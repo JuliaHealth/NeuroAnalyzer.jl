@@ -1,102 +1,32 @@
-using FFTW
-using Statistics
+"""
+    signal_derivative(x)
 
-"""
-Gets the position value n in array x
-"""
-function vsearch(x, n)
-    _, n_idx = findmin(abs.(x .- n))
-    return n_idx
-end
-
-"""
-Converts cartographic coordinates to polar
-"""
-function cart2pol(x, y)
-    rho = hypot(x, y)
-    theta = atan(y, x)
-    return rho, theta
-end
-
-"""
-Converts polar coordinates to cartographic
-"""
-function pol2cart(theta, rho)
-    x = rho * cos(theta)
-    y = rho * sin(theta)
-    return x, y
-end
-
-"""
-Unity based (min..max) data scaling: 0..1
-"""
-function min_max(x)
-    return (x - findmin(x)) / (x - findmax(x))
-end
-
-"""
-Returns the phase angles, in radians, of a vector with complex elements
-"""
-function cvangle(v)
-    return atan.(imag(v), real(v))
-end
-
-"""
-Returns the n-point long symmetric Hann window column vector
-"""
-function hann(n)
-    return 0.5 .* (1 .- cos.(2 .* pi .* range(0, 1, length = n)))
-end
-
-"""
-Calculates Hildebrand rule for symmetry
-H < 0.2 means symmetry
-"""
-function hildebrand_rule(x)
-    return (mean(x) - median(x)) ./ std(x)
-end
-
-"""
-Calculates Jaccard similarity between two vectors
-"""
-function jaccard_similarity(x, y)
-    intersection = length(intersect(x, y))
-    union = length(x) + length(y) - intersection
-    return intersection / union
-end
-
-"""
-Calculates Manhattan distance between two vectors
-"""
-function manhattan_distance(x, y)
-    return sum(x .- y)
-end
-
-"""
-Zero-padded FFT
-"""
-function fft0(x, padlength)
-    return fft(vcat(x, zeros(padlength)))
-end
-
-"""
 Returns the derivative of the signal with length same as the signal
 """
-function signal_derivative(x)
-    return np.append(np.diff(x), np.diff(x)[-1])
-end
+signal_derivative(x::Vector) = vcat(diff(x), diff(x)[end-1])
 
 """
-Calculates absolute band power
+    band_power(psd, f1, f2)
+
+Calculates absolute band power between frequencies 'f1' and 'f2'
 """
-function band_power(psd, freqs, f1, f2)
-    # find intersecting values in frequency vector
-    idx_delta = np.logical_and(freqs >= f1, freqs <= f2)
+function band_power(psd, f1, f2)
+    frq_idx = [vsearch(psd.freq, f1), vsearch(psd.freq, f2)]
     # dx: frequency resolution
-    p = simpson(psd[idx_delta], dx=freqs[1]-freqs[0])
-    return p
+    dx = psd.freq[2] - psd.freq[1]
+    result = simpson(psd.power[frq_idx[1]:frq_idx[2]], start=frq_idx[1], stop=frq_idx[1], dx=dx)
+    return result
 end
 
-function simpson(x, dx)
-    return int
+"""
+    make_spectrum(y, fs)
+
+Return 'y' signal FFT and DFT sample frequencies for a DFT of the 'y' length 
+"""
+function make_spectrum(y, fs)
+    hs = fft(y)
+    n = length(y)               # number of samples
+    d = 1/fs                    # time between samples
+    fs = fftfreq(n, d)
+    return hs, fs
 end

@@ -1,6 +1,12 @@
 module NeuroJ
 
 include("eeg.jl")
+export signal_derivative
+export band_power
+export make_spectrum
+
+include("misc.jl")
+export zero_pad
 export vsearch
 export cart2pol
 export pol2cart
@@ -11,9 +17,7 @@ export hildebrand_rule
 export jaccard_similarity
 export manhattan_distance
 export fft0
-export signal_derivative
 export simpson
-export band_power
 
 include("nstim.jl")
 export tes_dose
