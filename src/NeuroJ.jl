@@ -1,11 +1,17 @@
 module NeuroJ
 
+import FFTW
+import DSP
+import Statistics
+
 include("eeg.jl")
 export signal_derivative
 export band_power
 export make_spectrum
 
 include("misc.jl")
+export linspace
+export logspace
 export zero_pad
 export vsearch
 export cart2pol
@@ -15,9 +21,7 @@ export cvangle
 export hann
 export hildebrand_rule
 export jaccard_similarity
-export manhattan_distance
 export fft0
-export simpson
 
 include("nstim.jl")
 export tes_dose

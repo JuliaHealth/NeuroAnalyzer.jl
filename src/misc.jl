@@ -109,4 +109,4 @@ end
 
 Calculates FFT for vector 'x' padded with 'n' zeros at the end.
 """
-fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(n)))
+fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
