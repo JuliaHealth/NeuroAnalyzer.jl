@@ -13,8 +13,7 @@ include("misc.jl")
 export linspace
 export logspace
 export zero_pad
-export vsearch(x::Vector, y::Number)
-export vsearch(x::Vector, y::Vector)
+export vsearch
 export cart2pol
 export pol2cart
 export minmax_scaler
