@@ -22,6 +22,7 @@ export hann
 export hildebrand_rule
 export jaccard_similarity
 export fft0
+export next_power_of_2
 
 include("nstim.jl")
 export tes_dose

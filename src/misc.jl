@@ -32,13 +32,27 @@ function zero_pad(m)
 end
 
 """
-    vsearch(x, n) 
+    vsearch(x::Vector, y::Number) 
 
-Gets the position of value 'n' in array 'x'.
+Gets the position of value 'y' in vector 'x'.
 """
-function vsearch(x, n)
-    _, n_idx = findmin(abs.(x .- n))
-    return n_idx
+function vsearch(x::Vector, y::Number)
+    y_dist, y_idx = findmin(abs.(x .- y))
+    return y_idx, y_dist
+end
+"""
+    vsearch(x::Vector, y::Vector) 
+
+Gets the positions of values 'y' in vector 'x'.
+"""
+function vsearch(x::Vector, y::Vector)
+    length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
+    y_idx = zeros(length(y))
+    y_dist = zeros(length(y))
+    for idx in 1:length(y)
+        y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
+    end
+    return convert.(Int, y_idx), y_dist
 end
 
 """
@@ -110,3 +124,12 @@ end
 Calculates FFT for vector 'x' padded with 'n' zeros at the end.
 """
 fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
+
+"""
+    next_power_of_2(x)
+Returns the next power of 2 for given 'x'.
+"""
+function next_power_of_2(x)
+    x == 0 && return 1
+    x == 0 || return 2 ^ ndigits(x - 1, base=2)
+end
