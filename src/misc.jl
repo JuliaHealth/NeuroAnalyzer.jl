@@ -133,3 +133,17 @@ function next_power_of_2(x)
     x == 0 && return 1
     x == 0 || return 2 ^ ndigits(x - 1, base=2)
 end
+
+"""
+    vsplit(x, n)
+Splits vector 'x' into 'n'-long pieces.
+"""
+function vsplit(x, n=1)
+    length(x) % n == 0 || throw(ArgumentError("""Length of "x" must be a multiple of "n"."""))
+    x_m = reshape(x, length(x) ÷ n, n)
+    result = [x_m[1, :]]
+    for idx in 2:size(x_m, 1)
+        result = vcat(result, [x_m[idx, :]])
+    end
+    return result
+end
