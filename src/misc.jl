@@ -110,3 +110,10 @@ end
 Calculates FFT for vector 'x' padded with 'n' zeros at the end.
 """
 fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
+
+"""
+    rms(x)
+
+Calculates RMS of vector x
+"""
+rms(x) = norm(x) / sqrt(length(x)) 
