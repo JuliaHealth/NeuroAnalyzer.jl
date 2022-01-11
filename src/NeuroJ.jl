@@ -8,6 +8,7 @@ include("eeg.jl")
 export signal_derivative
 export band_power
 export make_spectrum
+export signal_detrend
 
 include("misc.jl")
 export linspace
@@ -23,6 +24,9 @@ export hildebrand_rule
 export jaccard_similarity
 export fft0
 export rms
+export next_power_of_2
+export vsplit
+
 
 include("nstim.jl")
 export tes_dose

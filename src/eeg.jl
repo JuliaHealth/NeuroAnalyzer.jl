@@ -3,7 +3,7 @@
 
 Returns the derivative of the signal with length same as the signal
 """
-signal_derivative(x::Vector) = vcat(diff(x), diff(x)[end-1])
+signal_derivative(x::Vector) = vcat(diff(x), diff(x)[end])
 
 """
     band_power(psd, f1, f2)
@@ -21,7 +21,7 @@ end
 """
     make_spectrum(y, fs)
 
-Return 'y' signal FFT and DFT sample frequencies for a DFT of the 'y' length 
+Returns 'y' signal FFT and DFT sample frequencies for a DFT of the 'y' length 
 """
 function make_spectrum(y, fs)
     hs = fft(y)
@@ -29,4 +29,24 @@ function make_spectrum(y, fs)
     d = 1/fs                    # time between samples
     fs = fftfreq(n, d)
     return hs, fs
+end
+
+"""
+    signal_detrend(y, type=:linear)
+
+Removes linear trend of signal 'y'.
+type : [:linear, :constant], optional
+linear: the result of a linear least-squares fit to 'y' is subtracted from 'y'
+constant: the mean of `y` is subtracted.
+"""
+function signal_detrend(y::Vector; trend=:linear)
+    trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
+    if trend == :constant
+        result = y .- mean(y)
+    else
+        A = ones(length(y))
+        coef = A \ y
+        result = @. y - dot(A, coef)
+    end
+    return result
 end
