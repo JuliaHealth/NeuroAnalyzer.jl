@@ -3,6 +3,7 @@ module NeuroJ
 import FFTW
 import DSP
 import Statistics
+import LinearAlgebra
 
 include("eeg.jl")
 export signal_derivative
@@ -26,7 +27,6 @@ export fft0
 export rms
 export nexpow2
 export vsplit
-
 
 include("nstim.jl")
 export tes_dose
