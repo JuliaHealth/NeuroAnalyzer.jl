@@ -126,10 +126,10 @@ Calculates FFT for vector 'x' padded with 'n' zeros at the end.
 fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
 
 """
-    next_power_of_2(x)
+    nexpow2(x)
 Returns the next power of 2 for given 'x'.
 """
-function next_power_of_2(x)
+function nexpow2(x)
     x == 0 && return 1
     x == 0 || return 2 ^ ndigits(x - 1, base=2)
 end

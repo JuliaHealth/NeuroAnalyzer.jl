@@ -24,7 +24,7 @@ export hildebrand_rule
 export jaccard_similarity
 export fft0
 export rms
-export next_power_of_2
+export nexpow2
 export vsplit
 
 
