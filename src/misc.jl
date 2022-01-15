@@ -1,23 +1,23 @@
 """
     linspace(start, stop, length)
 
-Generates 'length' of evenly spaced numbers between 'start' and 'end'.
+Generates `length`-long sequence of evenly spaced numbers between `start` and `stop`.
 """
 linspace(start, stop, length) = collect(range(start, stop, length))
 
 """
     logspace(start, stop, length)
 
-Generates 'length' of log10-spaced numbers between 'start' and 'end'.
+Generates `length`-long sequence of log10-spaced numbers between `start` and `stop`.
 """
 logspace(start, stop, length) = collect(exp10.(range(start, stop, length)))
 
 """
     zero_pad(m)
 
-Pads the matrix 'm' with zeros to make 'm' square
+Pads the matrix `m` with zeros to make it square.
 """
-function zero_pad(m)
+function zero_pad(m::Matrix)
     nr, nc = size(m)
     if nr > nc
         mp = repeat([0], nr, nr - nc)
@@ -32,18 +32,19 @@ function zero_pad(m)
 end
 
 """
-    vsearch(x::Vector, y::Number) 
+    vsearch(x::Vector, y::Number; return_distance=false)
 
-Gets the position of value 'y' in vector 'x'.
+Returns the positions of the `y` value in the vector `x`.
 """
-function vsearch(x::Vector, y::Number)
+function vsearch(x::Vector, y::Number; return_distance=false)
     y_dist, y_idx = findmin(abs.(x .- y))
-    return y_idx, y_dist
+    return_distance == false && return y_idx
+    return_distance == true && return y_idx, y_dist
 end
 """
-    vsearch(x::Vector, y::Vector) 
+    vsearch(x::Vector, y::Vector)
 
-Gets the positions of values 'y' in vector 'x'.
+Returns the positions of the `y` vector in the vector `x`.
 """
 function vsearch(x::Vector, y::Vector)
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
@@ -58,7 +59,7 @@ end
 """
     cart2pol(x, y)
 
-Converts cartographic coordinates 'x' and 'y' to polar.
+Converts cartographic coordinates `x` and `y` to polar.
 """
 function cart2pol(x, y)
     rho = hypot(x, y)
@@ -69,7 +70,7 @@ end
 """
     pol2cart(theta, rho)
 
-Converts polar coordinates 'theta' and 'rho' to cartographic.
+Converts polar coordinates `theta` and `rho` to cartographic.
 """
 function pol2cart(theta, rho)
     x = rho * cos(theta)
@@ -80,37 +81,36 @@ end
 """
     minmax_scaler(x)
 
-Apply unity based (min - max) data scaling to vector 'x'
-'x' will have values between 0 and 1.
+Apply unity based (min - max) data scaling to the vector `x`. After scaling, `x` will have values between 0 and 1.
 """
-minmax_scaler(x::Vector) = (x - findmin(x)) / (x - findmax(x))
+minmax_scaler(x::Vector) = (x - findmin(x)[1]) / (x - findmax(x)[1])
 
 """
-    cvangle(v)
+    cvangle(x)
 
-Returns the phase angles, in radians, of vector 'v' with complex elements.
+Returns the phase angles, in radians, of the vector `x` with complex elements.
 """
-cvangle(v::Vector) = atan.(imag(v), real(v))
+cvangle(x::Vector) = atan.(imag(x), real(x))
 
 """
     hann(n)
 
-Returns the 'n'-point long symmetric Hann window column vector.
+Returns the `n`-point long symmetric Hanning window.
 """
 hann(n::Int) = 0.5 .* (1 .- cos.(2 .* pi .* range(0, 1, length = n)))
 
 """
     hildebrand_rule(x)
 
-Calculates Hildebrand rule for vector 'x'.
-If H < 0.2 then vector is symmetrical.
+Calculates Hildebrand rule for vector `x`.
+If H < 0.2 then the vector `x` is symmetrical.
 """
 hildebrand_rule(x::Vector) = (mean(x) - median(x)) ./ std(x)
 
 """
     jaccard_similarity(x, y)
 
-Calculates Jaccard similarity between two vectors 'x' and 'y'.
+Calculates Jaccard similarity between two vectors `x` and `y`.
 """
 function jaccard_similarity(x::Vector, y::Vector)
     intersection = length(intersect(x, y))
@@ -121,13 +121,14 @@ end
 """
     fft0(x, n)
 
-Calculates FFT for vector 'x' padded with 'n' zeros at the end.
+Calculates FFT for the vector `x` padded with `n` zeros at the end.
 """
 fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
 
 """
     nexpow2(x)
-Returns the next power of 2 for given 'x'.
+
+Returns the next power of 2 for given number `x`.
 """
 function nexpow2(x)
     x == 0 && return 1
@@ -136,9 +137,10 @@ end
 
 """
     vsplit(x, n)
-Splits vector 'x' into 'n'-long pieces.
+
+Splits the vector `x` into `n`-long pieces.
 """
-function vsplit(x, n=1)
+function vsplit(x::Vector, n::Int=1)
     length(x) % n == 0 || throw(ArgumentError("""Length of "x" must be a multiple of "n"."""))
     x_m = reshape(x, length(x) ÷ n, n)
     result = [x_m[1, :]]
@@ -151,9 +153,13 @@ end
 """
     rms(x)
 
-Calculates RMS of vector x
+Calculates Root Mean Square of the vector `x`.
 """
-rms(x) = norm(x) / sqrt(length(x))
+rms(x::Vector) = norm(x) / sqrt(length(x))
 
+"""
+    db(x)
 
-
+Converts values of the vector `x` to dB.
+"""
+db(x::Vector) = 10 .* log10.(x ./ findmax(x)[1])
