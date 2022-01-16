@@ -64,7 +64,6 @@ Converts cartographic coordinates `x` and `y` to polar.
 function cart2pol(x, y)
     rho = hypot(x, y)
     theta = atan(y, x)
-    return rho, theta
 end
 
 """
@@ -163,3 +162,10 @@ rms(x::Vector) = norm(x) / sqrt(length(x))
 Converts values of the vector `x` to dB.
 """
 db(x::Vector) = 10 .* log10.(x ./ findmax(x)[1])
+
+"""
+    sine(a, f, p, t)
+
+Generates sine wave of `a` amplitude, `f` frequency, `p` phase over `t` time.
+"""
+sine(a, f, p, t) = a .* sin.(2 * pi .* f * t .+ p)

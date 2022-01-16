@@ -33,6 +33,7 @@ export nexpow2
 export vsplit
 export rms
 export db
+export sine
 
 include("nstim.jl")
 export tes_dose
