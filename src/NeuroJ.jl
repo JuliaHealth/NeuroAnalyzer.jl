@@ -34,6 +34,7 @@ export vsplit
 export rms
 export db
 export sine
+export frequencies
 
 include("nstim.jl")
 export tes_dose
