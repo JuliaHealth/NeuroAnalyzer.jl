@@ -1,9 +1,10 @@
 module NeuroJ
 
-import FFTW
 import DSP
-import Statistics
+import FFTW
 import LinearAlgebra
+import StatsKit
+
 import Simpson
 
 include("eeg.jl")
