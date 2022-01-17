@@ -108,6 +108,7 @@ function signals_mean(signals1::Matrix, signals2::Matrix)
     signals1_sd = std(signals1, dims=1) / sqrt(size(signals1, 1))
     signals2_sd = std(signals2, dims=1) / sqrt(size(signals2, 1))
     signals_mean_sd = sqrt.(signals1_sd.^2 .+ signals2_sd.^2)'
+
     return signals_mean, signals_mean_sd, signals_mean + 1.96 * signals_mean_sd, signals_mean - 1.96 * signals_mean_sd
 end
 
@@ -127,6 +128,7 @@ function signals_difference(signals1::Matrix, signals2::Matrix, n::Int=3; method
     method in [:absdiff, :diff2int] || throw(ArgumentError("""Method must be ":absdiff" or ":diff2int"."""))
     signals1_mean = mean(signals1, dims=1)'
     signals2_mean = mean(signals2, dims=1)'
+
     if method === :absdiff
         # statistic: maximum difference
         signals_diff = signals1_mean - signals2_mean
@@ -136,8 +138,10 @@ function signals_difference(signals1::Matrix, signals2::Matrix, n::Int=3; method
         signals_diff_squared = (signals1_mean - signals2_mean).^2
         signals_statistic_single = simpson(signals_diff_squared)
     end
+
     signals = [signals1; signals2]
     signals_statistic = zeros(size(signals1, 1) * n)
+
     Threads.@threads for idx1 in 1:(size(signals1, 1) * n)
         signals_tmp1 = zeros(size(signals1, 1), size(signals1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
@@ -163,32 +167,92 @@ function signals_difference(signals1::Matrix, signals2::Matrix, n::Int=3; method
             signals_statistic[idx1] = simpson(signals_diff_squared)
         end
     end
+
     p = length(signals_statistic[signals_statistic .> signals_statistic_single]) / size(signals1, 1) * n
+
     return signals_statistic, signals_statistic_single, p
 end
 
 """
-   signal_autocov(x, lag=1)
+   signal_autocov(signal, lag=1, demean=true)
 
 Calculates autocovariance for the `signal` vector for lags = -lag:lag.
 """
-function signal_autocov(signal::Vector, lag=1)
+function signal_autocov(signal::Vector, lag=1, demean=false, normalize=false)
     lags = collect(-lag:lag)
-    signal_demeaned = signal .- mean(signal)
+
+    if demean == true
+        signal_demeaned = signal .- mean(signal)
+    else
+        signal_demeaned = signal
+    end
+
     ac = zeros(length(lags))
+
     for idx in 1:length(lags)
-        if lags[idx] >= 0
+        if lags[idx] == 0
+            # no lag
+            signal_lagged = signal_demeaned
+            signals_mul = signal_demeaned .* signal_lagged
+        elseif lags[idx] > 0
             # positive lag
             signal_lagged = signal_demeaned[1:(end - lags[idx])]
             signals_mul = signal_demeaned[(1 + lags[idx]):end] .* signal_lagged
-        else
+        elseif lags[idx] < 0
             # negative lag
             signal_lagged = signal_demeaned[(1 + abs(lags[idx])):end]
             signals_mul = signal_demeaned[1:(end - abs(lags[idx]))] .* signal_lagged
         end
         signals_sum = sum(signals_mul)
-        ac[idx] = signals_sum / length(signal)
+        if normalize == true
+            ac[idx] = signals_sum / length(signal)
+        else
+            ac[idx] = signals_sum
+        end
     end
+
     return ac, lags
 end
 
+"""
+   signal_crosscov(signal1, signal2, lag=1, demean=true)
+
+Calculates cross-covariance between `signal1` and `signal2` vectors for lags = -lag:lag.
+"""
+function signal_crosscov(signal1::Vector, signal2::Vector, lag=1, demean=false, normalize=false)
+    lags = collect(-lag:lag)
+
+    if demean == true
+        signal_demeaned1 = signal1 .- mean(signal1)
+        signal_demeaned2 = signal2 .- mean(signal2)
+    else
+        signal_demeaned1 = signal1
+        signal_demeaned2 = signal2
+    end
+
+    ac = zeros(length(lags))
+
+    for idx in 1:length(lags)
+        if lags[idx] == 0
+            # no lag
+            signal_lagged = signal_demeaned2
+            signals_mul = signal_demeaned1 .* signal_lagged
+        elseif lags[idx] > 0
+            # positive lag
+            signal_lagged = signal_demeaned2[1:(end - lags[idx])]
+            signals_mul = signal_demeaned1[(1 + lags[idx]):end] .* signal_lagged
+        elseif lags[idx] < 0
+            # negative lag
+            signal_lagged = signal_demeaned2[(1 + abs(lags[idx])):end]
+            signals_mul = signal_demeaned1[1:(end - abs(lags[idx]))] .* signal_lagged
+        end
+        signals_sum = sum(signals_mul)
+        if normalize == true
+            ac[idx] = signals_sum / length(signal1)
+        else
+            ac[idx] = signals_sum
+        end
+    end
+
+    return ac, lags
+end

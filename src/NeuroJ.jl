@@ -1,11 +1,10 @@
 module NeuroJ
 
-import DSP
-import FFTW
-import LinearAlgebra
-import StatsKit
-
-import Simpson
+using DSP
+using FFTW
+using LinearAlgebra
+using StatsKit
+using Simpson
 
 include("eeg.jl")
 export signal_derivative
@@ -16,6 +15,7 @@ export signals_ci95
 export signals_mean
 export signals_difference
 export signal_autocov
+export signal_crosscov
 
 include("misc.jl")
 export linspace
