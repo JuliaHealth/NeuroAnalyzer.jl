@@ -164,8 +164,27 @@ Converts values of the vector `x` to dB.
 db(x::Vector) = 10 .* log10.(x ./ findmax(x)[1])
 
 """
-    sine(a, f, p, t)
+    sine(f, t, a, p)
 
-Generates sine wave of `a` amplitude, `f` frequency, `p` phase over `t` time.
+Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` amplitude and  `p` phase.
 """
-sine(a, f, p, t) = a .* sin.(2 * pi .* f * t .+ p)
+sine(f, t, a=1, p=0) = a .* sin.(2 * pi .* f * t .+ p)
+
+"""
+    frequencies(t)
+
+Generates vector of frequencies for given time vector `t`.
+"""
+function frequencies(t::Vector)
+    # sampling interval
+    dt = t[2] - t[1]
+    # sampling rate
+    fs = 1 / dt
+    # frequency step size
+    df = 1 / (length(t) * dt)
+    # Nyquist frequency
+    nyquist_freq = fs / 2
+    # frequency array
+    hz = collect(0:df:nyquist_freq)
+    return hz
+end
