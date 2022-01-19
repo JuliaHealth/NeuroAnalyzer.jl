@@ -15,7 +15,8 @@ export signals_ci95
 export signals_mean
 export signals_difference
 export signal_autocov
-export signal_crosscov
+export signals_crosscov
+export signal_spectrum
 
 include("misc.jl")
 export linspace

@@ -1,9 +1,9 @@
 """
-    signal_derivative(x)
+    signal_derivative(signal)
 
-Returns the derivative of the signal `x` with length same as the signal
+Returns the derivative of the `signal` with length same as the signal
 """
-signal_derivative(x::Vector) = vcat(diff(x), diff(x)[end])
+signal_derivative(signal::Vector) = vcat(diff(signal), diff(signal)[end])
 
 """
     band_power(psd, f1, f2)
@@ -19,22 +19,22 @@ function signal_band_power(psd, f1, f2)
 end
 
 """
-    make_spectrum(x, fs)
+    make_spectrum(signal, fs)
 
 Returns FFT and DFT sample frequencies for a DFT of the `x` signal 
 """
-function signal_make_spectrum(x::Vector, fs)
-    hs = fft(x)
-    n = length(x)               # number of samples
-    d = 1/fs                    # time between samples
+function signal_make_spectrum(signal::Vector, fs)
+    hs = fft(signal)
+    n = length(signal)               # number of samples
+    d = 1 / fs                    # time between samples
     fs = fftfreq(n, d)
     return hs, fs
 end
 
 """
-    signal_detrend(x, type=:linear)
+    signal_detrend(signal, type=:linear)
 
-Removes linear trend of signal `x`.
+Removes linear trend of `signal`.
 
 # Arguments
 - `x::Vector` - the signal to detrend.
@@ -42,14 +42,14 @@ Removes linear trend of signal `x`.
     linear: the result of a linear least-squares fit to `y` is subtracted from `y`
     constant: the mean of `y` is subtracted.
 """
-function signal_detrend(x::Vector; trend=:linear)
+function signal_detrend(signal::Vector; trend=:linear)
     trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
     if trend == :constant
-        result = x .- mean(x)
+        result = signal .- mean(signal)
     else
-        A = ones(length(x))
-        coef = A \ x
-        result = @. x - dot(A, coef)
+        A = ones(length(signal))
+        coef = A \ signal
+        result = @. signal - dot(A, coef)
     end
     return result
 end
@@ -174,9 +174,9 @@ function signals_difference(signals1::Matrix, signals2::Matrix, n::Int=3; method
 end
 
 """
-   signal_autocov(signal, lag=1, demean=true)
+   signal_autocov(signal, lag=1, demean=false, normalize=false)
 
-Calculates autocovariance for the `signal` vector for lags = -lag:lag.
+Calculates autocovariance of the `signal` vector for lags = -lag:lag.
 """
 function signal_autocov(signal::Vector, lag=1, demean=false, normalize=false)
     lags = collect(-lag:lag)
@@ -215,11 +215,11 @@ function signal_autocov(signal::Vector, lag=1, demean=false, normalize=false)
 end
 
 """
-   signal_crosscov(signal1, signal2, lag=1, demean=true)
+   signals_crosscov(signal1, signal2, lag=1, demean=false, normalize=false)
 
 Calculates cross-covariance between `signal1` and `signal2` vectors for lags = -lag:lag.
 """
-function signal_crosscov(signal1::Vector, signal2::Vector, lag=1, demean=false, normalize=false)
+function signals_crosscov(signal1::Vector, signal2::Vector, lag=1, demean=false, normalize=false)
     lags = collect(-lag:lag)
 
     if demean == true
@@ -255,4 +255,35 @@ function signal_crosscov(signal1::Vector, signal2::Vector, lag=1, demean=false, 
     end
 
     return ac, lags
+end
+
+"""
+    signal_spectrum(signal, pad=0, remove_dc=false, detrend=false, taper=nothing)
+"""
+function signal_spectrum(signal::Vector, pad::Int=0, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+    pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
+    remove_dc == true && (signal = signal .- mean(signal))
+    detrend == true && (signal = signal_detrend(signal))
+    derivative == true && (signal = signal_derivative(signal))
+    taper != nothing && (signal = signal .* taper)
+
+    if pad == 0
+        signal_fft = fft(signal)
+    else
+        signal_fft = fft0(signal, pad)
+    end
+
+    # normalize
+    signal_fft ./= length(signal)
+
+    # amplitudes
+    signal_amplitudes = @. 2 * abs(signal_fft)
+
+    # power
+    signal_powers = signal_amplitudes.^2
+
+    # phases
+    signal_phases = atan.(imag(signal_fft), real(signal_fft))
+
+    return signal_fft, signal_amplitudes, signal_powers, signal_phases
 end
