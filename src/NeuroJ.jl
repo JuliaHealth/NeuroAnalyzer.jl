@@ -4,6 +4,7 @@ using DataFrames
 using DSP
 using FFTW
 using LinearAlgebra
+using Plots
 using StatsKit
 using Simpson
 
