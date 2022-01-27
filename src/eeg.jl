@@ -443,8 +443,147 @@ function eeg_load(in_file, read_annotations=true, header_only=false, clean_label
 
     close(fid)
 
-    eeg_file_header = [version, eeg_filetype, patient, recording, recording_date, recording_time, data_records,     data_records_duration, channels_no]
-    eeg_signal_header = DataFrame(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)
+    eeg_file_header = Dict(:version => version, :eeg_filetype => eeg_filetype, :patient => patient, :recording => recording, :recording_date => recording_date, :recording_time => recording_time, :data_records => data_records, :data_records_duration => data_records_duration, :channels_no => channels_no)
+    eeg_signal_header = Dict(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)
     eeg = EEG(eeg_file_header, eeg_signal_header, eeg_signals)
     return eeg
 end
+
+"""
+    signals_epoch_avg(signals, n)
+
+Divides `signals` matrix into `n`-samples long averaged epochs and average them.
+"""
+function signals_epoch_avg(signals::Matrix, n)
+    channels = size(signals, 1)
+    m = size(signals, 2)
+    no_epochs = m ÷ n
+    epochs = zeros(channels, n)
+    for idx1 in 1:channels
+        epoch_tmp = zeros(no_epochs, n)
+        for idx2 in 1:no_epochs
+            epoch_tmp[idx2, :] = signals[idx1, (((idx2 - 1) * n) + 1):(idx2 * n)]
+        end
+        epochs[idx1, :] = mean(epoch_tmp, dims=1)
+    end
+    return epochs
+end
+
+"""
+    signal_epoch_avg(signals, n)
+
+Divides `signal` vector into `n`-samples long averaged epochs and average them.
+"""
+function signal_epoch_avg(signal::Vector{Float64}, n)
+    m = length(signal)
+    no_epochs = m ÷ n
+    epochs = zeros(n)
+    epoch_tmp = zeros(no_epochs, n)
+    for idx in 1:no_epochs
+        epoch_tmp[idx, :] = signal[(((idx - 1) * n) + 1):(idx * n)]
+    end
+    epochs = Vector(mean(epoch_tmp, dims=1)[1, :])
+    return epochs
+end
+
+"""
+    signal_filter(signal, type, cutoff, fs, poles=8)
+
+Filters `signal` vector using filter `type`=[:lp, :hp, :bp, :bs], `cutoff` in Hz, `fs` sampling rate and `poles`-pole Butterworth filter.
+"""
+function signal_filter(signal::Vector{Float64}, type, cutoff, fs, poles=8)
+    if type == :lp
+        responsetype = Lowpass(cutoff; fs=fs)
+        prototype = Butterworth(poles)
+    elseif type == :hp
+        responsetype = Highpass(cutoff; fs=fs)
+        prototype = Butterworth(poles)
+    elseif type == :bp
+        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
+        prototype = Butterworth(poles)
+    elseif type == :bs
+        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+        prototype = Butterworth(poles)
+    end
+    filter = digitalfilter(responsetype, prototype)
+    signal_filtered = filt(filter, signal)
+    return signal_filtered
+end
+
+"""
+    signals_filter(signal, type, cutoff, fs, poles=8)
+
+Filters `signals` matrix using filter `type` [:lp, :hp, :bp, :bs], `cutoff` in Hz, `fs` sampling rate and `poles`-pole Butterworth filter.
+"""
+function signals_filter(signals::Matrix, type, cutoff, fs, poles=8)
+    no_channels = size(signals, 1)
+    signals_filtered = zeros(size(signals))
+    for idx in 1:no_channels
+        signals_filtered[idx, :] = signal_filter(signals[idx, :], type, cutoff, fs, poles)
+    end
+    return signals_filtered
+end
+
+"""
+    signal_plot(time, signal)
+
+Plots `signal` vector.
+"""
+function signal_plot(time, signal)
+    amplitude_min, _ = findmin(signal)
+    amplitude_min = ceil(Int64, amplitude_min)
+    amplitude_max, _ = findmax(signal)
+    amplitude_max = floor(amplitude_max; digits=0)
+    plot(time, signal, ylim=(amplitude_min, amplitude_max))
+end
+
+"""
+    signal_plot(t, signals; labels=[], rescale=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=100)
+
+Plots `signal` vector.
+"""
+function signal_plot(t, signal; labels=[], rescale=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=100)
+    if rescale == true
+        # rescale
+        signal = (signal .- mean(signal)) ./ std(signal)
+        yamp = ceil(findmax(signal)[1])
+    end
+    p = plot(t, signal, xlabel="Time [s]", ylabel="Amplitude [μV]", legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+    return p
+end
+
+"""
+    signals_plot(t, signals; labels=[], rescale=false, xlabel="Time [s]", ylabel="Channels")
+
+Plots `signals` matrix.
+"""
+function signals_plot(t, signals; labels=[], rescale=false, xlabel="Time [s]", ylabel="Channels")
+    no_channels = size(signals, 1)
+
+    # reverse so 1st channel is on top
+    signals = reverse(signals, dims = 1)
+
+    if rescale == true
+        # rescale and shift so all channels are visible
+        variances = var(signals; dims=2)
+        mean_variance = mean(variances)
+        for idx in 1:no_channels
+            signals[idx, :] = (signals[idx, :] .- mean(signals[idx, :])) ./ mean_variance .+ (idx - 1)
+        end
+    end
+
+    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, no_channels-0.5))
+    for idx in 1:no_channels
+        # Rescale and shift so all chanels are visible
+        p = plot!(t, signals[idx, :], legend=false, t=:line, c=:black)
+    end
+    p = plot!(p, yticks = (no_channels-1:-1:0, labels))
+    return p
+end
+
+"""
+    signal_demean(signal)
+
+Demean `signal` vector.
+"""
+signal_demean(signal) = signal .- mean(signal)

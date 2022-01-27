@@ -96,7 +96,7 @@ cvangle(x::Vector) = atan.(imag(x), real(x))
 
 Returns the `n`-point long symmetric Hanning window.
 """
-hann(n::Int) = 0.5 .* (1 .- cos.(2 .* pi .* range(0, 1, length = n)))
+hann(n::Int) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
 
 """
     hildebrand_rule(x)
@@ -249,7 +249,7 @@ end
 Pads the vector `x` with `n` zeros at the beginning and at the end.
 """
 # to do: check if x is numeric vector
-pad0(x::Vector, n::Int) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
+pad0(x, n) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
 
 """
     hz2rads(f)
@@ -264,3 +264,17 @@ hz2rads(f) = 2 * pi * f
 Converts frequency `f` in rad/s to Hz.
 """
 rads2hz(f) = f / 2 * pi
+
+"""
+    z_score(x)
+
+Calculates Z-scores for each value of the vector `x`.
+"""
+z_score(x) = (x .- mean(x)) ./ std(x)
+
+"""
+    k(n)
+
+Calculates number of categories for a given sample size `n`.
+"""
+k(n) = (sqrt(n), (1 + 3.222 * log10(n)))

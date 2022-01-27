@@ -8,8 +8,8 @@ using StatsKit
 using Simpson
 
 struct EEG
-    eeg_file_header::Array
-    eeg_signal_header::DataFrame
+    eeg_file_header::Dict
+    eeg_signal_header::Dict
     eeg_signals::Matrix
 end
 
@@ -25,6 +25,12 @@ export signal_autocov
 export signals_crosscov
 export signal_spectrum
 export eeg_load
+export signals_epoch_avg
+export signal_epoch_avg
+export signal_filter
+export signals_filter
+export signal_plot
+export signals_plot
 
 include("misc.jl")
 export linspace
@@ -50,6 +56,9 @@ export matrix_sortperm
 export matrix_sort
 export pad0
 export hz2rads
+export rads2hz
+export z_score
+export k
 
 include("nstim.jl")
 export tes_dose
