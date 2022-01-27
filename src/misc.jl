@@ -122,7 +122,14 @@ end
 
 Calculates FFT for the vector `x` padded with `n` zeros at the end.
 """
-fft0(x::Vector, padlength::Int) = fft(vcat(x, zeros(padlength)))
+fft0(x::Vector, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
+
+"""
+    fft0(x, n)
+
+Calculates IFFT for the vector `x` padded with `n` zeros at the end.
+"""
+ifft0(x::Vector, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
 
 """
     nexpow2(x)
@@ -173,18 +180,87 @@ sine(f, t, a=1, p=0) = a .* sin.(2 * pi .* f * t .+ p)
 """
     frequencies(t)
 
-Generates vector of frequencies for given time vector `t`.
+Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 """
 function frequencies(t::Vector)
-    # sampling interval
-    dt = t[2] - t[1]
-    # sampling rate
-    fs = 1 / dt
-    # frequency step size
-    df = 1 / (length(t) * dt)
-    # Nyquist frequency
-    nyquist_freq = fs / 2
-    # frequency array
-    hz = collect(0:df:nyquist_freq)
-    return hz
+        # sampling interval
+        dt = t[2] - t[1]
+        # sampling rate
+        fs = 1 / dt
+        # frequency step size
+        df = 1 / (length(t) * dt)
+        # Nyquist frequency
+        nyquist_freq = fs / 2
+        # frequency array
+        hz = collect(0:df:nyquist_freq)
+        return hz, nyquist_freq
 end
+
+"""
+    matrix_sortperm(m::AbstractMatrix; dims=1)
+
+Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
+"""
+function matrix_sortperm(m::AbstractMatrix; rev=false, dims=1)
+    m_idx = zeros(Int, size(m))
+    idx=1
+    if dims == 1
+        for idx = 1:size(m, 2)
+            # sort by columns
+            m_idx[:, idx] = sortperm(m[:, idx], rev=rev)
+        end
+    else
+        for idx = 1:size(m, 1)
+            # sort by rows
+            m_idx[idx, :] = sortperm(m[idx, :], rev=rev)'
+        end     
+    end
+    return m_idx
+end
+
+"""
+    matrix_sort(m::AbstractMatrix, m_idx::Vector{Int}; dims=1)
+
+Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
+"""
+function matrix_sort(m::AbstractMatrix, m_idx::Vector{Int}; rev=false, dims=1)
+    sorted_m = zeros(eltype(m), size(m))
+    if dims == 1
+        for idx = 1:size(m, 2)
+            # sort by columns
+            tmp = m[:, idx]
+            tmp = tmp[m_idx]
+            sorted_m[:, idx] = tmp
+        end
+    else
+        for idx = 1:size(m, 1)
+            # sort by rows
+            tmp = m[idx, :]
+            tmp = tmp[m_idx]
+            sorted_m[idx, :] = tmp
+        end
+    end
+    return sorted_m
+end
+
+"""
+    pad0(x, n)
+
+Pads the vector `x` with `n` zeros at the beginning and at the end.
+"""
+# to do: check if x is numeric vector
+pad0(x::Vector, n::Int) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
+
+"""
+    hz2rads(f)
+
+Converts frequency `f` in Hz to rad/s.
+"""
+hz2rads(f) = 2 * pi * f
+
+"""
+    rads2hz(f)
+
+Converts frequency `f` in rad/s to Hz.
+"""
+rads2hz(f) = f / 2 * pi
