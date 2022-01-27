@@ -444,7 +444,7 @@ function eeg_load(in_file, read_annotations=true, header_only=false, clean_label
     close(fid)
 
     eeg_file_header = [version, eeg_filetype, patient, recording, recording_date, recording_time, data_records,     data_records_duration, channels_no]
-    eeg_signal_header = DataFrame(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord)
+    eeg_signal_header = DataFrame(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)
     eeg = EEG(eeg_file_header, eeg_signal_header, eeg_signals)
     return eeg
 end
