@@ -1,5 +1,6 @@
 module NeuroJ
 
+using DataFrames
 using DSP
 using FFTW
 using LinearAlgebra

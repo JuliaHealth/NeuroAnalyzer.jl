@@ -430,7 +430,7 @@ function eeg_load(in_file, read_annotations=true, header_only=false, clean_label
     fid = open(in_file)
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
-    eeg_signals = zeros(channels_no, samples_per_datarecord[idx] * data_records)
+    eeg_signals = zeros(channels_no, samples_per_datarecord[1] * data_records)
 
     for idx1 in 1:data_records
         for idx2 in 1:channels_no
