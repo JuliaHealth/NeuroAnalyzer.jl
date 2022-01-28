@@ -5,7 +5,7 @@ Returns the derivative of the `signal` vector with length same as the signal.
 
 # Arguments
 
-- `signals::Vector{Float64}` - the signal vector to analyze
+- `signal::Vector{Float64}` - the signal vector to analyze
 """
 signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end])
 
@@ -36,7 +36,7 @@ Calculates total power for the `signal` vector.
 
 # Arguments
 
-- `signals::Vector{Float64}` - the signal vector to analyze
+- `signal::Vector{Float64}` - the signal vector to analyze
 """
 function signal_total_power(signal::Vector{Float64}, fs)
     psd = welch_pgram(signal, 4*fs, fs=fs)
@@ -74,7 +74,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for the `signal
 
 # Arguments
 
-- `signals::Vector{Float64}` - the signal vector to analyze
+- `signal::Vector{Float64}` - the signal vector to analyze
 - `fs::Float64` - Sampling rate of the signal
 - `f1::Float64` - Lower frequency bound
 - `f2::Float64` - Upper frequency bound
@@ -96,7 +96,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `s
 
 # Arguments
 
-- `signals::Matrix{Float64}` - the signal matrix to analyze
+- `signal::Matrix{Float64}` - the signal matrix to analyze
 - `fs::Float64` - Sampling rate of the signal
 - `f1::Float64` - Lower frequency bound
 - `f2::Float64` - Upper frequency bound
@@ -119,7 +119,7 @@ Returns FFT and DFT sample frequencies for a DFT for the `signal` vector.
 
 # Arguments
 
-- `signals::Vector{Float64}` - the signal vector to analyze
+- `signal::Vector{Float64}` - the signal vector to analyze
 - `fs::Float64` - Sampling rate of the signal
 """
 function signal_make_spectrum(signal::Vector{Float64}, fs)
@@ -140,7 +140,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` matrix ch
 
 # Arguments
 
-- `signals::Matrix{Float64}` - the signal matrix to analyze
+- `signal::Matrix{Float64}` - the signal matrix to analyze
 - `fs::Float64` - Sampling rate of the signal
 """
 function signal_make_spectrum(signal::Matrix{Float64}, fs)
@@ -162,7 +162,7 @@ Removes linear trend from the `signal` vector.
 
 # Arguments
 
-- `signals::Vector{Float64}` - the signal vector to analyze
+- `signal::Vector{Float64}` - the signal vector to analyze
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
@@ -188,7 +188,7 @@ Removes linear trend for each the `signal` matrix channels.
 
 # Arguments
 
-- `signals::Matrix{Float64}` the signal matrix to analyze
+- `signal::Matrix{Float64}` the signal matrix to analyze
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
@@ -241,7 +241,7 @@ function signal_ci95(signal::Matrix{Float64}; n=3, method=:normal)
         upper_bound = signal_sorted[round(Int, 0.975 * size(signal_tmp1, 1)), :]
     end
 
-    return Vector(signals_mean[:, 1]), Vector(signals_sd[:, 1]), Vector(upper_bound[:, 1]), Vector(lower_bound[:, 1])
+    return Vector(signal_mean[:, 1]), Vector(signal_sd[:, 1]), Vector(upper_bound[:, 1]), Vector(lower_bound[:, 1])
 end
 
 """
@@ -389,7 +389,7 @@ Calculates autocovariance of each the `signal` matrix channels.
 
 - `signal::Matrix{Float64}` - the signal vector to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signals prior to analysis
+- `remove_dc::Bool[true, false]` - demean signal prior to analysis
 - `normalize::Bool[true, false]` - normalize autocovariance
 """
 function signal_autocov(signal::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
@@ -417,7 +417,7 @@ Calculates cross-covariance between `signal1` and `signal2` vectors.
 - `signal1::Vector{Float64}` - the signal 1 vector to analyze
 - `signal2::Vector{Float64}` - the signal 2 vector to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signals prior to analysis
+- `remove_dc::Bool[true, false]` - demean signal prior to analysis
 - `normalize::Bool[true, false]` - normalize cross-covariance
 """
 function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag=1, remove_dc=false, normalize=false)
@@ -470,7 +470,7 @@ Calculates cross-covariance between same channels in `signal1` and `signal2` mat
 - `signal1::Matrix{Float64}` - the signal 1 matrix to analyze
 - `signal2::Matrix{Float64}` - the signal 2 matrix to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signals prior to analysis
+- `remove_dc::Bool[true, false]` - demean signal prior to analysis
 - `normalize::Bool[true, false]` - normalize cross-covariance
 """
 function signal_crosscov(signal1::Matrix{Float64}, signal2::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
@@ -653,7 +653,7 @@ function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothi
 end
 
 """
-    signal_epoch(signals, n; average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+    signal_epoch(signal, n; average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
 
 Splits `signal` matrix into epochs.
 
@@ -752,7 +752,7 @@ Filters `signal` matrix using Butterworth filter.
 function signal_filter_butter(signal::Matrix{Float64}; filter_type, cutoff, fs, poles=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
-    no_channels = size(signals, 1)
+    no_channels = size(signal, 1)
     signal_filtered = zeros(size(signal))
 
     for idx in 1:no_channels
@@ -798,7 +798,7 @@ function signal_plot(t::Vector{Float64}, signal::Vector{Float64}; labels=[], xla
 end
 
 """
-    signal_plot(t, signals; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    signal_plot(t, signal; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
 
 Plots `signal` matrix.
 
