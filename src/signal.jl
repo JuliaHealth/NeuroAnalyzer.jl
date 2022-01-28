@@ -780,7 +780,11 @@ Plots `signal` against `t`ime.
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_plot(t::Vector{Float64}, signal::Vector{Float64}; labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_plot(t, signal::Vector{Float64}; labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+
+    if typeof(t) == UnitRange{Int64}
+        t = collect(t)
+    end
 
     normalize == true && (signal = normalize_mean(signal))
     remove_dc == true && (signal = demean(signal))
@@ -821,6 +825,10 @@ function signal_plot(t::Vector{Float64}, signal::Matrix{Float64}; channels=[], l
         channels = collect(channels)
     end
 
+    if typeof(t) == UnitRange{Int64}
+        t = collect(t)
+    end
+    
     channels_no = size(signal, 1)
 
     # drop channels not in the list

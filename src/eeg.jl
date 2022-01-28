@@ -23,6 +23,10 @@ function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel=
         channels = collect(channels)
     end
 
+    if typeof(t) == UnitRange{Int64}
+        t = collect(t)
+    end
+
     channels_no = eeg.eeg_file_header[:channels_no]
 
     # drop channels not in the list
@@ -39,7 +43,7 @@ function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel=
     fs = eeg.eeg_signal_header[:sampling_rate][1]
 
     # default time is 5 seconds
-    t === nothing && (t = 0:1/fs:5)
+    t === nothing && (t = collect(0:1/fs:5))
 
     p = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper)
 
