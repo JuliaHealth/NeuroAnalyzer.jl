@@ -623,10 +623,10 @@ Splits `signal` vector into epochs.
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
 function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothing, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
-    (epoch_len == nothing && epoch_no == nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
-    if epoch_no == nothing
+    if epoch_no === nothing
         epoch_no = length(signal) ÷ epoch_len
     else
         epoch_len = length(signal) ÷ epoch_no
@@ -668,12 +668,12 @@ Splits `signal` matrix into epochs.
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
 function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
-    (epoch_len == nothing && epoch_no == nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
     channels_no = size(signal, 1)
 
-    if epoch_no == nothing
+    if epoch_no === nothing
         epoch_no = size(signal, 2) ÷ epoch_len
     else
         epoch_len = size(signal, 2) ÷ epoch_no
@@ -788,7 +788,7 @@ function signal_plot(t::Vector{Float64}, signal::Vector{Float64}; labels=[], xla
     derivative == true && (signal = signal_derivative(signal))
     taper !== nothing && (signal = signal .* taper)
 
-    if yamp == nothing
+    if yamp === nothing
         yamp, _ = findmax(signal)
         yamp = ceil(Int64, yamp)
     end

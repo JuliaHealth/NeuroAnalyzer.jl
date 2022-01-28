@@ -39,9 +39,9 @@ function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel=
     fs = eeg.eeg_signal_header[:sampling_rate][1]
 
     # default time is 5 seconds
-    t == nothing && (t = 0:1/fs:5)
+    t === nothing && (t = 0:1/fs:5)
 
-    p = signal_plot(signal, t=t, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper)
+    p = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper)
 
     return p
 end
