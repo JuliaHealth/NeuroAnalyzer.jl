@@ -9,7 +9,7 @@ using Pkg
 Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ```
 
-## Conventions
+## Documentation
 
 Single-channel signals are column vectors.
 
@@ -19,7 +19,14 @@ Function name prefix:
 - signal_  :: functions taking signal or signals as argument
 - eeg_     :: functions taking EEG object as argument
 
-## Sub-modules
+EEG object (headers + data) is stored in the EEG structure:
+```
+struct EEG
+    eeg_file_header::Dict
+    eeg_signal_header::Dict
+    eeg_signals::Matrix
+end
+```
 
 ### signal.jl
 
@@ -227,16 +234,6 @@ Normalize (scales around the mean) `signal` vector.
 normalize_minmax(signal)
 ```
 Normalize (to 0…1) `signal` vector.
-
-## Documentation
-
-```
-struct EEG
-    eeg_file_header::Dict
-    eeg_signal_header::Dict
-    eeg_signals::Matrix
-end
-```
 
 ## TO DO
 
