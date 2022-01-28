@@ -278,3 +278,10 @@ z_score(x) = (x .- mean(x)) ./ std(x)
 Calculates number of categories for a given sample size `n`.
 """
 k(n) = (sqrt(n), (1 + 3.222 * log10(n)))
+
+"""
+    demean(signal)
+
+Demean `signal` vector.
+"""
+demean(signal) = signal .- mean(signal)
