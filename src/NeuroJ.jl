@@ -16,6 +16,8 @@ end
 
 include("eeg.jl")
 export eeg_drop_channel
+export eeg_filter_butter
+export eeg_plot
 
 include("eeg_load_edf.jl")
 export eeg_load_edf

@@ -752,10 +752,10 @@ Filters `signal` matrix using Butterworth filter.
 function signal_filter_butter(signal::Matrix{Float64}; filter_type, cutoff, fs, poles=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
-    no_channels = size(signal, 1)
+    channels_no = size(signal, 1)
     signal_filtered = zeros(size(signal))
 
-    for idx in 1:no_channels
+    for idx in 1:channels_no
         signal_filtered[idx, :] = signal_filter_butter(signal[idx, :], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
     end
 
@@ -829,7 +829,7 @@ function signal_plot(t::Vector{Float64}, signal::Matrix{Float64}; channels=[], l
         for idx in length(channels):-1:1
             channels_to_drop = deleteat!(channels_to_drop, channels[idx])
         end
-        signal = eeg_drop_channel(signal, channels_to_drop)
+        signal = signal_drop_channel(signal, channels_to_drop)
     end
 
     channels_no = size(signal, 1)
