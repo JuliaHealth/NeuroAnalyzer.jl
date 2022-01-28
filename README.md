@@ -1,5 +1,13 @@
-signal   :: column or row vector
-signals  :: matrix of channels by signals
+# Conventions
 
-signal_  :: functions taking signal or signals as argument
-eeg_     :: functions taking EEG object as argument
+signal   :: column or row vector\\
+
+signals  :: matrix of channels by signals\\
+
+signal_  :: functions taking signal or signals as argument\\
+
+eeg_     :: functions taking EEG object as argument\\
+
+# TO DO
+
+- save figures (PDF, PNG) for eeg_plot(), signal_plot()

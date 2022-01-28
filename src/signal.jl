@@ -15,7 +15,6 @@ signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end
 Returns the derivative of each the `signal` matrix channels with length same as the signal.
 
 # Arguments
-
 - `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time).
 """
 function signal_derivative(signal::Matrix{Float64})
@@ -35,7 +34,6 @@ end
 Calculates total power for the `signal` vector.
 
 # Arguments
-
 - `signal::Vector{Float64}` - the signal vector to analyze
 """
 function signal_total_power(signal::Vector{Float64}, fs)
@@ -68,7 +66,7 @@ function signal_total_power(signal::Matrix{Float64}, fs)
 end
 
 """
-    signal_band_power(signal, f1, f2)
+    signal_band_power(signal, fs, f1, f2)
 
 Calculates absolute band power between frequencies `f1` and `f2` for the `signal` vector.
 
@@ -90,7 +88,7 @@ function signal_band_power(signal::Vector{Float64}, fs::Float64, f1::Float64, f2
 end
 
 """
-    signal_band_power(signal, f1, f2)
+    signal_band_power(signal, fs, f1, f2)
 
 Calculates absolute band power between frequencies `f1` and `f2` for each the `signal` matrix channels.
 
@@ -613,6 +611,7 @@ end
 Splits `signal` vector into epochs.
 
 # Arguments
+
 - `signal::Vector{Float64}` - the signal vector to analyze
 - `epoch_no::Int` - number of epochs
 - `epoch_len::Int` - epoch length in samples
@@ -658,6 +657,7 @@ end
 Splits `signal` matrix into epochs.
 
 # Arguments
+
 - `signal::Matrix{Float64}` - the signal matrix to analyze
 - `epoch_no::Int` - number of epochs
 - `epoch_len::Int` - epoch length in samples
@@ -743,6 +743,7 @@ end
 Filters `signal` matrix using Butterworth filter.
 
 # Arguments
+
 - `signal::Matrix{Float64}` - the signal matrix to analyze
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
@@ -768,6 +769,7 @@ end
 Plots `signal` against `t`ime.
 
 # Arguments
+
 - `t::Vector{Float64}` - the time vector
 - `signal::Vector{Float64}` - the signal vector
 - `offset::Float64` - displayed segment offset in samples
@@ -808,6 +810,7 @@ end
 Plots `signal` matrix.
 
 # Arguments
+
 - `t::Vector{Float64}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
 - `offset::Float64` - displayed segment offset in samples
@@ -877,6 +880,7 @@ end
 Removes `channels` from the `signal` matrix.
 
 # Arguments
+
 - `signal::Matrix{Float64}` - the signal matrix
 - `channels::Float64` - channels to be removed, vector of numbers or range
 """

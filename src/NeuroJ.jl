@@ -15,15 +15,21 @@ struct EEG
 end
 
 include("eeg.jl")
+export eeg_derivative
+export eeg_detrend
 export eeg_drop_channel
 export eeg_filter_butter
 export eeg_plot
+export eeg_total_power
+export eeg_band_power
+export eeg_make_spectrum
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
 
 include("signal.jl")
 export signal_autocov
+export signal_total_power
 export signal_band_power
 export signal_ci95
 export signal_crosscov
