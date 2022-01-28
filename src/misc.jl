@@ -32,7 +32,7 @@ function zero_pad(m::Matrix)
 end
 
 """
-    vsearch(x::Vector, y::Number; return_distance=false)
+    vsearch(x, y; return_distance=false)
 
 Returns the positions of the `y` value in the vector `x`.
 """
@@ -190,7 +190,7 @@ function frequencies(t::Vector{Float64})
 end
 
 """
-    matrix_sortperm(m::AbstractMatrix; dims=1)
+    matrix_sortperm(m; dims=1)
 
 Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
 """
@@ -212,7 +212,7 @@ function matrix_sortperm(m::Matrix; rev=false, dims=1)
 end
 
 """
-    matrix_sort(m::Matrix, m_idx::Vector{Int}; dims=1)
+    matrix_sort(m, m_idx; dims=1)
 
 Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
 """

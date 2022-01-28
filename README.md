@@ -25,6 +25,53 @@ Function name prefix:
 
 ### eeg.jl
 
+Functions for importing, processing, analyzing and displaying EEG data go here.
+
+```
+eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_labels=true)
+```
+Loads EDF/EDFPlus file.
+
+```
+eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+```
+Plots `eeg` signals.
+
+```
+eeg_drop_channel(eeg, channels)
+```
+Removes `channels` from the `eeg` set.
+
+```
+eeg_filter_butter(eeg; channels=[], filter_type, cutoff, fs, poles=8)
+```
+Filters `eeg` channels using Butterworth filter.
+
+```
+eeg_derivative(eeg; channels=[])
+```
+Returns the derivative of each the `eeg` channels with length same as the signal.
+
+```
+eeg_total_power(eeg; channels=[])
+```
+Calculates total power for each the `eeg` signal channels.
+
+```
+eeg_band_power(eeg, f1, f2; channels=[])
+```
+Calculates absolute band power between frequencies `f1` and `f2` for each the `eeg` signal channels.
+
+```
+eeg_make_spectrum(eeg; channels=[])
+```
+Returns FFT and DFT sample frequencies for a DFT for each the `eeg` signal channels.
+
+```
+eeg_detrend(eeg, type=:linear; channels=[])
+```
+Removes linear trend for each the `eeg` signal channels.
+
 ### mri.jl
 
 ### nirs.jl
@@ -43,7 +90,7 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 ```
 logspace(start, stop, length)
 ```
-Generates `length`-long sequence of log_(10)-spaced numbers between `start` and `stop`.
+Generates `length`-long sequence of log10-spaced numbers between `start` and `stop`.
 
 ```
 zero_pad(m)
@@ -51,12 +98,12 @@ zero_pad(m)
 Pads the matrix `m` with zeros to make it square.
 
 ```
-vsearch(x::Vector, y::Number; return_distance=false)
+vsearch(x, y; return_distance=false)
 ```
 Returns the positions of the `y` value in the vector `x`.
 
 ```
-vsearch(x::Vector, y::Vector)
+vsearch(x, y)
 ```
 Returns the positions of the `y` vector in the vector `x`.
 
@@ -132,12 +179,12 @@ frequencies(t)
 Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 
 ```
-matrix_sortperm(m::AbstractMatrix; dims=1)
+matrix_sortperm(m; dims=1)
 ```
 Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
 
 ```
-matrix_sort(m::Matrix, m_idx::Vector{Int}; dims=1)
+matrix_sort(m, m_idx; dims=1)
 ```
 Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
 

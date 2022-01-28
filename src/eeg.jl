@@ -1,7 +1,7 @@
 """
     eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
 
-Plots `signal` matrix.
+Plots `eeg` signals.
 
 # Arguments
 
