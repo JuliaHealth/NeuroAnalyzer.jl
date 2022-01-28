@@ -30,7 +30,7 @@ export signal_detrend
 export signal_difference
 export signal_drop_channel
 export signal_epoch
-export signal_filter
+export signal_filter_butter
 export signal_make_spectrum
 export signal_mean
 export signal_plot
