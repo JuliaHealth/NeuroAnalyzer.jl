@@ -763,13 +763,14 @@ function signal_filter_butter(signal::Matrix{Float64}; filter_type, cutoff, fs, 
 end
 
 """
-    signal_plot(t, signal; labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]")
+    signal_plot(t, signal; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]")
 
 Plots `signal` against `t`ime.
 
 # Arguments
 - `t::Vector{Float64}` - the time vector
 - `signal::Vector{Float64}` - the signal vector
+- `offset::Float64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
@@ -780,7 +781,7 @@ Plots `signal` against `t`ime.
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_plot(t, signal::Vector{Float64}; labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing)
 
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
@@ -797,7 +798,7 @@ function signal_plot(t, signal::Vector{Float64}; labels=[], xlabel="Time [s]", y
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal, xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+    p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
     return p
 end
 
@@ -809,6 +810,7 @@ Plots `signal` matrix.
 # Arguments
 - `t::Vector{Float64}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
+- `offset::Float64` - displayed segment offset in samples
 - `channels::Float64` - channels to be plotted (all if empty), vector or range
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
@@ -819,7 +821,7 @@ Plots `signal` matrix.
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_plot(t::Vector{Float64}, signal::Matrix{Float64}; channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
     
     if typeof(channels) == UnitRange{Int64}
         channels = collect(channels)
@@ -862,7 +864,7 @@ function signal_plot(t::Vector{Float64}, signal::Matrix{Float64}; channels=[], l
     # plot channels
     p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
     for idx in 1:channels_no
-        p = plot!(t, signal[idx, :], legend=false, t=:line, c=:black)
+        p = plot!(t, signal[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
 

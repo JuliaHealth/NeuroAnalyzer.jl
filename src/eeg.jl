@@ -1,5 +1,5 @@
 """
-    eeg_plot(eeg; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
 
 Plots `signal` matrix.
 
@@ -17,7 +17,7 @@ Plots `signal` matrix.
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
     
     if typeof(channels) == UnitRange{Int64}
         channels = collect(channels)
