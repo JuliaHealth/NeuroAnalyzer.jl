@@ -37,33 +37,28 @@ Various, miscellaneous, general or not belonging to above categories, functions 
 
 ```
     linspace(start, stop, length)
-
-Generates `length`-long sequence of evenly spaced numbers between `start` and `stop`.
 ```
+Generates `length`-long sequence of evenly spaced numbers between `start` and `stop`.
 
 ```
     logspace(start, stop, length)
-
-Generates `length`-long sequence of log10-spaced numbers between `start` and `stop`.
 ```
+Generates `length`-long sequence of log10-spaced numbers between `start` and `stop`.
 
 ```
     zero_pad(m)
-
-Pads the matrix `m` with zeros to make it square.
 ```
+Pads the matrix `m` with zeros to make it square.
 
 ```
     vsearch(x::Vector, y::Number; return_distance=false)
-
-Returns the positions of the `y` value in the vector `x`.
 ```
+Returns the positions of the `y` value in the vector `x`.
 
 ```
     vsearch(x::Vector, y::Vector)
-
-Returns the positions of the `y` vector in the vector `x`.
 ```
+Returns the positions of the `y` vector in the vector `x`.
 
 ```
     cart2pol(x, y)
