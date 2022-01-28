@@ -78,18 +78,11 @@ function pol2cart(theta, rho)
 end
 
 """
-    minmax_scaler(x)
-
-Apply unity based (min - max) data scaling to the vector `x`. After scaling, `x` will have values between 0 and 1.
-"""
-minmax_scaler(x::Vector) = (x - findmin(x)[1]) / (x - findmax(x)[1])
-
-"""
     cvangle(x)
 
 Returns the phase angles, in radians, of the vector `x` with complex elements.
 """
-cvangle(x::Vector) = atan.(imag(x), real(x))
+cvangle(x::Vector{ComplexF64}) = atan.(imag(x), real(x))
 
 """
     hann(n)
@@ -104,14 +97,14 @@ hann(n::Int) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
 Calculates Hildebrand rule for vector `x`.
 If H < 0.2 then the vector `x` is symmetrical.
 """
-hildebrand_rule(x::Vector) = (mean(x) - median(x)) ./ std(x)
+hildebrand_rule(x::Vector{Float64}) = (mean(x) - median(x)) ./ std(x)
 
 """
     jaccard_similarity(x, y)
 
 Calculates Jaccard similarity between two vectors `x` and `y`.
 """
-function jaccard_similarity(x::Vector, y::Vector)
+function jaccard_similarity(x::Vector{Float64}, y::Vector{Float64})
     intersection = length(intersect(x, y))
     union = length(x) + length(y) - intersection
     return intersection / union
@@ -122,14 +115,14 @@ end
 
 Calculates FFT for the vector `x` padded with `n` zeros at the end.
 """
-fft0(x::Vector, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
+fft0(x::Vector{Float64}, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
 
 """
-    fft0(x, n)
+    ifft0(x, n)
 
 Calculates IFFT for the vector `x` padded with `n` zeros at the end.
 """
-ifft0(x::Vector, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
+ifft0(x::Vector{Float64}, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
 
 """
     nexpow2(x)
@@ -161,14 +154,14 @@ end
 
 Calculates Root Mean Square of the vector `x`.
 """
-rms(x::Vector) = norm(x) / sqrt(length(x))
+rms(x::Vector{Float64}) = norm(x) / sqrt(length(x))
 
 """
     db(x)
 
 Converts values of the vector `x` to dB.
 """
-db(x::Vector) = 10 .* log10.(x ./ findmax(x)[1])
+db(x::Vector{Float64}) = 10 .* log10.(x ./ findmax(x)[1])
 
 """
     sine(f, t, a, p)
@@ -182,7 +175,7 @@ sine(f, t, a=1, p=0) = a .* sin.(2 * pi .* f * t .+ p)
 
 Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 """
-function frequencies(t::Vector)
+function frequencies(t::Vector{Float64})
         # sampling interval
         dt = t[2] - t[1]
         # sampling rate
@@ -201,7 +194,7 @@ end
 
 Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
 """
-function matrix_sortperm(m::AbstractMatrix; rev=false, dims=1)
+function matrix_sortperm(m::Matrix; rev=false, dims=1)
     m_idx = zeros(Int, size(m))
     idx=1
     if dims == 1
@@ -219,11 +212,11 @@ function matrix_sortperm(m::AbstractMatrix; rev=false, dims=1)
 end
 
 """
-    matrix_sort(m::AbstractMatrix, m_idx::Vector{Int}; dims=1)
+    matrix_sort(m::Matrix, m_idx::Vector{Int}; dims=1)
 
 Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
 """
-function matrix_sort(m::AbstractMatrix, m_idx::Vector{Int}; rev=false, dims=1)
+function matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev=false, dims=1)
     sorted_m = zeros(eltype(m), size(m))
     if dims == 1
         for idx = 1:size(m, 2)
@@ -249,7 +242,7 @@ end
 Pads the vector `x` with `n` zeros at the beginning and at the end.
 """
 # to do: check if x is numeric vector
-pad0(x, n) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
+pad0(x::Vector, n) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
 
 """
     hz2rads(f)
@@ -284,4 +277,18 @@ k(n) = (sqrt(n), (1 + 3.222 * log10(n)))
 
 Demean `signal` vector.
 """
-demean(signal) = signal .- mean(signal)
+demean(signal::Vector{Float64}) = signal .- mean(signal)
+
+"""
+    normalize_mean(signal)
+
+Normalize (scales around the mean) `signal` vector.
+"""
+normalize_mean(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal)
+
+"""
+    normalize_minmax(signal)
+
+Normalize (to 0…1) `signal` vector.
+"""
+normalize_minmax(signal::Vector{Float64}) = (signal .- findmin(signal)[1]) ./ (findmax(signal)[1] - findmin(signal)[1])
