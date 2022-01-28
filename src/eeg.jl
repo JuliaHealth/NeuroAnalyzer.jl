@@ -23,7 +23,7 @@ function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel=
         channels = collect(channels)
     end
 
-    channels_no = eeg.eeg_file_header.channels_no
+    channels_no = eeg.eeg_file_header[:channels_no]
 
     # drop channels not in the list
     channels_to_drop = collect(1:channels_no)
@@ -35,8 +35,8 @@ function eeg_plot(eeg::EEG; t=nothing, offset=0, channels=[], labels=[], xlabel=
     end
 
     signal = eeg.eeg_signals
-    labels = eeg.eeg_signal_header.labels
-    fs = eeg.eeg_signal_header.sampling_rate[1]
+    labels = eeg.eeg_signal_header[:labels]
+    fs = eeg.eeg_signal_header[:sampling_rate][1]
 
     # default time is 5 seconds
     t == nothing && (t = 0:1/fs:5)
@@ -117,7 +117,7 @@ function eeg_filter_butter(eeg::EEG; channels=[], filter_type, cutoff, poles=8)
         channels = collect(channels)
     end
 
-    channels_no = eeg.eeg_file_header.channels_no
+    channels_no = eeg.eeg_file_header[:channels_no]
 
     # drop channels not in the list
     channels_to_drop = collect(1:channels_no)
@@ -129,7 +129,7 @@ function eeg_filter_butter(eeg::EEG; channels=[], filter_type, cutoff, poles=8)
     end
 
     signal = eeg.eeg_signals
-    fs = eeg.eeg_signal_header.sampling_rate[1]
+    fs = eeg.eeg_signal_header[:sampling_rate][1]
 
     signal_filtered = zeros(size(signal))
 
