@@ -764,7 +764,7 @@ function signal_filter_butter(signal::Matrix{Float64}; filter_type, cutoff, fs, 
 end
 
 """
-    signal_plot(t, signal; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]")
+    signal_plot(t, signal; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", figure="")
 
 Plots `signal` against `t`ime.
 
@@ -782,8 +782,9 @@ Plots `signal` against `t`ime.
 - `detrend::Bool` - detrend the `signal` prior to calculations
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
+- `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
 
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
@@ -801,11 +802,15 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
     end
 
     p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+
+    # TO DO: catching error while saving
+    figure !== "" && (savefig(p, figure))
+
     return p
 end
 
 """
-    signal_plot(t, signal; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    signal_plot(t, signal; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure="")
 
 Plots `signal` matrix.
 
@@ -823,8 +828,9 @@ Plots `signal` matrix.
 - `detrend::Bool` - detrend the `signal` prior to calculations
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
+- `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
     
     if typeof(channels) == UnitRange{Int64}
         channels = collect(channels)
@@ -870,6 +876,9 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[
         p = plot!(t, signal[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
+
+    # TO DO: catching error while saving
+    figure !== "" && (savefig(p, figure))
 
     return p
 end

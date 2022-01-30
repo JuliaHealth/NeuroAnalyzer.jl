@@ -242,9 +242,8 @@ Normalize (to 0…1) `signal` vector.
 EEG:
 - re-reference
 - generate time vector and add to eeg_signal_header
-- channel location files 
+- import channel location files
 - channel locations data to eeg_signal_header
-- save figures (PDF, PNG) for eeg_plot(), signal_plot()
 
 ## Contributing
 

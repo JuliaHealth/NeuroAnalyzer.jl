@@ -1,5 +1,5 @@
 """
-    eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
 Plots `eeg` signals.
 
@@ -17,8 +17,9 @@ Plots `eeg` signals.
 - `detrend::Bool` - detrend the `signal` prior to calculations
 - `derivative::Bool` - derivate `signal` prior to calculations
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
+- `figure::String` - name of the output figure file
 """
-function eeg_plot(t=nothing, eeg::EEG; offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
     
     if typeof(channels) == UnitRange{Int64}
         channels = collect(channels)
@@ -47,6 +48,9 @@ function eeg_plot(t=nothing, eeg::EEG; offset=1, channels=[], labels=[], xlabel=
     t === nothing && (t = collect(0:1/fs:5))
 
     p = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper)
+
+    # TO DO: catching error while saving
+    figure !== "" && (savefig(p, figure))
 
     # create new dataset    
     eeg_new = EEG(eeg_file_header, eeg_signal_header, eeg.eeg_signals)
