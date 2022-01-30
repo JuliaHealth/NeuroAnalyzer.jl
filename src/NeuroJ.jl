@@ -3,11 +3,11 @@ module NeuroJ
 using DataFrames
 using DSP
 using FFTW
+using JLD2
 using LinearAlgebra
 using Plots
-using StatsKit
 using Simpson
-using JLD2
+using StatsKit
 
 struct EEG
     eeg_file_header::Dict

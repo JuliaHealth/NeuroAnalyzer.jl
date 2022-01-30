@@ -258,7 +258,7 @@ end
 """
     eeg_save(eeg, file_name)
 
-Saves the `eeg` object to `file_name` file.
+Saves the `eeg` object to `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -272,7 +272,7 @@ end
 """
     eeg_load(file_name)
 
-Loads the `eeg` object from `file_name` file.
+Loads the `eeg` object from `file_name` file (HDF5-based).
 
 # Arguments
 
