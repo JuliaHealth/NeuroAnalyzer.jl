@@ -493,7 +493,7 @@ end
    signal_crosscov(signal, lag=1, remove_dc=false, normalize=false)
 
 Calculates cross-covariance for all channels in the `signal` matrix. Return matrix of cross-covariances:
-signal_1_channel_1 vs signal_2_channel_1, signal_1_channel_1 vs signal_2_channel_2, signal_1_channel_1 vs signal_2_channel_3, ..., signal_1_channel_n vs signal_2_channel_n, 
+signal_1_channel_1 vs signal_2_channel_1, signal_1_channel_1 vs signal_2_channel_2, signal_1_channel_1 vs signal_2_channel_3, ..., signal_1_channel_n vs signal_2_channel_n.
 
 # Arguments
 
