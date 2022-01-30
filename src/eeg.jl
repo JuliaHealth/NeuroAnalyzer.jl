@@ -47,13 +47,10 @@ function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel=
     # default time is 5 seconds
     t === nothing && (t = collect(0:1/fs:5))
 
-    p = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper)
-
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
+    p, signal_new = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper, figure=figure)
 
     # create new dataset    
-    eeg_new = EEG(eeg_file_header, eeg_signal_header, eeg.eeg_signals)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_new)
 
     return p, eeg_new
 end

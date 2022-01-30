@@ -806,7 +806,7 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
 
-    return p
+    return p, signal
 end
 
 """
@@ -880,7 +880,7 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
 
-    return p
+    return p, signal
 end
 
 """
