@@ -85,6 +85,8 @@ Removes linear trend for each the `eeg` signal channels.
 
 ### nstim.jl
 
+- neuromodulation modeling
+
 ### misc.jl
 
 Various, miscellaneous, general or not belonging to above categories, functions go here.
@@ -237,6 +239,11 @@ Normalize (to 0…1) `signal` vector.
 
 ## TO DO
 
+EEG:
+- re-reference
+- generate time vector and add to eeg_signal_header
+- channel location files 
+- channel locations data to eeg_signal_header
 - save figures (PDF, PNG) for eeg_plot(), signal_plot()
 
 ## Contributing
