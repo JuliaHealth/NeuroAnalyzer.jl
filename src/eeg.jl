@@ -49,6 +49,8 @@ function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel=
 
     p, signal_new = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper, figure=figure)
 
+    plot(p)
+    
     # create new dataset    
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_new)
 
