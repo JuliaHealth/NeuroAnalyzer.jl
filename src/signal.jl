@@ -766,7 +766,7 @@ end
 """
     signal_plot(t, signal; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", figure="")
 
-Plots `signal` against `t`ime.
+Plots `signal` against time vector `t`.
 
 # Arguments
 
@@ -812,7 +812,7 @@ end
 """
     signal_plot(t, signal; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure="")
 
-Plots `signal` matrix.
+Plots `signal` matrix against time vector `t`.
 
 # Arguments
 
@@ -876,6 +876,8 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[
         p = plot!(t, signal[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
+
+    plot(p)
 
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
