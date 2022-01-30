@@ -248,8 +248,37 @@ Re-references the `eeg` signal channels to specific signal channel.
 """
 function eeg_rereference_channel(eeg::EEG, reference_idx)
     signal_rereferenced = signal_rereference_channel(eeg.eeg_signals, reference_idx)
-    eeg.eeg_file_header[:reference] = reference_idx
+    eeg.eeg_file_header[:reference_type] = "channel"
+    eeg.eeg_file_header[:reference_channel] = reference_idx
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_rereferenced)
 
     return eeg_new
+end
+
+"""
+    eeg_save(eeg, file_name)
+
+Saves the `eeg` object to `file_name` file.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `file_name::String` - file name
+"""
+function eeg_save(eeg::EEG, file_name)
+    save_object(file_name, eeg)
+end
+
+"""
+    eeg_load(file_name)
+
+Loads the `eeg` object from `file_name` file.
+
+# Arguments
+
+- `file_name::String` - file name
+"""
+function eeg_load(file_name)
+    eeg = load_object(file_name)
+    return eeg
 end

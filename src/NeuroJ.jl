@@ -7,6 +7,7 @@ using LinearAlgebra
 using Plots
 using StatsKit
 using Simpson
+using JLD2
 
 struct EEG
     eeg_file_header::Dict
@@ -24,6 +25,8 @@ export eeg_total_power
 export eeg_band_power
 export eeg_make_spectrum
 export eeg_rereference_channel
+export eeg_load
+export eeg_save
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
