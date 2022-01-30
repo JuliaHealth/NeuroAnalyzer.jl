@@ -248,6 +248,7 @@ Re-references the `eeg` signal channels to specific signal channel.
 """
 function eeg_rereference_channel(eeg::EEG, reference_idx)
     signal_rereferenced = signal_rereference_channel(eeg.eeg_signals, reference_idx)
+    eeg.eeg_file_header[:reference] = reference_idx
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_rereferenced)
 
     return eeg_new
