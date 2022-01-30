@@ -342,14 +342,14 @@ Draws head over a topographical plot `p`.
 - `loc_y::Vector{Float64` - vector of y electrode position
 """
 function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64})
-    pts = Plots.partialcircle(0, 2π, 100, findmax(loc_x)[1])
+    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 1.1
     y = y .* 0.91
     head = Shape(x, y)
-    nose = Shape([(-0.1, findmax(y)[1]), (0, findmax(y)[1] + 0.1 * findmax(y)[1]), (0.1, findmax(y)[1])])
-    ear_l = Shape([(findmin(x)[1], -0.1), (findmin(x)[1] + 0.1 * findmin(x)[1], -0.1), (findmin(x)[1] + 0.1 * findmin(x)[1], 0.1), (findmin(x)[1], 0.1)])
-    ear_r = Shape([(findmax(x)[1], -0.1), (findmax(x)[1] + 0.1 * findmax(x)[1], -0.1), (findmax(x)[1] + 0.1 * findmax(x)[1], 0.1), (findmax(x)[1], 0.1)])
+    nose = Shape([(-0.1, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.1, maximum(y))])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), 0.1), (maximum(x), 0.1)])
     plot!(p1, head, fill=nothing, label="")
     plot!(p1, nose, fill=nothing, label="")
     plot!(p1, ear_l, fill=nothing, label="")

@@ -73,6 +73,10 @@ export vsearch
 export vsplit
 export z_score
 export zero_pad
+export mag2db
+export db2mag
+export pow2db
+export db2pow
 
 include("nstim.jl")
 export tes_dose

@@ -159,9 +159,14 @@ rms(x::Vector{Float64}) = norm(x) / sqrt(length(x))
 """
     db(x)
 
-Converts values of the vector `x` to dB.
+Converts the vector or matrix `x` to dB. Maximum value of `x` is 0 dB.
 """
-db(x::Vector{Float64}) = 10 .* log10.(x ./ findmax(x)[1])
+function db(x::Union{Vector, Matrix})
+    x = float.(x)
+    x[x .< 0] .= NaN
+    result = 10 .* log10.(x ./ maximum(filter(!isnan, x)))
+    return result
+end
 
 """
     sine(f, t, a, p)
@@ -291,4 +296,42 @@ normalize_mean(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal
 
 Normalize (to 0…1) `signal` vector.
 """
-normalize_minmax(signal::Vector{Float64}) = (signal .- findmin(signal)[1]) ./ (findmax(signal)[1] - findmin(signal)[1])
+normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
+
+"""
+    mag2db(x)
+
+Converts magnitude of the vector or matrix `x` into dB values. Maximum value of `x` is 0 dB.
+"""
+function mag2db(x::Union{Vector, Matrix})
+    x = float.(x)
+    x[x .< 0] .= NaN
+    result = 20 .* log10.(x)
+    return result
+end
+
+"""
+    db2mag(x)
+
+Converts dB values of the vector or matrix `x` into magnitude.
+"""
+db2mag(x::Union{Vector, Matrix}) = 10 .^ (x ./ 20)
+
+"""
+    pow2db(x)
+
+Converts power values of the vector or matrix `x` into dB values. Maximum value of `x` is 0 dB.
+"""
+function mag2db(x::Union{Vector, Matrix})
+    x = float.(x)
+    x[x .< 0] .= NaN
+    result = 10 .* log10.(x)
+    return result
+end
+
+"""
+    db2pow(x)
+
+Converts dB values of the vector or matrix `x` into corresponding power value.
+"""
+db2mag(x::Union{Vector, Matrix}) = 10 .^ (x ./ 10)

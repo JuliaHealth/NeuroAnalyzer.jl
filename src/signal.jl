@@ -289,7 +289,7 @@ function signal_difference(signal1::Matrix, signal2::Matrix; n=3, method=:absdif
     if method === :absdiff
         # statistic: maximum difference
         signals_diff = signal1_mean - signal2_mean
-        signals_statistic_single = findmax(abs.(signals_diff))[1]
+        signals_statistic_single = maximum(abs.(signals_diff))
     else
         # statistic: integrated area of the squared difference
         signals_diff_squared = (signal1_mean - signal2_mean).^2
@@ -317,7 +317,7 @@ function signal_difference(signal1::Matrix, signal2::Matrix; n=3, method=:absdif
         if method === :absdiff
             # statistic: maximum difference
             signals_diff = signal1_mean - signal2_mean
-            signals_statistic[idx1] = findmax(abs.(signals_diff))[1]
+            signals_statistic[idx1] = maximum(abs.(signals_diff))
         else
             # statistic: integrated area of the squared difference
             signals_diff_squared = (signal1_mean - signal2_mean).^2
@@ -797,7 +797,7 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
     taper !== nothing && (signal = signal .* taper)
 
     if yamp === nothing
-        yamp, _ = findmax(signal)
+        yamp = maximum(signal)
         yamp = ceil(Int64, yamp)
     end
 
@@ -905,3 +905,4 @@ function signal_drop_channel(signal::Matrix, channels)
 
     return signal
 end
+
