@@ -924,6 +924,13 @@ function signal_rereference_channel(signal::Matrix, reference_idx)
     channels_no = size(signal, 1)
     signal_rereferenced = zeros(size(signal))
 
+    channels_list = collect(1:channels_no)
+    for idx in 1:length(reference_idx)
+        if (reference_idx[idx] in channels_list) == false
+            throw(ArgumentError("Reference channel index does not match signal channels."))
+        end
+    end
+
     reference_channel = vec(mean(signal[reference_idx, :], dims=1))
 
     for idx in 1:channels_no
