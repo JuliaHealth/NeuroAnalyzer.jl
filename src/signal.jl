@@ -906,3 +906,29 @@ function signal_drop_channel(signal::Matrix, channels)
     return signal
 end
 
+"""
+    signal_rereference_channel(signal, reference)
+
+Re-references channels of the `signal` matrix to specific signal channel.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix
+- `reference::Float64` - index of channels used as reference; if multiple channels are specififed, their average is used as the reference
+"""
+function signal_rereference_channel(signal::Matrix, reference_idx)
+    if typeof(reference_idx) == UnitRange{Int64}
+        reference_idx = collect(reference_idx)
+    end
+
+    channels_no = size(signal, 1)
+    signal_rereferenced = zeros(size(signal))
+
+    reference_channel = vec(mean(signal[reference_idx, :], dims=1))
+
+    for idx in 1:channels_no
+        signal_rereferenced[idx, :] = signal[idx, :] .- reference_channel
+    end
+
+    return signal_rereferenced
+end

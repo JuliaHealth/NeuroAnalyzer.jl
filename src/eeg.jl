@@ -1,5 +1,5 @@
 """
-    eeg_plot(eeg; t=nothing, offset=0, channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
+    eeg_plot(eeg; t=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
 Plots `eeg` signals.
 
@@ -8,7 +8,6 @@ Plots `eeg` signals.
 - `eeg::EEG` - EEG object
 - `t::Vector{Float64} - the time vector
 - `offset::Float64` - displayed segment offset in samples
-- `channels::Float64` - channels to be plotted (all if empty), vector or range
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
@@ -19,25 +18,10 @@ Plots `eeg` signals.
 - `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
+function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
     
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
     end
 
     signal = eeg.eeg_signals
@@ -47,7 +31,7 @@ function eeg_plot(eeg::EEG; t=nothing, offset=1, channels=[], labels=[], xlabel=
     # default time is 5 seconds
     t === nothing && (t = collect(0:1/fs:5))
 
-    p, signal_new = signal_plot(t, signal, offset=offset, channels=[], labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper, figure=figure)
+    p, signal_new = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper, figure=figure)
 
     plot(p)
     
@@ -72,7 +56,7 @@ function eeg_drop_channel(eeg::EEG, channels)
         channels = collect(channels)
     end
 
-    length(channels) > 1 && (channels = sort!(channels, rev=true))
+    channels = sort!(channels, rev=true)
 
     eeg_file_header = eeg.eeg_file_header
     eeg_signal_header = eeg.eeg_signal_header
@@ -110,36 +94,20 @@ function eeg_drop_channel(eeg::EEG, channels)
 end
 
 """
-    eeg_filter_butter(eeg; channels=[], filter_type, cutoff, fs, poles=8)
+    eeg_filter_butter(eeg; filter_type, cutoff, fs, poles=8)
 
 Filters `eeg` channels using Butterworth filter.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channels::Float64` - channels to filter, vector of numbers or range
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
 - `fs::Float64` - sampling rate
 - `poles::Int` - filter pole
 """
-function eeg_filter_butter(eeg::EEG; channels=[], filter_type, cutoff, poles=8)
+function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
 
     signal = eeg.eeg_signals
     fs = eeg.eeg_signal_header[:sampling_rate][1]
@@ -156,140 +124,69 @@ function eeg_filter_butter(eeg::EEG; channels=[], filter_type, cutoff, poles=8)
 end
 
 """
-    eeg_derivative(eeg; channels=[])
+    eeg_derivative(eeg)
 
 Returns the derivative of each the `eeg` channels with length same as the signal.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channels::Float64` - channels to filter, vector of numbers or range
 """
-function eeg_derivative(eeg; channels=[])
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
-
+function eeg_derivative(eeg)
     signal_der = signal_derivative(eeg.eeg_signals)
-
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_der)
 
     return eeg_new
 end
 
 """
-    eeg_total_power(eeg; channels=[])
+    eeg_total_power(eeg)
 
 Calculates total power for each the `eeg` signal channels.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channels::Float64` - channels to filter, vector of numbers or range
 """
-function eeg_total_power(eeg; channels=[])
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
-
+function eeg_total_power(eeg)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
     stp = signal_total_power(eeg.eeg_signals, fs)
 
-    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, eeg.eeg_signals)
-
-    return stp, eeg_new
+    return stp
 end
 
 """
-    eeg_band_power(eeg, f1, f2; channels=[])
+    eeg_band_power(eeg, f1, f2)
 
 Calculates absolute band power between frequencies `f1` and `f2` for each the `eeg` signal channels.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channels::Float64` - channels to filter, vector of numbers or range
 - `f1::Float64` - Lower frequency bound
 - `f2::Float64` - Upper frequency bound
 """
-function eeg_total_power(eeg; channels=[])
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
-
+function eeg_total_power(eeg, f1, f2)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
     sbp = signal_band_power(eeg.eeg_signals, fs, f1, f2)
 
-    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, eeg.eeg_signals)
-
-    return sbp, eeg_new
+    return sbp
 end
 
 """
-    eeg_make_spectrum(eeg; channels=[])
+    eeg_make_spectrum(eeg)
 
 Returns FFT and DFT sample frequencies for a DFT for each the `eeg` signal channels.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channels::Float64` - channels to filter, vector of numbers or range
 """
-function eeg_make_spectrum(eeg; channels=[])
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
-
+function eeg_make_spectrum(eeg)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
     signal_fft, signal_sf = signal_make_spectrum(eeg.eeg_signals, fs)
 
-    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, eeg.eeg_signals)
-
-    return signal_fft, signal_sf, eeg_new
+    return signal_fft, signal_sf
 end
 
 """
@@ -303,28 +200,11 @@ Removes linear trend for each the `eeg` signal channels.
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
-- `channels::Float64` - channels to filter, vector of numbers or range
 """
-function eeg_detrend(eeg; channels=[])
+function eeg_detrend(eeg, type=:linear)
     trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
 
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
-    channels_no = eeg.eeg_file_header[:channels_no]
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        eeg = eeg_drop_channel(eeg, channels_to_drop)
-    end
-
     signal_det = signal_detrend(eeg.eeg_signals)
-
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_det)
 
     return eeg_new
@@ -337,7 +217,7 @@ Draws head over a topographical plot `p`.
 
 # Arguments
 
-- `p::Plot` - topgraphical plot
+- `p::Plot` - toppgraphical plot
 - `loc_x::Vector{Float64` - vector of x electrode position
 - `loc_y::Vector{Float64` - vector of y electrode position
 """
@@ -350,9 +230,25 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64})
     nose = Shape([(-0.1, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.1, maximum(y))])
     ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), 0.1), (minimum(x), 0.1)])
     ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), 0.1), (maximum(x), 0.1)])
-    plot!(p1, head, fill=nothing, label="")
-    plot!(p1, nose, fill=nothing, label="")
-    plot!(p1, ear_l, fill=nothing, label="")
-    plot!(p1, ear_r, fill=nothing, label="")
+    plot!(p, head, fill=nothing, label="")
+    plot!(p, nose, fill=nothing, label="")
+    plot!(p, ear_l, fill=nothing, label="")
+    plot!(p, ear_r, fill=nothing, label="")
 end
 
+"""
+    eeg_rereference_channel(eeg, reference)
+
+Re-references the `eeg` signal channels to specific signal channel.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `reference::Float64` - index of channels used as reference; if multiple channels are specififed, their average is used as the reference
+"""
+function eeg_rereference_channel(eeg::EEG, reference_idx)
+    signal_rereferenced = signal_rereference_channel(eeg.eeg_signals, reference_idx)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_rereferenced)
+
+    return eeg_new
+end

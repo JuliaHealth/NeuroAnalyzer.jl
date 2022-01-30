@@ -23,6 +23,7 @@ export eeg_plot
 export eeg_total_power
 export eeg_band_power
 export eeg_make_spectrum
+export eeg_rereference_channel
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -43,6 +44,7 @@ export signal_make_spectrum
 export signal_mean
 export signal_plot
 export signal_spectrum
+export signal_rereference_channel
 
 include("misc.jl")
 export cart2pol
