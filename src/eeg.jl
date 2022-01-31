@@ -49,7 +49,7 @@ function eeg_drop_channel(eeg::EEG, channels)
         channels = collect(channels)
     end
 
-    channels = sort!(channels, rev=true)
+    length(channels) > 1 && (channels = sort!(channels, rev=true))
 
     eeg_object_header = eeg.eeg_object_header
     eeg_signal_header = eeg.eeg_signal_header
