@@ -84,7 +84,7 @@ function eeg_drop_channel(eeg::EEG, channels)
     # create new dataset
     eeg_new = EEG(eeg_object_header, eeg_signal_header, eeg_time, eeg_signals)
     # add entry to :history field
-    push!(eeg_new_object_header[:history], "eeg_drop_channel(EEG, $channels)")
+    push!(eeg_new.eeg_object_header[:history], "eeg_drop_channel(EEG, $channels)")
     
     return eeg_new
 end
@@ -585,11 +585,10 @@ Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal vector
-- `t::Vector{Float64}` - the time vector
 - `new_sr::Int64` - new sampling rate
 """
-function eeg_upsample(eeg::EEG, new_sr)
-    signal_upsampled = signal_upsample(eeg.eeg_signals, eeg.eeg_time, new_sr)
+function eeg_upsample(eeg::EEG; new_sr)
+    signal_upsampled = signal_upsample(eeg.eeg_signals, t=eeg.eeg_time, new_sr=new_sr)
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_upsampled)

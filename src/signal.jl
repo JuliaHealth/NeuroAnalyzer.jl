@@ -1094,7 +1094,7 @@ function signal_add_noise(signal::Matrix{Float64})
 end
 
 """
-    signal_upsample(signal, t, new_sr)
+    signal_upsample(signal; t, new_sr)
 
 Upsamples the`signal` vector to `new_sr` sampling frequency.
 
@@ -1104,7 +1104,7 @@ Upsamples the`signal` vector to `new_sr` sampling frequency.
 - `t::Vector{Float64}` - the time vector
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Vector{Float64}, t, new_sr::Int64)
+function signal_upsample(signal::Vector{Float64}; t, new_sr::Int64)
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
@@ -1121,7 +1121,7 @@ function signal_upsample(signal::Vector{Float64}, t, new_sr::Int64)
 end
 
 """
-    signal_upsample(signal, t, new_sr)
+    signal_upsample(signal; t, new_sr)
 
 Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 
@@ -1131,7 +1131,7 @@ Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 - `t::Vector{Float64}` - the time vector
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Matrix{Float64}, t, new_sr::Int64)
+function signal_upsample(signal::Matrix{Float64}; t, new_sr::Int64)
     channels_no = size(signal, 1)
 
     for idx in 1:channels_no
