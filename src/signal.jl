@@ -1101,10 +1101,10 @@ Upsamples the`signal` vector to `new_sr` sampling frequency.
 # Arguments
 
 - `signal::Vector{Float64}` - the signal vector
-- `t::Vector{Float64}` - the time vector
+- `t::AbstractRange` - the time range
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Vector{Float64}; t::Vector{Float64}, new_sr::Int64)
+function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int64)
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
