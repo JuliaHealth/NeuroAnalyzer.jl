@@ -497,3 +497,53 @@ function eeg_normalize_minmax(eeg::EEG)
 
     return eeg_new
 end
+
+"""
+    eeg_get_channel(eeg, channel_name)
+
+Get the `eeg` channel by `channel_name`.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `channel_name::String`
+"""
+function eeg_get_channel(eeg::EEG, channel_name::String)
+    labels = eeg.eeg_signal_header[:labels]
+    channel_idx = nothing
+    for idx in 1:length(labels)
+        if channel_name == labels[idx]
+            labels[idx] = new_channel_name
+            channel_idx = idx
+        end
+    end
+    if channel_idx == nothing
+        throw(ArgumentError("Channel name does not match signal labels."))
+    end
+    channel = eeg.eeg_signals[channel_idx, :]
+
+    return channel
+end
+
+"""
+    eeg_get_channel(eeg, channel_idx)
+
+Get the `eeg` channel by `channel_idx`.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `channel_idx::Int`
+"""
+function eeg_get_channel(eeg::EEG, channel_idx::Int)
+    labels = eeg.eeg_signal_header[:labels]
+    if channel_idx < 1 || channel_idx > length(labels)
+        throw(ArgumentError("Channel index does not match signal channels."))
+    else
+        labels[channel_idx] = new_channel_name
+    end
+    eeg_signal_header[:labels] = labels
+    channel = eeg.eeg_signals[channel_idx, :]
+
+    return channel
+end

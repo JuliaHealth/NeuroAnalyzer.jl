@@ -35,6 +35,7 @@ export eeg_taper
 export eeg_demean
 export eeg_normalize_mean
 export eeg_normalize_minmax
+export eeg_get_channel
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -89,6 +90,8 @@ export vsearch
 export vsplit
 export z_score
 export zero_pad
+export cmin
+export cmax
 
 include("nstim.jl")
 export tes_dose

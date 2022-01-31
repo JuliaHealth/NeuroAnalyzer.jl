@@ -115,14 +115,14 @@ end
 
 Calculates FFT for the vector `x` padded with `n` zeros at the end.
 """
-fft0(x::Vector{Float64}, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
+fft0(x::Vector, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
 
 """
     ifft0(x, n)
 
 Calculates IFFT for the vector `x` padded with `n` zeros at the end.
 """
-ifft0(x::Vector{Float64}, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
+ifft0(x::Vector, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
 
 """
     nexpow2(x)
@@ -173,7 +173,7 @@ end
 
 Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` amplitude and  `p` phase.
 """
-sine(f, t, a=1, p=0) = a .* sin.(2 * pi .* f * t .+ p)
+sine(f, t, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
 
 """
     frequencies(t)
@@ -276,3 +276,17 @@ z_score(x) = (x .- mean(x)) ./ std(x)
 Calculates number of categories for a given sample size `n`.
 """
 k(n) = (sqrt(n), (1 + 3.222 * log10(n)))
+
+"""
+    cmax(x)
+
+Returns maximum value of the Complex vector`x`.
+"""
+cmax(x::Vector{ComplexF64}) argmax(abs, x)
+
+"""
+    cmin(x)
+
+Returns minimum value of the Complex vector`x`.
+"""
+cmin(x::Vector{ComplexF64}) argmin(abs, x)
