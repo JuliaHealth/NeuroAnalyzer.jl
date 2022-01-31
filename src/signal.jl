@@ -1114,10 +1114,10 @@ function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int6
 
     # interpolate
     signal_interpolation = CubicSplineInterpolation(t, signal)
-    t = t[1]:1/new_sr:t[end]
+    t_upsampled = t[1]:1/new_sr:t[end]
     signal_upsampled = signal_interpolation(t)
 
-    return signal_upsampled, t
+    return signal_upsampled, t_upsampled
 end
 
 """
@@ -1136,6 +1136,7 @@ function signal_upsample(signal::Matrix{Float64}; t::AbstractRange, new_sr::Int6
     signal_upsampled_length = length(signal_upsample(signal[1, :], t=t, new_sr=new_sr)[1])
     signal_upsampled = zeros(channels_no, signal_upsampled_length)
 
+    t_upsampled = nothing
     for idx in 1:channels_no
         signal_upsampled[idx, :], t_upsampled = signal_upsample(signal[idx, :], t=t, new_sr=new_sr)
     end

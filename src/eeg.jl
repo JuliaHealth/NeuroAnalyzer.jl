@@ -589,15 +589,14 @@ Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
 """
 function eeg_upsample(eeg::EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_signal_header[:sampling_rate][1]):eeg.eeg_time[end]
-    signal_upsampled, _ = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
+    signal_upsampled, t_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg_time, signal_upsampled)
 
     eeg_duration_samples = size(signal_upsampled, 2)
     eeg_duration_seconds = size(signal_upsampled, 2) / new_sr
-    eeg_time = collect(0:(1 / new_sr):(size(signal_upsampled, 2) / new_sr))
-    eeg_time = eeg_time[1:end - 1]
+    eeg_time = collect(t_upsampled)
     eeg_new.eeg_object_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_object_header[:eeg_duration_seconds] = eeg_duration_seconds
     eeg_new.eeg_signal_header[:sampling_rate] = repeat([new_sr], eeg_new.eeg_object_header[:channels_no])
