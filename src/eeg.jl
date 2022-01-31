@@ -107,6 +107,9 @@ function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
     signal_filtered = signal_filter_butter(eeg.eeg_signals, filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_filtered)
 
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_filter_butter(EEG, $filter_type, $cutoff, $poles)")
+
     return eeg_new
 end
 
