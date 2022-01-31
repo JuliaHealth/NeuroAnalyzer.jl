@@ -1,12 +1,12 @@
 """
-    eeg_plot(t=nothing, eeg; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
+    eeg_plot(eeg; t=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
 Plots `eeg` channels.
 
 # Arguments
 
-- `t::Vector{Float64} - the time vector
 - `eeg::EEG` - EEG object
+- `t::Vector{Float64} - the time vector
 - `offset::Float64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
@@ -14,7 +14,7 @@ Plots `eeg` channels.
 - `ylabel::String` - y-axis lable
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(t=nothing, eeg::EEG; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
+function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
     
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
