@@ -53,6 +53,7 @@ function eeg_drop_channel(eeg::EEG, channels)
 
     eeg_object_header = eeg.eeg_object_header
     eeg_signal_header = eeg.eeg_signal_header
+    eeg_time = eeg.eeg_time
     eeg_signals = eeg.eeg_signals
 
     channels_no = eeg_object_header[:channels_no]
@@ -81,7 +82,7 @@ function eeg_drop_channel(eeg::EEG, channels)
     eeg_signals = eeg_signals[setdiff(1:end, (channels)), :]
 
     # create new dataset
-    eeg_new = EEG(eeg_object_header, eeg_signal_header, eeg_signals)
+    eeg_new = EEG(eeg_object_header, eeg_signal_header, eeg_time, eeg_signals)
     # add entry to :history field
     push!(eeg_new_object_header[:history], "eeg_drop_channel(EEG, $channels)")
     
@@ -106,7 +107,7 @@ function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
     signal_filtered = signal_filter_butter(eeg.eeg_signals, filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_filtered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_filtered)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_filter_butter(EEG, filter_type=$filter_type, cutoff=$cutoff, poles=$poles)")
 
@@ -126,7 +127,7 @@ function eeg_derivative(eeg)
     signal_der = signal_derivative(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_der)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_der)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_derivative(EEG)")
 
@@ -199,7 +200,7 @@ function eeg_detrend(eeg, type=:linear)
     signal_det = signal_detrend(eeg.eeg_signals, type)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_det)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_det)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_detrend(EEG, type=$type)")
 
@@ -255,7 +256,7 @@ function eeg_reference_channel(eeg::EEG, reference_idx)
     eeg.eeg_object_header[:reference_channel] = reference_idx
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_referenced)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_referenced)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_reference_channel(EEG, reference_idx=$reference_idx)")
 
@@ -277,7 +278,7 @@ function eeg_reference_car(eeg::EEG)
     eeg.eeg_object_header[:reference_channel] = []
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_referenced)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_referenced)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_reference_car(EEG)")
 
@@ -382,7 +383,7 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
     eeg_signal_header[:labels] = labels
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_signals)
+    eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_time, eeg.eeg_signals)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_rename_channel(EEG, old_channel_name=$old_channel_name, new_channel_name=$new_channel_name)")
 
@@ -410,7 +411,7 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String
     eeg_signal_header[:labels] = labels
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_signals)
+    eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_time, eeg.eeg_signals)
     # add entry to :history field
     push!(eeg.eeg_object_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
 
@@ -431,7 +432,7 @@ function eeg_taper(eeg::EEG, taper::Vector)
     signal_tapered = signal_taper(eeg.eeg_signals, taper)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_tapered)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_taper(EEG, taper=$taper)")
 
@@ -451,7 +452,7 @@ function eeg_demean(eeg::EEG)
     signal_demeaned = signal_demean(eeg.eeg_signals, taper)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_demeaned)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_demeaned)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_demean(EEG)")
 
@@ -471,7 +472,7 @@ function eeg_normalize_mean(eeg::EEG)
     signal_normalized = signal_normalize_mean(eeg.eeg_signals, taper)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_tapered)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_normalize_mean(EEG)")
 
@@ -491,7 +492,7 @@ function eeg_normalize_minmax(eeg::EEG)
     signal_normalized = signal_normalize_minmax(eeg.eeg_signals, taper)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_tapered)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_normalize_minmax(EEG)")
 
@@ -591,7 +592,7 @@ function eeg_upsample(eeg::EEG, new_sr)
     signal_upsampled = signal_upsample(eeg.eeg_signals, eeg.eeg_time, new_sr)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_upsampled)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_upsampled)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
 
