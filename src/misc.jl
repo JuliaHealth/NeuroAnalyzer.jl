@@ -290,3 +290,21 @@ cmax(x::Vector{ComplexF64}) argmax(abs, x)
 Returns minimum value of the Complex vector`x`.
 """
 cmin(x::Vector{ComplexF64}) argmin(abs, x)
+
+"""
+    sinc(t=0:0.01:10, f=10, peak=4)
+
+Generates sinc function.
+
+# Arguments
+
+- `t::StepRangeLen` - time
+- `f::Float64` - frequency
+- `peak::Float64` - peak time of sinc function
+"""
+function sinc(t=-2:0.01:2, f=10.0, peak=0)
+    y_sinc = @. sin(2 * pi * f * (t - peak)) / (t - peak)
+    nan_idx = y_sinc[y_sinc .== NaN]
+    y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2
+    return y_sinc
+end

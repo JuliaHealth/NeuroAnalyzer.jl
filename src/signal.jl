@@ -1003,3 +1003,84 @@ function signal_normalize_minmax(signal::Matrix{Float64})
 
     return signal_normalized
 end
+
+"""
+   signal_cov(signal1, signal2; normalize=true)
+
+Calculates covariance between `signal1` and `signal2` vectors.
+
+# Arguments
+
+- `signal1::Vector{Float64}` - the signal 1 vector to analyze
+- `signal2::Vector{Float64}` - the signal 2 vector to analyze
+- `normalize::Bool` - normalize covariance
+"""
+function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normalize=true)
+    length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
+
+    result = cov(signal1 * signal2')
+
+    # divide so that components are centered at (0, 0)
+    normalize == true && result = result ./ length(signal1)
+
+    return result
+end
+
+"""
+   signal_cov(signal; normalize=true)
+
+Calculates covariance between all channels of the `signal` matrix.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix to analyze
+- `normalize::Bool` - normalize covariance
+"""
+function signal_cov(signal::Matrix{Float64}; normalize=true)
+    # channels-vs-channels
+    result = cov(signal')
+
+    # divide so that components are centered at (0, 0)
+    normalize == true && (result = result ./ size(signal, 2))
+
+    return result
+end
+
+"""
+   signal_cor(signal)
+
+Calculates correlation coefficients between all channels of the `signal` matrix.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix to analyze
+"""
+function signal_cor(signal::Matrix{Float64})
+    # channels-vs-channels
+    result = cor(signal')
+
+    return result
+end
+
+"""
+    signal_add_noise(signal)
+
+Add random noise to the `signal` vector.
+"""
+signal_add_noise(x::Vector{Float64}) = x .+ mean(x) .* rand(length(x))
+
+"""
+    signal_add_noise(signal)
+
+Add random noise to each the `signal` matrix channel.
+"""
+function signal_add_noise(signal::Matrix{Float64})
+    channels_no = size(signal, 1)
+    signal_noise = zeros(size(signal))
+
+    for idx in 1:channels_no
+        signal_noise[idx, :] = signal_add_noise(signal[idx, :])
+    end
+
+    return signal_noise
+end

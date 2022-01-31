@@ -547,3 +547,31 @@ function eeg_get_channel(eeg::EEG, channel_idx::Int)
 
     return channel
 end
+
+"""
+    eeg_cov(eeg; normalize=true)
+
+Calculates covariance between all channels of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_cov(eeg::EEG; normalize=true)
+    result = signal_cov(eeg.eeg_signals, normalize=normalize)
+    return eeg_new
+end
+
+"""
+    eeg_cor(eeg; normalize=true)
+
+Calculates correlation coefficients between all channels of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_cov(eeg::EEG)
+    result = eeg_cor(eeg.eeg_signals)
+    return eeg_new
+end

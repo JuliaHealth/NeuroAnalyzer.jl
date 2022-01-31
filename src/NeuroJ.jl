@@ -36,6 +36,8 @@ export eeg_demean
 export eeg_normalize_mean
 export eeg_normalize_minmax
 export eeg_get_channel
+export eeg_cov
+export eeg_cor
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -62,6 +64,9 @@ export signal_taper
 export signal_demean
 export signal_normalize_mean
 export signal_normalize_minmax
+export signal_cov
+export signal_cor
+export signal_add_noise
 
 include("misc.jl")
 export cart2pol
@@ -92,6 +97,7 @@ export z_score
 export zero_pad
 export cmin
 export cmax
+export sinc
 
 include("nstim.jl")
 export tes_dose
