@@ -6,7 +6,7 @@ Plots `eeg` channels.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Vector{Float64} - the time vector
+- `t::Vector{Float64}` - the time vector
 - `offset::Float64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
@@ -203,8 +203,8 @@ Draws head over a topographical plot `p`.
 # Arguments
 
 - `p::Plot` - toppgraphical plot
-- `loc_x::Vector{Float64` - vector of x electrode position
-- `loc_y::Vector{Float64` - vector of y electrode position
+- `loc_x::Vector{Float64}` - vector of x electrode position
+- `loc_y::Vector{Float64}` - vector of y electrode position
 - `add_labels::Bool` - add text labels to the plot
 """
 function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels=true)
@@ -304,7 +304,7 @@ Returns the `channel_name` index.
 - `eeg::EEG` - EEG object
 - `channel_name::String` - channel name
 """
-function eeg_get_channel_idx(eeg:EEG, channel_name::String)
+function eeg_get_channel_idx(eeg::EEG, channel_name::String)
     labels = eeg.eeg_signal_header[:labels]
     channel_idx = nothing
     for idx in 1:length(labels)
@@ -328,7 +328,7 @@ Returns the `channel_idx` name.
 - `eeg::EEG` - EEG object
 - `channel_idx::Int` - channel index
 """
-function eeg_get_channel_name(eeg:EEG, channel_idx::Int)
+function eeg_get_channel_name(eeg::EEG, channel_idx::Int)
     labels = eeg.eeg_signal_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
