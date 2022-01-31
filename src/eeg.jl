@@ -27,10 +27,13 @@ function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], normalize=true, xlab
     # default time is 10 seconds
     t === nothing && (t = collect(0:1/fs:10))
 
-    p, signal_new = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
+    p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
 
     plot(p)
 
+    # TO DO: catching error while saving
+    figure !== "" && (savefig(p, figure))
+    
     return p
 end
 
@@ -50,6 +53,10 @@ function eeg_drop_channel(eeg::EEG, channels)
     end
 
     length(channels) > 1 && (channels = sort!(channels, rev=true))
+
+    if channels[end] < 1 || channels[1] > length(eeg.eeg_signal_header[:labels])
+        throw(ArgumentError("Channel index does not match signal channels."))
+    else
 
     eeg_object_header = eeg.eeg_object_header
     eeg_signal_header = eeg.eeg_signal_header
@@ -413,7 +420,7 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_time, eeg.eeg_signals)
     # add entry to :history field
-    push!(eeg.eeg_object_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
+    push!(eeg_new.eeg_object_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
 
     return eeg_new
 end

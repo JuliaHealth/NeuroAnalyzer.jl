@@ -29,14 +29,15 @@ function signal_derivative(signal::Matrix{Float64})
 end
 
 """
-    signal_total_power(signal)
+    signal_total_power(signal; fs)
 
 Calculates total power for the `signal` vector.
 
 # Arguments
 - `signal::Vector{Float64}` - the signal vector to analyze
+- `fs::Int64` sampling rate
 """
-function signal_total_power(signal::Vector{Float64}, fs)
+function signal_total_power(signal::Vector{Float64}; fs::Int64)
     psd = welch_pgram(signal, 4*fs, fs=fs)
     # dx: frequency resolution
     dx = psd.freq[2] - psd.freq[1]
@@ -46,20 +47,21 @@ function signal_total_power(signal::Vector{Float64}, fs)
 end
 
 """
-    signal_total_power(signal)
+    signal_total_power(signal; fs)
 
 Calculates total power for each the `signal` matrix channels.
 
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time)
+- `fs::Int64` sampling rate
 """
-function signal_total_power(signal::Matrix{Float64}, fs)
+function signal_total_power(signal::Matrix{Float64}; fs::Int64)
     channels_no = size(signal, 1)
     stp = zeros(channels_no)
 
     for idx in 1:channels_no
-        stp[idx] = signal_total_power(signal[idx, :], fs=fs)
+        stp[idx] = signal_total_power(signal[idx, :]; fs=fs)
     end
 
     return stp
