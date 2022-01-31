@@ -1133,12 +1133,12 @@ Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 """
 function signal_upsample(signal::Matrix{Float64}; t::AbstractRange, new_sr::Int64)
     channels_no = size(signal, 1)
-    signal_upsampled_length = length(signal_upsample(signal[1, :], t=t, new_sr=new_sr))
+    signal_upsampled_length = length(signal_upsample(signal[1, :], t=t, new_sr=new_sr)[1])
     signal_upsampled = zeros(channels_no, signal_upsampled_length)
 
     for idx in 1:channels_no
-        signal_upsampled[idx, :], t = signal_upsample(signal[idx, :], t=t, new_sr=new_sr)
+        signal_upsampled[idx, :], t_upsampled = signal_upsample(signal[idx, :], t=t, new_sr=new_sr)
     end
 
-    return signal_upsampled, t
+    return signal_upsampled, t_upsampled
 end
