@@ -1108,13 +1108,13 @@ function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int6
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
-    sr = round(1 / dt)
+    sr = round(Int64, 1 / dt)
     new_sr < sr && throw(ArgumentError("New sampling rate mu be larger than signal sampling rate."))
     new_sr == sr && return(signal)
 
     # interpolate
     signal_interpolation = CubicSplineInterpolation(t, signal)
-    t = 0:1/new_sr:t[end]
+    t = t[0]:1/new_sr:t[end]
     signal_upsampled = signal_interpolation(t)
 
     return signal_upsampled
@@ -1128,10 +1128,10 @@ Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal vector
-- `t::Vector{Float64}` - the time vector
+- `t::AbstractRange` - the time range
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Matrix{Float64}; t::Vector{Float64}, new_sr::Int64)
+function signal_upsample(signal::Matrix{Float64}; t::AbstractRange, new_sr::Int64)
     channels_no = size(signal, 1)
 
     for idx in 1:channels_no
