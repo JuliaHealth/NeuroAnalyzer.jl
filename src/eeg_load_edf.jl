@@ -156,6 +156,7 @@ function eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_l
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]
     eeg_time = collect(0:1/sampling_rate[1]:size(eeg_signals, 2) / sampling_rate[1])
+    eeg_time = eeg_time[1:end - 1]
 
     eeg_object_header = Dict(:version => version, :eeg_filetype => eeg_filetype, :patient => patient, :recording => recording, :recording_date => recording_date, :recording_time => recording_time, :data_records => data_records, :data_records_duration => data_records_duration, :channels_no => channels_no, :reference_type => "", :reference_channel => [], :xlocs => [], :ylocs => [], :history => Vector{String}(), :eeg_duration_samples => eeg_duration_samples, :eeg_duration_seconds => eeg_duration_seconds)
     eeg_signal_header = Dict(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)

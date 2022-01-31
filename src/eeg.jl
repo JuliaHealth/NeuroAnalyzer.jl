@@ -588,7 +588,7 @@ Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
 - `new_sr::Int64` - new sampling rate
 """
 function eeg_upsample(eeg::EEG; new_sr::Int64)
-    t = eeg.eeg_time[1]:eeg.eeg_signal_header[:sampling_rate][1]:eeg.eeg_time[end]
+    t = eeg.eeg_time[1]:1/eeg.eeg_signal_header[:sampling_rate][1]:eeg.eeg_time[end]
     signal_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     # create new dataset

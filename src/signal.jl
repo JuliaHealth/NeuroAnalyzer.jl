@@ -1108,7 +1108,7 @@ function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int6
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
-    sr = round(Int64, 1 / dt)
+    sr = 1 / dt
     new_sr < sr && throw(ArgumentError("New sampling rate mu be larger than signal sampling rate."))
     new_sr == sr && return(signal)
 
