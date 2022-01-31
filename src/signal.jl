@@ -180,7 +180,7 @@ function signal_detrend(signal::Vector{Float64}; type=:linear)
 end
 
 """
-    signal_detrend(signal, type=:linear)
+    signal_detrend(signal; type=:linear)
 
 Removes linear trend for each the `signal` matrix channels.
 
@@ -203,7 +203,7 @@ function signal_detrend(signal::Matrix{Float64}; type=:linear)
 end
 
 """
-    signal_ci95(signal, n=3; method=:normal)
+    signal_ci95(signal; n=3, method=:normal)
 
 Calculates mean, std and 95% confidence interval for each the `signal` matrix channels.
 
@@ -265,7 +265,7 @@ function signal_mean(signal1::Matrix{Float64}, signal2::Matrix{Float64})
 end
 
 """
-    signal_difference(signal1::Matrix, signal2::Matrix, n=3; method=:absdiff)
+    signal_difference(signal1::Matrix, signal2::Matrix; n=3, method=:absdiff)
 
 Calculates mean difference and 95% confidence interval for 2 signals.
 
@@ -330,7 +330,7 @@ function signal_difference(signal1::Matrix, signal2::Matrix; n=3, method=:absdif
 end
 
 """
-   signal_autocov(signal, lag=1, remove_dc=false, normalize=false)
+   signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
 
 Calculates autocovariance of the `signal` vector.
 
@@ -378,7 +378,7 @@ function signal_autocov(signal::Vector{Float64}; lag=1, remove_dc=false, normali
 end
 
 """
-   signal_autocov(signal, lag=1, remove_dc=false, normalize=false)
+   signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
 
 Calculates autocovariance of each the `signal` matrix channels.
 
@@ -405,7 +405,7 @@ function signal_autocov(signal::Matrix{Float64}; lag=1, remove_dc=false, normali
 end
 
 """
-   signal_crosscov(signal1, signal2, lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
 
 Calculates cross-covariance between `signal1` and `signal2` vectors.
 
@@ -458,7 +458,7 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
 end
 
 """
-   signal_crosscov(signal1, signal2, lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
 
 Calculates cross-covariance between same channels in `signal1` and `signal2` matrices.
 
@@ -489,7 +489,7 @@ function signal_crosscov(signal1::Matrix{Float64}, signal2::Matrix{Float64}; lag
 end
 
 """
-   signal_crosscov(signal, lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal; lag=1, remove_dc=false, normalize=false)
 
 Calculates cross-covariance for all channels in the `signal` matrix. Return matrix of cross-covariances:
 signal_1_channel_1 vs signal_2_channel_1, signal_1_channel_1 vs signal_2_channel_2, signal_1_channel_1 vs signal_2_channel_3, ..., signal_1_channel_n vs signal_2_channel_n.
@@ -624,7 +624,7 @@ function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothi
 end
 
 """
-    signal_epoch(signal, n; average=true)
+    signal_epoch(signal, n; epoch_no=nothing, epoch_len=nothing, average=true)
 
 Splits `signal` matrix into epochs.
 
@@ -635,7 +635,7 @@ Splits `signal` matrix into epochs.
 - `epoch_len::Int` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -762,7 +762,7 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", yamp=nothing, figure::String="")
+    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -777,7 +777,7 @@ Plots `signal` matrix against time vector `t`.
 - `ylabel::String` - y-axis label
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", yamp=nothing, figure::String="")
+function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
     
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
@@ -790,7 +790,7 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=
 
     if normalize == true
         # normalize and shift so all channels are visible
-        variances = var(signal; dims=2)
+        variances = var(signal, dims=2)
         mean_variance = mean(variances)
         for idx in 1:channels_no
             signal[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)

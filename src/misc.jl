@@ -195,7 +195,7 @@ function frequencies(t::Vector{Float64})
 end
 
 """
-    matrix_sortperm(m; dims=1)
+    matrix_sortperm(m; rev=false, dims=1)
 
 Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
 """
@@ -217,7 +217,7 @@ function matrix_sortperm(m::Matrix; rev=false, dims=1)
 end
 
 """
-    matrix_sort(m, m_idx; dims=1)
+    matrix_sort(m, m_idx; rev=false, dims=1)
 
 Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
 """

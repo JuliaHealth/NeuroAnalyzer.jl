@@ -27,7 +27,6 @@ EEG:
 - generate time vector and add to eeg_signal_header
 - import channel location files
 - channel locations data to eeg_signal_header
-- add :history field in the signal header to store processing history
 
 ## Contributing
 
