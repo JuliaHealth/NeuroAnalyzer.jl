@@ -152,7 +152,7 @@ Calculates total power for each the `eeg` channels.
 """
 function eeg_total_power(eeg)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
-    stp = signal_total_power(eeg.eeg_signals, fs)
+    stp = signal_total_power(eeg.eeg_signals, fs=fs)
 
     return stp
 end
@@ -170,7 +170,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `e
 """
 function eeg_band_power(eeg, f1, f2)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
-    sbp = signal_band_power(eeg.eeg_signals, fs, f1, f2)
+    sbp = signal_band_power(eeg.eeg_signals, fs=fs, f1=f1, f2=f2)
 
     return sbp
 end

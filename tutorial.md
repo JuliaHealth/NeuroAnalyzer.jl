@@ -42,7 +42,7 @@ edf = eeg_filter_butter(edf, filter_type=:hp, cutoff=1.0, poles=8)
 edf = eeg_drop_channel(edf, 10)
 
 # show processing history
-eeg_show_history(edf)
+eeg_show_processing_history(edf)
 
 # show sampling rate
 edf.eeg_signal_header[:sampling_rate][1]

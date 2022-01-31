@@ -41,6 +41,7 @@ export eeg_get_channel
 export eeg_cov
 export eeg_cor
 export eeg_upsample
+export eeg_show_processing_history
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
