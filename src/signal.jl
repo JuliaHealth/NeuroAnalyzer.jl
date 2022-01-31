@@ -876,9 +876,9 @@ Re-references channels of the `signal` matrix to common average reference.
 
 - `signal::Matrix{Float64}` - the signal matrix
 """
-function signal_reference_car(signal::Matrix)
+function signal_reference_car(signal::Matrix{Float64})
     channels_no = size(signal, 1)
-
+    signal_referenced = zeros(size(signal))
     reference_channel = vec(mean(signal, dims=1))
 
     for idx in 1:channels_no
