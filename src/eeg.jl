@@ -1,24 +1,20 @@
 """
-    eeg_plot(eeg; t=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
+    eeg_plot(t=nothing, eeg; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
 Plots `eeg` signals.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
 - `t::Vector{Float64} - the time vector
+- `eeg::EEG` - EEG object
 - `offset::Float64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
+- `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
-- `normalize::Bool` - normalize the `signal` prior to calculations
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
+function eeg_plot(t=nothing, eeg::EEG; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
     
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
@@ -28,17 +24,14 @@ function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], xlabel="Time [s]", y
     labels = eeg.eeg_signal_header[:labels]
     fs = eeg.eeg_signal_header[:sampling_rate][1]
 
-    # default time is 5 seconds
-    t === nothing && (t = collect(0:1/fs:5))
+    # default time is 10 seconds
+    t === nothing && (t = collect(0:1/fs:10))
 
-    p, signal_new = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, remove_dc=remove_dc, detrend=detrend, derivative=derivative, taper=taper, figure=figure)
+    p, signal_new = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
 
     plot(p)
-    
-    # create new dataset    
-    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_new)
 
-    return p, eeg_new
+    return p
 end
 
 """
@@ -107,17 +100,8 @@ Filters `eeg` channels using Butterworth filter.
 - `poles::Int` - filter pole
 """
 function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
-    filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-
-    signal = eeg.eeg_signals
     fs = eeg.eeg_signal_header[:sampling_rate][1]
-
-    signal_filtered = zeros(size(signal))
-
-    for idx in 1:channels_no
-        signal_filtered[idx, :] = signal_filter_butter(signal[idx, :], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
-    end
-
+    signal_filtered = signal_filter_butter(eeg.eeg_signals, filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_filtered)
 
     return eeg_new
@@ -190,7 +174,7 @@ function eeg_make_spectrum(eeg)
 end
 
 """
-    eeg_detrend(eeg, type=:linear; channels=[])
+    eeg_detrend(eeg, type=:linear)
 
 Removes linear trend for each the `eeg` signal channels.
 
@@ -202,16 +186,14 @@ Removes linear trend for each the `eeg` signal channels.
     - `constant` - the mean of `signal` is subtracted
 """
 function eeg_detrend(eeg, type=:linear)
-    trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
-
-    signal_det = signal_detrend(eeg.eeg_signals)
+    signal_det = signal_detrend(eeg.eeg_signals, type)
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_det)
 
     return eeg_new
 end
 
 """
-    eeg_draw_head(p, loc_x, loc_y)
+    eeg_draw_head(p, loc_x, loc_y, add_labels=true)
 
 Draws head over a topographical plot `p`.
 
@@ -220,12 +202,13 @@ Draws head over a topographical plot `p`.
 - `p::Plot` - toppgraphical plot
 - `loc_x::Vector{Float64` - vector of x electrode position
 - `loc_y::Vector{Float64` - vector of y electrode position
+- `add_labels::Bool` - add text labels to the plot
 """
-function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64})
+function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels=true)
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 1.1
-    y = y .* 0.91
+    y = y .* 1.1
     head = Shape(x, y)
     nose = Shape([(-0.1, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.1, maximum(y))])
     ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), 0.1), (minimum(x), 0.1)])
@@ -234,10 +217,16 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64})
     plot!(p, nose, fill=nothing, label="")
     plot!(p, ear_l, fill=nothing, label="")
     plot!(p, ear_r, fill=nothing, label="")
+    if add_labels=true
+        plot!(p, annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
+        plot!(p, annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
+        plot!(p, annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
+        plot!(p, annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
+    end
 end
 
 """
-    eeg_rereference_channel(eeg, reference)
+    eeg_reference_channel(eeg, reference)
 
 Re-references the `eeg` signal channels to specific signal channel.
 
@@ -248,8 +237,27 @@ Re-references the `eeg` signal channels to specific signal channel.
 """
 function eeg_rereference_channel(eeg::EEG, reference_idx)
     signal_rereferenced = signal_rereference_channel(eeg.eeg_signals, reference_idx)
-    eeg.eeg_file_header[:reference_type] = "channel"
+    eeg.eeg_file_header[:reference_type] = "common reference"
     eeg.eeg_file_header[:reference_channel] = reference_idx
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_rereferenced)
+
+    return eeg_new
+end
+
+"""
+    eeg_reference_car(eeg)
+
+Re-references the `eeg` signal channels to common average reference.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `reference::Float64` - index of channels used as reference; if multiple channels are specififed, their average is
+"""
+function eeg_rereference_car(eeg::EEG, reference_idx)
+    signal_rereferenced = eeg_rereference_car(eeg.eeg_signals, reference_idx)
+    eeg.eeg_file_header[:reference_type] = "CAR"
+    eeg.eeg_file_header[:reference_channel] = []
     eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_rereferenced)
 
     return eeg_new
@@ -281,4 +289,166 @@ Loads the `eeg` object from `file_name` file (HDF5-based).
 function eeg_load(file_name)
     eeg = load_object(file_name)
     return eeg
+end
+
+"""
+    eeg_get_channel_idx(eeg, channel_name)
+
+Returns the `channel_name` index.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `channel_name::String` - channel name
+"""
+function eeg_get_channel_idx(eeg:EEG, channel_name::String)
+    labels = eeg.eeg_signal_header[:labels]
+    channel_idx = nothing
+    for idx in 1:length(labels)
+        if channel_name == labels[idx]
+            channel_idx = idx
+        end
+    end
+    if channel_idx == nothing
+        throw(ArgumentError("Channel name does not match signal labels."))
+    end
+    return channel_idx
+end
+
+"""
+    eeg_get_channel_idx(eeg, channel_idx)
+
+Returns the `channel_idx` name.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `channel_idx::Int` - channel index
+"""
+function eeg_get_channel_name(eeg:EEG, channel_idx::Int)
+    labels = eeg.eeg_signal_header[:labels]
+    if channel_idx < 1 || channel_idx > length(labels)
+        throw(ArgumentError("Channel index does not match signal channels."))
+    else
+        channel_name = labels[channel_idx]
+    end
+    return channel_name
+end
+
+"""
+    eeg_rename_channel(eeg, old_channel_name, new_channel_name)
+
+Rename the `eeg` signal channel.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `old_channel_name::String`
+- `new_name::String`
+"""
+function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name::String)
+    labels = eeg.eeg_signal_header[:labels]
+    channel_idx = nothing
+    for idx in 1:length(labels)
+        if old_channel_name == labels[idx]
+            labels[idx] = new_channel_name
+            channel_idx = idx
+        end
+    end
+    if channel_idx == nothing
+        throw(ArgumentError("Channel name does not match signal labels."))
+    end
+    eeg_signal_header[:labels] = labels
+    eeg_new = EEG(eeg.eeg_file_header, eeg_signal_header, eeg.signal_rereferenced)
+
+    return eeg_new
+end
+
+"""
+    eeg_rename_channel(eeg, channel_idx, new_channel_name)
+
+Rename the `eeg` signal channel.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `channel_idx::Int`
+- `new_name::String`
+"""
+function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String)
+    labels = eeg.eeg_signal_header[:labels]
+    if channel_idx < 1 || channel_idx > length(labels)
+        throw(ArgumentError("Channel index does not match signal channels."))
+    else
+        labels[channel_idx] = new_channel_name
+    end
+    eeg_signal_header[:labels] = labels
+    eeg_new = EEG(eeg.eeg_file_header, eeg_signal_header, eeg.signal_rereferenced)
+
+    return eeg_new
+end
+
+"""
+    eeg_taper(eeg, taper)
+
+Taper channels of the `eeg` with `taper`.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `taper::Vector`
+"""
+function eeg_taper(eeg::EEG, taper::Vector)
+    signal_tapered = signal_taper(eeg.eeg_signals, taper)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_tapered)
+
+    return eeg_new
+end
+
+"""
+    eeg_demean(eeg)
+
+Removes mean value (DC offset) for each the `eeg`  channels.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_demean(eeg::EEG)
+    signal_demeaned = signal_demean(eeg.eeg_signals, taper)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_demeaned)
+
+    return eeg_new
+end
+
+"""
+    eeg_normalize_mean(eeg)
+
+Normalize (scales around the mean) each the `eeg`  channels.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_normalize_mean(eeg::EEG)
+    signal_normalized = signal_normalize_mean(eeg.eeg_signals, taper)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_tapered)
+
+    return eeg_new
+end
+
+"""
+    eeg_normalize_mean(eeg)
+
+Normalize (to 0…1) each the `eeg`  channels.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_normalize_minmax(eeg::EEG)
+    signal_normalized = signal_normalize_minmax(eeg.eeg_signals, taper)
+    eeg_new = EEG(eeg.eeg_file_header, eeg.eeg_signal_header, signal_tapered)
+
+    return eeg_new
 end

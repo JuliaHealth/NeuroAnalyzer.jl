@@ -23,10 +23,11 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ## TO DO
 
 EEG:
-- re-reference
+- add re-referening methods
 - generate time vector and add to eeg_signal_header
 - import channel location files
 - channel locations data to eeg_signal_header
+- add :history field in the signal header to store processing history
 
 ## Contributing
 

@@ -24,9 +24,17 @@ export eeg_plot
 export eeg_total_power
 export eeg_band_power
 export eeg_make_spectrum
-export eeg_rereference_channel
+export eeg_reference_channel
+export eeg_reference_car
 export eeg_load
 export eeg_save
+export eeg_get_channel_idx
+export eeg_get_channel_name
+export eeg_rename_channel
+export eeg_taper
+export eeg_demean
+export eeg_normalize_mean
+export eeg_normalize_minmax
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -48,6 +56,11 @@ export signal_mean
 export signal_plot
 export signal_spectrum
 export signal_rereference_channel
+export signal_plot_timefreq
+export signal_taper
+export signal_demean
+export signal_normalize_mean
+export signal_normalize_minmax
 
 include("misc.jl")
 export cart2pol
@@ -67,8 +80,6 @@ export logspace
 export matrix_sort
 export matrix_sortperm
 export nexpow2
-export normalize_mean
-export normalize_minmax
 export pad0
 export pol2cart
 export rads2hz
@@ -78,10 +89,6 @@ export vsearch
 export vsplit
 export z_score
 export zero_pad
-export mag2db
-export db2mag
-export pow2db
-export db2pow
 
 include("nstim.jl")
 export tes_dose

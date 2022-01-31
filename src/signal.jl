@@ -111,7 +111,7 @@ function signal_band_power(signal::Matrix{Float64}, fs, f1, f2)
 end
 
 """
-    make_spectrum(signal, fs)
+    signal_make_spectrum(signal, fs)
 
 Returns FFT and DFT sample frequencies for a DFT for the `signal` vector.
 
@@ -132,7 +132,7 @@ function signal_make_spectrum(signal::Vector{Float64}, fs)
 end
 
 """
-    make_spectrum(signal, fs)
+    signal_make_spectrum(signal, fs)
 
 Returns FFT and DFT sample frequencies for a DFT for each the `signal` matrix channels.
 
@@ -154,7 +154,7 @@ function signal_make_spectrum(signal::Matrix{Float64}, fs)
 end
 
 """
-    signal_detrend(signal, type=:linear)
+    signal_detrend(signal; type=:linear)
 
 Removes linear trend from the `signal` vector.
 
@@ -165,10 +165,10 @@ Removes linear trend from the `signal` vector.
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
 """
-function signal_detrend(signal::Vector{Float64}; trend=:linear)
-    trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
+function signal_detrend(signal::Vector{Float64}; type=:linear)
+    type in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
 
-    if trend == :constant
+    if type == :constant
         signal_det = demean(signal)
     else
         A = ones(length(signal))
@@ -191,13 +191,12 @@ Removes linear trend for each the `signal` matrix channels.
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
 """
-function signal_detrend(signal::Matrix{Float64}; trend=:linear)
-    trend in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
+function signal_detrend(signal::Matrix{Float64}; type=:linear)
     channels_no = size(signal, 1)
     signal_det = zeros(size(signal))
 
     for idx in 1:channels_no
-        signal_det[idx, :] = signal_detrend(signal[idx, :], trend=trend)
+        signal_det[idx, :] = signal_detrend(signal[idx, :], type=type)
     end
 
     return signal_det
@@ -764,7 +763,7 @@ function signal_filter_butter(signal::Matrix{Float64}; filter_type, cutoff, fs, 
 end
 
 """
-    signal_plot(t, signal; offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", figure="")
+    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, figure::String="")
 
 Plots `signal` against time vector `t`.
 
@@ -777,24 +776,13 @@ Plots `signal` against time vector `t`.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
 - `yamp::Float64` - y-axis limits (-yamp:yamp)
-- `normalize::Bool` - normalize the `signal` prior to calculations
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, normalize=false, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
+function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, figure::String="")
 
     if typeof(t) == UnitRange{Int64}
-        t = collect(t)
+        t = float(collect(t))
     end
-
-    normalize == true && (signal = normalize_mean(signal))
-    remove_dc == true && (signal = demean(signal))
-    detrend == true && (signal = signal_detrend(signal))
-    derivative == true && (signal = signal_derivative(signal))
-    taper !== nothing && (signal = signal .* taper)
 
     if yamp === nothing
         yamp = maximum(signal)
@@ -810,7 +798,7 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
 end
 
 """
-    signal_plot(t, signal; channels=[], labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure="")
+    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", yamp=nothing, figure::String="")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -819,44 +807,19 @@ Plots `signal` matrix against time vector `t`.
 - `t::Vector{Float64}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
 - `offset::Float64` - displayed segment offset in samples
-- `channels::Float64` - channels to be plotted (all if empty), vector or range
 - `labels::Vector{String}` - channel labels vector
-- `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
 - `normalize::Bool` - normalize the `signal` prior to calculations
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Matrix{Float64}; offset=1, channels=[], labels=[], xlabel="Time [s]", ylabel="Channels", normalize=true, remove_dc=false, detrend=false, derivative=false, taper=nothing, figure::String="")
+function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", yamp=nothing, figure::String="")
     
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
-    end
-
     if typeof(t) == UnitRange{Int64}
-        t = collect(t)
+        t = float(collect(t))
     end
     
     channels_no = size(signal, 1)
-
-    # drop channels not in the list
-    channels_to_drop = collect(1:channels_no)
-    if length(channels) > 1
-        for idx in length(channels):-1:1
-            channels_to_drop = deleteat!(channels_to_drop, channels[idx])
-        end
-        signal = signal_drop_channel(signal, channels_to_drop)
-    end
-
-    channels_no = size(signal, 1)
-
-    remove_dc == true && (signal = demean(signal))
-    detrend == true && (signal = signal_detrend(signal))
-    derivative == true && (signal = signal_derivative(signal))
-    taper !== nothing && (signal = signal .* taper)
 
     # reverse so 1st channel is on top
     signal = reverse(signal, dims = 1)
@@ -938,4 +901,165 @@ function signal_rereference_channel(signal::Matrix, reference_idx)
     end
 
     return signal_rereferenced
+end
+
+"""
+    signal_rereference_channel(signal)
+
+Re-references channels of the `signal` matrix to common average reference.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix
+"""
+function signal_rereference_channel(signal::Matrix)
+    channels_no = size(signal, 1)
+
+    reference_channel = vec(mean(signal, dims=1))
+
+    for idx in 1:channels_no
+        signal_rereferenced[idx, :] = signal[idx, :] .- reference_channel
+    end
+
+    return signal_rereferenced
+end
+
+"""
+    signal_taper(signal, taper)
+
+Taper channels of the `signal` matrix with `taper`.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix
+- `taper::Vector`
+"""
+function signal_taper(signal::Matrix, taper::Vector)
+    channels_no = size(signal, 1)
+
+    length(taper) == size(signal, 2) || throw(ArgumentError("Taper length and signal length must be equal."))
+
+    for idx in 1:channels_no
+        signal_tapered[idx, :] = signal[idx, :] .* taper
+    end
+
+    return signal_tapered
+end
+
+"""
+    signal_taper(signal, taper)
+
+Taper channels of the `signal` vector with `taper`.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix
+- `taper::Vector`
+"""
+function signal_taper(signal::Vector, taper::Vector)
+    length(taper) == length(signal) || throw(ArgumentError("Taper length and signal length must be equal."))
+    signal_tapered = signal .* taper
+
+    return signal_tapered
+end
+
+"""
+    signal_demean(signal)
+
+Removes mean value (DC offset) from the `signal` vector.
+
+# Arguments
+
+- `signal::Vector{Float64}` the signal matrix to analyze
+"""
+signal_demean(signal::Vector{Float64}) = signal .- mean(signal)
+
+"""
+    signal_demean(signal)
+
+Removes mean value (DC offset) for each the `signal` matrix channels.
+
+# Arguments
+
+- `signal::Matrix{Float64}` the signal matrix to analyze
+"""
+function signal_demean(signal::Matrix{Float64})
+    channels_no = size(signal, 1)
+    signal_demeaned = zeros(size(signal))
+
+    for idx in 1:channels_no
+        signal_demeaned[idx, :] = signal_demean(signal[idx, :])
+    end
+
+    return signal_demeaned
+end
+
+"""
+    signal_normalize_mean(signal)
+
+Normalize (scales around the mean) `signal` vector.
+"""
+signal_normalize_mean(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal)
+
+"""
+    signal_normalize_mean(signal)
+
+Normalize (scales around the mean) `signal` matrix.
+"""
+function signal_normalize_mean(signal::Matrix{Float64})
+    channels_no = size(signal, 1)
+    signal_normalized = zeros(size(signal))
+
+    for idx in 1:channels_no
+        signal_normalized[idx, :] = signal_normalize_mean(signal[idx, :])
+    end
+
+    return signal_normalized
+end
+
+"""
+    signal_normalize_minmax(signal)
+
+Normalize (to 0…1) `signal` vector.
+"""
+singla_normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
+
+
+"""
+    signal_normalize_minmax(signal)
+
+Normalize (to 0…1) each the `signal` matrix channel.
+"""
+function signal_normalize_minmax(signal::Matrix{Float64})
+    channels_no = size(signal, 1)
+    signal_normalized = zeros(size(signal))
+
+    for idx in 1:channels_no
+        signal_normalized[idx, :] = singla_normalize_minmax(signal[idx, :])
+    end
+
+    return signal_normalized
+end
+
+function signal_plot_timefreq(signal, t, t_res, channel, figure="")
+    if typeof(t) == UnitRange{Int64}
+        t = float(collect(t))
+    end
+    time_segments = length(t) ÷ t_res
+
+    hz, nyquist_freq = frequencies(t)
+    signal_fft, signal_amplitudes, signal_powers, signal_phases = signal_spectrum(signal[channel, :])
+
+    timefreq = zeros(length(hz), time_segments)
+    for idx in 1:length(time_segments)
+        timefreq = fft per time_segments
+    end
+    p1 = plot(hz, signal_amplitudes[1:length(hz)])
+    p2 = plot(hz, signal_powers[1:length(hz)])
+    p = plot(p1, p2, layout=(1, 2))
+
+    # TO DO: catching error while saving
+    figure !== "" && (savefig(p, figure))
+
+    return p
 end
