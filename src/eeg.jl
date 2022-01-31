@@ -161,7 +161,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `e
 - `f1::Float64` - Lower frequency bound
 - `f2::Float64` - Upper frequency bound
 """
-function eeg_total_power(eeg, f1, f2)
+function eeg_band_power(eeg, f1, f2)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
     sbp = signal_band_power(eeg.eeg_signals, fs, f1, f2)
 
@@ -197,7 +197,7 @@ Removes linear trend for each the `eeg` channels.
     - `constant` - the mean of `signal` is subtracted
 """
 function eeg_detrend(eeg, type=:linear)
-    signal_det = signal_detrend(eeg.eeg_signals, type)
+    signal_det = signal_detrend(eeg.eeg_signals, type=type)
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_det)
@@ -380,7 +380,7 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
     if channel_idx == nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
-    eeg_signal_header[:labels] = labels
+    eeg.eeg_signal_header[:labels] = labels
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_time, eeg.eeg_signals)
@@ -408,7 +408,7 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String
     else
         labels[channel_idx] = new_channel_name
     end
-    eeg_signal_header[:labels] = labels
+    eeg.eeg_signal_header[:labels] = labels
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_time, eeg.eeg_signals)
@@ -573,7 +573,7 @@ Calculates correlation coefficients between all channels of the `eeg` object.
 - `eeg::EEG` - EEG object
 """
 function eeg_cor(eeg::EEG)
-    result = eeg_cor(eeg.eeg_signals)
+    result = signal_cor(eeg.eeg_signals)
     return result
 end
 

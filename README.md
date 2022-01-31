@@ -26,7 +26,7 @@ EEG:
 - add re-referencing methods
 - import channel location files
 - channel locations data to eeg_signal_header
-- rename labels
+- epochs
 
 ## Contributing
 

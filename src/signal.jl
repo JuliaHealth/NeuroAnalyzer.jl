@@ -56,10 +56,10 @@ Calculates total power for each the `signal` matrix channels.
 """
 function signal_total_power(signal::Matrix{Float64}, fs)
     channels_no = size(signal, 1)
-    stp = zeros(size(signal, 1))
+    stp = zeros(channels_no)
 
     for idx in 1:channels_no
-        stp[idx] = signal_total_power(signal[idx, :])
+        stp[idx] = signal_total_power(signal[idx, :], fs=fs)
     end
 
     return stp
