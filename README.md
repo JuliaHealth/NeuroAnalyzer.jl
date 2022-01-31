@@ -23,7 +23,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ## TO DO
 
 EEG:
-- add re-referening methods
+- add re-referencing methods
 - generate time vector and add to eeg_signal_header
 - import channel location files
 - channel locations data to eeg_signal_header

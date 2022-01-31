@@ -81,7 +81,7 @@ function eeg_drop_channel(eeg::EEG, channels)
     eeg_signals = eeg_signals[setdiff(1:end, (channels)), :]
 
     # add entry to :history field
-    push!(eeg_object_header[:history], "eeg_drop_channel($eeg, $channels)")
+    push!(eeg_object_header[:history], "eeg_drop_channel(EEG, $channels)")
 
     # create new dataset    
     eeg_new = EEG(eeg_object_header, eeg_signal_header, eeg_signals)
