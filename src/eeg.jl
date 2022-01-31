@@ -571,7 +571,7 @@ Calculates correlation coefficients between all channels of the `eeg` object.
 
 - `eeg::EEG` - EEG object
 """
-function eeg_cov(eeg::EEG)
+function eeg_cor(eeg::EEG)
     result = eeg_cor(eeg.eeg_signals)
     return eeg_new
 end

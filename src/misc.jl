@@ -282,14 +282,14 @@ k(n) = (sqrt(n), (1 + 3.222 * log10(n)))
 
 Returns maximum value of the Complex vector`x`.
 """
-cmax(x::Vector{ComplexF64}) argmax(abs, x)
+cmax(x::Vector{ComplexF64}) = argmax(abs, x)
 
 """
     cmin(x)
 
 Returns minimum value of the Complex vector`x`.
 """
-cmin(x::Vector{ComplexF64}) argmin(abs, x)
+cmin(x::Vector{ComplexF64}) = argmin(abs, x)
 
 """
     sinc(t=0:0.01:10, f=10, peak=4)
