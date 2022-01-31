@@ -10,7 +10,7 @@ using Simpson
 using StatsKit
 
 struct EEG
-    eeg_file_header::Dict
+    eeg_object_header::Dict
     eeg_signal_header::Dict
     eeg_signals::Matrix
 end
