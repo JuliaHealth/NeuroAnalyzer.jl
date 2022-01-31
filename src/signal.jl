@@ -1114,7 +1114,7 @@ function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int6
 
     # interpolate
     signal_interpolation = CubicSplineInterpolation(t, signal)
-    t = t[0]:1/new_sr:t[end]
+    t = t[1]:1/new_sr:t[end]
     signal_upsampled = signal_interpolation(t)
 
     return signal_upsampled
