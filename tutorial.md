@@ -34,7 +34,7 @@ eeg = eeg_reference_channel(edf, [1, 2])
 eeg = eeg_reference_car(edf)
 
 # filtering
-edf = eeg_filter_butter(edf, filter_type=:bs, cutoff=[45, 55], poles=8)
+edf = eeg_filter_butter(edf, filter_type=:bs, cutoff=[45.0, 55.0], poles=8)
 edf = eeg_filter_butter(edf, filter_type=:lp, cutoff=45.0, poles=8)
 edf = eeg_filter_butter(edf, filter_type=:hp, cutoff=1.0, poles=8)
 
@@ -83,7 +83,11 @@ bar(edf.eeg_signal_header[:labels],
     edf.eeg_signal_header[:labels]))
 
 # alpha power
-eeg_band_power(edf, 8, 12)
+abp = eeg_band_power(edf, f1=8.0, f2=12.0)
+bar(edf.eeg_signal_header[:labels],
+    abp,
+    xticks=(1:length(edf.eeg_signal_header[:labels]),
+    edf.eeg_signal_header[:labels]))
 
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")

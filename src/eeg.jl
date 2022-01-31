@@ -293,7 +293,7 @@ function eeg_reference_car(eeg::EEG)
 end
 
 """
-    eeg_save(eeg, file_name)
+    eeg_save(eeg, file_name; overwrite=false)
 
 Saves the `eeg` object to `file_name` file (HDF5-based).
 
@@ -302,7 +302,10 @@ Saves the `eeg` object to `file_name` file (HDF5-based).
 - `eeg::EEG` - EEG object
 - `file_name::String` - file name
 """
-function eeg_save(eeg::EEG, file_name)
+function eeg_save(eeg::EEG, file_name; overwrite=false)
+    if isfile(file_name) & overwrite == false
+        throw(ArgumentError("""File $file_name already exists. To overwrite, add "overwrite=true" argument."""))
+    end
     save_object(file_name, eeg)
 end
 
