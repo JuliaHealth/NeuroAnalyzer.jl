@@ -76,10 +76,10 @@ Calculates absolute band power between frequencies `f1` and `f2` for the `signal
 
 - `signal::Vector{Float64}` - the signal vector to analyze
 - `fs::Int64` - Sampling rate of the signal
-- `f1::Float64` - Lower frequency bound
-- `f2::Float64` - Upper frequency bound
+- `f1::Union{Int64, Float64}` - Lower frequency bound
+- `f2::Union{Int64, Float64}` - Upper frequency bound
 """
-function signal_band_power(signal::Vector{Float64}; fs::Int64, f1::Float64, f2::Float64)
+function signal_band_power(signal::Vector{Float64}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     psd = welch_pgram(signal, 4*fs, fs=fs)
     frq_idx = [vsearch(Vector(psd.freq), f1), vsearch(Vector(psd.freq), f2)]
     # dx: frequency resolution
@@ -101,12 +101,12 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `s
 - `f1::Float64` - Lower frequency bound
 - `f2::Float64` - Upper frequency bound
 """
-function signal_band_power(signal::Matrix{Float64}; fs::Int64, f1::Float64, f2::Float64)
+function signal_band_power(signal::Matrix{Float64}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     channels_no = size(signal, 1)
     sbp = zeros(size(signal, 1))
 
     for idx in 1:channels_no
-        sbp[idx] = signal_band_power(signal[idx, :], fs, f1, f2)
+        sbp[idx] = signal_band_power(signal[idx, :], fs=fs, f1=f1, f2=f2)
     end
 
     return sbp
@@ -596,11 +596,11 @@ Splits `signal` vector into epochs.
 # Arguments
 
 - `signal::Vector{Float64}` - the signal vector to analyze
-- `epoch_no::Int` - number of epochs
-- `epoch_len::Int` - epoch length in samples
+- `epoch_no::Int64` - number of epochs
+- `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothing, average=true)
+function signal_epoch(signal::Vector{Float64}; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -633,11 +633,11 @@ Splits `signal` matrix into epochs.
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix to analyze
-- `epoch_no::Int` - number of epochs
-- `epoch_len::Int` - epoch length in samples
+- `epoch_no::Int64` - number of epochs
+- `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, average=true)
+function signal_epoch(signal::Matrix; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -673,11 +673,11 @@ Filters `signal` vector using Butterworth filter.
 
 - `signal::Vector{Float64}` - the signal vector to analyze
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
+- `cutoff::Union{Float64, Vector{Float64}}` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `poles::Int64` - filter pole
 """
-function signal_filter_butter(signal::Vector{Float64}; filter_type::Symbol, cutoff::Float64, fs::Int64, poles::Int64=8)
+function signal_filter_butter(signal::Vector{Float64}; filter_type::Symbol, cutoff::Union{Float64, Vector{Float64}, Tuple}, fs::Int64, poles::Int64=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
     if filter_type == :lp
@@ -711,11 +711,11 @@ Filters `signal` matrix using Butterworth filter.
 
 - `signal::Matrix{Float64}` - the signal matrix to analyze
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
+- `cutoff::Union{Float64, Vector{Float64}, Tuple}` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `poles::Int` - filter pole
 """
-function signal_filter_butter(signal::Matrix{Float64}; filter_type::Symbol, cutoff::Float64, fs::Int64, poles::Int64=8)
+function signal_filter_butter(signal::Matrix{Float64}; filter_type::Symbol, cutoff::Union{Float64, Vector{Float64}, Tuple}, fs::Int64, poles::Int64=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
     channels_no = size(signal, 1)
