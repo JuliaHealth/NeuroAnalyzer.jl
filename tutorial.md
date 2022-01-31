@@ -3,7 +3,9 @@
 ## EEG
 
 ```
-edf = eeg_load_edf("test.edf")
+using NeuroJ
+
+edf = eeg_load_edf("eeg-test.edf")
 
 # save
 eeg_save(edf, "test.bin")
@@ -11,13 +13,21 @@ eeg_save(edf, "test.bin")
 # load
 edf = eeg_load("test.bin")
 
+# show labels
+edf.eeg_signal_header[:labels]
+
+# show properties
+edf.eeg_signal_header[:sampling_rate][1]
+edf.eeg_object_header[:eeg_duration_seconds]
+edf.eeg_object_header[:eeg_duration_samples]
+
 # channel index
 eeg_get_channel_idx(edf, "Cz")
-eeg_get_channel_name(edf, 20)
+eeg_get_channel_name(edf, 18)
 
 # channel rename
-edf = eeg_rename_channel(edf, "Cz, "CZ")
-edf = eeg_rename_channel(edf, 20, "Cz")
+edf = eeg_rename_channel(edf, "Cz", "CZ")
+edf = eeg_rename_channel(edf, 18, "Cz")
 
 # re-reference
 eeg = eeg_reference_channel(edf, [1, 2])
@@ -29,13 +39,10 @@ edf = eeg_filter_butter(edf, filter_type=:lp, cutoff=45.0, poles=8)
 edf = eeg_filter_butter(edf, filter_type=:hp, cutoff=1.0, poles=8)
 
 # remove channel
-edf = eeg_drop_channel(edf, 22)
-
-# show labels
-edf.eeg_signal_header[:labels]
+edf = eeg_drop_channel(edf, 10)
 
 # show processing history
-edf.eeg_object_header[:history]
+eeg_show_history(edf)
 
 # show sampling rate
 edf.eeg_signal_header[:sampling_rate][1]
@@ -45,6 +52,7 @@ eeg_upsample(edf, new_sr=512)
 
 # plot channels
 eeg_plot(edf)
+eeg_plot(edf, figure="figure1.pdf")
 
 # covariance
 edf_cov = eeg_cov(edf)

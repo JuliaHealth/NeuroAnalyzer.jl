@@ -56,7 +56,7 @@ function eeg_drop_channel(eeg::EEG, channels)
 
     if channels[end] < 1 || channels[1] > length(eeg.eeg_signal_header[:labels])
         throw(ArgumentError("Channel index does not match signal channels."))
-    else
+    end
 
     eeg_object_header = eeg.eeg_object_header
     eeg_signal_header = eeg.eeg_signal_header
@@ -591,7 +591,7 @@ Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal vector
+- `eeg::EEG` - EEG object
 - `new_sr::Int64` - new sampling rate
 """
 function eeg_upsample(eeg::EEG; new_sr::Int64)
@@ -611,4 +611,17 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
     push!(eeg_new.eeg_object_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
 
     return eeg_new
+end
+
+"""
+    eeg_show_processing_history(eeg)
+
+Shows processing history of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_show_processing_history(eeg::EEG)
+    return eeg.eeg_object_header[:history]
 end
