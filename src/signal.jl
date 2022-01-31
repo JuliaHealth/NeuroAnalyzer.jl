@@ -1110,7 +1110,7 @@ function signal_upsample(signal::Vector{Float64}; t::Vector{Float64}, new_sr::In
     # sampling rate
     sr = round(1 / dt)
     new_sr < sr && throw(ArgumentError("New sampling rate mu be larger than signal sampling rate."))
-    new_sr = sr && return(signal)
+    new_sr == sr && return(signal)
 
     # interpolate
     signal_interpolation = CubicSplineInterpolation(t, signal)
