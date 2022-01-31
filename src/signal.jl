@@ -755,10 +755,12 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
 
     p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
 
+    plot(p)
+
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
 
-    return p, signal
+    return p
 end
 
 """
@@ -777,7 +779,7 @@ Plots `signal` matrix against time vector `t`.
 - `ylabel::String` - y-axis label
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
+function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
     
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
@@ -809,7 +811,7 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
 
-    return p, signal
+    return p
 end
 
 """
