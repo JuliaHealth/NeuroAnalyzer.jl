@@ -105,10 +105,11 @@ Filters `eeg` channels using Butterworth filter.
 function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
     fs = eeg.eeg_signal_header[:sampling_rate][1]
     signal_filtered = signal_filter_butter(eeg.eeg_signals, filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_filtered)
 
     # add entry to :history field
-    push!(eeg.eeg_object_header[:history], "eeg_filter_butter(EEG, $filter_type, $cutoff, $poles)")
+    push!(eeg.eeg_object_header[:history], "eeg_filter_butter(EEG, filter_type=$filter_type, cutoff=$cutoff, poles=$poles)")
+
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_filtered)
 
     return eeg_new
 end
@@ -124,6 +125,10 @@ Returns the derivative of each the `eeg` channels with length same as the signal
 """
 function eeg_derivative(eeg)
     signal_der = signal_derivative(eeg.eeg_signals)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_derivative(EEG)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_der)
 
     return eeg_new
@@ -193,6 +198,10 @@ Removes linear trend for each the `eeg` channels.
 """
 function eeg_detrend(eeg, type=:linear)
     signal_det = signal_detrend(eeg.eeg_signals, type)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_detrend(EEG, type=$type)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_det)
 
     return eeg_new
@@ -245,6 +254,10 @@ function eeg_reference_channel(eeg::EEG, reference_idx)
     signal_referenced = signal_reference_channel(eeg.eeg_signals, reference_idx)
     eeg.eeg_object_header[:reference_type] = "common reference"
     eeg.eeg_object_header[:reference_channel] = reference_idx
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_reference_channel(EEG, reference_idx=$reference_idx)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_referenced)
 
     return eeg_new
@@ -258,12 +271,15 @@ References the `eeg` channels to common average reference.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `reference::Float64` - index of channels used as reference; if multiple channels are specified, their average is
 """
-function eeg_reference_car(eeg::EEG, reference_idx)
-    signal_referenced = eeg_reference_car(eeg.eeg_signals, reference_idx)
+function eeg_reference_car(eeg::EEG)
+    signal_referenced = eeg_reference_car(eeg.eeg_signals)
     eeg.eeg_object_header[:reference_type] = "CAR"
     eeg.eeg_object_header[:reference_channel] = []
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_reference_car(EEG)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_referenced)
 
     return eeg_new
@@ -280,6 +296,10 @@ Saves the `eeg` object to `file_name` file (HDF5-based).
 - `file_name::String` - file name
 """
 function eeg_save(eeg::EEG, file_name)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_save(EEG)")
+
     save_object(file_name, eeg)
 end
 
@@ -294,6 +314,10 @@ Loads the `eeg` object from `file_name` file (HDF5-based).
 """
 function eeg_load(file_name)
     eeg = load_object(file_name)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_load(EEG)")
+
     return eeg
 end
 
@@ -365,6 +389,10 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
         throw(ArgumentError("Channel name does not match signal labels."))
     end
     eeg_signal_header[:labels] = labels
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_rename_channel(EEG, old_channel_name=$old_channel_name, new_channel_name=$new_channel_name)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_signals)
 
     return eeg_new
@@ -389,6 +417,10 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String
         labels[channel_idx] = new_channel_name
     end
     eeg_signal_header[:labels] = labels
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg_signal_header, eeg.eeg_signals)
 
     return eeg_new
@@ -406,6 +438,10 @@ Taper each the `eeg` channels with `taper`.
 """
 function eeg_taper(eeg::EEG, taper::Vector)
     signal_tapered = signal_taper(eeg.eeg_signals, taper)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_taper(EEG, taper=$taper)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
 
     return eeg_new
@@ -422,6 +458,10 @@ Removes mean value (DC offset) for each the `eeg` channels.
 """
 function eeg_demean(eeg::EEG)
     signal_demeaned = signal_demean(eeg.eeg_signals, taper)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_demean(EEG)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_demeaned)
 
     return eeg_new
@@ -438,6 +478,10 @@ Normalize (scales around the mean) each the `eeg` channels.
 """
 function eeg_normalize_mean(eeg::EEG)
     signal_normalized = signal_normalize_mean(eeg.eeg_signals, taper)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_normalize_mean(EEG)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
 
     return eeg_new
@@ -454,6 +498,10 @@ Normalize (to 0…1) each the `eeg` channels.
 """
 function eeg_normalize_minmax(eeg::EEG)
     signal_normalized = signal_normalize_minmax(eeg.eeg_signals, taper)
+
+    # add entry to :history field
+    push!(eeg.eeg_object_header[:history], "eeg_normalize_minmax(EEG)")
+
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_tapered)
 
     return eeg_new
