@@ -3,6 +3,7 @@ module NeuroJ
 using DataFrames
 using DSP
 using FFTW
+using Interpolations
 using JLD2
 using LinearAlgebra
 using Plots
@@ -12,6 +13,7 @@ using StatsKit
 struct EEG
     eeg_object_header::Dict
     eeg_signal_header::Dict
+    eeg_time::Vector{Float64}
     eeg_signals::Matrix
 end
 
@@ -38,6 +40,7 @@ export eeg_normalize_minmax
 export eeg_get_channel
 export eeg_cov
 export eeg_cor
+export eeg_upsample
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -67,6 +70,7 @@ export signal_normalize_minmax
 export signal_cov
 export signal_cor
 export signal_add_noise
+export signal_upsample
 
 include("misc.jl")
 export cart2pol

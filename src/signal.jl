@@ -1021,7 +1021,7 @@ function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normaliz
     result = cov(signal1 * signal2')
 
     # divide so that components are centered at (0, 0)
-    normalize == true && result = result ./ length(signal1)
+    normalize == true && (result = result ./ length(signal1))
 
     return result
 end
@@ -1066,6 +1066,10 @@ end
     signal_add_noise(signal)
 
 Add random noise to the `signal` vector.
+
+# Arguments
+
+- `signal::Vector{Float64}` - the signal vector
 """
 signal_add_noise(x::Vector{Float64}) = x .+ mean(x) .* rand(length(x))
 
@@ -1073,6 +1077,10 @@ signal_add_noise(x::Vector{Float64}) = x .+ mean(x) .* rand(length(x))
     signal_add_noise(signal)
 
 Add random noise to each the `signal` matrix channel.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal matrix
 """
 function signal_add_noise(signal::Matrix{Float64})
     channels_no = size(signal, 1)
@@ -1083,4 +1091,52 @@ function signal_add_noise(signal::Matrix{Float64})
     end
 
     return signal_noise
+end
+
+"""
+    signal_upsample(signal, t, new_sr)
+
+Upsamples the`signal` vector to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::Vector{Float64}` - the signal vector
+- `t::Vector{Float64}` - the time vector
+- `new_sr::Int64` - new sampling rate
+"""
+function signal_upsample(signal::Vector{Float64}, t, new_sr::Int64)
+    # sampling interval
+    dt = t[2] - t[1]
+    # sampling rate
+    sr = round(1 / dt)
+    new_sr < sr && throw(ArgumentError("New sampling rate mu be larger than signal sampling rate."))
+    new_sr = sr && return(signal)
+
+    # interpolate
+    signal_interpolation = CubicSplineInterpolation(t, signal)
+    t = 0:1/new_sr:t[end]
+    signal_upsampled = signal_interpolation(t)
+
+    return signal_upsampled
+end
+
+"""
+    signal_upsample(signal, t, new_sr)
+
+Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal vector
+- `t::Vector{Float64}` - the time vector
+- `new_sr::Int64` - new sampling rate
+"""
+function signal_upsample(signal::Matrix{Float64}, t, new_sr::Int64)
+    channels_no = size(signal, 1)
+
+    for idx in 1:channels_no
+        signal_upsampled[idx, :] = signal_upsample(signal[idx, :], t=t, new_sr=new_sr)
+    end
+
+    return signal_upsampled
 end

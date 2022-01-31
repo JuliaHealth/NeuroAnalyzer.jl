@@ -575,3 +575,25 @@ function eeg_cov(eeg::EEG)
     result = eeg_cor(eeg.eeg_signals)
     return eeg_new
 end
+
+"""
+    eeg_upsample(eeg; new_sr)
+
+Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::Matrix{Float64}` - the signal vector
+- `t::Vector{Float64}` - the time vector
+- `new_sr::Int64` - new sampling rate
+"""
+function eeg_upsample(eeg::EEG, new_sr)
+    signal_upsampled = signal_upsample(eeg.eeg_signals, eeg.eeg_time, new_sr)
+
+    # create new dataset
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, signal_upsampled)
+    # add entry to :history field
+    push!(eeg_new.eeg_object_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
+
+    return eeg_new
+end
