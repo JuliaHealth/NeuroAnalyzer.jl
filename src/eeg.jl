@@ -220,7 +220,7 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_la
     plot!(p, nose, fill=nothing, label="")
     plot!(p, ear_l, fill=nothing, label="")
     plot!(p, ear_r, fill=nothing, label="")
-    if add_labels=true
+    if add_labels == true
         plot!(p, annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
         plot!(p, annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
         plot!(p, annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
