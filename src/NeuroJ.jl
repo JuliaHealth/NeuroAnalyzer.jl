@@ -55,8 +55,8 @@ export signal_make_spectrum
 export signal_mean
 export signal_plot
 export signal_spectrum
-export signal_rereference_channel
-export signal_plot_timefreq
+export signal_reference_channel
+export signal_reference_car
 export signal_taper
 export signal_demean
 export signal_normalize_mean

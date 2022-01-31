@@ -15,7 +15,7 @@ signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end
 Returns the derivative of each the `signal` matrix channels with length same as the signal.
 
 # Arguments
-- `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time).
+- `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time)
 """
 function signal_derivative(signal::Matrix{Float64})
     channels_no = size(signal, 1)
@@ -52,7 +52,7 @@ Calculates total power for each the `signal` matrix channels.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time).
+- `signal::Matrix{Float64}` - the signal matrix to analyze (rows: channels, columns: time)
 """
 function signal_total_power(signal::Matrix{Float64}, fs)
     channels_no = size(signal, 1)
@@ -210,8 +210,8 @@ Calculates mean, std and 95% confidence interval for each the `signal` matrix ch
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix to analyze
-- `n::Int` - number of bootstraps.
-- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping.
+- `n::Int` - number of bootstraps
+- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 """
 function signal_ci95(signal::Matrix{Float64}; n=3, method=:normal)
     method in [:normal, :boot] || throw(ArgumentError("""Method must be ":normal" or ":boot"."""))
@@ -386,8 +386,8 @@ Calculates autocovariance of each the `signal` matrix channels.
 
 - `signal::Matrix{Float64}` - the signal vector to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signal prior to analysis
-- `normalize::Bool[true, false]` - normalize autocovariance
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize autocovariance
 """
 function signal_autocov(signal::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
     signal_lags = collect(-lag:lag)
@@ -414,8 +414,8 @@ Calculates cross-covariance between `signal1` and `signal2` vectors.
 - `signal1::Vector{Float64}` - the signal 1 vector to analyze
 - `signal2::Vector{Float64}` - the signal 2 vector to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signal prior to analysis
-- `normalize::Bool[true, false]` - normalize cross-covariance
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize cross-covariance
 """
 function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag=1, remove_dc=false, normalize=false)
     length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
@@ -467,8 +467,8 @@ Calculates cross-covariance between same channels in `signal1` and `signal2` mat
 - `signal1::Matrix{Float64}` - the signal 1 matrix to analyze
 - `signal2::Matrix{Float64}` - the signal 2 matrix to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean signal prior to analysis
-- `normalize::Bool[true, false]` - normalize cross-covariance
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize cross-covariance
 """
 function signal_crosscov(signal1::Matrix{Float64}, signal2::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
     size(signal1) != size(signal2) && throw(ArgumentError("Both matrices must be of the same as size."))
@@ -498,8 +498,8 @@ signal_1_channel_1 vs signal_2_channel_1, signal_1_channel_1 vs signal_2_channel
 
 - `signal::Matrix{Float64}` - the signal matrix to analyze
 - `lag::Int` - lags range is `-lag:lag`
-- `remove_dc::Bool[true, false]` - demean `signal` prior to analysis
-- `normalize::Bool[true, false]` - normalize cross-covariance
+- `remove_dc::Bool` - demean `signal` prior to analysis
+- `normalize::Bool` - normalize cross-covariance
 """
 function signal_crosscov(signal::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
     signal_lags = collect(-lag:lag)
@@ -525,7 +525,7 @@ function signal_crosscov(signal::Matrix{Float64}; lag=1, remove_dc=false, normal
 end
 
 """
-    signal_spectrum(signal, pad=0, remove_dc=false, detrend=false, taper=nothing)
+    signal_spectrum(signal; pad=0)
 
 Calculates FFT, amplitudes, powers and phases of the `signal` vector.
 
@@ -533,18 +533,9 @@ Calculates FFT, amplitudes, powers and phases of the `signal` vector.
 
 - `signal::Vector{Float64}` - the signal vector to analyze
 - `pad::Int` - pad the `signal` with `pad` zeros
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_spectrum(signal::Vector{Float64}; pad::Int=0, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_spectrum(signal::Vector{Float64}; pad=0)
     pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
-
-    remove_dc == true && (signal = demean(signal))
-    detrend == true && (signal = signal_detrend(signal))
-    derivative == true && (signal = signal_derivative(signal))
-    taper !== nothing && (signal = signal .* taper)
 
     if pad == 0
         signal_fft = fft(signal)
@@ -568,7 +559,7 @@ function signal_spectrum(signal::Vector{Float64}; pad::Int=0, remove_dc=false, d
 end
 
 """
-    signal_spectrum(signal, pad=0, remove_dc=false, detrend=false, taper=nothing)
+    signal_spectrum(signal; pad=0)
 
 Calculates FFT, amplitudes, powers and phases for each channel of the `signal` matrix.
 
@@ -576,12 +567,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `signal` m
 
 - `signal::Vector{Float64}` - the signal matrix to analyze
 - `pad::Int` - pad the `signal` with `pad` zeros
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_spectrum(signal::Matrix{Float64}; pad::Int=0, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_spectrum(signal::Matrix{Float64}; pad=0)
     pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
 
     channels_no = size(signal, 1)
@@ -593,19 +580,14 @@ function signal_spectrum(signal::Matrix{Float64}; pad::Int=0, remove_dc=false, d
 
     for idx in 1:channels_no
         signal_fft[idx, :], signal_amplitudes[idx, :], signal_powers[idx, :], signal_phases[idx, :] = 
-        signal_spectrum(signal[idx, :],
-                        pad=pad,
-                        remove_dc=remove_dc,
-                        detrend=detrend,
-                        derivative=derivative,
-                        taper=taper)
+        signal_spectrum(signal[idx, :], pad=pad)
     end
 
     return signal_fft, signal_amplitudes, signal_powers, signal_phases
 end
 
 """
-    signal_epoch(signal; epoch_no, epoch_len, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+    signal_epoch(signal; epoch_no, epoch_len, average=true)
 
 Splits `signal` vector into epochs.
 
@@ -615,12 +597,8 @@ Splits `signal` vector into epochs.
 - `epoch_no::Int` - number of epochs
 - `epoch_len::Int` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
-function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothing, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -631,11 +609,6 @@ function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothi
     end
 
     epochs = zeros(epoch_no, epoch_len)
-
-    remove_dc == true && (signal = demean(signal))
-    detrend == true && (signal = signal_detrend(signal))
-    derivative == true && (signal = signal_derivative(signal))
-    taper !== nothing && (signal = signal .* taper)
 
     idx1 = 1
     for idx2 in 1:epoch_len:(epoch_no * epoch_len - 1)
@@ -651,7 +624,7 @@ function signal_epoch(signal::Vector{Float64}; epoch_no=nothing, epoch_len=nothi
 end
 
 """
-    signal_epoch(signal, n; average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
+    signal_epoch(signal, n; average=true)
 
 Splits `signal` matrix into epochs.
 
@@ -661,10 +634,6 @@ Splits `signal` matrix into epochs.
 - `epoch_no::Int` - number of epochs
 - `epoch_len::Int` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
-- `remove_dc::Bool` - demean the `signal` prior to calculations
-- `detrend::Bool` - detrend the `signal` prior to calculations
-- `derivative::Bool` - derivate `signal` prior to calculations
-- `taper::Bool` - taper the `signal` with `taper`-window prior to calculations
 """
 function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, average=true, remove_dc=false, detrend=false, derivative=false, taper=nothing)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
@@ -679,11 +648,6 @@ function signal_epoch(signal::Matrix; epoch_no=nothing, epoch_len=nothing, avera
     end
 
     epochs = zeros(channels_no, epoch_len, epoch_no)
-
-    remove_dc == true && (signal = demean(signal))
-    detrend == true && (signal = signal_detrend(signal))
-    derivative == true && (signal = signal_derivative(signal))
-    taper !== nothing && (signal = signal .* taper)
 
     idx1 = 1
     for idx2 in 1:epoch_len:(epoch_no * epoch_len - 1)
@@ -870,22 +834,22 @@ function signal_drop_channel(signal::Matrix, channels)
 end
 
 """
-    signal_rereference_channel(signal, reference)
+    signal_reference_channel(signal, reference)
 
 Re-references channels of the `signal` matrix to specific signal channel.
 
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix
-- `reference::Float64` - index of channels used as reference; if multiple channels are specififed, their average is used as the reference
+- `reference::Float64` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
-function signal_rereference_channel(signal::Matrix, reference_idx)
+function signal_reference_channel(signal::Matrix, reference_idx)
     if typeof(reference_idx) == UnitRange{Int64}
         reference_idx = collect(reference_idx)
     end
 
     channels_no = size(signal, 1)
-    signal_rereferenced = zeros(size(signal))
+    signal_referenced = zeros(size(signal))
 
     channels_list = collect(1:channels_no)
     for idx in 1:length(reference_idx)
@@ -897,14 +861,14 @@ function signal_rereference_channel(signal::Matrix, reference_idx)
     reference_channel = vec(mean(signal[reference_idx, :], dims=1))
 
     for idx in 1:channels_no
-        signal_rereferenced[idx, :] = signal[idx, :] .- reference_channel
+        signal_referenced[idx, :] = signal[idx, :] .- reference_channel
     end
 
-    return signal_rereferenced
+    return signal_referenced
 end
 
 """
-    signal_rereference_channel(signal)
+    signal_reference_channel(signal)
 
 Re-references channels of the `signal` matrix to common average reference.
 
@@ -912,16 +876,16 @@ Re-references channels of the `signal` matrix to common average reference.
 
 - `signal::Matrix{Float64}` - the signal matrix
 """
-function signal_rereference_channel(signal::Matrix)
+function signal_reference_car(signal::Matrix)
     channels_no = size(signal, 1)
 
     reference_channel = vec(mean(signal, dims=1))
 
     for idx in 1:channels_no
-        signal_rereferenced[idx, :] = signal[idx, :] .- reference_channel
+        signal_referenced[idx, :] = signal[idx, :] .- reference_channel
     end
 
-    return signal_rereferenced
+    return signal_referenced
 end
 
 """
@@ -1024,7 +988,6 @@ Normalize (to 0…1) `signal` vector.
 """
 singla_normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
 
-
 """
     signal_normalize_minmax(signal)
 
@@ -1039,27 +1002,4 @@ function signal_normalize_minmax(signal::Matrix{Float64})
     end
 
     return signal_normalized
-end
-
-function signal_plot_timefreq(signal, t, t_res, channel, figure="")
-    if typeof(t) == UnitRange{Int64}
-        t = float(collect(t))
-    end
-    time_segments = length(t) ÷ t_res
-
-    hz, nyquist_freq = frequencies(t)
-    signal_fft, signal_amplitudes, signal_powers, signal_phases = signal_spectrum(signal[channel, :])
-
-    timefreq = zeros(length(hz), time_segments)
-    for idx in 1:length(time_segments)
-        timefreq = fft per time_segments
-    end
-    p1 = plot(hz, signal_amplitudes[1:length(hz)])
-    p2 = plot(hz, signal_powers[1:length(hz)])
-    p = plot(p1, p2, layout=(1, 2))
-
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
-
-    return p
 end
