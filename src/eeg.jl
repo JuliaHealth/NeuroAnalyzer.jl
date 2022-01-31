@@ -449,7 +449,7 @@ Removes mean value (DC offset) for each the `eeg` channels.
 - `eeg::EEG` - EEG object
 """
 function eeg_demean(eeg::EEG)
-    signal_demeaned = signal_demean(eeg.eeg_signals, taper)
+    signal_demeaned = signal_demean(eeg.eeg_signals)
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_demeaned)
@@ -469,10 +469,10 @@ Normalize (scales around the mean) each the `eeg` channels.
 - `eeg::EEG` - EEG object
 """
 function eeg_normalize_mean(eeg::EEG)
-    signal_normalized = signal_normalize_mean(eeg.eeg_signals, taper)
+    signal_normalized = signal_normalize_mean(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_tapered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_normalized)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_normalize_mean(EEG)")
 
@@ -489,10 +489,10 @@ Normalize (to 0…1) each the `eeg` channels.
 - `eeg::EEG` - EEG object
 """
 function eeg_normalize_minmax(eeg::EEG)
-    signal_normalized = signal_normalize_minmax(eeg.eeg_signals, taper)
+    signal_normalized = signal_normalize_minmax(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_tapered)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg.eeg_time, signal_normalized)
     # add entry to :history field
     push!(eeg_new.eeg_object_header[:history], "eeg_normalize_minmax(EEG)")
 
@@ -587,7 +587,7 @@ Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
 - `signal::Matrix{Float64}` - the signal vector
 - `new_sr::Int64` - new sampling rate
 """
-function eeg_upsample(eeg::EEG; new_sr)
+function eeg_upsample(eeg::EEG; new_sr::Int64)
     signal_upsampled = signal_upsample(eeg.eeg_signals, t=eeg.eeg_time, new_sr=new_sr)
 
     # create new dataset

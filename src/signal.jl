@@ -986,7 +986,7 @@ end
 
 Normalize (to 0…1) `signal` vector.
 """
-singla_normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
+signal_normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
 
 """
     signal_normalize_minmax(signal)
@@ -998,7 +998,7 @@ function signal_normalize_minmax(signal::Matrix{Float64})
     signal_normalized = zeros(size(signal))
 
     for idx in 1:channels_no
-        signal_normalized[idx, :] = singla_normalize_minmax(signal[idx, :])
+        signal_normalized[idx, :] = signal_normalize_minmax(signal[idx, :])
     end
 
     return signal_normalized
@@ -1104,7 +1104,7 @@ Upsamples the`signal` vector to `new_sr` sampling frequency.
 - `t::Vector{Float64}` - the time vector
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Vector{Float64}; t, new_sr::Int64)
+function signal_upsample(signal::Vector{Float64}; t::Vector{Float64}, new_sr::Int64)
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
@@ -1131,7 +1131,7 @@ Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 - `t::Vector{Float64}` - the time vector
 - `new_sr::Int64` - new sampling rate
 """
-function signal_upsample(signal::Matrix{Float64}; t, new_sr::Int64)
+function signal_upsample(signal::Matrix{Float64}; t::Vector{Float64}, new_sr::Int64)
     channels_no = size(signal, 1)
 
     for idx in 1:channels_no
