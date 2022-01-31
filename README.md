@@ -27,6 +27,7 @@ EEG:
 - import channel location files
 - channel locations data to eeg_signal_header
 - epochs
+- eeg_save() check for file overwrite
 
 ## Contributing
 

@@ -76,10 +76,14 @@ eeg_derivative(edf)
 eeg_detrend(edf)
 
 # total power
-eeg_total_power(edf)
+tbp = eeg_total_power(edf)
+bar(edf.eeg_signal_header[:labels],
+    tbp,
+    xticks=(1:length(edf.eeg_signal_header[:labels]),
+    edf.eeg_signal_header[:labels]))
 
 # alpha power
-eeg_band_power(eeg, 8, 12)
+eeg_band_power(edf, 8, 12)
 
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
