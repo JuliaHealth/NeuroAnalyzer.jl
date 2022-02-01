@@ -748,16 +748,16 @@ Plots `signal` against time vector `t`.
 
 # Arguments
 
-- `t::Vector{Float64}` - the time vector
+- `t::Union{Vector{Float64}, UnitRange{Int64}}` - the time vector
 - `signal::Vector{Float64}` - the signal vector
-- `offset::Float64` - displayed segment offset in samples
+- `offset::Int64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
 - `yamp::Float64` - y-axis limits (-yamp:yamp)
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, figure::String="")
+function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Float64=nothing, figure::String="")
 
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
