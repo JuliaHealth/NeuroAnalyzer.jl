@@ -943,6 +943,7 @@ function signal_taper(signal::Array{Float64, 3}, taper::Vector)
 
     channels_no = size(signal, 1)
     signal_epochs = size(signal, 3)
+    signal_tapered = zeros(size(signal))
 
     for epoch in 1:signal_epochs
         for idx in 1:channels_no
@@ -1092,8 +1093,7 @@ Calculates covariance between all channels of the `signal` matrix.
 """
 function signal_cov(signal::Array{Float64, 3}; normalize=true)
     signal_epochs = size(signal, 3)
-
-    cov_mat = zeros(size(signal))
+    cov_mat = zeros(size(signal, 1), size(signal, 1), signal_epochs)
 
     for epoch in 1:signal_epochs
         # channels-vs-channels
@@ -1117,8 +1117,7 @@ Calculates correlation coefficients between all channels of the `signal` matrix.
 """
 function signal_cor(signal::Array{Float64, 3})
     signal_epochs = size(signal, 3)
-
-    cor_mat = zeros(size(signal))
+    cor_mat = zeros(size(signal, 1), size(signal, 1), signal_epochs)
 
     for epoch in 1:signal_epochs
         # channels-vs-channels

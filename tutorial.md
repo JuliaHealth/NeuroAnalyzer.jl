@@ -13,9 +13,10 @@ eeg_info(edf)
 edf.eeg_header[:sampling_rate][1]
 edf.eeg_header[:eeg_duration_seconds]
 edf.eeg_header[:eeg_duration_samples]
+eeg_samplingrate(edf)
 
 # show labels
-eeg_show_labels(edf)
+eeg_labels(edf)
 
 # save
 eeg_save(edf, "test.bin")
@@ -29,6 +30,9 @@ e10 = eeg_epochs(edf, epochs_no=10)
 
 # split into 2-second epochs, average
 e2avg = eeg_epochs(edf, epochs_len=512, average=true)
+
+# get 1st epoch
+e1 = eeg_get_epoch(edf, 1)
 
 # get channel index
 eeg_get_channel_idx(edf, "Cz")
@@ -76,11 +80,15 @@ eeg_normalize_minmax(edf)
 # remove DC
 eeg_demean(edf)
 
+# taper with
+h = hann(edf.eeg_header[:eeg_duration_samples])
+eeg_taper(edf, h)
+
 # derivative
 eeg_derivative(edf)
 
 # detrend
-eeg_detrend(edf)
+eeg_detrend(edf, type=:linear)
 
 # total power
 tbp = eeg_total_power(e2avg)

@@ -198,7 +198,7 @@ function eeg_make_spectrum(eeg)
 end
 
 """
-    eeg_detrend(eeg, type=:linear)
+    eeg_detrend(eeg; type=:linear)
 
 Removes linear trend for each the `eeg` channels.
 
@@ -209,7 +209,7 @@ Removes linear trend for each the `eeg` channels.
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
 """
-function eeg_detrend(eeg, type=:linear)
+function eeg_detrend(eeg::EEG; type::Symbol=:linear)
     signal_det = signal_detrend(eeg.eeg_signals, type=type)
 
     # create new dataset
@@ -232,7 +232,7 @@ Draws head over a topographical plot `p`.
 - `loc_y::Vector{Float64}` - vector of y electrode position
 - `add_labels::Bool` - add text labels to the plot
 """
-function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels=true)
+function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels::Bool=true)
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 1.1
@@ -254,16 +254,19 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_la
 end
 
 """
-    eeg_reference_channel(eeg, reference)
+    eeg_reference_channel(eeg, reference_idx)
 
-References the `eeg` channels to specific signal channel.
+References the `eeg` channels to specific signal channel `reference_idx`.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `reference::Float64` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `reference_idx::Union{Int64, Vector{Int64}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
-function eeg_reference_channel(eeg::EEG, reference_idx)
+function eeg_reference_channel(eeg::EEG, reference_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
+    if typeof(reference_idx) == UnitRange{Int64}
+        reference_idx = collect(reference_idx)
+    end
     signal_referenced = signal_reference_channel(eeg.eeg_signals, reference_idx)
     eeg.eeg_header[:reference_type] = "common reference"
     eeg.eeg_header[:reference_channel] = reference_idx
@@ -307,8 +310,9 @@ Saves the `eeg` object to `file_name` file (HDF5-based).
 
 - `eeg::EEG` - EEG object
 - `file_name::String` - file name
+- `overwrite::Bool`
 """
-function eeg_save(eeg::EEG, file_name; overwrite=false)
+function eeg_save(eeg::EEG, file_name::Strin; overwrite::Bool=false)
     if isfile(file_name) & overwrite == false
         throw(ArgumentError("""File $file_name already exists. To overwrite, add "overwrite=true" argument."""))
     end
@@ -324,7 +328,7 @@ Loads the `eeg` object from `file_name` file (HDF5-based).
 
 - `file_name::String` - file name
 """
-function eeg_load(file_name)
+function eeg_load(file_name::Strin)
     eeg = load_object(file_name)
     return eeg
 end
@@ -736,7 +740,7 @@ function eeg_epochs2(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_
     eeg_new.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
 
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epochs_no=$epochs_no, epochs_len=$epochs_len, average=$average")
+    push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epochs_no=$epochs_no, epochs_len=$epochs_len, average=$average)")
 
     return eeg_new
 end
@@ -761,7 +765,7 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
     eeg_new.eeg_header[:epochs_no] = 1
 
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch_idx=$epoch_idx")
+    push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch_idx=$epoch_idx)")
 
     return eeg_new
 end
