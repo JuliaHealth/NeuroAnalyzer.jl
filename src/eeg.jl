@@ -16,7 +16,7 @@ Plots `eeg` channels.
 - `ylabel::String` - y-axis lable
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
+function eeg_plot2(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -33,6 +33,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     # default time is 10 seconds or epoch_duration_seconds
     len > eeg.eeg_header[:epoch_duration_seconds] && (len = eeg.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect(0:1/fs:len))
+    t = t[1:(end - 2)]
 
     p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize)
 

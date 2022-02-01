@@ -809,13 +809,14 @@ function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix
 
     # reverse so 1st channel is on top
     signal = reverse(signal[:, :], dims = 1)
+    new_signal = zeros(size(signal))
 
     if normalize == true
         # normalize and shift so all channels are visible
         variances = var(signal[:, :], dims=2)
         mean_variance = mean(variances)
         for idx in 1:channels_no
-            signal[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
+            new_signal[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
         end
     end
 
