@@ -533,7 +533,7 @@ function eeg_get_channel(eeg::EEG, channel_name::String)
     if channel_idx == nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
-    channel = eeg.eeg_signals[channel_idx, :]
+    channel = eeg.eeg_signals[channel_idx, :, :]
 
     return channel
 end
@@ -552,11 +552,8 @@ function eeg_get_channel(eeg::EEG, channel_idx::Int64)
     labels = eeg.eeg_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
-    else
-        labels[channel_idx] = new_channel_name
     end
-    eeg_header[:labels] = labels
-    channel = eeg.eeg_signals[channel_idx, :]
+    channel = eeg.eeg_signals[channel_idx, :, :]
 
     return channel
 end
@@ -571,8 +568,10 @@ Calculates covariance between all channels of the `eeg` object.
 - `eeg::EEG` - EEG object
 """
 function eeg_cov(eeg::EEG; normalize=true)
-    result = signal_cov(eeg.eeg_signals, normalize=normalize)
-    return result
+    cov_mat = signal_cov(eeg.eeg_signals, normalize=normalize)
+    size(cov_mat, 3) == 1 && (cov_mat = reshape(cov_mat, size(cov_mat, 1), size(cov_mat, 2)))
+
+    return cov_mat
 end
 
 """
@@ -585,8 +584,10 @@ Calculates correlation coefficients between all channels of the `eeg` object.
 - `eeg::EEG` - EEG object
 """
 function eeg_cor(eeg::EEG)
-    result = signal_cor(eeg.eeg_signals)
-    return result
+    cor_mat = signal_cor(eeg.eeg_signals)
+    size(cor_mat, 3) == 1 && (cor_mat = reshape(cor_mat, size(cor_mat, 1), size(cor_mat, 2)))
+
+    return cor_mat
 end
 
 """
