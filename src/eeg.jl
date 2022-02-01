@@ -32,7 +32,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}}=nothing,
 
     # default time is 10 seconds or epoch_duration_seconds
     len > eeg.eeg_object_header[:epoch_duration_seconds] && len = eeg.eeg_object_header[:epoch_duration_seconds]
-    if t === nothing && (t = collect(0:1/fs:len))
+    t === nothing && (t = collect(0:1/fs:len))
 
     p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
 
