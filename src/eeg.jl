@@ -654,21 +654,21 @@ function eeg_info(eeg::EEG)
     println("Epoch length (samples): $(eeg.eeg_header[:epoch_duration_samples])")
     println("Epoch length (seconds): $(eeg.eeg_header[:epoch_duration_seconds])")
     if eeg.eeg_header[:reference_type] == ""
-        println("    Reference type: unknown")
+        println("        Reference type: unknown")
     elseif eeg.eeg_header[:reference_type] == "common reference"
-        println("    Reference type: $(eeg.eeg_header[:reference_type]), channel: $(eeg.eeg_header[:reference_channel])")
+        println("        Reference type: $(eeg.eeg_header[:reference_type]), channel: $(eeg.eeg_header[:reference_channel])")
     else
         println("        Reference type: $(eeg.eeg_header[:reference_type])")
     end
     if length(eeg.eeg_header[:labels]) == 0
-        println("                    Labels: no")
+        println("                Labels: no")
     else
-        println("                    Labels: yes")
+        println("                Labels: yes")
     end
     if length(eeg.eeg_header[:channel_locations]) == false
-        println("         Channel locations: no")
+        println("     Channel locations: no")
     else
-        println("         Channel locations: yes")
+        println("     Channel locations: yes")
     end
 end
 
