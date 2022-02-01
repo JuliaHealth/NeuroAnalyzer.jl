@@ -111,8 +111,10 @@ function signal_band_power(signal::Matrix{Float64}; fs::Int64, f1::Union{Int64, 
     channels_no = size(signal, 1)
     sbp = zeros(channels_no, signal_epochs)
 
-    for idx in 1:channels_no
-        sbp[idx epoch] = signal_band_power(signal[idx, : epoch], fs=fs, f1=f1, f2=f2)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
+        end
     end
 
     return sbp
