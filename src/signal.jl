@@ -66,7 +66,7 @@ function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
 
     for epoch in 1:signal_epochs
         for idx in 1:channels_no
-            stp[idx, epoch] = signal_total_power(signal[idx, :, epoch]; fs=fs)
+            stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
         end
     end
 
