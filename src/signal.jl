@@ -784,7 +784,7 @@ function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector
 end
 
 """
-    signal_plot(t, signal; epoch=1, offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -809,21 +809,23 @@ function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix
 
     # reverse so 1st channel is on top
     signal = reverse(signal[:, :], dims = 1)
-    new_signal = zeros(size(signal))
+    signal_normalized = zeros(size(signal))
 
     if normalize == true
         # normalize and shift so all channels are visible
-        variances = var(signal[:, :], dims=2)
+        variances = var(signal, dims=2)
         mean_variance = mean(variances)
         for idx in 1:channels_no
-            new_signal[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
+            signal_normalized[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
         end
+    else
+        signal_normalized = signal
     end
 
     # plot channels
     p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
     for idx in 1:channels_no
-        p = plot!(t, signal[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
+        p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
     return p

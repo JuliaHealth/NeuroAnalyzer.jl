@@ -35,7 +35,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     t === nothing && (t = collect(0:1/fs:len))
     t = t[1:(end - 2)]
 
-    p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize)
+    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel)
 
     plot(p)
 
