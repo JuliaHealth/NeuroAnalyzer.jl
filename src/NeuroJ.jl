@@ -11,8 +11,7 @@ using Simpson
 using StatsKit
 
 struct EEG
-    eeg_object_header::Dict
-    eeg_signal_header::Dict
+    eeg_header::Dict
     eeg_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
 end

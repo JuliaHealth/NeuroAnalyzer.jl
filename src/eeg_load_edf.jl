@@ -160,7 +160,40 @@ function eeg_load_edf(in_file::String, read_annotations::Bool=true, header_only:
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(in_file) / 1024^2, digits=2)
 
-    eeg_header = Dict(:version => version, :eeg_filename => in_file, :eeg_filesize_mb => eeg_filesize_mb, :eeg_filetype => eeg_filetype, :patient => patient, :recording => recording, :recording_date => recording_date, :recording_time => recording_time, :data_records => data_records, :data_records_duration => data_records_duration, :channels_no => channels_no, :reference_type => "", :reference_channel => [], :channel_locations => false, :xlocs => [], :ylocs => [], :history => Vector{String}(), :eeg_duration_samples => eeg_duration_samples, :eeg_duration_seconds => eeg_duration_seconds, :epochs_no => 1, :epoch_duration_samples => eeg_duration_samples, :epoch_duration_seconds => eeg_duration_seconds, :labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)
+    eeg_header = Dict(:version => version,
+                      :eeg_filename => in_file,
+                      :eeg_filesize_mb => eeg_filesize_mb,
+                      :eeg_filetype => eeg_filetype,
+                      :patient => patient,
+                      :recording => recording,
+                      :recording_date => recording_date,
+                      :recording_time => recording_time,
+                      :data_records => data_records,
+                      :data_records_duration => data_records_duration,
+                      :channels_no => channels_no,
+                      :reference_type => "",
+                      :reference_channel => [],
+                      :channel_locations => false,
+                      :xlocs => [],
+                      :ylocs => [],
+                      :history => Vector{String}(),
+                      :eeg_duration_samples => eeg_duration_samples,
+                      :eeg_duration_seconds => eeg_duration_seconds,
+                      :epochs_no => 1,
+                      :epoch_duration_samples => eeg_duration_samples,
+                      :epoch_duration_seconds => eeg_duration_seconds,
+                      :labels => labels,
+                      :transducers => transducers,
+                      :physical_dimension => physical_dimension,
+                      :physical_minimum => physical_minimum,
+                      :physical_maximum => physical_maximum,
+                      :digital_minimum => digital_minimum,
+                      :digital_maximum => digital_maximum,
+                      :prefiltering => prefiltering,
+                      :samples_per_datarecord => samples_per_datarecord,
+                      :sampling_rate => sampling_rate,
+                      :gain => gain)
+
     eeg = EEG(eeg_header, eeg_time, eeg_signals)
 
     return eeg

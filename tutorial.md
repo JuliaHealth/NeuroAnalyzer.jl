@@ -5,7 +5,17 @@
 ```
 using NeuroJ
 
+# load EDF file
 edf = eeg_load_edf("eeg-test.edf")
+
+# show properties
+eeg_info(edf)
+edf.eeg_header[:sampling_rate][1]
+edf.eeg_header[:eeg_duration_seconds]
+edf.eeg_header[:eeg_duration_samples]
+
+# show labels
+edf.eeg_header[:labels]
 
 # save
 eeg_save(edf, "test.bin")
@@ -13,24 +23,13 @@ eeg_save(edf, "test.bin")
 # load
 edf = eeg_load("test.bin")
 
-# show info
-eeg_info(edf)
-
 # split into 10 epochs
 eeg_epochs(edf, epochs_no=10)
 
-# 2-second epochs
+# split into 2-second epochs
 eeg_epochs(edf, epochs_len=2 * eeg_header[:sampling_rate][1], average=true)
 
-# show labels
-edf.eeg_header[:labels]
-
-# show properties
-edf.eeg_header[:sampling_rate][1]
-edf.eeg_header[:eeg_duration_seconds]
-edf.eeg_header[:eeg_duration_samples]
-
-# channel index
+# get channel index
 eeg_get_channel_idx(edf, "Cz")
 eeg_get_channel_name(edf, 18)
 
@@ -53,8 +52,6 @@ edf = eeg_drop_channel(edf, 10)
 # show processing history
 eeg_show_processing_history(edf)
 
-# show sampling rate
-edf.eeg_header[:sampling_rate][1]
 
 # upsample
 eeg_upsample(edf, new_sr=512)
