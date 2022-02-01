@@ -25,7 +25,6 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ## TO DO
 
 EEG:
-- fix history storing - use deepcopy()
 - fix: get_epoch()
 - add re-referencing methods
 - import channel location files

@@ -24,7 +24,6 @@ export eeg_filter_butter
 export eeg_plot
 export eeg_total_power
 export eeg_band_power
-export eeg_make_spectrum
 export eeg_reference_channel
 export eeg_reference_car
 export eeg_load

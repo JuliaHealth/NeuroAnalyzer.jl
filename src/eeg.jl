@@ -66,9 +66,9 @@ function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRa
         throw(ArgumentError("Channel index does not match signal channels."))
     end
 
-    eeg_header = eeg.eeg_header
-    eeg_time = eeg.eeg_time
-    eeg_signals = eeg.eeg_signals
+    eeg_header = deepcopy(eeg.eeg_header)
+    eeg_time = deepcopy(eeg.eeg_time)
+    eeg_signals = deepcopy(eeg.eeg_signals)
 
     channels_no = eeg_header[:channels_no]
 
@@ -118,12 +118,18 @@ Filters `eeg` channels using Butterworth filter.
 """
 function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
     fs = eeg.eeg_header[:sampling_rate][1]
-    signal_filtered = signal_filter_butter(eeg.eeg_signals, filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
+
+    signal_filtered = signal_filter_butter(eeg.eeg_signals,
+                                           filter_type=filter_type,
+                                           cutoff=cutoff,
+                                           fs=fs,
+                                           poles=poles)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_filtered)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_filter_butter(EEG, filter_type=$filter_type, cutoff=$cutoff, poles=$poles)")
+    push!(eeg_new.eeg_header[:history],
+          "eeg_filter_butter(EEG, filter_type=$filter_type, cutoff=$cutoff, poles=$poles)")
 
     return eeg_new
 end
@@ -141,7 +147,7 @@ function eeg_derivative(eeg)
     signal_der = signal_derivative(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_der)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_der)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG)")
 
@@ -160,6 +166,7 @@ Calculates total power for each the `eeg` channels.
 function eeg_total_power(eeg)
     fs = eeg.eeg_header[:sampling_rate][1]
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
+    size(stp, 3) = 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2), size(stp, 3)))
 
     return stp
 end
@@ -178,24 +185,9 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `e
 function eeg_band_power(eeg; f1, f2)
     fs = eeg.eeg_header[:sampling_rate][1]
     sbp = signal_band_power(eeg.eeg_signals, fs=fs, f1=f1, f2=f2)
+    size(sbp, 3) = 1 && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2), size(sbp, 3)))
 
     return sbp
-end
-
-"""
-    eeg_make_spectrum(eeg)
-
-Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
-
-# Arguments
-
-- `eeg::EEG` - EEG object
-"""
-function eeg_make_spectrum(eeg)
-    fs = eeg.eeg_header[:sampling_rate][1]
-    signal_fft, signal_sf = signal_make_spectrum(eeg.eeg_signals, fs)
-
-    return signal_fft, signal_sf
 end
 
 """
@@ -214,7 +206,7 @@ function eeg_detrend(eeg::EEG; type::Symbol=:linear)
     signal_det = signal_detrend(eeg.eeg_signals, type=type)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_det)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_det)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, type=$type)")
 
@@ -269,11 +261,11 @@ function eeg_reference_channel(eeg::EEG, reference_idx::Union{Int64, Vector{Int6
         reference_idx = collect(reference_idx)
     end
     signal_referenced = signal_reference_channel(eeg.eeg_signals, reference_idx)
-    eeg.eeg_header[:reference_type] = "common reference"
-    eeg.eeg_header[:reference_channel] = reference_idx
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_referenced)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_referenced)
+    eeg_new.eeg_header[:reference_type] = "common reference"
+    eeg_new.eeg_header[:reference_channel] = reference_idx
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, reference_idx=$reference_idx)")
 
@@ -291,11 +283,11 @@ References the `eeg` channels to common average reference.
 """
 function eeg_reference_car(eeg::EEG)
     signal_referenced = signal_reference_car(eeg.eeg_signals)
-    eeg.eeg_header[:reference_type] = "CAR"
-    eeg.eeg_header[:reference_channel] = []
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_referenced)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_referenced)
+    eeg_new.eeg_header[:reference_type] = "CAR"
+    eeg_new.eeg_header[:reference_channel] = []
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
 
@@ -403,7 +395,7 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
     end
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, eeg.eeg_signals)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))
     eeg_new.eeg_header[:labels] = labels
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, old_channel_name=$old_channel_name, new_channel_name=$new_channel_name)")
@@ -431,7 +423,7 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_channel_name::Stri
     end
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, eeg.eeg_signals)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))
     eeg_new.eeg_header[:labels] = labels
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
@@ -453,7 +445,7 @@ function eeg_taper(eeg::EEG, taper::Vector)
     signal_tapered = signal_taper(eeg.eeg_signals, taper)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_tapered)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_tapered)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
 
@@ -473,7 +465,7 @@ function eeg_demean(eeg::EEG)
     signal_demeaned = signal_demean(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_demeaned)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_demeaned)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_demean(EEG)")
 
@@ -493,7 +485,7 @@ function eeg_normalize_mean(eeg::EEG)
     signal_normalized = signal_normalize_mean(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_normalized)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_normalized)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_normalize_mean(EEG)")
 
@@ -513,7 +505,7 @@ function eeg_normalize_minmax(eeg::EEG)
     signal_normalized = signal_normalize_minmax(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_normalized)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_normalized)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_normalize_minmax(EEG)")
 
@@ -615,7 +607,7 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
     eeg_duration_samples = size(signal_upsampled, 2)
     eeg_duration_seconds = size(signal_upsampled, 2) / new_sr
     eeg_time = collect(t_upsampled)
-    eeg_new = EEG(eeg.eeg_header, eeg_time, signal_upsampled)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, signal_upsampled)
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
     eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_new.eeg_header[:channels_no])
@@ -732,7 +724,7 @@ function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_l
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
     eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
-    eeg_new = EEG(eeg.eeg_header, eeg_time, signal_split)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, signal_split)
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
     eeg_new.eeg_header[:epochs_no] = epochs_no
@@ -761,7 +753,7 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
     end
 
     signal_new = eeg.eeg_signals[:, :, epoch_idx]
-    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_new)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_new)
     eeg_new.eeg_header[:epochs_no] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
