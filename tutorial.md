@@ -16,18 +16,19 @@ edf = eeg_load("test.bin")
 # show info
 eeg_info(edf)
 
-# split into epochs
+# split into 10 epochs
 eeg_epochs(edf, epochs_no=10)
+
 # 2-second epochs
-eeg_epochs(edf, epochs_len=2 * eeg_signal_header[:sampling_rate][1], average=true)
+eeg_epochs(edf, epochs_len=2 * eeg_header[:sampling_rate][1], average=true)
 
 # show labels
-edf.eeg_signal_header[:labels]
+edf.eeg_header[:labels]
 
 # show properties
-edf.eeg_signal_header[:sampling_rate][1]
-edf.eeg_object_header[:eeg_duration_seconds]
-edf.eeg_object_header[:eeg_duration_samples]
+edf.eeg_header[:sampling_rate][1]
+edf.eeg_header[:eeg_duration_seconds]
+edf.eeg_header[:eeg_duration_samples]
 
 # channel index
 eeg_get_channel_idx(edf, "Cz")
@@ -53,7 +54,7 @@ edf = eeg_drop_channel(edf, 10)
 eeg_show_processing_history(edf)
 
 # show sampling rate
-edf.eeg_signal_header[:sampling_rate][1]
+edf.eeg_header[:sampling_rate][1]
 
 # upsample
 eeg_upsample(edf, new_sr=512)
@@ -85,17 +86,17 @@ eeg_detrend(edf)
 
 # total power
 tbp = eeg_total_power(edf)
-bar(edf.eeg_signal_header[:labels],
+bar(edf.eeg_header[:labels],
     tbp,
-    xticks=(1:length(edf.eeg_signal_header[:labels]),
-    edf.eeg_signal_header[:labels]))
+    xticks=(1:length(edf.eeg_header[:labels]),
+    edf.eeg_header[:labels]))
 
 # alpha power
 abp = eeg_band_power(edf, f1=8.0, f2=12.0)
-bar(edf.eeg_signal_header[:labels],
+bar(edf.eeg_header[:labels],
     abp,
-    xticks=(1:length(edf.eeg_signal_header[:labels]),
-    edf.eeg_signal_header[:labels]))
+    xticks=(1:length(edf.eeg_header[:labels]),
+    edf.eeg_header[:labels]))
 
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
