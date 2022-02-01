@@ -109,6 +109,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `s
 """
 function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     channels_no = size(signal, 1)
+    signal_epochs = size(signal, 3)
     sbp = zeros(channels_no, signal_epochs)
 
     for epoch in 1:signal_epochs
@@ -153,6 +154,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` matrix ch
 """
 function signal_make_spectrum(signal::Array{Float64, 3}, fs)
     channels_no = size(signal, 1)
+    signal_epochs = size(signal, 3)
     signal_fft = zeros(ComplexF64, size(signal))
     signal_sf = zeros(size(signal))
 
@@ -177,7 +179,7 @@ Removes linear trend from the `signal` vector.
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
 """
-function signal_detrend(signal::Vector{Float64}; type=:linear)
+function signal_detrend(signal::Vector{Float64}; type::Symbol=:linear)
     type in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
 
     if type == :constant
@@ -203,7 +205,7 @@ Removes linear trend for each the `signal` matrix channels.
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
 """
-function signal_detrend(signal::Array{Float64, 3}; type=:linear)
+function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
     channels_no = size(signal, 1)
     signal_det = zeros(size(signal))
 

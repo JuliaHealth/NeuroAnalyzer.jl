@@ -32,7 +32,7 @@ e10 = eeg_epochs(edf, epochs_no=10)
 e2avg = eeg_epochs(edf, epochs_len=512, average=true)
 
 # get 1st epoch
-e1 = eeg_get_epoch(edf, 1)
+e1 = eeg_get_epoch(e10, 1)
 
 # get channel index
 eeg_get_channel_idx(edf, "Cz")
@@ -67,11 +67,11 @@ eeg_plot(edf, figure="figure1.pdf")
 
 # covariance
 edf_cov = eeg_cov(edf)
-heatmap(edf_cov)
+heatmap(edf_cov[:, :, 1])
 
 # correlation
 edf_cor = eeg_cor(edf)
-heatmap(edf_cor)
+heatmap(edf_cor[:, :, 1])
 
 # normalize
 eeg_normalize_mean(edf)
