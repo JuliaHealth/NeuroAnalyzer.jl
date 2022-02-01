@@ -194,7 +194,7 @@ function eeg_load_edf(in_file::String, read_annotations::Bool=true, header_only:
                       :sampling_rate => sampling_rate,
                       :gain => gain)
 
-    eeg = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg = EEG(deepcopy(eeg_header), deepcopy(eeg_time), deepcopy(eeg_signals))
 
     return eeg
 end
