@@ -685,7 +685,11 @@ Splits `eeg` signals into epochs.
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
 function eeg_epochs(eeg::EEG; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=false)
-    signal_split = signal_epochs(signal, epoch_no=epoch_no, epoch_len=epoch_len, average=average)
+    # unsplit epochs
+    signal_merged = reshape(eeg.eeg_signals, size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals), 3)
+    
+    # split into epochs
+    signal_split = signal_epochs(signal_merged, epoch_no=epoch_no, epoch_len=epoch_len, average=average)
 
     # create new dataset
     epoch_no = size(signal_split, 3)
