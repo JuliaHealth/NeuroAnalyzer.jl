@@ -657,7 +657,7 @@ Returns sampling rate of the `eeg` object.
 
 - `eeg::EEG` - EEG object
 """
-function eeg_labels(eeg::EEG)
+function eeg_samplingrate(eeg::EEG)
     return eeg.eeg_header[:sampling_rate][1]
 end
 
