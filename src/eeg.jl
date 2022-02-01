@@ -534,7 +534,6 @@ function eeg_get_channel(eeg::EEG, channel_name::String)
     channel_idx = nothing
     for idx in 1:length(labels)
         if channel_name == labels[idx]
-            labels[idx] = new_channel_name
             channel_idx = idx
         end
     end
@@ -763,6 +762,8 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
     signal_new = eeg.eeg_signals[:, :, epoch_idx]
     eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_new)
     eeg_new.eeg_header[:epochs_no] = 1
+    eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
+    eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch_idx=$epoch_idx)")

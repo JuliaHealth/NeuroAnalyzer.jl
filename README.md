@@ -20,6 +20,8 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 
+## Roadmap
+
 ## TO DO
 
 EEG:

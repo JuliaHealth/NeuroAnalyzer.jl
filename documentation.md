@@ -13,7 +13,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 
 Single-channel signals are column vectors.
 
-Multi-channel or multi-trial signals are matrices of channels/trials by signals.
+Multi-channel or multi-trial signals are 3-d array of channels/trials by signals by epochs.
 
 Function name prefix:
 - signal_  :: functions taking signal or signals as argument

@@ -20,9 +20,9 @@ Returns the derivative of each the `signal` matrix channels with length same as 
 function signal_derivative(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
     signal_der = zeros(size(signal))
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
         end
@@ -61,10 +61,10 @@ Calculates total power for each the `signal` matrix channels.
 """
 function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
-    stp = zeros(channels_no, signal_epochs)
+    epochs_no = size(signal, 3)
+    stp = zeros(channels_no, epochs_no)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
         end
@@ -109,10 +109,10 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `s
 """
 function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
-    sbp = zeros(channels_no, signal_epochs)
+    epochs_no = size(signal, 3)
+    sbp = zeros(channels_no, epochs_no)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
         end
@@ -131,7 +131,7 @@ Returns FFT and DFT sample frequencies for a DFT for the `signal` vector.
 - `signal::Vector{Float64}` - the signal vector
 - `fs::Int64` - Sampling rate of the signal
 """
-function signal_make_spectrum(signal::Vector{Float64}, fs)
+function signal_make_spectrum(signal::Vector{Float64}, fs::Int64)
     signal_fft = fft(signal)
     # number of samples
     n = length(signal)
@@ -152,13 +152,13 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` matrix ch
 - `signal::Array{Float64, 3}` - the signal matrix
 - `fs::Int64` - Sampling rate of the signal
 """
-function signal_make_spectrum(signal::Array{Float64, 3}, fs)
+function signal_make_spectrum(signal::Array{Float64, 3}, fs::Int64)
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
     signal_fft = zeros(ComplexF64, size(signal))
     signal_sf = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_fft[idx, :, epoch], signal_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs)
         end
@@ -207,9 +207,10 @@ Removes linear trend for each the `signal` matrix channels.
 """
 function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
     channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
     signal_det = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
         end
@@ -229,7 +230,7 @@ Calculates mean, std and 95% confidence interval for each the `signal` matrix ch
 - `n::Int` - number of bootstraps
 - `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 """
-function signal_ci95(signal::Array{Float64, 3}; n=3, method=:normal)
+function signal_ci95(signal::Array{Float64, 3}; n::Int=3, method::Symbol=:normal)
     method in [:normal, :boot] || throw(ArgumentError("""Method must be ":normal" or ":boot"."""))
 
     if method === :normal
@@ -588,14 +589,14 @@ function signal_spectrum(signal::Array{Float64, 3}; pad=0)
     pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
 
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_fft = zeros(ComplexF64, size(signal))
     signal_amplitudes = zeros(size(signal))
     signal_powers = zeros(size(signal))
     signal_phases = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_fft[idx, :, epoch], signal_amplitudes[idx, :, epoch], signal_powers[idx, :, epoch], signal_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
         end
@@ -735,9 +736,9 @@ function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cu
 
     channels_no = size(signal, 1)
     signal_filtered = zeros(size(signal))
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_filtered[idx, :, epoch] = signal_filter_butter(signal[idx, :, epoch], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
         end
@@ -876,9 +877,9 @@ function signal_reference_channel(signal::Array{Float64, 3}, reference_idx)
     reference_channel = mean(signal[reference_idx, :, :], dims=3)
     reference_channel = vec(mean(reference_channel, dims=1))
 
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_referenced[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
@@ -898,13 +899,13 @@ Re-references channels of the `signal` matrix to common average reference.
 """
 function signal_reference_car(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_referenced = zeros(size(signal))
     reference_channel = mean(signal[:, :, :], dims=3)
     reference_channel = vec(mean(reference_channel, dims=1))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_referenced[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
@@ -944,10 +945,10 @@ function signal_taper(signal::Array{Float64, 3}, taper::Vector)
     length(taper) == size(signal, 2) || throw(ArgumentError("Taper length and signal length must be equal."))
 
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
     signal_tapered = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_tapered[idx, :, epoch] = signal[idx, :, epoch] .* taper
         end
@@ -978,11 +979,11 @@ Removes mean value (DC offset) for each the `signal` matrix channels.
 """
 function signal_demean(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_demeaned = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_demeaned[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
         end
@@ -1013,11 +1014,11 @@ Normalize (scales around the mean) `signal` matrix.
 """
 function signal_normalize_mean(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_normalized = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_normalized[idx, :, epoch] = signal_normalize_mean(signal[idx, :, epoch])
         end
@@ -1048,11 +1049,11 @@ Normalize (to 0…1) each the `signal` matrix channel.
 """
 function signal_normalize_minmax(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_normalized = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_normalized[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
         end
@@ -1094,10 +1095,10 @@ Calculates covariance between all channels of the `signal` matrix.
 - `normalize::Bool` - normalize covariance
 """
 function signal_cov(signal::Array{Float64, 3}; normalize=true)
-    signal_epochs = size(signal, 3)
-    cov_mat = zeros(size(signal, 1), size(signal, 1), signal_epochs)
+    epochs_no = size(signal, 3)
+    cov_mat = zeros(size(signal, 1), size(signal, 1), epochs_no)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         # channels-vs-channels
         cov_mat[:, :, epoch] = cov(signal[:, :, epoch]')
     end
@@ -1118,10 +1119,10 @@ Calculates correlation coefficients between all channels of the `signal` matrix.
 - `signal::Array{Float64, 3}` - the signal matrix
 """
 function signal_cor(signal::Array{Float64, 3})
-    signal_epochs = size(signal, 3)
-    cor_mat = zeros(size(signal, 1), size(signal, 1), signal_epochs)
+    epochs_no = size(signal, 3)
+    cor_mat = zeros(size(signal, 1), size(signal, 1), epochs_no)
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         # channels-vs-channels
         cor_mat[:, :, epoch] = cor(signal[:, :, epoch]')
     end
@@ -1151,11 +1152,11 @@ Add random noise to each the `signal` matrix channel.
 """
 function signal_add_noise(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_noise = zeros(size(signal))
 
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
         end
@@ -1204,13 +1205,13 @@ Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
 """
 function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
     channels_no = size(signal, 1)
-    signal_epochs = size(signal, 3)
+    epochs_no = size(signal, 3)
 
     signal_upsampled_length = length(signal_upsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
-    signal_upsampled = zeros(channels_no, signal_upsampled_length, signal_epochs) 
+    signal_upsampled = zeros(channels_no, signal_upsampled_length, epochs_no) 
 
     t_upsampled = nothing
-    for epoch in 1:signal_epochs
+    for epoch in 1:epochs_no
         for idx in 1:channels_no
             signal_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end

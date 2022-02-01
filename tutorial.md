@@ -27,9 +27,11 @@ edf = eeg_load("test.bin")
 
 # split into 10 epochs
 e10 = eeg_epochs(edf, epochs_no=10)
+eeg_info(e10)
 
 # split into 2-second epochs, average
 e2avg = eeg_epochs(edf, epochs_len=512, average=true)
+eeg_info(e2avg)
 
 # get 1st epoch
 e1 = eeg_get_epoch(e10, 1)
@@ -81,7 +83,7 @@ eeg_normalize_minmax(edf)
 eeg_demean(edf)
 
 # taper with
-h = hann(edf.eeg_header[:eeg_duration_samples])
+h = hann(edf.eeg_header[:epoch_duration_samples])
 eeg_taper(edf, h)
 
 # derivative
@@ -91,8 +93,8 @@ eeg_derivative(edf)
 eeg_detrend(edf, type=:linear)
 
 # total power
-tbp = eeg_total_power(e2avg)
-bar(eeg_labels(e2avg, tbp, xticks=(1:length(eeg_labels(e2avg)), eeg_labels(e2avg)))
+tbp = eeg_total_power(edf)
+bar(eeg_labels(e2avg, tbp[:, 1], xticks=(1:length(eeg_labels(e2avg)), eeg_labels(e2avg)))
 
 # alpha power
 abp = eeg_band_power(edf, f1=8.0, f2=12.0)
