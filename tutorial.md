@@ -10,6 +10,7 @@ edf = eeg_load_edf("eeg-test.edf")
 
 # show properties
 eeg_info(edf)
+
 edf.eeg_header[:sampling_rate][1]
 edf.eeg_header[:eeg_duration_seconds]
 edf.eeg_header[:eeg_duration_samples]
@@ -24,10 +25,10 @@ eeg_save(edf, "test.bin")
 edf = eeg_load("test.bin")
 
 # split into 10 epochs
-eeg_epochs(edf, epochs_no=10)
+e10 = eeg_epochs(edf, epochs_no=10)
 
 # split into 2-second epochs
-eeg_epochs(edf, epochs_len=2 * eeg_header[:sampling_rate][1], average=true)
+eeg_epochs(edf, epochs_len=512, average=true)
 
 # get channel index
 eeg_get_channel_idx(edf, "Cz")
@@ -51,7 +52,6 @@ edf = eeg_drop_channel(edf, 10)
 
 # show processing history
 eeg_show_processing_history(edf)
-
 
 # upsample
 eeg_upsample(edf, new_sr=512)

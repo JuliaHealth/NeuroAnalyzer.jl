@@ -651,7 +651,7 @@ Splits `signal` matrix into epochs.
 - `epochs_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
+function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
     (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epochs_len != nothing && epochs_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -833,9 +833,9 @@ Removes `channels` from the `signal` matrix.
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix
-- `channels::Float64` - channels to be removed, vector of numbers or range
+- `channels::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channels to be removed, vector of numbers or range
 """
-function signal_drop_channel(signal::Matrix{Float64}, channels)
+function signal_drop_channel(signal::Matrix{Float64}, channels::Union{Int64, Vector{Int64}, UnitRange{Int64}})
     if typeof(channels) == UnitRange{Int64}
         channels = collect(channels)
     end
