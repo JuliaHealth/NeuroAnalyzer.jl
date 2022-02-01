@@ -681,10 +681,10 @@ Splits `eeg` signals into epochs.
 
 - `eeg::EEG` - EEG object
 - `epochs_no::Union{Int64, Nothing}=nothing` - number of epochs
-- `epochs_len::Int64` - epoch length in samples
+- `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=false)
+function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
     # unsplit epochs
     signal_merged = reshape(eeg.eeg_signals,
                             size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals, 3))
@@ -693,7 +693,7 @@ function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_l
     signal_split = signal_epochs(signal_merged, epochs_no=epochs_no, epochs_len=epochs_len, average=average)
 
     # create new dataset
-    epoch_no = size(signal_split, 3)
+    epochs_no = size(signal_split, 3)
     epoch_duration_samples = size(signal_split, 2)
     epoch_duration_seconds = size(signal_split, 2) / eeg.eeg_header[:sampling_rate][1]
     eeg_duration_samples = size(signal_split)[2] * size(signal_split)[3]
@@ -702,12 +702,12 @@ function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_l
     eeg_new = EEG(eeg.eeg_header, eeg.eeg_header, eeg_time, signal_split)
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
-    eeg_new.eeg_header[:epochs_no] = epoch_no
+    eeg_new.eeg_header[:epochs_no] = epochs_no
     eeg_new.eeg_header[:epoch_duration_samples] = epoch_duration_samples
     eeg_new.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
 
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epoch_no=$epoch_no, epoch_len=$epoch_len, average=$average")
+    push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epochs_no=$epochs_no, epochs_len=$epochs_len, average=$average")
 end
 
 """

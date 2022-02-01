@@ -603,15 +603,15 @@ function signal_spectrum(signal::Array{Float64, 3}; pad=0)
 end
 
 """
-    signal_epochs(signal; epoch_no, epoch_len, average=true)
+    signal_epochs(signal; epochs_no, epochs_len, average=true)
 
 Splits `signal` vector into epochs.
 
 # Arguments
 
 - `signal::Vector{Float64}` - the signal vector
-- `epoch_no::Int64` - number of epochs
-- `epoch_len::Int64` - epoch length in samples
+- `epochs_no::Int64` - number of epochs
+- `epochs_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
 function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
@@ -640,33 +640,33 @@ function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}
 end
 
 """
-    signal_epochs(signal; epoch_no=nothing, epoch_len=nothing, average=true)
+    signal_epochs(signal; epochs_no=nothing, epochs_len=nothing, average=true)
 
 Splits `signal` matrix into epochs.
 
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal matrix
-- `epoch_no::Int64` - number of epochs
-- `epoch_len::Int64` - epoch length in samples
+- `epochs_no::Int64` - number of epochs
+- `epochs_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
 function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
-    (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
-    (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
+    (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epochs_len != nothing && epochs_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
     channels_no = size(signal, 1)
 
-    if epoch_no === nothing
-        epoch_no = size(signal, 2) ÷ epoch_len
+    if epochs_no === nothing
+        epochs_no = size(signal, 2) ÷ epochs_len
     else
-        epoch_len = size(signal, 2) ÷ epoch_no
+        epochs_len = size(signal, 2) ÷ epochs_no
     end
 
-    epochs = zeros(channels_no, epoch_len, epoch_no)
+    epochs = zeros(channels_no, epochs_len, epochs_no)
     idx1 = 1
-    for idx2 in 1:epoch_len:(epoch_no * epoch_len - 1)
-        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1), 1]
+    for idx2 in 1:epochs_len:(epochs_no * epochs_len - 1)
+        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epochs_len - 1), 1]
         idx1 += 1
     end
 
