@@ -26,7 +26,6 @@ EEG:
 - add re-referencing methods
 - import channel location files
 - channel locations data to eeg_signal_header
-- epochs
 - eeg_plot() check for file overwrite
 
 ## Contributing

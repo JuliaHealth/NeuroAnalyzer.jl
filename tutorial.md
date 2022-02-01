@@ -13,6 +13,9 @@ eeg_save(edf, "test.bin")
 # load
 edf = eeg_load("test.bin")
 
+# show info
+eeg_info(edf)
+
 # show labels
 edf.eeg_signal_header[:labels]
 

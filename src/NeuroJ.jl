@@ -42,6 +42,9 @@ export eeg_cov
 export eeg_cor
 export eeg_upsample
 export eeg_show_processing_history
+export eeg_info
+export eeg_epochs
+export eeg_get_epoch
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -56,7 +59,7 @@ export signal_derivative
 export signal_detrend
 export signal_difference
 export signal_drop_channel
-export signal_epoch
+export signal_epochs
 export signal_filter_butter
 export signal_make_spectrum
 export signal_mean

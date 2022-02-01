@@ -140,14 +140,14 @@ function eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_l
     fid = open(in_file)
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
-    eeg_signals = zeros(channels_no, samples_per_datarecord[1] * data_records)
+    eeg_signals = zeros(channels_no, samples_per_datarecord[1] * data_records, 1)
 
     for idx1 in 1:data_records
         for idx2 in 1:channels_no
             signal = zeros(UInt8, samples_per_datarecord[idx2] * 2);
             readbytes!(fid, signal, samples_per_datarecord[idx2] * 2);
             signal = map(ltoh, reinterpret(Int16, signal));
-            eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2])] = @. (signal - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2];
+            eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = @. (signal - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2];
         end
     end
 
@@ -158,8 +158,9 @@ function eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_l
     eeg_time = collect(0:1/sampling_rate[1]:size(eeg_signals, 2) / sampling_rate[1])
     eeg_time = eeg_time[1:end - 1]
     sampling_rate = round.(Int64, sampling_rate)
+    eeg_filesize_mb = round(filesize(in_file) / 1024^2, digits=2)
 
-    eeg_object_header = Dict(:version => version, :eeg_filetype => eeg_filetype, :patient => patient, :recording => recording, :recording_date => recording_date, :recording_time => recording_time, :data_records => data_records, :data_records_duration => data_records_duration, :channels_no => channels_no, :reference_type => "", :reference_channel => [], :xlocs => [], :ylocs => [], :history => Vector{String}(), :eeg_duration_samples => eeg_duration_samples, :eeg_duration_seconds => eeg_duration_seconds)
+    eeg_object_header = Dict(:version => version, :eeg_filename => in_file, :eeg_filesize_mb => eeg_filesize_mb, :eeg_filetype => eeg_filetype, :patient => patient, :recording => recording, :recording_date => recording_date, :recording_time => recording_time, :data_records => data_records, :data_records_duration => data_records_duration, :channels_no => channels_no, :reference_type => "", :reference_channel => [], :channel_locations => false, :xlocs => [], :ylocs => [], :history => Vector{String}(), :eeg_duration_samples => eeg_duration_samples, :eeg_duration_seconds => eeg_duration_seconds, :epochs_no => 1, :epoch_duration_samples => eeg_duration_samples, :epoch_duration_seconds => eeg_duration_seconds)
     eeg_signal_header = Dict(:labels => labels, :transducers => transducers, :physical_dimension => physical_dimension, :physical_minimum => physical_minimum, :physical_maximum => physical_maximum, :digital_minimum => digital_minimum, :digital_maximum => digital_maximum, :prefiltering => prefiltering, :samples_per_datarecord => samples_per_datarecord, :sampling_rate => sampling_rate, :gain => gain)
     eeg = EEG(eeg_object_header, eeg_signal_header, eeg_time, eeg_signals)
 

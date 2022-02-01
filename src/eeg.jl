@@ -1,31 +1,38 @@
 """
-    eeg_plot(eeg; t=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
+    eeg_plot(eeg; t=nothing, epoch=1, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
 Plots `eeg` channels.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Vector{Float64}` - the time vector
-- `offset::Float64` - displayed segment offset in samples
+- `t::Union{Vector{Float64}, UnitRange{Int64}}` - the time vector
+- `epoch::Int64` - epoch number to display
+- `offset::Int64` - displayed segment offset in samples
+- `len::Float64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t=nothing, offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
-    
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
+
+    if epoch < 1 || epoch > eeg.eeg_object_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
     end
 
-    signal = eeg.eeg_signals
+    signal = eeg.eeg_signals[:, :, epoch]
     labels = eeg.eeg_signal_header[:labels]
     fs = eeg.eeg_signal_header[:sampling_rate][1]
 
-    # default time is 10 seconds
-    t === nothing && (t = collect(0:1/fs:10))
+    # default time is 10 seconds or epoch_duration_seconds
+    len > eeg.eeg_object_header[:epoch_duration_seconds] && len = eeg.eeg_object_header[:epoch_duration_seconds]
+    if t === nothing && (t = collect(0:1/fs:len))
 
     p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
 
@@ -86,7 +93,7 @@ function eeg_drop_channel(eeg::EEG, channels)
     end
 
     # remove channels
-    eeg_signals = eeg_signals[setdiff(1:end, (channels)), :]
+    eeg_signals = eeg_signals[setdiff(1:end, (channels)), :, :]
 
     # create new dataset
     eeg_new = EEG(eeg_object_header, eeg_signal_header, eeg_time, eeg_signals)
@@ -355,9 +362,9 @@ Returns the `channel_idx` name.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channel_idx::Int` - channel index
+- `channel_idx::Int64` - channel index
 """
-function eeg_get_channel_name(eeg::EEG, channel_idx::Int)
+function eeg_get_channel_name(eeg::EEG, channel_idx::Int64)
     labels = eeg.eeg_signal_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
@@ -408,10 +415,10 @@ Rename the `eeg` channel.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channel_idx::Int`
+- `channel_idx::Int64`
 - `new_name::String`
 """
-function eeg_rename_channel(eeg::EEG, channel_idx::Int, new_channel_name::String)
+function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_channel_name::String)
     labels = eeg.eeg_signal_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
@@ -544,9 +551,9 @@ Get the `eeg` channel by `channel_idx`.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `channel_idx::Int`
+- `channel_idx::Int64`
 """
-function eeg_get_channel(eeg::EEG, channel_idx::Int)
+function eeg_get_channel(eeg::EEG, channel_idx::Int64)
     labels = eeg.eeg_signal_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
@@ -627,4 +634,98 @@ Shows processing history of the `eeg` object.
 """
 function eeg_show_processing_history(eeg::EEG)
     return eeg.eeg_object_header[:history]
+end
+
+"""
+    eeg_info(eeg)
+
+Shows info of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_info(eeg::EEG)
+    println("         EEG file name: $(eeg.eeg_object_header[:eeg_filename])")
+    println("         EEG size [Mb]: $(eeg.eeg_object_header[:eeg_filesize_mb])")
+    println("    Number of channels: $(eeg.eeg_object_header[:channels_no])")
+    println("    Sampling rate (Hz): $(eeg.eeg_signal_header[:sampling_rate][1])")
+    println("      Number of epochs: $(eeg.eeg_signal_header[:epochs_no])")
+    println("Epoch length (samples): $(eeg.eeg_signal_header[:epoch_duration_samples])")
+    println("Epoch length (seconds): $(eeg.eeg_signal_header[:epoch_duration_seconds])")
+    if eeg.eeg_object_header[:reference_type] == ""
+        println("    Reference type: unknown")
+    elseif eeg.eeg_object_header[:reference_type] == "common reference"
+        println("    Reference type: $(eeg.eeg_object_header[:reference_type]), channel: $(eeg.eeg_object_header[:reference_channel])")
+    else
+        println("        Reference type: $(eeg.eeg_object_header[:reference_type])")
+    end
+    if length(eeg.eeg_signal_header[:labels]) == 0
+        println("                    Labels: no")
+    else
+        println("                    Labels: yes")
+    end
+    if length(eeg.eeg_signal_header[:channel_locations]) == false
+        println("         Channel locations: no")
+    else
+        println("         Channel locations: yes")
+    end
+end
+
+"""
+    eeg_epochs(eeg; epoch_no=nothing, epoch_len=nothing, average=true)
+
+Splits `eeg` signals into epochs.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `epoch_no::Int64` - number of epochs
+- `epoch_len::Int64` - epoch length in samples
+- `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+"""
+function eeg_epochs(eeg::EEG; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
+    signal_split = signal_epochs(signal, epoch_no=epoch_no, epoch_len=epoch_len, average=average)
+
+    # create new dataset
+    epoch_no = size(signal_split, 3)
+    epoch_duration_samples = size(signal_split, 2)
+    epoch_duration_seconds = size(signal_split, 2) / eeg.eeg_signal_header[:sampling_rate][1]
+    eeg_duration_samples = size(signal_split)[2] * size(signal_split)[3]
+    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_signal_header[:sampling_rate][1]
+    eeg_time = collect(1:1/eeg.eeg_signal_header[:sampling_rate][1]:epoch_duration_samples)
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg_time, signal_split)
+    eeg_new.eeg_object_header[:eeg_duration_samples] = eeg_duration_samples
+    eeg_new.eeg_object_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg_new.eeg_object_header[:epochs_no] = epoch_no
+    eeg_new.eeg_object_header[:epoch_duration_samples] = epoch_duration_samples
+    eeg_new.eeg_object_header[:epoch_duration_seconds] = epoch_duration_seconds
+
+    # add entry to :history field
+    push!(eeg_new.eeg_object_header[:history], "eeg_epochs(EEG, epoch_no=$epoch_no, epoch_len=$epoch_len, average=$average")
+end
+
+"""
+    eeg_get_epoch(eeg, epoch_idx)
+
+Returns the `epoch_idx` epoch.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `epoch_idx::Int64` - epoch index
+"""
+function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
+    if epoch_idx < 1 || epoch_idx > eeg.eeg_object_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
+    signal_new = eeg.eeg_signals[:, :, epoch_idx]
+    eeg_new = EEG(eeg.eeg_object_header, eeg.eeg_signal_header, eeg_time, signal_new)
+    eeg_new.eeg_object_header[:epochs_no] = 1
+
+    # add entry to :history field
+    push!(eeg_new.eeg_object_header[:history], "eeg_get_epoch(EEG, epoch_idx=$epoch_idx")
+
+    return eeg_new
 end
