@@ -20,9 +20,12 @@ Returns the derivative of each the `signal` matrix channels with length same as 
 function signal_derivative(signal::Matrix{Float64})
     channels_no = size(signal, 1)
     signal_der = zeros(size(signal))
+    signal_epochs = size(signal, 3)
 
-    for idx in 1:channels_no
-        signal_der[idx, :] = signal_derivative(signal[idx, :])
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            signal_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
+        end
     end
 
     return signal_der
@@ -58,10 +61,13 @@ Calculates total power for each the `signal` matrix channels.
 """
 function signal_total_power(signal::Matrix{Float64}; fs::Int64)
     channels_no = size(signal, 1)
-    stp = zeros(channels_no)
+    signal_epochs = size(signal, 3)
+    stp = zeros(channels_no, signal_epochs)
 
-    for idx in 1:channels_no
-        stp[idx] = signal_total_power(signal[idx, :]; fs=fs)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            stp[idx, epoch] = signal_total_power(signal[idx, :, epoch]; fs=fs)
+        end
     end
 
     return stp
@@ -103,10 +109,10 @@ Calculates absolute band power between frequencies `f1` and `f2` for each the `s
 """
 function signal_band_power(signal::Matrix{Float64}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     channels_no = size(signal, 1)
-    sbp = zeros(size(signal, 1))
+    sbp = zeros(channels_no, signal_epochs)
 
     for idx in 1:channels_no
-        sbp[idx] = signal_band_power(signal[idx, :], fs=fs, f1=f1, f2=f2)
+        sbp[idx epoch] = signal_band_power(signal[idx, : epoch], fs=fs, f1=f1, f2=f2)
     end
 
     return sbp
@@ -148,8 +154,10 @@ function signal_make_spectrum(signal::Matrix{Float64}, fs)
     signal_fft = zeros(ComplexF64, size(signal))
     signal_sf = zeros(size(signal))
 
-    for idx in 1:channels_no
-        signal_fft[idx, :], signal_sf[idx, :] = signal_make_spectrum(signal[idx, :], fs)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            signal_fft[idx, :, epoch], signal_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs)
+        end
     end
 
     return signal_fft, signal_sf
@@ -197,8 +205,10 @@ function signal_detrend(signal::Matrix{Float64}; type=:linear)
     channels_no = size(signal, 1)
     signal_det = zeros(size(signal))
 
-    for idx in 1:channels_no
-        signal_det[idx, :] = signal_detrend(signal[idx, :], type=type)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            signal_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
+        end
     end
 
     return signal_det
@@ -580,16 +590,17 @@ function signal_spectrum(signal::Matrix{Float64}; pad=0)
     signal_powers = zeros(size(signal))
     signal_phases = zeros(size(signal))
 
-    for idx in 1:channels_no
-        signal_fft[idx, :], signal_amplitudes[idx, :], signal_powers[idx, :], signal_phases[idx, :] = 
-        signal_spectrum(signal[idx, :], pad=pad)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            signal_fft[idx, :, epoch], signal_amplitudes[idx, :, epoch], signal_powers[idx, :, epoch], signal_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
+        end
     end
 
     return signal_fft, signal_amplitudes, signal_powers, signal_phases
 end
 
 """
-    signal_epoch(signal; epoch_no, epoch_len, average=true)
+    signal_epochs(signal; epoch_no, epoch_len, average=true)
 
 Splits `signal` vector into epochs.
 
@@ -600,7 +611,7 @@ Splits `signal` vector into epochs.
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epoch(signal::Vector{Float64}; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
+function signal_epochs(signal::Vector{Float64}; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -626,7 +637,7 @@ function signal_epoch(signal::Vector{Float64}; epoch_no::Int64=nothing, epoch_le
 end
 
 """
-    signal_epoch(signal, n; epoch_no=nothing, epoch_len=nothing, average=true)
+    signal_epochs(signal; epoch_no=nothing, epoch_len=nothing, average=true)
 
 Splits `signal` matrix into epochs.
 
@@ -637,7 +648,7 @@ Splits `signal` matrix into epochs.
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epoch(signal::Matrix; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
+function signal_epochs(signal::Matrix; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -721,8 +732,10 @@ function signal_filter_butter(signal::Matrix{Float64}; filter_type::Symbol, cuto
     channels_no = size(signal, 1)
     signal_filtered = zeros(size(signal))
 
-    for idx in 1:channels_no
-        signal_filtered[idx, :] = signal_filter_butter(signal[idx, :], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
+    for epoch in 1:signal_epochs
+        for idx in 1:channels_no
+            signal_filtered[idx, :, epoch] = signal_filter_butter(signal[idx, :, epoch], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
+        end
     end
 
     return signal_filtered
@@ -766,22 +779,23 @@ function signal_plot(t, signal::Vector{Float64}; offset=1, labels=[], xlabel="Ti
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
+    signal_plot(t, signal; epoch=1, offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
 
 Plots `signal` matrix against time vector `t`.
 
 # Arguments
 
-- `t::Vector{Float64}` - the time vector
+- `t::Union{Vector{Float64}, UnitRange{Int64}}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
-- `offset::Float64` - displayed segment offset in samples
+- `offset::Int64` - displayed segment offset in samples
+- `len::Float64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis label
+- `ylabel::String` - y-axis lable
 - `figure::String` - name of the output figure file
 """
-function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels", figure::String="")
+function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
     
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
@@ -790,11 +804,11 @@ function signal_plot(t, signal::Matrix{Float64}; offset=1, labels=[], normalize=
     channels_no = size(signal, 1)
 
     # reverse so 1st channel is on top
-    signal = reverse(signal, dims = 1)
+    signal = reverse(signal[:, :], dims = 1)
 
     if normalize == true
         # normalize and shift so all channels are visible
-        variances = var(signal, dims=2)
+        variances = var(signal[:, :], dims=2)
         mean_variance = mean(variances)
         for idx in 1:channels_no
             signal[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
