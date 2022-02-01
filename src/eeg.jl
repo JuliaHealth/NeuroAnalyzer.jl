@@ -396,10 +396,10 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
     if channel_idx == nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
-    eeg.eeg_header[:labels] = labels
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, eeg.eeg_signals)
+    eeg_new.eeg_header[:labels] = labels
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, old_channel_name=$old_channel_name, new_channel_name=$new_channel_name)")
 
@@ -424,10 +424,10 @@ function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_channel_name::Stri
     else
         labels[channel_idx] = new_channel_name
     end
-    eeg.eeg_header[:labels] = labels
 
     # create new dataset
     eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, eeg.eeg_signals)
+    eeg_new.eeg_header[:labels] = labels
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
 
@@ -636,6 +636,32 @@ function eeg_show_processing_history(eeg::EEG)
 end
 
 """
+    eeg_labels(eeg)
+
+Returns labels of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_labels(eeg::EEG)
+    return eeg.eeg_header[:labels]
+end
+
+"""
+    eeg_samplingrate(eeg)
+
+Returns sampling rate of the `eeg` object.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_labels(eeg::EEG)
+    return eeg.eeg_header[:sampling_rate][1]
+end
+
+"""
     eeg_info(eeg)
 
 Shows info of the `eeg` object.
@@ -691,13 +717,17 @@ function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_l
     # split into epochs
     signal_split = signal_epochs(signal_merged, epochs_no=epochs_no, epochs_len=epochs_len, average=average)
 
+    # convert into Array{Float64, 3}
+    signal_split = reshape(signal_split, size(signal_split, 1), size(signal_split, 2), size(signal_split, 3))
+
     # create new dataset
     epochs_no = size(signal_split, 3)
     epoch_duration_samples = size(signal_split, 2)
     epoch_duration_seconds = size(signal_split, 2) / eeg.eeg_header[:sampling_rate][1]
-    eeg_duration_samples = size(signal_split)[2] * size(signal_split)[3]
+    eeg_duration_samples = size(signal_split, 2) * size(signal_split, 3)
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
-    eeg_time = collect(1:1/eeg.eeg_header[:sampling_rate][1]:epoch_duration_samples)
+    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
+    eeg_time = eeg_time[1:(end - 1)]
     eeg_new = EEG(eeg.eeg_header, eeg_time, signal_split)
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
@@ -727,7 +757,7 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
     end
 
     signal_new = eeg.eeg_signals[:, :, epoch_idx]
-    eeg_new = EEG(eeg.eeg_header, eeg_time, signal_new)
+    eeg_new = EEG(eeg.eeg_header, eeg.eeg_time, signal_new)
     eeg_new.eeg_header[:epochs_no] = 1
 
     # add entry to :history field

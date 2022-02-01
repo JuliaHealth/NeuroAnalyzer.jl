@@ -44,6 +44,8 @@ export eeg_show_processing_history
 export eeg_info
 export eeg_epochs
 export eeg_get_epoch
+export eeg_labels
+export eeg_samplingrate
 
 include("eeg_load_edf.jl")
 export eeg_load_edf

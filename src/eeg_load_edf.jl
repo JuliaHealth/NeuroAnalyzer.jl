@@ -155,7 +155,7 @@ function eeg_load_edf(in_file::String, read_annotations::Bool=true, header_only:
 
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]
-    eeg_time = collect(0:1/sampling_rate[1]:size(eeg_signals, 2) / sampling_rate[1])
+    eeg_time = collect(0:(1 / sampling_rate[1]):eeg_duration_seconds)
     eeg_time = eeg_time[1:end - 1]
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(in_file) / 1024^2, digits=2)

@@ -2,7 +2,7 @@
 
 ## EEG
 
-```
+```julia
 using NeuroJ
 
 # load EDF file
@@ -10,16 +10,16 @@ edf = eeg_load_edf("eeg-test.edf")
 
 # show properties
 eeg_info(edf)
-
 edf.eeg_header[:sampling_rate][1]
 edf.eeg_header[:eeg_duration_seconds]
 edf.eeg_header[:eeg_duration_samples]
 
 # show labels
-edf.eeg_header[:labels]
+eeg_show_labels(edf)
 
 # save
 eeg_save(edf, "test.bin")
+eeg_save(edf, "test.bin", overwrite=true)
 
 # load
 edf = eeg_load("test.bin")
@@ -27,8 +27,8 @@ edf = eeg_load("test.bin")
 # split into 10 epochs
 e10 = eeg_epochs(edf, epochs_no=10)
 
-# split into 2-second epochs
-eeg_epochs(edf, epochs_len=512, average=true)
+# split into 2-second epochs, average
+e2avg = eeg_epochs(edf, epochs_len=512, average=true)
 
 # get channel index
 eeg_get_channel_idx(edf, "Cz")
