@@ -58,6 +58,7 @@ eeg_upsample(edf, new_sr=512)
 
 # plot channels
 eeg_plot(edf)
+eeg_plot(e2avg)
 eeg_plot(edf, figure="figure1.pdf")
 
 # covariance
@@ -82,11 +83,8 @@ eeg_derivative(edf)
 eeg_detrend(edf)
 
 # total power
-tbp = eeg_total_power(edf)
-bar(edf.eeg_header[:labels],
-    tbp,
-    xticks=(1:length(edf.eeg_header[:labels]),
-    edf.eeg_header[:labels]))
+tbp = eeg_total_power(e2avg)
+bar(eeg_labels(e2avg, tbp, xticks=(1:length(eeg_labels(e2avg)), eeg_labels(e2avg)))
 
 # alpha power
 abp = eeg_band_power(edf, f1=8.0, f2=12.0)
