@@ -22,7 +22,7 @@ value = (value - digital_minimum ) * gain + physical_minimum
 
 Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 """
-function eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_labels=true)
+function eeg_load_edf(in_file::String, read_annotations::Bool=true, header_only::Bool=false, clean_labels::Bool=true)
     fid = open(in_file)
 
     eeg_filetype = ""
