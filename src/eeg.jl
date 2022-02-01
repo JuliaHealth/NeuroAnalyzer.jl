@@ -31,7 +31,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}}=nothing,
     fs = eeg.eeg_signal_header[:sampling_rate][1]
 
     # default time is 10 seconds or epoch_duration_seconds
-    len > eeg.eeg_object_header[:epoch_duration_seconds] && len = eeg.eeg_object_header[:epoch_duration_seconds]
+    len > eeg.eeg_object_header[:epoch_duration_seconds] && (len = eeg.eeg_object_header[:epoch_duration_seconds])
     t === nothing && (t = collect(0:1/fs:len))
 
     p = signal_plot(t, signal, offset=offset, labels=labels, xlabel=xlabel, ylabel=ylabel, normalize=normalize, figure=figure)
@@ -684,7 +684,7 @@ Splits `eeg` signals into epochs.
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function eeg_epochs(eeg::EEG; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=true)
+function eeg_epochs(eeg::EEG; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=false)
     signal_split = signal_epochs(signal, epoch_no=epoch_no, epoch_len=epoch_len, average=average)
 
     # create new dataset
