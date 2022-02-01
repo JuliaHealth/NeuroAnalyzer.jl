@@ -1208,9 +1208,9 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
     signal_upsampled_length = length(signal_upsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
     signal_upsampled = zeros(channels_no, signal_upsampled_length, signal_epochs) 
 
+    t_upsampled = nothing
     for epoch in 1:signal_epochs
         for idx in 1:channels_no
-            t_upsampled = nothing
             signal_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end
     end
