@@ -646,12 +646,12 @@ Splits `signal` matrix into epochs.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Matrix{Float64}` - the signal matrix
 - `epoch_no::Int64` - number of epochs
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epochs(signal::Array{Float64, 3}; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
+function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 

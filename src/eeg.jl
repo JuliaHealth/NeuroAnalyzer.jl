@@ -687,7 +687,7 @@ Splits `eeg` signals into epochs.
 function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=false)
     # unsplit epochs
     signal_merged = reshape(eeg.eeg_signals,
-                            size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals), 1)
+                            size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals, 3))
     
     # split into epochs
     signal_split = signal_epochs(signal_merged, epochs_no=epochs_no, epochs_len=epochs_len, average=average)
