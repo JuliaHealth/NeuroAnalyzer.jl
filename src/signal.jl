@@ -799,7 +799,7 @@ Plots `signal` matrix against time vector `t`.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
 """
-function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
+function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
     
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
