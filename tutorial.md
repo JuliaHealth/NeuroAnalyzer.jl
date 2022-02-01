@@ -17,8 +17,9 @@ edf = eeg_load("test.bin")
 eeg_info(edf)
 
 # split into epochs
-eeg_epoch(edf)
-eeg_epoch(edf, average=true)
+eeg_epochs(edf, epochs_no=10)
+# 2-second epochs
+eeg_epochs(edf, epochs_len=2 * eeg_signal_header[:sampling_rate][1], average=true)
 
 # show labels
 edf.eeg_signal_header[:labels]

@@ -614,21 +614,21 @@ Splits `signal` vector into epochs.
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epochs(signal::Vector{Float64}; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
-    (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
-    (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
+function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
+    (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epochs_len != nothing && epochs_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
-    if epoch_no === nothing
-        epoch_no = length(signal) ÷ epoch_len
+    if epochs_no === nothing
+        epochs_no = length(signal) ÷ epochs_len
     else
-        epoch_len = length(signal) ÷ epoch_no
+        epochs_len = length(signal) ÷ epochs_no
     end
 
-    epochs = zeros(epoch_no, epoch_len)
+    epochs = zeros(epochs_no, epochs_len)
 
     idx1 = 1
-    for idx2 in 1:epoch_len:(epoch_no * epoch_len - 1)
-        epochs[idx1, :] = signal[idx2:(idx2 + epoch_len - 1)]
+    for idx2 in 1:epochs_len:(epochs_no * epochs_len - 1)
+        epochs[idx1, :] = signal[idx2:(idx2 + epochs_len - 1)]
         idx1 += 1
     end
 
@@ -646,12 +646,12 @@ Splits `signal` matrix into epochs.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal matrix
+- `signal::Array{Float64, 3}` - the signal matrix
 - `epoch_no::Int64` - number of epochs
 - `epoch_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epochs(signal::Matrix{Float64}; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
+function signal_epochs(signal::Array{Float64, 3}; epoch_no::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average=true)
     (epoch_len === nothing && epoch_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epoch_len != nothing && epoch_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -666,7 +666,7 @@ function signal_epochs(signal::Matrix{Float64}; epoch_no::Union{Int64, Nothing}=
     epochs = zeros(channels_no, epoch_len, epoch_no)
     idx1 = 1
     for idx2 in 1:epoch_len:(epoch_no * epoch_len - 1)
-        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1)]
+        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1), 1]
         idx1 += 1
     end
 
@@ -745,7 +745,7 @@ function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cu
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing, figure::String="")
+    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing)
 
 Plots `signal` against time vector `t`.
 
@@ -758,9 +758,8 @@ Plots `signal` against time vector `t`.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
 - `yamp::Float64` - y-axis limits (-yamp:yamp)
-- `figure::String` - name of the output figure file
 """
-function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Float64=nothing, figure::String="")
+function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Union{Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
@@ -782,7 +781,7 @@ function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector
 end
 
 """
-    signal_plot(t, signal; epoch=1, offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure::String="")
+    signal_plot(t, signal; epoch=1, offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -796,9 +795,8 @@ Plots `signal` matrix against time vector `t`.
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis lable
-- `figure::String` - name of the output figure file
 """
-function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
+function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
     
     if typeof(t) == UnitRange{Int64}
         t = float(collect(t))
@@ -824,12 +822,6 @@ function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix
         p = plot!(t, signal[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
-
-    plot(p)
-
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
-
     return p
 end
 

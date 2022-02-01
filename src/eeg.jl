@@ -650,9 +650,9 @@ function eeg_info(eeg::EEG)
     println("         EEG size [Mb]: $(eeg.eeg_object_header[:eeg_filesize_mb])")
     println("    Number of channels: $(eeg.eeg_object_header[:channels_no])")
     println("    Sampling rate (Hz): $(eeg.eeg_signal_header[:sampling_rate][1])")
-    println("      Number of epochs: $(eeg.eeg_signal_header[:epochs_no])")
-    println("Epoch length (samples): $(eeg.eeg_signal_header[:epoch_duration_samples])")
-    println("Epoch length (seconds): $(eeg.eeg_signal_header[:epoch_duration_seconds])")
+    println("      Number of epochs: $(eeg.eeg_object_header[:epochs_no])")
+    println("Epoch length (samples): $(eeg.eeg_object_header[:epoch_duration_samples])")
+    println("Epoch length (seconds): $(eeg.eeg_object_header[:epoch_duration_seconds])")
     if eeg.eeg_object_header[:reference_type] == ""
         println("    Reference type: unknown")
     elseif eeg.eeg_object_header[:reference_type] == "common reference"
@@ -673,23 +673,24 @@ function eeg_info(eeg::EEG)
 end
 
 """
-    eeg_epochs(eeg; epoch_no=nothing, epoch_len=nothing, average=true)
+    eeg_epochs(eeg; epochs_no=nothing, epochs_len=nothing, average=true)
 
 Splits `eeg` signals into epochs.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `epoch_no::Int64` - number of epochs
-- `epoch_len::Int64` - epoch length in samples
+- `epochs_no::Union{Int64, Nothing}=nothing` - number of epochs
+- `epochs_len::Int64` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function eeg_epochs(eeg::EEG; epoch_no::Int64=nothing, epoch_len::Int64=nothing, average=false)
+function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=false)
     # unsplit epochs
-    signal_merged = reshape(eeg.eeg_signals, size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals), 3)
+    signal_merged = reshape(eeg.eeg_signals,
+                            size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2) * size(eeg.eeg_signals), 1)
     
     # split into epochs
-    signal_split = signal_epochs(signal_merged, epoch_no=epoch_no, epoch_len=epoch_len, average=average)
+    signal_split = signal_epochs(signal_merged, epochs_no=epochs_no, epochs_len=epochs_len, average=average)
 
     # create new dataset
     epoch_no = size(signal_split, 3)
