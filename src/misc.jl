@@ -370,8 +370,11 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     eeg_filter = digitalfilter(responsetype, prototype)
 
     H, w = freqresp(eeg_filter)
-    plot(w, abs.(H), title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, cutoff * 2), xlabel="Frequency [Hz]", label="")
-    plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+
+    p = plot(w, abs.(H), title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, cutoff * 2), xlabel="Frequency [Hz]", label="")
+    p = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+
+    plot(p)
 
     return H, w
 end
