@@ -138,7 +138,7 @@ end
 """
     eeg_reference_channel(eeg, reference_idx)
 
-References the `eeg` to specific signal channel `reference_idx`.
+References the `eeg` to specific channel `reference_idx`.
 
 # Arguments
 
@@ -153,8 +153,7 @@ function eeg_reference_channel(eeg::EEG, reference_idx::Union{Int64, Vector{Int6
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_referenced)
-    eeg_new.eeg_header[:reference_type] = "common reference"
-    eeg_new.eeg_header[:reference_channel] = reference_idx
+    eeg_new.eeg_header[:reference] = "channel: $reference_idx"
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, reference_idx=$reference_idx)")
 
@@ -175,8 +174,7 @@ function eeg_reference_car(eeg::EEG)
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_referenced)
-    eeg_new.eeg_header[:reference_type] = "CAR"
-    eeg_new.eeg_header[:reference_channel] = []
+    eeg_new.eeg_header[:reference] = "CAR"
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
 
@@ -564,12 +562,10 @@ function eeg_info(eeg::EEG)
     println("      Number of epochs: $(eeg.eeg_header[:epochs_no])")
     println("Epoch length (samples): $(eeg.eeg_header[:epoch_duration_samples])")
     println("Epoch length (seconds): $(round(eeg.eeg_header[:epoch_duration_seconds], digits=2))")
-    if eeg.eeg_header[:reference_type] == ""
+    if eeg.eeg_header[:reference] == ""
         println("        Reference type: unknown")
-    elseif eeg.eeg_header[:reference_type] == "common reference"
-        println("        Reference type: $(eeg.eeg_header[:reference_type]), channel: $(eeg.eeg_header[:reference_channel])")
     else
-        println("        Reference type: $(eeg.eeg_header[:reference_type])")
+        println("        Reference type: $(eeg.eeg_header[:reference])")
     end
     if length(eeg.eeg_header[:labels]) == 0
         println("                Labels: no")

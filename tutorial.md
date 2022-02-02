@@ -46,20 +46,20 @@ edf = eeg_rename_channel(edf, 18, "Cz")
 
 # re-reference
 edf = eeg_reference_channel(edf, [1, 2])
+edf = eeg_reference_channel(edf, 18)
 edf = eeg_reference_car(edf)
 eeg_reference_car(e10)
 
 # filtering
 ## FIR
-window=hanning(255)
-edf_fir = eeg_filter(edf, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=4, window=window)
-edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=4)
-edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:hp, cutoff=1.0, order=4, window=window)
+edf_fir = eeg_filter(e2avg, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8)
+edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8)
 
 ## IIR
-edf_but = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
-edf_but = eeg_filter(edf_b, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
-edf_but = eeg_filter(edf_b, fprototype=:butterworth, ftype=:hp, cutoff=1.0, order=8)
+edf_but = eeg_filter(e2avg, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf_but = eeg_filter(edf_but, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
+edf_but = eeg_filter(edf_but, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
 
 # remove channel
 edf1 = eeg_drop_channel(edf, 10)
@@ -73,11 +73,12 @@ eeg_history(e2avg)
 edf_512 = eeg_upsample(edf, new_sr=512)
 
 # plot channels
-p1 = eeg_plot(edf_but)
-p2 = eeg_plot(edf_fir)
-plot(p1, p2, layout=(1, 2))
+p1 = eeg_plot(e2avg)
+p2 = eeg_plot(edf_but)
+p3 = eeg_plot(edf_fir)
+plot(p1, p2, p3, layout=(, 3))
 
-eeg_plot(edf_512, offset=60*256)
+eeg_plot(edf)
 eeg_plot(edf_512, offset=60*256)
 eeg_plot(edf1, offset=100*256)
 eeg_plot(e10, epoch=10)
