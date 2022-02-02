@@ -77,7 +77,6 @@ export signal_upsample
 export signal_tconv
 
 include("misc.jl")
-export filter_response
 export generate_time
 export cart2pol
 export cvangle
@@ -116,5 +115,6 @@ include("plots.jl")
 export signal_plot
 export eeg_plot
 export eeg_draw_head
+export filter_response
 
 end
