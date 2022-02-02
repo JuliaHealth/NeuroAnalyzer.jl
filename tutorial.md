@@ -3,6 +3,7 @@
 ## EEG
 
 ```julia
+Pkg.update
 using NeuroJ
 
 # load EDF file
@@ -78,6 +79,7 @@ edf_cheb2 = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.
 
 # plot
 eeg_plot(edf)
+eeg_plot(e10e1)
 
 # remove channel
 edf1 = eeg_drop_channel(edf, 10)
