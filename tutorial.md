@@ -3,7 +3,8 @@
 ## EEG
 
 ```julia
-Pkg.update
+using Pkg
+Pkg.update()
 using NeuroJ
 
 # load EDF file
@@ -40,7 +41,14 @@ eeg_history(edf)
 
 # upsample
 eeg_samplingrate(edf)
+eeg_info(edf)
 edf_512 = eeg_upsample(edf, new_sr=512)
+eeg_info(edf_512)
+
+# downsample
+eeg_samplingrate(edf)
+edf_128 = eeg_downsample(edf, new_sr=128)
+eeg_info(edf_128)
 
 # split into 10 epochs
 e10 = eeg_epochs(edf, epochs_no=10)
