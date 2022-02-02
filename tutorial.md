@@ -51,11 +51,15 @@ eeg_reference_car(e10)
 
 # filtering
 ## FIR
-edf = eeg_filter(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8, window=hamming(128));
+window=hanning(255)
+edf_fir = eeg_filter(edf, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=4, window=window)
+edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=4)
+edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:hp, cutoff=1.0, order=4, window=window)
+
 ## IIR
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8);
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:hp, cutoff=1.0, order=8);
+edf_but = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf_but = eeg_filter(edf_b, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
+edf_but = eeg_filter(edf_b, fprototype=:butterworth, ftype=:hp, cutoff=1.0, order=8)
 
 # remove channel
 edf1 = eeg_drop_channel(edf, 10)
@@ -69,6 +73,11 @@ eeg_history(e2avg)
 edf_512 = eeg_upsample(edf, new_sr=512)
 
 # plot channels
+p1 = eeg_plot(edf_but)
+p2 = eeg_plot(edf_fir)
+plot(p1, p2, layout=(1, 2))
+
+eeg_plot(edf_512, offset=60*256)
 eeg_plot(edf_512, offset=60*256)
 eeg_plot(edf1, offset=100*256)
 eeg_plot(e10, epoch=10)

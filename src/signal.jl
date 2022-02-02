@@ -1164,9 +1164,6 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
     fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
 
-    fprototype == :butterworth && (prototype = Butterworth(order))
-    fprototype == :fir && (prototype = FIRWindow(window))
-
     if ftype == :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
@@ -1182,6 +1179,9 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
         mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     end
+
+    fprototype == :butterworth && (prototype = Butterworth(order))
+    fprototype == :fir && (prototype = FIRWindow(window))
 
     filter = digitalfilter(responsetype, prototype)
     signal_filtered = filtfilt(filter, signal)
