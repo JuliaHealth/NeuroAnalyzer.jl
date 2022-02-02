@@ -20,8 +20,6 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 
-## Roadmap
-
 ## TO DO
 
 EEG:
@@ -31,6 +29,13 @@ EEG:
 - import channel location files
 - channel locations data to eeg_signal_header
 - eeg_plot() check for file overwrite
+
+MRI
+
+NIRS
+
+NSTIM
+- modelling
 
 ## Contributing
 
