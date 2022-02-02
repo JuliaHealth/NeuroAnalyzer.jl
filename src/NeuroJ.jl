@@ -45,6 +45,7 @@ export eeg_get_epoch
 export eeg_labels
 export eeg_samplingrate
 export eeg_tconv
+export eeg_downsample
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -75,6 +76,7 @@ export signal_cor
 export signal_add_noise
 export signal_upsample
 export signal_tconv
+export signal_downsample
 
 include("misc.jl")
 export generate_time

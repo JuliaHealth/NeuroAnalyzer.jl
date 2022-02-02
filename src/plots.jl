@@ -233,7 +233,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p2 = plot(w, phi, title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Phase [°]", xlabel="Frequency [Hz]", label="")
+    p2 = plot(w, phi, title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", ylims=(-180, 180), xlims=(0, x_max), ylabel="Phase [°]", xlabel="Frequency [Hz]", label="")
     if length(cutoff) == 1
         p2 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
     else

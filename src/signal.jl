@@ -1246,3 +1246,58 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Sym
 
     return signal_filtered
 end
+
+"""
+    signal_downsample(signal; t, new_sr)
+
+Downsamples the`signal` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `t::AbstractRange` - time range
+- `new_sr::Int64` - new sampling rate
+"""
+function signal_downsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int64)
+    # sampling interval
+    dt = t[2] - t[1]
+    # sampling rate
+    sr = 1 / dt
+    new_sr > sr && throw(ArgumentError("New sampling rate mu be lower than signal sampling rate."))
+    new_sr == sr && return(signal)
+    sr_ratio = new_sr / sr
+    # downsample
+    signal_downsampled = resample(signal, sr_ratio)
+    t = collect(t)
+    t_downsampled = t[1]:1/new_sr:t[end]
+
+    return signal_downsampled, t_downsampled
+end
+
+"""
+    signal_downsample(signal; t, new_sr)
+
+Downsamples all channels of the`signal` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `t::AbstractRange` - the time range
+- `new_sr::Int64` - new sampling rate
+"""
+function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+
+    signal_downsampled_length = length(signal_downsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
+    signal_downsampled = zeros(channels_no, signal_downsampled_length, epochs_no) 
+
+    t_downsampled = nothing
+    for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
+        end
+    end
+
+    return signal_downsampled, t_downsampled
+end

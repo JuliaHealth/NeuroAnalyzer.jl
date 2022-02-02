@@ -710,3 +710,32 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{I
 
     return eeg_new
 end
+
+"""
+    eeg_downsample(eeg; new_sr)
+
+Downsamples all channels of `eeg` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `eeg::EEG`
+- `new_sr::Int64` - new sampling rate
+"""
+function eeg_downsample(eeg::EEG; new_sr::Int64)
+    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
+    signal_downsampled, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
+
+    # create new dataset
+    eeg_duration_samples = size(signal_downsampled, 2)
+    eeg_duration_seconds = size(signal_downsampled, 2) / new_sr
+    eeg_time = collect(t_downsampled)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, signal_downsampled)
+    eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
+    eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_new.eeg_header[:channels_no])
+
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_downsample(EEG, new_sr=$new_sr)")
+
+    return eeg_new
+end
