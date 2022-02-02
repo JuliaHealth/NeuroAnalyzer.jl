@@ -113,16 +113,22 @@ end
 """
     fft0(x, n)
 
-Calculates FFT for the vector `x` padded with `n` zeros at the end.
+Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 """
-fft0(x::Union{Vector{Int64}, Vector{Float64}}, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
+function fft0(x::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}, n::Int64)
+    n > length(x) && (n = n - length(x))
+    return fft(vcat(x, zeros(eltype(x), n)))
+end
 
 """
     ifft0(x, n)
 
-Calculates IFFT for the vector `x` padded with `n` zeros at the end.
+Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 """
-ifft0(x::Vector, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
+function ifft0(x::Vector{ComplexF64}, n::Int64)
+    n > length(x) && (n = n - length(x))
+    return ifft(vcat(x, zeros(eltype(x), n)))
+end
 
 """
     nexpow2(x)
