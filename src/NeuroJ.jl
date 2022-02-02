@@ -21,7 +21,6 @@ export eeg_derivative
 export eeg_detrend
 export eeg_drop_channel
 export eeg_filter_butter
-export eeg_plot
 export eeg_total_power
 export eeg_band_power
 export eeg_reference_channel
@@ -39,12 +38,13 @@ export eeg_get_channel
 export eeg_cov
 export eeg_cor
 export eeg_upsample
-export eeg_show_processing_history
+export eeg_history
 export eeg_info
 export eeg_epochs
 export eeg_get_epoch
 export eeg_labels
 export eeg_samplingrate
+export eeg_tconv
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -63,7 +63,6 @@ export signal_epochs
 export signal_filter_butter
 export signal_make_spectrum
 export signal_mean
-export signal_plot
 export signal_spectrum
 export signal_reference_channel
 export signal_reference_car
@@ -75,8 +74,10 @@ export signal_cov
 export signal_cor
 export signal_add_noise
 export signal_upsample
+export signal_tconv
 
 include("misc.jl")
+export generate_time
 export cart2pol
 export cvangle
 export db
@@ -109,5 +110,10 @@ export sinc
 
 include("nstim.jl")
 export tes_dose
+
+include("plots.jl")
+export signal_plot
+export eeg_plot
+export eeg_draw_head
 
 end

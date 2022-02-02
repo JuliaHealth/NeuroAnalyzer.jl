@@ -58,9 +58,9 @@ edf = eeg_filter_butter(edf, filter_type=:hp, cutoff=1.0, poles=8);
 edf1 = eeg_drop_channel(edf, 10)
 
 # show processing history
-eeg_show_processing_history(edf)
-eeg_show_processing_history(e10)
-eeg_show_processing_history(e2avg)
+eeg_history(edf)
+eeg_history(e10)
+eeg_history(e2avg)
 
 # upsample
 edf_512 = eeg_upsample(edf, new_sr=512)
@@ -116,4 +116,9 @@ bar(eeg_labels(e2avg),
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
 f4 = eeg_get_channel(edf, 4)
+
+# time-domain convolution
+mw = morlet(256, 1, 10, complex=false)
+eeg_tconv(edf, mw)
+
 ```

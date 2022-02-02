@@ -5,7 +5,7 @@ Returns the derivative of the `signal` vector with length same as the signal.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 """
 signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end])
 
@@ -15,7 +15,8 @@ signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end
 Returns the derivative of each the `signal` matrix channels with length same as the signal.
 
 # Arguments
-- `signal::Array{Float64, 3}` - the signal matrix (rows: channels, columns: time)
+
+- `signal::Array{Float64, 3}`
 """
 function signal_derivative(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -34,11 +35,11 @@ end
 """
     signal_total_power(signal; fs)
 
-Calculates total power for the `signal` vector.
+Calculates total power for the `signal`.
 
 # Arguments
-- `signal::Vector{Float64}` - the signal vector
-- `fs::Int64` sampling rate
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling rate
 """
 function signal_total_power(signal::Vector{Float64}; fs::Int64)
     psd = welch_pgram(signal, 4*fs, fs=fs)
@@ -56,7 +57,7 @@ Calculates total power for each the `signal` matrix channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix (rows: channels, columns: time)
+- `signal::Array{Float64, 3}` - the signal array (rows: channels, columns: time)
 - `fs::Int64` sampling rate
 """
 function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
@@ -76,14 +77,14 @@ end
 """
     signal_band_power(signal; fs, f1, f2)
 
-Calculates absolute band power between frequencies `f1` and `f2` for the `signal` vector.
+Calculates absolute band power between frequencies `f1` and `f2` for the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `fs::Int64` - Sampling rate of the signal
-- `f1::Union{Int64, Float64}` - Lower frequency bound
-- `f2::Union{Int64, Float64}` - Upper frequency bound
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling rate of the signal
+- `f1::Union{Int64, Float64}` - lower frequency bound
+- `f2::Union{Int64, Float64}` - upper frequency bound
 """
 function signal_band_power(signal::Vector{Float64}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     psd = welch_pgram(signal, 4*fs, fs=fs)
@@ -98,14 +99,14 @@ end
 """
     signal_band_power(signal, fs, f1, f2)
 
-Calculates absolute band power between frequencies `f1` and `f2` for each the `signal` matrix channels.
+Calculates absolute band power between frequencies `f1` and `f2` for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
-- `fs::Int64` - Sampling rate of the signal
-- `f1::Float64` - Lower frequency bound
-- `f2::Float64` - Upper frequency bound
+- `signal::Array{Float64, 3}`
+- `fs::Int64` - sampling rate
+- `f1::Float64` - lower frequency bound
+- `f2::Float64` - upper frequency bound
 """
 function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     channels_no = size(signal, 1)
@@ -124,12 +125,12 @@ end
 """
     signal_make_spectrum(signal, fs)
 
-Returns FFT and DFT sample frequencies for a DFT for the `signal` vector.
+Returns FFT and DFT sample frequencies for a DFT for the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `fs::Int64` - Sampling rate of the signal
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling rate
 """
 function signal_make_spectrum(signal::Vector{Float64}, fs::Int64)
     signal_fft = fft(signal)
@@ -145,12 +146,12 @@ end
 """
     signal_make_spectrum(signal, fs)
 
-Returns FFT and DFT sample frequencies for a DFT for each the `signal` matrix channels.
+Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
-- `fs::Int64` - Sampling rate of the signal
+- `signal::Array{Float64, 3}`
+- `fs::Int64` - sampling rate
 """
 function signal_make_spectrum(signal::Array{Float64, 3}, fs::Int64)
     channels_no = size(signal, 1)
@@ -170,11 +171,11 @@ end
 """
     signal_detrend(signal; type=:linear)
 
-Removes linear trend from the `signal` vector.
+Removes linear trend from the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
@@ -196,11 +197,11 @@ end
 """
     signal_detrend(signal; type=:linear)
 
-Removes linear trend for each the `signal` matrix channels.
+Removes linear trend for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` the signal matrix
+- `signal::Array{Float64, 3}`
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
@@ -222,11 +223,11 @@ end
 """
     signal_ci95(signal; n=3, method=:normal)
 
-Calculates mean, std and 95% confidence interval for each the `signal` matrix channels.
+Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}`
 - `n::Int` - number of bootstraps
 - `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 """
@@ -265,8 +266,8 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 # Arguments
 
-- `signal1::Matrix{Float64}` - the signal 1 matrix
-- `signal2:Matrix{Float64}` - the signal 2 matrix
+- `signal1::Matrix{Float64}`
+- `signal2:Matrix{Float64}`
 """
 function signal_mean(signal1::Matrix{Float64}, signal2::Matrix{Float64})
     size(signal1) != size(signal2) && throw(ArgumentError("Both matrices must be of the same as size."))
@@ -288,8 +289,8 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 # Arguments
 
-- `signal1::Matrix` - the signal 1 matrix
-- `signal2:Matrix` - the signal 2 matrix
+- `signal1::Matrix`
+- `signal2:Matrix`
 - `n::Int` - number of bootstraps.
 - `method::Symbol[:absdiff, :diff2int]`
     - `:absdiff` - maximum difference
@@ -349,11 +350,11 @@ end
 """
    signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
 
-Calculates autocovariance of the `signal` vector.
+Calculates autocovariance of the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 - `lag::Int` - lags range is `-lag:lag`
 - `remove_dc::Bool[true, false]` - demean `signal` prior to calculations
 - `normalize::Bool[true, false]` - normalize autocovariance
@@ -397,11 +398,11 @@ end
 """
    signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
 
-Calculates autocovariance of each the `signal` matrix channels.
+Calculates autocovariance of each the `signal` channels.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal vector
+- `signal::Matrix{Float64}`
 - `lag::Int` - lags range is `-lag:lag`
 - `remove_dc::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize autocovariance
@@ -424,12 +425,12 @@ end
 """
    signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
 
-Calculates cross-covariance between `signal1` and `signal2` vectors.
+Calculates cross-covariance between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::Vector{Float64}` - the signal 1 vector
-- `signal2::Vector{Float64}` - the signal 2 vector
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
 - `lag::Int` - lags range is `-lag:lag`
 - `remove_dc::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize cross-covariance
@@ -477,12 +478,12 @@ end
 """
    signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
 
-Calculates cross-covariance between same channels in `signal1` and `signal2` matrices.
+Calculates cross-covariance between same channels in `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::Matrix{Float64}` - the signal 1 matrix
-- `signal2::Matrix{Float64}` - the signal 2 matrix
+- `signal1::Matrix{Float64}`
+- `signal2::Matrix{Float64}`
 - `lag::Int` - lags range is `-lag:lag`
 - `remove_dc::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize cross-covariance
@@ -508,17 +509,23 @@ end
 """
    signal_crosscov(signal; lag=1, remove_dc=false, normalize=false)
 
-Calculates cross-covariance for all channels in the `signal` matrix. Return matrix of cross-covariances:
-signal_1_channel_1 vs signal_2_channel_1, signal_1_channel_1 vs signal_2_channel_2, signal_1_channel_1 vs signal_2_channel_3, ..., signal_1_channel_n vs signal_2_channel_n.
+Calculates cross-covariance for all channels in the `signal`.
+
+Returns matrix of cross-covariances:
+- signal_1_channel_1 vs signal_2_channel_1
+- signal_1_channel_1 vs signal_2_channel_2
+- signal_1_channel_1 vs signal_2_channel_3
+- ...
+- signal_1_channel_n vs signal_2_channel_n
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal matrix
-- `lag::Int` - lags range is `-lag:lag`
+- `signal::Matrix{Float64}` - the signal
+- `lag::Int64` - lags range is `-lag:lag`
 - `remove_dc::Bool` - demean `signal` prior to analysis
 - `normalize::Bool` - normalize cross-covariance
 """
-function signal_crosscov(signal::Matrix{Float64}; lag=1, remove_dc=false, normalize=false)
+function signal_crosscov(signal::Matrix{Float64}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
     signal_lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     signal_ac_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
@@ -544,14 +551,14 @@ end
 """
     signal_spectrum(signal; pad=0)
 
-Calculates FFT, amplitudes, powers and phases of the `signal` vector.
+Calculates FFT, amplitudes, powers and phases of the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `pad::Int` - pad the `signal` with `pad` zeros
+- `signal::Vector{Float64}`
+- `pad::Int64` - pad the `signal` with `pad` zeros
 """
-function signal_spectrum(signal::Vector{Float64}; pad=0)
+function signal_spectrum(signal::Vector{Float64}; pad::Int64=0)
     pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
 
     if pad == 0
@@ -582,10 +589,10 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `signal` m
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal matrix
-- `pad::Int` - pad the `signal` with `pad` zeros
+- `signal::Vector{Float64}` - the signal
+- `pad::Int64` - pad the `signal` with `pad` zeros
 """
-function signal_spectrum(signal::Array{Float64, 3}; pad=0)
+function signal_spectrum(signal::Array{Float64, 3}; pad::Int64=0)
     pad < 0 && throw(ArgumentError("""Value of "pad" cannot be negative."""))
 
     channels_no = size(signal, 1)
@@ -608,16 +615,16 @@ end
 """
     signal_epochs(signal; epochs_no, epochs_len, average=true)
 
-Splits `signal` vector into epochs.
+Splits `signal` into epochs.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `epochs_no::Int64` - number of epochs
-- `epochs_len::Int64` - epoch length in samples
+- `signal::Vector{Float64}`
+- `epochs_no::Union{Int64, Nothing}` - number of epochs
+- `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
-function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average=true)
+function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=true)
     (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
     (epochs_len != nothing && epochs_no != nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
 
@@ -645,13 +652,13 @@ end
 """
     signal_epochs(signal; epochs_no=nothing, epochs_len=nothing, average=true)
 
-Splits `signal` matrix into epochs.
+Splits `signal` into epochs.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal matrix
-- `epochs_no::Int64` - number of epochs
-- `epochs_len::Int64` - epoch length in samples
+- `signal::Matrix{Float64}`
+- `epochs_no::Union{Int64, Nothing}` - number of epochs
+- `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
 function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
@@ -683,17 +690,17 @@ end
 """
     signal_filter_butter(signal; filter_type, cutoff, fs, poles=8)
 
-Filters `signal` vector using Butterworth filter.
+Filters `signal` using Butterworth filter.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Float64, Vector{Float64}}` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
+- `cutoff::Union{Int64, Float64, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `poles::Int64` - filter pole
 """
-function signal_filter_butter(signal::Vector{Float64}; filter_type::Symbol, cutoff::Union{Float64, Vector{Float64}, Tuple}, fs::Int64, poles::Int64=8)
+function signal_filter_butter(signal::Vector{Float64}; filter_type::Symbol, cutoff::Union{Int64, Float64, Vector{Float64}}, fs::Int64, poles::Int64=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
     if filter_type == :lp
@@ -721,17 +728,17 @@ end
 """
     signal_filter_butter(signal; filter_type, cutoff, fs, poles=8)
 
-Filters `signal` matrix using Butterworth filter.
+Filters `signal` using Butterworth filter.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}`
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Float64, Vector{Float64}, Tuple}` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
+- `cutoff::Union{Int64, Float64, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
-- `poles::Int` - filter pole
+- `poles::Int64` - filter pole
 """
-function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cutoff::Union{Float64, Vector{Float64}, Tuple}, fs::Int64, poles::Int64=8)
+function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cutoff::Union{Int64, Float64, Vector{Float64}}, fs::Int64, poles::Int64=8)
     filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
 
     channels_no = size(signal, 1)
@@ -748,97 +755,13 @@ function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cu
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing)
-
-Plots `signal` against time vector `t`.
-
-# Arguments
-
-- `t::Union{Vector{Float64}, UnitRange{Int64}}` - the time vector
-- `signal::Vector{Float64}` - the signal vector
-- `offset::Int64` - displayed segment offset in samples
-- `labels::Vector{String}` - channel labels vector
-- `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
-- `yamp::Float64` - y-axis limits (-yamp:yamp)
-"""
-function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Union{Float64, Nothing}=nothing)
-
-    if typeof(t) == UnitRange{Int64}
-        t = float(collect(t))
-    end
-
-    if yamp === nothing
-        yamp = maximum(signal)
-        yamp = ceil(Int64, yamp)
-    end
-
-    p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
-
-    plot(p)
-
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
-
-    return p
-end
-
-"""
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
-
-Plots `signal` matrix against time vector `t`.
-
-# Arguments
-
-- `t::Union{Vector{Float64}, UnitRange{Int64}}` - the time vector
-- `signal::Matrix{Float64}` - the signal matrix
-- `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
-- `labels::Vector{String}` - channel labels vector
-- `normalize::Bool` - normalize the `signal` prior to calculations
-- `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
-"""
-function signal_plot(t::Union{Vector{Float64}, UnitRange{Int64}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
-    
-    if typeof(t) == UnitRange{Int64}
-        t = float(collect(t))
-    end
-    
-    channels_no = size(signal, 1)
-
-    # reverse so 1st channel is on top
-    signal = reverse(signal[:, :], dims = 1)
-    signal_normalized = zeros(size(signal))
-
-    if normalize == true
-        # normalize and shift so all channels are visible
-        variances = var(signal, dims=2)
-        mean_variance = mean(variances)
-        for idx in 1:channels_no
-            signal_normalized[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
-        end
-    else
-        signal_normalized = signal
-    end
-
-    # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
-    for idx in 1:channels_no
-        p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
-    end
-    p = plot!(p, yticks = (channels_no-1:-1:0, labels))
-    return p
-end
-
-"""
     signal_drop_channel(signal, channels)
 
-Removes `channels` from the `signal` matrix.
+Removes `channels` from the `signal`.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal matrix
+- `signal::Matrix{Float64}` - the signal
 - `channels::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channels to be removed, vector of numbers or range
 """
 function signal_drop_channel(signal::Matrix{Float64}, channels::Union{Int64, Vector{Int64}, UnitRange{Int64}})
@@ -855,14 +778,14 @@ end
 """
     signal_reference_channel(signal, reference)
 
-Re-references channels of the `signal` matrix to specific signal channel.
+Re-references channels of the `signal` to specific signal channel.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
-- `reference::Float64` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `signal::Array{Float64, 3}`
+- `reference::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
-function signal_reference_channel(signal::Array{Float64, 3}, reference_idx)
+function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
     if typeof(reference_idx) == UnitRange{Int64}
         reference_idx = collect(reference_idx)
     end
@@ -898,7 +821,7 @@ Re-references channels of the `signal` matrix to common average reference.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}` - signal
 """
 function signal_reference_car(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -920,14 +843,14 @@ end
 """
     signal_taper(signal, taper)
 
-Taper the `signal` vector with `taper`.
+Taper the `signal` with `taper`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `taper::Vector{Float64}`
+- `signal::Vector{Float64}`
+- `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 """
-function signal_taper(signal::Vector{Float64}, taper::Vector{Float64})
+function signal_taper(signal::Vector{Float64}, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == length(signal) || throw(ArgumentError("Taper length and signal length must be equal."))
     signal_tapered = signal .* taper
 
@@ -937,23 +860,23 @@ end
 """
     signal_taper(signal, taper)
 
-Taper channels of the `signal` matrix with `taper`.
+Tapers channels of the `signal` with `taper`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
-- `taper::Vector`
+- `signal::Array{Float64, 3}`
+- `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 """
-function signal_taper(signal::Array{Float64, 3}, taper::Vector)
+function signal_taper(signal::Array{Float64, 3}, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == size(signal, 2) || throw(ArgumentError("Taper length and signal length must be equal."))
 
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
-    signal_tapered = zeros(size(signal))
+    signal_tapered = zeros(eltype(taper), size(signal))
 
     for epoch in 1:epochs_no
         for idx in 1:channels_no
-            signal_tapered[idx, :, epoch] = signal[idx, :, epoch] .* taper
+            signal_tapered[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
         end
     end
 
@@ -963,22 +886,22 @@ end
 """
     signal_demean(signal)
 
-Removes mean value (DC offset) from the `signal` vector.
+Removes mean value (DC offset) from the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` the signal matrix
+- `signal::Vector{Float64}`
 """
 signal_demean(signal::Vector{Float64}) = signal .- mean(signal)
 
 """
     signal_demean(signal)
 
-Removes mean value (DC offset) for each the `signal` matrix channels.
+Removes mean value (DC offset) for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` the signal matrix
+- `signal::Array{Float64, 3}`
 """
 function signal_demean(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -998,22 +921,22 @@ end
 """
     signal_normalize_mean(signal)
 
-Normalize (scales around the mean) `signal` vector.
+Normalize (scales around the mean) `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` the signal vector
+- `signal::Vector{Float64}`
 """
 signal_normalize_mean(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal)
 
 """
     signal_normalize_mean(signal)
 
-Normalize (scales around the mean) `signal` matrix.
+Normalize (scales around the mean) each the `signal` channel.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` the signal matrix
+- `signal::Array{Float64, 3}`
 """
 function signal_normalize_mean(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -1033,22 +956,22 @@ end
 """
     signal_normalize_minmax(signal)
 
-Normalize (to 0…1) `signal` vector.
+Normalize (to 0…1) `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` the signal vector
+- `signal::Vector{Float64}`
 """
 signal_normalize_minmax(signal::Vector{Float64}) = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
 
 """
     signal_normalize_minmax(signal)
 
-Normalize (to 0…1) each the `signal` matrix channel.
+Normalize (to 0…1) each the `signal` channel.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` the signal matrix
+- `signal::Array{Float64, 3}`
 """
 function signal_normalize_minmax(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -1068,15 +991,15 @@ end
 """
    signal_cov(signal1, signal2; normalize=true)
 
-Calculates covariance between `signal1` and `signal2` vectors.
+Calculates covariance between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::Vector{Float64}` - the signal 1 vector
-- `signal2::Vector{Float64}` - the signal 2 vector
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
 - `normalize::Bool` - normalize covariance
 """
-function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normalize=true)
+function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normalize::Bool=true)
     length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
 
     result = cov(signal1 * signal2')
@@ -1090,14 +1013,14 @@ end
 """
    signal_cov(signal; normalize=true)
 
-Calculates covariance between all channels of the `signal` matrix.
+Calculates covariance between all channels of the `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}`
 - `normalize::Bool` - normalize covariance
 """
-function signal_cov(signal::Array{Float64, 3}; normalize=true)
+function signal_cov(signal::Array{Float64, 3}; normalize::Bool=true)
     epochs_no = size(signal, 3)
     cov_mat = zeros(size(signal, 1), size(signal, 1), epochs_no)
 
@@ -1115,11 +1038,11 @@ end
 """
    signal_cor(signal)
 
-Calculates correlation coefficients between all channels of the `signal` matrix.
+Calculates correlation coefficients between all channels of the `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}`
 """
 function signal_cor(signal::Array{Float64, 3})
     epochs_no = size(signal, 3)
@@ -1136,22 +1059,22 @@ end
 """
     signal_add_noise(signal)
 
-Add random noise to the `signal` vector.
+Add random noise to the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 """
 signal_add_noise(x::Vector{Float64}) = x .+ mean(x) .* rand(length(x))
 
 """
     signal_add_noise(signal)
 
-Add random noise to each the `signal` matrix channel.
+Add random noise to the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal matrix
+- `signal::Array{Float64, 3}`
 """
 function signal_add_noise(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
@@ -1171,12 +1094,12 @@ end
 """
     signal_upsample(signal; t, new_sr)
 
-Upsamples the`signal` vector to `new_sr` sampling frequency.
+Upsamples the`signal` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `signal::Vector{Float64}` - the signal vector
-- `t::AbstractRange` - the time range
+- `signal::Vector{Float64}`
+- `t::AbstractRange` - time range
 - `new_sr::Int64` - new sampling rate
 """
 function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int64)
@@ -1198,11 +1121,11 @@ end
 """
     signal_upsample(signal; t, new_sr)
 
-Upsamples all channels of the`signal` matrix to `new_sr` sampling frequency.
+Upsamples all channels of the`signal` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal vector
+- `signal::Array{Float64, 3}`
 - `t::AbstractRange` - the time range
 - `new_sr::Int64` - new sampling rate
 """
@@ -1221,4 +1144,69 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
     end
 
     return signal_upsampled, t_upsampled
+end
+
+"""
+    morlet(fs, wt, wf)
+
+Generates Morlet wavelet.
+
+# Arguments
+
+- `fs::Int64` - sampling frequency
+- `wt::Union{Int64, Float64}` - length = -wt:1/fs:ws
+- `wf::Union{Int64, Float64}` - width, determines time-frequency precision trade-off
+- `complex::Bool` - if true, generates complex Morlet
+"""
+function morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; complex::Bool=false)
+    wt = -wt:1/fs:wt
+    complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
+    complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
+    w = 2 * (5 / (2 * pi * wf))^2                                       # time-frequency precision
+    gaussian = @. exp((-wt.^2) / w)
+    morlet_wavelet = sin_wave .* gaussian
+    return morlet_wavelet
+end
+
+"""
+    signal_tconv(signal, kernel)
+
+Performs convolution in the time domain between `signal` and `kernel`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+"""
+function signal_tconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    signal_convoluted = conv(signal, kernel)
+    half_kernel = floor(Int, length(kernel) / 2)
+    signal_convoluted = signal_convoluted[(half_kernel + 1):(end - half_kernel)]
+
+    return signal_convoluted
+end
+
+"""
+    signal_tconv(signal, kernel)
+
+Performs convolution in the time domain between `signal` and `kernel`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+"""
+function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+
+    signal_convoluted = zeros(eltype(kernel), size(signal)) 
+
+    for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_convoluted[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
+        end
+    end
+
+    return signal_convoluted
 end

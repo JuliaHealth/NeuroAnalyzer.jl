@@ -1,58 +1,11 @@
 """
-    eeg_plot(eeg; t=nothing, epoch=1, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
-
-Plots `eeg` channels.
-
-# Arguments
-
-- `eeg::EEG` - EEG object
-- `t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}` - the time vector
-- `epoch::Int64` - epoch number to display
-- `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
-- `labels::Vector{String}` - channel labels vector
-- `normalize::Bool` - normalize the `signal` prior to calculations
-- `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
-- `figure::String` - name of the output figure file
-"""
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
-
-    if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
-        throw(ArgumentError("Epoch index out of range."))
-    end
-
-    if typeof(t) == UnitRange{Int64}
-        t = collect(t)
-    end
-
-    signal = eeg.eeg_signals[:, :, epoch]
-    labels = eeg.eeg_header[:labels]
-    fs = eeg.eeg_header[:sampling_rate][1]
-
-    # default time is 10 seconds or epoch_duration_seconds
-    len > eeg.eeg_header[:epoch_duration_seconds] && (len = eeg.eeg_header[:epoch_duration_seconds])
-    t === nothing && (t = collect(0:1/fs:len))
-    t = t[1:(end - 2)]
-
-    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel)
-
-    plot(p)
-
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
-    
-    return p
-end
-
-"""
     eeg_drop_channel(eeg, channels)
 
-Removes `channels` from the `eeg` object.
+Removes `channels` from the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channels::Float64` - channels to be removed, vector of numbers or range
 """
 function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRange{Int64}})
@@ -106,11 +59,11 @@ end
 """
     eeg_filter_butter(eeg; filter_type, cutoff, fs, poles=8)
 
-Filters `eeg` channels using Butterworth filter.
+Filters the `eeg` using Butterworth filter.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
 - `fs::Float64` - sampling rate
@@ -137,7 +90,7 @@ end
 """
     eeg_derivative(eeg)
 
-Returns the derivative of each the `eeg` channels with length same as the signal.
+Returns the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
@@ -157,11 +110,11 @@ end
 """
     eeg_total_power(eeg)
 
-Calculates total power for each the `eeg` channels.
+Calculates total power of the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_total_power(eeg)
     fs = eeg.eeg_header[:sampling_rate][1]
@@ -174,13 +127,13 @@ end
 """
     eeg_band_power(eeg; f1, f2)
 
-Calculates absolute band power between frequencies `f1` and `f2` for each the `eeg` channels.
+Calculates absolute band power between frequencies `f1` and `f2` of the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
-- `f1::Float64` - Lower frequency bound
-- `f2::Float64` - Upper frequency bound
+- `eeg::EEG`
+- `f1::Float64` - lower frequency bound
+- `f2::Float64` - upper frequency bound
 """
 function eeg_band_power(eeg; f1, f2)
     fs = eeg.eeg_header[:sampling_rate][1]
@@ -193,11 +146,11 @@ end
 """
     eeg_detrend(eeg; type=:linear)
 
-Removes linear trend for each the `eeg` channels.
+Removes linear trend from the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
@@ -214,46 +167,13 @@ function eeg_detrend(eeg::EEG; type::Symbol=:linear)
 end
 
 """
-    eeg_draw_head(p, loc_x, loc_y, add_labels=true)
-
-Draws head over a topographical plot `p`.
-
-# Arguments
-
-- `p::Plot` - toppgraphical plot
-- `loc_x::Vector{Float64}` - vector of x electrode position
-- `loc_y::Vector{Float64}` - vector of y electrode position
-- `add_labels::Bool` - add text labels to the plot
-"""
-function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels::Bool=true)
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-    x, y = Plots.unzip(pts)
-    x = x .* 1.1
-    y = y .* 1.1
-    head = Shape(x, y)
-    nose = Shape([(-0.1, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.1, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), 0.1), (maximum(x), 0.1)])
-    plot!(p, head, fill=nothing, label="")
-    plot!(p, nose, fill=nothing, label="")
-    plot!(p, ear_l, fill=nothing, label="")
-    plot!(p, ear_r, fill=nothing, label="")
-    if add_labels == true
-        plot!(p, annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
-        plot!(p, annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
-        plot!(p, annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
-        plot!(p, annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
-    end
-end
-
-"""
     eeg_reference_channel(eeg, reference_idx)
 
-References the `eeg` channels to specific signal channel `reference_idx`.
+References the `eeg` to specific signal channel `reference_idx`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `reference_idx::Union{Int64, Vector{Int64}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
 function eeg_reference_channel(eeg::EEG, reference_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
@@ -275,11 +195,11 @@ end
 """
     eeg_reference_car(eeg)
 
-References the `eeg` channels to common average reference.
+References the `eeg` to common average reference.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_reference_car(eeg::EEG)
     signal_referenced = signal_reference_car(eeg.eeg_signals)
@@ -297,11 +217,11 @@ end
 """
     eeg_save(eeg, file_name; overwrite=false)
 
-Saves the `eeg` object to `file_name` file (HDF5-based).
+Saves the `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `file_name::String` - file name
 - `overwrite::Bool`
 """
@@ -315,7 +235,7 @@ end
 """
     eeg_load(file_name)
 
-Loads the `eeg` object from `file_name` file (HDF5-based).
+Loads the `eeg` from `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -333,7 +253,7 @@ Returns the `channel_name` index.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channel_name::String` - channel name
 """
 function eeg_get_channel_idx(eeg::EEG, channel_name::String)
@@ -357,7 +277,7 @@ Returns the `channel_idx` name.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channel_idx::Int64` - channel index
 """
 function eeg_get_channel_name(eeg::EEG, channel_idx::Int64)
@@ -373,11 +293,11 @@ end
 """
     eeg_rename_channel(eeg, old_channel_name, new_channel_name)
 
-Rename the `eeg` channel.
+Renames the `eeg` channel.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `old_channel_name::String`
 - `new_name::String`
 """
@@ -410,7 +330,7 @@ Rename the `eeg` channel.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channel_idx::Int64`
 - `new_name::String`
 """
@@ -434,11 +354,11 @@ end
 """
     eeg_taper(eeg, taper)
 
-Taper each the `eeg` channels with `taper`.
+Taper `eeg` with `taper`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `taper::Vector`
 """
 function eeg_taper(eeg::EEG, taper::Vector)
@@ -455,11 +375,11 @@ end
 """
     eeg_demean(eeg)
 
-Removes mean value (DC offset) for each the `eeg` channels.
+Removes mean value (DC offset).
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_demean(eeg::EEG)
     signal_demeaned = signal_demean(eeg.eeg_signals)
@@ -475,7 +395,7 @@ end
 """
     eeg_normalize_mean(eeg)
 
-Normalize (scales around the mean) each the `eeg` channels.
+Normalize (scales around the mean).
 
 # Arguments
 
@@ -495,11 +415,11 @@ end
 """
     eeg_normalize_minmax(eeg)
 
-Normalize (to 0…1) each the `eeg` channels.
+Normalize to 0...1
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_normalize_minmax(eeg::EEG)
     signal_normalized = signal_normalize_minmax(eeg.eeg_signals)
@@ -519,7 +439,7 @@ Get the `eeg` channel by `channel_name`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channel_name::String`
 """
 function eeg_get_channel(eeg::EEG, channel_name::String)
@@ -545,7 +465,7 @@ Get the `eeg` channel by `channel_idx`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `channel_idx::Int64`
 """
 function eeg_get_channel(eeg::EEG, channel_idx::Int64)
@@ -561,11 +481,11 @@ end
 """
     eeg_cov(eeg; normalize=true)
 
-Calculates covariance between all channels of the `eeg` object.
+Calculates covariance between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_cov(eeg::EEG; normalize=true)
     cov_mat = signal_cov(eeg.eeg_signals, normalize=normalize)
@@ -577,11 +497,11 @@ end
 """
     eeg_cor(eeg; normalize=true)
 
-Calculates correlation coefficients between all channels of the `eeg` object.
+Calculates correlation coefficients between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_cor(eeg::EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
@@ -593,11 +513,11 @@ end
 """
     eeg_upsample(eeg; new_sr)
 
-Upsamples all channels of the `eeg` object to `new_sr` sampling frequency.
+Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `new_sr::Int64` - new sampling rate
 """
 function eeg_upsample(eeg::EEG; new_sr::Int64)
@@ -620,26 +540,26 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
 end
 
 """
-    eeg_show_processing_history(eeg)
+    eeg_history(eeg)
 
-Shows processing history of the `eeg` object.
+Shows processing history.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
-function eeg_show_processing_history(eeg::EEG)
+function eeg_history(eeg::EEG)
     return eeg.eeg_header[:history]
 end
 
 """
     eeg_labels(eeg)
 
-Returns labels of the `eeg` object.
+Returns labels.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_labels(eeg::EEG)
     return eeg.eeg_header[:labels]
@@ -648,11 +568,11 @@ end
 """
     eeg_samplingrate(eeg)
 
-Returns sampling rate of the `eeg` object.
+Returns sampling rate.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_samplingrate(eeg::EEG)
     return eeg.eeg_header[:sampling_rate][1]
@@ -661,11 +581,11 @@ end
 """
     eeg_info(eeg)
 
-Shows info of the `eeg` object.
+Shows info.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_info(eeg::EEG)
     println("         EEG file name: $(eeg.eeg_header[:eeg_filename])")
@@ -697,12 +617,12 @@ end
 """
     eeg_epochs(eeg; epochs_no=nothing, epochs_len=nothing, average=true)
 
-Splits `eeg` signals into epochs.
+Splits `eeg` into epochs.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
-- `epochs_no::Union{Int64, Nothing}=nothing` - number of epochs
+- `eeg::EEG`
+- `epochs_no::Union{Int64, Nothing}` - number of epochs
 - `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
@@ -745,7 +665,7 @@ Returns the `epoch_idx` epoch.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 - `epoch_idx::Int64` - epoch index
 """
 function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
@@ -761,6 +681,30 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch_idx=$epoch_idx)")
+
+    return eeg_new
+end
+
+"""
+    eeg_tconv(eeg, kernel)
+
+Performs convolution in the time domain.
+
+# Arguments
+
+- `eeg::EEG`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+"""
+function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    signal_convoluted = signal_tconv(eeg.eeg_signals, kernel)
+
+    ## EEG signal can only store Float64
+    typeof(kernel) == Vector{ComplexF64} && (signal_convoluted = abs.(signal_convoluted))
+
+    # create new dataset
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_convoluted)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_tconv(EEG, kernel=$kernel)")
 
     return eeg_new
 end

@@ -36,7 +36,7 @@ end
 
 Returns the positions of the `y` value in the vector `x`.
 """
-function vsearch(x::Vector, y::Number; return_distance=false)
+function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float64}; return_distance=false)
     y_dist, y_idx = findmin(abs.(x .- y))
     return_distance == false && return y_idx
     return_distance == true && return y_idx, y_dist
@@ -46,7 +46,7 @@ end
 
 Returns the positions of the `y` vector in the vector `x`.
 """
-function vsearch(x::Vector, y::Vector)
+function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
     y_idx = zeros(length(y))
     y_dist = zeros(length(y))
@@ -61,7 +61,7 @@ end
 
 Converts cartographic coordinates `x` and `y` to polar.
 """
-function cart2pol(x, y)
+function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
     rho = hypot(x, y)
     theta = atan(y, x)
 end
@@ -71,7 +71,7 @@ end
 
 Converts polar coordinates `theta` and `rho` to cartographic.
 """
-function pol2cart(theta, rho)
+function pol2cart(theta::Float64, rho::Float64)
     x = rho * cos(theta)
     y = rho * sin(theta)
     return x, y
@@ -89,7 +89,7 @@ cvangle(x::Vector{ComplexF64}) = atan.(imag(x), real(x))
 
 Returns the `n`-point long symmetric Hanning window.
 """
-hann(n::Int) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
+hann(n::Int64) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
 
 """
     hildebrand_rule(x)
@@ -97,14 +97,14 @@ hann(n::Int) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
 Calculates Hildebrand rule for vector `x`.
 If H < 0.2 then the vector `x` is symmetrical.
 """
-hildebrand_rule(x::Vector{Float64}) = (mean(x) - median(x)) ./ std(x)
+hildebrand_rule(x::Union{Vector{Int64}, Vector{Float64}}) = (mean(x) - median(x)) ./ std(x)
 
 """
     jaccard_similarity(x, y)
 
 Calculates Jaccard similarity between two vectors `x` and `y`.
 """
-function jaccard_similarity(x::Vector{Float64}, y::Vector{Float64})
+function jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
     intersection = length(intersect(x, y))
     union = length(x) + length(y) - intersection
     return intersection / union
@@ -115,7 +115,7 @@ end
 
 Calculates FFT for the vector `x` padded with `n` zeros at the end.
 """
-fft0(x::Vector, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
+fft0(x::Union{Vector{Int64}, Vector{Float64}}, n::Int) = fft(vcat(x, zeros(eltype(x), n)))
 
 """
     ifft0(x, n)
@@ -129,7 +129,7 @@ ifft0(x::Vector, n::Int) = ifft(vcat(x, zeros(eltype(x), n)))
 
 Returns the next power of 2 for given number `x`.
 """
-function nexpow2(x)
+function nexpow2(x::Union{Int64, Float64})
     x == 0 && return 1
     x == 0 || return 2 ^ ndigits(x - 1, base=2)
 end
@@ -139,7 +139,7 @@ end
 
 Splits the vector `x` into `n`-long pieces.
 """
-function vsplit(x::Vector, n::Int=1)
+function vsplit(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64=1)
     length(x) % n == 0 || throw(ArgumentError("""Length of "x" must be a multiple of "n"."""))
     x_m = reshape(x, length(x) ÷ n, n)
     result = [x_m[1, :]]
@@ -154,14 +154,14 @@ end
 
 Calculates Root Mean Square of the vector `x`.
 """
-rms(x::Vector{Float64}) = norm(x) / sqrt(length(x))
+rms(x::Union{Vector{Int64}, Vector{Float64}}) = norm(x) / sqrt(length(x))
 
 """
     db(x)
 
 Converts the vector or matrix `x` to dB. Maximum value of `x` is 0 dB.
 """
-function db(x::Union{Vector, Matrix})
+function db(x::Union{Vector{Int64}, Vector{Float64}, Matrix})
     x = float.(x)
     x[x .< 0] .= NaN
     result = 10 .* log10.(x ./ maximum(filter(!isnan, x)))
@@ -173,7 +173,7 @@ end
 
 Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` amplitude and  `p` phase.
 """
-sine(f, t, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
+sine(f, t::Union{Vector{Int64}, Vector{Float64}}, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
 
 """
     frequencies(t)
@@ -247,7 +247,7 @@ end
 Pads the vector `x` with `n` zeros at the beginning and at the end.
 """
 # to do: check if x is numeric vector
-pad0(x::Vector, n) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
+pad0(x::Union{Vector{Int64}, Vector{Float64}}, n) = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
 
 """
     hz2rads(f)
@@ -308,3 +308,10 @@ function sinc(t=-2:0.01:2, f=10.0, peak=0)
     y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2
     return y_sinc
 end
+
+"""
+    generate_time(len, fs)
+
+Returns time vector of length `len` and sampling frequency `fs`.
+"""
+generate_time(len::Union{Int64, Float64}, fs::Int64) = collect(range(0, len, step=(1 / fs)))
