@@ -73,7 +73,7 @@ edf = eeg_reference_car(edf)
 # filtering
 filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=eeg_samplingrate(edf), order=8)
 filter_response(fprototype=:chebyshev1, ftype=:bp, cutoff=[40, 50], fs=eeg_samplingrate(edf), rs=1, order=12)
-filter_response(fprototype=:chebyshev2, ftype=:bp, cutoff=[40, 50], fs=eeg_samplingrate(edf), rp=1, order=12)
+filter_response(fprototype=:chebyshev2, ftype=:bs, cutoff=[45, 55], fs=eeg_samplingrate(edf), rp=10, order=4)
 ## FIR
 edf_fir = eeg_filter(edf, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=8, window=hann(128))
 edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8)
@@ -114,6 +114,16 @@ heatmap(edf_cov[:, :, 1])
 # correlation
 edf_cor = eeg_cor(edf)
 heatmap(edf_cor)
+
+# autocovariance
+ac = eeg_autocov(e10, normalize=false)
+heatmap(ac)
+cc = eeg_crosscov(e10, demean=true)
+heatmap(cc)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
+cc = eeg_crosscov(edf1, edf2, lag=10)
+heatmap(cc)
 
 # normalize
 eeg_normalize_mean(edf)
