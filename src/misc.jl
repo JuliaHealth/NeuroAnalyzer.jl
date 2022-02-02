@@ -186,18 +186,26 @@ sine(f, t::Union{Vector{Int64}, Vector{Float64}}, a=1, p=0) = @. a * sin(2 * pi 
 
 Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 """
-function frequencies(t::Vector{Float64})
-        # sampling interval
-        dt = t[2] - t[1]
-        # sampling rate
-        fs = 1 / dt
-        # frequency step size
-        df = 1 / (length(t) * dt)
-        # Nyquist frequency
-        nyquist_freq = fs / 2
-        # frequency array
-        hz = collect(0:df:nyquist_freq)
-        return hz, nyquist_freq
+function frequencies(t::Union{Vector{Int64}, Vector{Float64}, StepRange{Int64, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}})
+    if typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
+        t = collect(t)
+    end
+    if typeof(t) == StepRange{Int64, Int64}
+        t = collect(t)
+    end
+
+    # sampling interval
+    dt = t[2] - t[1]
+    # sampling rate
+    fs = 1 / dt
+    # frequency step size
+    df = 1 / (length(t) * dt)
+    # Nyquist frequency
+    nyquist_freq = fs / 2
+    # frequency array
+    hz = collect(0:df:nyquist_freq)
+
+    return hz, nyquist_freq
 end
 
 """

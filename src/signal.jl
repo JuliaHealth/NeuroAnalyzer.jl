@@ -688,73 +688,6 @@ function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}
 end
 
 """
-    signal_filter_butter(signal; filter_type, cutoff, fs, poles=8)
-
-Filters `signal` using Butterworth filter.
-
-# Arguments
-
-- `signal::Vector{Float64}`
-- `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Int64` - sampling rate
-- `poles::Int64` - filter pole
-"""
-function signal_filter_butter(signal::Vector{Float64}; filter_type::Symbol, cutoff::Union{Int64, Float64, Vector{Float64}}, fs::Int64, poles::Int64=8)
-    filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-
-    if filter_type == :lp
-        responsetype = Lowpass(cutoff; fs=fs)
-        prototype = Butterworth(poles)
-    elseif filter_type == :hp
-        responsetype = Highpass(cutoff; fs=fs)
-        prototype = Butterworth(poles)
-    elseif filter_type == :bp
-        length(cutoff) < 2 && throw(ArgumentError("For band-pass filter two frequencies must be given."))
-        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-        prototype = Butterworth(poles)
-    elseif filter_type == :bs
-        length(cutoff) < 2 && throw(ArgumentError("For band-stop filter two frequencies must be given."))
-        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
-        prototype = Butterworth(poles)
-    end
-
-    filter = digitalfilter(responsetype, prototype)
-    signal_filtered = filt(filter, signal)
-
-    return signal_filtered
-end
-
-"""
-    signal_filter_butter(signal; filter_type, cutoff, fs, poles=8)
-
-Filters `signal` using Butterworth filter.
-
-# Arguments
-
-- `signal::Array{Float64, 3}`
-- `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Int64` - sampling rate
-- `poles::Int64` - filter pole
-"""
-function signal_filter_butter(signal::Array{Float64, 3}; filter_type::Symbol, cutoff::Union{Int64, Float64, Vector{Float64}}, fs::Int64, poles::Int64=8)
-    filter_type in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-
-    channels_no = size(signal, 1)
-    signal_filtered = zeros(size(signal))
-    epochs_no = size(signal, 3)
-
-    for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_filtered[idx, :, epoch] = signal_filter_butter(signal[idx, :, epoch], filter_type=filter_type, cutoff=cutoff, fs=fs, poles=poles)
-        end
-    end
-
-    return signal_filtered
-end
-
-"""
     signal_drop_channel(signal, channels)
 
 Removes `channels` from the `signal`.
@@ -1155,14 +1088,15 @@ Generates Morlet wavelet.
 
 - `fs::Int64` - sampling frequency
 - `wt::Union{Int64, Float64}` - length = -wt:1/fs:ws
-- `wf::Union{Int64, Float64}` - width, determines time-frequency precision trade-off
+- `wf::Union{Int64, Float64}` - frequency
+- `ncyc::Int64` - number of cycles
 - `complex::Bool` - if true, generates complex Morlet
 """
-function morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; complex::Bool=false)
+function morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
-    w = 2 * (5 / (2 * pi * wf))^2                                       # time-frequency precision
+    w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
     gaussian = @. exp((-wt.^2) / w)
     morlet_wavelet = sin_wave .* gaussian
     return morlet_wavelet
@@ -1209,4 +1143,83 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
     end
 
     return signal_convoluted
+end
+
+"""
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+
+Filters `signal` using zero phase distortion filter.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `fprototype::Symbol[:butterworth, :fir]
+- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `fs::Int64` - sampling rate
+- `order::Int64` - filter order
+- `window::Vector{Float64} - window, required for FIR filter
+"""
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
+    fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
+
+    fprototype == :butterworth && (prototype = Butterworth(order))
+    fprototype == :fir && (prototype = FIRWindow(window))
+
+    if ftype == :lp
+        length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
+        responsetype = Lowpass(cutoff; fs=fs)
+    elseif ftype == :hp
+        length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
+        responsetype = Highpass(cutoff; fs=fs)
+        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+    elseif ftype == :bp
+        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
+        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+    elseif ftype == :bs
+        length(cutoff) < 2 && throw(ArgumentError("For band-stop filter two frequencies must be given."))
+        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+    end
+
+    filter = digitalfilter(responsetype, prototype)
+    signal_filtered = filtfilt(filter, signal)
+
+    return signal_filtered
+end
+
+"""
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+
+Filters `signal` using zero phase distortion filter.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `fprototype::Symbol[:butterworth, :fir]
+- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `fs::Int64` - sampling rate
+- `order::Int64` - filter order
+- `window::Vector{Float64} - window, required for FIR filter
+"""
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+    channels_no = size(signal, 1)
+    signal_filtered = zeros(size(signal))
+    epochs_no = size(signal, 3)
+
+    for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
+                                                           fprototype=fprototype,
+                                                           ftype=ftype,
+                                                           cutoff=cutoff,
+                                                           fs=fs,
+                                                           order=order,
+                                                           window=window)
+        end
+    end
+
+    return signal_filtered
 end

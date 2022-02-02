@@ -20,7 +20,7 @@ include("eeg.jl")
 export eeg_derivative
 export eeg_detrend
 export eeg_drop_channel
-export eeg_filter_butter
+export eeg_filter
 export eeg_total_power
 export eeg_band_power
 export eeg_reference_channel
@@ -60,7 +60,7 @@ export signal_detrend
 export signal_difference
 export signal_drop_channel
 export signal_epochs
-export signal_filter_butter
+export signal_filter
 export signal_make_spectrum
 export signal_mean
 export signal_spectrum

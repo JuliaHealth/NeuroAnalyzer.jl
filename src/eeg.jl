@@ -57,37 +57,6 @@ function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRa
 end
 
 """
-    eeg_filter_butter(eeg; filter_type, cutoff, fs, poles=8)
-
-Filters the `eeg` using Butterworth filter.
-
-# Arguments
-
-- `eeg::EEG`
-- `filter_type::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Float64` - filter cutoff in Hz (tuple or vector for `:bp` and `:bs`)
-- `fs::Float64` - sampling rate
-- `poles::Int` - filter pole
-"""
-function eeg_filter_butter(eeg::EEG; filter_type, cutoff, poles=8)
-    fs = eeg.eeg_header[:sampling_rate][1]
-
-    signal_filtered = signal_filter_butter(eeg.eeg_signals,
-                                           filter_type=filter_type,
-                                           cutoff=cutoff,
-                                           fs=fs,
-                                           poles=poles)
-
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history],
-          "eeg_filter_butter(EEG, filter_type=$filter_type, cutoff=$cutoff, poles=$poles)")
-
-    return eeg_new
-end
-
-"""
     eeg_derivative(eeg)
 
 Returns the derivative of the `eeg` with length same as the signal.
@@ -705,6 +674,40 @@ function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_convoluted)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_tconv(EEG, kernel=$kernel)")
+
+    return eeg_new
+end
+
+"""
+    eeg_filter(signal; prototype, filter_type, cutoff, fs, order=8, window=hanning(64))
+
+Filters `signal` using zero phase distortion filter.
+
+# Arguments
+
+- `eeg::EEG`
+- `fprototype::Symbol[:butterworth, :fir]
+- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `fs::Int64` - sampling rate
+- `order::Int64` - filter order
+- `window::Vector{Float64} - window, required for FIR filter
+"""
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64=8, window::Vector{Float64}=hanning(64))
+    fs = eeg.eeg_header[:sampling_rate][1]
+
+    signal_filtered = signal_filter(eeg.eeg_signals,
+                                    fprototype=fprototype,
+                                    ftype=filter_type,
+                                    cutoff=cutoff,
+                                    fs=fs,
+                                    order=order,
+                                    window=window)
+
+    # create new dataset
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype,ftype=$ftype, cutoff=$cutoff, order=$order, window=$window)")
 
     return eeg_new
 end

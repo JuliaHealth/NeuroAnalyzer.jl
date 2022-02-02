@@ -50,9 +50,12 @@ edf = eeg_reference_car(edf)
 eeg_reference_car(e10)
 
 # filtering
-edf = eeg_filter_butter(edf, filter_type=:bs, cutoff=[45.0, 55.0], poles=8);
-edf = eeg_filter_butter(edf, filter_type=:lp, cutoff=45.0, poles=8);
-edf = eeg_filter_butter(edf, filter_type=:hp, cutoff=1.0, poles=8);
+## FIR
+edf = eeg_filter(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8, window=hamming(128));
+## IIR
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8);
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:hp, cutoff=1.0, order=8);
 
 # remove channel
 edf1 = eeg_drop_channel(edf, 10)
