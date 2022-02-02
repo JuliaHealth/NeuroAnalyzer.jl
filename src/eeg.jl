@@ -793,7 +793,7 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `remove_dc::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize crosscovariance
 """
-function eeg_crosscov(eeg1::EEG, eeg2:EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
     ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
     size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
 
