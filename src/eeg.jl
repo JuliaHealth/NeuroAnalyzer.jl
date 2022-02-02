@@ -774,7 +774,7 @@ Calculates cross-covariance of each the `eeg` channels.
 - `normalize::Bool` - normalize cross-covariance
 """
 function eeg_crosscov(eeg::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    ccov_mat, lags = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
     size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
 
     return ccov_mat
@@ -794,7 +794,7 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `normalize::Bool` - normalize crosscovariance
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    ccov_mat, lags = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    ccov_mat = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, normalize=normalize)
     size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
 
     return ccov_mat
