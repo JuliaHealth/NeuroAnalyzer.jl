@@ -344,7 +344,7 @@ Returns zero phase distortion filter response.
 - `order::Int64` - filter order
 - `window::Vector{Float64} - window, required for FIR filter
 """
-function signal_filter(fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function filter_response(fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
     fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
 
