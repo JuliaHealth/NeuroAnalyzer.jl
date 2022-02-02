@@ -125,6 +125,8 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
 
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
+
+    return p
 end
 
 """
@@ -172,11 +174,11 @@ Returns zero phase distortion filter response.
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
-- `rp::Float64` - dB ripple in the passband
-- `rs::Float64` - dB attentuation in the stopband
-- `window::Vector{Float64} - window, required for FIR filter
+- `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Nothing, Int64, Float64}` - dB attenuation in the stopband
+- `window::Union{Nothing, Vector{Float64}} - window, required for FIR filter
 """
-function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Vector{Float64})
+function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
     fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("""Filter prototype must be ":butterworth", ":chebyshev1:, ":chebyshev2" or ":elliptic"."""))
 
