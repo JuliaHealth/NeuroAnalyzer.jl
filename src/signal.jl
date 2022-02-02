@@ -348,7 +348,7 @@ function signal_difference(signal1::Matrix, signal2::Matrix; n=3, method=:absdif
 end
 
 """
-   signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
+   signal_autocov(signal; lag=1, demean=false, normalize=false)
 
 Calculates autocovariance of the `signal`.
 
@@ -356,13 +356,13 @@ Calculates autocovariance of the `signal`.
 
 - `signal::Vector{Float64}`
 - `lag::Int64` - lags range is `-lag:lag`
-- `remove_dc::Bool` - demean `signal` prior to calculations
+- `demean::Bool` - demean `signal` prior to calculations
 - `normalize::Bool` - normalize autocovariance
 """
-function signal_autocov(signal::Vector{Float64}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_autocov(signal::Vector{Float64}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     lags = collect(-lag:lag)
 
-    if remove_dc == true
+    if demean == true
         signal_demeaned = signal .- mean(signal)
     else
         signal_demeaned = signal
@@ -396,7 +396,7 @@ function signal_autocov(signal::Vector{Float64}; lag::Int64=1, remove_dc::Bool=f
 end
 
 """
-   signal_autocov(signal; lag=1, remove_dc=false, normalize=false)
+   signal_autocov(signal; lag=1, demean=false, normalize=false)
 
 Calculates autocovariance of each the `signal` channels.
 
@@ -404,10 +404,10 @@ Calculates autocovariance of each the `signal` channels.
 
 - `signal::Array{Float64, 3}`
 - `lag::Int64` - lags range is `-lag:lag`
-- `remove_dc::Bool` - demean signal prior to analysis
+- `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize autocovariance
 """
-function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
@@ -417,7 +417,7 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool
         for idx in 1:channels_no
             acov_mat[idx, :, epoch] = signal_autocov(signal[idx, :, epoch],
                                                      lag=lag,
-                                                     remove_dc=remove_dc,
+                                                     demean=demean,
                                                      normalize=normalize)
         end
     end
@@ -426,7 +426,7 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool
 end
 
 """
-   signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, demean=false, normalize=false)
 
 Calculates cross-covariance between `signal1` and `signal2`.
 
@@ -435,15 +435,15 @@ Calculates cross-covariance between `signal1` and `signal2`.
 - `signal1::Vector{Float64}`
 - `signal2::Vector{Float64}`
 - `lag::Int64` - lags range is `-lag:lag`
-- `remove_dc::Bool` - demean signal prior to analysis
+- `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize cross-covariance
 """
-function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
 
     lags = collect(-lag:lag)
 
-    if remove_dc == true
+    if demean == true
         signal_demeaned1 = signal1 .- mean(signal1)
         signal_demeaned2 = signal2 .- mean(signal2)
     else
@@ -479,22 +479,22 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
 end
 
 """
-   signal_crosscov(signal; lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal; lag=1, demean=false, normalize=false)
 
-Calculates cross-covariance for all channels in the `signal`.
+Calculates cross-covariance between all channels in the `signal`.
 
 # Arguments
 
 - `signal::Matrix{Float64}` - the signal
 - `lag::Int64` - lags range is `-lag:lag`
-- `remove_dc::Bool` - demean `signal` prior to analysis
+- `demean::Bool` - demean `signal` prior to analysis
 - `normalize::Bool` - normalize cross-covariance
 """
-function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
-    ccov_mat = zeros(channels_no^2, channels_no, epochs_no)
+    ccov_mat = zeros(channels_no^2, length(lags), epochs_no)
 
     for epoch in 1:epochs_no
     ccov_mat_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
@@ -503,20 +503,21 @@ function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Boo
                 ccov_mat_packed[idx1, idx2] = signal_crosscov(signal[idx1, :, epoch],
                                                               signal[idx2, :, epoch],
                                                               lag=lag,
-                                                              remove_dc=remove_dc,
+                                                              demean=demean,
                                                               normalize=normalize)
             end
         end
         for idx in 1:channels_no^2
-            ccov_mat[idx, :, epochs_no] = ccov_mat_packed[idx]
+            ccov_mat[idx, :, epoch] = ccov_mat_packed[idx]
         end
     end
 
-    return reverse(ccov_mat)
+    # return reverse(ccov_mat)
+    return ccov_mat
 end
 
 """
-   signal_crosscov(signal1, signal2; lag=1, remove_dc=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, demean=false, normalize=false)
 
 Calculates cross-covariance between same channels in `signal1` and `signal2`.
 
@@ -525,10 +526,10 @@ Calculates cross-covariance between same channels in `signal1` and `signal2`.
 - `signal1::Array{Float64, 3}`
 - `signal2::Array{Float64, 3}`
 - `lag::Int64` - lags range is `-lag:lag`
-- `remove_dc::Bool` - demean signal prior to analysis
+- `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize cross-covariance
 """
-function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     size(signal1) != size(signal2) && throw(ArgumentError("Both arrays must be of the same as size."))
 
     lags = collect(-lag:lag)
@@ -541,7 +542,7 @@ function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3};
             ccov_mat[idx, :, epoch] = signal_crosscov(signal1[idx, :, epoch],
                                                       signal2[idx, :, epoch],
                                                       lag=lag,
-                                                      remove_dc=remove_dc,
+                                                      demean=demean,
                                                       normalize=normalize)
         end
     end
