@@ -46,6 +46,8 @@ export eeg_labels
 export eeg_samplingrate
 export eeg_tconv
 export eeg_downsample
+export eeg_autocov
+export eeg_crosscov
 
 include("eeg_load_edf.jl")
 export eeg_load_edf

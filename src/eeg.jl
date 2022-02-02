@@ -453,6 +453,7 @@ Calculates covariance between all channels of `eeg`.
 # Arguments
 
 - `eeg::EEG`
+- `normalize::Bool` - normalize covariance
 """
 function eeg_cov(eeg::EEG; normalize=true)
     cov_mat = signal_cov(eeg.eeg_signals, normalize=normalize)
@@ -469,6 +470,7 @@ Calculates correlation coefficients between all channels of `eeg`.
 # Arguments
 
 - `eeg::EEG`
+- `normalize::Bool` - normalize correlation
 """
 function eeg_cor(eeg::EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
@@ -738,4 +740,62 @@ function eeg_downsample(eeg::EEG; new_sr::Int64)
     push!(eeg_new.eeg_header[:history], "eeg_downsample(EEG, new_sr=$new_sr)")
 
     return eeg_new
+end
+
+"""
+    eeg_autocov(eeg; lag=1, remove_dc=false, normalize=false)
+
+Calculates autocovariance of each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `lag::Int64` - lags range is `-lag:lag`
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize autocovariance
+"""
+function eeg_autocov(eeg::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+    acov_mat = signal_autocov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    size(acov_mat, 3) == 1 && (acov_mat = reshape(acov_mat, size(acov_mat, 1), size(acov_mat, 2)))
+
+    return acov_mat
+end
+
+"""
+    eeg_crosscov(eeg; lag=1, remove_dc=false, normalize=false)
+
+Calculates cross-covariance of each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `lag::Int64` - lags range is `-lag:lag`
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize cross-covariance
+"""
+function eeg_crosscov(eeg::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
+
+    return ccov_mat
+end
+
+"""
+    eeg_crosscov(eeg1, eeg1; lag=1, remove_dc=false, normalize=false)
+
+Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::EEG`
+- `eeg2::EEG`
+- `lag::Int64` - lags range is `-lag:lag`
+- `remove_dc::Bool` - demean signal prior to analysis
+- `normalize::Bool` - normalize crosscovariance
+"""
+function eeg_crosscov(eeg1::EEG, eeg2:EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
+
+    return ccov_mat
 end
