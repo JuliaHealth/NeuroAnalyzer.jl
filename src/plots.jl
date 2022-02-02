@@ -10,7 +10,7 @@ Plots `signal` against time vector `t`.
 - `offset::Int64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
+- `ylabel::String` - y-axis label
 - `yamp::Float64` - y-axis limits (-yamp:yamp)
 """
 function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Union{Float64, Nothing}=nothing)
@@ -48,7 +48,7 @@ Plots `signal` matrix against time vector `t`.
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
+- `ylabel::String` - y-axis label
 """
 function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
     
@@ -97,7 +97,7 @@ Plots `eeg` channels.
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
-- `ylabel::String` - y-axis lable
+- `ylabel::String` - y-axis label
 - `figure::String` - name of the output figure file
 """
 function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
@@ -219,7 +219,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p1 = plot(w, H, title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabl="Magnitude [dB]", xlabel="Frequency [Hz]", label="")
+    p1 = plot(w, H, title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Magnitude [dB]", xlabel="Frequency [Hz]", label="")
     if length(cutoff) == 1
         p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
     else
