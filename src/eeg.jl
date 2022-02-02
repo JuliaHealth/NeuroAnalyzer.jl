@@ -682,14 +682,15 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `eeg::EEG`
-- `fprototype::Symbol[:butterworth, :fir]
+- `fprototype::Symbol[:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Int64` - sampling rate
 - `order::Int64` - filter order
-- `window::Vector{Float64} - window, required for FIR filter
+- `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Nothing, Int64, Float64}` - dB attentuation in the stopband
+- `window::Union{Nothing, Vector{Float64}}` - window, required for FIR filter
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64=8, window::Vector{Float64}=hanning(64))
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
@@ -698,12 +699,14 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{I
                                     cutoff=cutoff,
                                     fs=fs,
                                     order=order,
+                                    rp=rp,
+                                    rs=rs,
                                     window=window)
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype,ftype=$ftype, cutoff=$cutoff, order=$order, window=$window, response=$response)")
+    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, tp=$rp, rs$=rs, window=$window)")
 
     return eeg_new
 end

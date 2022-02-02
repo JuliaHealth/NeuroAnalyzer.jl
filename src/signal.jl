@@ -1158,11 +1158,14 @@ Filters `signal` using zero phase distortion filter.
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
-- `window::Vector{Float64} - window, required for FIR filter
+- `rp::Float64` - dB ripple in the passband
+- `rs::Float64` - dB attentuation in the stopband
+- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
+    window == nothing || (length(window) > length(signal) && throw(ArgumentError("""For FIR filter "window" must be longer that "signal".""")))
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-    fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
+    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth", ":chebyshev1:, ":chebyshev2", ":elliptic" or ":fir"."""))
 
     if ftype == :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
@@ -1170,18 +1173,34 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
     elseif ftype == :hp
         length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
         responsetype = Highpass(cutoff; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     elseif ftype == :bp
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     elseif ftype == :bs
         length(cutoff) < 2 && throw(ArgumentError("For band-stop filter two frequencies must be given."))
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     end
 
     fprototype == :butterworth && (prototype = Butterworth(order))
-    fprototype == :fir && (prototype = FIRWindow(window))
+    if fprototype == :fir
+        window == nothing && throw(ArgumentError("""For FIR filter "window" must be given."""))
+        if ftype == :hp || ftype == :bp || ftype == :bs
+            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+        end
+        prototype = FIRWindow(window)
+    end
+    if fprototype == :chebyshev1
+        rs == nothing && throw(ArgumentError("""For Chebyshev1 filter "rs" must be given."""))
+        prototype = Chebyshev1(order, rs)
+    end
+    if fprototype == :chebyshev2
+        rp == nothing && throw(ArgumentError("""For Chebyshev2 filter "rp" must be given."""))
+        prototype = Chebyshev2(order, rp)
+    end
+    if fprototype == :elliptic
+        rs == nothing && throw(ArgumentError("""For Elliptic filter "rs" must be given."""))
+        rp == nothing && throw(ArgumentError("""For Elliptic filter "rp" must be given."""))
+        prototype = Elliptic(order, rp, rs)
+    end
 
     eeg_filter = digitalfilter(responsetype, prototype)
     signal_filtered = filtfilt(eeg_filter, signal)
@@ -1197,14 +1216,16 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fprototype::Symbol[:butterworth, :fir]
+- `fprototype::Symbol[:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
-- `window::Vector{Float64} - window, required for FIR filter
+- `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Nothing, Int64, Float64}` - dB attentuation in the stopband
+- `window::Union{Nothing, Vector{Float64}}` - window, required for FIR filter
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
     channels_no = size(signal, 1)
     signal_filtered = zeros(size(signal))
     epochs_no = size(signal, 3)
@@ -1217,6 +1238,8 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Sym
                                                            cutoff=cutoff,
                                                            fs=fs,
                                                            order=order,
+                                                           rp=rp,
+                                                           rs=rs,
                                                            window=window)
         end
     end

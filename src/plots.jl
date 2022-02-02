@@ -161,22 +161,24 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_la
 end
 
 """
-    filter_response(fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+    filter_response(fprototype, ftype, cutoff, fs, order, rp, rs, window)
 
 Returns zero phase distortion filter response.
 
 # Arguments
 
-- `fprototype::Symbol[:butterworth]
+- `fprototype::Symbol[:butterworth, :chebyshev1, :chebyshev2, :elliptic]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
+- `rp::Float64` - dB ripple in the passband
+- `rs::Float64` - dB attentuation in the stopband
 - `window::Vector{Float64} - window, required for FIR filter
 """
-function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Vector{Float64})
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-    fprototype in [:butterworth] || throw(ArgumentError("""Filter prototype must be ":butterworth"."""))
+    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("""Filter prototype must be ":butterworth", ":chebyshev1:, ":chebyshev2" or ":elliptic"."""))
 
     if ftype == :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
@@ -192,6 +194,19 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     end
 
     fprototype == :butterworth && (prototype = Butterworth(order))
+    if fprototype == :chebyshev1
+        rs == nothing && throw(ArgumentError("For Chebyshev1 filter rs must be given."))
+        prototype = Chebyshev1(order, rs)
+    end
+    if fprototype == :chebyshev2
+        rp == nothing && throw(ArgumentError("For Chebyshev2 filter rp must be given."))
+        prototype = Chebyshev2(order, rp)
+    end
+    if fprototype == :elliptic
+        rs == nothing && throw(ArgumentError("For Elliptic filter rs must be given."))
+        rp == nothing && throw(ArgumentError("For Elliptic filter rp must be given."))
+        prototype = Elliptic(order, rp, rs)
+    end
 
     ffilter = digitalfilter(responsetype, prototype)
 
@@ -199,17 +214,30 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
 
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
-    p1 = plot(w, abs.(H), title="Frequency response: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, w[end]), xlabel="Frequency [Hz]", label="")
-    length(cutoff) == 1 && (p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label=""))
-    if length(cutoff) == 2
-        p1 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
-        p1 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+    x_max = w[end]
+    ftype == :hp && (x_max = cutoff * 10)
+    p1 = plot(w, abs.(H), title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), xlabel="Frequency [Hz]", label="")
+    if length(cutoff) == 1
+        p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+    else
+        p2 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
+        p2 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
     end
 
     tau, w = grpdelay(ffilter)
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
-    p2 = plot(w, abs.(tau), title="Group delay: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, w[end]), xlabel="Frequency [Hz]", label="")
+    x_max = w[end]
+    ftype == :hp && (x_max = cutoff * 10)
+    p2 = plot(w, abs.(tau), title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), xlabel="Frequency [Hz]", label="")
+    if length(cutoff) == 1
+        p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+    else
+        p2 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
+        p2 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+    end
+
     p = plot(p1, p2, layout=(2, 1))
+
     return p
 end

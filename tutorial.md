@@ -52,8 +52,13 @@ edf = eeg_reference_car(edf)
 eeg_reference_car(e10)
 
 # filtering
-filter_response(fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8)
-filter_response(fprototype=:fir, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf))
+using NeuroJ
+
+# load EDF file
+edf = eeg_load_edf("eeg-test.edf")
+filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=eeg_samplingrate(edf), order=8)
+filter_response2(fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8)
+filter_response2(fprototype=:butterworth, ftype=:lp, cutoff=45, fs=eeg_samplingrate(edf), order=4)
 ## FIR
 edf_fir = eeg_filter(e2avg, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8)
