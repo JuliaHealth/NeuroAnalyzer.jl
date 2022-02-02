@@ -125,8 +125,6 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
 
     # TO DO: catching error while saving
     figure !== "" && (savefig(p, figure))
-    
-    return p
 end
 
 """
@@ -169,7 +167,7 @@ Returns zero phase distortion filter response.
 
 # Arguments
 
-- `fprototype::Symbol[:butterworth, :fir]
+- `fprototype::Symbol[:butterworth]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Int64` - sampling rate
@@ -178,7 +176,7 @@ Returns zero phase distortion filter response.
 """
 function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
-    fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
+    fprototype in [:butterworth] || throw(ArgumentError("""Filter prototype must be ":butterworth"."""))
 
     if ftype == :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
@@ -186,27 +184,32 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     elseif ftype == :hp
         length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
         responsetype = Highpass(cutoff; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     elseif ftype == :bp
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     elseif ftype == :bs
         length(cutoff) < 2 && throw(ArgumentError("For band-stop filter two frequencies must be given."))
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
-        mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
     end
 
     fprototype == :butterworth && (prototype = Butterworth(order))
-    fprototype == :fir && (prototype = FIRWindow(window))
 
-    eeg_filter = digitalfilter(responsetype, prototype)
+    ffilter = digitalfilter(responsetype, prototype)
 
-    H, w = freqresp(eeg_filter)
+    H, w = freqresp(ffilter)
 
-    p = plot(w, abs.(H), title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, cutoff * 2), xlabel="Frequency [Hz]", label="")
-    p = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    p1 = plot(w, abs.(H), title="Frequency response: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, w[end]), xlabel="Frequency [Hz]", label="")
+    length(cutoff) == 1 && (p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label=""))
+    if length(cutoff) == 2
+        p1 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
+        p1 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+    end
 
-    plot(p)
-
-    return H, w, p
+    tau, w = grpdelay(ffilter)
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    p2 = plot(w, abs.(tau), title="Group delay: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, w[end]), xlabel="Frequency [Hz]", label="")
+    p = plot(p1, p2, layout=(2, 1))
+    return p
 end
