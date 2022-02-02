@@ -52,6 +52,7 @@ edf = eeg_reference_car(edf)
 eeg_reference_car(e10)
 
 # filtering
+filter_response(fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8, response=true)
 ## FIR
 edf_fir = eeg_filter(e2avg, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8)
@@ -130,7 +131,6 @@ bar(eeg_labels(e2avg),
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
 f4 = eeg_get_channel(edf, 4)
-signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8, response=true)
 f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8)
 
 # time-domain convolution

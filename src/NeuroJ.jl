@@ -77,6 +77,7 @@ export signal_upsample
 export signal_tconv
 
 include("misc.jl")
+export filter_response
 export generate_time
 export cart2pol
 export cvangle

@@ -675,7 +675,7 @@ function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
 end
 
 """
-    eeg_filter(signal; prototype, filter_type, cutoff, fs, order=8, window=hanning(64), response=false)
+    eeg_filter(signal; prototype, filter_type, cutoff, fs, order=8, window=hanning(64))
 
 Filters `signal` using zero phase distortion filter.
 
@@ -688,9 +688,8 @@ Filters `signal` using zero phase distortion filter.
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
 - `window::Vector{Float64} - window, required for FIR filter
-- `response::Bool=false` - plot filter response
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64=8, window::Vector{Float64}=hanning(64), response=false)
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64=8, window::Vector{Float64}=hanning(64))
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
@@ -699,8 +698,7 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{I
                                     cutoff=cutoff,
                                     fs=fs,
                                     order=order,
-                                    window=window,
-                                    response=response)
+                                    window=window)
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
