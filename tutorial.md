@@ -10,6 +10,7 @@ edf = eeg_load_edf("eeg-test.edf")
 
 # show properties
 eeg_info(edf)
+eeg_info(e2avg)
 edf.eeg_header[:sampling_rate][1]
 edf.eeg_header[:eeg_duration_seconds]
 edf.eeg_header[:eeg_duration_samples]
@@ -76,7 +77,7 @@ edf_512 = eeg_upsample(edf, new_sr=512)
 p1 = eeg_plot(e2avg)
 p2 = eeg_plot(edf_but)
 p3 = eeg_plot(edf_fir)
-plot(p1, p2, p3, layout=(, 3))
+plot(p1, p2, p3, layout=(1, 3))
 
 eeg_plot(edf)
 eeg_plot(edf_512, offset=60*256)
@@ -129,6 +130,8 @@ bar(eeg_labels(e2avg),
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
 f4 = eeg_get_channel(edf, 4)
+signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8, response=true)
+f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8)
 
 # time-domain convolution
 mw = morlet(256, 1, 10, complex=false)

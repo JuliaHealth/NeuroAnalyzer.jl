@@ -1146,7 +1146,7 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64), response=false)
 
 Filters `signal` using zero phase distortion filter.
 
@@ -1159,8 +1159,9 @@ Filters `signal` using zero phase distortion filter.
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
 - `window::Vector{Float64} - window, required for FIR filter
+- `response::Bool=false` - plot filter response
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64), response=false)
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
     fprototype in [:butterworth, :fir] || throw(ArgumentError("""Filter prototype must be ":butterworth" or ":fir"."""))
 
@@ -1183,14 +1184,20 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
     fprototype == :butterworth && (prototype = Butterworth(order))
     fprototype == :fir && (prototype = FIRWindow(window))
 
-    filter = digitalfilter(responsetype, prototype)
-    signal_filtered = filtfilt(filter, signal)
+    eeg_filter = digitalfilter(responsetype, prototype)
+    signal_filtered = filtfilt(eeg_filter, signal)
+
+    if response == true
+        H, w = freqresp(eeg_filter)
+        plot(w, abs.(H), title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype)))($cutoff Hz), order: $order", xlims=(0, cutoff * 2), xlabel="Frequency [Hz]", label="")
+        plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+    end
 
     return signal_filtered
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64), response=false)
 
 Filters `signal` using zero phase distortion filter.
 
@@ -1203,8 +1210,9 @@ Filters `signal` using zero phase distortion filter.
 - `fs::Int64` - sampling rate
 - `order::Int64` - filter order
 - `window::Vector{Float64} - window, required for FIR filter
+- `response::Bool=false` - plot filter response
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64))
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64=8, window::Vector{Float64}=hanning(64), response=false)
     channels_no = size(signal, 1)
     signal_filtered = zeros(size(signal))
     epochs_no = size(signal, 3)
@@ -1217,7 +1225,8 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Sym
                                                            cutoff=cutoff,
                                                            fs=fs,
                                                            order=order,
-                                                           window=window)
+                                                           window=window,
+                                                           response=response)
         end
     end
 
