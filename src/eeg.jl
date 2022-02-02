@@ -698,7 +698,7 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{I
 
     signal_filtered = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
-                                    ftype=filter_type,
+                                    ftype=ftype,
                                     cutoff=cutoff,
                                     fs=fs,
                                     order=order,
