@@ -638,7 +638,7 @@ function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
         throw(ArgumentError("Epoch index out of range."))
     end
 
-    signal_new = eeg.eeg_signals[:, :, epoch_idx]
+    signal_new = reshape(eeg.eeg_signals[:, :, epoch_idx], size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2), 1)
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_new)
     eeg_new.eeg_header[:epochs_no] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
