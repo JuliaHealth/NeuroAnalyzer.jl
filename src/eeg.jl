@@ -755,7 +755,7 @@ Calculates autocovariance of each the `eeg` channels.
 - `normalize::Bool` - normalize autocovariance
 """
 function eeg_autocov(eeg::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
-    acov_mat = signal_autocov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    acov_mat, lags= signal_autocov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
     size(acov_mat, 3) == 1 && (acov_mat = reshape(acov_mat, size(acov_mat, 1), size(acov_mat, 2)))
 
     return acov_mat
@@ -774,7 +774,7 @@ Calculates cross-covariance of each the `eeg` channels.
 - `normalize::Bool` - normalize cross-covariance
 """
 function eeg_crosscov(eeg::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
-    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    ccov_mat, lags = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
     size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
 
     return ccov_mat
@@ -794,7 +794,7 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `normalize::Bool` - normalize crosscovariance
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
-    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
+    ccov_mat, lags = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, remove_dc=remove_dc, normalize=normalize)
     size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
 
     return ccov_mat

@@ -392,7 +392,7 @@ function signal_autocov(signal::Vector{Float64}; lag::Int64=1, remove_dc::Bool=f
         end
     end
 
-    return acov, lags
+    return acov
 end
 
 """
@@ -415,14 +415,14 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool
 
     for epoch in 1:epochs_no
         for idx in 1:channels_no
-            acov_mat[idx, :, epoch], _ = signal_autocov(signal[idx, :, epoch],
-                                                         lag=lag,
-                                                         remove_dc=remove_dc,
-                                                         normalize=normalize)
+            acov_mat[idx, :, epoch] = signal_autocov(signal[idx, :, epoch],
+                                                     lag=lag,
+                                                     remove_dc=remove_dc,
+                                                     normalize=normalize)
         end
     end
 
-    return acov_mat, lags
+    return acov_mat
 end
 
 """
@@ -475,7 +475,7 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
         end
     end
 
-    return acov, lags
+    return acov
 end
 
 """
@@ -490,7 +490,7 @@ Calculates cross-covariance for all channels in the `signal`.
 - `remove_dc::Bool` - demean `signal` prior to analysis
 - `normalize::Bool` - normalize cross-covariance
 """
-function signal_crosscov(signal::Matrix{Float64}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, remove_dc::Bool=false, normalize::Bool=false)
     lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
@@ -500,11 +500,11 @@ function signal_crosscov(signal::Matrix{Float64}; lag::Int64=1, remove_dc::Bool=
     ccov_mat_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
         for idx1 in 1:channels_no
             for idx2 in 1:channels_no
-                ccov_mat_packed[idx1, idx2], _ = signal_crosscov(signal[idx1, :, epoch],
-                                                                  signal[idx2, :, epoch],
-                                                                  lag=lag,
-                                                                  remove_dc=remove_dc,
-                                                                  normalize=normalize)
+                ccov_mat_packed[idx1, idx2] = signal_crosscov(signal[idx1, :, epoch],
+                                                              signal[idx2, :, epoch],
+                                                              lag=lag,
+                                                              remove_dc=remove_dc,
+                                                              normalize=normalize)
             end
         end
         for idx in 1:channels_no^2
@@ -512,7 +512,7 @@ function signal_crosscov(signal::Matrix{Float64}; lag::Int64=1, remove_dc::Bool=
         end
     end
 
-    return reverse(ccov_mat), lags
+    return reverse(ccov_mat)
 end
 
 """
@@ -533,20 +533,20 @@ function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3};
 
     lags = collect(-lag:lag)
     channels_no = size(signal1, 1)
-    epochs_no = size(signal, 3)
+    epochs_no = size(signal1, 3)
     ccov_mat = zeros(channels_no, length(lags), epochs_no)
 
     for epoch in 1:epochs_no
         for idx in 1:channels_no
-            ccov_mat[idx, :, epoch], _ = signal_crosscov(signal1[idx, :, epoch],
-                                                              signal2[idx, :, epoch],
-                                                              lag=lag,
-                                                              remove_dc=remove_dc,
-                                                              normalize=normalize)
+            ccov_mat[idx, :, epoch] = signal_crosscov(signal1[idx, :, epoch],
+                                                      signal2[idx, :, epoch],
+                                                      lag=lag,
+                                                      remove_dc=remove_dc,
+                                                      normalize=normalize)
         end
     end
 
-    return ccov_mat, lags
+    return ccov_mat
 end
 
 """
