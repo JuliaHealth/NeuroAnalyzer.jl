@@ -111,6 +111,7 @@ export zero_pad
 export cmin
 export cmax
 export sinc
+export morlet
 
 include("nstim.jl")
 export tes_dose

@@ -1082,29 +1082,6 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
 end
 
 """
-    morlet(fs, wt, wf)
-
-Generates Morlet wavelet.
-
-# Arguments
-
-- `fs::Int64` - sampling frequency
-- `wt::Union{Int64, Float64}` - length = -wt:1/fs:ws
-- `wf::Union{Int64, Float64}` - frequency
-- `ncyc::Int64` - number of cycles
-- `complex::Bool` - if true, generates complex Morlet
-"""
-function morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
-    wt = -wt:1/fs:wt
-    complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
-    complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
-    w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
-    gaussian = @. exp((-wt.^2) / w)
-    morlet_wavelet = sin_wave .* gaussian
-    return morlet_wavelet
-end
-
-"""
     signal_tconv(signal, kernel)
 
 Performs convolution in the time domain between `signal` and `kernel`.

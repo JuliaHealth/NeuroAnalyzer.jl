@@ -118,11 +118,11 @@ heatmap(edf_cor)
 # autocovariance
 ac = eeg_autocov(e10, normalize=false)
 heatmap(ac)
-cc = eeg_crosscov(e10, demean=true)
+cc = eeg_crosscov(e10, lag=100, demean=true)
 heatmap(cc)
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
-cc = eeg_crosscov(edf1, edf2, lag=10)
+cc = eeg_crosscov(edf1, edf2, lag=100)
 heatmap(cc)
 
 # normalize
@@ -133,8 +133,8 @@ eeg_normalize_minmax(edf)
 eeg_demean(edf)
 
 # taper with
-h = hann(edf.eeg_header[:epoch_duration_samples])
-edf_t = eeg_taper(edf, h);
+h = hann(e10.eeg_header[:epoch_duration_samples])
+e10_t = eeg_taper(e10, h)
 eeg_plot(e10_t)
 
 # derivative
@@ -145,16 +145,16 @@ edf1 = eeg_detrend(edf, type=:linear)
 e2avg = eeg_detrend(e2avg, type=:linear)
 
 # total power
-tbp = eeg_total_power(e2avg)
-bar(eeg_labels(e2avg),
+tbp = eeg_total_power(e10)
+bar(eeg_labels(e10),
     tbp,
-    xticks=(1:length(eeg_labels(e2avg)), eeg_labels(e2avg)))
+    xticks=(1:length(eeg_labels(e10)), eeg_labels(e10)))
 
 # alpha power
-abp = eeg_band_power(e2avg, f1=8.0, f2=12.0)
-bar(eeg_labels(e2avg),
+abp = eeg_band_power(e10, f1=8.0, f2=12.0)
+bar(eeg_labels(e10),
     abp,
-    xticks=(1:length(eeg_labels(e2avg)), eeg_labels(e2avg)))
+    xticks=(1:length(eeg_labels(e10)), eeg_labels(e10)))
 
 # get separate channels
 f3 = eeg_get_channel(edf, "F3")
@@ -162,6 +162,6 @@ f4 = eeg_get_channel(edf, 4)
 f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_samplingrate(edf), order=8)
 
 # time-domain convolution
-mw = morlet(256, 1, 10, complex=false)
-eeg_tconv(edf, mw)
+mw = morlet(256, 1, 32, complex=true)
+eeg_tconv(e10, kernel=mw)
 ```
