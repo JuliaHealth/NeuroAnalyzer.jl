@@ -1,0 +1,8 @@
+*.swp
+*.cov
+*-checkpoint.ipynb
+*.DS_Store
+docs/build/
+docs/site/
+Manifest.toml
+***.vscode

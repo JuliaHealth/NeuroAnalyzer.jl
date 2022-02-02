@@ -213,33 +213,49 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     ffilter = digitalfilter(responsetype, prototype)
 
     H, w = freqresp(ffilter)
-
+    H = 20 * log10.(abs.(H))
+    # convert to dB
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p1 = plot(w, abs.(H), title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), xlabel="Frequency [Hz]", label="")
+    p1 = plot(w, H, title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabl="Magnitude [dB]", xlabel="Frequency [Hz]", label="")
     if length(cutoff) == 1
         p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+    else
+        p1 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
+        p1 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+    end
+
+    phi, w = phaseresp(ffilter)
+    phi = rad2deg.(angle.(phi))
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    x_max = w[end]
+    ftype == :hp && (x_max = cutoff * 10)
+    p2 = plot(w, rad, title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Phase [°]", xlabel="Frequency [Hz]", label="")
+    if length(cutoff) == 1
+        p2 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
     else
         p2 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
         p2 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
     end
 
     tau, w = grpdelay(ffilter)
+    tau = abs.(tau)
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p2 = plot(w, abs.(tau), title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), xlabel="Frequency [Hz]", label="")
+    p3 = plot(w, tau, title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Group delay [samples]", xlabel="Frequency [Hz]", label="")
     if length(cutoff) == 1
-        p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+        p3 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
     else
-        p2 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
-        p2 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+        p3 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
+        p3 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
     end
 
-    p = plot(p1, p2, layout=(2, 1))
+    p = plot(p1, p2, p3, layout=(3, 1))
 
     return p
 end
