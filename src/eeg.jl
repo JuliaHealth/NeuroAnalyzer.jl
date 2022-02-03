@@ -26,7 +26,7 @@ function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, U
     channel_no = eeg_header[:channel_no]
 
     # update headers
-    eeg_header[:channel_no] = channel_no - length(channel_idx)
+    eeg_header[:channels_no] = channel_no - length(channel_idx)
     for idx1 in 1:length(channel_idx)
         for idx2 in 1:channel_no
             if idx2 == channel_idx[idx1]
@@ -71,7 +71,8 @@ function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, Uni
         channel_idx = collect(channel_idx)
     end
 
-    channels_to_remove = setdiff(x, y)
+    channels = size(eeg.eeg_signals, 1)
+    channels_to_remove = setdiff(channels, channel_idx)
 
     # create new dataset
     eeg_new = eeg_delete_channel(eeg, channels_to_remove)
