@@ -31,9 +31,9 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         p = plot(t, signal[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
     else
         m, s, u, l = signal_ci95(signal)
-        p = plot(t, m[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
-        p = plot!(t, u[offset:(offset + length(t))], c=:grey, lw=0.5)
-        p = plot!(t, l[offset:(offset + length(t))], c=:grey, lw=0.5)
+        p = plot(t, m[offset:(offset + length(t) - 1)], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+        p = plot!(t, u[offset:(offset + length(t) - 1)], c=:grey, lw=0.5)
+        p = plot!(t, l[offset:(offset + length(t) - 1)], c=:grey, lw=0.5)
     end
 
     plot(p)
@@ -147,7 +147,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
         signal = eeg_temp.eeg_signals[:, :, epoch]
         labels = eeg_temp.eeg_header[:labels]
     else
-        signal = vec(mean(eeg_temp.eeg_signals[:, :, epoch], dims=1))
+        signal = Matrix(eeg_temp.eeg_signals[:, :, epoch])
         labels = [""]
     end
 
