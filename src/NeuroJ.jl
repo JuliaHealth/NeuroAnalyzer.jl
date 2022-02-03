@@ -49,6 +49,7 @@ export eeg_tconv
 export eeg_downsample
 export eeg_autocov
 export eeg_crosscov
+export eeg_psd
 
 include("eeg_load_edf.jl")
 export eeg_load_edf
@@ -80,6 +81,7 @@ export signal_add_noise
 export signal_upsample
 export signal_tconv
 export signal_downsample
+export signal_psd
 
 include("misc.jl")
 export generate_time

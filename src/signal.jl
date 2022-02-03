@@ -1,7 +1,7 @@
 """
     signal_derivative(signal)
 
-Returns the derivative of the `signal` vector with length same as the signal.
+Returns the derivative of the `signal` with length same as the signal.
 
 # Arguments
 
@@ -12,7 +12,7 @@ signal_derivative(signal::Vector{Float64}) = vcat(diff(signal), diff(signal)[end
 """
     signal_derivative(signal)
 
-Returns the derivative of each the `signal` matrix channels with length same as the signal.
+Returns the derivative of each the `signal` channels with length same as the signal.
 
 # Arguments
 
@@ -53,12 +53,12 @@ end
 """
     signal_total_power(signal; fs)
 
-Calculates total power for each the `signal` matrix channels.
+Calculates total power for each the `signal` channels.
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal array (rows: channels, columns: time)
-- `fs::Int64` sampling rate
+- `signal::Array{Float64, 3}`
+- `fs::Int64` - sampling rate
 """
 function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
     channels_no = size(signal, 1)
@@ -1318,4 +1318,46 @@ function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::
     end
 
     return signal_downsampled, t_downsampled
+end
+
+"""
+    signal_psd(signal; fs)
+
+Calculates power spectrum density of the `signal`.
+
+# Arguments
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling rate
+- `normalize::Bool` - normalize do dB
+"""
+function signal_psd(signal::Vector{Float64}; fs::Int64, normalize::Bool=false)
+    psd = welch_pgram(signal, 4*fs, fs=fs)
+    normalize == true && (psd.power = pow2db.(power))
+    return psd.power, psd.freq
+end
+
+"""
+    signal_psd(signal; fs)
+
+Calculates total power for each the `signal` channels.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `fs::Int64` sampling rate
+- `normalize::Bool` - normalize do dB
+"""
+function signal_psd(signal::Array{Float64, 3}; fs::Int64, normalize::Bool=false)
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+    psd_length, _ = signal_psd(signal[1, :, 1], fs=fs)
+    signal_spectral_density_powers = zeros(channels_no, length(psd_length), epochs_no)
+    signal_spectral_density_frequencies = zeros(channels_no, length(psd_length), epochs_no)
+    Threads.@threads for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_spectral_density_powers[idx, :, epoch], signal_spectral_density_frequencies[idx, :, epoch] = signal_psd(signal[idx, :, epoch], fs=fs)
+        end
+    end
+
+    return signal_spectral_density_powers, signal_spectral_density_frequencies
 end

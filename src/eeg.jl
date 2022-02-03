@@ -870,3 +870,21 @@ function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, no
 
     return ccov_mat
 end
+
+"""
+    eeg_psd(eeg; normalize=false)
+
+Calculates total power for each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `normalize::Bool` - normalize do dB
+"""
+function eeg_psd(eeg::EEG; normalize::Bool=false)
+    signal_spectral_density_powers, signal_spectral_density_frequencies = signal_psd(eeg.eeg_signals, fs=eeg_samplingrate(eeg), normalize=normalize)
+    size(signal_spectral_density_powers, 3) == 1 && (signal_spectral_density_powers = reshape(signal_spectral_density_powers, size(signal_spectral_density_powers, 1), size(signal_spectral_density_powers, 2)))
+    size(signal_spectral_density_frequencies, 3) == 1 && (signal_spectral_density_frequencies = reshape(signal_spectral_density_frequencies, size(signal_spectral_density_frequencies, 1), size(signal_spectral_density_frequencies, 2)))
+
+    return signal_spectral_density_powers, signal_spectral_density_frequencies
+end
