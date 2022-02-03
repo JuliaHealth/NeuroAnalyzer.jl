@@ -59,6 +59,7 @@ eeg_info(e10)
 
 # get 1st epoch
 e10e1 = eeg_get_epoch(e10, 1)
+eeg_info(e10e1)
 
 # split into 5-second epochs, average
 e2avg = eeg_epochs(edf, epochs_len=5*eeg_samplingrate(edf), average=true)
@@ -80,7 +81,7 @@ edf_fir = eeg_filter(edf_fir, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8)
 ## IIR
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-edf_but = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf_cheb1 = eeg_filter(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=[45.0, 55.0], rs=1, order=8)
 edf_cheb2 = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp=1, order=8)
 
@@ -95,11 +96,21 @@ edf19 = eeg_delete_channel(edf, 10:18)
 edf14 = eeg_keep_channel(edf, 1:4)
 
 # plot channels
-eeg_plot(edf, average=true)
-eeg_plot(edf, butterfly=true)
+using Pkg
+Pkg.update()
+using NeuroJ
+edf = eeg_load_edf("eeg-test.edf")
+eeg_plot(edf, channels=1:4)
+eeg_plot(edf, offset=20, len=20)
+eeg_plot(edf, normalize=false)
+eeg_plot_avg(edf, channels=1:4, offset=20)
+eeg_plot_avg(e2avg)
+a=edf.eeg_signals[:, :, 1]
+signal_plot_avg(a)
+eeg_plot_butterfly(edf)
 eeg_plot(edf, figure="/test.png")
 eeg_plot(edf, figure="/tmp/test.png")
-eeg_plot(edf, offset=60*256, figure="/tmp/test.png")
+eeg_plot(edf, offset=60, figure="/tmp/test.png")
 p1 = eeg_plot(e2avg)
 p1 = plot!(title="e2avg")
 p2 = eeg_plot(edf_but)
@@ -107,7 +118,7 @@ p2 = plot!(title="butterworth")
 p3 = eeg_plot(edf_fir)
 p3 = plot!(title="FIR")
 plot(p1, p2, p3, layout=(1, 3))
-eeg_plot(edf, offset=60*256)
+eeg_plot(edf, offset=60)
 eeg_plot(e10, epoch=10)
 eeg_plot(e2avg)
 eeg_plot(edf, figure="figure1.pdf")
