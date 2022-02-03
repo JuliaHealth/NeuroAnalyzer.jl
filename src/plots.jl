@@ -16,7 +16,7 @@ Plots `signal` against time vector `t`.
 - `butterfly::Bool` - plot all channels in butterfly mode
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Union{Vector{Float64}, Matrix{Float64}}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -123,10 +123,6 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
         throw(ArgumentError("Epoch index out of range."))
     end
 
-    if offset < 1 || offset + (len * eeg_samplingrate(eeg)) > eeg.eeg_header[:epoch_duration_samples]
-        throw(ArgumentError("Offset value out of range."))
-    end
-
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
     end
@@ -143,6 +139,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     eeg_temp = eeg_keep_channel(eeg, channels)
 
     fs = eeg_temp.eeg_header[:sampling_rate][1]
+
     if average == false
         signal = eeg_temp.eeg_signals[:, :, epoch]
         labels = eeg_temp.eeg_header[:labels]
@@ -155,6 +152,10 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect(0:1/fs:len))
     t = t[1:(end - 2)]
+
+    if offset < 1 || offset + (len * eeg_samplingrate(eeg)) > eeg.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value out of range."))
+    end
 
     p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, average=average, butterfly=butterfly)
 
