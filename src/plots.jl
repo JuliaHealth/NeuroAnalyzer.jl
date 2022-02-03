@@ -26,7 +26,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, xlims=(ceil(t[1]), floor(t[end])), ylims=(-yamp, yamp), title=title)
+    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, label="", xlims=(ceil(t[1]), floor(t[end])), ylims=(-yamp, yamp), title=title)
 
     plot(p)
 
@@ -82,9 +82,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
-                  label="",
-                  t=:line,
-                  c=:black)
+                  label="")
     end
     p = plot!(p, yticks = ((channels_no - 1):-1:0, labels))
 
@@ -765,8 +763,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
             p = plot!(signal_freqs[idx, :],
                       signal_powers[idx, :],
                       label=labels[idx],
-                      t=:line,
-                      c=:black)
+                      t=:line)
         end
     end
 
