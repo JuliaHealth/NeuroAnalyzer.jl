@@ -96,10 +96,6 @@ edf19 = eeg_delete_channel(edf, 10:18)
 edf14 = eeg_keep_channel(edf, 1:4)
 
 # plot channels
-using Pkg
-Pkg.update()
-using NeuroJ
-edf = eeg_load_edf("eeg-test.edf")
 eeg_plot(edf)
 eeg_plot(edf, channels=1:4)
 eeg_plot(edf, offset=20, len=20)
@@ -108,6 +104,7 @@ eeg_plot_avg(edf, channels=1:4, offset=20)
 eeg_plot_avg(edf)
 eeg_plot_butterfly(edf)
 eeg_plot_butterfly(edf, offset=20*256, len=120, channels=1:4, normalize=true)
+eeg_plot_butterfly(e2avg)
 eeg_plot_avg(e2avg)
 eeg_plot(edf, figure="/test.png")
 eeg_plot(edf, figure="/tmp/test.png")
@@ -183,6 +180,25 @@ f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_
 # time-domain convolution
 mw = morlet(256, 1, 32, complex=true)
 eeg_tconv(e10, kernel=mw)
+
+# PSD
+using Pkg
+Pkg.update()
+using NeuroJ
+edf = eeg_load_edf("eeg-test.edf")
+edf_pow, edf_frq = eeg_psd(edf, normalize=true)
+plot(edf_frq[10, :], edf_pow[10, :])
+eeg_plot_psd(edf, frq_lim=20.0)
+eeg_plot_psd(edf, normalize=true, average=false, frq_lim=50)
+eeg_plot_psd(edf, normalize=true, average=true, frq_lim=20)
+eeg_plot_psd(edf, channels=1:4, average=true)
+f3 = eeg_get_channel(edf, "F3")
+t=collect(0:1/fs:length(f3))
+signal_plot(t, f3)
+f4 = eeg_get_channel(edf, 4)
+signal_psd(f4, fs=256)
+signal_plot_psd(f3, fs=256)
+signal_plot_psd(f4, fs=256)
 
 # benchmarking
 using BenchmarkTools
