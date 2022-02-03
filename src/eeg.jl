@@ -31,6 +31,8 @@ function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, U
         for idx2 in 1:channel_no
             if idx2 == channel_idx[idx1]
                 deleteat!(eeg_header[:labels], idx2)
+                deleteat!(eeg_header[:xlocs], idx2)
+                deleteat!(eeg_header[:ylocs], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -92,6 +94,8 @@ function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, Uni
         for idx2 in 1:channel_no
             if idx2 == channels_to_remove[idx1]
                 deleteat!(eeg_header[:labels], idx2)
+                deleteat!(eeg_header[:xlocs], idx2)
+                deleteat!(eeg_header[:ylocs], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)

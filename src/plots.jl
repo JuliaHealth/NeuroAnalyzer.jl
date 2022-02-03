@@ -847,7 +847,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
     # select channels, default is all channels
     channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
     eeg_temp = eeg_keep_channel(eeg, channels)
-
+    
     loc_x = eeg_temp.eeg_header[:xlocs]
     loc_y = eeg_temp.eeg_header[:xlocs]
 
