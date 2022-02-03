@@ -91,7 +91,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
-                  label="")
+                  label="", color=idx)
     end
     p = plot!(p, yticks = ((channels_no - 1):-1:0, labels))
 
@@ -554,7 +554,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
                   t=:line,
-                  label=labels[idx])
+                  label=labels[idx], color=idx)
     end
 
     return p
@@ -881,7 +881,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
         loc_x = eeg_temp.eeg_header[:xlocs]
         loc_y = eeg_temp.eeg_header[:ylocs]
         for idx in 1:eeg_temp.eeg_header[:channels_no]
-            p = plot!((loc_x[idx], loc_y[idx]), seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+            p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
         end
     end
     if labels == true
