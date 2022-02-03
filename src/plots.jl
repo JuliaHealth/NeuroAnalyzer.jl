@@ -722,7 +722,6 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
     signal_freqs = signal_freqs[:, :, 1]
 
     frq_lim === nothing && (frq_lim = signal_freqs[1, end])
-    println(frq_lim)
     if average == true
         signal_powers_m, signal_powers_s, signal_powers_u, signal_powers_l = signal_ci95(signal_powers)
         signal_freqs = signal_freqs[1, :]
@@ -775,7 +774,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
 end
 
 """
-    eeg_plot_psd(eeg; t, epoch=1, channels=nothing, labels=[""], normalize=false, average=false, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD", figure="")
+    eeg_plot_psd(eeg; t, epoch=1, channels=nothing, labels=[""], normalize=false, average=false, frq_lim=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD", figure="")
 
 Plots power spectrum density.
 
@@ -793,7 +792,7 @@ Plots power spectrum density.
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
+function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Vector{String}=[""], normalize::Bool=false, normalize::Bool=false, frq_lim::Union{Nothing, Float64}=nothing, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))

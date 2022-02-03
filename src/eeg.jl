@@ -511,7 +511,7 @@ function eeg_get_channel(eeg::EEG, channel_idx::Int64)
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
     end
-    channel = eeg.eeg_signals[channel_idx, :, :]
+    channel = vec(eeg.eeg_signals[channel_idx, :, :])
 
     return channel
 end
