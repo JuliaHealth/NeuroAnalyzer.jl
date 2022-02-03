@@ -349,7 +349,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
                    label="")
     end
 
-    p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest))
+    p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest)
 
     if figure !== ""
         try
