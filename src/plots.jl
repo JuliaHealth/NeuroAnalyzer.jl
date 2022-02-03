@@ -842,6 +842,8 @@ Plots electrodes.
 """
 function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
 
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+
     # select channels, default is all channels
     channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
     eeg_temp = eeg_keep_channel(eeg, channels)

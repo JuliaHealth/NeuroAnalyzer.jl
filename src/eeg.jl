@@ -604,7 +604,7 @@ function eeg_info(eeg::EEG)
     else
         println("                Labels: yes")
     end
-    if length(eeg.eeg_header[:channel_locations]) == false
+    if eeg.eeg_header[:channel_locations] == false
         println("     Channel locations: no")
     else
         println("     Channel locations: yes")
