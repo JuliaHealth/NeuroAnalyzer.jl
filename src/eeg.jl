@@ -302,7 +302,7 @@ function eeg_get_channel_idx(eeg::EEG, channel_name::String)
             channel_idx = idx
         end
     end
-    if channel_idx == nothing
+    if channel_idx === nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
     return channel_idx
@@ -348,7 +348,7 @@ function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name
             channel_idx = idx
         end
     end
-    if channel_idx == nothing
+    if channel_idx === nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
 
@@ -488,7 +488,7 @@ function eeg_get_channel(eeg::EEG, channel_name::String)
             channel_idx = idx
         end
     end
-    if channel_idx == nothing
+    if channel_idx === nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
     channel = vec(eeg.eeg_signals[channel_idx, :, :])

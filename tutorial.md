@@ -89,12 +89,14 @@ eeg_plot(edf)
 eeg_plot(e10e1)
 
 # remove channel
-edf1 = eeg_delete_channel(edf, 10)
+edf19 = eeg_delete_channel(edf, 10:18)
 
 # keep channel
-edf12 = eeg_keep_channel(edf, 1:2)
+edf14 = eeg_keep_channel(edf, 1:4)
 
 # plot channels
+eeg_plot(edf, average=true)
+eeg_plot(edf, butterfly=true)
 eeg_plot(edf, figure="/test.png")
 eeg_plot(edf, figure="/tmp/test.png")
 eeg_plot(edf, offset=60*256, figure="/tmp/test.png")
@@ -169,4 +171,21 @@ f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_
 # time-domain convolution
 mw = morlet(256, 1, 32, complex=true)
 eeg_tconv(e10, kernel=mw)
+
+# benchmarking
+using BenchmarkTools
+function eeg_benchmark(n::Int64)
+    for idx in 1:n
+        edf_new = eeg_reference_car(edf)
+        edf10 = eeg_epochs(edf_new, epochs_len=10*eeg_samplingrate(edf))
+        edf10 = eeg_filter(edf10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
+        edf10 = eeg_filter(edf10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
+        edf10 = eeg_filter(edf10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+        tbp = eeg_total_power(edf10)
+        ac = eeg_autocov(edf10, normalize=false)
+        cc = eeg_crosscov(edf10, lag=10, demean=true)
+        mconv = eeg_tconv(e10, kernel=morlet(256, 1, 32, complex=true))
+    end
+end
+@time eeg_benchmark(10)
 ```

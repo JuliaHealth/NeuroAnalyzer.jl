@@ -11,9 +11,11 @@ Plots `signal` against time vector `t`.
 - `labels::Vector{String}` - channel labels vector
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
-- `yamp::Float64` - y-axis limits (-yamp:yamp)
+- `average::Bool` - plot all channels averaged with 95%CI
+- `butterfly::Bool` - plot all channels in butterfly mode
+- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", yamp::Union{Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -24,7 +26,14 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+    if average == false
+        p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+    else
+        m, s, u, l = signals_ci95(signal)
+        p = plot(t, m[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+        p = plot!(t, u[ofset:(offset + length(t))], c=:grey, lw=0.5)
+        p = plot!(t, l[ofset:(offset + length(t))], c=:grey, lw=0.5)
+    end
 
     plot(p)
 
@@ -46,8 +55,10 @@ Plots `signal` matrix against time vector `t`.
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
+- `average::Bool` - plot all channels averaged with 95%CI
+- `butterfly::Bool` - plot all channels in butterfly mode
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels")
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", average::Bool=false, butterfly::Bool=false)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -71,53 +82,80 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     end
 
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
-    for idx in 1:channels_no
-        p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
+    if butterfly == false
+        p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
+        for idx in 1:channels_no
+            p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
+        end
+        p = plot!(p, yticks = (channels_no-1:-1:0, labels))
+    else
+        p = plot(t, signal[:, offset:(offset + length(t))]', xlabel=xlabel, ylabel="Amplitude [μV]")    
     end
-    p = plot!(p, yticks = (channels_no-1:-1:0, labels))
 
     return p
 end
 
 """
-    eeg_plot(eeg; t=nothing, epoch=1, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
+    eeg_plot(eeg; t=nothing, epoch=1, channels=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", average=false, butterfly=false, figure=nothing)
 
 Plots `eeg` channels.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}` - the time vector
+- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
 - `epoch::Int64` - epoch number to display
+- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Float64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
+- `average::Bool` - plot all channels averaged with 95%CI
+- `butterfly::Bool` - plot all channels in butterfly mode
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="", overwrite::Bool=false)
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", average::Bool=false, butterfly::Bool=false, figure::String="", overwrite::Bool=false)
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
+    end
+
+    if offset < 1 || offset + (len * eeg_samplingrate(eeg)) > eeg.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value out of range."))
     end
 
     if typeof(t) == UnitRange{Int64}
         t = collect(t)
     end
 
-    signal = eeg.eeg_signals[:, :, epoch]
-    labels = eeg.eeg_header[:labels]
-    fs = eeg.eeg_header[:sampling_rate][1]
+    # select channels, default is 1:20 or all channels
+    if channels === nothing
+        if eeg.eeg_header[:channels_no] >= 20
+            channels = 1:20
+        else
+            channels = 1:eeg.eeg_header[:channels_no]
+        end
+    end
+
+    eeg_temp = eeg_keep_channel(eeg, channels)
+
+    fs = eeg_temp.eeg_header[:sampling_rate][1]
+    if butterfly == false
+        signal = eeg_temp.eeg_signals[:, :, epoch]
+        labels = eeg_temp.eeg_header[:labels]
+    else
+        signal = vec(mean(eeg_temp.eeg_signals[:, :, epoch], dims=1))
+        labels = [""]
+    end
 
     # default time is 10 seconds or epoch_duration_seconds
-    len > eeg.eeg_header[:epoch_duration_seconds] && (len = eeg.eeg_header[:epoch_duration_seconds])
+    len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect(0:1/fs:len))
     t = t[1:(end - 2)]
 
-    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel)
+    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, average=average, butterfly=butterfly)
 
     plot(p)
 
