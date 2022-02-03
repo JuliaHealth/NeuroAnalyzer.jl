@@ -43,14 +43,14 @@ Plots `signal` matrix against time vector `t`.
 - `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
 - `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
+- `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot")
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot")
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -95,7 +95,7 @@ Plots `eeg` channels.
 - `epoch::Int64` - epoch number to display
 - `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
+- `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
@@ -103,7 +103,7 @@ Plots `eeg` channels.
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", figure::String="")
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -127,9 +127,9 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     labels = eeg_temp.eeg_header[:labels]
 
     # default time is 10 seconds or epoch_duration_seconds
-    fs = eeg_temp.eeg_header[:sampling_rate][1]
+    fs = eeg_samplingrate(eeg_temp)
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
-    t === nothing && (t = collect(0:1/fs:len))
+    t === nothing && (t = collect((offset * fs):1/fs:((offset * fs) + len)))
     t = t[1:(end - 1)]
 
     if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
@@ -307,14 +307,14 @@ Plots averaged `signal` matrix against time vector `t`.
 - `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
 - `signal::Matrix{Float64}` - the signal matrix
 - `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
+- `len::Union{Int64, Float64}` - length in seconds
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Float64=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -365,7 +365,7 @@ Plots averaged `eeg` channels.
 - `epoch::Int64` - epoch number to display
 - `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
-- `len::Float64` - length in seconds
+- `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
@@ -374,7 +374,7 @@ Plots averaged `eeg` channels.
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Float64=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing, figure::String="")
+function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing, figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -391,7 +391,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Noth
     # default time is 10 seconds or epoch_duration_seconds
     fs = eeg_samplingrate(eeg_temp)
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
-    t === nothing && (t = collect(0:1/fs:len))
+    t === nothing && (t = collect((offset * fs):1/fs:((offset * fs) + len)))
     t = t[1:(end - 1)]
 
     if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
