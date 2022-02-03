@@ -16,7 +16,7 @@ Plots `signal` against time vector `t`.
 - `butterfly::Bool` - plot all channels in butterfly mode
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
