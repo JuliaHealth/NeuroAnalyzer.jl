@@ -90,7 +90,7 @@ export cvangle
 export db
 export demean
 export fft0
-export frequencies
+export freqs
 export hann
 export hildebrand_rule
 export hz2rads

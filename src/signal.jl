@@ -1321,7 +1321,7 @@ function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::
 end
 
 """
-    signal_psd(signal; fs)
+    signal_psd(signal; fs, normalize=false)
 
 Calculates power spectrum density of the `signal`.
 
@@ -1332,14 +1332,16 @@ Calculates power spectrum density of the `signal`.
 """
 function signal_psd(signal::Vector{Float64}; fs::Int64, normalize::Bool=false)
     psd = welch_pgram(signal, 4*fs, fs=fs)
-    normalize == true && (psd.power = pow2db.(power))
-    return psd.power, psd.freq
+    psd_pow = power(psd)
+    psd_frq = freq(psd)
+    normalize == true && (psd_pow = pow2db.(psd_pow))
+    return vec(psd_pow), Vector(psd_frq)
 end
 
 """
-    signal_psd(signal; fs)
+    signal_psd(signal; fs, normalize=false)
 
-Calculates total power for each the `signal` channels.
+Calculates power spectrum density for each the `signal` channels.
 
 # Arguments
 
@@ -1350,12 +1352,12 @@ Calculates total power for each the `signal` channels.
 function signal_psd(signal::Array{Float64, 3}; fs::Int64, normalize::Bool=false)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
-    psd_length, _ = signal_psd(signal[1, :, 1], fs=fs)
+    psd_length, _ = signal_psd(signal[1, :, 1], fs=fs, normalize=normalize)
     signal_spectral_density_powers = zeros(channels_no, length(psd_length), epochs_no)
     signal_spectral_density_frequencies = zeros(channels_no, length(psd_length), epochs_no)
     Threads.@threads for epoch in 1:epochs_no
         for idx in 1:channels_no
-            signal_spectral_density_powers[idx, :, epoch], signal_spectral_density_frequencies[idx, :, epoch] = signal_psd(signal[idx, :, epoch], fs=fs)
+            signal_spectral_density_powers[idx, :, epoch], signal_spectral_density_frequencies[idx, :, epoch] = signal_psd(signal[idx, :, epoch], fs=fs, normalize=normalize)
         end
     end
 

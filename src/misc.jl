@@ -182,11 +182,11 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 sine(f, t::Union{Vector{Int64}, Vector{Float64}}, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
 
 """
-    frequencies(t)
+    freqs(t)
 
 Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 """
-function frequencies(t::Union{Vector{Int64}, Vector{Float64}, StepRange{Int64, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}})
+function freqs(t::Union{Vector{Int64}, Vector{Float64}, StepRange{Int64, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}})
     if typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = collect(t)
     end

@@ -36,12 +36,12 @@ end
 """
     signal_plot(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Signal plot")
 
-Plots `signal` matrix against time vector `t`.
+Plots `signal` channels.
 
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
-- `signal::Matrix{Float64}` - the signal matrix
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -82,7 +82,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
-                  legend=false,
+                  label="",
                   t=:line,
                   c=:black)
     end
@@ -358,12 +358,11 @@ end
 """
     signal_plot_avg(t, signal; offset=0, len=10.0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Averaged signal and 95% CI plot", yamp=nothing)
 
-Plots averaged `signal` matrix against time vector `t`.
-
+Plots averaged `signal` channels.
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
-- `signal::Matrix{Float64}` - the signal matrix
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `normalize::Bool` - normalize the `signal` prior to calculations
@@ -493,12 +492,12 @@ end
 """
     signal_plot_butterfly(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Butterfly plot", yamp=nothing)
 
-Butterfly plot of `signal` matrix against time vector `t`.
+Butterfly plot of `signal` channels.
 
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
-- `signal::Matrix{Float64}` - the signal matrix
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -530,7 +529,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
     if labels == [""]
         labels = Vector{String}(undef, channels_no)
         for idx in 1:channels_no
-            labels[idx] = "ch: $idx"
+            labels[idx] = ""
         end
     end
     
@@ -551,7 +550,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
 end
 
 """
-    eeg_plot_butterfly(eeg; t, epoch=1, channels=nothing, offset=0, len=10.0, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", figure="", yamp=nothing)
+    eeg_plot_butterfly(eeg; t, epoch=1, channels=nothing, offset=0, len=10.0, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", yamp=nothing, figure="")
 
 Butterfly plot of `eeg` channels.
 
@@ -568,10 +567,10 @@ Butterfly plot of `eeg` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `figure::String` - name of the output figure file
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
+- `figure::String` - name of the output figure file
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -611,6 +610,217 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}
                               title=title,
                               yamp=yamp)
 
+    plot(p)
+
+    if figure !== ""
+        try
+            savefig(p, figure)
+        catch error
+            throw(ArgumentError("File $figure cannot be saved."))
+            return false
+        end
+    end
+
+    return p
+end
+
+"""
+    signal_plot_psd(signal_powers::Vector{Float64}, signal_freqs::Vector{Float64}, normalize=false, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD")
+
+Plots power spectrum density.
+
+# Arguments
+
+- `signal_powers::Vector{Float64}`
+- `signal_freqs::Vector{Float64}`
+- `frq_lim::Union{Nothing, Float64}` - x-axis limit
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `title::String` - plot title
+"""
+function signal_plot_psd(signal_powers::Vector{Float64}, signal_freqs::Vector{Float64}; frq_lim::Union{Nothing, Float64}=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD")
+
+    frq_lim === nothing && (frq_lim = signal_freqs[end])
+
+    p = plot(signal_freqs,
+             signal_powers,
+             xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(0, frq_lim)
+             legend=false,
+             t=:line,
+             c=:black,
+             title=title)
+
+    plot(p)
+
+    return p
+end
+
+"""
+    signal_plot_psd(signal::Vector{Float64}; fs::Int64, normalize=false, frq_lim=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD")
+
+Plots power spectrum density.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling frequency
+- `normalize::Bool` - normalize the `signal` prior to calculations
+- `frq_lim::Union{Nothing, Float64}` - x-axis limit
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `title::String` - plot title
+"""
+function signal_plot_psd(signal::Vector{Float64}; fs::Int64, normalize::Bool=false, frq_lim::Union{Nothing, Float64}=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD")
+
+    signal_freqs, signal_powers = signal_psd(signal, fs=fs, normalize=normalize)
+    normalize == true && (ylabel::String="Power [dB]")
+
+    frq_lim === nothing && (frq_lim = signal_freqs[end])
+
+    p = plot(signal_freqs,
+             signal_powers,
+             xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(0, frq_lim),
+             legend=false,
+             t=:line,
+             c=:black,
+             title=title)
+
+    plot(p)
+
+    return p
+end
+
+"""
+    signal_plot_psd(signal; fs, normalize=false, average=false, frq_lim=nothing, labels=[""], xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD")
+
+Plots power spectrum density.
+
+# Arguments
+
+- `signal::Matrix{Float64}`
+- `fs::Int64` - sampling rate
+- `normalize::Bool` - normalize the `signal` prior to calculations
+- `average::Bool` - plots average power and 95%CI for all channels
+- `frq_lim::Union{Nothing, Float64}` - x-axis limit
+- `labels::Vector{String}` - channel labels vector
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `title::String` - plot title
+"""
+function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=false, average::Bool=false, frq_lim::Union{Nothing, Float64}=nothing, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD")
+
+    normalize == true && (ylabel="Power [dB]")
+
+    channels_no = size(signal, 1)
+    signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
+    signal_powers, signal_freqs = signal_psd(signal, fs=fs, normalize=normalize)
+    signal_powers = signal_powers[:, :, 1]
+    signal_freqs = signal_freqs[:, :, 1]
+
+    frq_lim === nothing && (frq_lim = signal_freqs[1, end])
+    println(frq_lim)
+    if average == true
+        signal_powers_m, signal_powers_s, signal_powers_u, signal_powers_l = signal_ci95(signal_powers)
+        signal_freqs = signal_freqs[1, :]
+        channels_no = 1
+        labels == [""]
+        title = "Average PSD with 95%CI"
+    end
+
+    if labels == [""]
+        labels = Vector{String}(undef, channels_no)
+        for idx in 1:channels_no
+            labels[idx] = ""
+        end
+    end
+
+    # plot channels
+    p = plot(xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(0, frq_lim),
+             title=title)
+    if average == true
+    p = plot!(signal_freqs,
+              signal_powers_m,
+              label=false,
+              t=:line,
+              c=:black)
+    p = plot!(signal_freqs,
+              signal_powers_u,
+              label=false,
+              t=:line,
+              c=:grey,
+              lw=0.5)
+    p = plot!(signal_freqs,
+              signal_powers_l,
+              label=false,
+              t=:line,
+              c=:grey,
+              lw=0.5)
+    else
+        for idx in 1:channels_no
+            p = plot!(signal_freqs[idx, :],
+                      signal_powers[idx, :],
+                      label=labels[idx],
+                      t=:line,
+                      c=:black)
+        end
+    end
+
+    return p
+end
+
+"""
+    eeg_plot_psd(eeg; t, epoch=1, channels=nothing, labels=[""], normalize=false, average=false, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD", figure="")
+
+Plots power spectrum density.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+- `epoch::Int64` - epoch number to display
+- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `labels::Vector{String}` - channel labels vector
+- `normalize::Bool` - normalize the `signal` prior to calculations
+- `average::Bool` - plots average power and 95%CI for all channels
+- `frq_lim::Union{Nothing, Float64}` - x-axis limit
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `title::String` - plot title
+- `figure::String` - name of the output figure file
+"""
+function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
+
+    if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
+    if typeof(t) == UnitRange{Int64}
+        t = collect(t)
+    end
+
+    # select channels, default is all channels
+    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
+    eeg_temp = eeg_keep_channel(eeg, channels)
+
+    eeg_temp = eeg_keep_channel(eeg, channels)
+    signal = eeg_temp.eeg_signals[:, :, epoch]
+    fs = eeg_samplingrate(eeg_temp)
+    labels = eeg_temp.eeg_header[:labels]
+
+    p = signal_plot_psd(signal,
+                        fs=fs,
+                        labels=labels,
+                        normalize=normalize,
+                        average=average,
+                        frq_lim=frq_lim,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title)
     plot(p)
 
     if figure !== ""
