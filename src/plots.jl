@@ -131,11 +131,9 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect((offset * fs):1/fs:((offset * fs) + len)))
     t = t[1:(end - 1)]
-
     if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-
     if offset + (len * eeg_samplingrate(eeg_temp)) > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
@@ -298,7 +296,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
 end
 
 """
-    signal_plot_avg(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Signal plot", yamp=nothing)
+    signal_plot_avg(t, signal; offset=0, len=10.0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Signal plot", yamp=nothing)
 
 Plots averaged `signal` matrix against time vector `t`.
 
@@ -393,11 +391,9 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Noth
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect((offset * fs):1/fs:((offset * fs) + len)))
     t = t[1:(end - 1)]
-
     if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-
     if offset + (len * eeg_samplingrate(eeg_temp)) > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
