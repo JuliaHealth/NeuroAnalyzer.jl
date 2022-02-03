@@ -761,7 +761,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
     p = plot!(signal_freqs,
               signal_powers_u,
               fillrange = signal_powers_l,
-              fillalpha = 0.35
+              fillalpha = 0.35,
               label=false,
               t=:line,
               c=:grey,
