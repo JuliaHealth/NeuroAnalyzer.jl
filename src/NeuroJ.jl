@@ -128,5 +128,7 @@ export signal_plot_avg
 export eeg_plot_avg
 export signal_plot_butterfly
 export eeg_plot_butterfly
+export signal_plot_psd
+export eeg_plot_psd
 
 end
