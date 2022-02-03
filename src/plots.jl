@@ -160,8 +160,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
                     normalize=normalize,
                     xlabel=xlabel,
                     ylabel=ylabel,
-                    title=title,
-                    palette=:darktest)
+                    title=title)
 
     if figure !== ""
         try
