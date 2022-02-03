@@ -1,7 +1,7 @@
 name = "NeuroJ"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
-version = "0.0.5"
+version = "0.0.6"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"

@@ -646,7 +646,7 @@ function signal_plot_psd(signal_powers::Vector{Float64}, signal_freqs::Vector{Fl
              signal_powers,
              xlabel=xlabel,
              ylabel=ylabel,
-             xlims=(0, frq_lim)
+             xlims=(0, frq_lim),
              legend=false,
              t=:line,
              c=:black,
