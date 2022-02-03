@@ -122,5 +122,7 @@ export signal_plot
 export eeg_plot
 export eeg_draw_head
 export filter_response
+export signal_plot_avg
+export eeg_plot_avg
 
 end
