@@ -124,5 +124,7 @@ export eeg_draw_head
 export filter_response
 export signal_plot_avg
 export eeg_plot_avg
+export signal_plot_butterfly
+export eeg_plot_butterfly
 
 end
