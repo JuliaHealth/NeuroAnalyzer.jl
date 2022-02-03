@@ -422,7 +422,7 @@ Butterfly plot of `signal` matrix against time vector `t`.
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -431,7 +431,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
     channels_no = size(signal, 1)
 
     if normalize == true
-        signal_normalized = signal_normalize_mean(signal)
+        signal_normalized = signal_normalize_mean(reshape(signal, size(signal, 1), size(signal, 2), 1))
     else
         signal_normalized = signal
     end
@@ -478,7 +478,7 @@ Butterfly plot of `eeg` channels.
 - `figure::String` - name of the output figure file
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
