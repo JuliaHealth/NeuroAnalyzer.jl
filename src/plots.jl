@@ -828,7 +828,7 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, 
 end
 
 """
-    eeg_plot_sensors(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, head::Bool=true)
+    eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, head::Bool=true)
 
 Plots electrodes.
 
@@ -840,7 +840,7 @@ Plots electrodes.
 - `head::Bool` - plot head
 - `head_labels::Bool` - plot head labels
 """
-function eeg_plot_sensors(eeg::NeuroJ.EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
+function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
 
     # select channels, default is all channels
     channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
