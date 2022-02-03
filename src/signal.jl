@@ -88,7 +88,7 @@ Calculates absolute band power between frequencies `f1` and `f2` for the `signal
 """
 function signal_band_power(signal::Vector{Float64}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     psd = welch_pgram(signal, 4*fs, fs=fs)
-    frq_idx = [vsearch(Vector(psd.freq), f1), vsearch(Vector(psd.freq), f2)]
+    frq_idx = [vsearch(vec(psd.freq), f1), vsearch(vec(psd.freq), f2)]
     # dx: frequency resolution
     dx = psd.freq[2] - psd.freq[1]
     sbp = simpson(psd.power[frq_idx[1]:frq_idx[2]], psd.freq[frq_idx[1]:frq_idx[2]], dx=dx)
@@ -256,7 +256,46 @@ function signal_ci95(signal::Array{Float64, 3}; n::Int=3, method::Symbol=:normal
         upper_bound = signal_sorted[round(Int, 0.975 * size(signal_tmp1, 1)), :]
     end
 
-    return Vector(signal_mean[:, 1]), Vector(signal_sd[:, 1]), Vector(upper_bound[:, 1]), Vector(lower_bound[:, 1])
+    return vec(signal_mean[:, 1]), vec(signal_sd[:, 1]), vec(upper_bound[:, 1]), vec(lower_bound[:, 1])
+end
+
+"""
+    signal_ci95(signal; n=3, method=:normal)
+
+Calculates mean, std and 95% confidence interval for each the `signal` channels.
+
+# Arguments
+
+- `signal::Matrix{Float64}`
+- `n::Int` - number of bootstraps
+- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
+"""
+function signal_ci95(signal::Matrix{Float64}; n::Int=3, method::Symbol=:normal)
+    method in [:normal, :boot] || throw(ArgumentError("""Method must be ":normal" or ":boot"."""))
+
+    if method === :normal
+        signal_mean = mean(signal, dims=1)'
+        signal_sd = std(signal, dims=1)' / sqrt(size(signal, 1))
+        upper_bound = signal_mean + 1.96 * signal_sd
+        lower_bound = signal_mean - 1.96 * signal_sd
+    else
+        signal_tmp1 = zeros(size(signal, 1) * n, size(signal, 2))
+        Threads.@threads for idx1 in 1:size(signal, 1) * n
+            signal_tmp2 = zeros(size(signal))
+            sample_idx = rand(1:size(signal, 1), size(signal, 1))
+            for idx2 in 1:size(signal, 1)
+                signal_tmp2[idx2, :] = signal[sample_idx[idx2], :]'
+            end
+            signal_tmp1[idx1, :] = mean(signal_tmp2, dims=1)
+        end
+        signal_mean = mean(signal_tmp1, dims=1)'
+        signal_sd = std(signal_tmp1, dims=1)' / sqrt(size(signal_tmp1, 1))
+        signal_sorted = sort(signal_tmp1, dims=1)
+        lower_bound = signal_sorted[round(Int, 0.025 * size(signal_tmp1, 1)), :]
+        upper_bound = signal_sorted[round(Int, 0.975 * size(signal_tmp1, 1)), :]
+    end
+
+    return vec(signal_mean[:, 1]), vec(signal_sd[:, 1]), vec(upper_bound[:, 1]), vec(lower_bound[:, 1])
 end
 
 """
@@ -279,7 +318,7 @@ function signal_mean(signal1::Matrix{Float64}, signal2::Matrix{Float64})
     signal2_sd = std(signal2, dims=1) / sqrt(size(signal2, 1))
     signals_mean_sd = sqrt.(signal1_sd.^2 .+ signal2_sd.^2)'
 
-    return Vector(signals_mean[:, 1]), Vector(signals_mean_sd[:, 1]), Vector((signals_mean + 1.96 * signals_mean_sd)[:, 1]), Vector((signals_mean - 1.96 * signals_mean_sd)[:, 1])
+    return vec(signals_mean[:, 1]), vec(signals_mean_sd[:, 1]), vec((signals_mean + 1.96 * signals_mean_sd)[:, 1]), vec((signals_mean - 1.96 * signals_mean_sd)[:, 1])
 end
 
 """
@@ -645,7 +684,7 @@ function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}
     end
 
     if average == true
-        epochs = Vector(mean(epochs, dims=1)[1, :])
+        epochs = vec(mean(epochs, dims=1)[1, :])
     end
 
     return epochs
