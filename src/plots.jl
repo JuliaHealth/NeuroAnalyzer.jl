@@ -1,5 +1,5 @@
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing)
+    signal_plot(t, signal; offset=0, labels=[], normalize=true, xlabel="Time [s]", ylabel="Amplitude [μV]", title="Signal plot", yamp=nothing)
 
 Plots `signal` against time vector `t`.
 
@@ -12,11 +12,10 @@ Plots `signal` against time vector `t`.
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
-- `average::Bool` - plot all channels averaged with 95%CI
-- `butterfly::Bool` - plot all channels in butterfly mode
+- `title::String` - plot title
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Union{Vector{Float64}, Matrix{Float64}}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -27,14 +26,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    if average == false
-        p = plot(t, signal[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
-    else
-        m, s, u, l = signal_ci95(signal)
-        p = plot(t, m[offset:(offset + length(t) - 1)], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
-        p = plot!(t, u[offset:(offset + length(t) - 1)], c=:grey, lw=0.5)
-        p = plot!(t, l[offset:(offset + length(t) - 1)], c=:grey, lw=0.5)
-    end
+    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp), title=title)
 
     plot(p)
 
@@ -42,7 +34,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels")
+    signal_plot(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Signal plot")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -56,10 +48,9 @@ Plots `signal` matrix against time vector `t`.
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
-- `average::Bool` - plot all channels averaged with 95%CI
-- `butterfly::Bool` - plot all channels in butterfly mode
+- `title::String` - plot title
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=1, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", average::Bool=false, butterfly::Bool=false)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot")
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -83,21 +74,17 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     end
 
     # plot channels
-    if butterfly == false
-        p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5))
-        for idx in 1:channels_no
-            p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
-        end
-        p = plot!(p, yticks = (channels_no-1:-1:0, labels))
-    else
-        p = plot(t, signal[:, offset:(offset + length(t))]', xlabel=xlabel, ylabel="Amplitude [μV]")    
+    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5), title=title)
+    for idx in 1:channels_no
+        p = plot!(t, signal_normalized[idx, (1 + offset):(offset + length(t))], legend=false, t=:line, c=:black)
     end
+    p = plot!(p, yticks = ((channels_no - 1):-1:0, labels))
 
     return p
 end
 
 """
-    eeg_plot(eeg; t=nothing, epoch=1, channels=nothing, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", average=false, butterfly=false, figure=nothing)
+    eeg_plot(eeg; t, epoch=1, channels=nothing, offset=0, len=10.0, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Signal plot", figure="")
 
 Plots `eeg` channels.
 
@@ -113,11 +100,10 @@ Plots `eeg` channels.
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
-- `average::Bool` - plot all channels averaged with 95%CI
-- `butterfly::Bool` - plot all channels in butterfly mode
+- `title::String` - plot title
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", average::Bool=false, butterfly::Bool=false, figure::String="", overwrite::Bool=false)
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -140,24 +126,20 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
 
     fs = eeg_temp.eeg_header[:sampling_rate][1]
 
-    if average == false
-        signal = eeg_temp.eeg_signals[:, :, epoch]
-        labels = eeg_temp.eeg_header[:labels]
-    else
-        signal = Matrix(eeg_temp.eeg_signals[:, :, epoch])
-        labels = [""]
-    end
-
     # default time is 10 seconds or epoch_duration_seconds
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
     t === nothing && (t = collect(0:1/fs:len))
-    t = t[1:(end - 2)]
+    t = t[1:(end - 1)]
 
-    if offset < 1 || offset + (len * eeg_samplingrate(eeg)) > eeg.eeg_header[:epoch_duration_samples]
+    if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
 
-    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, average=average, butterfly=butterfly)
+    if offset + (len * eeg_samplingrate(eeg_temp)) > eeg_temp.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value or length value out of range."))
+    end
+
+    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title)
 
     plot(p)
 
@@ -209,7 +191,7 @@ end
 """
     filter_response(fprototype, ftype, cutoff, fs, order, rp, rs, window, figure)
 
-Returns zero phase distortion filter response.  While saving, it does not check for overwrite.
+Returns zero phase distortion filter response.
 
 # Arguments
 
@@ -306,10 +288,10 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
         try
             savefig(p, figure)
         catch error
-            throw(SystemError("File $figure cannot be saved."))
+            throw(ArgumentError("File $figure cannot be saved."))
             return false
         end
     end
-    
+
     return p
 end
