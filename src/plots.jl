@@ -263,12 +263,13 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     p = plot(p1, p2, p3, layout=(3, 1))
 
     if figure !== ""
-    try
-        savefig(p, figure)
-    catch error
-        throw(SystemError("File $figure cannot be saved."))
-        return false
+        try
+            savefig(p, figure)
+        catch error
+            throw(SystemError("File $figure cannot be saved."))
+            return false
+        end
     end
-
+    
     return p
 end
