@@ -9,13 +9,14 @@ Plots `signal` against time vector `t`.
 - `signal::Vector{Float64}` - the signal vector
 - `offset::Int64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
+- `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `average::Bool` - plot all channels averaged with 95%CI
 - `butterfly::Bool` - plot all channels in butterfly mode
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
