@@ -799,10 +799,6 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, 
         throw(ArgumentError("Epoch index out of range."))
     end
 
-    if typeof(t) == UnitRange{Int64}
-        t = collect(t)
-    end
-
     # select channels, default is all channels
     channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
     eeg_temp = eeg_keep_channel(eeg, channels)
