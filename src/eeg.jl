@@ -244,47 +244,6 @@ function eeg_reference_car(eeg::EEG)
 end
 
 """
-    eeg_save(eeg, file_name)
-
-Saves the `eeg` to `file_name` file (HDF5-based).
-
-# Arguments
-
-- `eeg::EEG`
-- `file_name::String` - file name
-"""
-function eeg_save(eeg::EEG, file_name::String)
-    try
-        save_object(file_name, eeg)
-    catch error
-        throw(ArgumentError("File $file_name cannot be saved."))
-        return false
-    end
-
-    return true
-end
-
-"""
-    eeg_load(file_name)
-
-Loads the `eeg` from `file_name` file (HDF5-based).
-
-# Arguments
-
-- `file_name::String` - file name
-"""
-function eeg_load(file_name::String)
-    try
-        eeg = load_object(file_name)
-    catch error
-        throw(SystemError("File $file_name cannot be load."))
-        return false
-    end
-
-    return eeg
-end
-
-"""
     eeg_get_channel_idx(eeg, channel_name)
 
 Returns the `channel_name` index.

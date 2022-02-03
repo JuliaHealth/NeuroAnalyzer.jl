@@ -1,5 +1,6 @@
 module NeuroJ
 
+using CSV
 using DataFrames
 using DSP
 using FFTW
@@ -26,8 +27,6 @@ export eeg_total_power
 export eeg_band_power
 export eeg_reference_channel
 export eeg_reference_car
-export eeg_load
-export eeg_save
 export eeg_get_channel_idx
 export eeg_get_channel_name
 export eeg_rename_channel
@@ -51,8 +50,11 @@ export eeg_autocov
 export eeg_crosscov
 export eeg_psd
 
-include("eeg_load_edf.jl")
+include("eeg_io.jl")
+export eeg_load
+export eeg_save
 export eeg_load_edf
+export eeg_load_electrode_positions
 
 include("signal.jl")
 export signal_autocov
@@ -130,5 +132,5 @@ export signal_plot_butterfly
 export eeg_plot_butterfly
 export signal_plot_psd
 export eeg_plot_psd
-
+export eeg_plot_electrodes
 end

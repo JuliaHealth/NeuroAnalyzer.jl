@@ -826,3 +826,37 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, 
 
     return p
 end
+
+"""
+    eeg_plot_sensors(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, head::Bool=true)
+
+Plots electrodes.
+
+# Arguments
+
+- `eeg:EEG`
+- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `labels::Bool` - plot electrode labels
+- `head::Bool` - plot head
+- `head_labels::Bool` - plot head labels
+"""
+function eeg_plot_sensors(eeg::NeuroJ.EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
+
+    # select channels, default is all channels
+    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
+    eeg_temp = eeg_keep_channel(eeg, channels)
+
+    loc_x = eeg_temp.eeg_header[:xlocs]
+    loc_y = eeg_temp.eeg_header[:xlocs]
+
+    p = plot()
+    p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+    for idx in 1:length(eeg_temp.eeg_header[:labels])
+        plot!(p, annotation=(loc_x[idx] + 0.05, loc_y[idx] + 0.05, text(eeg_temp.eeg_header[:labels][idx], pointsize=8)))
+    end
+    p = plot!()
+    head == true && eeg_draw_head(p, loc_x, loc_y, head_labels)
+    plot(p)
+
+    return p
+end
