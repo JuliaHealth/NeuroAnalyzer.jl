@@ -853,10 +853,12 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
 
     p = plot()
     p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
-    for idx in 1:length(eeg_temp.eeg_header[:labels])
+    if labels == true
+        for idx in 1:length(eeg_temp.eeg_header[:labels])
         plot!(p, annotation=(loc_x[idx] + 0.05, loc_y[idx] + 0.05, text(eeg_temp.eeg_header[:labels][idx], pointsize=8)))
+        end
+        p = plot!()
     end
-    p = plot!()
     head == true && eeg_draw_head(p, loc_x, loc_y, head_labels)
     plot(p)
 
