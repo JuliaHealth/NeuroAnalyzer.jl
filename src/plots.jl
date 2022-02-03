@@ -28,9 +28,6 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
 
     plot(p)
 
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
-
     return p
 end
 
@@ -85,7 +82,7 @@ end
 """
     eeg_plot(eeg; t=nothing, epoch=1, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
-Plots `eeg` channels.
+Plots `eeg` channels. While saving, it does not check for overwrite.
 
 # Arguments
 
@@ -123,8 +120,12 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
 
     plot(p)
 
-    # TO DO: catching error while saving
-    figure !== "" && (savefig(p, figure))
+    try
+        figure !== "" && (savefig(p, figure))
+    catch error
+        throw(SystemError("File $figure cannot be saved."))
+        return false
+    end
 
     return p
 end
@@ -136,7 +137,7 @@ Draws head over a topographical plot `p`.
 
 # Arguments
 
-- `p::Plot` - toppgraphical plot
+- `p::Plot` - topographical plot
 - `loc_x::Vector{Float64}` - vector of x electrode position
 - `loc_y::Vector{Float64}` - vector of y electrode position
 - `add_labels::Bool` - add text labels to the plot
@@ -163,9 +164,9 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_la
 end
 
 """
-    filter_response(fprototype, ftype, cutoff, fs, order, rp, rs, window)
+    filter_response(fprototype, ftype, cutoff, fs, order, rp, rs, window, figure)
 
-Returns zero phase distortion filter response.
+Returns zero phase distortion filter response.  While saving, it does not check for overwrite.
 
 # Arguments
 
@@ -177,8 +178,9 @@ Returns zero phase distortion filter response.
 - `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
 - `rs::Union{Nothing, Int64, Float64}` - dB attenuation in the stopband
 - `window::Union{Nothing, Vector{Float64}} - window, required for FIR filter
+- `figure::String` - name of the output figure file
 """
-function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
+function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing, figure::String="")
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("""Filter type must be ":bp", ":hp", ":bp" or ":bs"."""))
     fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("""Filter prototype must be ":butterworth", ":chebyshev1:, ":chebyshev2" or ":elliptic"."""))
 
@@ -256,6 +258,13 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     end
 
     p = plot(p1, p2, p3, layout=(3, 1))
+
+    try
+        figure !== "" && (savefig(p, figure))
+    catch error
+        throw(SystemError("File $figure cannot be saved."))
+        return false
+    end
 
     return p
 end

@@ -196,7 +196,12 @@ function eeg_save(eeg::EEG, file_name::String; overwrite::Bool=false)
     if isfile(file_name) & overwrite == false
         throw(ArgumentError("""File $file_name already exists. To overwrite, add "overwrite=true" argument."""))
     end
-    save_object(file_name, eeg)
+    try
+        save_object(file_name, eeg)
+    catch error
+        throw(SystemError("""File $file_name cannot be saved."""))
+        return -1
+    end
 end
 
 """
@@ -209,7 +214,13 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 - `file_name::String` - file name
 """
 function eeg_load(file_name::String)
-    eeg = load_object(file_name)
+    try
+        eeg = load_object(file_name)
+    catch error
+        throw(SystemError("""File $file_name cannot be load."""))
+        return -1
+    end
+
     return eeg
 end
 
