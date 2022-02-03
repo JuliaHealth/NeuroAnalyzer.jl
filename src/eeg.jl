@@ -199,9 +199,11 @@ function eeg_save(eeg::EEG, file_name::String; overwrite::Bool=false)
     try
         save_object(file_name, eeg)
     catch error
-        throw(SystemError("""File $file_name cannot be saved."""))
-        return -1
+        throw(SystemError("File $file_name cannot be saved."))
+        return false
     end
+
+    return true
 end
 
 """
@@ -217,7 +219,7 @@ function eeg_load(file_name::String)
     try
         eeg = load_object(file_name)
     catch error
-        throw(SystemError("""File $file_name cannot be load."""))
+        throw(SystemError("File $file_name cannot be load."))
         return -1
     end
 
