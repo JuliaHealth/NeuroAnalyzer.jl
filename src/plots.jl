@@ -129,7 +129,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     # default time is 10 seconds or epoch_duration_seconds
     fs = eeg_samplingrate(eeg_temp)
     len > eeg_temp.eeg_header[:epoch_duration_seconds] && (len = eeg_temp.eeg_header[:epoch_duration_seconds])
-    t === nothing && t = (offset / fs) .+ collect(0:1/fs:len)
+    t === nothing && (t = (offset / fs) .+ collect(0:1/fs:len))
     t = t[1:(end - 1)]
     if offset < 0 || offset > eeg_temp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
