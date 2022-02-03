@@ -13,9 +13,9 @@ Plots `signal` against time vector `t`.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Nothing, Int64, Float64}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -310,9 +310,9 @@ Plots averaged `signal` matrix against time vector `t`.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -338,7 +338,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int6
     m, s, u, l = signal_ci95(signal_normalized)
 
     if yamp === nothing
-        yamp = maximum(u) * 2
+        yamp = maximum(u)
         yamp = ceil(Int64, yamp)
     end
 
@@ -369,10 +369,10 @@ Plots averaged `eeg` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Int64, Float64, Nothing}=nothing, figure::String="")
+function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -399,9 +399,8 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Noth
     end
 
     signal = Matrix(eeg_temp.eeg_signals[:, :, epoch])
-    labels = labels = [""]
 
-    p = signal_plot_avg(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
+    p = signal_plot_avg(t, signal, offset=offset, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
 
     plot(p)
 
