@@ -26,7 +26,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, xlims=(t[1], t[end]), ylims=(-yamp, yamp), title=title)
+    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp), title=title)
 
     plot(p)
 
@@ -74,7 +74,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     end
 
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, xlims=(t[1], t[end]), ylim=(-0.5, channels_no-0.5), title=title)
+    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-0.5, channels_no-0.5), title=title)
     for idx in 1:channels_no
         p = plot!(t, signal_normalized[idx, (1 + offset):(offset + length(t))], legend=false, t=:line, c=:black)
     end
@@ -325,7 +325,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int6
     end
 
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, xlims=(t[1], t[end]), ylim=(-yamp, yamp), title=title)
+    p = plot(xlabel=xlabel, ylabel=ylabel, ylim=(-yamp, yamp), title=title)
     p = plot!(t, m[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:black)
     p = plot!(t, u[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:grey, lw=0.5)
     p = plot!(t, l[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:grey, lw=0.5)

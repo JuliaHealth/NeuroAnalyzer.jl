@@ -23,8 +23,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ## TO DO
 
 EEG:
-- add filter types
-- fix: get_epoch()
+- fix: time ticks
 - add re-referencing methods
 - import channel location files
 - channel locations data to eeg_signal_header
