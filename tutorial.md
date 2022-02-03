@@ -100,14 +100,15 @@ using Pkg
 Pkg.update()
 using NeuroJ
 edf = eeg_load_edf("eeg-test.edf")
+eeg_plot(edf)
 eeg_plot(edf, channels=1:4)
 eeg_plot(edf, offset=20, len=20)
 eeg_plot(edf, normalize=false)
 eeg_plot_avg(edf, channels=1:4, offset=20)
-eeg_plot_avg(e2avg)
-a=edf.eeg_signals[:, :, 1]
-signal_plot_avg(a)
+eeg_plot_avg(edf)
 eeg_plot_butterfly(edf)
+eeg_plot_butterfly(edf, normalize=true)
+eeg_plot_avg(e2avg)
 eeg_plot(edf, figure="/test.png")
 eeg_plot(edf, figure="/tmp/test.png")
 eeg_plot(edf, offset=60, figure="/tmp/test.png")

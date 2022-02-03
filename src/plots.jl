@@ -306,18 +306,25 @@ Plots averaged `signal` matrix against time vector `t`.
 - `signal::Matrix{Float64}` - the signal matrix
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
+- `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
     end
+
+    if normalize == true
+        signal_normalized = signal_normalize_mean(signal)
+    else
+        signal_normalized = signal
+    end
     
-    m, s, u, l = signal_ci95(signal)
+    m, s, u, l = signal_ci95(signal_normalized)
 
     if yamp === nothing
         yamp = maximum(u)
@@ -346,6 +353,7 @@ Plots averaged `eeg` channels.
 - `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
+- `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
@@ -380,7 +388,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Noth
 
     signal = Matrix(eeg_temp.eeg_signals[:, :, epoch])
 
-    p = signal_plot_avg(t, signal, offset=offset, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
+    p = signal_plot_avg(t, signal, offset=offset, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
 
     plot(p)
 
@@ -422,17 +430,8 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
     
     channels_no = size(signal, 1)
 
-    # reverse so 1st channel is on top
-    signal = reverse(signal[:, :], dims = 1)
-    signal_normalized = zeros(size(signal))
-
     if normalize == true
-        # normalize and shift so all channels are visible
-        variances = var(signal, dims=2)
-        mean_variance = mean(variances)
-        for idx in 1:channels_no
-            signal_normalized[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
-        end
+        signal_normalized = signal_normalize_mean(signal)
     else
         signal_normalized = signal
     end
