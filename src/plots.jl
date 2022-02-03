@@ -67,6 +67,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     channels_no = size(signal, 1)
 
     # reverse so 1st channel is on top
+    channel_color = channels_no:-1:1
     signal = reverse(signal[:, :], dims = 1)
     signal_normalized = zeros(size(signal))
 
@@ -91,7 +92,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
-                  label="", color=idx)
+                  label="", color=channel_color[idx])
     end
     p = plot!(p, yticks = ((channels_no - 1):-1:0, labels))
 
