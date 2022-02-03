@@ -15,7 +15,7 @@ function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, U
 
     length(channel_idx) > 1 && (channel_idx = sort!(channel_idx, rev=true))
 
-    if channel_idx[end] < 1 || channel_idx[1] > length(eeg.eeg_header[:labels])
+    if channel_idx[end] < 1 || channel_idx[1] > size(eeg.eeg_signals, 1)
         throw(ArgumentError("Channel index does not match signal channels."))
     end
 
@@ -71,14 +71,50 @@ function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, Uni
         channel_idx = collect(channel_idx)
     end
 
+    if channel_idx[end] < 1 || channel_idx[1] > size(eeg.eeg_signals, 1)
+        throw(ArgumentError("Channel index does not match signal channels."))
+    end
+
     channels = size(eeg.eeg_signals, 1)
     channels_to_remove = setdiff(channels, channel_idx)
 
+    length(channels_to_remove) > 1 && (channels_to_remove = sort!(channels_to_remove, rev=true))
+
+    eeg_header = deepcopy(eeg.eeg_header)
+    eeg_time = deepcopy(eeg.eeg_time)
+    eeg_signals = deepcopy(eeg.eeg_signals)
+
+    channel_no = eeg_header[:channels_no]
+
+    # update headers
+    eeg_header[:channels_no] = channel_no - length(channels_to_remove)
+    for idx1 in 1:length(channels_to_remove)
+        for idx2 in 1:channel_no
+            if idx2 == channels_to_remove[idx1]
+                deleteat!(eeg_header[:labels], idx2)
+                deleteat!(eeg_header[:transducers], idx2)
+                deleteat!(eeg_header[:physical_dimension], idx2)
+                deleteat!(eeg_header[:physical_minimum], idx2)
+                deleteat!(eeg_header[:physical_maximum], idx2)
+                deleteat!(eeg_header[:digital_minimum], idx2)
+                deleteat!(eeg_header[:digital_maximum], idx2)
+                deleteat!(eeg_header[:prefiltering], idx2)
+                deleteat!(eeg_header[:samples_per_datarecord], idx2)
+                deleteat!(eeg_header[:sampling_rate], idx2)
+                deleteat!(eeg_header[:gain], idx2)
+            end
+        end 
+    end
+
+    # remove channel
+    eeg_signals = eeg_signals[setdiff(1:end, (channels_to_remove)), :, :]
+
     # create new dataset
-    eeg_new = eeg_delete_channel(eeg, channels_to_remove)
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_keep_channel(EEG, $channel_idx)")
-    
+
     return eeg_new
 end
 
