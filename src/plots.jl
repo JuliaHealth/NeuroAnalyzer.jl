@@ -153,7 +153,6 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
                     ylabel=ylabel,
                     title=title)
 
-    plot(p)
 
     if figure !== ""
         try
@@ -163,6 +162,8 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
             return false
         end
     end
+
+    plot(p)
 
     return p
 end
@@ -182,8 +183,8 @@ Draws head over a topographical plot `p`.
 function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels::Bool=true)
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
-    x = x .* 1.1
-    y = y .* 1.1
+    x = x .* 1.2
+    y = y .* 1.2
     head = Shape(x, y)
     nose = Shape([(-0.1, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.1, maximum(y))])
     ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), 0.1), (minimum(x), 0.1)])
@@ -866,7 +867,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
     end
     if labels == true
         for idx in 1:length(eeg_temp.eeg_header[:labels])
-        plot!(p, annotation=(loc_x[idx] + 0.05, loc_y[idx] + 0.05, text(eeg_temp.eeg_header[:labels][idx], pointsize=8)))
+        plot!(p, annotation=(loc_x[idx] + 0.00, loc_y[idx] + 0.04, text(eeg_temp.eeg_header[:labels][idx], pointsize=8)))
         end
         p = plot!()
     end
