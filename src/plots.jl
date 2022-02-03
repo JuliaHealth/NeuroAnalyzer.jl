@@ -5,7 +5,7 @@ Plots `signal` against time vector `t`.
 
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}` - the time vector
 - `signal::Vector{Float64}` - the signal vector
 - `offset::Int64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
@@ -15,7 +15,7 @@ Plots `signal` against time vector `t`.
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Nothing, Int64, Float64}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -40,7 +40,7 @@ Plots `signal` channels.
 
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}`
 - `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
@@ -50,7 +50,7 @@ Plots `signal` channels.
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot")
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot")
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -97,9 +97,9 @@ Plots `eeg` channels.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
+- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -109,7 +109,7 @@ Plots `eeg` channels.
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", figure::String="")
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}}=nothing, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -359,7 +359,7 @@ end
 Plots averaged `signal` channels.
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}`
 - `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
@@ -369,7 +369,7 @@ Plots averaged `signal` channels.
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -424,9 +424,9 @@ Plots averaged `eeg` channels.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
+- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `normalize::Bool` - normalize the `signal` prior to calculations
@@ -436,7 +436,7 @@ Plots averaged `eeg` channels.
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
+function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}}=nothing, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -494,7 +494,7 @@ Butterfly plot of `signal` channels.
 
 # Arguments
 
-- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}`
+- `t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}`
 - `signal::Matrix{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
@@ -505,7 +505,7 @@ Butterfly plot of `signal` channels.
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -555,9 +555,9 @@ Butterfly plot of `eeg` channels.
 # Arguments
 
 - `eeg::EEG` - EEG object
-- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}` - the time vector
+- `t::Union{Nothing, Vector{Float64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}` - channels to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Union{Int64, Float64}` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -568,7 +568,7 @@ Butterfly plot of `eeg` channels.
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}}=nothing, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing, figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -779,7 +779,7 @@ Plots power spectrum density.
 
 - `eeg::EEG` - EEG object
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}` - channels to display
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `average::Bool` - plots average power and 95%CI for all channels
@@ -789,7 +789,7 @@ Plots power spectrum density.
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
 """
-function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Vector{String}=[""], normalize::Bool=false, average::Bool=false, frq_lim::Union{Nothing, Int64, Float64}=nothing, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", figure::String="")
+function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}}=nothing, UnitRange{Int64}}=nothing, labels::Vector{String}=[""], normalize::Bool=false, average::Bool=false, frq_lim::Union{Nothing, Int64, Float64}=nothing, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", figure::String="")
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -828,20 +828,20 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Nothing, Int64, 
 end
 
 """
-    eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, head::Bool=true)
+    eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}=nothing, head::Bool=true)
 
 Plots electrodes.
 
 # Arguments
 
 - `eeg:EEG`
-- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `channels::Union{Nothing, Int64, Vector{Float64}}, UnitRange{Int64}}` - channels to display
 - `selected::Union{Nothing, Int64, Vector{Float64}}` - which channels should be highlighted
 - `labels::Bool` - plot electrode labels
 - `head::Bool` - plot head
 - `head_labels::Bool` - plot head labels
 """
-function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}=nothing, UnitRange{Int64}}=nothing, selected::Union{Nothing, Int64, Vector{Float64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
+function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}}=nothing, UnitRange{Int64}}=nothing, selected::Union{Nothing, Int64, Vector{Float64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
 
@@ -861,7 +861,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
         eeg_temp = eeg_keep_channel(eeg, selected)
         loc_x = eeg_temp.eeg_header[:xlocs]
         loc_y = eeg_temp.eeg_header[:ylocs]
-        p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+        p = plot!(loc_x, loc_y, seriestype=:scatter, color=:red, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
     end
     if labels == true
         for idx in 1:length(eeg_temp.eeg_header[:labels])
