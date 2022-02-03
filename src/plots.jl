@@ -863,7 +863,9 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
         eeg_temp = eeg_keep_channel(eeg, selected)
         loc_x = eeg_temp.eeg_header[:xlocs]
         loc_y = eeg_temp.eeg_header[:ylocs]
-        p = plot!(loc_x, loc_y, seriestype=:scatter, color=:red, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+        for idx in 1:eeg_temp.eeg_header[:channels_no]
+            p = plot!((loc_x[idx], loc_y[idx]), seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+        end
     end
     if labels == true
         for idx in 1:length(eeg_temp.eeg_header[:labels])
