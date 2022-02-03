@@ -1,5 +1,5 @@
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing)
+    signal_plot(t, signal; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Amplitude [μV]", yamp=nothing)
 
 Plots `signal` against time vector `t`.
 
@@ -16,7 +16,7 @@ Plots `signal` against time vector `t`.
 - `butterfly::Bool` - plot all channels in butterfly mode
 - `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Vector{Float64}; offset::Int64=1, labels::Vector{String}=[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", average::Bool=false, butterfly::Bool=false, yamp::Union{Int64, Float64, Nothing}=nothing)
 
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -28,12 +28,12 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     end
 
     if average == false
-        p = plot(t, signal[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+        p = plot(t, signal[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
     else
         m, s, u, l = signals_ci95(signal)
-        p = plot(t, m[ofset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
-        p = plot!(t, u[ofset:(offset + length(t))], c=:grey, lw=0.5)
-        p = plot!(t, l[ofset:(offset + length(t))], c=:grey, lw=0.5)
+        p = plot(t, m[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
+        p = plot!(t, u[offset:(offset + length(t))], c=:grey, lw=0.5)
+        p = plot!(t, l[offset:(offset + length(t))], c=:grey, lw=0.5)
     end
 
     plot(p)
@@ -42,7 +42,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
 end
 
 """
-    signal_plot(t, signal; offset=1, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels")
+    signal_plot(t, signal; offset=1, labels=[], normalize=true, xlabel="Time [s]", ylabel="Channels")
 
 Plots `signal` matrix against time vector `t`.
 
@@ -143,7 +143,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
     eeg_temp = eeg_keep_channel(eeg, channels)
 
     fs = eeg_temp.eeg_header[:sampling_rate][1]
-    if butterfly == false
+    if average == false
         signal = eeg_temp.eeg_signals[:, :, epoch]
         labels = eeg_temp.eeg_header[:labels]
     else
