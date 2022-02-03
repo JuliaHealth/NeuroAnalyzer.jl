@@ -854,6 +854,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
     loc_y = eeg_temp.eeg_header[:ylocs]
 
     p = plot()
+    head == true && eeg_draw_head(p, loc_x_head, loc_y_head, head_labels)
     if length(selected) >= eeg_temp.eeg_header[:channels_no]
         p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
     else
@@ -869,7 +870,6 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
         end
         p = plot!()
     end
-    head == true && eeg_draw_head(p, loc_x, loc_y, head_labels)
     plot(p)
 
     return p
