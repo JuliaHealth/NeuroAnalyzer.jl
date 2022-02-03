@@ -26,7 +26,15 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, label="", xlims=(ceil(t[1]), floor(t[end])), ylims=(-yamp, yamp), title=title)
+    p = plot(t,
+             signal[1+offset:(offset + length(t))],
+             xlabel=xlabel,
+             ylabel=ylabel,
+             label="",
+             xlims=(ceil(t[1]), floor(t[end])),
+             ylims=(-yamp, yamp),
+             title=title,
+             palette(:darktest))
 
     plot(p)
 
@@ -78,7 +86,8 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
              ylabel=ylabel,
              xlims=(ceil(t[1]), floor(t[end])),
              ylims=(-0.5, channels_no-0.5),
-             title=title)
+             title=title,
+             palette(:darktest))
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
@@ -151,8 +160,8 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
                     normalize=normalize,
                     xlabel=xlabel,
                     ylabel=ylabel,
-                    title=title)
-
+                    title=title,
+                    palette(:darktest))
 
     if figure !== ""
         try
@@ -340,7 +349,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
                    label="")
     end
 
-    p = plot(p1, p2, p3, layout=(3, 1))
+    p = plot(p1, p2, p3, layout=(3, 1), palette(:darktest)))
 
     if figure !== ""
         try
@@ -382,7 +391,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int6
         signal_normalized = signal
     end
     
-    m, s, u, l = signal_ci95(signal_normalized)
+    signal_normalized_m, signal_normalized_s, signal_normalized_u, signal_normalized_l = signal_ci95(signal_normalized)
 
     if yamp === nothing
         yamp = maximum(u)
@@ -395,24 +404,27 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int6
              xlims=(ceil(t[1]),
                     floor(t[end])),
              ylims=(-yamp, yamp),
-             title=title)
+             title=title,
+             palette(:darktest))
     p = plot!(t,
-              m[(1 + offset):(offset + length(t))],
-              label=false,
-              t=:line,
-              c=:black)
-    p = plot!(t,
-              u[(1 + offset):(offset + length(t))],
+              signal_normalized_u[(1 + offset):(offset + length(t))],
+              fillrange = signal_normalized_l,
+              fillalpha = 0.35, 
               label=false,
               t=:line,
               c=:grey,
               lw=0.5)
     p = plot!(t,
+              signal_normalized_m[(1 + offset):(offset + length(t))],
+              label=false,
+              t=:line,
+              c=:black)
+#=    p = plot!(t,
               l[(1 + offset):(offset + length(t))],
               label=false,
               t=:line,
               c=:grey,
-              lw=0.5)
+              lw=0.5)=#
 
     return p
 end
@@ -537,7 +549,8 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
              ylabel=ylabel,
              xlims=(ceil(t[1]), floor(t[end])),
              ylims=(-yamp, yamp),
-             title=title)
+             title=title,
+             palette(:darktest))
     for idx in 1:channels_no
         p = plot!(t,
                   signal_normalized[idx, (1 + offset):(offset + length(t))],
@@ -649,7 +662,8 @@ function signal_plot_psd(signal_powers::Vector{Float64}, signal_freqs::Vector{Fl
              legend=false,
              t=:line,
              c=:black,
-             title=title)
+             title=title,
+             palette(:darktest))
 
     plot(p)
 
@@ -686,7 +700,8 @@ function signal_plot_psd(signal::Vector{Float64}; fs::Int64, normalize::Bool=fal
              legend=false,
              t=:line,
              c=:black,
-             title=title)
+             title=title,
+             palette(:darktest))
 
     plot(p)
 
@@ -740,25 +755,28 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(0, frq_lim),
-             title=title)
+             title=title,
+             palette(:darktest))
     if average == true
+    p = plot!(signal_freqs,
+              signal_powers_u,
+              fillrange = signal_powers_l,
+              fillalpha = 0.35
+              label=false,
+              t=:line,
+              c=:grey,
+              lw=0.5)
     p = plot!(signal_freqs,
               signal_powers_m,
               label=false,
               t=:line,
               c=:black)
-    p = plot!(signal_freqs,
-              signal_powers_u,
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
-    p = plot!(signal_freqs,
+#=    p = plot!(signal_freqs,
               signal_powers_l,
               label=false,
               t=:line,
               c=:grey,
-              lw=0.5)
+              lw=0.5)=#
     else
         for idx in 1:channels_no
             p = plot!(signal_freqs[idx, :],
@@ -854,7 +872,7 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
     loc_x = eeg_temp.eeg_header[:xlocs]
     loc_y = eeg_temp.eeg_header[:ylocs]
 
-    p = plot(grid=false, framestyle=:none)
+    p = plot(grid=false, framestyle=:none, palette(:darktest))
     head == true && eeg_draw_head(p, loc_x, loc_x, head_labels)
     if length(selected) >= eeg_temp.eeg_header[:channels_no]
         p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
