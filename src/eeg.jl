@@ -1,21 +1,21 @@
 """
-    eeg_drop_channel(eeg, channels)
+    eeg_delete_channel(eeg, channel_idx)
 
-Removes `channels` from the `eeg`.
+Removes `channel_idx` from the `eeg`.
 
 # Arguments
 
 - `eeg::EEG`
-- `channels::Float64` - channels to be removed, vector of numbers or range
+- `channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channel index to be removed, vector of numbers or range
 """
-function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRange{Int64}})
-    if typeof(channels) == UnitRange{Int64}
-        channels = collect(channels)
+function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
+    if typeof(channel_idx) == UnitRange{Int64}
+        channel_idx = collect(channel_idx)
     end
 
-    length(channels) > 1 && (channels = sort!(channels, rev=true))
+    length(channel_idx) > 1 && (channel_idx = sort!(channel_idx, rev=true))
 
-    if channels[end] < 1 || channels[1] > length(eeg.eeg_header[:labels])
+    if channel_idx[end] < 1 || channel_idx[1] > length(eeg.eeg_header[:labels])
         throw(ArgumentError("Channel index does not match signal channels."))
     end
 
@@ -23,13 +23,13 @@ function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRa
     eeg_time = deepcopy(eeg.eeg_time)
     eeg_signals = deepcopy(eeg.eeg_signals)
 
-    channels_no = eeg_header[:channels_no]
+    channel_no = eeg_header[:channel_no]
 
     # update headers
-    eeg_header[:channels_no] = channels_no - length(channels)
-    for idx1 in 1:length(channels)
-        for idx2 in 1:channels_no
-            if idx2 == channels[idx1]
+    eeg_header[:channel_no] = channel_no - length(channel_idx)
+    for idx1 in 1:length(channel_idx)
+        for idx2 in 1:channel_no
+            if idx2 == channel_idx[idx1]
                 deleteat!(eeg_header[:labels], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
@@ -45,13 +45,38 @@ function eeg_drop_channel(eeg::EEG, channels::Union{Int64, Vector{Int64}, UnitRa
         end 
     end
 
-    # remove channels
-    eeg_signals = eeg_signals[setdiff(1:end, (channels)), :, :]
+    # remove channel
+    eeg_signals = eeg_signals[setdiff(1:end, (channel_idx)), :, :]
 
     # create new dataset
     eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_drop_channel(EEG, $channels)")
+    push!(eeg_new.eeg_header[:history], "eeg_delete_channel(EEG, $channel_idx)")
+    
+    return eeg_new
+end
+
+"""
+    eeg_keep_channel(eeg, channel_idx)
+
+Keeps `channels` in the `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channel index to keep, vector of numbers or range
+"""
+function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
+    if typeof(channel_idx) == UnitRange{Int64}
+        channel_idx = collect(channel_idx)
+    end
+
+    channels_to_remove = setdiff(x, y)
+
+    # create new dataset
+    eeg_new = eeg_delete_channel(eeg, channels_to_remove)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_keep_channel(EEG, $channel_idx)")
     
     return eeg_new
 end
@@ -182,7 +207,7 @@ function eeg_reference_car(eeg::EEG)
 end
 
 """
-    eeg_save(eeg, file_name; overwrite=false)
+    eeg_save(eeg, file_name)
 
 Saves the `eeg` to `file_name` file (HDF5-based).
 
@@ -190,16 +215,12 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 - `eeg::EEG`
 - `file_name::String` - file name
-- `overwrite::Bool`
 """
-function eeg_save(eeg::EEG, file_name::String; overwrite::Bool=false)
-    if isfile(file_name) & overwrite == false
-        throw(ArgumentError("""File $file_name already exists. To overwrite, add "overwrite=true" argument."""))
-    end
+function eeg_save(eeg::EEG, file_name::String)
     try
         save_object(file_name, eeg)
     catch error
-        throw(SystemError("File $file_name cannot be saved."))
+        throw(ArgumentError("File $file_name cannot be saved."))
         return false
     end
 
@@ -220,7 +241,7 @@ function eeg_load(file_name::String)
         eeg = load_object(file_name)
     catch error
         throw(SystemError("File $file_name cannot be load."))
-        return -1
+        return false
     end
 
     return eeg

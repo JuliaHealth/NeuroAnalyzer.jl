@@ -23,7 +23,6 @@ eeg_labels(edf)
 
 # save
 eeg_save(edf, "test.bin")
-eeg_save(edf, "test.bin", overwrite=true)
 
 # load
 edf = eeg_load("test.bin")
@@ -90,9 +89,15 @@ eeg_plot(edf)
 eeg_plot(e10e1)
 
 # remove channel
-edf1 = eeg_drop_channel(edf, 10)
+edf1 = eeg_delete_channel(edf, 10)
+
+# keep channel
+edf12 = eeg_keep_channel(edf, 1:2)
 
 # plot channels
+eeg_plot(edf, figure="/test.png")
+eeg_plot(edf, figure="/tmp/test.png")
+eeg_plot(edf, offset=60*256, figure="/tmp/test.png")
 p1 = eeg_plot(e2avg)
 p1 = plot!(title="e2avg")
 p2 = eeg_plot(edf_but)

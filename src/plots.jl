@@ -76,13 +76,14 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         p = plot!(t, signal_normalized[idx, offset:(offset + length(t))], legend=false, t=:line, c=:black)
     end
     p = plot!(p, yticks = (channels_no-1:-1:0, labels))
+
     return p
 end
 
 """
     eeg_plot(eeg; t=nothing, epoch=1, offset=0, labels=[], normalize=false, xlabel="Time [s]", ylabel="Channels", figure=nothing)
 
-Plots `eeg` channels. While saving, it does not check for overwrite.
+Plots `eeg` channels.
 
 # Arguments
 
@@ -97,7 +98,7 @@ Plots `eeg` channels. While saving, it does not check for overwrite.
 - `ylabel::String` - y-axis label
 - `figure::String` - name of the output figure file
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="")
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, offset::Int64=1, len::Float64=10.0, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", figure::String="", overwrite::Bool=false)
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -120,11 +121,13 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
 
     plot(p)
 
-    try
-        figure !== "" && (savefig(p, figure))
-    catch error
-        throw(SystemError("File $figure cannot be saved."))
-        return false
+    if figure !== ""
+        try
+            savefig(p, figure)
+        catch error
+            throw(ArgumentError("File $figure cannot be saved."))
+            return false
+        end
     end
 
     return p
@@ -259,8 +262,9 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
 
     p = plot(p1, p2, p3, layout=(3, 1))
 
+    if figure !== ""
     try
-        figure !== "" && (savefig(p, figure))
+        savefig(p, figure)
     catch error
         throw(SystemError("File $figure cannot be saved."))
         return false

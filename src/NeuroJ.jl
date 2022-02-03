@@ -19,7 +19,8 @@ end
 include("eeg.jl")
 export eeg_derivative
 export eeg_detrend
-export eeg_drop_channel
+export eeg_delete_channel
+export eeg_keep_channel
 export eeg_filter
 export eeg_total_power
 export eeg_band_power

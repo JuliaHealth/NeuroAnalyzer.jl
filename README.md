@@ -28,7 +28,6 @@ EEG:
 - add re-referencing methods
 - import channel location files
 - channel locations data to eeg_signal_header
-- eeg_plot() check for file overwrite
 
 MRI
 
@@ -36,10 +35,6 @@ NIRS
 
 NSTIM
 - modelling
-
-## Contributing
-
-Please feel free to contribute documentation, tutorials, paid and free books.
 
 ## Contributors
 
