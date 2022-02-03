@@ -840,11 +840,12 @@ Plots electrodes.
 - `head::Bool` - plot head
 - `head_labels::Bool` - plot head labels
 """
-function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
+function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}=nothing, UnitRange{Int64}}=nothing, selected::Union{Nothing, Int64, Vector{Float64}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
 
     # select channels, default is all channels
+    selected === nothing && (selected = 1:eeg.eeg_header[:channels_no])
     channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
     eeg_temp = eeg_keep_channel(eeg, channels)
 
@@ -852,7 +853,15 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
     loc_y = eeg_temp.eeg_header[:ylocs]
 
     p = plot()
-    p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+    if length(selected) >= eeg_temp.eeg_header[:channels_no]
+        p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+    else
+        p = plot!(loc_x, loc_y, seriestype=:scatter, color=:black, alpha=0.2, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+        eeg_temp = eeg_keep_channel(eeg, selected)
+        loc_x = eeg_temp.eeg_header[:xlocs]
+        loc_y = eeg_temp.eeg_header[:ylocs]
+        p = plot!(loc_x, loc_y, seriestype=:scatter, xlims=(-1, 1), ylims=(-1, 1), grid=true, label="")
+    end
     if labels == true
         for idx in 1:length(eeg_temp.eeg_header[:labels])
         plot!(p, annotation=(loc_x[idx] + 0.05, loc_y[idx] + 0.05, text(eeg_temp.eeg_header[:labels][idx], pointsize=8)))
