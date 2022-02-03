@@ -23,7 +23,7 @@ function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, U
     eeg_time = deepcopy(eeg.eeg_time)
     eeg_signals = deepcopy(eeg.eeg_signals)
 
-    channel_no = eeg_header[:channel_no]
+    channel_no = eeg_header[:channels_no]
 
     # update headers
     eeg_header[:channels_no] = channel_no - length(channel_idx)
