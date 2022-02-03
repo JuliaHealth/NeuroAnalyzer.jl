@@ -836,11 +836,12 @@ Plots electrodes.
 
 - `eeg:EEG`
 - `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `selected::Union{Nothing, Int64, Vector{Float64}}` - which channels should be highlighted
 - `labels::Bool` - plot electrode labels
 - `head::Bool` - plot head
 - `head_labels::Bool` - plot head labels
 """
-function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}=nothing, UnitRange{Int64}}=nothing, selected::Union{Nothing, Int64, Vector{Float64}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
+function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Float64}=nothing, UnitRange{Int64}}=nothing, selected::Union{Nothing, Int64, Vector{Float64}}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
 
