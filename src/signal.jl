@@ -184,7 +184,7 @@ function signal_detrend(signal::Vector{Float64}; type::Symbol=:linear)
     type in [:linear, :constant] || throw(ArgumentError("""Trend type must be ":linear" or ":constant"."""))
 
     if type == :constant
-        signal_det = demean(signal)
+        signal_det = signal_demean(signal)
     else
         A = ones(length(signal))
         coef = A \ signal
