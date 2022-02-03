@@ -53,7 +53,7 @@ export eeg_psd
 include("eeg_io.jl")
 export eeg_load
 export eeg_save
-export eeg_load_edf
+export eeg_import_edf
 export eeg_load_electrode_positions
 
 include("signal.jl")
