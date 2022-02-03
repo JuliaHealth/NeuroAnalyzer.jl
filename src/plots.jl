@@ -30,7 +30,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     if average == false
         p = plot(t, signal[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
     else
-        m, s, u, l = signals_ci95(signal)
+        m, s, u, l = signal_ci95(signal)
         p = plot(t, m[offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, ylims=(-yamp, yamp))
         p = plot!(t, u[offset:(offset + length(t))], c=:grey, lw=0.5)
         p = plot!(t, l[offset:(offset + length(t))], c=:grey, lw=0.5)
