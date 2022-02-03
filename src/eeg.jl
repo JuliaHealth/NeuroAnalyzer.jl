@@ -75,8 +75,8 @@ function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, Uni
         throw(ArgumentError("Channel index does not match signal channels."))
     end
 
-    channels = size(eeg.eeg_signals, 1)
-    channels_to_remove = setdiff(channels, channel_idx)
+    channels_list = collect(1:size(eeg.eeg_signals, 1))
+    channels_to_remove = setdiff(channels_list, channel_idx)
 
     length(channels_to_remove) > 1 && (channels_to_remove = sort!(channels_to_remove, rev=true))
 
