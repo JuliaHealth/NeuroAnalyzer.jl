@@ -26,7 +26,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
         yamp = ceil(Int64, yamp)
     end
 
-    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, xlims=(t[1], t[end]), ylims=(-yamp, yamp), title=title)
+    p = plot(t, signal[1+offset:(offset + length(t))], xlabel=xlabel, ylabel=ylabel, legend=false, t=:line, c=:black, xlims=(ceil(t[1]), floor(t[end])), ylims=(-yamp, yamp), title=title)
 
     plot(p)
 
@@ -74,9 +74,17 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, 
     end
 
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, xlims=(t[1], t[end]), ylim=(-0.5, channels_no-0.5), title=title)
+    p = plot(xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(ceil(t[1]), floor(t[end])),
+             ylims=(-0.5, channels_no-0.5),
+             title=title)
     for idx in 1:channels_no
-        p = plot!(t, signal_normalized[idx, (1 + offset):(offset + length(t))], legend=false, t=:line, c=:black)
+        p = plot!(t,
+                  signal_normalized[idx, (1 + offset):(offset + length(t))],
+                  legend=false,
+                  t=:line,
+                  c=:black)
     end
     p = plot!(p, yticks = ((channels_no - 1):-1:0, labels))
 
@@ -138,7 +146,14 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
-    p = signal_plot(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title)
+    p = signal_plot(t,
+                    signal,
+                    offset=offset,
+                    labels=labels,
+                    normalize=normalize,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    title=title)
 
     plot(p)
 
@@ -245,12 +260,27 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p1 = plot(w, H, title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Magnitude [dB]", xlabel="Frequency [Hz]", label="")
+    p1 = plot(w,
+              H,
+              title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order",
+              xlims=(0, x_max),
+              ylabel="Magnitude [dB]",
+              xlabel="Frequency [Hz]",
+              label="")
     if length(cutoff) == 1
-        p1 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+        p1 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     else
-        p1 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
-        p1 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+        p1 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p1 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     end
 
     phi, w = phaseresp(ffilter)
@@ -259,12 +289,28 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p2 = plot(w, phi, title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", ylims=(-180, 180), xlims=(0, x_max), ylabel="Phase [°]", xlabel="Frequency [Hz]", label="")
+    p2 = plot(w,
+              phi,
+              title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order",
+              ylims=(-180, 180),
+              xlims=(0, x_max),
+              ylabel="Phase [°]",
+              xlabel="Frequency [Hz]",
+              label="")
     if length(cutoff) == 1
-        p2 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+        p2 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     else
-        p2 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
-        p2 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+        p2 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p2 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     end
 
     tau, w = grpdelay(ffilter)
@@ -273,12 +319,26 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     w = w .* fs / 2 / pi
     x_max = w[end]
     ftype == :hp && (x_max = cutoff * 10)
-    p3 = plot(w, tau, title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max), ylabel="Group delay [samples]", xlabel="Frequency [Hz]", label="")
+    p3 = plot(w,
+              tau,
+              title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max),
+              ylabel="Group delay [samples]",
+              xlabel="Frequency [Hz]",
+              label="")
     if length(cutoff) == 1
-        p3 = plot!((0, cutoff), seriestype=:vline, linestyle=:dash, label="")
+        p3 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     else
-        p3 = plot!((0, cutoff[1]), seriestype=:vline, linestyle=:dash, label="")
-        p3 = plot!((0, cutoff[2]), seriestype=:vline, linestyle=:dash, label="")
+        p3 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p3 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
     end
 
     p = plot(p1, p2, p3, layout=(3, 1))
@@ -332,10 +392,29 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int6
     end
 
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, xlims=(t[1], t[end]), ylim=(-yamp, yamp), title=title)
-    p = plot!(t, m[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:black)
-    p = plot!(t, u[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:grey, lw=0.5)
-    p = plot!(t, l[(1 + offset):(offset + length(t))], legend=false, t=:line, c=:grey, lw=0.5)
+    p = plot(xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(ceil(t[1]),
+                    floor(t[end])),
+             ylims=(-yamp, yamp),
+             title=title)
+    p = plot!(t,
+              m[(1 + offset):(offset + length(t))],
+              label=false,
+              t=:line,
+              c=:black)
+    p = plot!(t,
+              u[(1 + offset):(offset + length(t))],
+              label=false,
+              t=:line,
+              c=:grey,
+              lw=0.5)
+    p = plot!(t,
+              l[(1 + offset):(offset + length(t))],
+              label=false,
+              t=:line,
+              c=:grey,
+              lw=0.5)
 
     return p
 end
@@ -388,7 +467,14 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Noth
 
     signal = Matrix(eeg_temp.eeg_signals[:, :, epoch])
 
-    p = signal_plot_avg(t, signal, offset=offset, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
+    p = signal_plot_avg(t,
+                        signal,
+                        offset=offset,
+                        normalize=normalize,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title,
+                        yamp=yamp)
 
     plot(p)
 
@@ -422,7 +508,7 @@ Butterfly plot of `signal` matrix against time vector `t`.
 - `title::String` - plot title
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRange{Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}}}, signal::Matrix{Float64}; offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Nothing, Int64, Float64}=nothing)
     
     if typeof(t) == UnitRange{Int64} || typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = float(collect(t))
@@ -449,9 +535,16 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, UnitRang
     end
     
     # plot channels
-    p = plot(xlabel=xlabel, ylabel=ylabel, xlims=(t[1], t[end]), ylim=(-yamp, yamp), title=title)
+    p = plot(xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=(ceil(t[1]), floor(t[end])),
+             ylims=(-yamp, yamp),
+             title=title)
     for idx in 1:channels_no
-        p = plot!(t, signal_normalized[idx, (1 + offset):(offset + length(t))], t=:line, label=labels[idx])
+        p = plot!(t,
+                  signal_normalized[idx, (1 + offset):(offset + length(t))],
+                  t=:line,
+                  label=labels[idx])
     end
 
     return p
@@ -478,7 +571,7 @@ Butterfly plot of `eeg` channels.
 - `figure::String` - name of the output figure file
 - `yamp::Union{Nothing, Int64, Float64}` - y-axis limits (-yamp:yamp)
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Butterfly plot", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}, Nothing}=nothing, epoch::Int64=1, channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, offset::Int64=0, len::Union{Int64, Float64}=10.0, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", figure::String="", yamp::Union{Nothing, Int64, Float64}=nothing)
 
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
@@ -508,7 +601,15 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, UnitRange{Int64}
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
-    p = signal_plot_butterfly(t, signal, offset=offset, labels=labels, normalize=normalize, xlabel=xlabel, ylabel=ylabel, title=title, yamp=yamp)
+    p = signal_plot_butterfly(t,
+                              signal,
+                              offset=offset,
+                              labels=labels,
+                              normalize=normalize,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              yamp=yamp)
 
     plot(p)
 
