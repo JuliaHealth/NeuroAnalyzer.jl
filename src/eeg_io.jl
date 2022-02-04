@@ -1,5 +1,5 @@
 """
-    eeg_load_edf(in_file, read_annotations=true, header_only=false, clean_labels=true)
+    eeg_import_edf(in_file, read_annotations=true, header_only=false, clean_labels=true)
 
 Loads EDF/EDFPlus file and returns EEG object.
 
