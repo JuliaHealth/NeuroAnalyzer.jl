@@ -21,7 +21,7 @@ function zero_pad(m::Matrix)
     nr, nc = size(m)
     if nr > nc
         mp = repeat([0], nr, nr - nc)
-        mp = hcat(M, Mp)
+        mp = hcat(m, mp)
     elseif nr < nc
         mp = repeat([0], nc - nr, nc)
         mp = vcat(m, mp)
@@ -34,7 +34,7 @@ end
 """
     vsearch(x, y; return_distance=false)
 
-Returns the positions of the `y` value in the vector `x`.
+Returns the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
 """
 function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float64}; return_distance=false)
     y_dist, y_idx = findmin(abs.(x .- y))
@@ -42,18 +42,19 @@ function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float
     return_distance == true && return y_idx, y_dist
 end
 """
-    vsearch(x::Vector, y::Vector)
+    vsearch(x, y)
 
 Returns the positions of the `y` vector in the vector `x`.
 """
-function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
+function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
     y_idx = zeros(length(y))
     y_dist = zeros(length(y))
     for idx in 1:length(y)
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
-    return convert.(Int, y_idx), y_dist
+    return_distance == false && return convert.(Int64, y_idx)
+    return_distance == true && return convert.(Int64, y_idx), y_dist
 end
 
 """
@@ -64,6 +65,7 @@ Converts cartographic coordinates `x` and `y` to polar.
 function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
     rho = hypot(x, y)
     theta = atan(y, x)
+    return rho, theta
 end
 
 """
@@ -78,18 +80,11 @@ function pol2cart(theta::Float64, rho::Float64)
 end
 
 """
-    cvangle(x)
-
-Returns the phase angles, in radians, of the vector `x` with complex elements.
-"""
-cvangle(x::Vector{ComplexF64}) = atan.(imag(x), real(x))
-
-"""
-    hann(n)
+    generate_hann(n)
 
 Returns the `n`-point long symmetric Hanning window.
 """
-hann(n::Int64) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
+generate_hann(n::Int64) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
 
 """
     hildebrand_rule(x)
@@ -135,7 +130,7 @@ end
 
 Returns the next power of 2 for given number `x`.
 """
-function nexpow2(x::Union{Int64, Float64})
+function nexpow2(x::Int64)
     x == 0 && return 1
     x == 0 || return 2 ^ ndigits(x - 1, base=2)
 end
@@ -163,30 +158,18 @@ Calculates Root Mean Square of the vector `x`.
 rms(x::Union{Vector{Int64}, Vector{Float64}}) = norm(x) / sqrt(length(x))
 
 """
-    db(x)
-
-Converts the vector or matrix `x` to dB. Maximum value of `x` is 0 dB.
-"""
-function db(x::Union{Vector{Int64}, Vector{Float64}, Matrix})
-    x = float.(x)
-    x[x .< 0] .= NaN
-    result = 10 .* log10.(x ./ maximum(filter(!isnan, x)))
-    return result
-end
-
-"""
-    sine(f, t, a, p)
+    generate_sine(f, t, a, p)
 
 Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` amplitude and  `p` phase.
 """
-sine(f, t::Union{Vector{Int64}, Vector{Float64}}, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
+generate_sine(f, t::Union{Vector{Int64}, Vector{Float64}}, a=1, p=0) = @. a * sin(2 * pi * f * t + p)
 
 """
     freqs(t)
 
 Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 """
-function freqs(t::Union{Vector{Int64}, Vector{Float64}, StepRange{Int64, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}})
+function freqs(t::Union{Vector{Int64}, Vector{Float64}, UnitRange{Int64}, StepRange{Int64, Int64}, StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}})
     if typeof(t) == StepRangeLen{Float64, Base.TwicePrecision{Float64}, Base.TwicePrecision{Float64}, Int64}
         t = collect(t)
     end
@@ -204,6 +187,20 @@ function freqs(t::Union{Vector{Int64}, Vector{Float64}, StepRange{Int64, Int64},
     nyquist_freq = fs / 2
     # frequency array
     hz = collect(0:df:nyquist_freq)
+
+    return hz, nyquist_freq
+end
+
+"""
+    freqs(signal, fs)
+
+Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+"""
+function freqs(signal::Vector{Float64}, fs::Union{Int64, Float64})
+    # Nyquist frequency
+    nyquist_freq = fs / 2
+    # frequency array
+    hz = linspace(0, nyquist_freq, floor(Int64, length(signal) / 2) + 1)
 
     return hz, nyquist_freq
 end
@@ -306,7 +303,7 @@ Returns minimum value of the Complex vector`x`.
 cmin(x::Vector{ComplexF64}) = argmin(abs, x)
 
 """
-    sinc(t=0:0.01:10, f=10, peak=4)
+    generate_sinc(t=0:0.01:10, f=10, peak=4)
 
 Generates sinc function.
 
@@ -316,7 +313,7 @@ Generates sinc function.
 - `f::Float64` - frequency
 - `peak::Float64` - peak time of sinc function
 """
-function sinc(t=-2:0.01:2, f=10.0, peak=0)
+function generate_sinc(t=-2:0.01:2, f=10.0, peak=0)
     y_sinc = @. sin(2 * pi * f * (t - peak)) / (t - peak)
     nan_idx = y_sinc[y_sinc .== NaN]
     y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2
@@ -332,19 +329,19 @@ generate_time(len::Union{Int64, Float64}, fs::Int64) = collect(range(0, len, ste
 
 
 """
-    morlet(fs, wt, wf)
+    generate_morlet(fs, wt, wf)
 
 Generates Morlet wavelet.
 
 # Arguments
 
 - `fs::Int64` - sampling frequency
-- `wt::Union{Int64, Float64}` - length = -wt:1/fs:ws
+- `wt::Union{Int64, Float64}` - length = -wt:1/fs:wt
 - `wf::Union{Int64, Float64}` - frequency
 - `ncyc::Int64` - number of cycles
-- `complex::Bool` - if true, generates complex Morlet
+- `complex::Bool` - generate complex Morlet
 """
-function morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
+function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0

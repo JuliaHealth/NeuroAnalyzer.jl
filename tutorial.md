@@ -185,7 +185,7 @@ cc, lags = eeg_crosscov(edf1, edf2)
 
 Normalize:
 ```julia
-eeg_normalize_mean(edf)
+eeg_normalize_zscore(edf)
 eeg_normalize_minmax(edf)
 ```
 
@@ -232,7 +232,7 @@ f3_f = signal_filter(f3, fprototype=:butterworth, ftype=:hp, cutoff=0.1, fs=eeg_
 
 Time-domain convolution:
 ```julia
-mw = morlet(256, 1, 32, complex=true)
+mw = generate_morlet(256, 1, 32, complex=true)
 eeg_tconv(e10, kernel=mw)
 ```
 

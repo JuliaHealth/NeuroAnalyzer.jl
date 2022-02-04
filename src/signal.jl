@@ -892,26 +892,26 @@ function signal_demean(signal::Array{Float64, 3})
 end
 
 """
-    signal_normalize_mean(signal)
+    signal_normalize_zscore(signal)
 
-Normalize (scales around the mean) `signal`.
+Normalize (by z-score) `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
 """
-signal_normalize_mean(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal)
+signal_normalize_zscore(signal::Vector{Float64}) = (signal .- mean(signal)) ./ std(signal)
 
 """
-    signal_normalize_mean(signal)
+    signal_normalize_zscore(signal)
 
-Normalize (scales around the mean) each the `signal` channel.
+Normalize (by z-score) each the `signal` channel.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
 """
-function signal_normalize_mean(signal::Array{Float64, 3})
+function signal_normalize_zscore(signal::Array{Float64, 3})
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
 

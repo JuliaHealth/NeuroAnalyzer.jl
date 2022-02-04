@@ -394,21 +394,21 @@ function eeg_demean(eeg::EEG)
 end
 
 """
-    eeg_normalize_mean(eeg)
+    eeg_normalize_zscore(eeg)
 
-Normalize (scales around the mean).
+Normalize by z-score.
 
 # Arguments
 
 - `eeg::EEG` - EEG object
 """
-function eeg_normalize_mean(eeg::EEG)
-    signal_normalized = signal_normalize_mean(eeg.eeg_signals)
+function eeg_normalize_zscore(eeg::EEG)
+    signal_normalized = signal_normalize_zscore(eeg.eeg_signals)
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_normalized)
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_mean(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_normalize_zscore(EEG)")
 
     return eeg_new
 end
