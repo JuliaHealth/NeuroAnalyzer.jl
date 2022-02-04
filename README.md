@@ -19,8 +19,10 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - DataFrames
 - DSP
 - FFTW
+- Interpolations
 - JLD2
 - LinearAlgebra
+- Pkg
 - Plots
 - [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
 - StatsKit
@@ -33,6 +35,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 
 General:
 - performance optimization
+- describe return in __doc__
 
 EEG:
 - channel locations data to eeg_signal_header
@@ -42,6 +45,7 @@ EEG:
 - signals comparison
 - kwargs for plots
 - plots: fix: time ticks
+- fix: eeg_crosscov(edf1, edf2)
 - add re-referencing methods
 - import channel location files
 - source localization

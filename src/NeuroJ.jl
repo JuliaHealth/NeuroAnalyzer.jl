@@ -7,6 +7,7 @@ using FFTW
 using Interpolations
 using JLD2
 using LinearAlgebra
+using Pkg
 using Plots
 using Simpson
 using StatsKit
@@ -15,6 +16,28 @@ struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
+end
+
+function NeuroJ_version()
+    m = Pkg.Operations.Context().env.manifest
+    println("NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
+    println("Imported packages:")
+    required_packages = ["CSV",
+                         "DataFrames",
+                         "DSP",
+                         "FFTW",
+                         "Interpolations",
+                         "JLD2",
+                         "LinearAlgebra",
+                         "Pkg",
+                         "Plots",
+                         "Simpson",
+                         "StatsKit"]
+    for idx in 1:length(required_packages)
+        pkg = lpad(required_packages[idx], 20 - length(idx), " ")
+        pkg_ver = m[findfirst(v->v.name==required_packages[idx], m)].version
+        println("$pkg $pkg_ver")
+    end
 end
 
 include("eeg.jl")
@@ -133,5 +156,7 @@ export eeg_plot_butterfly
 export signal_plot_psd
 export eeg_plot_psd
 export eeg_plot_electrodes
+export eeg_plot_matrix
+export eeg_plot_covmatrix
 
 end

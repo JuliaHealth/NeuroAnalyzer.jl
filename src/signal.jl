@@ -450,18 +450,18 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=fa
     lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
-    acov_mat = zeros(channels_no, length(lags), epochs_no)
+    acov = zeros(channels_no, length(lags), epochs_no)
 
     Threads.@threads for epoch in 1:epochs_no
         for idx in 1:channels_no
-            acov_mat[idx, :, epoch] = signal_autocov(signal[idx, :, epoch],
-                                                     lag=lag,
-                                                     demean=demean,
-                                                     normalize=normalize)
+            acov[idx, :, epoch] = signal_autocov(signal[idx, :, epoch],
+                                                 lag=lag,
+                                                 demean=demean,
+                                                 normalize=normalize)
         end
     end
 
-    return acov_mat
+    return acov
 end
 
 """
@@ -490,7 +490,7 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
         signal_demeaned2 = signal2
     end
 
-    acov = zeros(length(lags))
+    ccov = zeros(length(lags))
 
     for idx in 1:length(lags)
         if lags[idx] == 0
@@ -508,13 +508,13 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
         end
         signals_sum = sum(signals_mul)
         if normalize == true
-            acov[idx] = signals_sum / length(signal1)
+            ccov[idx] = signals_sum / length(signal1)
         else
-            acov[idx] = signals_sum
+            ccov[idx] = signals_sum
         end
     end
 
-    return acov
+    return ccov
 end
 
 """
@@ -533,26 +533,25 @@ function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=f
     lags = collect(-lag:lag)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
-    ccov_mat = zeros(channels_no^2, length(lags), epochs_no)
+    ccov = zeros(channels_no^2, length(lags), epochs_no)
 
     Threads.@threads for epoch in 1:epochs_no
-    ccov_mat_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
+    ccov_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
         for idx1 in 1:channels_no
             for idx2 in 1:channels_no
-                ccov_mat_packed[idx1, idx2] = signal_crosscov(signal[idx1, :, epoch],
-                                                              signal[idx2, :, epoch],
-                                                              lag=lag,
-                                                              demean=demean,
-                                                              normalize=normalize)
+                ccov_packed[idx1, idx2] = signal_crosscov(signal[idx1, :, epoch],
+                                                          signal[idx2, :, epoch],
+                                                          lag=lag,
+                                                          demean=demean,
+                                                          normalize=normalize)
             end
         end
         for idx in 1:channels_no^2
-            ccov_mat[idx, :, epoch] = ccov_mat_packed[idx]
+            ccov[idx, :, epoch] = ccov_packed[idx]
         end
     end
 
-    # return reverse(ccov_mat)
-    return ccov_mat
+    return ccov
 end
 
 """
@@ -574,19 +573,19 @@ function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3};
     lags = collect(-lag:lag)
     channels_no = size(signal1, 1)
     epochs_no = size(signal1, 3)
-    ccov_mat = zeros(channels_no, length(lags), epochs_no)
+    ccov = zeros(channels_no, length(lags), epochs_no)
 
     Threads.@threads for epoch in 1:epochs_no
         for idx in 1:channels_no
-            ccov_mat[idx, :, epoch] = signal_crosscov(signal1[idx, :, epoch],
-                                                      signal2[idx, :, epoch],
-                                                      lag=lag,
-                                                      demean=demean,
-                                                      normalize=normalize)
+            ccov[idx, :, epoch] = signal_crosscov(signal1[idx, :, epoch],
+                                                  signal2[idx, :, epoch],
+                                                  lag=lag,
+                                                  demean=demean,
+                                                  normalize=normalize)
         end
     end
 
-    return ccov_mat
+    return ccov
 end
 
 """

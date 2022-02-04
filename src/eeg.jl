@@ -789,10 +789,11 @@ Calculates autocovariance of each the `eeg` channels.
 - `normalize::Bool` - normalize autocovariance
 """
 function eeg_autocov(eeg::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    acov_mat = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
-    size(acov_mat, 3) == 1 && (acov_mat = reshape(acov_mat, size(acov_mat, 1), size(acov_mat, 2)))
+    acov = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    size(acov, 3) == 1 && (acov = reshape(acov, size(acov, 1), size(acov, 2)))
+    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
-    return acov_mat
+    return acov, lags
 end
 
 """
@@ -808,10 +809,11 @@ Calculates cross-covariance of each the `eeg` channels.
 - `normalize::Bool` - normalize cross-covariance
 """
 function eeg_crosscov(eeg::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    ccov_mat = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
-    size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
+    ccov = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
+    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
-    return ccov_mat
+    return ccov, lags
 end
 
 """
@@ -828,10 +830,11 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `normalize::Bool` - normalize crosscovariance
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    ccov_mat = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, normalize=normalize)
-    size(ccov_mat, 3) == 1 && (ccov_mat = reshape(ccov_mat, size(ccov_mat, 1), size(ccov_mat, 2)))
+    ccov = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
+    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
-    return ccov_mat
+    return ccov, lags
 end
 
 """

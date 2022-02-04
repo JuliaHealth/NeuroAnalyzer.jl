@@ -895,3 +895,84 @@ function eeg_plot_electrodes(eeg::EEG; channels::Union{Nothing, Int64, Vector{Fl
 
     return p
 end
+
+"""
+    eeg_plot_matrix(eeg, m; epoch, figure="")
+
+Plots matrix `m` of `eeg` signals.
+
+# Arguments
+
+- `eeg:EEG`
+- `m::Union{Matrix{Float64}, Array{Float64, 3}}` - channels by channels matrix
+- `epoch::Int64` - epoch number to display
+- `figure::String` - name of the output figure file
+"""
+function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, figure::String="")
+    if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
+    labels = eeg_labels(eeg)
+    channels_no = size(m, 1)
+    ndims(m) == 3 && (m = m[:, :, epoch])
+
+    p = heatmap(m, xticks=(1:channels_no, labels), yticks=(1:channels_no, eeg_labels(eeg)))
+    plot(p)
+
+    if figure !== ""
+        try
+            savefig(p, figure)
+        catch error
+            throw(ArgumentError("File $figure cannot be saved."))
+            return false
+        end
+    end
+
+    return p
+end
+
+
+
+
+
+"""
+    eeg_plot_matrix(eeg, m; epoch, figure="")
+
+Plots matrix `m` of `eeg` signals.
+
+# Arguments
+
+- `eeg:EEG`
+- `cov_mm::Union{Matrix{Float64}, Array{Float64, 3}}` - covariance matrix
+- `channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}` - channels to display
+- `epoch::Int64` - epoch number to display
+- `figure::String` - name of the output figure file
+"""
+function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Vector{Float64}; channels::Union{Nothing, Int64, Vector{Float64}, UnitRange{Int64}}=nothing, epoch::Int64=1, figure::String="")
+    if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
+    # select channels
+    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
+
+    labels = eeg_labels(eeg)
+    ndims(cov_m) == 3 && (cov_m = cov_m[:, :, epoch])
+    p = [] 
+    for idx in channels
+        push!(p, plot(lags, cov_m[idx, :], title="ch: $(labels[idx])", label="", titlefontsize=6, xtickfontsize=4, ytickfontsize=4, lw=0.5))
+    end
+    p = plot(p...)
+
+    if figure !== ""
+        try
+            savefig(p, figure)
+        catch error
+            throw(ArgumentError("File $figure cannot be saved."))
+            return false
+        end
+    end
+
+    return p
+end

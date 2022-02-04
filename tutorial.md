@@ -2,8 +2,20 @@
 
 ## EEG
 
+For interactive processing it's best to use Pluto:
+```julia
+import Pluto
+Pluto.run()
+```
+
+Load package:
 ```julia
 using NeuroJ
+```
+
+Show version (for reproducibility):
+```julia
+NeuroJ_version()
 ```
 
 Load EDF file:
@@ -148,27 +160,27 @@ plot(p1, p2, layout=(1, 2))
 Calculate covariance matrix:
 ```julia
 edf_cov = eeg_cov(edf)
-heatmap(edf_cov)
-edf_cov = eeg_cov(edf)
-heatmap(edf_cov[:, :, 1])
 ```
 
 Calculate correlation matrix
 ```julia
 edf_cor = eeg_cor(edf)
-heatmap(edf_cor)
+eeg_plot_matrix(edf, edf_cor)
 ```
 
-Calculate autocovariance matrix:
+Calculate auto-covariance:
 ```julia
-ac = eeg_autocov(edf, normalize=false)
-heatmap(ac)
-cc = eeg_crosscov(edf, lag=100, demean=true)
-heatmap(cc)
+ac, lags = eeg_autocov(edf, lag=20, normalize=false)
+eeg_plot_covmatrix(edf, ac, lags)
+```
+
+Calculate cross-covariance:
+```julia
+cc, lags = eeg_crosscov(edf, lag=20, demean=true)
+
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
-cc = eeg_crosscov(edf1, edf2, lag=100)
-heatmap(cc)
+cc, lags = eeg_crosscov(edf1, edf2)
 ```
 
 Normalize:
@@ -266,4 +278,5 @@ function eeg_benchmark(n::Int64)
     end
 end
 @time eeg_benchmark(10)
+# 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
 ```
