@@ -70,6 +70,7 @@ end
 .. so much to do ..
 
 General:
+- add missing tests
 - performance optimization
 - describe return in __doc__
 
