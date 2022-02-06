@@ -843,7 +843,7 @@ Filters `signal` using zero phase distortion filter.
 
 - `eeg::EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, dir::Symbol=twoway, window::Union{Nothing, Vector{Float64}}=nothing)
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, dir::Symbol=:twopass, window::Union{Nothing, Vector{Float64}}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
