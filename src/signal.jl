@@ -242,7 +242,7 @@ Removes linear trend from the `signal`.
 function signal_detrend(signal::Vector{Float64}; type::Symbol=:linear)
     type in [:linear, :constant] || throw(ArgumentError("Trend type must be :linear or :constant."))
 
-    if type == :constant
+    if type === :constant
         signal_det = signal_demean(signal)
     else
         A = ones(length(signal))
@@ -1625,49 +1625,51 @@ Filters `signal` using zero phase distortion filter.
 - `order::Int64` - filter order
 - `rp::Float64` - dB ripple in the passband
 - `rs::Float64` - dB attentuation in the stopband
+- `dir:Symbol[:oenpass, :onepass_reverse, :twopass]` - filter direction
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `signal_filtered::Vector{Float64}`
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, window::Union{Vector{Float64}, Nothing}=nothing)
-    (fprototype == :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, window::Union{Vector{Float64}, Nothing}=nothing)
+    (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs."))
+    dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("Filter direction must be :onepass, :onepass_reverse or :twopass."))
     fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even."))
     order < 0 && throw(ArgumentError("Order must be positive."))
 
-    if ftype == :lp
+    if ftype === :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
-    elseif ftype == :hp
+    elseif ftype === :hp
         length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
         responsetype = Highpass(cutoff; fs=fs)
-    elseif ftype == :bp
+    elseif ftype === :bp
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-    elseif ftype == :bs
+    elseif ftype === :bs
         (length(cutoff) < 2 || length(cutoff) > 2) && throw(ArgumentError("For band-stop filter two frequencies must be given."))
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
-    fprototype == :butterworth && (prototype = Butterworth(order))
-    if fprototype == :fir
+    fprototype === :butterworth && (prototype = Butterworth(order))
+    if fprototype === :fir
         window === nothing && throw(ArgumentError("For FIR filter window must be given."))
-        if ftype == :hp || ftype == :bp || ftype == :bs
+        if ftype === :hp || ftype === :bp || ftype === :bs
             mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
         end
         prototype = FIRWindow(window)
     end
-    if fprototype == :chebyshev1
+    if fprototype === :chebyshev1
         rs === nothing && throw(ArgumentError("For Chebyshev1 filter rs must be given."))
         prototype = Chebyshev1(order, rs)
     end
-    if fprototype == :chebyshev2
+    if fprototype === :chebyshev2
         rp === nothing && throw(ArgumentError("For Chebyshev2 filter rp must be given."))
         prototype = Chebyshev2(order, rp)
     end
-    if fprototype == :elliptic
+    if fprototype === :elliptic
         rs === nothing && throw(ArgumentError("For Elliptic filter rs must be given."))
         rp === nothing && throw(ArgumentError("For Elliptic filter rp must be given."))
         rp > rs && throw(ArgumentError("For Elliptic filter rp must be less than rs."))
@@ -1675,7 +1677,10 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
     end
 
     eeg_filter = digitalfilter(responsetype, prototype)
-    signal_filtered = filtfilt(eeg_filter, signal)
+
+    dir === :twopass && (signal_filtered = filtfilt(eeg_filter, signal))
+    dir === :onepass && (signal_filtered = filt(eeg_filter, signal))
+    dir === :onepass_reverse && (signal_filtered = filt(eeg_filter, reverse(signal)))
 
     return signal_filtered
 end
@@ -1695,13 +1700,14 @@ Filters `signal` using zero phase distortion filter.
 - `order::Int64` - filter order
 - `rp::Union{Int64, Float64, Nothing}` - dB ripple in the passband
 - `rs::Union{Int64, Float64, Nothing}` - dB attentuation in the stopband
+- `dir:Symbol[:oenpass, :onepass_reverse, :twopass]` - filter direction
 - `window::Union{Vector{Float64}, Nothing}` - window, required for FIR filter
 
 # Returns
 
 - `signal_filtered::Array{Float64, 3}`
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, window::Union{Vector{Float64}, Nothing}=nothing)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
     signal_filtered = zeros(size(signal))
@@ -1716,6 +1722,7 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Sym
                                                            order=order,
                                                            rp=rp,
                                                            rs=rs,
+                                                           dir=dir,
                                                            window=window)
         end
     end

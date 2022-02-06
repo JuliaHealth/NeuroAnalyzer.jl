@@ -265,29 +265,29 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs."))
     fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("Filter prototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
 
-    if ftype == :lp
+    if ftype === :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
-    elseif ftype == :hp
+    elseif ftype === :hp
         length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
         responsetype = Highpass(cutoff; fs=fs)
-    elseif ftype == :bp
+    elseif ftype === :bp
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-    elseif ftype == :bs
+    elseif ftype === :bs
         length(cutoff) < 2 && throw(ArgumentError("For band-stop filter two frequencies must be given."))
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
-    fprototype == :butterworth && (prototype = Butterworth(order))
-    if fprototype == :chebyshev1
+    fprototype === :butterworth && (prototype = Butterworth(order))
+    if fprototype === :chebyshev1
         rs == nothing && throw(ArgumentError("For Chebyshev1 filter rs must be given."))
         prototype = Chebyshev1(order, rs)
     end
-    if fprototype == :chebyshev2
+    if fprototype === :chebyshev2
         rp == nothing && throw(ArgumentError("For Chebyshev2 filter rp must be given."))
         prototype = Chebyshev2(order, rp)
     end
-    if fprototype == :elliptic
+    if fprototype === :elliptic
         rs == nothing && throw(ArgumentError("For Elliptic filter rs must be given."))
         rp == nothing && throw(ArgumentError("For Elliptic filter rp must be given."))
         prototype = Elliptic(order, rp, rs)
@@ -301,7 +301,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
     x_max = w[end]
-    ftype == :hp && (x_max = cutoff * 10)
+    ftype === :hp && (x_max = cutoff * 10)
     p1 = plot(w,
               H,
               title="Frequency response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order",
@@ -330,7 +330,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
     x_max = w[end]
-    ftype == :hp && (x_max = cutoff * 10)
+    ftype === :hp && (x_max = cutoff * 10)
     p2 = plot(w,
               phi,
               title="Phase response\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order",
@@ -360,7 +360,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
     # convert rad/sample to Hz
     w = w .* fs / 2 / pi
     x_max = w[end]
-    ftype == :hp && (x_max = cutoff * 10)
+    ftype === :hp && (x_max = cutoff * 10)
     p3 = plot(w,
               tau,
               title="Group delay\nfilter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order", xlims=(0, x_max),

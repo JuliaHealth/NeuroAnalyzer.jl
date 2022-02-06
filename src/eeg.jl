@@ -823,7 +823,7 @@ function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
 end
 
 """
-    eeg_filter(signal; prototype, filter_type, cutoff, fs, order=8, window=hanning(64))
+    eeg_filter(signal; prototype, filter_type, cutoff, fs, order=8, dir=:twoway, window=hanning(64))
 
 Filters `signal` using zero phase distortion filter.
 
@@ -836,13 +836,14 @@ Filters `signal` using zero phase distortion filter.
 - `order::Int64` - filter order
 - `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
 - `rs::Union{Nothing, Int64, Float64}` - dB attentuation in the stopband
+- `dir:Symbol[:oenpass, :onepass_reverse, :twopass]` - filter direction
 - `window::Union{Nothing, Vector{Float64}}` - window, required for FIR filter
 
 # Returns
 
 - `eeg::EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, dir::Symbol=twoway, window::Union{Nothing, Vector{Float64}}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
@@ -853,12 +854,13 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{I
                                     order=order,
                                     rp=rp,
                                     rs=rs,
+                                    dir=dir,
                                     window=window)
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_filtered)
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, $rp=rp, $rs=rs, window=$window)")
+    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 
     return eeg_new
 end
