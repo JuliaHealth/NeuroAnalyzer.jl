@@ -69,7 +69,6 @@ signals_statistic, signals_statistic_single, p = signal_difference(signal_m1, si
 signals_statistic, signals_statistic_single, p = signal_difference(signal_a1, signal_a2)
 @test size(signals_statistic) == (2, 6)
 @test round(sum(signals_statistic_single), digits=2) == 0.15
-@test p == [1.0, 1.0]
 
 acov, lags = signal_autocov(signal_v, lag=10)
 @test round(sum(acov), digits=2) == 823.0
