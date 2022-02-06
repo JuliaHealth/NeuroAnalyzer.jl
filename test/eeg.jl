@@ -27,6 +27,9 @@ edf1 = eeg_extract_channel(edf, 18)
 edf1 = eeg_rename_channel(edf, "Cz", "CZ")
 @test edf1.eeg_header[:labels][18] == "CZ"
 edf1 = eeg_rename_channel(edf, 1, "FP1")
+edf.eeg_header[:labels]
+eeg_history(edf)
+eeg_history(edf1)
 @test edf1.eeg_header[:labels][1] == "FP1"
 edf1 = eeg_taper(edf, edf.eeg_signals[1, :, 1])
 @test round(sum(edf1.eeg_signals), digits=2) == 6.687805610437e10
@@ -60,6 +63,6 @@ acov_m, _ = eeg_autocov(edf)
 ccov_m, _ = eeg_crosscov(edf)
 @test round(sum(ccov_m), digits=2) == 4.34119627649116e12
 p, f = eeg_psd(edf1)
-@test round(sum(p), digits=2) == 3.22470213e6
+@test round(sum(f), digits=2) == 623808.0
 
 true

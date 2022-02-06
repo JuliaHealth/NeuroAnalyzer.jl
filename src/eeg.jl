@@ -333,44 +333,44 @@ function eeg_get_channel(eeg::EEG, channel_idx::Int64)
 end
 
 """
-    eeg_rename_channel(eeg, old_channel_name, new_channel_name)
+    eeg_rename_channel(eeg, old_name, new_name)
 
 Renames the `eeg` channel.
 
 # Arguments
 
 - `eeg::EEG`
-- `old_channel_name::String`
+- `old_name::String`
 - `new_name::String`
 
 # Returns
 
 - `eeg::EEG`
 """
-function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name::String)
-    labels = eeg.eeg_header[:labels]
+function eeg_rename_channel(eeg::EEG, old_name::String, new_name::String)
+    # create new dataset
+    eeg_new = deepcopy(eeg)
+    labels = eeg_new.eeg_header[:labels]
     channel_idx = nothing
     for idx in 1:length(labels)
-        if old_channel_name == labels[idx]
-            labels[idx] = new_channel_name
+        if old_name == labels[idx]
+            labels[idx] = new_name
             channel_idx = idx
         end
     end
     if channel_idx === nothing
         throw(ArgumentError("Channel name does not match signal labels."))
     end
-
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))
     eeg_new.eeg_header[:labels] = labels
+
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, old_channel_name=$old_channel_name, new_channel_name=$new_channel_name)")
+    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, old_name=$old_name, new_name=$new_name)")
 
     return eeg_new
 end
 
 """
-    eeg_rename_channel(eeg, channel_idx, new_channel_name)
+    eeg_rename_channel(eeg, channel_idx, new_name)
 
 Rename the `eeg` channel.
 
@@ -384,19 +384,18 @@ Rename the `eeg` channel.
 
 - `eeg::EEG`
 """
-function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_channel_name::String)
-    labels = eeg.eeg_header[:labels]
+function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_name::String)
+    # create new dataset
+    eeg_new = deepcopy(eeg)
+    labels = eeg_new.eeg_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
     else
-        labels[channel_idx] = new_channel_name
+        labels[channel_idx] = new_name
     end
-
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))
     eeg_new.eeg_header[:labels] = labels
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_channel_name=$new_channel_name)")
+    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel_idx=$channel_idx, new_name=$new_name)")
 
     return eeg_new
 end
