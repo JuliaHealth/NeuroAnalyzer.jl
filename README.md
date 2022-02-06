@@ -70,11 +70,11 @@ end
 .. so much to do ..
 
 General:
-- add missing tests
+- verbose flag
 - performance optimization
-- describe return in __doc__
 
 EEG:
+- plot epoch borders
 - create EEG object
 - clean DC line
 - automated channel rejection

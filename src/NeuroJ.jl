@@ -9,6 +9,7 @@ using JLD2
 using LinearAlgebra
 using Pkg
 using Plots
+using Plots.PlotMeasures
 using Simpson
 using StatsKit
 
@@ -22,7 +23,7 @@ if VERSION < v"1.0.0"
     @warn("This version of EDFPlus requires Julia 1.0 or above.")
 end
 
-function NeuroJ_version()
+function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
     println("NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
     println("Imported packages:")
@@ -44,6 +45,8 @@ function NeuroJ_version()
     end
 end
 
+export neuroj_version
+
 include("eeg.jl")
 export eeg_autocov
 export eeg_band_power
@@ -57,10 +60,9 @@ export eeg_detrend
 export eeg_downsample
 export eeg_epochs
 export eeg_filter
+export eeg_extract_channel
 export eeg_get_channel
-export eeg_get_channel_idx
-export eeg_get_channel_name
-export eeg_get_epoch
+export eeg_extract_epoch
 export eeg_history
 export eeg_info
 export eeg_keep_channel
@@ -119,8 +121,7 @@ export cmin
 export demean
 export fft0
 export freqs
-export generate_time
-export generate_hann
+export generate_hanning
 export hildebrand_rule
 export hz2rads
 export ifft0
@@ -131,7 +132,7 @@ export logspace
 export matrix_sort
 export matrix_sortperm
 export generate_morlet
-export nexpow2
+export nextpow2
 export pad0
 export pol2cart
 export rads2hz

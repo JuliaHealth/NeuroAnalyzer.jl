@@ -6,10 +6,14 @@ Removes `channel_idx` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channel index to be removed, vector of numbers or range
+- `channel_idx::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to be removed, vector of numbers or range
+
+# Returns
+
+- `eeg::EEG`
 """
-function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
-    if typeof(channel_idx) == UnitRange{Int64}
+function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel_idx) <: AbstractRange
         channel_idx = collect(channel_idx)
     end
 
@@ -31,8 +35,8 @@ function eeg_delete_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, U
         for idx2 in 1:channel_no
             if idx2 == channel_idx[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                deleteat!(eeg_header[:xlocs], idx2)
-                deleteat!(eeg_header[:ylocs], idx2)
+                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:xlocs], idx2))
+                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:xlocs], idx2))
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -66,10 +70,14 @@ Keeps `channels` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}}` - channel index to keep, vector of numbers or range
+- `channel_idx::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep, vector of numbers or range
+
+# Returns
+
+- `eeg::EEG`
 """
-function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
-    if typeof(channel_idx) == UnitRange{Int64}
+function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel_idx) <: AbstractRange
         channel_idx = collect(channel_idx)
     end
 
@@ -94,8 +102,8 @@ function eeg_keep_channel(eeg::EEG, channel_idx::Union{Int64, Vector{Int64}, Uni
         for idx2 in 1:channel_no
             if idx2 == channels_to_remove[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                deleteat!(eeg_header[:xlocs], idx2)
-                deleteat!(eeg_header[:ylocs], idx2)
+                eeg_header[:channel_locations] == true && deleteat!(eeg_header[:xlocs], idx2)
+                eeg_header[:channel_locations] == true && deleteat!(eeg_header[:ylocs], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -130,8 +138,12 @@ Returns the derivative of the `eeg` with length same as the signal.
 # Arguments
 
 - `eeg::EEG` - EEG object
+
+# Returns
+
+- `eeg::EEG`
 """
-function eeg_derivative(eeg)
+function eeg_derivative(eeg::EEG)
     signal_der = signal_derivative(eeg.eeg_signals)
 
     # create new dataset
@@ -150,8 +162,12 @@ Calculates total power of the `eeg`.
 # Arguments
 
 - `eeg::EEG`
+
+# Returns
+
+- `stp::Vector{Float64}`
 """
-function eeg_total_power(eeg)
+function eeg_total_power(eeg::EEG)
     fs = eeg.eeg_header[:sampling_rate][1]
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
     size(stp, 3) == 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2)))
@@ -167,13 +183,17 @@ Calculates absolute band power between frequencies `f1` and `f2` of the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `f1::Float64` - lower frequency bound
-- `f2::Float64` - upper frequency bound
+- `f1::Union(Int64, Float64}` - lower frequency bound
+- `f2::Union(Int64, Float64}` - upper frequency bound
+
+# Returns
+
+- `sbp::Vector{Float64}`
 """
-function eeg_band_power(eeg; f1, f2)
+function eeg_band_power(eeg::EEG; f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
     fs = eeg.eeg_header[:sampling_rate][1]
     sbp = signal_band_power(eeg.eeg_signals, fs=fs, f1=f1, f2=f2)
-    size(sbp, 3) == 1 && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2)))
+    (size(sbp, 3) == 1) && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2)))
 
     return sbp
 end
@@ -189,6 +209,10 @@ Removes linear trend from the `eeg`.
 - `type::Symbol[:linear, :constant]`, optional
     - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant` - the mean of `signal` is subtracted
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_detrend(eeg::EEG; type::Symbol=:linear)
     signal_det = signal_detrend(eeg.eeg_signals, type=type)
@@ -210,6 +234,10 @@ References the `eeg` to specific channel `reference_idx`.
 
 - `eeg::EEG`
 - `reference_idx::Union{Int64, Vector{Int64}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_reference_channel(eeg::EEG, reference_idx::Union{Int64, Vector{Int64}, UnitRange{Int64}})
     if typeof(reference_idx) == UnitRange{Int64}
@@ -234,6 +262,10 @@ References the `eeg` to common average reference.
 # Arguments
 
 - `eeg::EEG`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_reference_car(eeg::EEG)
     signal_referenced = signal_reference_car(eeg.eeg_signals)
@@ -248,7 +280,7 @@ function eeg_reference_car(eeg::EEG)
 end
 
 """
-    eeg_get_channel_idx(eeg, channel_name)
+    eeg_get_channel(eeg, channel_name)
 
 Returns the `channel_name` index.
 
@@ -256,8 +288,12 @@ Returns the `channel_name` index.
 
 - `eeg::EEG`
 - `channel_name::String` - channel name
+
+# Returns
+
+- `channel_idx::Int64`
 """
-function eeg_get_channel_idx(eeg::EEG, channel_name::String)
+function eeg_get_channel(eeg::EEG, channel_name::String)
     labels = eeg.eeg_header[:labels]
     channel_idx = nothing
     for idx in 1:length(labels)
@@ -272,7 +308,7 @@ function eeg_get_channel_idx(eeg::EEG, channel_name::String)
 end
 
 """
-    eeg_get_channel_idx(eeg, channel_idx)
+    eeg_get_channel(eeg, channel_idx)
 
 Returns the `channel_idx` name.
 
@@ -280,14 +316,19 @@ Returns the `channel_idx` name.
 
 - `eeg::EEG`
 - `channel_idx::Int64` - channel index
+
+# Returns
+
+- `channel_name::String`
 """
-function eeg_get_channel_name(eeg::EEG, channel_idx::Int64)
+function eeg_get_channel(eeg::EEG, channel_idx::Int64)
     labels = eeg.eeg_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
     else
         channel_name = labels[channel_idx]
     end
+
     return channel_name
 end
 
@@ -301,6 +342,10 @@ Renames the `eeg` channel.
 - `eeg::EEG`
 - `old_channel_name::String`
 - `new_name::String`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_rename_channel(eeg::EEG, old_channel_name::String, new_channel_name::String)
     labels = eeg.eeg_header[:labels]
@@ -334,6 +379,10 @@ Rename the `eeg` channel.
 - `eeg::EEG`
 - `channel_idx::Int64`
 - `new_name::String`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_rename_channel(eeg::EEG, channel_idx::Int64, new_channel_name::String)
     labels = eeg.eeg_header[:labels]
@@ -361,6 +410,10 @@ Taper `eeg` with `taper`.
 
 - `eeg::EEG`
 - `taper::Vector`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_taper(eeg::EEG, taper::Vector)
     signal_tapered = signal_taper(eeg.eeg_signals, taper)
@@ -379,6 +432,10 @@ end
 Removes mean value (DC offset).
 
 # Arguments
+
+- `eeg::EEG`
+
+# Returns
 
 - `eeg::EEG`
 """
@@ -401,6 +458,10 @@ Normalize by z-score.
 # Arguments
 
 - `eeg::EEG` - EEG object
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_normalize_zscore(eeg::EEG)
     signal_normalized = signal_normalize_zscore(eeg.eeg_signals)
@@ -421,6 +482,10 @@ Normalize to 0...1
 # Arguments
 
 - `eeg::EEG`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_normalize_minmax(eeg::EEG)
     signal_normalized = signal_normalize_minmax(eeg.eeg_signals)
@@ -434,16 +499,20 @@ function eeg_normalize_minmax(eeg::EEG)
 end
 
 """
-    eeg_get_channel(eeg, channel_name)
+    eeg_extract_channel(eeg, channel_name)
 
-Get the `eeg` channel by `channel_name`.
+Extracts the `eeg` channel by `channel_name`.
 
 # Arguments
 
 - `eeg::EEG`
 - `channel_name::String`
+
+# Returns
+
+- `channel::Vector{Float64}`
 """
-function eeg_get_channel(eeg::EEG, channel_name::String)
+function eeg_extract_channel(eeg::EEG, channel_name::String)
     labels = eeg.eeg_header[:labels]
     channel_idx = nothing
     for idx in 1:length(labels)
@@ -460,16 +529,20 @@ function eeg_get_channel(eeg::EEG, channel_name::String)
 end
 
 """
-    eeg_get_channel(eeg, channel_idx)
+    eeg_extract_channel(eeg, channel_idx)
 
-Get the `eeg` channel by `channel_idx`.
+Extracts the `eeg` channel by `channel_idx`.
 
 # Arguments
 
 - `eeg::EEG`
 - `channel_idx::Int64`
+
+# Returns
+
+- `channel::Vector{Float64}`
 """
-function eeg_get_channel(eeg::EEG, channel_idx::Int64)
+function eeg_extract_channel(eeg::EEG, channel_idx::Int64)
     labels = eeg.eeg_header[:labels]
     if channel_idx < 1 || channel_idx > length(labels)
         throw(ArgumentError("Channel index does not match signal channels."))
@@ -488,6 +561,10 @@ Calculates covariance between all channels of `eeg`.
 
 - `eeg::EEG`
 - `normalize::Bool` - normalize covariance
+
+# Returns
+
+- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}`
 """
 function eeg_cov(eeg::EEG; normalize=true)
     cov_mat = signal_cov(eeg.eeg_signals, normalize=normalize)
@@ -505,6 +582,10 @@ Calculates correlation coefficients between all channels of `eeg`.
 
 - `eeg::EEG`
 - `normalize::Bool` - normalize correlation
+
+# Returns
+
+- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}`
 """
 function eeg_cor(eeg::EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
@@ -522,6 +603,10 @@ Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 - `eeg::EEG`
 - `new_sr::Int64` - new sampling rate
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_upsample(eeg::EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
@@ -550,6 +635,10 @@ Shows processing history.
 # Arguments
 
 - `eeg::EEG`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_history(eeg::EEG)
     return eeg.eeg_header[:history]
@@ -561,6 +650,10 @@ end
 Returns labels.
 
 # Arguments
+
+- `eeg::EEG`
+
+# Returns
 
 - `eeg::EEG`
 """
@@ -576,6 +669,10 @@ Returns sampling rate.
 # Arguments
 
 - `eeg::EEG`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_samplingrate(eeg::EEG)
     return eeg.eeg_header[:sampling_rate][1]
@@ -587,6 +684,10 @@ end
 Shows info.
 
 # Arguments
+
+- `eeg::EEG`
+
+# Returns
 
 - `eeg::EEG`
 """
@@ -626,6 +727,10 @@ Splits `eeg` into epochs.
 - `epochs_no::Union{Int64, Nothing}` - number of epochs
 - `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
     # unsplit epochs
@@ -660,16 +765,20 @@ function eeg_epochs(eeg::EEG; epochs_no::Union{Int64, Nothing}=nothing, epochs_l
 end
 
 """
-    eeg_get_epoch(eeg, epoch_idx)
+    eeg_extract_epoch(eeg, epoch_idx)
 
-Returns the `epoch_idx` epoch.
+Extracts the `epoch_idx` epoch.
 
 # Arguments
 
 - `eeg::EEG`
 - `epoch_idx::Int64` - epoch index
+
+# Returns
+
+- `eeg::EEG`
 """
-function eeg_get_epoch(eeg::EEG, epoch_idx::Int64)
+function eeg_extract_epoch(eeg::EEG, epoch_idx::Int64)
     if epoch_idx < 1 || epoch_idx > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
     end
@@ -695,6 +804,10 @@ Performs convolution in the time domain.
 
 - `eeg::EEG`
 - `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     signal_convoluted = signal_tconv(eeg.eeg_signals, kernel)
@@ -725,6 +838,10 @@ Filters `signal` using zero phase distortion filter.
 - `rp::Union{Nothing, Int64, Float64}` - dB ripple in the passband
 - `rs::Union{Nothing, Int64, Float64}` - dB attentuation in the stopband
 - `window::Union{Nothing, Vector{Float64}}` - window, required for FIR filter
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, order::Int64, rp::Union{Nothing, Int64, Float64}=nothing, rs::Union{Nothing, Int64, Float64}=nothing, window::Union{Nothing, Vector{Float64}}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
@@ -756,6 +873,10 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 - `eeg::EEG`
 - `new_sr::Int64` - new sampling rate
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_downsample(eeg::EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
@@ -787,9 +908,15 @@ Calculates autocovariance of each the `eeg` channels.
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize autocovariance
+
+# Returns
+
+- `acov::Matrix{Float64}`
+- `lags::Vector{Float64}
+
 """
 function eeg_autocov(eeg::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    acov = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    acov, lags = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
     size(acov, 3) == 1 && (acov = reshape(acov, size(acov, 1), size(acov, 2)))
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
@@ -807,9 +934,14 @@ Calculates cross-covariance of each the `eeg` channels.
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize cross-covariance
+
+# Returns
+
+- `ccov::Matrix{Float64}`
+- `lags::Vector{Float64}
 """
 function eeg_crosscov(eeg::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    ccov = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
+    ccov, lags = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, normalize=normalize)
     size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
@@ -828,6 +960,11 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
 - `normalize::Bool` - normalize crosscovariance
+
+# Returns
+
+- `ccov::Matrix{Float64}`
+- `lags::Vector{Float64}
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
     ccov = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, normalize=normalize)
@@ -846,6 +983,11 @@ Calculates total power for each the `eeg` channels.
 
 - `eeg::EEG`
 - `normalize::Bool` - normalize do dB
+
+# Returns
+
+- `powers::Array{Float64, 3}`
+- `frequencies::Array{Float64, 3}`
 """
 function eeg_psd(eeg::EEG; normalize::Bool=false)
     signal_spectral_density_powers, signal_spectral_density_frequencies = signal_psd(eeg.eeg_signals, fs=eeg_samplingrate(eeg), normalize=normalize)

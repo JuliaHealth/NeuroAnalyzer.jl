@@ -1,14 +1,17 @@
 """
-    eeg_import_edf(in_file, read_annotations=true, header_only=false, clean_labels=true)
+    eeg_import_edf(file_name, read_annotations=true, header_only=false, clean_labels=true)
 
 Loads EDF/EDFPlus file and returns EEG object.
 
 # Arguments
 
-- `in_file::String` - name of the file to load
+- `file_name::String` - name of the file to load
 - `read_annotations::Bool` - read annotations from EDF+ file (currently not implemented)
-- `header_only::Bool` - do not read signal data
 - `clean_labels::Bool` - only keep channel names in channel labels
+
+# Returns
+
+- `eeg:EEG`
 
 # Notes
 
@@ -22,8 +25,10 @@ value = (value - digital_minimum ) * gain + physical_minimum
 
 Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 """
-function eeg_import_edf(in_file::String, read_annotations::Bool=true, header_only::Bool=false, clean_labels::Bool=true)
-    fid = open(in_file)
+function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_labels::Bool=true)
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    fid = open(file_name)
 
     eeg_filetype = ""
 
@@ -132,12 +137,7 @@ function eeg_import_edf(in_file::String, read_annotations::Bool=true, header_onl
         labels = replace.(labels, "ECG " => "")
     end
 
-    if header_only == true
-        eeg = EEG(eeg_object_header, eeg_signal_header)
-        return eeg
-    end
-
-    fid = open(in_file)
+    fid = open(file_name)
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channels_no, samples_per_datarecord[1] * data_records, 1)
@@ -158,10 +158,10 @@ function eeg_import_edf(in_file::String, read_annotations::Bool=true, header_onl
     eeg_time = collect(0:(1 / sampling_rate[1]):eeg_duration_seconds)
     eeg_time = eeg_time[1:end - 1]
     sampling_rate = round.(Int64, sampling_rate)
-    eeg_filesize_mb = round(filesize(in_file) / 1024^2, digits=2)
+    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     eeg_header = Dict(:version => version,
-                      :eeg_filename => in_file,
+                      :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
                       :patient => patient,
@@ -199,7 +199,7 @@ function eeg_import_edf(in_file::String, read_annotations::Bool=true, header_onl
 end
 
 """
-    eeg_load_electrode_positions(eeg, in_file)
+    eeg_load_electrode_positions(eeg, file_name)
 
 Loads electrode positions from 
 - CED
@@ -207,11 +207,16 @@ Loads electrode positions from
 # Arguments
 
 - `eeg::EEG`
-- `in_file::String`
+- `file_name::String`
+
+# Returns
+
+- `eeg:EEG`
 """
-function eeg_load_electrode_positions(eeg::EEG, in_file)
-    isfile(in_file) || throw(ArgumentError("File $in_file cannot be loaded."))
-    sensors = CSV.read(in_file, delim="\t", DataFrame)
+function eeg_load_electrode_positions(eeg::EEG, file_name)
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    sensors = CSV.read(file_name, delim="\t", DataFrame)
     loc_x = zeros(length(sensors[:, :radius]))
     loc_y = zeros(length(sensors[:, :theta]))
     for idx in 1:length(sensors[:, :theta])
@@ -226,14 +231,14 @@ function eeg_load_electrode_positions(eeg::EEG, in_file)
     eeg_new.eeg_header[:ylocs] = loc_y
 
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_load_sensor_positions(EEG, $in_file)")
+    push!(eeg_new.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
 
     return eeg_new
 end
 
 
 """
-    eeg_save(eeg, file_name)
+    eeg_save(eeg, file_name; overwrite)
 
 Saves the `eeg` to `file_name` file (HDF5-based).
 
@@ -241,14 +246,17 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 - `eeg::EEG`
 - `file_name::String` - file name
+- `overwrite::Bool==false`
+
+# Returns
+
+- `success::Bool`
+
 """
-function eeg_save(eeg::EEG, file_name::String)
-    try
-        save_object(file_name, eeg)
-    catch error
-        throw(ArgumentError("File $file_name cannot be saved."))
-        return false
-    end
+function eeg_save(eeg::EEG, file_name::String; overwrite::Bool=false)
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved."))
+    
+    save_object(file_name, eeg)
 
     return true
 end
@@ -261,14 +269,15 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 # Arguments
 
 - `file_name::String` - file name
+
+# Returns
+
+- `eeg::EEG`
 """
 function eeg_load(file_name::String)
-    try
-        eeg = load_object(file_name)
-    catch error
-        throw(SystemError("File $file_name cannot be loaded."))
-        return false
-    end
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg = load_object(file_name)
 
     return eeg
 end

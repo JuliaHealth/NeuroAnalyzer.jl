@@ -20,7 +20,7 @@ NeuroJ_version()
 
 Load EDF file:
 ```julia
-edf = eeg_import_edf("eeg-test.edf")
+edf = eeg_import_edf("test/eeg-test-edf.edf")
 ```
 
 Show EEG object properties:
@@ -87,7 +87,7 @@ eeg_info(e10)
 
 Get 1st epoch:
 ```julia
-e10e1 = eeg_get_epoch(e10, 1)
+e10e1 = eeg_extract_epoch(e10, 1)
 eeg_info(e10e1)
 ```
 
@@ -134,7 +134,8 @@ IIR filtering:
 ```julia
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-edf = eeg_filter(edf, fprototype=:elliptic, ftype=:bs, cutoff=[45.0, 55.0], rs=1, rp=10, order=12)
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+edf = eeg_filter(edf, fprototype=:elliptic, ftype=:bs, cutoff=[45.0, 55.0], rs=10, rp=1, order=12)
 edf = eeg_filter(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=[45.0, 55.0], rs=1, order=8)
 edf = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp=1, order=8)
 ```
@@ -244,8 +245,8 @@ eeg_plot_psd(edf, frq_lim=20.0, channels=1:4)
 eeg_plot_psd(edf, normalize=true, average=false, frq_lim=50)
 eeg_plot_psd(edf, normalize=true, average=true, frq_lim=20)
 eeg_plot_psd(edf, channels=1:4, average=true)
-f3 = eeg_get_channel(edf, "F3")
-f4 = eeg_get_channel(edf, 4)
+f3 = eeg_extract_channel(edf, "F3")
+f4 = eeg_extract_channel(edf, 4)
 signal_psd(f4, fs=256)
 signal_plot_psd(f3, fs=256)
 signal_plot_psd(f4, fs=256)
@@ -254,16 +255,21 @@ signal_plot_psd(f4, fs=256)
 Electrode positioning:
 ```julia
 eeg_info(edf)
-edf = eeg_load_electrode_positions(edf, in_file)
-eeg_plot_electrodes(edf, labels=false)
-p = eeg_plot(edf, channels=1:10)
-h = eeg_plot_electrodes(edf, labels=true, selected=1:10)
-plot(p, h, layout=(1, 2))
+using NeuroJ
+edf = eeg_import_edf("test/eeg-test-edf.edf")
+edf = eeg_load_electrode_positions(edf, "locs/standard-10-20-cap19.ced")
+eeg_plot_electrodes(edf, labels=true, head=true)
+eeg_plot(edf, channels=1:10, head=false)
+eeg_plot_butterfly(edf, channels=1:10, head=true)
+eeg_plot_psd(edf, normalize=true, channels=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
+eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
+eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
 ```
 
 Benchmarking:
 ```julia
-using BenchmarkTools
+using NeuroJ
+edf = eeg_import_edf("NeuroJ.jl/test/eeg-test-edf.edf")
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)
@@ -274,9 +280,11 @@ function eeg_benchmark(n::Int64)
         tbp = eeg_total_power(e10)
         ac = eeg_autocov(e10, normalize=false)
         cc = eeg_crosscov(e10, lag=10, demean=true)
-        mconv = eeg_tconv(e10, kernel=morlet(256, 1, 32, complex=true))
+        mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
     end
 end
 @time eeg_benchmark(10)
-# 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
+# workstation: 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
+# laptop: 108.841515 seconds (117.81 M allocations: 644.318 GiB, 10.23% gc time, 1.06% compilation time)
+# laptop: 92.209796 seconds (114.60 M allocations: 642.148 GiB, 10.88% gc time)
 ```
