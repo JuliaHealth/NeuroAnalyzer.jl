@@ -92,4 +92,13 @@ ccov_m, _ = eeg_crosscov(edf)
 p, f = eeg_psd(edf1)
 @test size(p, 1) == 19
 
+p = eeg_stationarity(edf, method=:mean)
+@test round(sum(p), digits=2) == -13451.5
+p = eeg_stationarity(edf, method=:var)
+@test round(sum(p), digits=2) == 5.54177262e6
+p = eeg_stationarity(edf, method=:hilbert)
+@test round(sum(p), digits=2) == 3.53311741e6
+p = eeg_stationarity(edf, window=10000, method=:euclid)
+@test round(sum(p), digits=2) == 1.0040717529475e11
+
 true

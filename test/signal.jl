@@ -187,4 +187,20 @@ p, f = signal_psd(signal_a, fs=fs)
 @test round(sum(p), digits=2) == 8.0
 @test round(sum(f), digits=2) == 210.0
 
+s = signal_stationarity_hilbert(signal_v)
+@test round(sum(s), digits=2) == 11.74
+s = signal_stationarity_mean(signal_v, window=10)
+@test round(sum(s), digits=2) == 1.86
+s = signal_stationarity_var(signal_v, window=10)
+@test round(sum(s), digits=2) == 0.47
+
+p = signal_stationarity(signal_a, method=:hilbert)
+@test round(sum(p), digits=2) == 753.98
+p = signal_stationarity(signal_a, window=100, method=:euclid)
+@test round(sum(p), digits=2) == 0.08
+p = signal_stationarity(signal_a, window=5, method=:mean)
+@test round(sum(p), digits=2) == -0.0
+p = signal_stationarity(signal_a, window=10, method=:var)
+@test round(sum(p), digits=2) == 22.22
+
 true

@@ -266,6 +266,16 @@ eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
 eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
 ```
 
+Stationarity:
+```julia
+p = eeg_stationarity(edf, method=:mean)
+p = eeg_stationarity(edf, method=:var)
+p = eeg_stationarity(edf, method=:hilbert)
+plot(p[1, :, 1], ylims=(-10, 10))
+p = eeg_stationarity(edf, window=10000, method=:euclid)
+plot(p[10:end])
+```
+
 Benchmarking:
 ```julia
 using NeuroJ

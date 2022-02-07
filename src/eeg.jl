@@ -997,3 +997,25 @@ function eeg_psd(eeg::EEG; normalize::Bool=false)
 
     return signal_spectral_density_powers, signal_spectral_density_frequencies
 end
+
+"""
+    eeg_stationarity(eeg:EEG; window=10, method=:euclid)
+
+Calculates stationarity.
+
+# Arguments
+
+- `eeg:EEG`
+- `window::Int64` - time window in samples
+- `method::Symbol[:mean, :var, :euclid, :hilbert]
+
+# Returns
+
+- `phase_stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
+
+"""
+function eeg_stationarity(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
+    stationarity = signal_stationarity(eeg.eeg_signals, window=window, method=method)
+
+    return stationarity
+end
