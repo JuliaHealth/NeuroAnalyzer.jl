@@ -17,6 +17,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 
 - CSV
 - DataFrames
+- Distances
 - DSP
 - FFTW
 - Interpolations

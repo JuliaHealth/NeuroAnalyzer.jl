@@ -2,6 +2,7 @@ module NeuroJ
 
 using CSV
 using DataFrames
+using Distances
 using DSP
 using FFTW
 using Interpolations
