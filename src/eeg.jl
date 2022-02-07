@@ -1022,7 +1022,7 @@ end
 
 
 """
-    eeg_trim(eeg:EEG; trim_len, from=:start)
+    eeg_trim(eeg:EEG; trim_len, offset=0, from=:start)
 
 Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -1030,6 +1030,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 - `eeg:EEG`
 - `trim_len::Int64` - number of samples to remove
+- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
 # Returns
@@ -1037,7 +1038,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 - `signal_trimmed::Array{Float64, 3}`
 
 """
-function eeg_trim(eeg::EEG; trim_len::Int64, from::Symbol=:start)
+function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
     # create new dataset
     eeg_signal = deepcopy(eeg.eeg_signals)
     eeg_time = deepcopy(eeg.eeg_time)

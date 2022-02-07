@@ -203,11 +203,11 @@ p = signal_stationarity(signal_a, window=5, method=:mean)
 p = signal_stationarity(signal_a, window=10, method=:var)
 @test round(sum(p), digits=2) == 22.22
 
-s = signal_trim(signal_v, trim_len=10, from=:start)
+s = signal_trim(signal_v, trim_len=10, offset=80, from=:start)
 @test length(s) == 91 
 s = signal_trim(signal_v, trim_len=11, from=:end)
 @test length(s) == 90
-s = signal_trim(signal_a, trim_len=10, from=:start)
+s = signal_trim(signal_a, trim_len=10, offset=30, from=:start)
 @test size(s) == (2, 91, 2) 
 s = signal_trim(signal_a, trim_len=11, from=:end)
 @test size(s) == (2, 90, 2)

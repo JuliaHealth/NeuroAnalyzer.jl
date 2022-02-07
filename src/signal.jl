@@ -2072,6 +2072,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 # Arguments
 
 - `signal::Vector{Float64}; trim_len::Int64`
+- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]
 
 # Returns
@@ -2079,12 +2080,15 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 - `signal_trimmed::Vector{Float64}`
 
 """
-function signal_trim(signal::Vector{Float64}; trim_len::Int64, from::Symbol=:start)
+function signal_trim(signal::Vector{Float64}; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
     trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
     trim_len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
+    offset < 0 && throw(ArgumentError("Offset must be ≥ 1."))
+    offset >= length(signal) - 1 && throw(ArgumentError("Offset must be less than signal length."))
+    (from ===:start && 1 + offset + trim_len > length(signal)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
-    from === :start && (signal_trimmed = signal[1+trim_len:end])
+    from === :start && (signal_trimmed = vcat(signal[1:offset], signal[(1 + offset + trim_len):end]))
     from === :end && (signal_trimmed = signal[1:(end - trim_len)])
     
     return signal_trimmed::Vector{Float64}
@@ -2092,7 +2096,7 @@ end
 
 
 """
-    signal_trim(signal::Array{Float64, 3}; trim_len::Int64, from=:start)
+    signal_trim(signal::Array{Float64, 3}; trim_len, offset=0, from=:start)
 
 Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -2100,6 +2104,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 - `signal::Array{Float64, 3}`
 - `trim_len::Int64` - number of samples to remove
+- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
 # Returns
@@ -2107,10 +2112,13 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 - `signal_trimmed::Array{Float64, 3}`
 
 """
-function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, from::Symbol=:start)
+function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
     trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
-    trim_len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
+    trim_len >= size(signal, 2) && throw(ArgumentError("Trim length must be less than signal length."))
+    offset < 0 && throw(ArgumentError("Offset must be ≥ 1."))
+    offset >= size(signal, 2) - 1 && throw(ArgumentError("Offset must be less than signal length."))
+    (from ===:start && 1 + offset + trim_len > size(signal, 2)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)

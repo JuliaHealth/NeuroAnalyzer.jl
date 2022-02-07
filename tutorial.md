@@ -79,10 +79,22 @@ edf_128 = eeg_downsample(edf, new_sr=128)
 eeg_info(edf_128)
 ```
 
+Remove parts of the signal:
+```julia
+edf = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(10 * eeg_samplingrate(edf)), from=:start)
+```
+
 Split into 10-second epochs:
 ```julia
 e10 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf))
 eeg_info(e10)
+```
+
+Trim 1 second from each epoch:
+```julia
+e9 = eeg_trim(e10, trim_len=(1 * eeg_samplingrate(edf)), from=:start)
+eeg_info(e9)
+eeg_plot(e9, epoch=22)
 ```
 
 Get 1st epoch:
