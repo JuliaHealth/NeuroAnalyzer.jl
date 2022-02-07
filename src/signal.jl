@@ -2063,3 +2063,65 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 
     return stationarity
 end
+
+"""
+    signal_trim(signal::Vector{Float64}; trim_len::Int64)
+
+Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+
+# Arguments
+
+- `signal::Vector{Float64}; trim_len::Int64`
+- `from::Symbol[:start, :end]
+
+# Returns
+
+- `signal_trimmed::Vector{Float64}`
+
+"""
+function signal_trim(signal::Vector{Float64}; trim_len::Int64, from::Symbol=:start)
+    from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
+    trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
+    trim_len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
+    
+    from === :start && (signal_trimmed = signal[1+trim_len:end])
+    from === :end && (signal_trimmed = signal[1:(end - trim_len)])
+    
+    return signal_trimmed::Vector{Float64}
+end
+
+
+"""
+    signal_trim(signal::Array{Float64, 3}; trim_len::Int64, from=:start)
+
+Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `trim_len::Int64` - number of samples to remove
+- `from::Symbol[:start, :end]`
+
+# Returns
+
+- `signal_trimmed::Array{Float64, 3}`
+
+"""
+function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, from::Symbol=:start)
+    from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
+    trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
+    trim_len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
+    
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+
+    signal_trimmed = zeros(channels_no, (size(signal, 2) - trim_len), epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx = 1:channels_no
+            signal_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
+        end
+    end
+    
+    return signal_trimmed
+end

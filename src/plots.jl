@@ -423,7 +423,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     end
 
     if normalize == true
-        signal_normalized = signal_normalize_mean(signal)
+        signal_normalized = signal_normalize_zscore(signal)
     else
         signal_normalized = signal
     end
@@ -571,7 +571,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     channels_no = size(signal, 1)
 
     if normalize == true
-        signal_normalized = signal_normalize_mean(reshape(signal, size(signal, 1), size(signal, 2), 1))
+        signal_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
     else
         signal_normalized = signal
     end

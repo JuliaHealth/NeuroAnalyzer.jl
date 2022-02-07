@@ -15,7 +15,7 @@ using NeuroJ
 
 Show version (for reproducibility):
 ```julia
-NeuroJ_version()
+neuroj_version()
 ```
 
 Load EDF file:
@@ -146,9 +146,11 @@ eeg_plot(edf)
 eeg_plot(edf, channels=1:4)
 eeg_plot(edf, offset=20*eeg_samplingrate(edf), len=20)
 eeg_plot(edf, normalize=false)
-eeg_plot_avg(edf, channels=1:4, offset=20)
+eeg_plot_avg(edf, channels=1:4)
+eeg_plot_avg(edf)
 eeg_plot_butterfly(edf)
 eeg_plot_butterfly(edf, offset=20*256, len=120, channels=1:4, normalize=true)
+eeg_plot_butterfly(edf, channels=1:4, normalize=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
 p1 = eeg_plot(edf)
@@ -259,6 +261,7 @@ using NeuroJ
 edf = eeg_import_edf("test/eeg-test-edf.edf")
 edf = eeg_load_electrode_positions(edf, "locs/standard-10-20-cap19.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
+eeg_plot(edf, channels=1:10)
 eeg_plot(edf, channels=1:10, head=false)
 eeg_plot_butterfly(edf, channels=1:10, head=true)
 eeg_plot_psd(edf, normalize=true, channels=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
@@ -270,16 +273,17 @@ Stationarity:
 ```julia
 p = eeg_stationarity(edf, method=:mean)
 p = eeg_stationarity(edf, method=:var)
+plot(p[1, :, :], legend=false)
+
 p = eeg_stationarity(edf, method=:hilbert)
-plot(p[1, :, 1], ylims=(-10, 10))
-p = eeg_stationarity(edf, window=10000, method=:euclid)
+plot(p[1, :, :], ylims=(-10, 10), legend=false)
+p = eeg_stationarity(edf, window=100, method=:euclid)
 plot(p[10:end])
 ```
 
 Benchmarking:
 ```julia
-using NeuroJ
-edf = eeg_import_edf("NeuroJ.jl/test/eeg-test-edf.edf")
+edf = eeg_import_edf("test/eeg-test-edf.edf")
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)

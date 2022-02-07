@@ -1019,3 +1019,39 @@ function eeg_stationarity(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
 
     return stationarity
 end
+
+
+"""
+    eeg_trim(eeg:EEG; trim_len, from=:start)
+
+Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+
+# Arguments
+
+- `eeg:EEG`
+- `trim_len::Int64` - number of samples to remove
+- `from::Symbol[:start, :end]`
+
+# Returns
+
+- `signal_trimmed::Array{Float64, 3}`
+
+"""
+function eeg_trim(eeg::EEG; trim_len::Int64, from::Symbol=:start)
+    # create new dataset
+    eeg_signal = deepcopy(eeg.eeg_signals)
+    eeg_time = deepcopy(eeg.eeg_time)
+    eeg_signal = signal_trim(eeg_signal, trim_len=trim_len, from=from)
+    eeg_time = signal_trim(eeg_time, trim_len=trim_len, from=from)
+
+    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signal)
+    eeg_trimmed.eeg_header[:eeg_duration_samples] -= trim_len
+    eeg_trimmed.eeg_header[:eeg_duration_seconds] -= trim_len * (1 / eeg_samplingrate(eeg))
+    eeg_trimmed.eeg_header[:epoch_duration_samples] -= trim_len
+    eeg_trimmed.eeg_header[:epoch_duration_seconds] -= trim_len * (1 / eeg_samplingrate(eeg))
+
+    # add entry to :history field
+    push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, trim_len=$trim_len, from=$from)")
+
+    return eeg_trimmed
+end

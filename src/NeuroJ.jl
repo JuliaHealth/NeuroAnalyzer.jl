@@ -80,6 +80,7 @@ export eeg_tconv
 export eeg_total_power
 export eeg_upsample
 export eeg_stationarity
+export eeg_trim
 
 include("eeg_io.jl")
 export eeg_import_edf
@@ -119,6 +120,7 @@ export signal_stationarity_hilbert
 export signal_stationarity_mean
 export signal_stationarity_var
 export signal_stationarity
+export signal_trim
 
 include("misc.jl")
 export cart2pol
