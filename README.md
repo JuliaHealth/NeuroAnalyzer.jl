@@ -75,7 +75,6 @@ General:
 - performance optimization
 
 EEG:
-- plot epoch borders
 - create EEG object
 - clean DC line
 - automated channel rejection

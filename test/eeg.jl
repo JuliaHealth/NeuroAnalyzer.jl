@@ -102,7 +102,6 @@ p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test round(sum(p), digits=2) == 1.0040717529475e11
 
 e = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(20 * eeg_samplingrate(edf)), from=:start)
-eeg_info(e)
 @test size(e.eeg_signals) == (19, 352256, 1)
 
 true

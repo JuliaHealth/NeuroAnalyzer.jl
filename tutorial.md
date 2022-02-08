@@ -88,13 +88,19 @@ Split into 10-second epochs:
 ```julia
 e10 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf))
 eeg_info(e10)
+eeg_plot(e10)
+eeg_plot(e10, len=10)
+eeg_plot(e10, len=10, offset=12*256)
+eeg_plot(edf)
 ```
 
 Trim 1 second from each epoch:
 ```julia
 e9 = eeg_trim(e10, trim_len=(1 * eeg_samplingrate(edf)), from=:start)
 eeg_info(e9)
-eeg_plot(e9, epoch=22)
+eeg_plot(e9, len=11)
+eeg_plot(e9, len=2, offset=5*256)
+eeg_plot(e9, len=60, offset=0)
 ```
 
 Get 1st epoch:
@@ -158,12 +164,26 @@ eeg_plot(edf)
 eeg_plot(edf, channels=1:4)
 eeg_plot(edf, offset=20*eeg_samplingrate(edf), len=20)
 eeg_plot(edf, normalize=false)
+eeg_plot(e9, head=true, figure="/tmp/1.png")
+
 eeg_plot_avg(edf, channels=1:4)
 eeg_plot_avg(edf)
+eeg_plot_avg(e9)
+eeg_plot_avg(e10, len=125)
+eeg_plot_avg(e9, len=5, offset=6 * eeg_samplingrate(e9))
+
 eeg_plot_butterfly(edf)
 eeg_plot_butterfly(edf, offset=20*256, len=120, channels=1:4, normalize=true)
 eeg_plot_butterfly(edf, channels=1:4, normalize=true)
 eeg_plot(edf, figure="/tmp/test.png")
+
+e9 = eeg_load_electrode_positions(e9, "locs/standard-10-20-cap19.ced")
+eeg_plot_butterfly(e9, len=9)
+eeg_plot_butterfly(e9, len=55)
+eeg_plot_butterfly(e9, len=55, head=true)
+eeg_plot_butterfly(e10, len=55, head=true)
+eeg_plot_butterfly(e10)
+eeg_plot_butterfly(e10, len=11, head=true)
 
 p1 = eeg_plot(edf)
 p1 = plot!(title="edf1")
