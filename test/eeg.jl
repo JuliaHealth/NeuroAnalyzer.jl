@@ -104,4 +104,9 @@ p = eeg_stationarity(edf, window=10000, method=:euclid)
 e = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(20 * eeg_samplingrate(edf)), from=:start)
 @test size(e.eeg_signals) == (19, 352256, 1)
 
+m = eeg_mi(edf)
+@test round(sum(m), digits=2) == 363.64
+m = eeg_mi(edf, edf)
+@test round(sum(m), digits=2) == 363.64
+
 true

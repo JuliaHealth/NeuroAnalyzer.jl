@@ -212,4 +212,11 @@ s = signal_trim(signal_a, trim_len=10, offset=30, from=:start)
 s = signal_trim(signal_a, trim_len=11, from=:end)
 @test size(s) == (2, 90, 2)
 
+m = signal_mi(signal_v1, signal_v2)
+@test m == 2.41069306603075
+m = signal_mi(signal_a)
+@test round(sum(m), digits=2) == 19.66
+m = signal_mi(signal_a1, signal_a2)
+@test round(sum(m), digits=2) == 19.66
+
 true

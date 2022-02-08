@@ -563,7 +563,7 @@ Calculates covariance between all channels of `eeg`.
 
 # Returns
 
-- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}`
+- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function eeg_cov(eeg::EEG; normalize=true)
     cov_mat = signal_cov(eeg.eeg_signals, normalize=normalize)
@@ -584,7 +584,7 @@ Calculates correlation coefficients between all channels of `eeg`.
 
 # Returns
 
-- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}`
+- `cov_mat::Union{Matrix{Float64}, Array{Float64, 3}}`
 """
 function eeg_cor(eeg::EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
@@ -1055,4 +1055,45 @@ function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:star
     push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, trim_len=$trim_len, from=$from)")
 
     return eeg_trimmed
+end
+
+"""
+    eeg_mi(eeg)
+
+Calculates mutual information between all channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `mi::Array{Float64, 3}`
+"""
+function eeg_mi(eeg::EEG)
+    mi = signal_mi(eeg.eeg_signals)
+    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
+
+    return mi
+end
+
+"""
+    eeg_mi(eeg1, eeg2)
+
+Calculates mutual information between all channels of `eeg1` and `eeg2.
+
+# Arguments
+
+- `eeg1::EEG`
+- `eeg2::EEG`
+
+# Returns
+
+- `mi::Array{Float64, 3}`
+"""
+function eeg_mi(eeg1::EEG, eeg2::EEG)
+    mi = signal_mi(eeg1.eeg_signals, eeg2.eeg_signals)
+    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
+
+    return mi
 end

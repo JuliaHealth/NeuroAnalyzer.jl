@@ -5,6 +5,7 @@ using DataFrames
 using Distances
 using DSP
 using FFTW
+using InformationMeasures
 using Interpolations
 using JLD2
 using LinearAlgebra
@@ -30,12 +31,13 @@ function neuroj_version()
     println("Imported packages:")
     required_packages = ["CSV",
                          "DataFrames",
+                         "Distances",
                          "DSP",
                          "FFTW",
+                         "InformationMeasures",
                          "Interpolations",
                          "JLD2",
                          "LinearAlgebra",
-                         "Pkg",
                          "Plots",
                          "Simpson",
                          "StatsKit"]
@@ -81,6 +83,7 @@ export eeg_total_power
 export eeg_upsample
 export eeg_stationarity
 export eeg_trim
+export eeg_mi
 
 include("eeg_io.jl")
 export eeg_import_edf
@@ -121,6 +124,7 @@ export signal_stationarity_mean
 export signal_stationarity_var
 export signal_stationarity
 export signal_trim
+export signal_mi
 
 include("misc.jl")
 export cart2pol

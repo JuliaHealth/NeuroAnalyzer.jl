@@ -1962,7 +1962,6 @@ function signal_stationarity_mean(signal::Vector{Float64}; window::Int64)
     return mean_stationarity
 end
 
-
 """
     signal_stationarity_var(signal::Vector{Float64})
 
@@ -2132,4 +2131,86 @@ function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0
     end
     
     return signal_trimmed
+end
+
+"""
+    signal_mi(signal1::Vector{Float64}, signal2::Vector{Float64})
+
+Calculates mutual information between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+
+# Returns
+
+- `mi::Float64`
+
+"""
+function signal_mi(signal1::Vector{Float64}, signal2::Vector{Float64})
+    mi = get_mutual_information(signal1, signal2)
+    
+    return mi
+end
+
+"""
+    signal_mi(signal)
+
+Calculates mutual information between each the `signal` channels.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `mi::Array{Float64, 3}`
+"""
+function signal_mi(signal::Array{Float64, 3})
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+    mi = zeros(channels_no, channels_no, epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx1 in 1:channels_no
+            for idx2 in 1:channels_no
+                mi[idx1, idx2, epoch] = signal_mi(signal[idx1, :, epoch], signal[idx2, :, epoch])
+            end
+        end
+    end
+
+    return mi
+end
+
+"""
+    signal_mi(signal1, signal2)
+
+Calculates mutual information between each the `signal1` and `signal2` channels.
+
+# Arguments
+
+- `signal1::Array{Float64, 3}`
+- `signal2::Array{Float64, 3}`
+
+# Returns
+
+- `mi::Array{Float64, 3}`
+"""
+function signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+    size(signal1, 1) == size(signal2, 1) || throw(ArgumentError("Both signals must have the same number of channels."))
+    size(signal1, 3) == size(signal2, 3) || throw(ArgumentError("Both signals must have the same number of epochs."))
+    channels_no = size(signal1, 1)
+    epochs_no = size(signal1, 3)
+    mi = zeros(channels_no, channels_no, epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx1 in 1:channels_no
+            for idx2 in 1:channels_no
+                mi[idx1, idx2, epoch] = signal_mi(signal1[idx1, :, epoch], signal2[idx2, :, epoch])
+            end
+        end
+    end
+
+    return mi
 end

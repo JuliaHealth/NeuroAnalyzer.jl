@@ -308,6 +308,10 @@ p = eeg_stationarity(edf, method=:var)
 plot(p[1, :, :], legend=false)
 
 p = eeg_stationarity(edf, method=:hilbert)
+signal_mi(p[1, :, 1], p[2, :, 1])
+m = eeg_mi(edf)
+eeg_plot_matrix(edf, m)
+
 plot(p[1, :, :], ylims=(-10, 10), legend=false)
 p = eeg_stationarity(edf, window=100, method=:euclid)
 plot(p[10:end])
