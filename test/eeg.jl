@@ -79,6 +79,10 @@ edf1 = eeg_tconv(edf, kernel=generate_hanning(256))
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test round(sum(edf1.eeg_signals), digits=2) == -4.7726293721e8
+edf1 = eeg_filter(edf, fprototype=:mavg, d=10)
+@test round(sum(edf1.eeg_signals), digits=2) == -4.7727283843e8
+edf1 = eeg_filter(edf, fprototype=:mmed, d=10)
+@test round(sum(edf1.eeg_signals), digits=2) == -4.2654706236e8
 
 edf1 = eeg_downsample(edf, new_sr=128)
 @test round(sum(edf1.eeg_signals), digits=2) == -2.3863254176e8

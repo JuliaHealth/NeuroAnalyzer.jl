@@ -1455,7 +1455,7 @@ Adds random noise to the `signal`.
 - `signal_noisy::Vector{Float64}`
 """
 function signal_add_noise(signal::Vector{Float64})
-    signal_noise = signal .+ mean(signal) .* rand(length(signal))
+    signal_noise = signal .+ rand(length(signal))
 
     return signal_noise
 end
@@ -1611,35 +1611,52 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
 
 Filters `signal` using zero phase distortion filter.
 
 # Arguments
 
 - `signal::Vector{Float64}`
-- `fprototype::Symbol[:butterworth, :fir]
+- `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Int64` - sampling rate
-- `order::Int64` - filter order
-- `rp::Float64` - dB ripple in the passband
-- `rs::Float64` - dB attentuation in the stopband
-- `dir:Symbol[:oenpass, :onepass_reverse, :twopass]` - filter direction
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `fs::Union{Int64, Nothing}` - sampling rate
+- `order::Union{Int64, Nothing}` - filter order
+- `rp::Union{Float64, Nothing}` - dB ripple in the passband
+- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
+- `d::Int64` - window length for mean average and median average filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `signal_filtered::Vector{Float64}`
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+    fprototype in [:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
-    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs."))
+    (fprototype !== :mavg && fprototype !== :mmed) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("Filter direction must be :onepass, :onepass_reverse or :twopass."))
-    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
-    mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even."))
-    order < 0 && throw(ArgumentError("Order must be positive."))
+    order != nothing && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
+    order != nothing && (order < 0 && throw(ArgumentError("Order must be positive.")))
 
+    if fprototype === :mavg
+        signal_filtered = signal
+        for idx in (1 + d):(length(signal) - d)
+            signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+        end
+
+        return signal_filtered
+    end
+    if fprototype === :mmed
+        signal_filtered = signal
+        for idx in (1 + d):(length(signal) - d)
+            signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+        end
+
+        return signal_filtered
+    end
     if ftype === :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
@@ -1686,28 +1703,29 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Symbo
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order=8, window=hanning(64))
+    signal_filter(signal; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
 
 Filters `signal` using zero phase distortion filter.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fprototype::Symbol[:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
+- `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Int64` - sampling rate
-- `order::Int64` - filter order
-- `rp::Union{Int64, Float64, Nothing}` - dB ripple in the passband
-- `rs::Union{Int64, Float64, Nothing}` - dB attentuation in the stopband
-- `dir:Symbol[:oenpass, :onepass_reverse, :twopass]` - filter direction
-- `window::Union{Vector{Float64}, Nothing}` - window, required for FIR filter
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `fs::Union{Int64, Nothing}` - sampling rate
+- `order::Union{Int64, Nothing}` - filter order
+- `rp::Union{Float64, Nothing}` - dB ripple in the passband
+- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
+- `d::Int64` - window length for mean average and median average filter
+- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `signal_filtered::Array{Float64, 3}`
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}}, fs::Int64, order::Int64, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
     signal_filtered = zeros(size(signal))
@@ -1723,6 +1741,7 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Sym
                                                            rp=rp,
                                                            rs=rs,
                                                            dir=dir,
+                                                           d=d,
                                                            window=window)
         end
     end
