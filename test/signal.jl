@@ -171,6 +171,8 @@ s_filt = signal_filter(signal_a, fprototype=:butterworth, ftype=:lp, cutoff=2, f
 @test floor(sum(s_filt), digits=2) == -0.01
 s_filt = signal_filter(signal_v, fprototype=:mavg, d=10)
 @test length(s_filt) == 101
+s_filt = signal_filter(signal_add_noise(signal_v), fprototype=:mavg, window=generate_gaussian(fs, 32, 0.01))
+@test length(s_filt) == 101
 s_filt = signal_filter(signal_a, fprototype=:mmed, d=10)
 @test length(s_filt) == 404
 
@@ -222,5 +224,15 @@ m = signal_mi(signal_a)
 @test floor(sum(m), digits=2) == 19.65
 m = signal_mi(signal_a1, signal_a2)
 @test floor(sum(m), digits=2) == 19.65
+
+e = signal_entropy(signal_v)
+@test floor(sum(e), digits=2) == 2.28
+e = signal_entropy(signal_a)
+@test floor(sum(e), digits=2) == 6.61
+
+s = signal_average(signal_v1, signal_v2)
+@test floor(sum(s), digits=2) == -0.01
+s = signal_average(signal_a1, signal_a2)
+@test floor(sum(s), digits=2) == -0.01
 
 true

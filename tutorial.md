@@ -317,6 +317,18 @@ p = eeg_stationarity(edf, window=100, method=:euclid)
 plot(p[10:end])
 ```
 
+Entropy:
+```julia
+e = eeg_entropy(edf)
+plot(eeg_labels(edf), e, seriestype=:bar)
+```
+
+Misc:
+```julia
+eeg_band(:alpha)
+alpha_band = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+```
+
 Benchmarking:
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf")

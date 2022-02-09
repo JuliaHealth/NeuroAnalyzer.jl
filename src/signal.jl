@@ -1567,14 +1567,14 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_convoluted::Union{Vector{Float64}, Vector{ComplexF64}}`
+- `signal_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function signal_tconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-    signal_tconv = conv(signal, kernel)
+    signal_conv = conv(signal, kernel)
     half_kernel = floor(Int, length(kernel) / 2)
-    signal_tconv = signal[(half_kernel + 1):(end - half_kernel)]
+    signal_conv = signal_conv[(half_kernel + 1):(end - half_kernel)]
 
-    return signal_tconv
+    return signal_conv
 end
 
 """
@@ -1589,7 +1589,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
+- `signal_conv::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
 """
 function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     channels_no = size(signal, 1)
@@ -1620,7 +1620,7 @@ Filters `signal` using zero phase distortion filter.
 - `signal::Vector{Float64}`
 - `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
 - `order::Union{Int64, Nothing}` - filter order
 - `rp::Union{Float64, Nothing}` - dB ripple in the passband
@@ -1633,18 +1633,22 @@ Filters `signal` using zero phase distortion filter.
 
 - `signal_filtered::Vector{Float64}`
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
     fprototype in [:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
     (fprototype !== :mavg && fprototype !== :mmed) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("Filter direction must be :onepass, :onepass_reverse or :twopass."))
-    order != nothing && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
-    order != nothing && (order < 0 && throw(ArgumentError("Order must be positive.")))
+    order !== nothing && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
+    order !== nothing && (order < 0 && throw(ArgumentError("Order must be positive.")))
 
     if fprototype === :mavg
-        signal_filtered = signal
-        for idx in (1 + d):(length(signal) - d)
-            signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+        if window === nothing
+            signal_filtered = signal
+            for idx in (1 + d):(length(signal) - d)
+                signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+            end
+        else
+            signal_filtered = signal_tconv(signal, window)
         end
 
         return signal_filtered
@@ -1712,20 +1716,20 @@ Filters `signal` using zero phase distortion filter.
 - `signal::Array{Float64, 3}`
 - `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
 - `order::Union{Int64, Nothing}` - filter order
 - `rp::Union{Float64, Nothing}` - dB ripple in the passband
 - `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
-- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+- `window::Union{Vector{Float64}, Nothing} - window, required for :fir and :mavg filters
 
 # Returns
 
 - `signal_filtered::Array{Float64, 3}`
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
     signal_filtered = zeros(size(signal))
@@ -2233,3 +2237,116 @@ function signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 
     return mi
 end
+
+"""
+    signal_entropy(signal::Vector{Float64})
+
+Calculates entropy of `signal`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+
+# Returns
+
+- `entropy::Float64`
+
+"""
+function signal_entropy(signal::Vector{Float64})
+    n = length(signal)
+    maxmin_range = maximum(signal) - minimum(signal)
+    fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(signal) * n^(-1/3))) # Freedman-Diaconis
+
+    # recompute entropy with optimal bins for comparison
+    h = fit(Histogram, signal, nbins=fd_bins)
+    hdat1 = h.weights ./ sum(h.weights)
+
+    # convert histograms to probability values
+    ent = -sum(hdat1 .* log2.(hdat1 .+ eps()))    
+
+    return ent
+end
+
+
+"""
+    signal_entropy(signal)
+
+Calculates mutual information between each the `signal1` and `signal2` channels.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `entropy::Matrix{Float64}`
+"""
+function signal_entropy(signal::Array{Float64, 3})
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+    sig_entropy = zeros(channels_no, epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx1 in 1:channels_no
+                sig_entropy[idx1, epoch] = signal_entropy(signal[idx1, :, epoch])
+        end
+    end
+
+    return sig_entropy
+end
+
+"""
+    signal_average(signal1, signal2)
+
+Averages `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+
+# Returns
+
+- `signal_averaged::Vector{Float64}`
+
+"""
+function signal_average(signal1::Vector{Float64}, signal2::Vector{Float64})
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+
+    signal_averaged = zeros(length(signal1))
+    for idx in 1:length(signal1)
+        signal_averaged[idx] = mean([signal1[idx], signal2[idx]])
+    end
+
+    return signal_averaged
+end
+
+"""
+    signal_average(signal1, signal2)
+
+Averages `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Array{Float64, 3}`
+- `signal2::Array{Float64, 3}`
+
+# Returns
+
+- `signal_averaged::Array{Float64, 3}`
+"""
+function signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+    size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
+    channels_no = size(signal1, 1)
+    epochs_no = size(signal1, 3)
+    signal_averaged = zeros(size(signal1))
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
+        end
+    end
+
+    return signal_averaged
+end
+

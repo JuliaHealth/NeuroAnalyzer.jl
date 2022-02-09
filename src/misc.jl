@@ -600,14 +600,36 @@ Generates Morlet wavelet.
 
 # Returns
 
-- `morlet::Union{Vector{Float64}, Vector{ComplexF64}}
+- `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
     w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
-    gaussian = @. exp((-wt.^2) / w)
-    morlet_wavelet = sin_wave .* gaussian
-    return morlet_wavelet
+    gaussian = generate_gaussian(fs, wt[end], w)
+    morlet = sin_wave .* gaussian
+    return morlet
+end
+
+"""
+    generate_gaussian(fs, wt, wf)
+
+Generates Gaussian wave.
+
+# Arguments
+
+- `fs::Int64` - sampling rate
+- `gt::Union{Int64, Float64}` - length = -wt:1/fs:wt
+- `gw::Union{Int64, Float64}` - width
+
+# Returns
+
+- `gaussian::Vector{Float64}`
+"""
+function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
+    t = -gt:1/fs:gt
+    gaussian = MathConstants.e.^(-t.^2 ./ gw)
+
+    return gaussian
 end

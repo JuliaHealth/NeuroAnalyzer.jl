@@ -75,6 +75,7 @@ General:
 - performance optimization
 
 EEG:
+- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
 - create EEG object
 - clean DC line
 - automated channel rejection

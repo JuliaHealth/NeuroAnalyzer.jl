@@ -84,6 +84,8 @@ export eeg_upsample
 export eeg_stationarity
 export eeg_trim
 export eeg_mi
+export eeg_entropy
+export eeg_band
 
 include("eeg_io.jl")
 export eeg_import_edf
@@ -125,6 +127,8 @@ export signal_stationarity_var
 export signal_stationarity
 export signal_trim
 export signal_mi
+export signal_entropy
+export signal_average
 
 include("misc.jl")
 export cart2pol
@@ -155,6 +159,7 @@ export vsearch
 export vsplit
 export z_score
 export zero_pad
+export generate_gaussian
 
 include("nstim.jl")
 export tes_dose

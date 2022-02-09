@@ -832,7 +832,7 @@ Filters `signal` using zero phase distortion filter.
 - `eeg::EEG`
 - `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
 - `order::Union{Int64, Nothing}` - filter order
 - `rp::Union{Float64, Nothing}` - dB ripple in the passband
@@ -845,7 +845,7 @@ Filters `signal` using zero phase distortion filter.
 
 - `eeg::EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
@@ -1083,7 +1083,7 @@ end
 """
     eeg_mi(eeg1, eeg2)
 
-Calculates mutual information between all channels of `eeg1` and `eeg2.
+Calculates mutual information between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -1099,4 +1099,56 @@ function eeg_mi(eeg1::EEG, eeg2::EEG)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
 
     return mi
+end
+
+
+"""
+    eeg_entropy(eeg1)
+
+Calculates entropy of all channels of `eeg1`.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `entropy::Matrix{Float64}`
+"""
+function eeg_entropy(eeg::EEG)
+    ent = signal_entropy(eeg.eeg_signals)
+    size(ent, 3) == 1 && (ent = reshape(ent, size(ent, 1), size(ent, 2)))
+
+    return ent
+end
+
+"""
+    eeg_band(band)
+
+Return EEG band frequency limits.
+
+# Arguments
+
+- `band::Symbol`
+
+# Returns
+
+- `band_frequency::Tuple`
+
+"""
+function eeg_band(band::Symbol)
+    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Band unknown."))
+
+    band === :deta && (band_frequency = (0.5, 4))
+    band === :theta && (band_frequency = (4, 8))
+    band === :alpha && (band_frequency = (8, 13))
+    band === :beta && (band_frequency = (14, 30))
+    band === :high && (band_frequency = (25, 30))
+    band === :gamma && (band_frequency = (30, 150))
+    band === :gamma_1 && (band_frequency = (31, 40))
+    band === :gamma_2 && (band_frequency = (41, 50))
+    band === :gamma_lower && (band_frequency = (30, 80))
+    band === :gamma_higher && (band_frequency = (80, 150))
+    
+    return band_frequency
 end

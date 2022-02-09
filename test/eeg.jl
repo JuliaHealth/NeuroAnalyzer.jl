@@ -75,14 +75,16 @@ edf1 = eeg_extract_epoch(edf, 1)
 @test round(sum(edf1.eeg_signals), digits=2) == -4.7727273831e8
 
 edf1 = eeg_tconv(edf, kernel=generate_hanning(256))
-@test round(sum(edf1.eeg_signals), digits=2) == -4.7741781538e8
+@test round(sum(edf1.eeg_signals), digits=2) == -6.13360628002e10
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test round(sum(edf1.eeg_signals), digits=2) == -4.7726293721e8
 edf1 = eeg_filter(edf, fprototype=:mavg, d=10)
 @test round(sum(edf1.eeg_signals), digits=2) == -4.7727283843e8
 edf1 = eeg_filter(edf, fprototype=:mmed, d=10)
-@test round(sum(edf1.eeg_signals), digits=2) == -4.2654706236e8
+@test size(edf1.eeg_signals) == (19, 354816, 1)
+edf1 = eeg_filter(edf, fprototype=:mavg, window=generate_gaussian(eeg_samplingrate(edf), 32, 0.01))
+@test round(sum(edf1.eeg_signals), digits=2) == -2.165654661766e10
 
 edf1 = eeg_downsample(edf, new_sr=128)
 @test round(sum(edf1.eeg_signals), digits=2) == -2.3863254176e8
@@ -112,5 +114,11 @@ m = eeg_mi(edf)
 @test round(sum(m), digits=2) == 363.64
 m = eeg_mi(edf, edf)
 @test round(sum(m), digits=2) == 363.64
+
+e = eeg_entropy(edf)
+@test round(sum(e), digits=2) == 116.06
+
+a = eeg_band(:alpha)
+@test a == (8, 13)
 
 true
