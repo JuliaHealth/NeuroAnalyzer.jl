@@ -311,7 +311,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 # Arguments
 
-- `f::Int64`
+- `f::Union{Int64, Float64}`
 - `t::Union{Vector{Int64}, Vector{Float64}}`
 - `a::Union{Int64, Float64}`
 - `p::Union{Int64, Float64}`
@@ -320,7 +320,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 - sine::Vector{Float64}`
 """
-generate_sine(f::Int64, t::Union{Vector{Int64}, Vector{Float64}}, a::Union{Int64, Float64}=1, p::Union{Int64, Float64}=0) = @. a * sin(2 * pi * f * t + p)
+generate_sine(f::Union{Int64, Float64}, t::Union{Vector{Int64}, Vector{Float64}}, a::Union{Int64, Float64}=1, p::Union{Int64, Float64}=0) = @. a * sin(2 * pi * f * t + p)
 
 """
     freqs(t)

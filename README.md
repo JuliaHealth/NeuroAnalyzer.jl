@@ -75,8 +75,10 @@ General:
 - performance optimization
 
 EEG:
-- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
+- io: export to CSV
+- io: import from CSV
 - create EEG object
+- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
 - clean DC line
 - automated channel rejection
 - channel interpolation
@@ -93,8 +95,8 @@ EEG:
 - edit eeg header
 - compose eeg_plots with electrode plots
 - io: import EDF+, BDF, other formats
-- io: export to CSV
 - ERPs
+- CUDA acceleration
 
 NIRS
 - import and process data

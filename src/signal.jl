@@ -1618,7 +1618,10 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `signal::Vector{Float64}`
-- `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
+    - `:mavg` - moving average (with threshold and/or weight window)
+    - `:mmed` - moving median (with threshold and/or weight window)
+    - `:poly` - polynomial of `order` order
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
@@ -1635,16 +1638,28 @@ Filters `signal` using zero phase distortion filter.
 - `signal_filtered::Vector{Float64}`
 """
 function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
-    fprototype in [:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
-    (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
-    (fprototype !== :mavg && fprototype !== :mmed) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
+    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
+    (fprototype === :fir && (window === nothing || length(window) < length(signal))) && throw(ArgumentError("For FIR filter window must be shorter than signal."))
+    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
+    (fprototype !== :mavg && fprototype !== :mmed) && (fs === nothing && throw(ArgumentError("Sampling frequency must be given.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("Filter direction must be :onepass, :onepass_reverse or :twopass."))
-    order !== nothing && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
-    order !== nothing && (order < 0 && throw(ArgumentError("Order must be positive.")))
+    (order !== nothing && fprototype !== :poly) && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
+    (order === 0 && fprototype === :poly) && throw(ArgumentError("Filter order must be ≥ 1."))
+    order !== nothing && (order < 0 && throw(ArgumentError("Filter order must be positive.")))
+    d > length(signal) && throw(ArgumentError("Value of d cannot be higher than signal length."))
 
     if fprototype === :mavg
         if window === nothing
             signal_filtered = signal
+            for idx in d:-1:1
+                if t > 0
+                    if signal[idx] > t * std(signal) + mean(signal)
+                        signal_filtered[idx] = mean(signal[idx:idx+1])
+                    end
+                else
+                    signal_filtered[idx] = mean(signal[idx:idx+1])
+                end
+            end
             for idx in (1 + d):(length(signal) - d)
                 if t > 0
                     if signal[idx] > t * std(signal) + mean(signal)
@@ -1654,14 +1669,33 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
                     signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
                 end
             end
+            for idx in (length(signal) - d + 1):length(signal)
+                if t > 0
+                    if signal[idx] > t * std(signal) + mean(signal)
+                        signal_filtered[idx] = mean(signal[idx-1:idx])
+                    end
+                else
+                    signal_filtered[idx] = mean(signal[idx-1:idx])
+                end
+            end
         else
             signal_filtered = signal_tconv(signal, window)
         end
 
         return signal_filtered
     end
+
     if fprototype === :mmed
         signal_filtered = signal
+        for idx in d:-1:1
+            if t > 0
+                if signal[idx] > t * std(signal) + median(signal)
+                    signal_filtered[idx] = median(signal[idx:idx+1])
+                end
+            else
+                signal_filtered[idx] = median(signal[idx:idx+1])
+            end
+        end
         for idx in (1 + d):(length(signal) - d)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
@@ -1671,9 +1705,30 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
                 signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
             end
         end
+        for idx in (length(signal) - d + 1):length(signal)
+            if t > 0
+                if signal[idx] > t * std(signal) + median(signal)
+                    signal_filtered[idx] = median(signal[idx-1:idx])
+                end
+            else
+                signal_filtered[idx] = median(signal[idx-1:idx])
+            end
+        end
 
         return signal_filtered
     end
+
+    if fprototype === :poly
+        t = collect(0:1/fs:(length(signal) - 1) / fs)        
+        p = Polynomials.fit(t, signal, order)
+        signal_filtered = zeros(length(signal))
+        for idx in 1:length(signal)
+            signal_filtered[idx] = p(t[idx])
+        end
+
+        return signal_filtered
+    end
+
     if ftype === :lp
         length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
@@ -1727,7 +1782,10 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
+    - `:mavg` - moving average (with threshold and/or weight window)
+    - `:mmed` - moving median (with threshold and/or weight window)
+    - `:poly` - polynomial of `order` order
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
@@ -2273,7 +2331,7 @@ function signal_entropy(signal::Vector{Float64})
     fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(signal) * n^(-1/3))) # Freedman-Diaconis
 
     # recompute entropy with optimal bins for comparison
-    h = fit(Histogram, signal, nbins=fd_bins)
+    h = StatsKit.fit(Histogram, signal, nbins=fd_bins)
     hdat1 = h.weights ./ sum(h.weights)
 
     # convert histograms to probability values

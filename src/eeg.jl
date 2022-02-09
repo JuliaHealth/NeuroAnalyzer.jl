@@ -612,12 +612,12 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
     signal_upsampled, t_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     # create new dataset
-    eeg_duration_samples = size(signal_upsampled, 2)
-    eeg_duration_seconds = size(signal_upsampled, 2) / new_sr
     eeg_time = collect(t_upsampled)
     eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, signal_upsampled)
-    eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
-    eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg_new.eeg_header[:eeg_duration_samples] = size(signal_upsampled, 2) * size(signal_upsampled, 3)
+    eeg_new.eeg_header[:eeg_duration_seconds] = (size(signal_upsampled, 2) * size(signal_upsampled, 3)) / new_sr
+    eeg_new.eeg_header[:epoch_duration_samples] = size(signal_upsampled, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(signal_upsampled, 2) / new_sr
     eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_new.eeg_header[:channels_no])
 
     # add entry to :history field
@@ -816,6 +816,10 @@ function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_convoluted)
+    eeg_new.eeg_header[:eeg_duration_samples] = size(signal_convoluted, 2) * size(signal_convoluted, 3)
+    eeg_new.eeg_header[:eeg_duration_seconds] = (size(signal_convoluted, 2) * size(signal_convoluted, 3)) / eeg_samplingrate(eeg_new)
+    eeg_new.eeg_header[:epoch_duration_samples] = size(signal_convoluted, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(signal_convoluted, 2) / eeg_samplingrate(eeg_new)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_tconv(EEG, kernel=$kernel)")
 
@@ -830,7 +834,10 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `eeg::EEG`
-- `fprototype::Symbol[:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
+    - `:mavg` - moving average (with threshold and/or weight window)
+    - `:mmed` - moving median (with threshold and/or weight window)
+    - `:poly` - polynomial of `order` order
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
 - `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `fs::Union{Int64, Nothing}` - sampling rate
@@ -889,12 +896,12 @@ function eeg_downsample(eeg::EEG; new_sr::Int64)
     signal_downsampled, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     # create new dataset
-    eeg_duration_samples = size(signal_downsampled, 2)
-    eeg_duration_seconds = size(signal_downsampled, 2) / new_sr
     eeg_time = collect(t_downsampled)
     eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, signal_downsampled)
-    eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
-    eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg_new.eeg_header[:eeg_duration_samples] = size(signal_downsampled, 2) * size(signal_downsampled, 3)
+    eeg_new.eeg_header[:eeg_duration_seconds] = (size(signal_downsampled, 2) * size(signal_downsampled, 3)) / new_sr
+    eeg_new.eeg_header[:epoch_duration_samples] = size(signal_downsampled, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(signal_downsampled, 2) / new_sr
     eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_new.eeg_header[:channels_no])
 
     # add entry to :history field

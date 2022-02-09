@@ -12,6 +12,7 @@ using LinearAlgebra
 using Pkg
 using Plots
 using Plots.PlotMeasures
+using Polynomials
 using Simpson
 using StatsKit
 
@@ -39,6 +40,7 @@ function neuroj_version()
                          "JLD2",
                          "LinearAlgebra",
                          "Plots",
+                         "Polynomials",
                          "Simpson",
                          "StatsKit"]
     for idx in 1:length(required_packages)
