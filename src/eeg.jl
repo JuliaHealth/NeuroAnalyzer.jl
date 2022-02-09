@@ -839,13 +839,14 @@ Filters `signal` using zero phase distortion filter.
 - `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
+- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `eeg::EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
     fs = eeg.eeg_header[:sampling_rate][1]
 
     signal_filtered = signal_filter(eeg.eeg_signals,
@@ -858,6 +859,7 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=
                                     rs=rs,
                                     dir=dir,
                                     d=d,
+                                    t=t,
                                     window=window)
 
     # create new dataset

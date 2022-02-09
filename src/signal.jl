@@ -1627,13 +1627,14 @@ Filters `signal` using zero phase distortion filter.
 - `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
+- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `signal_filtered::Vector{Float64}`
 """
-function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
     fprototype in [:mavg, :mmed, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For FIR filter window must be longer that signal."))
     (fprototype !== :mavg && fprototype !== :mmed) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
@@ -1645,7 +1646,13 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
         if window === nothing
             signal_filtered = signal
             for idx in (1 + d):(length(signal) - d)
-                signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+                if t > 0
+                    if signal[idx] > t * std(signal) + mean(signal)
+                        signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+                    end
+                else
+                    signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+                end
             end
         else
             signal_filtered = signal_tconv(signal, window)
@@ -1656,7 +1663,13 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
     if fprototype === :mmed
         signal_filtered = signal
         for idx in (1 + d):(length(signal) - d)
-            signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+            if t > 0
+                if signal[idx] > t * std(signal) + median(signal)
+                    signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+                end
+            else
+                signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+            end
         end
 
         return signal_filtered
@@ -1723,13 +1736,14 @@ Filters `signal` using zero phase distortion filter.
 - `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
+- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for :fir and :mavg filters
 
 # Returns
 
 - `signal_filtered::Array{Float64, 3}`
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
     channels_no = size(signal, 1)
     epochs_no = size(signal, 3)
     signal_filtered = zeros(size(signal))
@@ -1746,6 +1760,7 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Uni
                                                            rs=rs,
                                                            dir=dir,
                                                            d=d,
+                                                           t=t,
                                                            window=window)
         end
     end

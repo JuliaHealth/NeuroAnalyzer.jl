@@ -173,7 +173,7 @@ s_filt = signal_filter(signal_v, fprototype=:mavg, d=10)
 @test length(s_filt) == 101
 s_filt = signal_filter(signal_add_noise(signal_v), fprototype=:mavg, window=generate_gaussian(fs, 32, 0.01))
 @test length(s_filt) == 101
-s_filt = signal_filter(signal_a, fprototype=:mmed, d=10)
+s_filt = signal_filter(signal_a, fprototype=:mmed, t=2.2)
 @test length(s_filt) == 404
 
 s_down, t_down = signal_downsample(signal_v, t=0:1/fs:10, new_sr=2)
