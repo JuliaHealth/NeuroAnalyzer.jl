@@ -81,6 +81,7 @@ eeg_info(edf_128)
 
 Remove parts of the signal:
 ```julia
+edf = eeg_trim(edf, trim_len=(20 * eeg_samplingrate(edf)), from=:start)
 edf = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(10 * eeg_samplingrate(edf)), from=:start)
 ```
 
@@ -227,6 +228,7 @@ eeg_normalize_minmax(edf)
 Remove DC:
 ```julia
 eeg_demean(edf)
+eeg_demean(edf)
 ```
 
 Taper:
@@ -323,10 +325,27 @@ e = eeg_entropy(edf)
 plot(eeg_labels(edf), e, seriestype=:bar)
 ```
 
+Coherence:
+```julia
+m = eeg_coherence(edf1, edf2)
+hz, nyq = eeg_freqs(edf1)
+plot(hz, abs.(m[1, 1:length(hz)]), xlims=(0, 40))
+
+edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+eeg_labels(edf_alpha)
+# O1 vs O2
+m = eeg_coherence(edf_alpha, channel1=9, channel2=10)
+plot(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+# Fp1 vs Fp2
+m = eeg_coherence(edf_alpha, channel1=1, channel2=2)
+plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+```
+
 Misc:
 ```julia
 eeg_band(:alpha)
 alpha_band = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+hz, nyq = eeg_freqs(edf)
 ```
 
 Benchmarking:

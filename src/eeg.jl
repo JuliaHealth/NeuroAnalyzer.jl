@@ -1110,7 +1110,6 @@ function eeg_mi(eeg1::EEG, eeg2::EEG)
     return mi
 end
 
-
 """
     eeg_entropy(eeg1)
 
@@ -1146,8 +1145,12 @@ Return EEG band frequency limits.
 
 """
 function eeg_band(band::Symbol)
-    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Band unknown."))
+    band in [:list, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Band unknown."))
 
+    if band === :list
+        println("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher.")
+        return
+    end
     band === :deta && (band_frequency = (0.5, 4))
     band === :theta && (band_frequency = (4, 8))
     band === :alpha && (band_frequency = (8, 13))
@@ -1160,4 +1163,67 @@ function eeg_band(band::Symbol)
     band === :gamma_higher && (band_frequency = (80, 150))
     
     return band_frequency
+end
+
+"""
+    eeg_coherence(eeg1)
+
+Calculates coherence between channels of `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::EEG`
+- `eeg2::EEG`
+
+# Returns
+
+- `coherence::Array{ComplexF64, 3}`
+"""
+function eeg_coherence(eeg1::EEG, eeg2::EEG)
+    coherence = signal_coherence(eeg1.eeg_signals, eeg2.eeg_signals)
+    size(coherence, 3) == 1 && (coherence = reshape(coherence, size(coherence, 1), size(coherence, 2)))
+
+    return coherence
+end
+
+"""
+    eeg_coherence(eeg; channel1, channel2, epoch1=:, epoch2=:)
+
+Calculates coherence between `hannel1` and `channel2` of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `channel1::Union{Int64, Vector{Int64}, AbstractRange}`
+- `channel2::Union{Int64, Vector{Int64}, AbstractRange}`
+- `epoch1::Union{Int64, Vector{Int64}, AbstractRange}`
+- `epoch2::Union{Int64, Vector{Int64}, AbstractRange}`
+
+# Returns
+
+- `coherence::Vector{ComplexF64}`
+"""
+function eeg_coherence(eeg::EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}, channel2::Union{Int64, Vector{Int64}, AbstractRange}, epoch1::Union{Int64, Vector{Int64}, AbstractRange, Colon}=1, epoch2::Union{Int64, Vector{Int64}, AbstractRange, Colon}=1)
+    coherence = signal_coherence(eeg.eeg_signals[channel1, :, epoch1], eeg.eeg_signals[channel2, :, epoch2])
+
+    return coherence
+end
+
+"""
+    eeg_frequencies(eeg)
+
+Returns vector of frequencies and Nyquist frequency for `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `coherence::Array{ComplexF64, 3}`
+"""
+function eeg_freqs(eeg::EEG)
+    hz, nyq = freqs(eeg.eeg_signals[1, :, 1], eeg_samplingrate(eeg))
+
+    return hz, nyq
 end

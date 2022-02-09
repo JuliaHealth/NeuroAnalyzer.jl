@@ -237,4 +237,9 @@ s = signal_average(signal_v1, signal_v2)
 s = signal_average(signal_a1, signal_a2)
 @test size(s) == (2, 101, 2)
 
+s = signal_coherence(signal_v1, signal_v2)
+@test size(s) == (101, )
+s = signal_coherence(signal_a1, signal_a2)
+@test size(s) == (2, 101, 2)
+
 true

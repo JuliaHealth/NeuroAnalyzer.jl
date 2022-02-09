@@ -88,7 +88,8 @@ export eeg_trim
 export eeg_mi
 export eeg_entropy
 export eeg_band
-
+export eeg_coherence
+export eeg_freqs
 include("eeg_io.jl")
 export eeg_import_edf
 export eeg_load
@@ -131,6 +132,7 @@ export signal_trim
 export signal_mi
 export signal_entropy
 export signal_average
+export signal_coherence
 
 include("misc.jl")
 export cart2pol

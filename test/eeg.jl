@@ -121,4 +121,10 @@ e = eeg_entropy(edf)
 a = eeg_band(:alpha)
 @test a == (8, 13)
 
+m = eeg_coherence(edf, edf)
+@test size(m) == (19, 354816)
+
+hz, _ = eeg_freqs(edf)
+@test typeof(hz) == Vector{Float64}
+
 true

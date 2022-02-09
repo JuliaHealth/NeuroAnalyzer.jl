@@ -2423,3 +2423,57 @@ function signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     return signal_averaged
 end
 
+"""
+    signal_coherence(signal1, signal2)
+
+Calculates coherence between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+
+# Returns
+
+- `coherence::Vector{ComplexF64`
+
+"""
+function signal_coherence(signal1::Vector{Float64}, signal2::Vector{Float64})
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+
+    signal1_fft = fft(signal1) ./ length(signal1)
+    signal2_fft = fft(signal2) ./ length(signal2)
+
+    coherence = (abs.((signal1_fft) .* conj.(signal2_fft)).^2) ./ (signal1_fft .* signal2_fft)
+
+    return coherence
+end
+
+"""
+    signal_coherence(signal1, signal2)
+
+Calculates coherence between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Array{Float64, 3}`
+- `signal2::Array{Float64, 3}`
+
+# Returns
+
+- `coherence::Array{ComplexF64, 3}`
+"""
+function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+    size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
+    channels_no = size(signal1, 1)
+    epochs_no = size(signal1, 3)
+    coherence = zeros(ComplexF64, size(signal1))
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            coherence[idx, :, epoch] = signal_coherence(signal1[idx, :, epoch], signal2[idx, :, epoch])
+        end
+    end
+
+    return coherence
+end
