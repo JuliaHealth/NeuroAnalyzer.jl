@@ -127,4 +127,9 @@ m = eeg_coherence(edf, edf)
 hz, _ = eeg_freqs(edf)
 @test typeof(hz) == Vector{Float64}
 
+edf1 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf), average=true)
+p, v = eeg_pca(edf1, edf1, n=2)
+@test size(p) == (2, 2560, 19, 1)
+@test size(v) == (2, 19, 1)
+
 true

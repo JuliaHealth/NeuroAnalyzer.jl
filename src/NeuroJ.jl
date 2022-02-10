@@ -90,6 +90,9 @@ export eeg_entropy
 export eeg_band
 export eeg_coherence
 export eeg_freqs
+export eeg_pca
+export eeg_difference
+
 include("eeg_io.jl")
 export eeg_import_edf
 export eeg_load
@@ -133,6 +136,7 @@ export signal_mi
 export signal_entropy
 export signal_average
 export signal_coherence
+export signal_pca
 
 include("misc.jl")
 export cart2pol

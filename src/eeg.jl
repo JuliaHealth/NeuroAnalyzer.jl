@@ -1151,7 +1151,7 @@ function eeg_band(band::Symbol)
         println("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher.")
         return
     end
-    band === :deta && (band_frequency = (0.5, 4))
+    band === :delta && (band_frequency = (0.5, 4))
     band === :theta && (band_frequency = (4, 8))
     band === :alpha && (band_frequency = (8, 13))
     band === :beta && (band_frequency = (14, 30))
@@ -1226,4 +1226,59 @@ function eeg_freqs(eeg::EEG)
     hz, nyq = freqs(eeg.eeg_signals[1, :, 1], eeg_samplingrate(eeg))
 
     return hz, nyq
+end
+
+"""
+    eeg_pca(eeg1, eeg2; n)
+
+Calculates `n` first PCAs for `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::EEG`
+- `eeg2::EEG`
+- `n::Int64` - number of PCs
+
+# Returns
+
+- `pc::Array{Float64, 4}:` - n × PC × channel × epoch
+- `pc_var::Vector{Float64}` - PC variances × channel × epoch
+"""
+function eeg_pca(eeg1::EEG, eeg2::EEG; n::Int64)
+    pc, pca_var = signal_pca(eeg1.eeg_signals, eeg2.eeg_signals, n=n)
+
+    return pc, pca_var
+end
+
+"""
+    eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
+
+Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::EEG`
+- `eeg2::EEG`
+- `n::Int64` - number of bootstraps
+- `method::Symbol[:absdiff, :diff2int]`
+    - `:absdiff` - maximum difference
+    - `:diff2int` - integrated area of the squared difference
+
+# Returns
+
+- `signals_statistic::Matrix{Float64}`
+- `signals_statistic_single::Vector{Float64}`
+- `p::Vector{Float64}`
+"""
+function eeg_difference(eeg1::EEG, eeg2::EEG; n::Int64=3, method::Symbol=:absdiff)
+    epochs_no = size(eeg1.eeg_signals, 3)
+    signals_statistic = zeros(epochs_no, size(eeg1.eeg_signals, 1) * n)
+    signals_statistic_single = zeros(epochs_no)
+    p = zeros(epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        signals_statistic[epoch, :], signals_statistic_single[epoch], p[epoch] = signal_difference(eeg1.eeg_signals[:, :, epoch], eeg2.eeg_signals[:, :, epoch], n=n, method=method)
+    end
+
+    return signals_statistic, signals_statistic_single, p
 end

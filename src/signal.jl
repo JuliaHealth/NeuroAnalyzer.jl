@@ -286,14 +286,14 @@ function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
 end
 
 """
-    signal_ci95(signal; n=3, method=:normal)
+    signal_ci95(signal; n::Int64=3, method=:normal)
 
 Calculates mean, std and 95% confidence interval for `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
-- `n::Int` - number of bootstraps
+- `n::Int64` - number of bootstraps
 - `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 
 # Returns
@@ -323,7 +323,7 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `n::Int` - number of bootstraps
+- `n::Int64` - number of bootstraps
 - `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 
 # Returns
@@ -362,14 +362,14 @@ function signal_ci95(signal::Matrix{Float64}; n::Int=3, method::Symbol=:normal)
 end
 
 """
-    signal_ci95(signal; n=3, method=:normal)
+    signal_ci95(signal; n::Int64=3, method=:normal)
 
 Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `n::Int` - number of bootstraps
+- `n::Int64` - number of bootstraps
 - `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
 
 # Returns
@@ -475,7 +475,7 @@ function signal_mean(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 end
 
 """
-    signal_difference(signal1, signal2; n=3, method=:absdiff)
+    signal_difference(signal1, signal2; n::Int64=3, method=:absdiff)
 
 Calculates mean difference and 95% confidence interval for 2 signals.
 
@@ -483,7 +483,7 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 - `signal1::Matrix{Float64}`
 - `signal2:Matrix{Float64}`
-- `n::Int` - number of bootstraps.
+- `n::Int64` - number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
     - `:absdiff` - maximum difference
     - `:diff2int` - integrated area of the squared difference
@@ -494,7 +494,7 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 - `signals_statistic_single::Float64`
 - `p::Float64`
 """
-function signal_difference(signal1::Matrix{Float64}, signal2::Matrix{Float64}; n=3, method::Symbol=:absdiff)
+function signal_difference(signal1::Matrix{Float64}, signal2::Matrix{Float64}; n::Int64=3, method::Symbol=:absdiff)
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("Method must be :absdiff or :diff2int."))
 
@@ -547,7 +547,7 @@ function signal_difference(signal1::Matrix{Float64}, signal2::Matrix{Float64}; n
 end
 
 """
-    signal_difference(signal1, signal2; n=3, method=:absdiff)
+    signal_difference(signal1, signal2; n::Int64=3, method=:absdiff)
 
 Calculates mean difference and 95% confidence interval for 2 signals.
 
@@ -555,7 +555,7 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 - `signal1::Array{Float64, 3}`
 - `signal2:Array{Float64, 3}`
-- `n::Int` - number of bootstraps.
+- `n::Int64` - number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
     - `:absdiff` - maximum difference
     - `:diff2int` - integrated area of the squared difference
@@ -566,7 +566,7 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 - `signals_statistic_single::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function signal_difference(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n=3, method::Symbol=:absdiff)
+function signal_difference(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("Method must be :absdiff or :diff2int."))
 
@@ -693,7 +693,7 @@ Calculates cross-covariance between `signal1` and `signal2`.
 - `lags::Vector{Int64}`
 """
 function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
-    length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
+    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1."))
 
     lags = collect(-lag:lag)
@@ -849,7 +849,7 @@ function signal_spectrum(signal::Vector{Float64}; pad::Int64=0)
     signal_powers = signal_amplitudes.^2
 
     # phases
-    signal_phases = atan.(imag(signal_fft), real(signal_fft))
+    signal_phases = angle(signal_fft)
 
     return signal_fft, signal_amplitudes, signal_powers, signal_phases
 end
@@ -1241,6 +1241,7 @@ Removes mean value (DC offset) from the `signal`.
 """
 function signal_demean(signal::Vector{Float64})
     signal_dem = signal .- mean(signal)
+
     return signal_dem
 end
 
@@ -1377,12 +1378,12 @@ Calculates covariance between `signal1` and `signal2`.
 - `cov_mat::Matrix{Float64}`
 """
 function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normalize::Bool=true)
-    length(signal1) != length(signal2) && throw(ArgumentError("Both vectors must be of the same as length."))
+    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
 
     cov_mat = cov(signal1 * signal2')
 
-    # divide so that components are centered at (0, 0)
-    normalize == true && (cov_mat = cov_mat ./ length(signal1))
+    # normalize so that components are centered at (0, 0)
+    normalize == true && (cov_mat = cov_mat ./ (length(signal1) - 1))
 
     return cov_mat
 end
@@ -1410,8 +1411,8 @@ function signal_cov(signal::Array{Float64, 3}; normalize::Bool=true)
         cov_mat[:, :, epoch] = cov(signal[:, :, epoch]')
     end
 
-    # divide so that components are centered at (0, 0)
-    normalize == true && (cov_mat = cov_mat ./ size(cov_mat, 2))
+    # normalize so that components are centered at (0, 0)
+    normalize == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
 
     return cov_mat
 end
@@ -2160,7 +2161,7 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 end
 
 """
-    signal_trim(signal::Vector{Float64}; trim_len::Int64)
+    signal_trim(signal; trim_len::Int64)
 
 Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -2191,7 +2192,7 @@ end
 
 
 """
-    signal_trim(signal::Array{Float64, 3}; trim_len, offset=0, from=:start)
+    signal_trim(signal; trim_len, offset=0, from=:start)
 
 Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -2476,4 +2477,78 @@ function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}
     end
 
     return coherence
+end
+
+
+"""
+   signal_pca(signal1, signal2; n)
+
+Calculates `n` first PCAs for `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+- `n::Int64` - number of PCs
+
+# Returns
+
+- `pc::Matrix{Float64}`
+- `pc_var::Vector{Float64}`
+"""
+function signal_pca(signal1::Vector{Float64}, signal2::Vector{Float64}; n::Int64)
+    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
+    n < 0 && throw(ArgumentError("Number of PCs must be ≥ 1."))
+    n > length(signal1) && throw(ArgumentError("Number of PCs cannot be higher than signal length."))
+
+    signal1 = signal_demean(signal1)
+    signal2 = signal_demean(signal2)
+
+    cov_mat = signal_cov(signal1, signal2, normalize=true)
+
+    eig_val, eig_vec = eigen(cov_mat)                       # eig_vec columns = PCs
+    eig_val = 100 .* (eig_val ./ sum(eig_val))              # convert to % of variance
+    eig_val = reverse!(eig_val)
+
+    pc_var = zeros(n)
+    pc = zeros(n, (length(signal1)))
+    for idx in 1:n
+        pc_var[idx] = eig_val[idx]
+        pc[idx, :] = eig_vec[:, idx]
+    end
+
+    return pc, pc_var
+end
+
+"""
+    signal_pca(signal1, signal2; n)
+
+Calculates `n` first PCAs for `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Array{Float64, 3}`
+- `signal2::Array{Float64, 3}`
+- `n::Int64` - number of PCs
+
+# Returns
+
+- `pc::Array{Float64, 4}:` - n × PC × channel × epoch
+- `pc_var::Vector{Float64}` - pc_var × channel × epoch
+"""
+function signal_pca(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::Int64)
+    size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
+
+    channels_no = size(signal1, 1)
+    epochs_no = size(signal1, 3)
+    pc = zeros(n, size(signal1, 2), channels_no, epochs_no)
+    pc_var = zeros(n, channels_no, epochs_no)
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            pc[:, :, idx, epoch], pc_var[:, idx, epoch] = signal_pca(signal1[idx, :, epoch], signal2[idx, :, epoch], n=n)
+        end
+    end
+
+    return pc, pc_var
 end

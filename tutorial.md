@@ -341,6 +341,37 @@ m = eeg_coherence(edf_alpha, channel1=1, channel2=2)
 plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 ```
 
+PCA:
+```julia
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf1 = eeg_epochs(edf1, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf1 = eeg_keep_channel(edf1, 3)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf2 = eeg_epochs(edf2, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf2 = eeg_keep_channel(edf2, 4)
+pc, pc_var = eeg_pca(edf1, edf2, n=4)
+plot(pc[1, :, 1, 1])
+bar(vec(pc_var))
+```
+
+Comparing two signals:
+```julia
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf1 = eeg_epochs(edf1, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf1 = eeg_keep_channel(edf1, 3)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf2 = eeg_epochs(edf2, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf2 = eeg_keep_channel(edf2, 4)
+signals_statistic, signals_statistic_single, p = eeg_difference(edf1, edf2, method=:absdiff)
+signals_statistic, signals_statistic_single, p = eeg_difference(edf1, edf2, method=:diff2int)
+# the distribution of bootstrapped signal statistic
+histogram(signals_statistic)
+# statistic for signal1 and signal2
+vline!([signals_statistic_single])
+signals_statistic_single
+p
+```
+
 Misc:
 ```julia
 eeg_band(:alpha)

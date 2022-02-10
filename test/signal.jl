@@ -242,4 +242,11 @@ s = signal_coherence(signal_v1, signal_v2)
 s = signal_coherence(signal_a1, signal_a2)
 @test size(s) == (2, 101, 2)
 
+p, v = signal_pca(signal_v1, signal_v2, n=2)
+@test size(p) == (2, 101)
+@test size(v) == (2, )
+p, v = signal_pca(signal_a1, signal_a2, n=2)
+@test size(p) == (2, 101, 2, 2)
+@test size(v) == (2, 2, 2)
+
 true
