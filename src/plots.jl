@@ -1,34 +1,34 @@
 """
-    signal_plot(t, signal; offset=0, labels=[], normalize=true, xlabel="Time [s]", ylabel="Amplitude [μV]", title="Signal plot", yamp=nothing)
+    signal_plot(t, signal; offset=0, labels=[], normalize=true, xlabel="Time [s]", ylabel="Amplitude [μV]", title="Signal plot", ylim=nothing)
 
 Plots `signal` against time vector `t`.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}` - the time vector
-- `signal::Vector{Float64}` - the signal vector
+- `signal::Vector{Float64}`
 - `offset::Int64` - displayed segment offset in samples
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 
 # Returns
 
 - `p::Plot`
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=String[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; offset::Int64=0, labels::Vector{String}=String[], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Signal plot", ylim::Union{Int64, Float64, Nothing}=nothing)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
 
     if typeof(t) <: AbstractRange
         t = float(collect(t))
     end
 
-    if yamp === nothing
-        yamp = maximum(signal) * 1.5
-        yamp = ceil(Int64, yamp)
+    if ylim === nothing
+        ylim = maximum(signal) * 1.5
+        ylim = ceil(Int64, ylim)
     end
 
     p = plot(t,
@@ -37,7 +37,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
              ylabel=ylabel,
              label="",
              xlims=(floor(t[1]), ceil(t[end])),
-             ylims=(-yamp, yamp),
+             ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
              size=(1200, 800))
@@ -416,7 +416,7 @@ function filter_response(;fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64
 end
 
 """
-    signal_plot_avg(t, signal; offset=0, len=10, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Averaged signal and 95% CI plot", yamp=nothing)
+    signal_plot_avg(t, signal; offset=0, len=10, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Averaged signal and 95% CI plot", ylim=nothing)
 
 Plots averaged `signal` channels.
 
@@ -430,13 +430,13 @@ Plots averaged `signal` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 
 # Returns
 
 - `p::Plot`
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", ylim::Union{Int64, Float64, Nothing}=nothing)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
@@ -452,16 +452,16 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     
     signal_normalized_m, signal_normalized_s, signal_normalized_u, signal_normalized_l = signal_ci95(signal_normalized)
 
-    if yamp === nothing
-        yamp = maximum(signal_normalized_u)
-        yamp = ceil(Int64, yamp)
+    if ylim === nothing
+        ylim = maximum(signal_normalized_u)
+        ylim = ceil(Int64, ylim)
     end
 
     # plot channels
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             ylims=(-yamp, yamp),
+             ylims=(-ylim, ylim),
              title=title,
              palette=:darktest)
     p = plot!(t,
@@ -504,14 +504,14 @@ Plots averaged `eeg` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 - `figure::String` - name of the output figure file
 
 # Returns
 
 - `p::Plot`
 """
-function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", yamp::Union{Int64, Float64, Nothing}=nothing, figure::String="")
+function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", ylim::Union{Int64, Float64, Nothing}=nothing, figure::String="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
@@ -565,7 +565,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
                         xlabel=xlabel,
                         ylabel=ylabel,
                         title=title,
-                        yamp=yamp)
+                        ylim=ylim)
 
     # add epochs markers
     if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
@@ -589,7 +589,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
 end
 
 """
-    signal_plot_butterfly(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Butterfly plot", yamp=nothing)
+    signal_plot_butterfly(t, signal; offset=0, labels=[""], normalize=true, xlabel"Time [s]", ylabel="Channels", title="Butterfly plot", ylim=nothing)
 
 Butterfly plot of `signal` channels.
 
@@ -604,13 +604,13 @@ Butterfly plot of `signal` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 
 # Returns
 
 - `p::Plot`
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Int64, Float64, Nothing}=nothing)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Union{Int64, Float64, Nothing}=nothing)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
@@ -624,9 +624,9 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
         signal_normalized = signal
     end
 
-    if yamp === nothing
-        yamp = maximum(signal_normalized) * 1.5
-        yamp = ceil(Int64, yamp)
+    if ylim === nothing
+        ylim = maximum(signal_normalized) * 1.5
+        ylim = ceil(Int64, ylim)
     end
 
     if labels == [""]
@@ -640,7 +640,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             ylims=(-yamp, yamp),
+             ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
              size=(1200, 800))
@@ -656,7 +656,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; t, epoch=1, channels=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", yamp=nothing, , head=false, figure="")
+    eeg_plot_butterfly(eeg; t, epoch=1, channels=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", ylim=nothing, , head=false, figure="")
 
 Butterfly plot of `eeg` channels.
 
@@ -673,7 +673,7 @@ Butterfly plot of `eeg` channels.
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
-- `yamp::Union{Int64, Float64, Nothing}` - y-axis limits (-yamp:yamp)
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 - `head::Bool` - add head with electrodes
 - `figure::String` - name of the output figure file
 
@@ -681,7 +681,7 @@ Butterfly plot of `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", yamp::Union{Int64, Float64, Nothing}=nothing, head::Bool=false, figure::String="")
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Union{Int64, Float64, Nothing}=nothing, head::Bool=false, figure::String="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
@@ -736,7 +736,7 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, N
                               xlabel=xlabel,
                               ylabel=ylabel,
                               title=title,
-                              yamp=yamp)
+                              ylim=ylim)
 
     # add epochs markers
     if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
@@ -1150,6 +1150,139 @@ function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float6
         push!(p, plot(lags, cov_m[idx, :], title="ch: $(labels[idx])", label="", titlefontsize=6, xtickfontsize=4, ytickfontsize=4, lw=0.5))
     end
     p = plot(p...)
+
+    if figure !== ""
+        isfile(figure) && @warn "File $figure cannot be saved."
+        savefig(p, figure)
+    end
+
+    return p
+end
+
+"""
+    signal_plot_spectrogram(signal; fs, offset=0, len=nothing, normalize=true, ylim=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram")
+
+Plots spectrogram of `signal`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `fs::Int64` - sampling frequency
+- `offset::Int64` - displayed segment offset in samples
+- `len::Int64` - displayed segment length in samples
+- `normalize::Bool` - normalize powers to dB
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (0:ylim) Hz
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `title::String` - plot title
+
+# Returns
+
+- `p::Plot`
+"""
+function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, len::Union{Int64, Float64, Nothing}=nothing, normalize::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram")
+    fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
+    offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
+    (len !== nothing && len < 0) && throw(ArgumentError("Segment length must be ≥ 1."))
+    ylim > fs / 2 && throw(ArgumentError("ylim must be smaller than Nyquist frequency ($(fs/2) Hz)."))
+
+    len === nothing && (len = length(signal) - offset)
+    interval = fs
+    overlap = round(Int64, fs * 0.95)
+    nfft = fs
+    signal = signal_demean(signal[(1 + offset):(offset + len)])
+    ylim === nothing && (ylim = fs/2)
+    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    t = collect(spec.time) .+ (offset / fs)
+    if normalize == false
+        p = heatmap(t, spec.freq, spec.power, xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), title=title, colorbar_title = "Power [μV^2/Hz]")
+    else
+        # in dB
+        p = heatmap(t, spec.freq, pow2db.(spec.power), xguide="Time [s]", yguide="Frequency [Hz]", ylim=(0, ylim), title=title, colorbar_title = "Power [dB]")
+    end
+
+    return p
+end
+
+"""
+    eeg_plot_spectrogram(eeg; channel, epoch=1, offset=0, len=10, normalize=true, title="Signal plot", ylim=nothing)
+
+Plots `signal` against time vector `t`.
+
+# Arguments
+
+- `eeg:EEG`
+- `fs::Int64` - sampling frequency
+- `offset::Int64` - displayed segment offset in samples
+- `len::Int64` - displayed segment length in seconds
+- `normalize::Bool` - normalize powers to dB
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (0:ylim) Hz
+- `xlabel::String` - x-axis label
+- `ylabel::String` - y-axis label
+- `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (0:ylim)
+- `figure::String` - name of the output figure file
+
+# Returns
+
+- `p::Plot`
+"""
+function eeg_plot_spectrogram(eeg::EEG; channel::Int64, epoch::Int64=1, offset::Int64=0, len::Union{Int64, Float64, Nothing}=nothing, normalize::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", figure="")
+    offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
+    (len !== nothing && len <= 0) && throw(ArgumentError("Segment length must be ≥ 1."))
+
+    fs = eeg_samplingrate(eeg)
+    len === nothing && (len = floor(Int64, eeg.eeg_header[:epoch_duration_seconds] - (offset * fs)))
+    len *= fs
+    interval = fs
+    overlap = round(Int64, fs * 0.5)
+    nfft = fs
+    ylim === nothing && (ylim = fs/2)
+
+    # get epochs markers for len > epoch_len
+    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_samples]
+        eeg_tmp = eeg_epochs(eeg, epochs_no=1)
+        epochs_len = size(eeg.eeg_signals, 2)
+        epochs_no = size(eeg.eeg_signals, 3)
+        epochs_markers = collect(1:epochs_len:epochs_len * epochs_no)[2:end] 
+        epochs_markers = floor.(Int64, (epochs_markers ./ eeg_samplingrate(eeg)))
+    else
+        eeg_tmp = eeg
+    end
+
+    if epoch < 1 || epoch > eeg_tmp.eeg_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+
+    signal = eeg_tmp.eeg_signals[channel, :, epoch]
+
+    len > eeg_tmp.eeg_header[:epoch_duration_samples] && (len = round(Int64, eeg_tmp.eeg_header[:epoch_duration_samples]))
+    if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value out of range."))
+    end
+    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("Offset value or length value out of range."))
+
+    p = signal_plot_spectrogram(signal,
+                                fs=fs,
+                                offset=offset,
+                                len=len,
+                                normalize=normalize,
+                                xlabel=xlabel,
+                                ylabel=ylabel,
+                                ylim=ylim,
+                                title=title)
+
+    # add epochs markers
+    if (len + offset) > eeg.eeg_header[:epoch_duration_samples]
+        p = vline!(p,
+                   epochs_markers[floor(Int64, 1 + (offset / epochs_len)):floor(Int64, (len + offset) / epochs_len)],
+                   timeseries=:vline,
+                   linestyle=:dash,
+                   linewidth=0.5,
+                   linecolor=:black,
+                   label="")
+    end
+
+    plot(p)
 
     if figure !== ""
         isfile(figure) && @warn "File $figure cannot be saved."

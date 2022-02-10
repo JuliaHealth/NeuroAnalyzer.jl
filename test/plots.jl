@@ -68,4 +68,9 @@ p = eeg_plot_covmatrix(edf, cc, lags, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
+p = eeg_plot_spectrogram(edf, channel=1, figure="test.png")
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+@test isfile("test.png") == true
+isfile("test.png") && rm("test.png")
+
 true

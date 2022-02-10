@@ -849,7 +849,7 @@ function signal_spectrum(signal::Vector{Float64}; pad::Int64=0)
     signal_powers = signal_amplitudes.^2
 
     # phases
-    signal_phases = angle(signal_fft)
+    signal_phases = angle.(signal_fft)
 
     return signal_fft, signal_amplitudes, signal_powers, signal_phases
 end

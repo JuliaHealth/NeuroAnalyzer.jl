@@ -286,6 +286,12 @@ f4 = eeg_extract_channel(edf, 4)
 signal_psd(f4, fs=256)
 signal_plot_psd(f3, fs=256)
 signal_plot_psd(f4, fs=256)
+
+eeg_plot_spectrogram(edf, channel=9, normalize=true)
+eeg_plot_spectrogram(e10, channel=9, normalize=true, epoch=3)
+eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40, len=75)
+eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40, len=80, offset=18*256)
+eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40)
 ```
 
 Electrode positioning:
@@ -356,19 +362,21 @@ bar(vec(pc_var))
 
 Comparing two signals:
 ```julia
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:delta), order=8)
 edf1 = eeg_epochs(edf1, epochs_len=10*eeg_samplingrate(edf1), average=true)
-edf1 = eeg_keep_channel(edf1, 3)
+edf1 = eeg_keep_channel(edf1, 4)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
 edf2 = eeg_epochs(edf2, epochs_len=10*eeg_samplingrate(edf1), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
-signals_statistic, signals_statistic_single, p = eeg_difference(edf1, edf2, method=:absdiff)
-signals_statistic, signals_statistic_single, p = eeg_difference(edf1, edf2, method=:diff2int)
+s, ss, p = eeg_difference(edf1, edf2, n=10, method=:absdiff)
+s, ss, p = eeg_difference(edf1, edf2, n=10, method=:diff2int)
 # the distribution of bootstrapped signal statistic
-histogram(signals_statistic)
+histogram(s)
 # statistic for signal1 and signal2
-vline!([signals_statistic_single])
-signals_statistic_single
+vline!([ss])
+# how many % of bootstrapped signal statistic are > statistic for signal1 and signal2
+ss
+# if p < alpha → signals are different
 p
 ```
 
