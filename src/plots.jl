@@ -112,7 +112,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    eeg_plot(eeg; t, epoch=1, channels=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Signal plot", head=false, figure="")
+    eeg_plot(eeg; t, epoch=1, channel=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Signal plot", head=false, figure="")
 
 Plots `eeg` channels.
 
@@ -121,7 +121,7 @@ Plots `eeg` channels.
 - `eeg::EEG` - EEG object
 - `t::Union{Vector{Float64}, AbstractRange, Nothing}` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channels to display
+- `channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channel to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Int64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -136,31 +136,31 @@ Plots `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", head::Bool=true, figure::String="")
+function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=true, xlabel::String="Time [s]", ylabel::String="Channels", title::String="Signal plot", head::Bool=true, figure::String="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
     # select channels, default is 1:20 or all channels
-    if channels === nothing
+    if channel === nothing
         if eeg.eeg_header[:channels_no] >= 20
-            channels = 1:20
+            channel = 1:20
         else
-            channels = 1:eeg.eeg_header[:channels_no]
+            channel = 1:eeg.eeg_header[:channels_no]
         end
     end
 
     # get epochs markers for len > epoch_len
     if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epochs_no=1)
         epochs_len = size(eeg.eeg_signals, 2)
         epochs_no = size(eeg.eeg_signals, 3)
         epochs_markers = collect(1:epochs_len:epochs_len * epochs_no)[2:end] 
         epochs_markers = floor.(Int64, (epochs_markers ./ eeg_samplingrate(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epochs_no]
@@ -208,7 +208,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=no
 
     if head == true
         p = plot(p)
-        h = eeg_plot_electrodes(eeg, labels=false, selected=channels, small=true)
+        h = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true)
         e = plot(grid=false, framestyle=:none)
         l = @layout @layout [a b{0.15w}; c{0.85h}]
         p = plot(e, h, p, layout=l, left_margin=20px, bottom_margin=10px)
@@ -488,7 +488,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 end
 
 """
-    eeg_plot_avg(eeg; t, epoch=1, channels=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Averaged signal and 95% CI plot", figure="")
+    eeg_plot_avg(eeg; t, epoch=1, channel=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Averaged signal and 95% CI plot", figure="")
 
 Plots averaged `eeg` channels.
 
@@ -497,7 +497,7 @@ Plots averaged `eeg` channels.
 - `eeg::EEG` - EEG object
 - `t::Union{Vector{Float64}, AbstractRange, Nothing, Nothing` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channels to display
+- `channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channel to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Int64` - length in seconds
 - `normalize::Bool` - normalize the `signal` prior to calculations
@@ -511,31 +511,31 @@ Plots averaged `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", ylim::Union{Int64, Float64, Nothing}=nothing, figure::String="")
+function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", ylim::Union{Int64, Float64, Nothing}=nothing, figure::String="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
     # select channels, default is 1:20 or all channels
-    if channels === nothing
+    if channel === nothing
         if eeg.eeg_header[:channels_no] >= 20
-            channels = 1:20
+            channel = 1:20
         else
-            channels = 1:eeg.eeg_header[:channels_no]
+            channel = 1:eeg.eeg_header[:channels_no]
         end
     end
 
     # get epochs markers for len > epoch_len
     if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epochs_no=1)
         epochs_len = size(eeg.eeg_signals, 2)
         epochs_no = size(eeg.eeg_signals, 3)
         epochs_markers = collect(1:epochs_len:epochs_len * epochs_no)[2:end] 
         epochs_markers = floor.(Int64, (epochs_markers ./ eeg_samplingrate(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epochs_no]
@@ -656,7 +656,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; t, epoch=1, channels=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", ylim=nothing, , head=false, figure="")
+    eeg_plot_butterfly(eeg; t, epoch=1, channel=nothing, offset=0, len=10, labels=[""], normalize=true, xlabel="Time [s]", ylabel="Channels", title="Butterfly plot", ylim=nothing, , head=false, figure="")
 
 Butterfly plot of `eeg` channels.
 
@@ -665,7 +665,7 @@ Butterfly plot of `eeg` channels.
 - `eeg::EEG` - EEG object
 - `t::Union{Vector{Float64}, AbstractRange, Nothing` - the time vector
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channels to display
+- `channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channel to display
 - `offset::Int64` - displayed segment offset in samples
 - `len::Int64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
@@ -681,31 +681,31 @@ Butterfly plot of `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Union{Int64, Float64, Nothing}=nothing, head::Bool=false, figure::String="")
+function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Union{Int64, Float64, Nothing}=nothing, head::Bool=false, figure::String="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
     # select channels, default is 1:20 or all channels
-    if channels === nothing
+    if channel === nothing
         if eeg.eeg_header[:channels_no] >= 20
-            channels = 1:20
+            channel = 1:20
         else
-            channels = 1:eeg.eeg_header[:channels_no]
+            channel = 1:eeg.eeg_header[:channels_no]
         end
     end
 
     # get epochs markers for len > epoch_len
     if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epochs_no=1)
         epochs_len = size(eeg.eeg_signals, 2)
         epochs_no = size(eeg.eeg_signals, 3)
         epochs_markers = collect(1:epochs_len:epochs_len * epochs_no)[2:end] 
         epochs_markers = floor.(Int64, (epochs_markers ./ eeg_samplingrate(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channels)
+        eeg_tmp = eeg_keep_channel(eeg, channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epochs_no]
@@ -754,7 +754,7 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, N
 
     if head == true
         p = plot(p)
-        h = eeg_plot_electrodes(eeg, labels=false, selected=channels, small=true)
+        h = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true)
         e = plot(grid=false, framestyle=:none)
         l=@layout @layout [a b{0.15w}; c{0.85h}]
         p = plot(e, h, p, layout=l, left_margin=20px, bottom_margin=10px)
@@ -944,7 +944,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=fal
 end
 
 """
-    eeg_plot_psd(eeg; t, epoch=1, channels=nothing, labels=[""], normalize=false, average=false, frq_lim=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD", head=false, figure="")
+    eeg_plot_psd(eeg; t, epoch=1, channel=nothing, labels=[""], normalize=false, average=false, frq_lim=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="PSD", head=false, figure="")
 
 Plots power spectrum density.
 
@@ -952,7 +952,9 @@ Plots power spectrum density.
 
 - `eeg::EEG` - EEG object
 - `epoch::Int64` - epoch number to display
-- `channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channels to display
+- `channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channel to display
+- `offset::Int64` - displayed segment offset in samples
+- `len::Int64` - length in seconds
 - `labels::Vector{String}` - channel labels vector
 - `normalize::Bool` - normalize the `signal` prior to calculations
 - `average::Bool` - plots average power and 95%CI for all channels
@@ -967,19 +969,35 @@ Plots power spectrum density.
 
 - `p::Plot`
 """
-function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, labels::Vector{String}=[""], normalize::Bool=false, average::Bool=false, frq_lim::Union{Int64, Float64, Nothing}=nothing, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", head::Bool=false, figure::String="")
+function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}= nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], normalize::Bool=false, average::Bool=false, frq_lim::Union{Int64, Float64, Nothing}=nothing, xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="PSD", head::Bool=false, figure::String="")
     frq_lim === nothing || (frq_lim < 0 && throw(ArgumentError("Frequency limit rate must be ≥ 0.")))
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
     end
 
     # select channels, default is all channels
-    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
-    eeg_tmp = eeg_keep_channel(eeg, channels)
+    channel === nothing && (channel = 1:eeg.eeg_header[:channels_no])
+    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+        eeg_tmp = eeg_keep_channel(eeg, channel)
+        eeg_tmp = eeg_epochs(eeg_tmp, epochs_no=1)
+    else
+        eeg_tmp = eeg_keep_channel(eeg, channel)
+    end
 
-    eeg_tmp = eeg_keep_channel(eeg, channels)
-    signal = eeg_tmp.eeg_signals[:, :, epoch]
+    if epoch < 1 || epoch > eeg_tmp.eeg_header[:epochs_no]
+        throw(ArgumentError("Epoch index out of range."))
+    end
+    len > eeg_tmp.eeg_header[:epoch_duration_seconds] && (len = eeg_tmp.eeg_header[:epoch_duration_seconds])
+    if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value out of range."))
+    end
+    if offset + (len * eeg_samplingrate(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
+        throw(ArgumentError("Offset value or length value out of range."))
+    end
+
     fs = eeg_samplingrate(eeg_tmp)
+    len *= fs
+    signal = eeg_tmp.eeg_signals[:, (1 + offset):(offset + len), epoch]
     labels = eeg_tmp.eeg_header[:labels]
 
     p = signal_plot_psd(signal,
@@ -997,7 +1015,7 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Int64, Vector{Fl
 
     if head == true
         p = plot(p)
-        h = eeg_plot_electrodes(eeg, labels=false, selected=channels, small=true)
+        h = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true)
         e = plot(grid=false, framestyle=:none)
         l=@layout @layout [a b{0.15w}; c{0.85h}]
         p = plot(e, h, p, layout=l, left_margin=20px, bottom_margin=10px)
@@ -1015,15 +1033,15 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channels::Union{Int64, Vector{Fl
 end
 
 """
-    eeg_plot_electrodes(eeg; channels, labels=true, head=true, head_labels=false, small=false)
+    eeg_plot_electrodes(eeg; channel, labels=true, head=true, head_labels=false, small=false)
 
 Plots electrodes.
 
 # Arguments
 
 - `eeg:EEG`
-- `channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channels to display
-- `selected::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - which channels should be highlighted
+- `channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - channel to display
+- `selected::Union{Int64, Vector{Float64}, AbstractRange, Nothing}` - which channel should be highlighted
 - `labels::Bool` - plot electrode labels
 - `head::Bool` - plot head
 - `head_labels::Bool` - plot head labels
@@ -1033,13 +1051,13 @@ Plots electrodes.
 
 - `p::Plot`
 """
-function eeg_plot_electrodes(eeg::EEG; channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, selected::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false)
+function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, selected::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false)
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
 
     # select channels, default is all channels
     selected === nothing && (selected = 1:eeg.eeg_header[:channels_no])
-    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
-    eeg_tmp = eeg_keep_channel(eeg, channels)
+    channel === nothing && (channel = 1:eeg.eeg_header[:channels_no])
+    eeg_tmp = eeg_keep_channel(eeg, channel)
 
     loc_x = eeg_tmp.eeg_header[:xlocs]
     loc_y = eeg_tmp.eeg_header[:ylocs]
@@ -1127,7 +1145,7 @@ Plots matrix `m` of `eeg` signals.
 - `eeg:EEG`
 - `cov_m::Union{Matrix{Float64}, Array{Float64, 3}}` - covariance matrix
 - `lags::Union{Vector{Int64}, Vector{Float64}}` - covariance matrix
-- `channels::Union{Int64, Vector{Float64}, UnitRange{Int64}, Nothing}` - channels to display
+- `channel::Union{Int64, Vector{Float64}, UnitRange{Int64}, Nothing}` - channel to display
 - `epoch::Int64` - epoch number to display
 - `figure::String` - name of the output figure file
 
@@ -1135,18 +1153,18 @@ Plots matrix `m` of `eeg` signals.
 
 - `p::Plot`
 """
-function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channels::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, figure::String="")
+function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, figure::String="")
     if epoch < 1 || epoch > eeg.eeg_header[:epochs_no]
         throw(ArgumentError("Epoch index out of range."))
     end
 
     # select channels
-    channels === nothing && (channels = 1:eeg.eeg_header[:channels_no])
+    channel === nothing && (channel = 1:eeg.eeg_header[:channels_no])
 
     labels = eeg_labels(eeg)
     ndims(cov_m) == 3 && (cov_m = cov_m[:, :, epoch])
     p = [] 
-    for idx in channels
+    for idx in channel
         push!(p, plot(lags, cov_m[idx, :], title="ch: $(labels[idx])", label="", titlefontsize=6, xtickfontsize=4, ytickfontsize=4, lw=0.5))
     end
     p = plot(p...)
@@ -1189,9 +1207,9 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     len === nothing && (len = length(signal) - offset)
     signal = signal_demean(signal[(1 + offset):(offset + len)])
 
-    interval = fs
     nfft = length(signal)
-    overlap = round(Int64, fs * 0.95)
+    interval = fs
+    overlap = round(Int64, fs * 0.85)
 
     ylim === nothing && (ylim = fs/2)
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
@@ -1228,16 +1246,13 @@ Plots `signal` against time vector `t`.
 
 - `p::Plot`
 """
-function eeg_plot_spectrogram(eeg::EEG; channel::Int64, epoch::Int64=1, offset::Int64=0, len::Union{Int64, Float64, Nothing}=nothing, normalize::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", figure="")
+function eeg_plot_spectrogram(eeg::EEG; channel::Int64, epoch::Int64=1, offset::Int64=0, len::Int64=10, normalize::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", figure="")
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     (len !== nothing && len <= 0) && throw(ArgumentError("Segment length must be ≥ 1."))
 
     fs = eeg_samplingrate(eeg)
     len === nothing && (len = floor(Int64, eeg.eeg_header[:epoch_duration_seconds] - (offset * fs)))
     len *= fs
-    interval = fs
-    overlap = round(Int64, fs * 0.5)
-    nfft = fs
     ylim === nothing && (ylim = fs/2)
 
     # get epochs markers for len > epoch_len

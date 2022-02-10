@@ -162,20 +162,20 @@ edf = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp
 Plot:
 ```julia
 eeg_plot(edf)
-eeg_plot(edf, channels=1:4)
+eeg_plot(edf, channel=1:4)
 eeg_plot(edf, offset=20*eeg_samplingrate(edf), len=20)
 eeg_plot(edf, normalize=false)
 eeg_plot(e9, head=true, figure="/tmp/1.png")
 
-eeg_plot_avg(edf, channels=1:4)
+eeg_plot_avg(edf, channel=1:4)
 eeg_plot_avg(edf)
 eeg_plot_avg(e9)
 eeg_plot_avg(e10, len=125)
 eeg_plot_avg(e9, len=5, offset=6 * eeg_samplingrate(e9))
 
 eeg_plot_butterfly(edf)
-eeg_plot_butterfly(edf, offset=20*256, len=120, channels=1:4, normalize=true)
-eeg_plot_butterfly(edf, channels=1:4, normalize=true)
+eeg_plot_butterfly(edf, offset=20*256, len=120, channel=1:4, normalize=true)
+eeg_plot_butterfly(edf, channel=1:4, normalize=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
 e9 = eeg_load_electrode_positions(e9, "locs/standard-10-20-cap19.ced")
@@ -277,10 +277,10 @@ Spectral analysis:
 ```julia
 edf_pow, edf_frq = eeg_psd(edf, normalize=true)
 plot(edf_frq[10, :], edf_pow[10, :])
-eeg_plot_psd(edf, frq_lim=20.0, channels=1:4)
+eeg_plot_psd(edf, frq_lim=20.0, channel=1:4)
 eeg_plot_psd(edf, normalize=true, average=false, frq_lim=50)
 eeg_plot_psd(edf, normalize=true, average=true, frq_lim=20)
-eeg_plot_psd(edf, channels=1:4, average=true)
+eeg_plot_psd(edf, channel=1:4, average=true)
 f3 = eeg_extract_channel(edf, "F3")
 f4 = eeg_extract_channel(edf, 4)
 signal_psd(f4, fs=256)
@@ -288,10 +288,13 @@ signal_plot_psd(f3, fs=256)
 signal_plot_psd(f4, fs=256)
 
 eeg_plot_spectrogram(edf, channel=9, normalize=true)
-eeg_plot_spectrogram(e10, channel=9, normalize=true, len=18)
+eeg_plot_spectrogram(e10, channel=9, normalize=true, len=110)
 eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=80, len=75)
 eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40, len=80, offset=18*256)
 eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40)
+eeg_plot_psd(e10)
+eeg_plot_psd(e10, len=120)
+eeg_plot_psd(edf, len=240, channel=4, frq_lim=20)
 ```
 
 Electrode positioning:
@@ -301,10 +304,10 @@ using NeuroJ
 edf = eeg_import_edf("test/eeg-test-edf.edf")
 edf = eeg_load_electrode_positions(edf, "locs/standard-10-20-cap19.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
-eeg_plot(edf, channels=1:10)
-eeg_plot(edf, channels=1:10, head=false)
-eeg_plot_butterfly(edf, channels=1:10, head=true)
-eeg_plot_psd(edf, normalize=true, channels=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
+eeg_plot(edf, channel=1:10)
+eeg_plot(edf, channel=1:10, head=false)
+eeg_plot_butterfly(e10, channel=1:10, head=true, len=55)
+eeg_plot_psd(edf, normalize=true, channel=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
 eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
 eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
 ```
