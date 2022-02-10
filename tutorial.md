@@ -288,8 +288,8 @@ signal_plot_psd(f3, fs=256)
 signal_plot_psd(f4, fs=256)
 
 eeg_plot_spectrogram(edf, channel=9, normalize=true)
-eeg_plot_spectrogram(e10, channel=9, normalize=true, epoch=3)
-eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40, len=75)
+eeg_plot_spectrogram(e10, channel=9, normalize=true, len=18)
+eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=80, len=75)
 eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40, len=80, offset=18*256)
 eeg_plot_spectrogram(e9, channel=9, normalize=true, ylim=40)
 ```

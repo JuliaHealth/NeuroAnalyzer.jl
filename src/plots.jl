@@ -1187,18 +1187,20 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     ylim > fs / 2 && throw(ArgumentError("ylim must be smaller than Nyquist frequency ($(fs/2) Hz)."))
 
     len === nothing && (len = length(signal) - offset)
-    interval = fs
-    overlap = round(Int64, fs * 0.95)
-    nfft = fs
     signal = signal_demean(signal[(1 + offset):(offset + len)])
+
+    interval = fs
+    nfft = length(signal)
+    overlap = round(Int64, fs * 0.95)
+
     ylim === nothing && (ylim = fs/2)
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
     t = collect(spec.time) .+ (offset / fs)
     if normalize == false
-        p = heatmap(t, spec.freq, spec.power, xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), title=title, colorbar_title = "Power [μV^2/Hz]")
+        p = heatmap(t, spec.freq, spec.power, xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), title=title, colorbar_title = "Power/frequency [μV^2/Hz]")
     else
         # in dB
-        p = heatmap(t, spec.freq, pow2db.(spec.power), xguide="Time [s]", yguide="Frequency [Hz]", ylim=(0, ylim), title=title, colorbar_title = "Power [dB]")
+        p = heatmap(t, spec.freq, pow2db.(spec.power), xguide="Time [s]", yguide="Frequency [Hz]", ylim=(0, ylim), title=title, colorbar_title = "Power/frequency [dB/Hz]")
     end
 
     return p
