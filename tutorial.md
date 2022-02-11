@@ -407,13 +407,13 @@ function eeg_benchmark(n::Int64)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
         tbp = eeg_total_power(e10)
-        ac = eeg_autocov(e10, normalize=false)
+        ac = eeg_autocov(e10, norm=false)
         cc = eeg_crosscov(e10, lag=10, demean=true)
         mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
     end
 end
 @time eeg_benchmark(10)
 # workstation: 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
-# laptop: 108.841515 seconds (117.81 M allocations: 644.318 GiB, 10.23% gc time, 1.06% compilation time)
+# workstation: 83.940243 seconds (116.14 M allocations: 643.699 GiB, 32.21% gc time)
 # laptop: 92.209796 seconds (114.60 M allocations: 642.148 GiB, 10.88% gc time)
 ```

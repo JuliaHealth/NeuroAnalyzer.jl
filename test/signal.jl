@@ -27,10 +27,10 @@ signal_a2 = signal_a .* 0.2
 @test typeof(signal_band_power(signal_v, fs=fs, f1=2, f2=4)) == Float64
 @test size(signal_band_power(signal_a, fs=fs, f1=2, f2=4)) == (2, 2)
 
-signal_fft, signal_sf = signal_make_spectrum(signal_v, fs)
+signal_fft, signal_sf = signal_make_spectrum(signal_v, fs=fs)
 @test size(signal_sf) == (101, )
 
-signal_fft, signal_sf = signal_make_spectrum(signal_a, fs)
+signal_fft, signal_sf = signal_make_spectrum(signal_a, fs=fs)
 @test size(abs.(signal_fft)) == (2, 101, 2)
 @test size(signal_sf) == (2, 101, 2)
 
@@ -230,7 +230,7 @@ e = signal_entropy(signal_a)
 @test size(e) == (2, 2)
 
 s = signal_average(signal_v1, signal_v2)
-@test size(s) == (101,)
+@test size(s) == (101, 1)
 s = signal_average(signal_a1, signal_a2)
 @test size(s) == (2, 101, 2)
 
