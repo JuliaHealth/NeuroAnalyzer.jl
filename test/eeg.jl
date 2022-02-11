@@ -75,7 +75,7 @@ edf1 = eeg_extract_epoch(edf, 1)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_tconv(edf, kernel=generate_hanning(256))
-@test size(edf1.eeg_signals) == (19, 354815, 1)
+@test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
@@ -131,5 +131,8 @@ edf1 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf), average=true)
 p, v = eeg_pca(edf1, edf1, n=2)
 @test size(p) == (2, 2560, 19, 1)
 @test size(v) == (2, 19, 1)
+
+e = eeg_fconv(edf, kernel=[1, 2, 3, 4])
+@test size(edf.eeg_signals) == (19, 354816, 1)
 
 true

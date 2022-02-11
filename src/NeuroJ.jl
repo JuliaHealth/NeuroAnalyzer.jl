@@ -52,6 +52,77 @@ end
 
 export neuroj_version
 
+include("misc.jl")
+export cart2pol
+export cmax
+export cmin
+export demean
+export fft0
+export freqs
+export generate_hanning
+export hildebrand_rule
+export hz2rads
+export ifft0
+export jaccard_similarity
+export k
+export linspace
+export logspace
+export matrix_sort
+export matrix_sortperm
+export generate_morlet
+export nextpow2
+export pad0
+export pol2cart
+export rads2hz
+export rms
+export generate_sinc
+export generate_sine
+export vsearch
+export vsplit
+export z_score
+export zero_pad
+export generate_gaussian
+
+include("signal.jl")
+export signal_add_noise
+export signal_autocov
+export signal_band_power
+export signal_ci95
+export signal_cor
+export signal_cov
+export signal_crosscov
+export signal_demean
+export signal_derivative
+export signal_detrend
+export signal_difference
+export signal_downsample
+export signal_drop_channel
+export signal_epochs
+export signal_filter
+export signal_make_spectrum
+export signal_mean
+export signal_normalize_zscore
+export signal_normalize_minmax
+export signal_psd
+export signal_reference_car
+export signal_reference_channel
+export signal_spectrum
+export signal_taper
+export signal_tconv
+export signal_total_power
+export signal_upsample
+export signal_stationarity_hilbert
+export signal_stationarity_mean
+export signal_stationarity_var
+export signal_stationarity
+export signal_trim
+export signal_mi
+export signal_entropy
+export signal_average
+export signal_coherence
+export signal_pca
+export signal_fconv
+
 include("eeg.jl")
 export eeg_autocov
 export eeg_band_power
@@ -92,85 +163,13 @@ export eeg_coherence
 export eeg_freqs
 export eeg_pca
 export eeg_difference
+export eeg_fconv
 
 include("eeg_io.jl")
 export eeg_import_edf
 export eeg_load
 export eeg_load_electrode_positions
 export eeg_save
-
-include("signal.jl")
-export signal_add_noise
-export signal_autocov
-export signal_band_power
-export signal_ci95
-export signal_cor
-export signal_cov
-export signal_crosscov
-export signal_demean
-export signal_derivative
-export signal_detrend
-export signal_difference
-export signal_downsample
-export signal_drop_channel
-export signal_epochs
-export signal_filter
-export signal_make_spectrum
-export signal_mean
-export signal_normalize_zscore
-export signal_normalize_minmax
-export signal_psd
-export signal_reference_car
-export signal_reference_channel
-export signal_spectrum
-export signal_taper
-export signal_tconv
-export signal_total_power
-export signal_upsample
-export signal_stationarity_hilbert
-export signal_stationarity_mean
-export signal_stationarity_var
-export signal_stationarity
-export signal_trim
-export signal_mi
-export signal_entropy
-export signal_average
-export signal_coherence
-export signal_pca
-
-include("misc.jl")
-export cart2pol
-export cmax
-export cmin
-export demean
-export fft0
-export freqs
-export generate_hanning
-export hildebrand_rule
-export hz2rads
-export ifft0
-export jaccard_similarity
-export k
-export linspace
-export logspace
-export matrix_sort
-export matrix_sortperm
-export generate_morlet
-export nextpow2
-export pad0
-export pol2cart
-export rads2hz
-export rms
-export generate_sinc
-export generate_sine
-export vsearch
-export vsplit
-export z_score
-export zero_pad
-export generate_gaussian
-
-include("nstim.jl")
-export tes_dose
 
 include("plots.jl")
 export eeg_draw_head
@@ -188,5 +187,8 @@ export signal_plot_butterfly
 export signal_plot_psd
 export signal_plot_spectrogram
 export eeg_plot_spectrogram
+
+include("nstim.jl")
+export tes_dose
 
 end

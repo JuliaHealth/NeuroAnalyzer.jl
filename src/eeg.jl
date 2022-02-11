@@ -1282,3 +1282,35 @@ function eeg_difference(eeg1::EEG, eeg2::EEG; n::Int64=3, method::Symbol=:absdif
 
     return signals_statistic, signals_statistic_single, p
 end
+
+"""
+    eeg_fconv(eeg, kernel)
+
+Performs convolution in the time domain.
+
+# Arguments
+
+- `eeg::EEG`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    signal_convoluted = signal_fconv(eeg.eeg_signals, kernel)
+
+    ## EEG signal can only store Float64
+    signal_convoluted = abs.(signal_convoluted)
+
+    # create new dataset
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), signal_convoluted)
+    eeg_new.eeg_header[:eeg_duration_samples] = size(signal_convoluted, 2) * size(signal_convoluted, 3)
+    eeg_new.eeg_header[:eeg_duration_seconds] = (size(signal_convoluted, 2) * size(signal_convoluted, 3)) / eeg_samplingrate(eeg_new)
+    eeg_new.eeg_header[:epoch_duration_samples] = size(signal_convoluted, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(signal_convoluted, 2) / eeg_samplingrate(eeg_new)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_fconv(EEG, kernel=$kernel)")
+
+    return eeg_new
+end

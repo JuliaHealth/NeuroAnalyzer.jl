@@ -249,4 +249,9 @@ p, v = signal_pca(signal_a1, signal_a2, n=2)
 @test size(p) == (2, 101, 2, 2)
 @test size(v) == (2, 2, 2)
 
+s = signal_fconv(signal_v1, [1, 2, 3])
+@test size(s) == (101, )
+s = signal_fconv(signal_a1, [1, 2, 3])
+@test size(s) == (2, 101, 2)
+
 true

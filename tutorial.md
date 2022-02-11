@@ -273,6 +273,12 @@ mw = generate_morlet(256, 1, 32, complex=true)
 eeg_tconv(e10, kernel=mw)
 ```
 
+Frequency-domain convolution:
+```julia
+mw = generate_morlet(256, 1, 32, complex=true)
+eeg_fconv(e10, kernel=mw)
+```
+
 Spectral analysis:
 ```julia
 edf_pow, edf_frq = eeg_psd(edf, normalize=true)

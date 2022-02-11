@@ -1573,7 +1573,13 @@ Performs convolution in the time domain between `signal` and `kernel`.
 function signal_tconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     signal_conv = conv(signal, kernel)
     half_kernel = floor(Int, length(kernel) / 2)
-    signal_conv = signal_conv[(half_kernel + 1):(end - half_kernel)]
+
+    # remove in- and out- edges
+    if mod(length(kernel), 2) == 0 
+        signal_conv = signal_conv[half_kernel:(end - half_kernel)]
+    else
+        signal_conv = signal_conv[half_kernel:(end - half_kernel - 1)]
+    end
 
     return signal_conv
 end
@@ -1599,7 +1605,7 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
     if typeof(kernel) == Vector{ComplexF64}
         signal_conv = zeros(ComplexF64, size(signal))
     else
-        signal_conv = zeros(channels_no, length(signal_tconv(signal[1, :, 1], kernel)), epochs_no)
+        signal_conv = zeros(size(signal))
     end
 
     Threads.@threads for epoch in 1:epochs_no
@@ -2551,4 +2557,66 @@ function signal_pca(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::I
     end
 
     return pc, pc_var
+end
+
+"""
+    signal_fconv(signal, kernel)
+
+Performs convolution in the frequency domain between `signal` and `kernel`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+# Returns
+
+- `signal_conv::Vector{ComplexF64}`
+"""
+function signal_fconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    n_signal = length(signal)
+    n_kernel = length(kernel)
+    n_conv = n_signal + n_kernel - 1
+    half_kernel = floor(Int64, n_kernel / 2)
+    signal_fft = fft0(signal, n_conv)
+    kernel_fft = fft0(kernel, n_conv)
+    signal_conv = ifft(signal_fft .* kernel_fft)
+    
+    # remove in- and out- edges
+    if mod(n_kernel, 2) == 0 
+        signal_conv = signal_conv[half_kernel:(end - half_kernel)]
+    else
+        signal_conv = signal_conv[half_kernel:(end - half_kernel - 1)]
+    end
+
+    return signal_conv
+end
+
+"""
+    signal_fconv(signal, kernel)
+
+Performs convolution in the frequency domain between `signal` and `kernel`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+# Returns
+
+- `signal_conv::Array{ComplexF64, 3}`
+"""
+function signal_fconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    channels_no = size(signal, 1)
+    epochs_no = size(signal, 3)
+
+    signal_conv = zeros(ComplexF64, size(signal))
+
+    Threads.@threads for epoch in 1:epochs_no
+        for idx in 1:channels_no
+            signal_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
+        end
+    end
+
+    return signal_conv
 end
