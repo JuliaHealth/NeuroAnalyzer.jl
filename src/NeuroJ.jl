@@ -164,6 +164,7 @@ export eeg_freqs
 export eeg_pca
 export eeg_difference
 export eeg_fconv
+export eeg_pca
 
 include("eeg_io.jl")
 export eeg_import_edf

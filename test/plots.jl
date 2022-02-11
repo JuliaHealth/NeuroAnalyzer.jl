@@ -35,14 +35,14 @@ p = signal_plot_butterfly(t, signal_m)
 p = eeg_plot_butterfly(edf, head=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-signal_pow, signal_frq = signal_psd(signal_v, fs=100, normalize=true)
+signal_pow, signal_frq = signal_psd(signal_v, fs=100, norm=true)
 p = signal_plot_psd(signal_pow, signal_frq)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = signal_plot_psd(signal_v, fs=100)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = signal_plot_psd(signal_m, fs=100)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_psd(edf, normalize=true, average=true, head=true, figure="test.png")
+p = eeg_plot_psd(edf, norm=true, average=true, head=true, figure="test.png")
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
@@ -56,13 +56,13 @@ p = eeg_plot_matrix(edf, edf_cor, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-ac, lags = eeg_autocov(edf, lag=5, normalize=false)
+ac, lags = eeg_autocov(edf, lag=5, norm=false)
 p = eeg_plot_covmatrix(edf, ac, lags, figure="test.png")
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-cc, lags = eeg_crosscov(edf, lag=5, normalize=false)
+cc, lags = eeg_crosscov(edf, lag=5, norm=false)
 p = eeg_plot_covmatrix(edf, cc, lags, figure="test.png")
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 @test isfile("test.png") == true

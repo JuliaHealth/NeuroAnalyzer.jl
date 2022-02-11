@@ -4,10 +4,10 @@ using Test
 edf = eeg_import_edf("eeg-test-edf.edf")
 
 edf1 = eeg_delete_channel(edf, 1)
-@test edf1.eeg_header[:channels_no] == 18
+@test edf1.eeg_header[:channels_n] == 18
 
 edf1 = eeg_keep_channel(edf, 1)
-@test edf1.eeg_header[:channels_no] == 1
+@test edf1.eeg_header[:channels_n] == 1
 
 edf1 = eeg_derivative(edf)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
@@ -127,12 +127,11 @@ m = eeg_coherence(edf, edf)
 hz, _ = eeg_freqs(edf)
 @test typeof(hz) == Vector{Float64}
 
-edf1 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf), average=true)
-p, v = eeg_pca(edf1, edf1, n=2)
-@test size(p) == (2, 2560, 19, 1)
-@test size(v) == (2, 19, 1)
-
 e = eeg_fconv(edf, kernel=[1, 2, 3, 4])
 @test size(edf.eeg_signals) == (19, 354816, 1)
+
+p, v = eeg_pca(edf, n=2)
+@test size(p) == (2, 354816, 1)
+@test size(v) == (2, 1)
 
 true

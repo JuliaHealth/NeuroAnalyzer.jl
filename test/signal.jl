@@ -94,9 +94,9 @@ signal_fft, signal_amplitudes, signal_powers, signal_phases = signal_spectrum(si
 @test size(signal_powers) == (2, 110, 2)
 @test size(signal_phases) == (2, 110, 2)
 
-epochs = signal_epochs(signal_v, epochs_no=10)
+epochs = signal_epochs(signal_v, epochs_n=10)
 @test size(epochs) == (10, 10)
-epochs = signal_epochs(signal_m, epochs_no=10, average=true)
+epochs = signal_epochs(signal_m, epochs_n=10, average=true)
 @test size(epochs) == (2, 10)
 
 signal = signal_drop_channel(signal_m, 1)
@@ -140,9 +140,6 @@ signal_norm = signal_normalize_minmax(signal_v)
 
 signal_norm = signal_normalize_minmax(signal_a)
 @test size(signal_norm) == (2, 101, 2)
-
-cov_mat = signal_cov(signal_v1, signal_v2)
-@test size(cov_mat) == (101, 101)
 
 cov_mat = signal_cov(signal_a)
 @test size(cov_mat) == (2, 2, 2)
@@ -242,12 +239,9 @@ s = signal_coherence(signal_v1, signal_v2)
 s = signal_coherence(signal_a1, signal_a2)
 @test size(s) == (2, 101, 2)
 
-p, v = signal_pca(signal_v1, signal_v2, n=2)
-@test size(p) == (2, 101)
-@test size(v) == (2, )
-p, v = signal_pca(signal_a1, signal_a2, n=2)
-@test size(p) == (2, 101, 2, 2)
-@test size(v) == (2, 2, 2)
+p, v = signal_pca(signal_a, n=2)
+@test size(p) == (2, 101, 2)
+@test size(v) == (2, 2)
 
 s = signal_fconv(signal_v1, [1, 2, 3])
 @test size(s) == (101, )

@@ -48,86 +48,86 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
     reserved  = header[193:236]
     data_records = parse(Int, rstrip(header[237:244]))
     data_records_duration  = parse(Float64, rstrip(header[245:252]))
-    channels_no  = parse(Int, rstrip(header[253:256]))
+    channels_n  = parse(Int, rstrip(header[253:256]))
 
-    labels = Vector{String}(undef, channels_no)
-    transducers = Vector{String}(undef, channels_no)
-    physical_dimension = Vector{String}(undef, channels_no)
-    physical_minimum = Vector{Float64}(undef, channels_no)
-    physical_maximum = Vector{Float64}(undef, channels_no)
-    digital_minimum = Vector{Float64}(undef, channels_no)
-    digital_maximum = Vector{Float64}(undef, channels_no)
-    prefiltering = Vector{String}(undef, channels_no)
-    samples_per_datarecord = Vector{Int64}(undef, channels_no)
+    labels = Vector{String}(undef, channels_n)
+    transducers = Vector{String}(undef, channels_n)
+    physical_dimension = Vector{String}(undef, channels_n)
+    physical_minimum = Vector{Float64}(undef, channels_n)
+    physical_maximum = Vector{Float64}(undef, channels_n)
+    digital_minimum = Vector{Float64}(undef, channels_n)
+    digital_maximum = Vector{Float64}(undef, channels_n)
+    prefiltering = Vector{String}(undef, channels_n)
+    samples_per_datarecord = Vector{Int64}(undef, channels_n)
 
-    header = zeros(UInt8, channels_no * 16)
-    readbytes!(fid, header, channels_no * 16)
+    header = zeros(UInt8, channels_n * 16)
+    readbytes!(fid, header, channels_n * 16)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         labels[idx] = rstrip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, channels_no * 80)
-    readbytes!(fid, header, channels_no * 80)
+    header = zeros(UInt8, channels_n * 80)
+    readbytes!(fid, header, channels_n * 80)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         transducers[idx] = rstrip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         physical_dimension[idx] = rstrip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         physical_minimum[idx] = parse(Float64, rstrip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         physical_maximum[idx] = parse(Float64, rstrip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         digital_minimum[idx] = parse(Float64, rstrip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         digital_maximum[idx] = parse(Float64, rstrip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channels_no * 80)
-    readbytes!(fid, header, channels_no * 80)
+    header = zeros(UInt8, channels_n * 80)
+    readbytes!(fid, header, channels_n * 80)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         prefiltering[idx] = rstrip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channels_no * 8)
-    readbytes!(fid, header, channels_no * 8)
+    header = zeros(UInt8, channels_n * 8)
+    readbytes!(fid, header, channels_n * 8)
     header = String(Char.(header))
-    for idx in 1:channels_no
+    for idx in 1:channels_n
         samples_per_datarecord[idx] = parse(Int, rstrip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
     close(fid)
 
-    sampling_rate = Vector{Float64}(undef, channels_no)
-    gain = Vector{Float64}(undef, channels_no)
-    for idx in 1:channels_no
+    sampling_rate = Vector{Float64}(undef, channels_n)
+    gain = Vector{Float64}(undef, channels_n)
+    for idx in 1:channels_n
         sampling_rate[idx] = samples_per_datarecord[idx] / data_records_duration
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
@@ -140,10 +140,10 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
     fid = open(file_name)
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
-    eeg_signals = zeros(channels_no, samples_per_datarecord[1] * data_records, 1)
+    eeg_signals = zeros(channels_n, samples_per_datarecord[1] * data_records, 1)
 
     for idx1 in 1:data_records
-        for idx2 in 1:channels_no
+        for idx2 in 1:channels_n
             signal = zeros(UInt8, samples_per_datarecord[idx2] * 2);
             readbytes!(fid, signal, samples_per_datarecord[idx2] * 2);
             signal = map(ltoh, reinterpret(Int16, signal));
@@ -170,7 +170,7 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
                       :recording_time => recording_time,
                       :data_records => data_records,
                       :data_records_duration => data_records_duration,
-                      :channels_no => channels_no,
+                      :channels_n => channels_n,
                       :reference => "",
                       :channel_locations => false,
                       :xlocs => [],
@@ -178,7 +178,7 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
                       :history => Vector{String}(),
                       :eeg_duration_samples => eeg_duration_samples,
                       :eeg_duration_seconds => eeg_duration_seconds,
-                      :epochs_no => 1,
+                      :epochs_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels,
@@ -222,7 +222,7 @@ function eeg_load_electrode_positions(eeg::EEG, file_name)
     for idx in 1:length(sensors[:, :theta])
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * sensors[idx, :theta], sensors[idx, :radius])
     end
-    length(loc_x) != eeg.eeg_header[:channels_no] && throw(ArgumentError("Number of channels and number of positions do not match."))
+    length(loc_x) != eeg.eeg_header[:channels_n] && throw(ArgumentError("Number of channels and number of positions do not match."))
 
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))

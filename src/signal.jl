@@ -9,7 +9,7 @@ Returns the derivative of the `signal` with length same as the signal.
 
 # Returns
 
-`signal_derivative::Union{Vector{Int64}, Vector{Float64}}`
+- `s_derivative::Union{Vector{Int64}, Vector{Float64}}`
 
 """
 signal_derivative(signal::Union{Vector{Int64}, Vector{Float64}}) = vcat(diff(signal), diff(signal)[end])
@@ -25,20 +25,20 @@ Returns the derivative of each the `signal` channels with length same as the sig
 
 # Returns
 
-- `signal_derivative::Array{Float64, 3}`
+- `s_derivative::Array{Float64, 3}`
 """
 function signal_derivative(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_der = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_der = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
         end
     end
 
-    return signal_der
+    return s_der
 end
 
 """
@@ -83,12 +83,12 @@ Calculates total power for each the `signal` channels.
 function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    stp = zeros(channels_no, epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    stp = zeros(channels_n, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
         end
     end
@@ -150,12 +150,12 @@ function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64
     f1 < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
     f2 > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    sbp = zeros(channels_no, epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    sbp = zeros(channels_n, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
         end
     end
@@ -175,20 +175,20 @@ Returns FFT and DFT sample frequencies for a DFT for the `signal`.
 
 # Returns
 
-- `signal_fft::Vector{ComplexF64}`
-- `signal_sf::Vector{Float64}`
+- `s_fft::Vector{ComplexF64}`
+- `s_sf::Vector{Float64}`
 """
 function signal_make_spectrum(signal::Vector{Float64}, fs::Int64)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
 
-    signal_fft = fft(signal)
+    s_fft = fft(signal)
     # number of samples
     n = length(signal)
     # time between samples
     d = 1 / fs
-    signal_sf = fftfreq(n, d)
+    s_sf = fftfreq(n, d)
 
-    return signal_fft, Vector(signal_sf)
+    return s_fft, Vector(s_sf)
 end
 
 """
@@ -203,24 +203,24 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
 
 # Returns
 
-- `signal_fft::Array{ComplexF64, 3}`
-- `signal_sf::Array{Float64, 3}`
+- `s_fft::Array{ComplexF64, 3}`
+- `s_sf::Array{Float64, 3}`
 """
 function signal_make_spectrum(signal::Array{Float64, 3}, fs::Int64)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_fft = zeros(ComplexF64, size(signal))
-    signal_sf = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_fft = zeros(ComplexF64, size(signal))
+    s_sf = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_fft[idx, :, epoch], signal_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_fft[idx, :, epoch], s_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs)
         end
     end
 
-    return signal_fft, signal_sf
+    return s_fft, s_sf
 end
 
 """
@@ -237,20 +237,20 @@ Removes linear trend from the `signal`.
 
 # Returns
 
-- `signal_detrended::Vector{Float64}`
+- `s_detrended::Vector{Float64}`
 """
 function signal_detrend(signal::Vector{Float64}; type::Symbol=:linear)
     type in [:linear, :constant] || throw(ArgumentError("Trend type must be :linear or :constant."))
 
     if type === :constant
-        signal_det = signal_demean(signal)
+        s_det = signal_demean(signal)
     else
         A = ones(length(signal))
         coef = A \ signal
-        signal_det = @. signal - dot(A, coef)
+        s_det = @. signal - dot(A, coef)
     end
 
-    return signal_det
+    return s_det
 end
 
 """
@@ -267,22 +267,22 @@ Removes linear trend for each the `signal` channels.
 
 # Returns
 
-- `signal_detrended::Array{Float64, 3}`
+- `s_detrended::Array{Float64, 3}`
 """
 function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
     type in [:linear, :constant] || throw(ArgumentError("Trend type must be :linear or :constant."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_det = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_det = zeros(size(signal))
     
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
         end
     end
 
-    return signal_det
+    return s_det
 end
 
 """
@@ -298,21 +298,21 @@ Calculates mean, std and 95% confidence interval for `signal`.
 
 # Returns
 
-- `signal_m::Float64`
-- `signal_s::Float64`
-- `signal_u::Float64`
-- `signal_l::Float64`
+- `s_m::Float64`
+- `s_s::Float64`
+- `s_u::Float64`
+- `s_l::Float64`
 """
 function signal_ci95(signal::Vector{Float64}; n::Int=3, method::Symbol=:normal)
     method === :normal || throw(ArgumentError("For vector signal method must be :normal."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
-    signal_m = mean(signal)
-    signal_s = std(signal) / sqrt(length(signal))
-    signal_u = signal_m + 1.96 * signal_s
-    signal_l = signal_m - 1.96 * signal_s
+    s_m = mean(signal)
+    s_s = std(signal) / sqrt(length(signal))
+    s_u = s_m + 1.96 * s_s
+    s_l = s_m - 1.96 * s_s
 
-    return signal_m, signal_s, signal_u, signal_l
+    return s_m, s_s, s_u, s_l
 end
 
 """
@@ -328,37 +328,37 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Returns
 
-- `signal_m::Vector{Float64}`
-- `signal_s::Vector{Float64}`
-- `signal_u::Vector{Float64}`
-- `signal_l::Vector{Float64}`
+- `s_m::Vector{Float64}`
+- `s_s::Vector{Float64}`
+- `s_u::Vector{Float64}`
+- `s_l::Vector{Float64}`
 """
 function signal_ci95(signal::Matrix{Float64}; n::Int=3, method::Symbol=:normal)
     method in [:normal, :boot] || throw(ArgumentError("Method must be :normal or :boot."))
 
     if method === :normal
-        signal_m = mean(signal, dims=1)'
-        signal_s = std(signal, dims=1)' / sqrt(size(signal, 1))
-        signal_u = signal_m + 1.96 * signal_s
-        signal_l = signal_m - 1.96 * signal_s
+        s_m = mean(signal, dims=1)'
+        s_s = std(signal, dims=1)' / sqrt(size(signal, 1))
+        s_u = s_m + 1.96 * s_s
+        s_l = s_m - 1.96 * s_s
     else
-        signal_tmp1 = zeros(size(signal, 1) * n, size(signal, 2))
+        s_tmp1 = zeros(size(signal, 1) * n, size(signal, 2))
         Threads.@threads for idx1 in 1:size(signal, 1) * n
-            signal_tmp2 = zeros(size(signal))
+            s_tmp2 = zeros(size(signal))
             sample_idx = rand(1:size(signal, 1), size(signal, 1))
             for idx2 in 1:size(signal, 1)
-                signal_tmp2[idx2, :] = signal[sample_idx[idx2], :]'
+                s_tmp2[idx2, :] = signal[sample_idx[idx2], :]'
             end
-            signal_tmp1[idx1, :] = mean(signal_tmp2, dims=1)
+            s_tmp1[idx1, :] = mean(s_tmp2, dims=1)
         end
-        signal_m = mean(signal_tmp1, dims=1)'
-        signal_s = std(signal_tmp1, dims=1)' / sqrt(size(signal_tmp1, 1))
-        signal_sorted = sort(signal_tmp1, dims=1)
-        signal_l = signal_sorted[round(Int, 0.025 * size(signal_tmp1, 1)), :]
-        signal_u = signal_sorted[round(Int, 0.975 * size(signal_tmp1, 1)), :]
+        s_m = mean(s_tmp1, dims=1)'
+        s_s = std(s_tmp1, dims=1)' / sqrt(size(s_tmp1, 1))
+        s_sorted = sort(s_tmp1, dims=1)
+        s_l = s_sorted[round(Int, 0.025 * size(s_tmp1, 1)), :]
+        s_u = s_sorted[round(Int, 0.975 * size(s_tmp1, 1)), :]
     end
 
-    return vec(signal_m[:, 1]), vec(signal_s[:, 1]), vec(signal_u[:, 1]), vec(signal_l[:, 1])
+    return vec(s_m[:, 1]), vec(s_s[:, 1]), vec(s_u[:, 1]), vec(s_l[:, 1])
 end
 
 """
@@ -374,27 +374,27 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Returns
 
-- `signal_m::Matrix{Float64}`
-- `signal_s::Matrix{Float64}`
-- `signal_u::Matrix{Float64}`
-- `signal_l::Matrix{Float64}`
+- `s_m::Matrix{Float64}`
+- `s_s::Matrix{Float64}`
+- `s_u::Matrix{Float64}`
+- `s_l::Matrix{Float64}`
 """
 function signal_ci95(signal::Array{Float64, 3}; n::Int=3, method::Symbol=:normal)
     method in [:normal, :boot] || throw(ArgumentError("Method must be :normal or :boot."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
-    signal_m = zeros(size(signal, 3), size(signal, 2))
-    signal_s = zeros(size(signal, 3), size(signal, 2))
-    signal_u = zeros(size(signal, 3), size(signal, 2))
-    signal_l = zeros(size(signal, 3), size(signal, 2))
+    s_m = zeros(size(signal, 3), size(signal, 2))
+    s_s = zeros(size(signal, 3), size(signal, 2))
+    s_u = zeros(size(signal, 3), size(signal, 2))
+    s_l = zeros(size(signal, 3), size(signal, 2))
 
-    epochs_no = size(signal, 3)
+    epochs_n = size(signal, 3)
 
-    Threads.@threads for epoch in 1:epochs_no
-        signal_m[epoch, :], signal_s[epoch, :], signal_u[epoch, :], signal_l[epoch, :] = signal_ci95(signal[:, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        s_m[epoch, :], s_s[epoch, :], s_u[epoch, :], s_l[epoch, :] = signal_ci95(signal[:, :, epoch])
     end
 
-    return signal_m, signal_s, signal_u, signal_l
+    return s_m, s_s, s_u, s_l
 end
 
 """
@@ -409,29 +409,29 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `signal_mean::Float64`
-- `signal_sd::Float64`
-- `signal_u::Float64`
-- `signal_l::Float64`
+- `s_mean::Float64`
+- `s_sd::Float64`
+- `s_u::Float64`
+- `s_l::Float64`
 """
 function signal_mean(signal1::Vector{Float64}, signal2::Vector{Float64})
     length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as size."))
 
-    signals_m = zeros(length(signal1))
-    signals_s = zeros(length(signal1))
-    signals_u = zeros(length(signal1))
-    signals_l = zeros(length(signal1))
+    s_m = zeros(length(signal1))
+    s_s = zeros(length(signal1))
+    s_u = zeros(length(signal1))
+    s_l = zeros(length(signal1))
 
-    signal1_mean = mean(signal1)
-    signal2_mean = mean(signal2)
-    signals_m = signal1_mean - signal2_mean
-    signal1_sd = std(signal1) / sqrt(length(signal1))
-    signal2_sd = std(signal2) / sqrt(length(signal2))
-    signals_s = sqrt(signal1_sd^2 + signal2_sd^2)
-    signals_u = signals_m + 1.96 * signals_s
-    signals_l = signals_m - 1.96 * signals_s
+    s1_mean = mean(signal1)
+    s2_mean = mean(signal2)
+    s_m = s1_mean - s2_mean
+    s1_sd = std(signal1) / sqrt(length(signal1))
+    s2_sd = std(signal2) / sqrt(length(signal2))
+    s_s = sqrt(s1_sd^2 + s2_sd^2)
+    s_u = s_m + 1.96 * s_s
+    s_l = s_m - 1.96 * s_s
 
-    return signals_m, signals_s, signals_u, signals_l
+    return s_m, s_s, s_u, s_l
 end
 
 """
@@ -446,32 +446,32 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `signal_mean::Matrix{Float64}`
-- `signal_sd::Matrix{Float64}`
-- `signal_u::Matrix{Float64}`
-- `signal_l::Matrix{Float64}`
+- `s_mean::Matrix{Float64}`
+- `s_sd::Matrix{Float64}`
+- `s_u::Matrix{Float64}`
+- `s_l::Matrix{Float64}`
 """
 function signal_mean(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same as size."))
 
-    signals_m = zeros(size(signal1, 3), size(signal1, 2))
-    signals_s = zeros(size(signal1, 3), size(signal1, 2))
-    signals_u = zeros(size(signal1, 3), size(signal1, 2))
-    signals_l = zeros(size(signal1, 3), size(signal1, 2))
-    epochs_no = size(signal1, 3)
+    s_m = zeros(size(signal1, 3), size(signal1, 2))
+    s_s = zeros(size(signal1, 3), size(signal1, 2))
+    s_u = zeros(size(signal1, 3), size(signal1, 2))
+    s_l = zeros(size(signal1, 3), size(signal1, 2))
+    epochs_n = size(signal1, 3)
 
-    Threads.@threads for epoch in 1:epochs_no
-        signal1_mean = mean(signal1[:, :, epoch], dims=1)
-        signal2_mean = mean(signal2[:, :, epoch], dims=1)
-        signals_m[epoch, :] = signal1_mean - signal2_mean
-        signal1_sd = std(signal1[:, :, epoch], dims=1) / sqrt(size(signal1[:, :, epoch], 2))
-        signal2_sd = std(signal2[:, :, epoch], dims=1) / sqrt(size(signal2[:, :, epoch], 2))
-        signals_s[epoch, :] = sqrt.(signal1_sd.^2 .+ signal2_sd.^2)
-        signals_u[epoch, :] = @. signals_m[epoch, :] + 1.96 * signals_s[epoch, :]
-        signals_l[epoch, :] = @. signals_m[epoch, :] - 1.96 * signals_s[epoch, :]
+    Threads.@threads for epoch in 1:epochs_n
+        s1_mean = mean(signal1[:, :, epoch], dims=1)
+        s2_mean = mean(signal2[:, :, epoch], dims=1)
+        s_m[epoch, :] = s1_mean - s2_mean
+        s1_sd = std(signal1[:, :, epoch], dims=1) / sqrt(size(signal1[:, :, epoch], 2))
+        s2_sd = std(signal2[:, :, epoch], dims=1) / sqrt(size(signal2[:, :, epoch], 2))
+        s_s[epoch, :] = sqrt.(s1_sd.^2 .+ s2_sd.^2)
+        s_u[epoch, :] = @. s_m[epoch, :] + 1.96 * s_s[epoch, :]
+        s_l[epoch, :] = @. s_m[epoch, :] - 1.96 * s_s[epoch, :]
     end
 
-    return signals_m, signals_s, signals_u, signals_l
+    return s_m, s_s, s_u, s_l
 end
 
 """
@@ -490,60 +490,59 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `signals_statistic::Vector{Float64}`
-- `signals_statistic_single::Float64`
+- `s_statistic::Vector{Float64}`
+- `s_statistic_single::Float64`
 - `p::Float64`
 """
 function signal_difference(signal1::Matrix{Float64}, signal2::Matrix{Float64}; n::Int64=3, method::Symbol=:absdiff)
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("Method must be :absdiff or :diff2int."))
 
-    signal1_mean = mean(signal1, dims=1)'
-    signal2_mean = mean(signal2, dims=1)'
+    s1_mean = mean(signal1, dims=1)'
+    s2_mean = mean(signal2, dims=1)'
 
     if method === :absdiff
         # statistic: maximum difference
-        signals_diff = signal1_mean - signal2_mean
-        signals_statistic_single = maximum(abs.(signals_diff))
+        s_diff = s1_mean - s2_mean
+        s_statistic_single = maximum(abs.(s_diff))
     else
         # statistic: integrated area of the squared difference
-        signals_diff_squared = (signal1_mean - signal2_mean).^2
-        signals_statistic_single = simpson(signals_diff_squared)
+        s_diff_squared = (s1_mean - s2_mean).^2
+        s_statistic_single = simpson(s_diff_squared)
     end
 
     signals = [signal1; signal2]
-    signals_statistic = zeros(size(signal1, 1) * n)
+    s_statistic = zeros(size(signal1, 1) * n)
 
     Threads.@threads for idx1 in 1:(size(signal1, 1) * n)
-        signals_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
+        s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
         # sample_idx = sample_idx[1:1000]
         for idx2 in 1:size(signal1, 1)
-            signals_tmp1[idx2, :] = signals[sample_idx[idx2], :]'
+            s_tmp1[idx2, :] = signals[sample_idx[idx2], :]'
         end
-        signal1_mean = mean(signals_tmp1, dims=1)
-        signals_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
+        s1_mean = mean(s_tmp1, dims=1)
+        s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
-        # sample_idx = sample_idx[1:1000]
         for idx2 in 1:size(signal1, 1)
-            signals_tmp1[idx2, :] = signals[sample_idx[idx2], :]'
+            s_tmp1[idx2, :] = signals[sample_idx[idx2], :]'
         end
-        signal2_mean = mean(signals_tmp1, dims=1)
+        s2_mean = mean(s_tmp1, dims=1)
         if method === :absdiff
             # statistic: maximum difference
-            signals_diff = signal1_mean - signal2_mean
-            signals_statistic[idx1] = maximum(abs.(signals_diff))
+            s_diff = s1_mean - s2_mean
+            s_statistic[idx1] = maximum(abs.(s_diff))
         else
             # statistic: integrated area of the squared difference
-            signals_diff_squared = (signal1_mean - signal2_mean).^2
-            signals_statistic[idx1] = simpson(signals_diff_squared)
+            s_diff_squared = (s1_mean - s2_mean).^2
+            s_statistic[idx1] = simpson(s_diff_squared)
         end
     end
 
-    p = length(signals_statistic[signals_statistic .> signals_statistic_single]) / size(signal1, 1) * n
+    p = length(s_statistic[s_statistic .> s_statistic_single]) / size(signal1, 1) * n
     p > 1 && (p = 1.0)
 
-    return signals_statistic, signals_statistic_single, p
+    return s_statistic, s_statistic_single, p
 end
 
 """
@@ -562,28 +561,28 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `signals_statistic::Matrix{Float64}`
-- `signals_statistic_single::Vector{Float64}`
+- `s_statistic::Matrix{Float64}`
+- `s_statistic_single::Vector{Float64}`
 - `p::Vector{Float64}`
 """
 function signal_difference(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("Method must be :absdiff or :diff2int."))
 
-    epochs_no = size(signal1, 3)
-    signals_statistic = zeros(epochs_no, size(signal1, 1) * n)
-    signals_statistic_single = zeros(epochs_no)
-    p = zeros(epochs_no)
+    epochs_n = size(signal1, 3)
+    s_statistic = zeros(epochs_n, size(signal1, 1) * n)
+    s_statistic_single = zeros(epochs_n)
+    p = zeros(epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        signals_statistic[epoch, :], signals_statistic_single[epoch], p[epoch] = signal_difference(signal1[:, :, epoch], signal2[:, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        s_statistic[epoch, :], s_statistic_single[epoch], p[epoch] = signal_difference(signal1[:, :, epoch], signal2[:, :, epoch])
     end
 
-    return signals_statistic, signals_statistic_single, p
+    return s_statistic, s_statistic_single, p
 end
 
 """
-   signal_autocov(signal; lag=1, demean=false, normalize=false)
+   signal_autocov(signal; lag=1, demean=false, norm=false)
 
 Calculates autocovariance of the `signal`.
 
@@ -592,22 +591,22 @@ Calculates autocovariance of the `signal`.
 - `signal::Vector{Float64}`
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean `signal` prior to calculations
-- `normalize::Bool` - normalize autocovariance
+- `norm::Bool` - normalize autocovariance
 
 # Returns
 
 - `acov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function signal_autocov(signal::Vector{Float64}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
+function signal_autocov(signal::Vector{Float64}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1."))
 
     lags = collect(-lag:lag)
 
     if demean == true
-        signal_demeaned = signal .- mean(signal)
+        s_demeaned = signal_demean(signal)
     else
-        signal_demeaned = signal
+        s_demeaned = signal
     end
 
     acov = zeros(length(lags))
@@ -615,22 +614,22 @@ function signal_autocov(signal::Vector{Float64}; lag::Int64=1, demean::Bool=fals
     for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            signal_lagged = signal_demeaned
-            signals_mul = signal_demeaned .* signal_lagged
+            s_lagged = s_demeaned
+            s_mul = s_demeaned .* s_lagged
         elseif lags[idx] > 0
             # positive lag
-            signal_lagged = signal_demeaned[1:(end - lags[idx])]
-            signals_mul = signal_demeaned[(1 + lags[idx]):end] .* signal_lagged
+            s_lagged = s_demeaned[1:(end - lags[idx])]
+            s_mul = s_demeaned[(1 + lags[idx]):end] .* s_lagged
         elseif lags[idx] < 0
             # negative lag
-            signal_lagged = signal_demeaned[(1 + abs(lags[idx])):end]
-            signals_mul = signal_demeaned[1:(end - abs(lags[idx]))] .* signal_lagged
+            s_lagged = s_demeaned[(1 + abs(lags[idx])):end]
+            s_mul = s_demeaned[1:(end - abs(lags[idx]))] .* s_lagged
         end
-        signals_sum = sum(signals_mul)
-        if normalize == true
-            acov[idx] = signals_sum / length(signal)
+        s_sum = sum(s_mul)
+        if norm == true
+            acov[idx] = s_sum / length(signal)
         else
-            acov[idx] = signals_sum
+            acov[idx] = s_sum
         end
     end
 
@@ -638,7 +637,7 @@ function signal_autocov(signal::Vector{Float64}; lag::Int64=1, demean::Bool=fals
 end
 
 """
-   signal_autocov(signal; lag=1, demean=false, normalize=false)
+   signal_autocov(signal; lag=1, demean=false, norm=false)
 
 Calculates autocovariance of each the `signal` channels.
 
@@ -647,27 +646,27 @@ Calculates autocovariance of each the `signal` channels.
 - `signal::Array{Float64, 3}`
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
-- `normalize::Bool` - normalize autocovariance
+- `norm::Bool` - normalize autocovariance
 
 # Returns
 
 - `acov::Matrix{Float64}`
 - `lags::Vector{Int64}`
 """
-function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
+function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1."))
 
     lags = collect(-lag:lag)
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    acov = zeros(channels_no, length(lags), epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    acov = zeros(channels_n, length(lags), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             acov[idx, :, epoch], lags = signal_autocov(signal[idx, :, epoch],
                                                  lag=lag,
                                                  demean=demean,
-                                                 normalize=normalize)
+                                                 norm=norm)
         end
     end
 
@@ -675,7 +674,7 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=fa
 end
 
 """
-   signal_crosscov(signal1, signal2; lag=1, demean=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, demean=false, norm=false)
 
 Calculates cross-covariance between `signal1` and `signal2`.
 
@@ -685,25 +684,25 @@ Calculates cross-covariance between `signal1` and `signal2`.
 - `signal2::Vector{Float64}`
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
-- `normalize::Bool` - normalize cross-covariance
+- `norm::Bool` - normalize cross-covariance
 
 # Returns
 
 - `ccov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1."))
 
     lags = collect(-lag:lag)
 
     if demean == true
-        signal_demeaned1 = signal1 .- mean(signal1)
-        signal_demeaned2 = signal2 .- mean(signal2)
+        s_demeaned1 = signal_demean(signal1)
+        s_demeaned2 = signal_demean(signal2)
     else
-        signal_demeaned1 = signal1
-        signal_demeaned2 = signal2
+        s_demeaned1 = signal1
+        s_demeaned2 = signal2
     end
 
     ccov = zeros(length(lags))
@@ -711,22 +710,22 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
     for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            signal_lagged = signal_demeaned2
-            signals_mul = signal_demeaned1 .* signal_lagged
+            s_lagged = s_demeaned2
+            s_mul = s_demeaned1 .* s_lagged
         elseif lags[idx] > 0
             # positive lag
-            signal_lagged = signal_demeaned2[1:(end - lags[idx])]
-            signals_mul = signal_demeaned1[(1 + lags[idx]):end] .* signal_lagged
+            s_lagged = s_demeaned2[1:(end - lags[idx])]
+            s_mul = s_demeaned1[(1 + lags[idx]):end] .* s_lagged
         elseif lags[idx] < 0
             # negative lag
-            signal_lagged = signal_demeaned2[(1 + abs(lags[idx])):end]
-            signals_mul = signal_demeaned1[1:(end - abs(lags[idx]))] .* signal_lagged
+            s_lagged = s_demeaned2[(1 + abs(lags[idx])):end]
+            s_mul = s_demeaned1[1:(end - abs(lags[idx]))] .* s_lagged
         end
-        signals_sum = sum(signals_mul)
-        if normalize == true
-            ccov[idx] = signals_sum / length(signal1)
+        s_sum = sum(s_mul)
+        if norm == true
+            ccov[idx] = s_sum / length(signal1)
         else
-            ccov[idx] = signals_sum
+            ccov[idx] = s_sum
         end
     end
 
@@ -734,7 +733,7 @@ function signal_crosscov(signal1::Vector{Float64}, signal2::Vector{Float64}; lag
 end
 
 """
-   signal_crosscov(signal; lag=1, demean=false, normalize=false)
+   signal_crosscov(signal; lag=1, demean=false, norm=false)
 
 Calculates cross-covariance between all channels in the `signal`.
 
@@ -743,33 +742,33 @@ Calculates cross-covariance between all channels in the `signal`.
 - `signal::Matrix{Float64}` - the signal
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean `signal` prior to analysis
-- `normalize::Bool` - normalize cross-covariance
+- `norm::Bool` - normalize cross-covariance
 
 # Returns
 
 - `ccov::Array{Float64, 3}`
 - `lags::Vector{Int64}`
 """
-function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1 Hz."))
 
     lags = collect(-lag:lag)
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    ccov = zeros(channels_no^2, length(lags), epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    ccov = zeros(channels_n^2, length(lags), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        ccov_packed = Array{Vector{Float64}}(undef, channels_no, channels_no)
-        for idx1 in 1:channels_no
-            for idx2 in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        ccov_packed = Array{Vector{Float64}}(undef, channels_n, channels_n)
+        for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
                 ccov_packed[idx1, idx2], lags = signal_crosscov(signal[idx1, :, epoch],
                                                           signal[idx2, :, epoch],
                                                           lag=lag,
                                                           demean=demean,
-                                                          normalize=normalize)
+                                                          norm=norm)
             end
         end
-        for idx in 1:channels_no^2
+        for idx in 1:channels_n^2
             ccov[idx, :, epoch] = ccov_packed[idx]
         end
     end
@@ -778,7 +777,7 @@ function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=f
 end
 
 """
-   signal_crosscov(signal1, signal2; lag=1, demean=false, normalize=false)
+   signal_crosscov(signal1, signal2; lag=1, demean=false, norm=false)
 
 Calculates cross-covariance between same channels in `signal1` and `signal2`.
 
@@ -788,29 +787,29 @@ Calculates cross-covariance between same channels in `signal1` and `signal2`.
 - `signal2::Array{Float64, 3}`
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
-- `normalize::Bool` - normalize cross-covariance
+- `norm::Bool` - normalize cross-covariance
 
 # Returns
 
 - `ccov::Array{Float64, 3}`
 - `lags::Vector{Int64}`
 """
-function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, normalize::Bool=false)
+function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     size(signal1) != size(signal2) && throw(ArgumentError("Both arrays must be of the same as size."))
     lag < 1 && throw(ArgumentError("Lag must be ≥ 1 Hz."))
 
     lags = collect(-lag:lag)
-    channels_no = size(signal1, 1)
-    epochs_no = size(signal1, 3)
-    ccov = zeros(channels_no, length(lags), epochs_no)
+    channels_n = size(signal1, 1)
+    epochs_n = size(signal1, 3)
+    ccov = zeros(channels_n, length(lags), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             ccov[idx, :, epoch], lags = signal_crosscov(signal1[idx, :, epoch],
                                                   signal2[idx, :, epoch],
                                                   lag=lag,
                                                   demean=demean,
-                                                  normalize=normalize)
+                                                  norm=norm)
         end
     end
 
@@ -829,29 +828,29 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 
 # Returns
 
-- `signal_fft::Vector(ComplexF64}`
-- `signal_amplitudes::Vector{Float64}`
-- `signal_powers::Vector{Float64}`
-- `signal_phases::Vector{Float64}
+- `fft::Vector(ComplexF64}`
+- `amplitudes::Vector{Float64}`
+- `powers::Vector{Float64}`
+- `phases::Vector{Float64}
 """
 function signal_spectrum(signal::Vector{Float64}; pad::Int64=0)
     pad < 0 && throw(ArgumentError("Pad cannot be negative."))
 
-    signal_fft = fft0(signal, pad)
+    s_fft = fft0(signal, pad)
 
     # normalize
-    signal_fft ./= length(signal)
+    s_fft ./= length(signal)
 
     # amplitudes
-    signal_amplitudes = @. 2 * abs(signal_fft)
+    s_amplitudes = @. 2 * abs(s_fft)
 
     # power
-    signal_powers = signal_amplitudes.^2
+    s_powers = s_amplitudes.^2
 
     # phases
-    signal_phases = angle.(signal_fft)
+    s_phases = angle.(s_fft)
 
-    return signal_fft, signal_amplitudes, signal_powers, signal_phases
+    return s_fft, s_amplitudes, s_powers, s_phases
 end
 
 """
@@ -866,40 +865,40 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `signal` m
 
 # Returns
 
-- `signal_fft::Array{ComplexF64, 3}`
-- `signal_amplitudes::Array{Float64, 3}`
-- `signal_powers::Array{Float64, 3}`
-- `signal_phases::Array{Float64, 3}
+- `fft::Array{ComplexF64, 3}`
+- `amplitudes::Array{Float64, 3}`
+- `powers::Array{Float64, 3}`
+- `phases::Array{Float64, 3}
 """
 function signal_spectrum(signal::Array{Float64, 3}; pad::Int64=0)
     pad < 0 && throw(ArgumentError("Pad cannot be negative."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_fft = zeros(ComplexF64, channels_no, size(signal, 2) + pad, epochs_no)
-    signal_amplitudes = zeros(channels_no, size(signal, 2) + pad, epochs_no)
-    signal_powers = zeros(channels_no, size(signal, 2) + pad, epochs_no)
-    signal_phases = zeros(channels_no, size(signal, 2) + pad, epochs_no)
+    s_fft = zeros(ComplexF64, channels_n, size(signal, 2) + pad, epochs_n)
+    s_amplitudes = zeros(channels_n, size(signal, 2) + pad, epochs_n)
+    s_powers = zeros(channels_n, size(signal, 2) + pad, epochs_n)
+    s_phases = zeros(channels_n, size(signal, 2) + pad, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_fft[idx, :, epoch], signal_amplitudes[idx, :, epoch], signal_powers[idx, :, epoch], signal_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
         end
     end
 
-    return signal_fft, signal_amplitudes, signal_powers, signal_phases
+    return s_fft, s_amplitudes, s_powers, s_phases
 end
 
 """
-    signal_epochs(signal; epochs_no, epochs_len, average=true)
+    signal_epochs(signal; epochs_n, epochs_len, average=true)
 
 Splits `signal` into epochs.
 
 # Arguments
 
 - `signal::Vector{Float64}`
-- `epochs_no::Union{Int64, Nothing}` - number of epochs
+- `epochs_n::Union{Int64, Nothing}` - number of epochs
 - `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 
@@ -907,23 +906,23 @@ Splits `signal` into epochs.
 
 - `epochs::Matrix{Float64}`
 """
-function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
-    (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
-    (epochs_len !== nothing && epochs_no !== nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
+function signal_epochs(signal::Vector{Float64}; epochs_n::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+    (epochs_len === nothing && epochs_n === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epochs_len !== nothing && epochs_n !== nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
     (epochs_len != nothing && epochs_len < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
-    (epochs_no != nothing && epochs_no < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
+    (epochs_n != nothing && epochs_n < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
 
-    if epochs_no === nothing
-        epochs_no = length(signal) ÷ epochs_len
+    if epochs_n === nothing
+        epochs_n = length(signal) ÷ epochs_len
     end
     if epochs_len === nothing
-        epochs_len = length(signal) ÷ epochs_no
+        epochs_len = length(signal) ÷ epochs_n
     end
 
-    epochs = zeros(epochs_no, epochs_len)
+    epochs = zeros(epochs_n, epochs_len)
 
-    signal = signal[1:epochs_len * epochs_no]
-    epochs = reshape(signal, epochs_no, epochs_len)'
+    signal = signal[1:epochs_len * epochs_n]
+    epochs = reshape(signal, epochs_n, epochs_len)'
 
     if average == true
         epochs = vec(mean(epochs, dims=1)[1, :])
@@ -933,14 +932,14 @@ function signal_epochs(signal::Vector{Float64}; epochs_no::Union{Int64, Nothing}
 end
 
 """
-    signal_epochs(signal; epochs_no=nothing, epochs_len=nothing, average=true)
+    signal_epochs(signal; epochs_n=nothing, epochs_len=nothing, average=true)
 
 Splits `signal` into epochs.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `epochs_no::Union{Int64, Nothing}` - number of epochs
+- `epochs_n::Union{Int64, Nothing}` - number of epochs
 - `epochs_len::Union{Int64, Nothing}` - epoch length in samples
 - `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 
@@ -948,27 +947,27 @@ Splits `signal` into epochs.
 
 - `epochs::Array{Float64, 3}`
 """
-function signal_epochs(signal::Matrix{Float64}; epochs_no::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
-    (epochs_len === nothing && epochs_no === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
-    (epochs_len !== nothing && epochs_no !== nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
+function signal_epochs(signal::Matrix{Float64}; epochs_n::Union{Int64, Nothing}=nothing, epochs_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+    (epochs_len === nothing && epochs_n === nothing) && throw(ArgumentError("Either number of epochs or epoch length must be set."))
+    (epochs_len !== nothing && epochs_n !== nothing) && throw(ArgumentError("Both number of epochs and epoch length cannot be set."))
     (epochs_len != nothing && epochs_len < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
-    (epochs_no != nothing && epochs_no < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
+    (epochs_n != nothing && epochs_n < 1) && throw(ArgumentError("Epoch length rate must be ≥ 1."))
 
-    channels_no = size(signal, 1)
+    channels_n = size(signal, 1)
 
-    if epochs_no === nothing
-        epochs_no = size(signal, 2) ÷ epochs_len
+    if epochs_n === nothing
+        epochs_n = size(signal, 2) ÷ epochs_len
     else
-        epochs_len = size(signal, 2) ÷ epochs_no
+        epochs_len = size(signal, 2) ÷ epochs_n
     end
 
-    epochs = zeros(channels_no, epochs_len, epochs_no)
+    epochs = zeros(channels_n, epochs_len, epochs_n)
 
-    # signal = signal[1:epochs_len * epochs_no]
-    # epochs = reshape(signal, epochs_no, epochs_len)'
+    # signal = signal[1:epochs_len * epochs_n]
+    # epochs = reshape(signal, epochs_n, epochs_len)'
 
     idx1 = 1
-    for idx2 in 1:epochs_len:(epochs_no * epochs_len - 1)
+    for idx2 in 1:epochs_len:(epochs_n * epochs_len - 1)
         epochs[:, :, idx1] = signal[:, idx2:(idx2 + epochs_len - 1), 1]
         idx1 += 1
     end
@@ -992,7 +991,7 @@ Removes `channels` from the `signal`.
 
 # Returns
 
-- `signal_modified::Matrix{Float64}`
+- `s_modified::Matrix{Float64}`
 """
 function signal_drop_channel(signal::Matrix{Float64}, channels::Union{Int64, Vector{Int64}, AbstractRange})
     if typeof(channels) <: AbstractRange
@@ -1003,9 +1002,9 @@ function signal_drop_channel(signal::Matrix{Float64}, channels::Union{Int64, Vec
     end
 
     length(channels) > 1 && (channels = sort!(channels, rev=true))
-    signal_new = signal[setdiff(1:end, (channels)), :]
+    s_new = signal[setdiff(1:end, (channels)), :]
 
-    return signal_new
+    return s_new
 end
 
 """
@@ -1020,7 +1019,7 @@ Removes `channels` from the `signal`.
 
 # Returns
 
-- `signal_modified::Matrix{Float64}`
+- `s_modified::Matrix{Float64}`
 """
 function signal_drop_channel(signal::Array{Float64, 3}, channels::Union{Int64, Vector{Int64}, AbstractRange})
     if typeof(channels) <: AbstractRange
@@ -1031,9 +1030,9 @@ function signal_drop_channel(signal::Array{Float64, 3}, channels::Union{Int64, V
     end
 
     length(channels) > 1 && (channels = sort!(channels, rev=true))
-    signal_new = signal[setdiff(1:end, (channels)), :, :]
+    s_new = signal[setdiff(1:end, (channels)), :, :]
 
-    return signal_new
+    return s_new
 end
 """
     signal_reference_channel(signal, reference)
@@ -1047,17 +1046,17 @@ Re-references channels of the `signal` to specific signal channel.
 
 # Returns
 
-- `signal_referenced::Matrix{Float64}`
+- `s_referenced::Matrix{Float64}`
 """
 function signal_reference_channel(signal::Matrix{Float64}, reference_idx::Union{Int64, Vector{Int64}, AbstractRange})
     if typeof(reference_idx) <: AbstractRange
         reference_idx = collect(reference_idx)
     end
 
-    channels_no = size(signal, 1)
-    signal_ref = zeros(size(signal))
+    channels_n = size(signal, 1)
+    s_ref = zeros(size(signal))
 
-    channels_list = collect(1:channels_no)
+    channels_list = collect(1:channels_n)
     for idx in 1:length(reference_idx)
         if (reference_idx[idx] in channels_list) == false
             throw(ArgumentError("Reference channel index does not match signal."))
@@ -1069,12 +1068,12 @@ function signal_reference_channel(signal::Matrix{Float64}, reference_idx::Union{
     else
         reference_channel = vec(mean(signal[reference_idx, :], dims=1))
     end
-    for idx in 1:channels_no
-        signal_ref[idx, :] = signal[idx, :] .- reference_channel
+    for idx in 1:channels_n
+        s_ref[idx, :] = signal[idx, :] .- reference_channel
     end
-    length(reference_idx) == 1 && (signal_ref[reference_idx, :] = reference_channel)
+    length(reference_idx) == 1 && (s_ref[reference_idx, :] = reference_channel)
 
-    return signal_ref
+    return s_ref
 end
 
 """
@@ -1089,36 +1088,36 @@ Re-references channels of the `signal` to specific signal channel.
 
 # Returns
 
-- `signal_referenced::Matrix{Float64}`
+- `s_referenced::Matrix{Float64}`
 """
 function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Union{Int64, Vector{Int64}, AbstractRange})
     if typeof(reference_idx) <: AbstractRange
         reference_idx = collect(reference_idx)
     end
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_ref = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_ref = zeros(size(signal))
 
-    channels_list = collect(1:channels_no)
+    channels_list = collect(1:channels_n)
     for idx in 1:length(reference_idx)
         if (reference_idx[idx] in channels_list) == false
             throw(ArgumentError("Reference channel index does not match signal."))
         end
     end
-    Threads.@threads for epoch in 1:epochs_no
+    Threads.@threads for epoch in 1:epochs_n
         if length(reference_idx) == 1
             reference_channel = mean(signal[reference_idx, :, epoch], dims=2)
         else
             reference_channel = vec(mean(signal[reference_idx, :, epoch], dims=1))
         end
-        for idx in 1:channels_no
-            signal_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
+        for idx in 1:channels_n
+            s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
-        length(reference_idx) == 1 && (signal_ref[reference_idx, :, epoch] = reference_channel)
+        length(reference_idx) == 1 && (s_ref[reference_idx, :, epoch] = reference_channel)
     end
 
-    return signal_ref
+    return s_ref
 end
 
 """
@@ -1132,18 +1131,18 @@ Re-references channels of the `signal` to common average reference.
 
 # Returns
 
-- `signal_referenced::Matrix{Float64}`
+- `s_referenced::Matrix{Float64}`
 """
 function signal_reference_car(signal::Matrix{Float64})
-    channels_no = size(signal, 1)
+    channels_n = size(signal, 1)
     reference_channel = vec(mean(signal, dims=1))
-    signal_ref = zeros(size(signal))
+    s_ref = zeros(size(signal))
 
-    for idx in 1:channels_no
-        signal_ref[idx, :] = signal[idx, :] .- reference_channel
+    for idx in 1:channels_n
+        s_ref[idx, :] = signal[idx, :] .- reference_channel
     end
 
-    return signal_ref
+    return s_ref
 end
 
 """
@@ -1157,21 +1156,21 @@ Re-references channels of the `signal` to common average reference.
 
 # Returns
 
-- `signal_referenced::Array{Float64, 3}`
+- `s_referenced::Array{Float64, 3}`
 """
 function signal_reference_car(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_ref = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_ref = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
+    Threads.@threads for epoch in 1:epochs_n
         reference_channel = vec(mean(signal[:, :, epoch], dims=1))
-        for idx in 1:channels_no
-            signal_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
+        for idx in 1:channels_n
+            s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
     end
 
-    return signal_ref
+    return s_ref
 end
 
 """
@@ -1186,13 +1185,13 @@ Taper the `signal` with `taper`.
 
 # Returns
 
-- `signal_tapered::Vector{Union{Float64, ComplexF64}}`
+- `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
 function signal_taper(signal::Vector{Float64}, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == length(signal) || throw(ArgumentError("Taper length and signal length must be equal."))
-    signal_tap = signal .* taper
+    s_tap = signal .* taper
 
-    return signal_tap
+    return s_tap
 end
 
 """
@@ -1207,23 +1206,23 @@ Tapers channels of the `signal` with `taper`.
 
 # Returns
 
-- `signal_tapered::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
+- `s_tapered::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
 """
 function signal_taper(signal::Array{Float64, 3}, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == size(signal, 2) || throw(ArgumentError("Taper length and signal length must be equal."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_tap = zeros(eltype(taper), size(signal))
+    s_tap = zeros(eltype(taper), size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_tap[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_tap[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
         end
     end
 
-    return signal_tap
+    return s_tap
 end
 
 """
@@ -1237,12 +1236,12 @@ Removes mean value (DC offset) from the `signal`.
 
 # Returns
 
-- `signal_demeaned::Vector{Float64}`
+- `s_demeaned::Vector{Float64}`
 """
 function signal_demean(signal::Vector{Float64})
-    signal_dem = signal .- mean(signal)
+    s_dem = signal .- mean(signal)
 
-    return signal_dem
+    return s_dem
 end
 
 """
@@ -1256,20 +1255,20 @@ Removes mean value (DC offset) for each the `signal` channels.
 
 # Returns
 
-- `signal_demeaned::Array{Float64, 3}`
+- `s_demeaned::Array{Float64, 3}`
 """
 function signal_demean(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_dem = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_dem = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_dem[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_dem[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
         end
     end
 
-    return signal_dem
+    return s_dem
 end
 
 """
@@ -1283,11 +1282,11 @@ Normalize (by z-score) `signal`.
 
 # Returns
 
-- `signal_normalized::Vector{Float64}`
+- `s_normalized::Vector{Float64}`
 """
 function signal_normalize_zscore(signal::Vector{Float64})
-    signal_norm = (signal .- mean(signal)) ./ std(signal)
-    return signal_norm
+    s_norm = (signal .- mean(signal)) ./ std(signal)
+    return s_norm
 end
 
 """
@@ -1301,20 +1300,20 @@ Normalize (by z-score) each the `signal` channel.
 
 # Returns
 
-- `signal_normalized::Array{Float64, 3}`
+- `s_normalized::Array{Float64, 3}`
 """
 function signal_normalize_zscore(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_norm = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_norm = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_norm[idx, :, epoch] = signal_normalize_zscore(signal[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_norm[idx, :, epoch] = signal_normalize_zscore(signal[idx, :, epoch])
         end
     end
 
-    return signal_norm
+    return s_norm
 end
 
 """
@@ -1328,11 +1327,11 @@ Normalize (to 0…1) `signal`.
 
 # Returns
 
-- `signal_normalized::Vector{Float64}`
+- `s_normalized::Vector{Float64}`
 """
 function signal_normalize_minmax(signal::Vector{Float64})
-    signal_norm = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
-    return signal_norm
+    s_norm = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
+    return s_norm
 end
 
 """
@@ -1346,24 +1345,24 @@ Normalize (to 0…1) each the `signal` channel.
 
 # Returns
 
-- `signal_normalized::Array{Float64, 3}`
+- `s_normalized::Array{Float64, 3}`
 """
 function signal_normalize_minmax(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_norm = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_norm = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_norm[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_norm[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
         end
     end
 
-    return signal_norm
+    return s_norm
 end
 
 """
-   signal_cov(signal1, signal2; normalize=true)
+   signal_cov(signal1, signal2; norm=true)
 
 Calculates covariance between `signal1` and `signal2`.
 
@@ -1371,48 +1370,75 @@ Calculates covariance between `signal1` and `signal2`.
 
 - `signal1::Vector{Float64}`
 - `signal2::Vector{Float64}`
-- `normalize::Bool` - normalize covariance
+- `norm::Bool` - normalize covariance
 
 # Returns
 
 - `cov_mat::Matrix{Float64}`
 """
-function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; normalize::Bool=true)
-    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
+function signal_cov(signal1::Vector{Float64}, signal2::Vector{Float64}; norm::Bool=false)
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same length."))
 
+    # channels-vs-channels
     cov_mat = cov(signal1 * signal2')
 
-    # normalize so that components are centered at (0, 0)
-    normalize == true && (cov_mat = cov_mat ./ (length(signal1) - 1))
+    # normalize
+    norm == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
 
     return cov_mat
 end
 
 """
-   signal_cov(signal; normalize=true)
+   signal_cov(signal; norm=true)
+
+Calculates covariance between all channels of the `signal`.
+
+# Arguments
+
+- `signal::Matrix{Float64}`
+- `norm::Bool` - normalize covariance
+
+# Returns
+
+- `cov_mat::Matrix{Float64}`
+"""
+function signal_cov(signal::Matrix{Float64}; norm::Bool=false)
+    signal = signal'
+    
+    # channels-vs-channels
+    cov_mat = cov(signal)
+
+    # normalize
+    norm == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
+
+    return cov_mat
+end
+
+"""
+   signal_cov(signal; norm=true)
 
 Calculates covariance between all channels of the `signal`.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `normalize::Bool` - normalize covariance
+- `norm::Bool` - normalize covariance
 
 # Returns
 
 - `cov_mat::Array{Float64, 3}`
 """
-function signal_cov(signal::Array{Float64, 3}; normalize::Bool=true)
-    epochs_no = size(signal, 3)
-    cov_mat = zeros(size(signal, 1), size(signal, 1), epochs_no)
+function signal_cov(signal::Array{Float64, 3}; norm::Bool=false)
+    epochs_n = size(signal, 3)
+    cov_mat = zeros(size(signal, 1), size(signal, 1), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
+    Threads.@threads for epoch in 1:epochs_n
         # channels-vs-channels
         cov_mat[:, :, epoch] = cov(signal[:, :, epoch]')
     end
 
-    # normalize so that components are centered at (0, 0)
-    normalize == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
+    # normalize
+    norm == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
 
     return cov_mat
 end
@@ -1431,10 +1457,10 @@ Calculates correlation coefficients between all channels of the `signal`.
 - `cor_mat::Array{Float64, 3}`
 """
 function signal_cor(signal::Array{Float64, 3})
-    epochs_no = size(signal, 3)
-    cor_mat = zeros(size(signal, 1), size(signal, 1), epochs_no)
+    epochs_n = size(signal, 3)
+    cor_mat = zeros(size(signal, 1), size(signal, 1), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
+    Threads.@threads for epoch in 1:epochs_n
         # channels-vs-channels
         cor_mat[:, :, epoch] = cor(signal[:, :, epoch]')
     end
@@ -1453,12 +1479,12 @@ Adds random noise to the `signal`.
 
 # Returns
 
-- `signal_noisy::Vector{Float64}`
+- `s_noisy::Vector{Float64}`
 """
 function signal_add_noise(signal::Vector{Float64})
-    signal_noise = signal .+ rand(length(signal))
+    s_noise = signal .+ rand(length(signal))
 
-    return signal_noise
+    return s_noise
 end
 
 """
@@ -1472,20 +1498,20 @@ Add random noise to the `signal` channels.
 
 # Returns
 
-- `signal_noisy::Array{Float64, 3}`
+- `s_noisy::Array{Float64, 3}`
 """
 function signal_add_noise(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_noise = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_noise = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
         end
     end
 
-    return signal_noise
+    return s_noise
 end
 
 """
@@ -1500,7 +1526,7 @@ Upsamples `signal` to `new_sr` sampling frequency.
 - `new_sr::Int64` - new sampling rate
 # Returns
 
-- `signal_upsampled::Vector{Float64}`
+- `s_upsampled::Vector{Float64}`
 - `t_upsampled::AbstractRange`
 """
 function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int64)
@@ -1516,9 +1542,9 @@ function signal_upsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int6
     # interpolate
     signal_interpolation = CubicSplineInterpolation(t, signal)
     t_upsampled = t[1]:1/new_sr:t[end]
-    signal_upsampled = signal_interpolation(t_upsampled)
+    s_upsampled = signal_interpolation(t_upsampled)
 
-    return signal_upsampled, t_upsampled
+    return s_upsampled, t_upsampled
 end
 
 """
@@ -1534,26 +1560,26 @@ Upsamples all channels of `signal` to `new_sr` sampling frequency.
 
 # Returns
 
-- `signal_upsampled::Array{Float64, 3}`
+- `s_upsampled::Array{Float64, 3}`
 - `t_upsampled::AbstractRange`
 """
 function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_upsampled_length = length(signal_upsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
-    signal_upsampled = zeros(channels_no, signal_upsampled_length, epochs_no) 
+    s_upsampled_len = length(signal_upsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
+    s_upsampled = zeros(channels_n, s_upsampled_len, epochs_n) 
 
     t_upsampled = nothing
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end
     end
 
-    return signal_upsampled, t_upsampled
+    return s_upsampled, t_upsampled
 end
 
 """
@@ -1568,20 +1594,20 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
+- `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function signal_tconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-    signal_conv = conv(signal, kernel)
+    s_conv = conv(signal, kernel)
     half_kernel = floor(Int, length(kernel) / 2)
 
     # remove in- and out- edges
     if mod(length(kernel), 2) == 0 
-        signal_conv = signal_conv[half_kernel:(end - half_kernel)]
+        s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        signal_conv = signal_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
     end
 
-    return signal_conv
+    return s_conv
 end
 
 """
@@ -1596,25 +1622,25 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_conv::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
+- `s_conv::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
 """
 function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
     if typeof(kernel) == Vector{ComplexF64}
-        signal_conv = zeros(ComplexF64, size(signal))
+        s_conv = zeros(ComplexF64, size(signal))
     else
-        signal_conv = zeros(size(signal))
+        s_conv = zeros(size(signal))
     end
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_conv[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_conv[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
         end
     end
 
-    return signal_conv
+    return s_conv
 end
 
 """
@@ -1642,7 +1668,7 @@ Filters `signal` using zero phase distortion filter.
 
 # Returns
 
-- `signal_filtered::Vector{Float64}`
+- `s_filtered::Vector{Float64}`
 """
 function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
@@ -1657,83 +1683,83 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
 
     if fprototype === :mavg
         if window === nothing
-            signal_filtered = signal
+            s_filtered = signal
             for idx in d:-1:1
                 if t > 0
                     if signal[idx] > t * std(signal) + mean(signal)
-                        signal_filtered[idx] = mean(signal[idx:idx+1])
+                        s_filtered[idx] = mean(signal[idx:idx+1])
                     end
                 else
-                    signal_filtered[idx] = mean(signal[idx:idx+1])
+                    s_filtered[idx] = mean(signal[idx:idx+1])
                 end
             end
             for idx in (1 + d):(length(signal) - d)
                 if t > 0
                     if signal[idx] > t * std(signal) + mean(signal)
-                        signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+                        s_filtered[idx] = mean(signal[(idx - d):(idx + d)])
                     end
                 else
-                    signal_filtered[idx] = mean(signal[(idx - d):(idx + d)])
+                    s_filtered[idx] = mean(signal[(idx - d):(idx + d)])
                 end
             end
             for idx in (length(signal) - d + 1):length(signal)
                 if t > 0
                     if signal[idx] > t * std(signal) + mean(signal)
-                        signal_filtered[idx] = mean(signal[idx-1:idx])
+                        s_filtered[idx] = mean(signal[idx-1:idx])
                     end
                 else
-                    signal_filtered[idx] = mean(signal[idx-1:idx])
+                    s_filtered[idx] = mean(signal[idx-1:idx])
                 end
             end
         else
-            signal_filtered = signal_tconv(signal, window)
+            s_filtered = signal_tconv(signal, window)
         end
 
-        return signal_filtered
+        return s_filtered
     end
 
     if fprototype === :mmed
-        signal_filtered = signal
+        s_filtered = signal
         for idx in d:-1:1
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
-                    signal_filtered[idx] = median(signal[idx:idx+1])
+                    s_filtered[idx] = median(signal[idx:idx+1])
                 end
             else
-                signal_filtered[idx] = median(signal[idx:idx+1])
+                s_filtered[idx] = median(signal[idx:idx+1])
             end
         end
         for idx in (1 + d):(length(signal) - d)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
-                    signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+                    s_filtered[idx] = median(signal[(idx - d):(idx + d)])
                 end
             else
-                signal_filtered[idx] = median(signal[(idx - d):(idx + d)])
+                s_filtered[idx] = median(signal[(idx - d):(idx + d)])
             end
         end
         for idx in (length(signal) - d + 1):length(signal)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
-                    signal_filtered[idx] = median(signal[idx-1:idx])
+                    s_filtered[idx] = median(signal[idx-1:idx])
                 end
             else
-                signal_filtered[idx] = median(signal[idx-1:idx])
+                s_filtered[idx] = median(signal[idx-1:idx])
             end
         end
 
-        return signal_filtered
+        return s_filtered
     end
 
     if fprototype === :poly
         t = collect(0:1/fs:(length(signal) - 1) / fs)        
         p = Polynomials.fit(t, signal, order)
-        signal_filtered = zeros(length(signal))
+        s_filtered = zeros(length(signal))
         for idx in 1:length(signal)
-            signal_filtered[idx] = p(t[idx])
+            s_filtered[idx] = p(t[idx])
         end
 
-        return signal_filtered
+        return s_filtered
     end
 
     if ftype === :lp
@@ -1774,11 +1800,11 @@ function signal_filter(signal::Vector{Float64}; fprototype::Symbol, ftype::Union
 
     eeg_filter = digitalfilter(responsetype, prototype)
 
-    dir === :twopass && (signal_filtered = filtfilt(eeg_filter, signal))
-    dir === :onepass && (signal_filtered = filt(eeg_filter, signal))
-    dir === :onepass_reverse && (signal_filtered = filt(eeg_filter, reverse(signal)))
+    dir === :twopass && (s_filtered = filtfilt(eeg_filter, signal))
+    dir === :onepass && (s_filtered = filt(eeg_filter, signal))
+    dir === :onepass_reverse && (s_filtered = filt(eeg_filter, reverse(signal)))
 
-    return signal_filtered
+    return s_filtered
 end
 
 """
@@ -1806,16 +1832,16 @@ Filters `signal` using zero phase distortion filter.
 
 # Returns
 
-- `signal_filtered::Array{Float64, 3}`
+- `s_filtered::Array{Float64, 3}`
 """
 function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    signal_filtered = zeros(size(signal))
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_filtered = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
                                                            fprototype=fprototype,
                                                            ftype=ftype,
                                                            cutoff=cutoff,
@@ -1830,7 +1856,7 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Uni
         end
     end
 
-    return signal_filtered
+    return s_filtered
 end
 
 """
@@ -1846,7 +1872,7 @@ Downsamples the`signal` to `new_sr` sampling frequency.
 
 # Returns
 
-- `signal_downsampled::Vector{Float64}`
+- `s_downsampled::Vector{Float64}`
 - `t_downsampled::Vector{Float64}`
 """
 function signal_downsample(signal::Vector{Float64}; t::AbstractRange, new_sr::Int64)
@@ -1860,11 +1886,11 @@ function signal_downsample(signal::Vector{Float64}; t::AbstractRange, new_sr::In
     new_sr == sr && return(signal)
     sr_ratio = new_sr / sr
     # downsample
-    signal_downsampled = resample(signal, sr_ratio)
+    s_downsampled = resample(signal, sr_ratio)
     t = collect(t)
     t_downsampled = t[1]:1/new_sr:t[end]
 
-    return signal_downsampled, t_downsampled
+    return s_downsampled, t_downsampled
 end
 
 """
@@ -1880,56 +1906,56 @@ Downsamples all channels of the`signal` to `new_sr` sampling frequency.
 
 # Returns
 
-- `signal_downsampled::Array{Float64, 3}`
+- `s_downsampled::Array{Float64, 3}`
 - `t_downsampled::AbstractRange`
 """
 function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
     
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_downsampled_length = length(signal_downsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
-    signal_downsampled = zeros(channels_no, signal_downsampled_length, epochs_no) 
+    s_downsampled_len = length(signal_downsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
+    s_downsampled = zeros(channels_n, s_downsampled_len, epochs_n) 
 
     t_downsampled = nothing
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end
     end
 
-    return signal_downsampled, t_downsampled
+    return s_downsampled, t_downsampled
 end
 
 """
-    signal_psd(signal; fs, normalize=false)
+    signal_psd(signal; fs, norm=false)
 
 Calculates power spectrum density of the `signal`.
 
 # Arguments
 - `signal::Vector{Float64}`
 - `fs::Int64` - sampling rate
-- `normalize::Bool` - normalize do dB
+- `norm::Bool` - normalize do dB
 
 # Returns
 
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
-function signal_psd(signal::Vector{Float64}; fs::Int64, normalize::Bool=false)
+function signal_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false)
     fs < 1 && throw(ArgumentError("Sampling rate must be positive."))
     
     psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_pow = power(psd)
     psd_frq = freq(psd)
-    normalize == true && (psd_pow = pow2db.(psd_pow))
+    norm == true && (psd_pow = pow2db.(psd_pow))
 
     return psd_pow, Vector(psd_frq)
 end
 
 """
-    signal_psd(signal; fs, normalize=false)
+    signal_psd(signal; fs, norm=false)
 
 Calculates power spectrum density for each the `signal` channels.
 
@@ -1937,31 +1963,31 @@ Calculates power spectrum density for each the `signal` channels.
 
 - `signal::Matrix{Float64}`
 - `fs::Int64` - sampling rate
-- `normalize::Bool` - normalize do dB
+- `norm::Bool` - normalize do dB
 
 # Returns
 
 - `psd_pow::Matrix{Float64}`
 - `psd_frq::Matrix{Float64}`
 """
-function signal_psd(signal::Matrix{Float64}; fs::Int64, normalize::Bool=false)
+function signal_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false)
     fs < 1 && throw(ArgumentError("Sampling rate must be positive."))
 
-    channels_no = size(signal, 1)
-    psd_length, _ = signal_psd(signal[1, :], fs=fs, normalize=normalize)
-    psd_pow = zeros(channels_no, length(psd_length))
-    psd_frq = zeros(channels_no, length(psd_length))
-    Threads.@threads for idx in 1:channels_no
+    channels_n = size(signal, 1)
+    psd_len, _ = signal_psd(signal[1, :], fs=fs, norm=norm)
+    psd_pow = zeros(channels_n, length(psd_len))
+    psd_frq = zeros(channels_n, length(psd_len))
+    Threads.@threads for idx in 1:channels_n
         psd_pow[idx, :], psd_frq[idx, :] = signal_psd(signal[idx, :],
                                                       fs=fs,
-                                                      normalize=normalize)
+                                                      norm=norm)
     end
 
     return psd_pow, psd_frq
 end
 
 """
-    signal_psd(signal; fs, normalize=false)
+    signal_psd(signal; fs, norm=false)
 
 Calculates power spectrum density for each the `signal` channels.
 
@@ -1969,26 +1995,26 @@ Calculates power spectrum density for each the `signal` channels.
 
 - `signal::Array{Float64, 3}`
 - `fs::Int64` sampling rate
-- `normalize::Bool` - normalize do dB
+- `norm::Bool` - normalize do dB
 
 # Returns
 
 - `psd_pow::Array{Float64, 3}`
 - `psd_frq::Array{Float64, 3}`
 """
-function signal_psd(signal::Array{Float64, 3}; fs::Int64, normalize::Bool=false)
+function signal_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
     fs < 1 && throw(ArgumentError("Sampling rate must be positive."))
 
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    psd_length, _ = signal_psd(signal[1, :, 1], fs=fs, normalize=normalize)
-    psd_pow = zeros(channels_no, length(psd_length), epochs_no)
-    psd_frq = zeros(channels_no, length(psd_length), epochs_no)
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    psd_len, _ = signal_psd(signal[1, :, 1], fs=fs, norm=norm)
+    psd_pow = zeros(channels_n, length(psd_len), epochs_n)
+    psd_frq = zeros(channels_n, length(psd_len), epochs_n)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = signal_psd(signal[idx, :, epoch],
                                                                         fs=fs,
-                                                                        normalize=normalize)
+                                                                        norm=norm)
         end
     end
 
@@ -2030,11 +2056,11 @@ Calculates phase stationarity using Hilbert transformation.
 - `phase_stationarity::Array{Float64, 3}`
 """
 function signal_stationarity_hilbert(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    phase_stationarity = zeros(channels_no, size(signal, 2) - 1, epochs_no)
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    phase_stationarity = zeros(channels_n, size(signal, 2) - 1, epochs_n)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             phase_stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
         end
     end
@@ -2109,31 +2135,31 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
     (typeof(window) == Int64 && window < 1) && throw(ArgumentError("Time window must be ≥ 1."))
     (typeof(window) == Int64 && window > size(signal, 2)) && throw(ArgumentError("Time window must be ≤ epoch duration in samples."))
     
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
     if method === :mean
-        stationarity = zeros(channels_no, window, epochs_no)
-        Threads.@threads for epoch in 1:epochs_no
-            for idx = 1:channels_no
+        stationarity = zeros(channels_n, window, epochs_n)
+        Threads.@threads for epoch in 1:epochs_n
+            for idx = 1:channels_n
                 stationarity[idx, :, epoch] = signal_stationarity_mean(signal[idx, :, epoch], window=window)
             end
         end
     end
 
     if method === :var
-        stationarity = zeros(channels_no, window, epochs_no)
-        Threads.@threads for epoch in 1:epochs_no
-            for idx = 1:channels_no
+        stationarity = zeros(channels_n, window, epochs_n)
+        Threads.@threads for epoch in 1:epochs_n
+            for idx = 1:channels_n
                 stationarity[idx, :, epoch] = signal_stationarity_var(signal[idx, :, epoch], window=window)
             end
         end
     end
 
     if method === :hilbert
-        stationarity = zeros(channels_no, size(signal, 2) - 1, epochs_no)
-        Threads.@threads for epoch in 1:epochs_no
-            for idx = 1:channels_no
+        stationarity = zeros(channels_n, size(signal, 2) - 1, epochs_n)
+        Threads.@threads for epoch in 1:epochs_n
+            for idx = 1:channels_n
                 stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
             end
         end
@@ -2142,16 +2168,16 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
     if method === :euclid
         # number of time windows per epoch
         window_n = size(signal, 2)
-        cov_mat = zeros(channels_no, channels_no, window_n, epochs_no)
-        stationarity = zeros(1 + length(2:window:window_n), epochs_no)
+        cov_mat = zeros(channels_n, channels_n, window_n, epochs_n)
+        stationarity = zeros(1 + length(2:window:window_n), epochs_n)
 
-        Threads.@threads for epoch in 1:epochs_no
+        Threads.@threads for epoch in 1:epochs_n
             for idx = 1:window_n
                 cov_mat[:, :, idx, epoch] = signal_cov(signal[:, idx, epoch], signal[:, idx, epoch])
             end
         end
 
-        Threads.@threads for epoch in 1:epochs_no
+        Threads.@threads for epoch in 1:epochs_n
             phase_idx = 1
             for idx = 2:window:window_n
                 stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
@@ -2179,7 +2205,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 # Returns
 
-- `signal_trimmed::Vector{Float64}`
+- `s_trimmed::Vector{Float64}`
 
 """
 function signal_trim(signal::Vector{Float64}; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
@@ -2190,10 +2216,10 @@ function signal_trim(signal::Vector{Float64}; trim_len::Int64, offset::Int64=0, 
     offset >= length(signal) - 1 && throw(ArgumentError("Offset must be less than signal length."))
     (from ===:start && 1 + offset + trim_len > length(signal)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
-    from === :start && (signal_trimmed = vcat(signal[1:offset], signal[(1 + offset + trim_len):end]))
-    from === :end && (signal_trimmed = signal[1:(end - trim_len)])
+    from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + trim_len):end]))
+    from === :end && (s_trimmed = signal[1:(end - trim_len)])
     
-    return signal_trimmed::Vector{Float64}
+    return s_trimmed::Vector{Float64}
 end
 
 
@@ -2211,7 +2237,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 # Returns
 
-- `signal_trimmed::Array{Float64, 3}`
+- `s_trimmed::Array{Float64, 3}`
 
 """
 function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
@@ -2222,18 +2248,18 @@ function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0
     offset >= size(signal, 2) - 1 && throw(ArgumentError("Offset must be less than signal length."))
     (from ===:start && 1 + offset + trim_len > size(signal, 2)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_trimmed = zeros(channels_no, (size(signal, 2) - trim_len), epochs_no)
+    s_trimmed = zeros(channels_n, (size(signal, 2) - trim_len), epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx = 1:channels_no
-            signal_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx = 1:channels_n
+            s_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
         end
     end
     
-    return signal_trimmed
+    return s_trimmed
 end
 
 """
@@ -2271,13 +2297,13 @@ Calculates mutual information between each the `signal` channels.
 - `mi::Array{Float64, 3}`
 """
 function signal_mi(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    mi = zeros(channels_no, channels_no, epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    mi = zeros(channels_n, channels_n, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx1 in 1:channels_no
-            for idx2 in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
                 mi[idx1, idx2, epoch] = signal_mi(signal[idx1, :, epoch], signal[idx2, :, epoch])
             end
         end
@@ -2303,13 +2329,13 @@ Calculates mutual information between each the `signal1` and `signal2` channels.
 function signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     size(signal1, 1) == size(signal2, 1) || throw(ArgumentError("Both signals must have the same number of channels."))
     size(signal1, 3) == size(signal2, 3) || throw(ArgumentError("Both signals must have the same number of epochs."))
-    channels_no = size(signal1, 1)
-    epochs_no = size(signal1, 3)
-    mi = zeros(channels_no, channels_no, epochs_no)
+    channels_n = size(signal1, 1)
+    epochs_n = size(signal1, 3)
+    mi = zeros(channels_n, channels_n, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx1 in 1:channels_no
-            for idx2 in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
                 mi[idx1, idx2, epoch] = signal_mi(signal1[idx1, :, epoch], signal2[idx2, :, epoch])
             end
         end
@@ -2329,7 +2355,7 @@ Calculates entropy of `signal`.
 
 # Returns
 
-- `entropy::Float64`
+- `ent::Float64`
 
 """
 function signal_entropy(signal::Vector{Float64})
@@ -2359,20 +2385,20 @@ Calculates mutual information between each the `signal1` and `signal2` channels.
 
 # Returns
 
-- `entropy::Matrix{Float64}`
+- `s_entropy::Matrix{Float64}`
 """
 function signal_entropy(signal::Array{Float64, 3})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
-    sig_entropy = zeros(channels_no, epochs_no)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    s_entropy = zeros(channels_n, epochs_n)
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx1 in 1:channels_no
-                sig_entropy[idx1, epoch] = signal_entropy(signal[idx1, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx1 in 1:channels_n
+                s_entropy[idx1, epoch] = signal_entropy(signal[idx1, :, epoch])
         end
     end
 
-    return sig_entropy
+    return s_entropy
 end
 
 """
@@ -2387,18 +2413,18 @@ Averages `signal1` and `signal2`.
 
 # Returns
 
-- `signal_averaged::Vector{Float64}`
+- `s_averaged::Vector{Float64}`
 
 """
 function signal_average(signal1::Vector{Float64}, signal2::Vector{Float64})
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    signal_averaged = zeros(length(signal1))
+    s_averaged = zeros(length(signal1))
     for idx in 1:length(signal1)
-        signal_averaged[idx] = mean([signal1[idx], signal2[idx]])
+        s_averaged[idx] = mean([signal1[idx], signal2[idx]])
     end
 
-    return signal_averaged
+    return s_averaged
 end
 
 """
@@ -2413,21 +2439,21 @@ Averages `signal1` and `signal2`.
 
 # Returns
 
-- `signal_averaged::Array{Float64, 3}`
+- `s_averaged::Array{Float64, 3}`
 """
 function signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-    channels_no = size(signal1, 1)
-    epochs_no = size(signal1, 3)
-    signal_averaged = zeros(size(signal1))
+    channels_n = size(signal1, 1)
+    epochs_n = size(signal1, 3)
+    s_averaged = zeros(size(signal1))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
         end
     end
 
-    return signal_averaged
+    return s_averaged
 end
 
 """
@@ -2448,10 +2474,10 @@ Calculates coherence between `signal1` and `signal2`.
 function signal_coherence(signal1::Vector{Float64}, signal2::Vector{Float64})
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    signal1_fft = fft(signal1) ./ length(signal1)
-    signal2_fft = fft(signal2) ./ length(signal2)
+    s1_fft = fft(signal1) ./ length(signal1)
+    s2_fft = fft(signal2) ./ length(signal2)
 
-    coherence = (abs.((signal1_fft) .* conj.(signal2_fft)).^2) ./ (signal1_fft .* signal2_fft)
+    coherence = (abs.((s1_fft) .* conj.(s2_fft)).^2) ./ (s1_fft .* s2_fft)
 
     return coherence
 end
@@ -2472,12 +2498,12 @@ Calculates coherence between `signal1` and `signal2`.
 """
 function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-    channels_no = size(signal1, 1)
-    epochs_no = size(signal1, 3)
+    channels_n = size(signal1, 1)
+    epochs_n = size(signal1, 3)
     coherence = zeros(ComplexF64, size(signal1))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
             coherence[idx, :, epoch] = signal_coherence(signal1[idx, :, epoch], signal2[idx, :, epoch])
         end
     end
@@ -2485,74 +2511,41 @@ function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}
     return coherence
 end
 
-
 """
-   signal_pca(signal1, signal2; n)
+    signal_pca(signal, n)
 
-Calculates `n` first PCAs for `signal1` and `signal2`.
+Calculates `n` first PCs for `signal`.
 
 # Arguments
 
-- `signal1::Vector{Float64}`
-- `signal2::Vector{Float64}`
+- `signal::Array{Float64, 3}`
 - `n::Int64` - number of PCs
 
 # Returns
 
-- `pc::Matrix{Float64}`
-- `pc_var::Vector{Float64}`
+- `pc::Array{Float64, 3}:` - PC(1)..PC(n) × epoch
+- `pc_var::Matrix{Float64}` - PC_VAR(1)..PC_VAR(n) × epoch
 """
-function signal_pca(signal1::Vector{Float64}, signal2::Vector{Float64}; n::Int64)
-    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
+function signal_pca(signal::Array{Float64, 3}; n::Int64)
     n < 0 && throw(ArgumentError("Number of PCs must be ≥ 1."))
-    n > length(signal1) && throw(ArgumentError("Number of PCs cannot be higher than signal length."))
+    n > size(signal, 1) && throw(ArgumentError("Number of PCs cannot be higher than signal rows."))
 
-    signal1 = signal_demean(signal1)
-    signal2 = signal_demean(signal2)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
+    pc = zeros(n, size(signal, 2), epochs_n)
+    pc_var = zeros(n, epochs_n)
 
-    cov_mat = signal_cov(signal1, signal2, normalize=true)
+    Threads.@threads for epoch in 1:epochs_n
+        m_cov = signal_cov(signal[:, :, epoch])
+        eig_val, eig_vec = eigen(m_cov)
+        eig_val_idx = sortperm(eig_val, rev=true)
+        eig_val = eig_val[eig_val_idx]
+        eig_vec = matrix_sort(eig_vec, eig_val_idx)
+        eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-    eig_val, eig_vec = eigen(cov_mat)                       # eig_vec columns = PCs
-    eig_val = 100 .* (eig_val ./ sum(eig_val))              # convert to % of variance
-    eig_val = reverse!(eig_val)
-
-    pc_var = zeros(n)
-    pc = zeros(n, (length(signal1)))
-    for idx in 1:n
-        pc_var[idx] = eig_val[idx]
-        pc[idx, :] = eig_vec[:, idx]
-    end
-
-    return pc, pc_var
-end
-
-"""
-    signal_pca(signal1, signal2; n)
-
-Calculates `n` first PCAs for `signal1` and `signal2`.
-
-# Arguments
-
-- `signal1::Array{Float64, 3}`
-- `signal2::Array{Float64, 3}`
-- `n::Int64` - number of PCs
-
-# Returns
-
-- `pc::Array{Float64, 4}:` - n × PC × channel × epoch
-- `pc_var::Vector{Float64}` - pc_var × channel × epoch
-"""
-function signal_pca(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::Int64)
-    size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-
-    channels_no = size(signal1, 1)
-    epochs_no = size(signal1, 3)
-    pc = zeros(n, size(signal1, 2), channels_no, epochs_no)
-    pc_var = zeros(n, channels_no, epochs_no)
-
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            pc[:, :, idx, epoch], pc_var[:, idx, epoch] = signal_pca(signal1[idx, :, epoch], signal2[idx, :, epoch], n=n)
+        for idx in 1:n
+            pc_var[idx, epoch] = eig_val[idx]
+            pc[idx, :, epoch] = (eig_vec[:, idx] .* signal[:, :, epoch])[idx, :]
         end
     end
 
@@ -2571,25 +2564,25 @@ Performs convolution in the frequency domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_conv::Vector{ComplexF64}`
+- `s_conv::Vector{ComplexF64}`
 """
 function signal_fconv(signal::Vector{Float64}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     n_signal = length(signal)
     n_kernel = length(kernel)
     n_conv = n_signal + n_kernel - 1
     half_kernel = floor(Int64, n_kernel / 2)
-    signal_fft = fft0(signal, n_conv)
+    s_fft = fft0(signal, n_conv)
     kernel_fft = fft0(kernel, n_conv)
-    signal_conv = ifft(signal_fft .* kernel_fft)
+    s_conv = ifft(s_fft .* kernel_fft)
     
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
-        signal_conv = signal_conv[half_kernel:(end - half_kernel)]
+        s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        signal_conv = signal_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
     end
 
-    return signal_conv
+    return s_conv
 end
 
 """
@@ -2604,19 +2597,19 @@ Performs convolution in the frequency domain between `signal` and `kernel`.
 
 # Returns
 
-- `signal_conv::Array{ComplexF64, 3}`
+- `s_conv::Array{ComplexF64, 3}`
 """
 function signal_fconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-    channels_no = size(signal, 1)
-    epochs_no = size(signal, 3)
+    channels_n = size(signal, 1)
+    epochs_n = size(signal, 3)
 
-    signal_conv = zeros(ComplexF64, size(signal))
+    s_conv = zeros(ComplexF64, size(signal))
 
-    Threads.@threads for epoch in 1:epochs_no
-        for idx in 1:channels_no
-            signal_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
+    Threads.@threads for epoch in 1:epochs_n
+        for idx in 1:channels_n
+            s_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
         end
     end
 
-    return signal_conv
+    return s_conv
 end
