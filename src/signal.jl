@@ -2528,7 +2528,7 @@ Calculates `n` first PCs for `signal`.
 """
 function signal_pca(signal::Array{Float64, 3}; n::Int64)
     n < 0 && throw(ArgumentError("Number of PCs must be ≥ 1."))
-    n > size(signal, 1) && throw(ArgumentError("Number of PCs cannot be higher than signal rows."))
+    n < size(signal, 1) || throw(ArgumentError("Number of PCs cannot be higher than signal rows."))
 
     channels_n = size(signal, 1)
     epochs_n = size(signal, 3)
