@@ -402,7 +402,7 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)
-        e10 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf))
+        e10 = eeg_epochs(edf_new, epochs_len=10*eeg_samplingrate(edf))
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
@@ -414,6 +414,6 @@ function eeg_benchmark(n::Int64)
 end
 @time eeg_benchmark(10)
 # workstation: 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
-# workstation: 83.940243 seconds (116.14 M allocations: 643.699 GiB, 32.21% gc time)
+# workstation: 56.047619 seconds (118.41 M allocations: 643.908 GiB, 15.67% gc time, 0.78% compilation time)
 # laptop: 92.209796 seconds (114.60 M allocations: 642.148 GiB, 10.88% gc time)
 ```

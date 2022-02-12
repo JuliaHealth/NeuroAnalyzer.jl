@@ -37,17 +37,9 @@ function signal_derivative(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_der = zeros(size(signal))
     
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_der[idx, :, epoch] = signal_derivative(signal[idx, :, epoch])
         end
     end
 
@@ -100,17 +92,9 @@ function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
     epochs_n = size(signal, 3)
     stp = zeros(channels_n, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            stp[idx, epoch] = signal_total_power(signal[idx, :, epoch], fs=fs)
         end
     end
 
@@ -179,17 +163,9 @@ function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64
     epochs_n = size(signal, 3)
     sbp = zeros(channels_n, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            sbp[idx, epoch] = signal_band_power(signal[idx, :, epoch], fs=fs, f1=f1, f2=f2)
         end
     end
 
@@ -247,17 +223,9 @@ function signal_make_spectrum(signal::Array{Float64, 3}; fs::Int64)
     s_fft = zeros(ComplexF64, size(signal))
     s_sf = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_fft[idx, :, epoch], s_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs=fs)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_fft[idx, :, epoch], s_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs=fs)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_fft[idx, :, epoch], s_sf[idx, :, epoch] = signal_make_spectrum(signal[idx, :, epoch], fs=fs)
         end
     end
 
@@ -317,17 +285,9 @@ function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
     epochs_n = size(signal, 3)
     s_det = zeros(size(signal))
     
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_det[idx, :, epoch] = signal_detrend(signal[idx, :, epoch], type=type)
         end
     end
 
@@ -713,23 +673,12 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=fa
     epochs_n = size(signal, 3)
     acov = zeros(channels_n, length(lags), epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                acov[idx, :, epoch], lags = signal_autocov(signal[idx, :, epoch],
-                                                           lag=lag,
-                                                           demean=demean,
-                                                           norm=norm)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                acov[idx, :, epoch], lags = signal_autocov(signal[idx, :, epoch],
-                                                           lag=lag,
-                                                           demean=demean,
-                                                           norm=norm)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            acov[idx, :, epoch], lags = signal_autocov(signal[idx, :, epoch],
+                                                       lag=lag,
+                                                       demean=demean,
+                                                       norm=norm)
         end
     end
 
@@ -820,37 +769,19 @@ function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=f
     epochs_n = size(signal, 3)
     ccov = zeros(channels_n^2, length(lags), epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            ccov_packed = Array{Vector{Float64}}(undef, channels_n, channels_n)
-            Threads.@threads for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    ccov_packed[idx1, idx2], lags = signal_crosscov(signal[idx1, :, epoch],
-                                                              signal[idx2, :, epoch],
-                                                              lag=lag,
-                                                              demean=demean,
-                                                              norm=norm)
-                end
-            end
-            for idx in 1:channels_n^2
-                ccov[idx, :, epoch] = ccov_packed[idx]
+    for epoch in 1:epochs_n
+        ccov_packed = Array{Vector{Float64}}(undef, channels_n, channels_n)
+        Threads.@threads for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
+                ccov_packed[idx1, idx2], lags = signal_crosscov(signal[idx1, :, epoch],
+                                                          signal[idx2, :, epoch],
+                                                          lag=lag,
+                                                          demean=demean,
+                                                          norm=norm)
             end
         end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            ccov_packed = Array{Vector{Float64}}(undef, channels_n, channels_n)
-            for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    ccov_packed[idx1, idx2], lags = signal_crosscov(signal[idx1, :, epoch],
-                                                              signal[idx2, :, epoch],
-                                                              lag=lag,
-                                                              demean=demean,
-                                                              norm=norm)
-                end
-            end
-            for idx in 1:channels_n^2
-                ccov[idx, :, epoch] = ccov_packed[idx]
-            end
+        for idx in 1:channels_n^2
+            ccov[idx, :, epoch] = ccov_packed[idx]
         end
     end
 
@@ -884,25 +815,13 @@ function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3};
     epochs_n = size(signal1, 3)
     ccov = zeros(channels_n, length(lags), epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                ccov[idx, :, epoch], lags = signal_crosscov(signal1[idx, :, epoch],
-                                                            signal2[idx, :, epoch],
-                                                            lag=lag,
-                                                            demean=demean,
-                                                            norm=norm)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                ccov[idx, :, epoch], lags = signal_crosscov(signal1[idx, :, epoch],
-                                                            signal2[idx, :, epoch],
-                                                            lag=lag,
-                                                            demean=demean,
-                                                            norm=norm)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            ccov[idx, :, epoch], lags = signal_crosscov(signal1[idx, :, epoch],
+                                                        signal2[idx, :, epoch],
+                                                        lag=lag,
+                                                        demean=demean,
+                                                        norm=norm)
         end
     end
 
@@ -974,17 +893,9 @@ function signal_spectrum(signal::Array{Float64, 3}; pad::Int64=0)
     s_powers = zeros(channels_n, size(signal, 2) + pad, epochs_n)
     s_phases = zeros(channels_n, size(signal, 2) + pad, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = signal_spectrum(signal[idx, :, epoch], pad=pad)
         end
     end
 
@@ -1207,30 +1118,16 @@ function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Unio
         end
     end
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            if length(reference_idx) == 1
-                reference_channel = mean(signal[reference_idx, :, epoch], dims=2)
-            else
-                reference_channel = vec(mean(signal[reference_idx, :, epoch], dims=1))
-            end
-            Threads.@threads for idx in 1:channels_n
-                s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
-            end
-            length(reference_idx) == 1 && (s_ref[reference_idx, :, epoch] = reference_channel)
+    for epoch in 1:epochs_n
+        if length(reference_idx) == 1
+            reference_channel = mean(signal[reference_idx, :, epoch], dims=2)
+        else
+            reference_channel = vec(mean(signal[reference_idx, :, epoch], dims=1))
         end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            if length(reference_idx) == 1
-                reference_channel = mean(signal[reference_idx, :, epoch], dims=2)
-            else
-                reference_channel = vec(mean(signal[reference_idx, :, epoch], dims=1))
-            end
-            for idx in 1:channels_n
-                s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
-            end
-            length(reference_idx) == 1 && (s_ref[reference_idx, :, epoch] = reference_channel)
+        Threads.@threads for idx in 1:channels_n
+            s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
+        length(reference_idx) == 1 && (s_ref[reference_idx, :, epoch] = reference_channel)
     end
 
     return s_ref
@@ -1279,19 +1176,10 @@ function signal_reference_car(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_ref = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            reference_channel = vec(mean(signal[:, :, epoch], dims=1))
-            Threads.@threads for idx in 1:channels_n
-                s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            reference_channel = vec(mean(signal[:, :, epoch], dims=1))
-            for idx in 1:channels_n
-                s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
-            end
+    for epoch in 1:epochs_n
+        reference_channel = vec(mean(signal[:, :, epoch], dims=1))
+        Threads.@threads for idx in 1:channels_n
+            s_ref[idx, :, epoch] = signal[idx, :, epoch] .- reference_channel
         end
     end
 
@@ -1341,17 +1229,9 @@ function signal_taper(signal::Array{Float64, 3}, taper::Union{Vector{Int64}, Vec
 
     s_tap = zeros(eltype(taper), size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_tap[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_tap[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_tap[idx, :, epoch] = signal_taper(signal[idx, :, epoch], taper)
         end
     end
 
@@ -1395,17 +1275,9 @@ function signal_demean(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_dem = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_dem[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_dem[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_dem[idx, :, epoch] = signal_demean(signal[idx, :, epoch])
         end
     end
 
@@ -1448,17 +1320,9 @@ function signal_normalize_zscore(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_norm = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_norm[idx, :, epoch] = signal_normalize_zscore(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_norm[idx, :, epoch] = signal_normalize_zscore(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_norm[idx, :, epoch] = signal_normalize_zscore(signal[idx, :, epoch])
         end
     end
 
@@ -1501,17 +1365,9 @@ function signal_normalize_minmax(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_norm = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_norm[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_norm[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_norm[idx, :, epoch] = signal_normalize_minmax(signal[idx, :, epoch])
         end
     end
 
@@ -1662,17 +1518,9 @@ function signal_add_noise(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_noise = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_noise[idx, :, epoch] = signal_add_noise(signal[idx, :, epoch])
         end
     end
 
@@ -1738,17 +1586,9 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
     s_upsampled = zeros(channels_n, s_upsampled_len, epochs_n) 
 
     t_upsampled = nothing
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_upsampled[idx, :, epoch], t_upsampled = signal_upsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end
     end
 
@@ -1807,17 +1647,9 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
         s_conv = zeros(size(signal))
     end
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_conv[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_conv[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_conv[idx, :, epoch] = signal_tconv(signal[idx, :, epoch], kernel)
         end
     end
 
@@ -2020,39 +1852,20 @@ function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Uni
     epochs_n = size(signal, 3)
     s_filtered = zeros(size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
-                                                          fprototype=fprototype,
-                                                          ftype=ftype,
-                                                          cutoff=cutoff,
-                                                          fs=fs,
-                                                          order=order,
-                                                          rp=rp,
-                                                          rs=rs,
-                                                          dir=dir,
-                                                          d=d,
-                                                          t=t,
-                                                          window=window)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
-                                                          fprototype=fprototype,
-                                                          ftype=ftype,
-                                                          cutoff=cutoff,
-                                                          fs=fs,
-                                                          order=order,
-                                                          rp=rp,
-                                                          rs=rs,
-                                                          dir=dir,
-                                                          d=d,
-                                                          t=t,
-                                                          window=window)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_filtered[idx, :, epoch] = signal_filter(signal[idx, :, epoch],
+                                                      fprototype=fprototype,
+                                                      ftype=ftype,
+                                                      cutoff=cutoff,
+                                                      fs=fs,
+                                                      order=order,
+                                                      rp=rp,
+                                                      rs=rs,
+                                                      dir=dir,
+                                                      d=d,
+                                                      t=t,
+                                                      window=window)
         end
     end
 
@@ -2119,17 +1932,9 @@ function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::
     s_downsampled = zeros(channels_n, s_downsampled_len, epochs_n) 
 
     t_downsampled = nothing
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_downsampled[idx, :, epoch], t_downsampled = signal_downsample(signal[idx, :, epoch], t=t, new_sr=new_sr)
         end
     end
 
@@ -2219,21 +2024,11 @@ function signal_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
     psd_pow = zeros(channels_n, length(psd_len), epochs_n)
     psd_frq = zeros(channels_n, length(psd_len), epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = signal_psd(signal[idx, :, epoch],
-                                                                            fs=fs,
-                                                                            norm=norm)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = signal_psd(signal[idx, :, epoch],
-                                                                            fs=fs,
-                                                                            norm=norm)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = signal_psd(signal[idx, :, epoch],
+                                                                        fs=fs,
+                                                                        norm=norm)
         end
     end
 
@@ -2279,17 +2074,9 @@ function signal_stationarity_hilbert(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     phase_stationarity = zeros(channels_n, size(signal, 2) - 1, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                phase_stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                phase_stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            phase_stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
         end
     end
 
@@ -2368,51 +2155,27 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 
     if method === :mean
         stationarity = zeros(channels_n, window, epochs_n)
-        if epochs_n < channels_n
-            for epoch in 1:epochs_n
-                Threads.@threads for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_mean(signal[idx, :, epoch], window=window)
-                end
-            end
-        else
-            Threads.@threads for epoch in 1:epochs_n
-                for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_mean(signal[idx, :, epoch], window=window)
-                end
+        for epoch in 1:epochs_n
+            Threads.@threads for idx in 1:channels_n
+                stationarity[idx, :, epoch] = signal_stationarity_mean(signal[idx, :, epoch], window=window)
             end
         end
     end
 
     if method === :var
         stationarity = zeros(channels_n, window, epochs_n)
-        if epochs_n < channels_n
-            for epoch in 1:epochs_n
-                Threads.@threads for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_var(signal[idx, :, epoch], window=window)
-                end
-            end
-        else
-            Threads.@threads for epoch in 1:epochs_n
-                for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_var(signal[idx, :, epoch], window=window)
-                end
+        for epoch in 1:epochs_n
+            Threads.@threads for idx in 1:channels_n
+                stationarity[idx, :, epoch] = signal_stationarity_var(signal[idx, :, epoch], window=window)
             end
         end
     end
 
     if method === :hilbert
         stationarity = zeros(channels_n, size(signal, 2) - 1, epochs_n)
-        if epochs_n < channels_n
-            for epoch in 1:epochs_n
-                Threads.@threads for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
-                end
-            end
-        else
-            Threads.@threads for epoch in 1:epochs_n
-                for idx in 1:channels_n
-                    stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
-                end
+        for epoch in 1:epochs_n
+            Threads.@threads for idx in 1:channels_n
+                stationarity[idx, :, epoch] = signal_stationarity_hilbert(signal[idx, :, epoch])
             end
         end
     end
@@ -2423,37 +2186,18 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
         cov_mat = zeros(channels_n, channels_n, window_n, epochs_n)
         stationarity = zeros(1 + length(2:window:window_n), epochs_n)
 
-        if epochs_n < window_n
-            for epoch in 1:epochs_n
-                Threads.@threads for idx = 1:window_n
-                    cov_mat[:, :, idx, epoch] = signal_cov(signal[:, idx, epoch], signal[:, idx, epoch])
-                end
-            end
-        else
-            Threads.@threads for epoch in 1:epochs_n
-                for idx = 1:window_n
-                    cov_mat[:, :, idx, epoch] = signal_cov(signal[:, idx, epoch], signal[:, idx, epoch])
-                end
+        for epoch in 1:epochs_n
+            Threads.@threads for idx = 1:window_n
+                cov_mat[:, :, idx, epoch] = signal_cov(signal[:, idx, epoch], signal[:, idx, epoch])
             end
         end
 
-        if epochs_n < window_n
-            for epoch in 1:epochs_n
-                phase_idx = 1
-                Threads.@threads for idx = 2:window:window_n
-                    stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
-                                                               cov_mat[:, :, idx, epoch])
-                    phase_idx += 1
-                end
-            end
-        else
-            Threads.@threads for epoch in 1:epochs_n
-                phase_idx = 1
-                for idx = 2:window:window_n
-                    stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
-                                                               cov_mat[:, :, idx, epoch])
-                    phase_idx += 1
-                end
+        for epoch in 1:epochs_n
+            phase_idx = 1
+            Threads.@threads for idx = 2:window:window_n
+                stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
+                                                           cov_mat[:, :, idx, epoch])
+                phase_idx += 1
             end
         end
     end
@@ -2524,17 +2268,9 @@ function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0
 
     s_trimmed = zeros(channels_n, (size(signal, 2) - trim_len), epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_trimmed[idx, :, epoch] = signal_trim(signal[idx, :, epoch], trim_len=trim_len, from=from)
         end
     end
 
@@ -2580,20 +2316,10 @@ function signal_mi(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     mi = zeros(channels_n, channels_n, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    mi[idx1, idx2, epoch] = signal_mi(signal[idx1, :, epoch], signal[idx2, :, epoch])
-                end
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    mi[idx1, idx2, epoch] = signal_mi(signal[idx1, :, epoch], signal[idx2, :, epoch])
-                end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
+                mi[idx1, idx2, epoch] = signal_mi(signal[idx1, :, epoch], signal[idx2, :, epoch])
             end
         end
     end
@@ -2622,20 +2348,10 @@ function signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     epochs_n = size(signal1, 3)
     mi = zeros(channels_n, channels_n, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    mi[idx1, idx2, epoch] = signal_mi(signal1[idx1, :, epoch], signal2[idx2, :, epoch])
-                end
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx1 in 1:channels_n
-                for idx2 in 1:channels_n
-                    mi[idx1, idx2, epoch] = signal_mi(signal1[idx1, :, epoch], signal2[idx2, :, epoch])
-                end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx1 in 1:channels_n
+            for idx2 in 1:channels_n
+                mi[idx1, idx2, epoch] = signal_mi(signal1[idx1, :, epoch], signal2[idx2, :, epoch])
             end
         end
     end
@@ -2691,17 +2407,9 @@ function signal_entropy(signal::Array{Float64, 3})
     epochs_n = size(signal, 3)
     s_entropy = zeros(channels_n, epochs_n)
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_entropy[idx, epoch] = signal_entropy(signal[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_entropy[idx, epoch] = signal_entropy(signal[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_entropy[idx, epoch] = signal_entropy(signal[idx, :, epoch])
         end
     end
 
@@ -2751,17 +2459,9 @@ function signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
     epochs_n = size(signal1, 3)
     s_averaged = zeros(size(signal1))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_averaged[idx, :, epoch] = signal_average(signal1[idx, :, epoch], signal2[idx, :, epoch])
         end
     end
 
@@ -2814,17 +2514,9 @@ function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}
     epochs_n = size(signal1, 3)
     coherence = zeros(ComplexF64, size(signal1))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                coherence[idx, :, epoch] = signal_coherence(signal1[idx, :, epoch], signal2[idx, :, epoch])
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                coherence[idx, :, epoch] = signal_coherence(signal1[idx, :, epoch], signal2[idx, :, epoch])
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            coherence[idx, :, epoch] = signal_coherence(signal1[idx, :, epoch], signal2[idx, :, epoch])
         end
     end
 
@@ -2925,17 +2617,9 @@ function signal_fconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
 
     s_conv = zeros(ComplexF64, size(signal))
 
-    if epochs_n < channels_n
-        for epoch in 1:epochs_n
-            Threads.@threads for idx in 1:channels_n
-                s_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
-            end
-        end
-    else
-        Threads.@threads for epoch in 1:epochs_n
-            for idx in 1:channels_n
-                s_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
-            end
+    for epoch in 1:epochs_n
+        Threads.@threads for idx in 1:channels_n
+            s_conv[idx, :, epoch] = signal_fconv(signal[idx, :, epoch], kernel)
         end
     end
 
