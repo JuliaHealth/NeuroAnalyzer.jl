@@ -1,5 +1,5 @@
 """
-    eeg_import_edf(file_name, read_annotations=true, header_only=false, clean_labels=true)
+    eeg_edit(file_name; read_annotations=true, header_only=false, clean_labels=true)
 
 Loads EDF/EDFPlus file and returns EEG object.
 
@@ -25,7 +25,7 @@ value = (value - digital_minimum ) * gain + physical_minimum
 
 Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 """
-function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_labels::Bool=true)
+function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_labels::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     fid = open(file_name)
@@ -164,8 +164,8 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
-                      :patient => patient,
-                      :recording => recording,
+                      :patient => string(patient),
+                      :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
                       :data_records => data_records,

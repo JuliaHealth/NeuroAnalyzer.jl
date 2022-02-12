@@ -1261,3 +1261,39 @@ function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
 
     return eeg_new
 end
+
+"""
+    eeg_edit(eeg; field, value)
+
+Changes value of `eeg` `field` to `value`.
+
+# Arguments
+
+- `eeg::EEG`
+- `field::Symbol`
+- `value`
+
+# Returns
+
+- `eeg:EEG`
+
+"""
+function eeg_edit(eeg::EEG; field::Symbol, value)
+  value === nothing && throw(ArgumentError("Value cannot be empty."))
+  
+  eeg_new = deepcopy(eeg)
+  fields = keys(eeg_new.eeg_header)
+  field in fields || throw(ArgumentError("Field does not exist."))
+  typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("Field type does not mach value type."))
+  eeg_new.eeg_header[field] = value
+  # add entry to :history field
+  push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
+
+  return eeg_new
+end
+
+function eeg_show_header(eeg::EEG)
+    for idx in keys(eeg.eeg_header)
+        println("Field: $(rpad(idx, 25, " ")) value: $(eeg.eeg_header[idx])")
+    end
+end

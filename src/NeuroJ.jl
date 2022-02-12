@@ -165,6 +165,8 @@ export eeg_tconv
 export eeg_total_power
 export eeg_trim
 export eeg_upsample
+export eeg_edit
+export eeg_show_header
 
 include("eeg_io.jl")
 export eeg_import_edf

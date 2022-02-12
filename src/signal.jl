@@ -39,8 +39,8 @@ function signal_derivative(signal::Array{Float64, 3})
     
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
-            # s = @view signal[idx, :, epoch]
-            s_der[idx, :, epoch] = signal_derivative(@view signal[idx, :, epoch])
+            s = @view signal[idx, :, epoch]
+            s_der[idx, :, epoch] = signal_derivative(s)
         end
     end
 

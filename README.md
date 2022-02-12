@@ -78,7 +78,6 @@ General:
 - performance optimization
 
 EEG:
-- edit EEG header
 - eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots

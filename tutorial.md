@@ -37,6 +37,12 @@ edf.eeg_header[:eeg_duration_samples]
 eeg_sr(edf)
 ```
 
+Edit EEG header
+```julia
+eeg_show_header(edf)
+eeg_edit(edf, field=:patient, value="N.N.")
+```
+
 Show labels:
 ```julia
 eeg_labels(edf)

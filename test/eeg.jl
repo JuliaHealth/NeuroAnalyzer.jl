@@ -134,4 +134,7 @@ p, v = eeg_pca(edf, n=2)
 @test size(p) == (2, 354816, 1)
 @test size(v) == (2, 1)
 
+e = eeg_edit(edf, field=:patient, value="unknown")
+@test e.eeg_header[:patient] == "unknown"
+
 true
