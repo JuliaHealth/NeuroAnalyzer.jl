@@ -90,7 +90,8 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
         variances = var(signal, dims=2)
         mean_variance = mean(variances)
         for idx in 1:channel_n
-            s_normalized[idx, :] = (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
+            s = @view signal[idx, :]
+            s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
         end
     else
         s_normalized = signal

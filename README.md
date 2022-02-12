@@ -71,6 +71,7 @@ end
 
 General:
 - performance optimization
+- unify named arguments
 
 EEG:
 - edit EEG header

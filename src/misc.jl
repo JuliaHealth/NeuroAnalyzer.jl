@@ -72,8 +72,8 @@ Returns the positions of the `y` value in the vector `x` and the difference betw
 
 # Returns
 
-y_idx::Int64
-y_dist::Union{Int64, Float64}
+- `y_idx::Int64`
+-` y_dist::Union{Int64, Float64}`
 """
 function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float64}; return_distance::Bool=false)
     y_dist, y_idx = findmin(abs.(x .- y))
@@ -94,8 +94,8 @@ Returns the positions of the `y` vector in the vector `x`.
 
 # Returns
 
-y_idx::Int64
-y_dist::Union{Int64, Float64}
+- `y_idx::Int64`
+- `y_dist::Union{Int64, Float64}`
 """
 function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
@@ -209,14 +209,14 @@ Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `x::AbstractArray`
 - `n::Int64`
 
 # Returns
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}, n::Int64)
+function fft0(x::AbstractArray, n::Int64)
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
@@ -230,14 +230,14 @@ Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at t
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `x::AbstractArray`
 - `n::Int64`
 
 # Returns
 
 - `ifft0::Vector{ComplexF64}`
 """
-function ifft0(x::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}, n::Int64)
+function ifft0(x::AbstractArray, n::Int64)
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
@@ -438,14 +438,14 @@ function matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int
     if dims == 1
         for idx = 1:size(m, 2)
             # sort by columns
-            tmp = m[:, idx]
+            tmp = @view m[:, idx]
             tmp = tmp[m_idx]
             m_sorted[:, idx] = tmp
         end
     else
         for idx = 1:size(m, 1)
             # sort by rows
-            tmp = m[idx, :]
+            tmp = @view m[idx, :]
             tmp = tmp[m_idx]
             m_sorted[idx, :] = tmp
         end
