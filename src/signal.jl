@@ -33,6 +33,7 @@ Returns the derivative of each the `signal` channels with length same as the sig
 - `s_derivative::Array{Float64, 3}`
 """
 function signal_derivative(signal::Array{Float64, 3})
+    println("s")
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     s_der = zeros(size(signal))
@@ -1627,7 +1628,7 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
 end
 
 """
-    signal_tconv(signal, kernel)
+    signal_tconv(signal; kernel)
 
 Performs convolution in the time domain between `signal` and `kernel`.
 
@@ -1640,7 +1641,8 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 - `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function signal_tconv(signal::AbstractArray, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_tconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+    signal = Vector(signal)
     s_conv = conv(signal, kernel)
     half_kernel = floor(Int, length(kernel) / 2)
 
@@ -1655,7 +1657,7 @@ function signal_tconv(signal::AbstractArray, kernel::Union{Vector{Int64}, Vector
 end
 
 """
-    signal_tconv(signal, kernel)
+    signal_tconv(signal; kernel)
 
 Performs convolution in the time domain between `signal` and `kernel`.
 
@@ -1668,7 +1670,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 - `s_conv::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
 """
-function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
@@ -1681,7 +1683,7 @@ function signal_tconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_conv[idx, :, epoch] = signal_tconv(s, kernel)
+            s_conv[idx, :, epoch] = signal_tconv(s, kernel=kernel)
         end
     end
 

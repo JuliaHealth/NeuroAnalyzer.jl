@@ -810,7 +810,7 @@ Performs convolution in the time domain.
 - `eeg::EEG`
 """
 function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-    s_convoluted = signal_tconv(eeg.eeg_signals, kernel)
+    s_convoluted = signal_tconv(eeg.eeg_signals, kernel=kernel)
 
     ## EEG signal can only store Float64
     typeof(kernel) == Vector{ComplexF64} && (s_convoluted = abs.(s_convoluted))

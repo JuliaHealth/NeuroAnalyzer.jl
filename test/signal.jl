@@ -157,9 +157,9 @@ s_up, t_up = signal_upsample(signal_v, t=0:1/fs:10, new_sr=15)
 s_up, t_up = signal_upsample(signal_a, t=0:1/fs:10, new_sr=15)
 @test size(s_up) == (2, 151, 2)
 
-s_tcov = signal_tconv(signal_v, [1, 0, 1])
+s_tcov = signal_tconv(signal_v, kernel=[1, 0, 1])
 @test size(s_tcov) == (101, )
-s_tcov = signal_tconv(signal_a, [1, 0, 1])
+s_tcov = signal_tconv(signal_a, kernel=[1, 0, 1])
 @test size(s_tcov) == (2, 101, 2)
 
 s_filt = signal_filter(signal_v, fprototype=:butterworth, ftype=:lp, cutoff=2, fs=fs, order=8)
