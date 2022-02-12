@@ -47,6 +47,7 @@ Pads the matrix `m` with zeros to make it square.
 """
 function zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
     nr, nc = size(m)
+
     if nr > nc
         mp = repeat([0], nr, nr - nc)
         mp = hcat(m, mp)
@@ -56,6 +57,7 @@ function zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
     elseif nr == nc
         mp = m
     end
+
     return mp
 end
 
@@ -77,8 +79,9 @@ Returns the positions of the `y` value in the vector `x` and the difference betw
 """
 function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float64}; return_distance::Bool=false)
     y_dist, y_idx = findmin(abs.(x .- y))
-    return_distance == false && return y_idx
-    return_distance == true && return y_idx, y_dist
+
+    return_distance == false && (return y_idx)
+    return_distance == true && (return y_idx, y_dist)
 end
 
 """
@@ -102,11 +105,13 @@ function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64
 
     y_idx = zeros(length(y))
     y_dist = zeros(length(y))
+
     for idx in 1:length(y)
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
-    return_distance == false && return convert.(Int64, y_idx)
-    return_distance == true && return convert.(Int64, y_idx), y_dist
+
+    return_distance == false && (return convert.(Int64, y_idx))
+    return_distance == true && (return convert.(Int64, y_idx), y_dist)
 end
 
 """
@@ -127,6 +132,7 @@ Converts cartographic coordinates `x` and `y` to polar.
 function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
     rho = hypot(x, y)
     theta = atan(y, x)
+
     return rho, theta
 end
 
@@ -148,6 +154,7 @@ Converts polar coordinates `theta` and `rho` to cartographic.
 function pol2cart(theta::Float64, rho::Float64)
     x = rho * cos(theta)
     y = rho * sin(theta)
+
     return x, y
 end
 
@@ -199,6 +206,7 @@ function jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{V
     intersection = length(intersect(x, y))
     union = length(x) + length(y) - intersection
     j = intersection / union
+
     return j
 end
 
@@ -220,6 +228,7 @@ function fft0(x::AbstractArray, n::Int64)
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
+
     return fft(vcat(x, zeros(eltype(x), n)))
 end
 
@@ -241,6 +250,7 @@ function ifft0(x::AbstractArray, n::Int64)
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
+
     return ifft(vcat(x, zeros(eltype(x), n)))
 end
 
@@ -258,8 +268,11 @@ Returns the next power of 2 for given number `x`.
 - `nextpow::Int64`
 """
 function nextpow2(x::Int64)
-    x == 0 && return 1
-    x == 0 || return 2 ^ ndigits(x - 1, base=2)
+    if x == 0
+        return 1
+    else
+        return 2 ^ ndigits(x - 1, base=2)
+    end
 end
 
 """
@@ -371,7 +384,7 @@ Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 - `nyquist_freq::Float64`
 """
 function freqs(signal::Vector{Float64}, fs::Union{Int64, Float64})
-    fs < 0 && throw(ArgumentError("Sampling rate must be positive."))
+    fs < 0 && throw(ArgumentError("Sampling rate must be >0 Hz."))
 
     # Nyquist frequency
     nyquist_freq = fs / 2

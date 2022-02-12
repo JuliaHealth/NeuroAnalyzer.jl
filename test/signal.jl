@@ -99,16 +99,16 @@ epochs = signal_epochs(signal_v, epoch_n=10)
 epochs = signal_epochs(signal_m, epoch_n=10, average=true)
 @test size(epochs) == (2, 10)
 
-signal = signal_drop_channel(signal_m, 1)
+signal = signal_delete_channel(signal_m, channel=1)
 @test size(signal) == (1, 101)
 
-signal = signal_drop_channel(signal_a, 1)
+signal = signal_delete_channel(signal_a, channel=1)
 @test size(signal) == (1, 101, 2)
 
-signal_ref = signal_reference_channel(signal_m, 1)
+signal_ref = signal_reference_channel(signal_m, channel=1)
 @test size(signal_ref) == (2, 101)
 
-signal_ref = signal_reference_channel(signal_a, 1)
+signal_ref = signal_reference_channel(signal_a, channel=1)
 @test size(signal_ref) == (2, 101, 2)
 
 signal_ref = signal_reference_car(signal_m)
@@ -117,10 +117,10 @@ signal_ref = signal_reference_car(signal_m)
 signal_ref = signal_reference_car(signal_a)
 @test size(signal_ref) == (2, 101, 2)
 
-signal_tap = signal_taper(signal_v, signal_v)
+signal_tap = signal_taper(signal_v, taper=signal_v)
 @test size(signal_tap) == (101, )
 
-signal_tap = signal_taper(signal_a, signal_v)
+signal_tap = signal_taper(signal_a, taper=signal_v)
 @test size(signal_tap) == (2, 101, 2)
 
 signal_dem = signal_demean(signal_v)
@@ -243,9 +243,9 @@ p, v = signal_pca(signal_a, n=2)
 @test size(p) == (2, 101, 2)
 @test size(v) == (2, 2)
 
-s = signal_fconv(signal_v1, [1, 2, 3])
+s = signal_fconv(signal_v1, kernel=[1, 2, 3])
 @test size(s) == (101, )
-s = signal_fconv(signal_a1, [1, 2, 3])
+s = signal_fconv(signal_a1, kernel=[1, 2, 3])
 @test size(s) == (2, 101, 2)
 
 true

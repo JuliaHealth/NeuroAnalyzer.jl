@@ -158,15 +158,15 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=no
     end
 
     # get epochs markers for len > epoch_len
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epoch_n=1)
         epoch_len = size(eeg.eeg_signals, 2)
         epoch_n = size(eeg.eeg_signals, 3)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_samplingrate(eeg)))
+        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epoch_n]
@@ -178,14 +178,14 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=no
 
     len > eeg_tmp.eeg_header[:epoch_duration_seconds] && (len = eeg_tmp.eeg_header[:epoch_duration_seconds])
     if t === nothing
-        t = collect(0:(1 / eeg_samplingrate(eeg_tmp)):len)
-        t = t .+ (offset / eeg_samplingrate(eeg_tmp))
+        t = collect(0:(1 / eeg_sr(eeg_tmp)):len)
+        t = t .+ (offset / eeg_sr(eeg_tmp))
         t = t[1:(end - 1)]
     end
     if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-    if offset + (len * eeg_samplingrate(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
+    if offset + (len * eeg_sr(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
@@ -200,7 +200,7 @@ function eeg_plot(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=no
                     kwargs...)
 
     # add epochs markers
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
         p = vline!(p,
                    epoch_markers,
                    timeseries=:vline,
@@ -538,15 +538,15 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
     end
 
     # get epochs markers for len > epoch_len
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epoch_n=1)
         epoch_len = size(eeg.eeg_signals, 2)
         epoch_n = size(eeg.eeg_signals, 3)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_samplingrate(eeg)))
+        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epoch_n]
@@ -558,14 +558,14 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
 
     len > eeg_tmp.eeg_header[:epoch_duration_seconds] && (len = eeg_tmp.eeg_header[:epoch_duration_seconds])
     if t === nothing
-        t = collect(0:(1 / eeg_samplingrate(eeg_tmp)):len)
-        t = t .+ (offset / eeg_samplingrate(eeg_tmp))
+        t = collect(0:(1 / eeg_sr(eeg_tmp)):len)
+        t = t .+ (offset / eeg_sr(eeg_tmp))
         t = t[1:(end - 1)]
     end
     if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-    if offset + (len * eeg_samplingrate(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
+    if offset + (len * eeg_sr(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
@@ -580,7 +580,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
                         kwargs...)
 
     # add epochs markers
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
         p = vline!(p,
                    epoch_markers,
                    timeseries=:vline,
@@ -712,15 +712,15 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, N
     end
 
     # get epochs markers for len > epoch_len
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epoch_n=1)
         epoch_len = size(eeg.eeg_signals, 2)
         epoch_n = size(eeg.eeg_signals, 3)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_samplingrate(eeg)))
+        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
     else
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epoch_n]
@@ -732,14 +732,14 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, N
 
     len > eeg_tmp.eeg_header[:epoch_duration_seconds] && (len = eeg_tmp.eeg_header[:epoch_duration_seconds])
     if t === nothing
-        t = collect(0:(1 / eeg_samplingrate(eeg_tmp)):len)
-        t = t .+ (offset / eeg_samplingrate(eeg_tmp))
+        t = collect(0:(1 / eeg_sr(eeg_tmp)):len)
+        t = t .+ (offset / eeg_sr(eeg_tmp))
         t = t[1:(end - 1)]
     end
     if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-    if offset + (len * eeg_samplingrate(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
+    if offset + (len * eeg_sr(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
@@ -755,7 +755,7 @@ function eeg_plot_butterfly(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, N
                               kwargs...)
 
     # add epochs markers
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
         p = vline!(p,
                    epoch_markers,
                    timeseries=:vline,
@@ -999,11 +999,11 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Flo
 
     # select channels, default is all channels
     channel === nothing && (channel = 1:eeg.eeg_header[:channel_n])
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
         eeg_tmp = eeg_epochs(eeg_tmp, epoch_n=1)
     else
-        eeg_tmp = eeg_keep_channel(eeg, channel)
+        eeg_tmp = eeg_keep_channel(eeg, channel=channel)
     end
 
     if epoch < 1 || epoch > eeg_tmp.eeg_header[:epoch_n]
@@ -1013,11 +1013,11 @@ function eeg_plot_psd(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Flo
     if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
-    if offset + (len * eeg_samplingrate(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
+    if offset + (len * eeg_sr(eeg_tmp)) > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value or length value out of range."))
     end
 
-    fs = eeg_samplingrate(eeg_tmp)
+    fs = eeg_sr(eeg_tmp)
     len *= fs
     signal = eeg_tmp.eeg_signals[:, (1 + offset):(offset + len), epoch]
     labels = eeg_tmp.eeg_header[:labels]
@@ -1080,7 +1080,7 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Float64}, Ab
     # select channels, default is all channels
     selected === nothing && (selected = 1:eeg.eeg_header[:channel_n])
     channel === nothing && (channel = 1:eeg.eeg_header[:channel_n])
-    eeg_tmp = eeg_keep_channel(eeg, channel)
+    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
 
     loc_x = eeg_tmp.eeg_header[:xlocs]
     loc_y = eeg_tmp.eeg_header[:ylocs]
@@ -1278,18 +1278,18 @@ function eeg_plot_spectrogram(eeg::EEG; channel::Int64, epoch::Int64=1, offset::
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     (len !== nothing && len <= 0) && throw(ArgumentError("Segment length must be ≥ 1."))
 
-    fs = eeg_samplingrate(eeg)
+    fs = eeg_sr(eeg)
     len === nothing && (len = floor(Int64, eeg.eeg_header[:epoch_duration_seconds] - (offset * fs)))
     len *= fs
     ylim === nothing && (ylim = fs/2)
 
     # get epochs markers for len > epoch_len
-    if (len + (offset / eeg_samplingrate(eeg))) > eeg.eeg_header[:epoch_duration_samples]
+    if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_samples]
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
         epoch_len = size(eeg.eeg_signals, 2)
         epoch_n = size(eeg.eeg_signals, 3)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_samplingrate(eeg)))
+        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
     else
         eeg_tmp = eeg
     end

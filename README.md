@@ -4,6 +4,8 @@ Welcome fellow researcher! NeuroJ.jl is a [Julia](https://julialang.org) package
 
 This is a non-commercial projected, aimed for researchers in psychiatry, neurology and neuroscience.
 
+Initially NeuroJ.jl will be focused on resting-state EEG analysis, but ERP analysis will developed in future versions.
+
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
 ## Installation
@@ -46,7 +48,9 @@ Functions name prefix:
 - `signal_`  :: functions taking single-/multi-channel signals as an argument
 - `eeg_`     :: functions taking EEG object as an argument
 
-All eeg_* functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_get_channel()`, `eeg_get_epoch()`)
+All `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_extract_channel()`, `eeg_extract_epoch()`)
+
+`eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s).
 
 For `eeg_plot_*()` channels and epochs may be specified.
 
@@ -64,6 +68,7 @@ end
 ### Bugs
 
 - plots: time ticks
+- eeg_info() for empty EEG object
 
 ### To do
 
@@ -71,7 +76,6 @@ end
 
 General:
 - performance optimization
-- unify named arguments
 
 EEG:
 - edit EEG header
@@ -94,7 +98,7 @@ EEG:
 - channel interpolation
 - source localization
 - ERPs
-- CUDA acceleration
+- CUDA/AMD ROCm acceleration
 
 NIRS
 - import and process data

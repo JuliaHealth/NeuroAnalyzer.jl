@@ -33,7 +33,6 @@ Returns the derivative of each the `signal` channels with length same as the sig
 - `s_derivative::Array{Float64, 3}`
 """
 function signal_derivative(signal::Array{Float64, 3})
-    println("s")
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     s_der = zeros(size(signal))
@@ -141,7 +140,7 @@ function signal_band_power(signal::AbstractArray; fs::Int64, f1::Union{Int64, Fl
 end
 
 """
-    signal_band_power(signal, fs, f1, f2)
+    signal_band_power(signal; fs, f1, f2)
 
 Calculates absolute band power between frequencies `f1` and `f2` for each the `signal` channels.
 
@@ -177,7 +176,7 @@ function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64
 end
 
 """
-    signal_make_spectrum(signal, fs)
+    signal_make_spectrum(signal; fs)
 
 Returns FFT and DFT sample frequencies for a DFT for the `signal`.
 
@@ -205,7 +204,7 @@ function signal_make_spectrum(signal::AbstractArray; fs::Int64)
 end
 
 """
-    signal_make_spectrum(signal, fs)
+    signal_make_spectrum(signal; fs)
 
 Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
 
@@ -318,7 +317,7 @@ Calculates mean, std and 95% confidence interval for `signal`.
 - `s_u::Float64`
 - `s_l::Float64`
 """
-function signal_ci95(signal::Vector{Float64}; n::Int=3, method::Symbol=:normal)
+function signal_ci95(signal::Vector{Float64}; n::Int64=3, method::Symbol=:normal)
     method === :normal || throw(ArgumentError("For vector signal method must be :normal."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
@@ -348,7 +347,7 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 - `s_u::Vector{Float64}`
 - `s_l::Vector{Float64}`
 """
-function signal_ci95(signal::AbstractArray; n::Int=3, method::Symbol=:normal)
+function signal_ci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
     method in [:normal, :boot] || throw(ArgumentError("Method must be :normal or :boot."))
 
     if method === :normal
@@ -378,7 +377,7 @@ function signal_ci95(signal::AbstractArray; n::Int=3, method::Symbol=:normal)
 end
 
 """
-    signal_ci95(signal; n::Int64=3, method=:normal)
+    signal_ci95(signal; n::=3, method=:normal)
 
 Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
@@ -395,7 +394,7 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 - `s_u::Matrix{Float64}`
 - `s_l::Matrix{Float64}`
 """
-function signal_ci95(signal::Array{Float64, 3}; n::Int=3, method::Symbol=:normal)
+function signal_ci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
     method in [:normal, :boot] || throw(ArgumentError("Method must be :normal or :boot."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
@@ -569,7 +568,7 @@ function signal_difference(signal1::AbstractArray, signal2::AbstractArray; n::In
 end
 
 """
-    signal_difference(signal1, signal2; n::Int64=3, method=:absdiff)
+    signal_difference(signal1, signal2; n=3, method=:absdiff)
 
 Calculates mean difference and 95% confidence interval for 2 signals.
 
@@ -1011,57 +1010,57 @@ function signal_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=n
 end
 
 """
-    signal_drop_channel(signal, channels)
+    signal_delete_channel(signal; channel)
 
-Removes `channels` from the `signal`.
+Removes `channel` from the `signal`.
 
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `channels::Union{Int64, Vector{Int64}, AbstractRange}` - channels to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel to be removed, vector of numbers or range
 
 # Returns
 
-- `s_modified::Matrix{Float64}`
+- `signal::Matrix{Float64}`
 """
-function signal_drop_channel(signal::Matrix{Float64}, channels::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(channels) <: AbstractRange
-        channels = collect(channels)
+function signal_delete_channel(signal::Matrix{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) <: AbstractRange
+        channel = collect(channel)
     end
-    for idx in length(channels):-1:1
-        channels[idx] > size(signal, 2) && throw(ArgumentError("Channels index does not match signal."))
+    for idx in length(channel):-1:1
+        channel[idx] > size(signal, 2) && throw(ArgumentError("Channel index does not match signal."))
     end
 
-    length(channels) > 1 && (channels = sort!(channels, rev=true))
-    s_new = signal[setdiff(1:end, (channels)), :]
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
+    s_new = signal[setdiff(1:end, (channel)), :]
 
     return s_new
 end
 
 """
-    signal_drop_channel(signal, channels)
+    signal_delete_channel(signal; channel)
 
-Removes `channels` from the `signal`.
+Removes `channel` from the `signal`.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `channels::Union{Int64, Vector{Int64}, AbstractRange}` - channels to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel to be removed, vector of numbers or range
 
 # Returns
 
-- `s_modified::Matrix{Float64}`
+- `signal::Matrix{Float64}`
 """
-function signal_drop_channel(signal::Array{Float64, 3}, channels::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(channels) <: AbstractRange
-        channels = collect(channels)
+function signal_delete_channel(signal::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) <: AbstractRange
+        channel = collect(channel)
     end
-    for idx in length(channels):-1:1
-        channels[idx] > size(signal, 2) && throw(ArgumentError("Channels index does not match signal."))
+    for idx in length(channel):-1:1
+        channel[idx] > size(signal, 2) && throw(ArgumentError("Channel index does not match signal."))
     end
 
-    length(channels) > 1 && (channels = sort!(channels, rev=true))
-    s_new = signal[setdiff(1:end, (channels)), :, :]
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
+    s_new = signal[setdiff(1:end, (channel)), :, :]
 
     return s_new
 end
@@ -1079,51 +1078,51 @@ Re-references channels of the `signal` to specific signal channel.
 
 - `s_referenced::Matrix{Float64}`
 """
-function signal_reference_channel(signal::Matrix{Float64}, reference_idx::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(reference_idx) <: AbstractRange
-        reference_idx = collect(reference_idx)
+function signal_reference_channel(signal::Matrix{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) <: AbstractRange
+        channel = collect(channel)
     end
 
     channel_n = size(signal, 1)
     s_ref = zeros(size(signal))
 
     channel_list = collect(1:channel_n)
-    for idx in 1:length(reference_idx)
-        if (reference_idx[idx] in channel_list) == false
+    for idx in 1:length(channel)
+        if (channel[idx] in channel_list) == false
             throw(ArgumentError("Reference channel index does not match signal."))
         end
     end
 
-    if length(reference_idx) == 1
-        reference_channel = mean(signal[reference_idx, :], dims=2)
+    if length(channel) == 1
+        reference_channel = mean(signal[channel, :], dims=2)
     else
-        reference_channel = vec(mean(signal[reference_idx, :], dims=1))
+        reference_channel = vec(mean(signal[channel, :], dims=1))
     end
     for idx in 1:channel_n
         s_ref[idx, :] = signal[idx, :] .- reference_channel
     end
-    length(reference_idx) == 1 && (s_ref[reference_idx, :] = reference_channel)
+    length(channel) == 1 && (s_ref[channel, :] = reference_channel)
 
     return s_ref
 end
 
 """
-    signal_reference_channel(signal, reference)
+    signal_reference_channel(signal, channel)
 
 Re-references channels of the `signal` to specific signal channel.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `reference::Union{Int64, Vector{Int64}, AbstractRange}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 # Returns
 
 - `s_referenced::Matrix{Float64}`
 """
-function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(reference_idx) <: AbstractRange
-        reference_idx = collect(reference_idx)
+function signal_reference_channel(signal::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) <: AbstractRange
+        channel = collect(channel)
     end
 
     channel_n = size(signal, 1)
@@ -1131,15 +1130,15 @@ function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Unio
     s_ref = zeros(size(signal))
 
     channel_list = collect(1:channel_n)
-    for idx in 1:length(reference_idx)
-        if (reference_idx[idx] in channel_list) == false
-            throw(ArgumentError("Reference channel index does not match signal."))
+    for idx in 1:length(channel)
+        if (channel[idx] in channel_list) == false
+            throw(ArgumentError("Channel index does not match signal."))
         end
     end
 
     for epoch in 1:epoch_n
-        s = @view signal[reference_idx, :, epoch]
-        if length(reference_idx) == 1
+        s = @view signal[channel, :, epoch]
+        if length(channel) == 1
             reference_channel = mean(s, dims=2)
         else
             reference_channel = vec(mean(s, dims=1))
@@ -1148,7 +1147,7 @@ function signal_reference_channel(signal::Array{Float64, 3}, reference_idx::Unio
             s = @view signal[idx, :, epoch]
             s_ref[idx, :, epoch] = s .- reference_channel
         end
-        length(reference_idx) == 1 && (s_ref[reference_idx, :, epoch] = reference_channel)
+        length(channel) == 1 && (s_ref[channel, :, epoch] = reference_channel)
     end
 
     return s_ref
@@ -1210,7 +1209,7 @@ function signal_reference_car(signal::Array{Float64, 3})
 end
 
 """
-    signal_taper(signal, taper)
+    signal_taper(signal; taper)
 
 Taper the `signal` with `taper`.
 
@@ -1223,7 +1222,7 @@ Taper the `signal` with `taper`.
 
 - `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
-function signal_taper(signal::AbstractArray, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_taper(signal::AbstractArray; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == length(signal) || throw(ArgumentError("Taper length and signal length must be equal."))
     s_tap = signal .* taper
 
@@ -1231,7 +1230,7 @@ function signal_taper(signal::AbstractArray, taper::Union{Vector{Int64}, Vector{
 end
 
 """
-    signal_taper(signal, taper)
+    signal_taper(signal; taper)
 
 Tapers channels of the `signal` with `taper`.
 
@@ -1244,7 +1243,7 @@ Tapers channels of the `signal` with `taper`.
 
 - `s_tapered::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
 """
-function signal_taper(signal::Array{Float64, 3}, taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_taper(signal::Array{Float64, 3}; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     length(taper) == size(signal, 2) || throw(ArgumentError("Taper length and signal length must be equal."))
 
     channel_n = size(signal, 1)
@@ -1255,7 +1254,7 @@ function signal_taper(signal::Array{Float64, 3}, taper::Union{Vector{Int64}, Vec
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_tap[idx, :, epoch] = signal_taper(s, taper)
+            s_tap[idx, :, epoch] = signal_taper(s, taper=taper)
         end
     end
 
@@ -1759,7 +1758,7 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
                 end
             end
         else
-            s_filtered = signal_tconv(signal, window)
+            s_filtered = signal_tconv(signal, kernel=window)
         end
 
         return s_filtered
@@ -2601,14 +2600,15 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
     pc_var = zeros(n, epoch_n)
 
     Threads.@threads for epoch in 1:epoch_n
-        m_cov = signal_cov(signal[:, :, epoch])
+        s = @view signal[:, :, epoch]
+        m_cov = signal_cov(s)
+
         eig_val, eig_vec = eigen(m_cov)
         eig_val_idx = sortperm(eig_val, rev=true)
         eig_val = eig_val[eig_val_idx]
         eig_vec = matrix_sort(eig_vec, eig_val_idx)
         eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        s = @view signal[:, :, epoch]
         for idx in 1:n
             pc_var[idx, epoch] = eig_val[idx]
             pc[idx, :, epoch] = (eig_vec[:, idx] .* s)[idx, :]
@@ -2619,7 +2619,7 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
 end
 
 """
-    signal_fconv(signal, kernel)
+    signal_fconv(signal; kernel)
 
 Performs convolution in the frequency domain between `signal` and `kernel`.
 
@@ -2632,7 +2632,7 @@ Performs convolution in the frequency domain between `signal` and `kernel`.
 
 - `s_conv::Vector{ComplexF64}`
 """
-function signal_fconv(signal::AbstractArray, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_fconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     n_signal = length(signal)
     n_kernel = length(kernel)
     n_conv = n_signal + n_kernel - 1
@@ -2652,7 +2652,7 @@ function signal_fconv(signal::AbstractArray, kernel::Union{Vector{Int64}, Vector
 end
 
 """
-    signal_fconv(signal, kernel)
+    signal_fconv(signal; kernel)
 
 Performs convolution in the frequency domain between `signal` and `kernel`.
 
@@ -2665,7 +2665,7 @@ Performs convolution in the frequency domain between `signal` and `kernel`.
 
 - `s_conv::Array{ComplexF64, 3}`
 """
-function signal_fconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function signal_fconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
@@ -2674,7 +2674,7 @@ function signal_fconv(signal::Array{Float64, 3}, kernel::Union{Vector{Int64}, Ve
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_conv[idx, :, epoch] = signal_fconv(s, kernel)
+            s_conv[idx, :, epoch] = signal_fconv(s, kernel=kernel)
         end
     end
 

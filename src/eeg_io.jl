@@ -199,7 +199,7 @@ function eeg_import_edf(file_name::String, read_annotations::Bool=true, clean_la
 end
 
 """
-    eeg_load_electrode_positions(eeg, file_name)
+    eeg_load_electrode_positions(eeg; file_name)
 
 Loads electrode positions from 
 - CED
@@ -213,7 +213,7 @@ Loads electrode positions from
 
 - `eeg:EEG`
 """
-function eeg_load_electrode_positions(eeg::EEG, file_name)
+function eeg_load_electrode_positions(eeg::EEG; file_name)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     sensors = CSV.read(file_name, delim="\t", DataFrame)
@@ -238,7 +238,7 @@ end
 
 
 """
-    eeg_save(eeg, file_name; overwrite)
+    eeg_save(eeg; file_name, overwrite)
 
 Saves the `eeg` to `file_name` file (HDF5-based).
 
@@ -253,7 +253,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 - `success::Bool`
 
 """
-function eeg_save(eeg::EEG, file_name::String; overwrite::Bool=false)
+function eeg_save(eeg::EEG; file_name::String, overwrite::Bool=false)
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved."))
     
     save_object(file_name, eeg)

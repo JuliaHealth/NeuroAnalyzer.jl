@@ -3,10 +3,10 @@ using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 
-edf1 = eeg_delete_channel(edf, 1)
+edf1 = eeg_delete_channel(edf, channel=1)
 @test edf1.eeg_header[:channel_n] == 18
 
-edf1 = eeg_keep_channel(edf, 1)
+edf1 = eeg_keep_channel(edf, channel=1)
 @test edf1.eeg_header[:channel_n] == 1
 
 edf1 = eeg_derivative(edf)
@@ -21,27 +21,27 @@ abp = eeg_band_power(edf, f1=2, f2=4)
 edf1 = eeg_detrend(edf)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
-edf1 = eeg_reference_channel(edf, 1)
+edf1 = eeg_reference_channel(edf, channel=1)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_reference_car(edf)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
-edf1 = eeg_extract_channel(edf, "Cz")
+edf1 = eeg_extract_channel(edf, channel="Cz")
 @test size(edf1) == (354816, )
 
-edf1 = eeg_extract_channel(edf, 18)
+edf1 = eeg_extract_channel(edf, channel=18)
 @test size(edf1) == (354816, )
 
-@test eeg_get_channel(edf, 1) == "Fp1"
-@test eeg_get_channel(edf, "Fp1") == 1
+@test eeg_get_channel(edf, channel=1) == "Fp1"
+@test eeg_get_channel(edf, channel="Fp1") == 1
 
-edf1 = eeg_rename_channel(edf, "Cz", "CZ")
+edf1 = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
 @test edf1.eeg_header[:labels][18] == "CZ"
-edf1 = eeg_rename_channel(edf, 1, "FP1")
+edf1 = eeg_rename_channel(edf, channel=1, new_name="FP1")
 @test edf1.eeg_header[:labels][1] == "FP1"
 
-edf1 = eeg_taper(edf, edf.eeg_signals[1, :, 1])
+edf1 = eeg_taper(edf, taper=edf.eeg_signals[1, :, 1])
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_demean(edf)
@@ -54,10 +54,10 @@ edf1 = eeg_normalize_minmax(edf)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 cov_m = eeg_cov(edf)
-@test size(cov_m) == (19, 19)
+@test size(cov_m) == (19, 19, 1)
 
 cor_m = eeg_cor(edf)
-@test size(cor_m) == (19, 19)
+@test size(cor_m) == (19, 19, 1)
 
 edf1 = eeg_upsample(edf, new_sr=512)
 @test size(edf1.eeg_signals) == (19, 709631, 1)
@@ -66,12 +66,12 @@ edf1 = eeg_upsample(edf, new_sr=512)
 
 @test eeg_labels(edf)[1] == "Fp1"
 
-@test eeg_samplingrate(edf) == 256
+@test eeg_sr(edf) == 256
 
 edf1 = eeg_epochs(edf, epoch_len=10, average=true)
 @test size(edf1.eeg_signals) == (19, 10, 1)
 
-edf1 = eeg_extract_epoch(edf, 1)
+edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_tconv(edf, kernel=generate_hanning(256))
@@ -83,7 +83,7 @@ edf1 = eeg_filter(edf, fprototype=:mavg, d=10)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 edf1 = eeg_filter(edf, fprototype=:mmed, d=10)
 @test size(edf1.eeg_signals) == (19, 354816, 1)
-edf1 = eeg_filter(edf, fprototype=:mavg, window=generate_gaussian(eeg_samplingrate(edf), 32, 0.01))
+edf1 = eeg_filter(edf, fprototype=:mavg, window=generate_gaussian(eeg_sr(edf), 32, 0.01))
 @test size(edf1.eeg_signals) == (19, 354816, 1)
 
 edf1 = eeg_downsample(edf, new_sr=128)
@@ -107,7 +107,7 @@ p = eeg_stationarity(edf, method=:hilbert)
 p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test size(p) == (37, 1)
 
-e = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(20 * eeg_samplingrate(edf)), from=:start)
+e = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), offset=(20 * eeg_sr(edf)), from=:start)
 @test size(e.eeg_signals) == (19, 352256, 1)
 
 m = eeg_mi(edf)

@@ -93,12 +93,12 @@ export signal_coherence
 export signal_cor
 export signal_cov
 export signal_crosscov
+export signal_delete_channel
 export signal_demean
 export signal_derivative
 export signal_detrend
 export signal_difference
 export signal_downsample
-export signal_drop_channel
 export signal_entropy
 export signal_epochs
 export signal_fconv
@@ -158,7 +158,7 @@ export eeg_psd
 export eeg_reference_car
 export eeg_reference_channel
 export eeg_rename_channel
-export eeg_samplingrate
+export eeg_sr
 export eeg_stationarity
 export eeg_taper
 export eeg_tconv
