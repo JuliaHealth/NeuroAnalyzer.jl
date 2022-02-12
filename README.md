@@ -64,37 +64,35 @@ end
 ### Bugs
 
 - plots: time ticks
-- eeg_crosscov(edf1, edf2)
 
 ### To do
 
 .. so much to do ..
 
 General:
-- verbose flag
 - performance optimization
 
 EEG:
+- edit EEG header
+- kwargs
+- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
+- more re-referencing methods
+- improve: compose eeg_plots with electrode plots
 - io: export to CSV
 - io: import from CSV
 - create EEG object
-- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
-- clean DC line
+- automated DC line cleaning
 - automated channel rejection
-- channel interpolation
-- automated clean artifacts
-- channel locations data to eeg_signal_header
+- automated cleaning of artifacts
+- bad channel marking / rejection
+- bad epoch marking / rejection
 - time-frequency analysis
-- spectrogram
-- topoplots
+- topographical plots
 - signals comparison
-- kwargs for plots
-- add re-referencing methods
-- import channel location files
+- more channel location formats
+- io: import from EDF+, BDF and other formats
+- channel interpolation
 - source localization
-- edit eeg header
-- compose eeg_plots with electrode plots
-- io: import EDF+, BDF, other formats
 - ERPs
 - CUDA acceleration
 
@@ -105,7 +103,7 @@ MRI
 - import and process data for EEG source localization
 
 NSTIM
-- modelling
+- TES modelling
 
 ## Contributors
 

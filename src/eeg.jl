@@ -974,7 +974,7 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `eeg2::EEG`
 - `lag::Int64` - lags range is `-lag:lag`
 - `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize crosscovariance
+- `norm::Bool` - normalize cross-covariance
 
 # Returns
 
@@ -982,9 +982,9 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `lags::Vector{Float64}
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
-    ccov = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, norm=norm)
+    ccov, lags = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, norm=norm)
     size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
-    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
+    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
 
     return ccov, lags
 end

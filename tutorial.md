@@ -213,6 +213,8 @@ eeg_plot_covmatrix(edf, ac, lags)
 Calculate cross-covariance:
 ```julia
 cc, lags = eeg_crosscov(edf, lag=20, demean=true)
+# channel by channel, all combinations
+plot(lags, cc[:, 1])
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
