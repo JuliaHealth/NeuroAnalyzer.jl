@@ -87,7 +87,7 @@ edf = eeg_trim(edf, trim_len=(10 * eeg_samplingrate(edf)), offset=(10 * eeg_samp
 
 Split into 10-second epochs:
 ```julia
-e10 = eeg_epochs(edf, epochs_len=10*eeg_samplingrate(edf))
+e10 = eeg_epochs(edf, epoch_len=10*eeg_samplingrate(edf))
 eeg_info(e10)
 eeg_plot(e10)
 eeg_plot(e10, len=10)
@@ -112,7 +112,7 @@ eeg_info(e10e1)
 
 Split into 5-second averaged epoch
 ```julia
-e2avg = eeg_epochs(edf, epochs_len=5*eeg_samplingrate(edf), average=true)
+e2avg = eeg_epochs(edf, epoch_len=5*eeg_samplingrate(edf), average=true)
 eeg_info(e2avg)
 ```
 
@@ -214,11 +214,12 @@ Calculate cross-covariance:
 ```julia
 cc, lags = eeg_crosscov(edf, lag=20, demean=true)
 # channel by channel, all combinations
-plot(lags, cc[:, 1])
+plot(lags, cc[1, :])
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
-cc, lags = eeg_crosscov(edf1, edf2)
+cc, lags = eeg_crosscov(edf1, edf2, lag=20, demean=true, norm=true)
+plot(lags, cc[1, :])
 ```
 
 Normalize:
@@ -361,10 +362,10 @@ plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 PCA:
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
-edf1 = eeg_epochs(edf1, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf1 = eeg_epochs(edf1, epoch_len=10*eeg_samplingrate(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 3)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
-edf2 = eeg_epochs(edf2, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf2 = eeg_epochs(edf2, epoch_len=10*eeg_samplingrate(edf1), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 pc, pc_var = eeg_pca(edf1, edf2, n=4)
 plot(pc[1, :, 1, 1])
@@ -374,10 +375,10 @@ bar(vec(pc_var))
 Comparing two signals:
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:delta), order=8)
-edf1 = eeg_epochs(edf1, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf1 = eeg_epochs(edf1, epoch_len=10*eeg_samplingrate(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 4)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
-edf2 = eeg_epochs(edf2, epochs_len=10*eeg_samplingrate(edf1), average=true)
+edf2 = eeg_epochs(edf2, epoch_len=10*eeg_samplingrate(edf1), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 s, ss, p = eeg_difference(edf1, edf2, n=10, method=:absdiff)
 s, ss, p = eeg_difference(edf1, edf2, n=10, method=:diff2int)
@@ -404,7 +405,7 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)
-        e10 = eeg_epochs(edf_new, epochs_len=10*eeg_samplingrate(edf))
+        e10 = eeg_epochs(edf_new, epoch_len=10*eeg_samplingrate(edf))
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)

@@ -94,9 +94,9 @@ signal_fft, signal_amplitudes, signal_powers, signal_phases = signal_spectrum(si
 @test size(signal_powers) == (2, 110, 2)
 @test size(signal_phases) == (2, 110, 2)
 
-epochs = signal_epochs(signal_v, epochs_n=10)
+epochs = signal_epochs(signal_v, epoch_n=10)
 @test size(epochs) == (10, 10)
-epochs = signal_epochs(signal_m, epochs_n=10, average=true)
+epochs = signal_epochs(signal_m, epoch_n=10, average=true)
 @test size(epochs) == (2, 10)
 
 signal = signal_drop_channel(signal_m, 1)
