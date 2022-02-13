@@ -254,8 +254,14 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 """
 function eeg_save(eeg::EEG; file_name::String, overwrite::Bool=false)
-    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved."))
-    
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+
+    eeg.eeg_header[:eeg_filename] = file_name
+
+    save_object("/tmp/$file_name", eeg)
+    eeg.eeg_header[:eeg_filesize_mb] = round(filesize("/tmp/$file_name") / 1024, digits=2)
+    rm("/tmp/$file_name")
+
     save_object(file_name, eeg)
 
     return true

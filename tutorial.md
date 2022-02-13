@@ -51,6 +51,8 @@ eeg_labels(edf)
 Save EEG object:
 ```julia
 eeg_save(edf, file_name="test.bin")
+eeg_save(edf, file_name="test.bin", overwrite=true)
+eeg_info(edf)
 ```
 
 Load EEG object:
@@ -119,6 +121,16 @@ Get 1st epoch:
 ```julia
 e10e1 = eeg_extract_epoch(e10, epoch=1)
 eeg_info(e10e1)
+```
+
+Remove epochs:
+```julia
+e = eeg_delete_epoch(e10, epoch=8:10)
+```
+
+Keep epochs:
+```julia
+e1 = eeg_keep_epoch(e, epoch=[1, 3, 5, 9])
 ```
 
 Split into 5-second averaged epoch

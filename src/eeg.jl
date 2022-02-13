@@ -16,6 +16,7 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
     if typeof(channel) <: AbstractRange
         channel = collect(channel)
     end
+    length(channel) == size(eeg.eeg_signals, 1) && throw(ArgumentError("You cannot delete all channels."))
 
     length(channel) > 1 && (channel = sort!(channel, rev=true))
 
@@ -81,6 +82,7 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
         channel = collect(channel)
     end
 
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
     if channel[end] < 1 || channel[1] > size(eeg.eeg_signals, 1)
         throw(ArgumentError("Channel index does not match signal channels."))
     end
@@ -1276,7 +1278,6 @@ Changes value of `eeg` `field` to `value`.
 # Returns
 
 - `eeg:EEG`
-
 """
 function eeg_edit(eeg::EEG; field::Symbol, value)
   value === nothing && throw(ArgumentError("Value cannot be empty."))
@@ -1292,8 +1293,123 @@ function eeg_edit(eeg::EEG; field::Symbol, value)
   return eeg_new
 end
 
+"""
+    eeg_edit(eeg)
+
+Shows keys and values of `eeg` header.
+
+# Arguments
+
+- `eeg::EEG`
+"""
 function eeg_show_header(eeg::EEG)
     for idx in keys(eeg.eeg_header)
         println("Field: $(rpad(idx, 25, " ")) value: $(eeg.eeg_header[idx])")
     end
+end
+
+"""
+    eeg_delete_epoch(eeg; epoch)
+
+Removes `epoch` from the `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to be removed, vector of numbers or range
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_delete_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+    size(eeg.eeg_signals, 3) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
+
+    if typeof(epoch) <: AbstractRange
+        epoch = collect(epoch)
+    end
+
+    length(epoch) == size(eeg.eeg_signals, 3) && throw(ArgumentError("You cannot delete all epochs."))
+
+    length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
+
+    if epoch[end] < 1 || epoch[1] > size(eeg.eeg_signals, 3)
+        throw(ArgumentError("Epoch index does not match signal epochs."))
+    end
+
+    eeg_header = deepcopy(eeg.eeg_header)
+    eeg_time = deepcopy(eeg.eeg_time)
+    eeg_signals = deepcopy(eeg.eeg_signals)
+
+    # remove epoch
+    eeg_signals = eeg_signals[:, :, setdiff(1:end, (epoch))]
+
+    # update headers
+    eeg_header[:epoch_n] = eeg_header[:epoch_n] - length(epoch)
+    epoch_n = eeg_header[:epoch_n]
+    eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
+    eeg_header[:eeg_duration_seconds] = round(epoch_n * (size(eeg.eeg_signals, 2) / eeg_sr(eeg)), digits=2)
+    eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
+    eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
+
+    # create new dataset
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_delete_epoch(EEG, $epoch)")
+    
+    return eeg_new
+end
+
+"""
+    eeg_keep_epoch(eeg; epoch)
+
+Keeps `epoch` in the `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to keep, vector of numbers or range
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_keep_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+    size(eeg.eeg_signals, 3) == 1 && throw(ArgumentError("EEG contains only one epoch."))
+
+    if typeof(epoch) <: AbstractRange
+        epoch = collect(epoch)
+    end
+
+    length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
+    if epoch[end] < 1 || epoch[1] > size(eeg.eeg_signals, 1)
+        throw(ArgumentError("Epoch index does not match signal epochs."))
+    end
+
+    epoch_list = collect(1:size(eeg.eeg_signals, 3))
+    epoch_to_remove = setdiff(epoch_list, epoch)
+
+    length(epoch_to_remove) > 1 && (epoch_to_remove = sort!(epoch_to_remove, rev=true))
+
+    eeg_header = deepcopy(eeg.eeg_header)
+    eeg_time = deepcopy(eeg.eeg_time)
+    eeg_signals = deepcopy(eeg.eeg_signals)
+
+    # remove epoch
+    eeg_signals = eeg_signals[:, :, setdiff(1:end, (epoch_to_remove))]
+
+    # update headers
+    eeg_header[:epoch_n] = eeg_header[:epoch_n] - length(epoch_to_remove)
+    epoch_n = eeg_header[:epoch_n]
+    eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
+    eeg_header[:eeg_duration_seconds] = round(epoch_n * (size(eeg.eeg_signals, 2) / eeg_sr(eeg)), digits=2)
+    eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
+    eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
+
+    # create new dataset
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
+    
+    return eeg_new
 end

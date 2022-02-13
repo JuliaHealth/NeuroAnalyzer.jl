@@ -137,4 +137,10 @@ p, v = eeg_pca(edf, n=2)
 e = eeg_edit(edf, field=:patient, value="unknown")
 @test e.eeg_header[:patient] == "unknown"
 
+e = eeg_epochs(edf, epoch_n=10)
+e9 = eeg_delete_epoch(e, epoch=10)
+@test size(e9.eeg_signals) == (19, 35481, 9)
+e1 = eeg_keep_epoch(e, epoch=1)
+@test size(e1.eeg_signals) == (19, 35481, 1)
+
 true

@@ -68,7 +68,6 @@ end
 ### Bugs
 
 - plots: time ticks
-- eeg_info() for empty EEG object
 
 ### To do
 
