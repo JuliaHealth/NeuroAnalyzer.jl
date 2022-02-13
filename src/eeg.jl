@@ -1090,12 +1090,8 @@ Return EEG band frequency limits.
 
 """
 function eeg_band(band::Symbol)
-    band in [:list, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Band unknown."))
+    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
 
-    if band === :list
-        println("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher.")
-        return
-    end
     band === :delta && (band_frequency = (0.5, 4))
     band === :theta && (band_frequency = (4, 8))
     band === :alpha && (band_frequency = (8, 13))
@@ -1412,4 +1408,80 @@ function eeg_keep_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
     push!(eeg_new.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
     
     return eeg_new
+end
+
+
+"""
+    eeg_picks(eeg; pick)
+
+Return `pick` of electrodes for `eeg` electrodes.
+
+# Arguments
+
+- `pick::Vector{Symbol}`
+
+# Returns
+
+- `channels::Vector{Int64}`
+
+"""
+function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
+    length(eeg.eeg_header[:labels]) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
+    labels = eeg.eeg_header[:labels]
+
+    if typeof(pick) == Vector{Symbol}
+        for idx in 1:length(pick)
+            pick[idx] in [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
+        end
+
+        c = Vector{Char}
+        for idx in length(pick)
+            (pick[idx] === :central || pick[idx] === :c) && push!(c = 'z')
+            (pick[idx] === :frontal || pick[idx] === :f) && push!(c = 'F')
+            (pick[idx] === :temporal || pick[idx] === :t) && push!(c = 'T')
+            (pick[idx] === :parietal || pick[idx] === :p) && push!(c = 'P')
+            (pick[idx] === :occipital || pick[idx] === :o) && push!(c = 'O')
+        end
+
+        channels = Vector{Int64}()
+        for idx1 in 1:length(labels)
+            for idx2 in 1:length(c)
+                in(c[idx2], labels[idx1]) && push!(channels, idx1)
+            end
+        end
+        labels = labels[channels]
+
+        # for :left remove rights
+        for idx in length(pick)
+            (pick[idx] === :left || pick[idx] === :l) && pat = r"^\d*[02468]$"
+        end
+
+        # for :right remove lefts
+        (pick[idx] === :right || pick[idx] === :r) && pat = r"^\d*[13579]$"
+
+        # use intersect(s1, s2)
+
+        return channels
+
+    else
+        pick in [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
+
+        c = Vector{Char}()
+        (pick === :central || pick === :c) && (c = ['z'])
+        (pick === :left || pick === :l) && (c = ['1', '3', '5', '7', '9'])
+        (pick === :right || pick === :r) && (c = ['2', '4', '6', '8'])
+        (pick === :frontal || pick === :f) && (c = ['F'])
+        (pick === :temporal || pick === :t) && (c = ['T'])
+        (pick === :parietal || pick === :p) && (c = ['P'])
+        (pick === :occipital || pick === :o) && (c = ['O'])
+
+        channels = Vector{Int64}()
+        for idx1 in 1:length(c)
+            for idx2 in 1:length(labels)
+                in(c[idx1], labels[idx2]) && push!(channels, idx2)
+            end
+        end
+
+        return channels
+    end
 end
