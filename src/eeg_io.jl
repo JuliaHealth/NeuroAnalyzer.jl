@@ -289,21 +289,24 @@ function eeg_load(file_name::String)
 end
 
 """
-    eeg_export_csv(file_name)
+    eeg_export_csv(eeg, file_name)
 
 Exports EEG data as CSV.
 
 # Arguments
 
-- `file_name`
+- `eeg::EEG`
+- `file_name::String`
 
 # Returns
 
 - `success::Bool`
 
 """
-function eeg_export_csv(file_name)
+function eeg_export_csv(eeg::EEG; file_name::String)
+    isfile(file_name) && throw(ArgumentError("File $file_name cannot be saved."))
 
+    # DATA
     # unsplit epochs
     s_merged = reshape(eeg.eeg_signals,
                        size(eeg.eeg_signals, 1),
@@ -313,13 +316,12 @@ function eeg_export_csv(file_name)
     l = vcat("time", eeg_labels(eeg))
     df = DataFrame(s, l)
 
-    CSV.write("out.csv", df)
+    CSV.write(file_name, df)
 
     # HEADER
-    df = DataFrame()
-    for key in keys(edf.eeg_header)
-        insertcols!(df, key = edf.eeg_header[key])
-    end
-    
+#=
+    file_name = replace(file_name, ".csv" => "_header.csv")
+=#
+ 
     return true
 end

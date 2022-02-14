@@ -1299,8 +1299,9 @@ Shows keys and values of `eeg` header.
 - `eeg::EEG`
 """
 function eeg_show_header(eeg::EEG)
-    for idx in keys(eeg.eeg_header)
-        println("Field: $(rpad(idx, 25, " ")) value: $(eeg.eeg_header[idx])")
+    for (key, value) in eeg.eeg_header
+        # println("$(rpad(key, 25, " ")) value: $value")
+        println("$key:$value")
     end
 end
 
