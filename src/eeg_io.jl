@@ -287,3 +287,39 @@ function eeg_load(file_name::String)
 
     return eeg
 end
+
+"""
+    eeg_export_csv(file_name)
+
+Exports EEG data as CSV.
+
+# Arguments
+
+- `file_name`
+
+# Returns
+
+- `success::Bool`
+
+"""
+function eeg_export_csv(file_name)
+
+    # unsplit epochs
+    s_merged = reshape(eeg.eeg_signals,
+                       size(eeg.eeg_signals, 1),
+                       size(eeg.eeg_signals, 2) * size(eeg.eeg_signals, 3))
+    s = s_merged[:, :, 1]'
+    s = hcat(edf.eeg_time, s)
+    l = vcat("time", eeg_labels(eeg))
+    df = DataFrame(s, l)
+
+    CSV.write("out.csv", df)
+
+    # HEADER
+    df = DataFrame()
+    for key in keys(edf.eeg_header)
+        insertcols!(df, key = edf.eeg_header[key])
+    end
+    
+    return true
+end
