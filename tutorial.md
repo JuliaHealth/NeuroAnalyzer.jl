@@ -424,6 +424,11 @@ Misc:
 eeg_band(:alpha)
 alpha_band = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
 hz, nyq = eeg_freqs(edf)
+
+e = eeg_pick(edf, pick=:left)
+eeg_labels(edf)[e]
+e = eeg_pick(edf, pick=[:l, :f, :t])
+eeg_labels(edf)[e]
 ```
 
 Benchmarking:

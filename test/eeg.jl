@@ -143,4 +143,7 @@ e9 = eeg_delete_epoch(e, epoch=10)
 e1 = eeg_keep_epoch(e, epoch=1)
 @test size(e1.eeg_signals) == (19, 35481, 1)
 
+e = eeg_pick(edf, pick=:left)
+@test length(e) == 8
+
 true

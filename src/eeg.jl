@@ -1427,42 +1427,63 @@ Return `pick` of electrodes for `eeg` electrodes.
 """
 function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
     length(eeg.eeg_header[:labels]) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
-    labels = eeg.eeg_header[:labels]
 
     if typeof(pick) == Vector{Symbol}
         for idx in 1:length(pick)
             pick[idx] in [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
         end
 
-        c = Vector{Char}
-        for idx in length(pick)
-            (pick[idx] === :central || pick[idx] === :c) && push!(c = 'z')
-            (pick[idx] === :frontal || pick[idx] === :f) && push!(c = 'F')
-            (pick[idx] === :temporal || pick[idx] === :t) && push!(c = 'T')
-            (pick[idx] === :parietal || pick[idx] === :p) && push!(c = 'P')
-            (pick[idx] === :occipital || pick[idx] === :o) && push!(c = 'O')
+        c = Vector{Char}()
+        for idx in 1:length(pick)
+            (pick[idx] === :central || pick[idx] === :c) && push!(c, 'z')
+            (pick[idx] === :frontal || pick[idx] === :f) && push!(c, 'F')
+            (pick[idx] === :temporal || pick[idx] === :t) && push!(c, 'T')
+            (pick[idx] === :parietal || pick[idx] === :p) && push!(c, 'P')
+            (pick[idx] === :occipital || pick[idx] === :o) && push!(c, 'O')
         end
-
+        
+        labels = deepcopy(eeg.eeg_header[:labels])
         channels = Vector{Int64}()
         for idx1 in 1:length(labels)
             for idx2 in 1:length(c)
                 in(c[idx2], labels[idx1]) && push!(channels, idx1)
             end
         end
-        labels = labels[channels]
 
-        # for :left remove rights
-        for idx in length(pick)
-            (pick[idx] === :left || pick[idx] === :l) && pat = r"^\d*[02468]$"
+        # check for both :l and :r
+        for idx1 in 1:length(pick)
+            if (pick[idx1] === :left || pick[idx1] === :l)
+                for idx2 in 1:length(pick)
+                    if (pick[idx2] === :right || pick[idx2] === :r)
+                        return channels
+                    end
+                end
+            end
+            if (pick[idx1] === :right || pick[idx1] === :r)
+                for idx2 in 1:length(pick)
+                    if (pick[idx2] === :left || pick[idx2] === :l)
+                        return channels
+                    end
+                end
+            end
         end
 
-        # for :right remove lefts
-        (pick[idx] === :right || pick[idx] === :r) && pat = r"^\d*[13579]$"
-
-        # use intersect(s1, s2)
+        labels = deepcopy(eeg.eeg_header[:labels])
+        labels = labels[channels]
+        pat = nothing
+        for idx in 1:length(pick)
+            # for :right remove lefts
+            (pick[idx] === :right || pick[idx] === :r) && (pat = r"[z13579]$")
+            # for :left remove rights
+            (pick[idx] === :left || pick[idx] === :l) && (pat = r"[z02468]$")
+        end
+        if typeof(pat) == Regex
+            for idx in length(labels):-1:1
+                typeof(match(pat, labels[idx])) == RegexMatch && deleteat!(channels, idx)
+            end
+        end
 
         return channels
-
     else
         pick in [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
 
@@ -1475,6 +1496,7 @@ function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
         (pick === :parietal || pick === :p) && (c = ['P'])
         (pick === :occipital || pick === :o) && (c = ['O'])
 
+        labels = deepcopy(eeg.eeg_header[:labels])
         channels = Vector{Int64}()
         for idx1 in 1:length(c)
             for idx2 in 1:length(labels)

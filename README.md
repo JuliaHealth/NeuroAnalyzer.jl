@@ -77,12 +77,12 @@ General:
 - performance optimization
 
 EEG:
-- eeg_picks: left, right, midline, dlpfc, frontal, temporal, etc.
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: export to CSV
 - io: import from CSV
 - create EEG object
+- ICA
 - automated DC line cleaning
 - automated channel rejection
 - automated cleaning of artifacts
