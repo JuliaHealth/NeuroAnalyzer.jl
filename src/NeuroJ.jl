@@ -176,6 +176,7 @@ export eeg_import_edf
 export eeg_load
 export eeg_load_electrode_positions
 export eeg_save
+export eeg_export_csv
 
 include("plots.jl")
 export eeg_draw_head

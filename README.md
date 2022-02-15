@@ -77,9 +77,9 @@ General:
 - performance optimization
 
 EEG:
+
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
-- io: export to CSV
 - io: import from CSV
 - create EEG object
 - ICA

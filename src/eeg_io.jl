@@ -238,7 +238,7 @@ end
 
 
 """
-    eeg_save(eeg; file_name, overwrite)
+    eeg_save(eeg; file_name, overwrite=false)
 
 Saves the `eeg` to `file_name` file (HDF5-based).
 
@@ -246,7 +246,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 - `eeg::EEG`
 - `file_name::String` - file name
-- `overwrite::Bool==false`
+- `overwrite::Bool`
 
 # Returns
 
@@ -289,7 +289,7 @@ function eeg_load(file_name::String)
 end
 
 """
-    eeg_export_csv(eeg, file_name)
+    eeg_export_csv(eeg, file_name, header, overwrite)
 
 Exports EEG data as CSV.
 
@@ -297,14 +297,16 @@ Exports EEG data as CSV.
 
 - `eeg::EEG`
 - `file_name::String`
+- `header::Bool` - export header
+- `overwrite::Bool`
 
 # Returns
 
 - `success::Bool`
 
 """
-function eeg_export_csv(eeg::EEG; file_name::String)
-    isfile(file_name) && throw(ArgumentError("File $file_name cannot be saved."))
+function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, overwrite::Bool=false)
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     # DATA
     # unsplit epochs
@@ -312,16 +314,21 @@ function eeg_export_csv(eeg::EEG; file_name::String)
                        size(eeg.eeg_signals, 1),
                        size(eeg.eeg_signals, 2) * size(eeg.eeg_signals, 3))
     s = s_merged[:, :, 1]'
-    s = hcat(edf.eeg_time, s)
+    s = hcat(eeg.eeg_time, s)
     l = vcat("time", eeg_labels(eeg))
     df = DataFrame(s, l)
 
     CSV.write(file_name, df)
+    header == false && return true
 
     # HEADER
-#=
     file_name = replace(file_name, ".csv" => "_header.csv")
-=#
- 
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    f = open(file_name, "w")
+    for (key, value) in eeg.eeg_header
+        println(f, key, ": ", value)
+    end
+    close(f)
+
     return true
 end

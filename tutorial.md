@@ -60,6 +60,11 @@ Load EEG object:
 edf = eeg_load("test.bin")
 ```
 
+Export EEG data and header to .csv:
+```julia
+eeg_export_csv(edf, file_name="edf.csv", header=true)
+```
+
 Get channel index:
 ```julia
 eeg_get_channel(edf, channel="Cz")

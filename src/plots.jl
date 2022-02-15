@@ -38,6 +38,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
              ylabel=ylabel,
              label="",
              xlims=(floor(t[1]), ceil(t[end])),
+             xticks=(floor(t[1]):1:ceil(t[end])),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
@@ -101,6 +102,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
+             xticks=(floor(t[1]):1:ceil(t[end])),
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=:darktest,
@@ -111,7 +113,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
                   s_normalized[idx, (1 + offset):(offset + length(t))],
                   label="", color=channel_color[idx])
     end
-    p = plot!(p, yticks = ((channel_n - 1):-1:0, labels))
+    p = plot!(p, yticks=((channel_n - 1):-1:0, labels))
 
     return p
 end
@@ -470,6 +472,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
+             xticks=(floor(t[1]):1:ceil(t[end])),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest;
@@ -653,6 +656,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
+             xticks=(floor(t[1]):1:ceil(t[end])),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
@@ -1242,10 +1246,10 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
     t = collect(spec.time) .+ (offset / fs)
     if norm == false
-        p = heatmap(t, spec.freq, spec.power, xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), title=title, colorbar_title = "Power/frequency [μV^2/Hz]"; kwargs...)
+        p = heatmap(t, spec.freq, spec.power, xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), xticks=(floor(t[1]):1:ceil(t[end])), title=title, colorbar_title = "Power/frequency [μV^2/Hz]"; kwargs...)
     else
         # in dB
-        p = heatmap(t, spec.freq, pow2db.(spec.power), xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), title=title, colorbar_title = "Power/frequency [dB/Hz]"; kwargs...)
+        p = heatmap(t, spec.freq, pow2db.(spec.power), xlabel=xlabel, ylabel=ylabel, ylim=(0, ylim), xticks=(floor(t[1]):1:ceil(t[end])), title=title, colorbar_title = "Power/frequency [dB/Hz]"; kwargs...)
     end
 
     return p
