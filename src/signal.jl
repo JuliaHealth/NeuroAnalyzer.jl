@@ -2680,3 +2680,69 @@ function signal_fconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Ve
 
     return s_conv
 end
+
+"""
+    signal_ica(signal, n)
+
+Calculates `n` first ICs for `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `n::Int64` - number of PCs
+
+# Returns
+
+- `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+"""
+function signal_ica(signal::Array{Float64, 3}; n::Int64)
+    n < 0 && throw(ArgumentError("Number of ICs must be ≥ 1."))
+    n > size(signal, 1) && throw(ArgumentError("Number of ICs cannot be higher than signal rows."))
+
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    ic = zeros(n, size(signal, 2), epoch_n)
+
+    Threads.@threads for epoch in 1:epoch_n
+        # s = @view signal[:, :, epoch]
+        s = signal[:, :, epoch]
+        s = s'
+
+        M = MultivariateStats.fit(ICA, s, n, tol=0.2)
+        for idx in 1:n
+            ic[idx, :, epoch] = M.W[:, idx]
+        end
+    end
+
+    return ic
+end
+
+"""
+    signal_epochs_var(signal)
+
+Calculates variance for all `signal` epochs.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `var::Vector{Float64}`
+"""
+function signal_epochs_stats(signal::Array{Float64, 3})
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    s_mean = zeros(epoch_n)
+    s_sd = zeros(epoch_n)
+    s_var = zeros(epoch_n)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s = @view signal[:, :, epoch]
+        s_mean[epoch] = mean(s)
+        s_sd[epoch] = std(s)
+        s_var[epoch] = var(s)
+    end
+
+    return s_mean, s_sd, s_var
+end

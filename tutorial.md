@@ -424,6 +424,12 @@ ss
 p
 ```
 
+Signal stats:
+```julia
+m, s, v = eeg_epochs_stats(edf)
+bar(v)
+```
+
 Misc:
 ```julia
 eeg_band(:alpha)

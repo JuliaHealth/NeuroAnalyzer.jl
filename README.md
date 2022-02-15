@@ -25,6 +25,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - Interpolations
 - JLD2
 - LinearAlgebra
+- MultivariateStats
 - Pkg
 - Plots
 - [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)

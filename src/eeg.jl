@@ -1508,3 +1508,42 @@ function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
         return channels
     end
 end
+
+"""
+    eeg_ica(eeg; n)
+
+Calculates `n` first ICs for `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `n::Int64` - number of ICs
+
+# Returns
+
+- `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch
+"""
+function eeg_ica(eeg::EEG; n::Int64)
+    ic = signal_ica(eeg.eeg_signals, n=n)
+
+    return ic
+end
+
+"""
+    eeg_epochs_stats(eeg)
+
+Calculates mean, sd and variance of `eeg` epochs.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `var::Vector{Float64}`
+"""
+function eeg_epochs_stats(eeg::EEG)
+    e_mean, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+
+    return e_mean, e_sd, e_var
+end

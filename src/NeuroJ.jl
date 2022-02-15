@@ -9,6 +9,7 @@ using InformationMeasures
 using Interpolations
 using JLD2
 using LinearAlgebra
+using MultivariateStats
 using Pkg
 using Plots
 using Plots.PlotMeasures
@@ -39,6 +40,7 @@ function neuroj_version()
                          "Interpolations",
                          "JLD2",
                          "LinearAlgebra",
+                         "MultivariateStats",
                          "Plots",
                          "Polynomials",
                          "Simpson",
@@ -122,6 +124,8 @@ export signal_tconv
 export signal_total_power
 export signal_trim
 export signal_upsample
+export signal_ica
+export signal_epochs_stats
 
 include("eeg.jl")
 export eeg_autocov
@@ -170,6 +174,8 @@ export eeg_show_header
 export eeg_delete_epoch
 export eeg_keep_epoch
 export eeg_pick
+export eeg_ica
+export eeg_epochs_stats
 
 include("eeg_io.jl")
 export eeg_import_edf

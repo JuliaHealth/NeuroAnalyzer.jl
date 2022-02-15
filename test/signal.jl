@@ -248,4 +248,7 @@ s = signal_fconv(signal_v1, kernel=[1, 2, 3])
 s = signal_fconv(signal_a1, kernel=[1, 2, 3])
 @test size(s) == (2, 101, 2)
 
+m, s, v = signal_epochs_stats(signal_a)
+@test size(s) == (2, )
+
 true

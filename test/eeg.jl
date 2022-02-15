@@ -146,4 +146,12 @@ e1 = eeg_keep_epoch(e, epoch=1)
 e = eeg_pick(edf, pick=:left)
 @test length(e) == 8
 
+e = eeg_epochs(edf, epoch_len=20*256)
+m, s, v = eeg_epochs_stats(e)
+@test size(v) == (69, )
+
+e = eeg_epochs(edf, epoch_len=20, average=true)
+i = eeg_ica(e, n=5)
+@test size(i) == (5, 20, 1)
+
 true
