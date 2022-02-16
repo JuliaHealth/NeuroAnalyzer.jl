@@ -2703,9 +2703,8 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64)
     epoch_n = size(signal, 3)
     ic = zeros(n, size(signal, 2), epoch_n)
 
-    Threads.@threads for epoch in 1:epoch_n
-        # s = @view signal[:, :, epoch]
-        s = signal[:, :, epoch]
+    for epoch in 1:epoch_n
+        s = @view signal[:, :, epoch]
         s = s'
 
         M = MultivariateStats.fit(ICA, s, n, tol=0.2)

@@ -399,9 +399,15 @@ edf1 = eeg_keep_channel(edf1, 3)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
 edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf1), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
-pc, pc_var = eeg_pca(edf1, edf2, n=4)
+pc, pc_var = eeg_pca(edf1, n=4)
 plot(pc[1, :, 1, 1])
 bar(vec(pc_var))
+```
+
+ICA:
+```julia
+e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
+i = eeg_ica(e10, n=19)
 ```
 
 Comparing two signals:

@@ -21,6 +21,7 @@ mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
+    eeg_ica::Array{Float64, 3}
 end
 
 if VERSION < v"1.0.0"
@@ -177,6 +178,7 @@ export eeg_pick
 export eeg_ica
 export eeg_epochs_stats
 
+
 include("eeg_io.jl")
 export eeg_import_edf
 export eeg_load
@@ -200,6 +202,8 @@ export signal_plot_avg
 export signal_plot_butterfly
 export signal_plot_psd
 export signal_plot_spectrogram
+export signal_plot_ica
+export eeg_plot_ica
 
 include("nstim.jl")
 export tes_dose

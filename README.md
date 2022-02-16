@@ -68,7 +68,7 @@ end
 
 ### Bugs
 
-- plots: time ticks
+- plots: time ticks (calculate xtick_step regarding length(t))
 
 ### To do
 
@@ -78,12 +78,11 @@ General:
 - performance optimization
 
 EEG:
-
+- ICA and PCA to be added to EEG object
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: import from CSV
 - create EEG object
-- ICA
 - automated DC line cleaning
 - automated channel rejection
 - automated cleaning of artifacts
