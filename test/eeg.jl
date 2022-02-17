@@ -155,9 +155,12 @@ i = eeg_ica(e, n=5)
 @test size(i) == (5, 20, 1)
 
 eeg_epochs_stats!(edf)
-c = eeg_show_components(edf)
+c = eeg_list_components(edf)
 @test size(c) == (3, )
 v = eeg_component(edf, c=:epochs_mean)
 @test size(v) == (1, )
+eeg_delete_component!(edf, c=:epochs_mean)
+c = eeg_list_components(edf)
+@test size(c) == (2, )
 
 true

@@ -180,6 +180,7 @@ export eeg_total_power!
 export eeg_trim
 export eeg_upsample
 export eeg_edit_header
+export eeg_edit_header!
 export eeg_show_header
 export eeg_delete_epoch
 export eeg_keep_epoch
@@ -190,8 +191,10 @@ export eeg_epochs_stats
 export eeg_epochs_stats!
 export eeg_reset_components
 export eeg_reset_components!
-export eeg_show_components
-export eeg_component
+export eeg_list_components
+export eeg_extract_component
+export eeg_delete_component
+export eeg_delete_component!
 
 include("eeg_io.jl")
 export eeg_import_edf

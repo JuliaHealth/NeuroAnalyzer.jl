@@ -2601,17 +2601,20 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
 
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
-        m_cov = signal_cov(s)
+        # m_cov = signal_cov(s)
+        # eig_val, eig_vec = eigen(m_cov)
+        # eig_val_idx = sortperm(eig_val, rev=true)
+        # eig_val = eig_val[eig_val_idx]
+        # eig_vec = matrix_sort(eig_vec, eig_val_idx)
+        # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        eig_val, eig_vec = eigen(m_cov)
-        eig_val_idx = sortperm(eig_val, rev=true)
-        eig_val = eig_val[eig_val_idx]
-        eig_vec = matrix_sort(eig_vec, eig_val_idx)
-        eig_val = 100 .* eig_val / sum(eig_val) # convert to %
+        M = MultivariateStats.fit(PCA, s, maxoutdim=n)
+        v = principalvars(M) ./ tvar(M) * 100
 
         for idx in 1:n
-            pc_var[idx, epoch] = eig_val[idx]
-            pc[idx, :, epoch] = (eig_vec[:, idx] .* s)[idx, :]
+            pc_var[idx, epoch] = v[idx]
+            # pc[idx, :, epoch] = (eig_vec[:, idx] .* s)[idx, :]
+            pc[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
         end
     end
 
@@ -2690,12 +2693,13 @@ Calculates `n` first ICs for `signal`.
 
 - `signal::Array{Float64, 3}`
 - `n::Int64` - number of PCs
+- `tol::Float64` - tolerance for ICA
 
 # Returns
 
 - `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
 """
-function signal_ica(signal::Array{Float64, 3}; n::Int64)
+function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6)
     n < 0 && throw(ArgumentError("Number of ICs must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of ICs cannot be higher than signal rows."))
 
@@ -2705,11 +2709,10 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64)
 
     for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
-        s = s'
 
-        M = MultivariateStats.fit(ICA, s, n, tol=0.2)
+        M = MultivariateStats.fit(ICA, s, n, tol=tol)
         for idx in 1:n
-            ic[idx, :, epoch] = M.W[:, idx]
+            ic[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
         end
     end
 

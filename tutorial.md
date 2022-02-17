@@ -40,19 +40,23 @@ eeg_sr(edf)
 Edit EEG header
 ```julia
 eeg_show_header(edf)
-eeg_edit_header(edf, field=:patient, value="N.N.")
+eeg_edit_header!(edf, field=:patient, value="N.N.")
 ```
 
 Show components (e.g. ICA, PCA):
 ```julia
-eeg_show_components(edf)
+eeg_list_components(edf)
 ```
 Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
 
-
 Get component:
 ```julia
-eeg_component(edf, c=:epochs_mean)
+eeg_extract_component(edf, c=:epochs_mean)
+```
+
+Delete component:
+```julia
+eeg_delete_component!(edf, c=:ica)
 ```
 
 Show labels:
@@ -111,7 +115,7 @@ eeg_info(edf_128)
 
 Remove parts of the signal:
 ```julia
-edf = eeg_trim(edf, trim_len=(20 * eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), from=:start)
 edf = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), offset=(10 * eeg_sr(edf)), from=:start)
 ```
 
@@ -359,7 +363,7 @@ edf = eeg_load_electrode_positions(edf, file_name="locs/standard-10-20-cap19.ced
 eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot(edf, channel=1:10)
 eeg_plot(edf, channel=1:10, head=false)
-eeg_plot_butterfly(e10, channel=1:10, head=true, len=55)
+eeg_plot_butterfly(edf, channel=1:10, head=true, len=55)
 eeg_plot_psd(edf, normalize=true, channel=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
 eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
 eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
@@ -414,12 +418,17 @@ edf2 = eeg_keep_channel(edf2, 4)
 pc, pc_var = eeg_pca(edf1, n=4)
 plot(pc[1, :, 1, 1])
 bar(vec(pc_var))
+
+pc, pc_var = eeg_pca(edf, n=4)
+plot(pc[1, :, 1, 1])
+bar(vec(pc_var))
 ```
 
 ICA:
 ```julia
-e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
-i = eeg_ica(e10, n=19)
+eeg_ica!(edf, n=15, tol=1.0)
+i = eeg_ica(edf, n=15, tol=1.0)
+eeg_plot_ica(edf, ica=1:5, len=50)
 ```
 
 Comparing two signals:

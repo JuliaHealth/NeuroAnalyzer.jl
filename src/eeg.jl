@@ -1,18 +1,4 @@
 """
-    eeg_reset_components!(eeg)
-
-Resets `eeg` components.
-
-# Arguments
-
-- `eeg:EEG`
-"""
-function eeg_reset_components!(eeg::EEG)
-    eeg.eeg_header[:components] = []
-    eeg.eeg_components = []
-end
-
-"""
     eeg_reset_components(eeg)
 
 Resets `eeg` components.
@@ -34,6 +20,20 @@ function eeg_reset_components(eeg::EEG)
 end
 
 """
+    eeg_reset_components!(eeg)
+
+Resets `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+"""
+function eeg_reset_components!(eeg::EEG)
+    eeg.eeg_header[:components] = []
+    eeg.eeg_components = []
+end
+
+"""
     eeg_delete_channel(eeg; channel)
 
 Removes `channel` from the `eeg`.
@@ -48,9 +48,7 @@ Removes `channel` from the `eeg`.
 - `eeg::EEG`
 """
 function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(channel) <: AbstractRange
-        channel = collect(channel)
-    end
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
     channel_n = size(eeg.eeg_signals, 1)
     length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
@@ -116,9 +114,7 @@ Keeps `channels` in the `eeg`.
 - `eeg::EEG`
 """
 function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(channel) <: AbstractRange
-        channel = collect(channel)
-    end
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
 
     length(channel) > 1 && (channel = sort!(channel, rev=true))
     if channel[end] < 1 || channel[1] > size(eeg.eeg_signals, 1)
@@ -155,7 +151,7 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
                 deleteat!(eeg_header[:sampling_rate], idx2)
                 deleteat!(eeg_header[:gain], idx2)
             end
-        end 
+        end
     end
 
     # remove channel
@@ -229,6 +225,7 @@ Calculates total power of the `eeg`.
 - `eeg::EEG`
 """
 function eeg_total_power!(eeg::EEG)
+    :total_power in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:total_power)
     fs = eeg.eeg_header[:sampling_rate][1]
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
     push!(eeg.eeg_components, stp)
@@ -599,6 +596,7 @@ Calculates covariance between all channels of `eeg`.
 - `norm::Bool` - normalize covariance
 """
 function eeg_cov!(eeg::EEG; norm=true)
+    :cov_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cov_mat)
     cov_mat = eeg_cov(eeg, norm=norm)
     push!(eeg.eeg_components, cov_mat)
     push!(eeg.eeg_header[:components], :cov_mat)
@@ -634,6 +632,7 @@ Calculates correlation coefficients between all channels of `eeg`.
 - `eeg::EEG`
 """
 function eeg_cor!(eeg::EEG)
+    :cor_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cor_mat)
     cor_mat = eeg_cor(eeg)
     push!(eeg.eeg_components, cor_mat)
     push!(eeg.eeg_header[:components], :cor_mat)
@@ -772,7 +771,7 @@ function eeg_info(eeg::EEG)
             println(c[end])
         end
     else
-        println("      Channel locations: yes")
+        print("             Components: no")
     end
 
 end
@@ -1021,6 +1020,8 @@ Calculates autocovariance of each the `eeg` channels.
 - `norm::Bool` - normalize autocovariance
 """
 function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+    :acov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov)
+    :acov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov_lags)
     acov, lags = eeg_autocov(eeg, lag=lag, demean=demean, norm=norm)
     push!(eeg.eeg_components, acov)
     push!(eeg.eeg_components, lags)
@@ -1067,6 +1068,8 @@ Calculates cross-covariance of each the `eeg` channels.
 - `norm::Bool` - normalize cross-covariance
 """
 function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+    :ccov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov)
+    :ccov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov_lags)
     ccov, lags = eeg_crosscov(eeg, lag=lag, demean=demean, norm=norm)
     push!(eeg.eeg_components, ccov)
     push!(eeg.eeg_components, lags)
@@ -1135,6 +1138,8 @@ Calculates total power for each the `eeg` channels.
 - `norm::Bool` - normalize do dB
 """
 function eeg_psd!(eeg::EEG; norm::Bool=false)
+    :psd_powers in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_powers)
+    :psd_frequencies in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_frequencies)
     s_psd_powers, s_psd_frequencies = eeg_psd(eeg, norm=norm)
     push!(eeg.eeg_components, s_psd_powers)
     push!(eeg.eeg_components, s_psd_frequencies)
@@ -1177,9 +1182,10 @@ Calculates stationarity.
 - `method::Symbol[:mean, :var, :euclid, :hilbert]
 """
 function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
+    :stationarity in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:stationarity)
     s_stationarity = eeg_stationarity(eeg, window=window, method=method)
     push!(eeg.eeg_components, s_stationarity)
-    push!(eeg.eeg_header[:components], :s_stationarity)
+    push!(eeg.eeg_header[:components], :stationarity)
     push!(eeg.eeg_header[:history], "eeg_stationarity!(EEG, window=$window, method=$method)")
 end
 
@@ -1252,6 +1258,7 @@ Calculates mutual information between all channels of `eeg`.
 - `eeg::EEG`
 """
 function eeg_mi!(eeg::EEG)
+    :mi in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:mi)
     mi = signal_mi(eeg.eeg_signals)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
     push!(eeg.eeg_components, mi)
@@ -1310,6 +1317,7 @@ Calculates entropy of all channels of `eeg1`.
 - `eeg::EEG`
 """
 function eeg_entropy!(eeg::EEG)
+    :entropy in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:entropy)
     ent = eeg_entropy(eeg)
     push!(eeg.eeg_components, ent)
     push!(eeg.eeg_header[:components], :entropy)
@@ -1426,6 +1434,8 @@ Returns vector of frequencies and Nyquist frequency for `eeg`.
 - `eeg::EEG`
 """
 function eeg_freqs!(eeg::EEG)
+    :hz in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:hz)
+    :nyq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:nyq)
     hz, nyq = eeg_freqs(eeg)
     push!(eeg.eeg_components, hz)
     push!(eeg.eeg_components, nyq)
@@ -1466,6 +1476,8 @@ Calculates `n` first PCs for `eeg`.
 - `n::Int64` - number of PCs
 """
 function eeg_pca!(eeg::EEG; n::Int64)
+    :pc in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pc)
+    :pc_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pc_var)
     pc, pc_var = eeg_pca(eeg, n=n)
     push!(eeg.eeg_components, pc)
     push!(eeg.eeg_components, pc_var)
@@ -1550,13 +1562,13 @@ Changes value of `eeg` `field` to `value`.
 
 - `eeg::EEG`
 - `field::Symbol`
-- `value`
+- `value::Any`
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_edit_header(eeg::EEG; field::Symbol, value)
+function eeg_edit_header(eeg::EEG; field::Symbol, value::Any)
   value === nothing && throw(ArgumentError("Value cannot be empty."))
   
   eeg_new = deepcopy(eeg)
@@ -1568,6 +1580,21 @@ function eeg_edit_header(eeg::EEG; field::Symbol, value)
   push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
 
   return eeg_new
+end
+
+"""
+    eeg_edit_header!(eeg; field, value)
+
+Changes value of `eeg` `field` to `value`.
+
+# Arguments
+
+- `eeg::EEG`
+- `field::Symbol`
+- `value::Any`
+"""
+function eeg_edit_header!(eeg::EEG; field::Symbol, value::Any)
+  eeg = eeg_edit_header(eeg; field=field, value=value)
 end
 
 """
@@ -1803,19 +1830,20 @@ Calculates `n` first ICs for `eeg`.
 
 - `eeg::EEG`
 - `n::Int64` - number of ICs
+- `tol::Float64` - tolerance for ICA
 
 # Returns
 
 - `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch
 """
-function eeg_ica(eeg::EEG; n::Int64)
-    ic = signal_ica(eeg.eeg_signals, n=n)
+function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6)
+    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol)
 
     return ic
 end
 
 """
-    eeg_ica!(eeg; n)
+    eeg_ica!(eeg; n, tol)
 
 Calculates `n` first ICs for `eeg`.
 
@@ -1823,16 +1851,18 @@ Calculates `n` first ICs for `eeg`.
 
 - `eeg::EEG`
 - `n::Int64` - number of ICs
+- `tol::Float64` - tolerance for ICA
 
 # Returns
 
 - `eeg::EEG`
 """
-function eeg_ica!(eeg::EEG; n::Int64)
-    ic = signal_ica(eeg.eeg_signals, n=n)
+function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6)
+    :ica in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica)
+    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol)
     push!(eeg.eeg_components, ic)
     push!(eeg.eeg_header[:components], :ica)
-    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=n)")
+    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n)")
 end
 
 """
@@ -1866,6 +1896,9 @@ Calculates mean, sd and variance of `eeg` epochs and stores in `eeg`.
 - `eeg::EEG`
 """
 function eeg_epochs_stats!(eeg::EEG)
+    :epochs_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean)
+    :epochs_sd in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_sd)
+    :epochs_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_var)
     e_mean, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
     push!(eeg.eeg_components, e_mean)
     push!(eeg.eeg_components, e_sd)
@@ -1877,9 +1910,9 @@ function eeg_epochs_stats!(eeg::EEG)
 end
 
 """
-    eeg_show_components(eeg)
+    eeg_list_components(eeg)
 
-Shows list of `eeg` components.
+Lists `eeg` components.
 
 # Arguments
 
@@ -1889,19 +1922,19 @@ Shows list of `eeg` components.
 
 - `components::Vector{Symbol}`
 """
-function eeg_show_components(eeg::EEG)
+function eeg_list_components(eeg::EEG)
     return eeg.eeg_header[:components]
 end
 
 """
-    eeg_component(eeg, component)
+    eeg_component(eeg, c)
 
 Returns `component` of `eeg`.
 
 # Arguments
 
 - `eeg::EEG`
-- component::Symbol`
+- `component::Symbol`
 
 # Returns
 
@@ -1916,3 +1949,51 @@ function eeg_component(eeg::EEG; c::Symbol)
     end
 end
 
+"""
+    eeg_delete_component(eeg, c)
+
+Deletes `component` of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `component::Symbol`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_delete_component(eeg::EEG; c::Symbol)
+    eeg_new = deepcopy(eeg)
+    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    for idx in 1:length(eeg.eeg_header[:components])
+        if c == eeg_new.eeg_header[:components][idx]
+            deleteat!(eeg_new.eeg_components, idx)
+            deleteat!(eeg_new.eeg_header[:components], idx)
+            push!(eeg_new.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
+            return eeg_new
+        end
+    end
+end
+
+"""
+    eeg_delete_component!(eeg, c)
+
+Deletes `component` of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `component::Symbol`
+"""
+function eeg_delete_component!(eeg::EEG; c::Symbol)
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    for idx in 1:length(eeg.eeg_header[:components])
+        if c == eeg.eeg_header[:components][idx]
+            deleteat!(eeg.eeg_components, idx)
+            deleteat!(eeg.eeg_header[:components], idx)
+            push!(eeg.eeg_header[:history], "eeg_delete_component!(EEG, c=$c)")
+            return
+        end
+    end
+end
