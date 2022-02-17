@@ -301,6 +301,7 @@ Exports EEG data as CSV.
 - `eeg::EEG`
 - `file_name::String`
 - `header::Bool` - export header
+- `components::Bool` - export components
 - `overwrite::Bool`
 
 # Returns
@@ -308,8 +309,9 @@ Exports EEG data as CSV.
 - `success::Bool`
 
 """
-function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, overwrite::Bool=false)
+function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
 
     # DATA
     # unsplit epochs
@@ -330,6 +332,17 @@ function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, overwri
     f = open(file_name, "w")
     for (key, value) in eeg.eeg_header
         println(f, key, ": ", value)
+    end
+    close(f)
+
+    # COMPONENTS
+    file_name = replace(file_name, ".csv" => "_components.csv")
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+    f = open(file_name, "w")
+    for idx in 1:length(eeg.eeg_header[:components])
+        println(f, "component: $(eeg.eeg_header[:components][idx])")
+        println(f, eeg.eeg_components[idx])
+        println(f, "---")
     end
     close(f)
 

@@ -23,10 +23,6 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
-
     if ylim === nothing
         ylim = maximum(signal) * 1.5
         ylim = ceil(Int64, ylim)
@@ -38,7 +34,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
              ylabel=ylabel,
              label=label,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
@@ -74,10 +70,6 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
-
     channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
@@ -101,7 +93,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=:darktest,
@@ -177,6 +169,7 @@ function eeg_plot(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Float64
     t = collect(0:(1 / eeg_sr(eeg_tmp)):len)
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
+
     if offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]
         throw(ArgumentError("Offset value out of range."))
     end
@@ -443,9 +436,6 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
 
     if norm == true
         s_normalized = signal_normalize_zscore(signal)
@@ -464,7 +454,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest;
@@ -519,10 +509,6 @@ Plots averaged `eeg` channels.
 function eeg_plot_avg(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI plot", ylim::Union{Int64, Float64, Nothing}=nothing, figure::String="", kwargs...)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
-
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
 
     # select channels, default is 1:20 or all channels
     if channel === nothing
@@ -623,9 +609,6 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 
     channel_n = size(signal, 1)
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
 
     if norm == true
         s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
@@ -649,7 +632,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
@@ -1224,10 +1207,6 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
 
     signal = signal_demean(signal)
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
-
     nfft = length(signal)
     interval = fs
     overlap = round(Int64, fs * 0.85)
@@ -1235,6 +1214,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     ylim === nothing && (ylim = fs/2)
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
     t = collect(spec.time) .+ (offset / fs)
+
     if norm == false
         p = heatmap(t,
                     spec.freq,
@@ -1242,7 +1222,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xlabel=xlabel,
                     ylabel=ylabel,
                     ylim=(0, ylim),
-                    xticks=floor(t[1]):xtick_step:ceil(t[end]),
+                    xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
                     title=title,
                     colorbar_title="Power/frequency [μV^2/Hz]";
                     kwargs...)
@@ -1254,7 +1234,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xlabel=xlabel,
                     ylabel=ylabel,
                     ylim=(0, ylim),
-                    xticks=floor(t[1]):xtick_step:ceil(t[end]),
+                    xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
                     title=title,
                     colorbar_title="Power/frequency [dB/Hz]";
                     kwargs...)
@@ -1374,9 +1354,6 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
 
     if ylim === nothing
         ylim = maximum(ica) * 1.5
@@ -1389,7 +1366,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              ylabel=ylabel,
              label=label,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-ylim, ylim),
              title=title,
              palette=:darktest,
@@ -1427,9 +1404,6 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # sampling interval → sampling rate
-    # fs = 1 / (t[2] - t[1])
-    xtick_step = 1
 
     ica_n = size(ica, 1)
 
@@ -1448,7 +1422,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     if norm == true
         # normalize and shift so all channels are visible
         variances = var(ica, dims=2)
-        mean_variance = mean(variances)
+        mean_variance = 10 * mean(variances)
         for idx in 1:ica_n
             i = @view ica[idx, :]
             ica_normalized[idx, :] = (i .- mean(i)) ./ mean_variance .+ (idx - 1)
@@ -1461,7 +1435,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=(floor(t[1]), ceil(t[end])),
-             xticks=floor(t[1]):xtick_step:ceil(t[end]),
+             xticks=floor(t[1]):div((ceil(t[end]) - floor(t[1])), 10):ceil(t[end]),
              ylims=(-0.5, ica_n-0.5),
              title=title,
              palette=:darktest,

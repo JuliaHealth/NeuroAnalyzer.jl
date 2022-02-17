@@ -65,11 +65,11 @@ mutable struct EEG
 end
 ```
 
+Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input object 
+
 ## Roadmap
 
 ### Bugs
-
-- plots: time ticks (calculate xtick_step regarding length(t))
 
 ### To do
 
@@ -79,7 +79,6 @@ General:
 - performance optimization
 
 EEG:
-- export to CSV: export components
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: import from CSV
