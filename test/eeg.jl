@@ -151,7 +151,7 @@ m, s, v = eeg_epochs_stats(e)
 @test size(v) == (69, )
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
-i = eeg_ica(e, n=5)
+i = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
 eeg_epochs_stats!(edf)

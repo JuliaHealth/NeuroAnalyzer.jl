@@ -79,7 +79,6 @@ General:
 - performance optimization
 
 EEG:
-- remove component
 - export to CSV: export components
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots

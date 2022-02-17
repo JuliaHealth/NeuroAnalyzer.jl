@@ -2609,7 +2609,7 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
         M = MultivariateStats.fit(PCA, s, maxoutdim=n)
-        v = principalvars(M) ./ tvar(M) * 100
+        v = principalvars(M) ./ var(M) * 100
 
         for idx in 1:n
             pc_var[idx, epoch] = v[idx]
