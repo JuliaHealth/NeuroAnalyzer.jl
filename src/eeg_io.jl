@@ -173,9 +173,10 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :channel_n => channel_n,
                       :reference => "",
                       :channel_locations => false,
-                      :xlocs => [],
-                      :ylocs => [],
+                      :xlocs => Float64[],
+                      :ylocs => Float64[],
                       :history => Vector{String}(),
+                      :components => Vector{Symbol}(),
                       :eeg_duration_samples => eeg_duration_samples,
                       :eeg_duration_seconds => eeg_duration_seconds,
                       :epoch_n => 1,
@@ -193,7 +194,9 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :sampling_rate => sampling_rate,
                       :gain => gain)
 
-    eeg = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg_components = Vector{Any}()
+
+    eeg = EEG(eeg_header, eeg_time, eeg_signals, eeg_components)
 
     return eeg
 end
@@ -225,7 +228,7 @@ function eeg_load_electrode_positions(eeg::EEG; file_name)
     length(loc_x) != eeg.eeg_header[:channel_n] && throw(ArgumentError("Number of channels and number of positions do not match."))
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals))
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals), deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:channel_locations] = true
     eeg_new.eeg_header[:xlocs] = loc_x
     eeg_new.eeg_header[:ylocs] = loc_y

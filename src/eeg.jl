@@ -1,4 +1,39 @@
 """
+    eeg_reset_components!(eeg)
+
+Resets `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+"""
+function eeg_reset_components!(eeg::EEG)
+    eeg.eeg_header[:components] = []
+    eeg.eeg_components = []
+end
+
+"""
+    eeg_reset_components(eeg)
+
+Resets `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_reset_components(eeg::EEG)
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:components] = []
+    eeg_new.eeg_components = []
+
+    return eeg_new
+end
+
+"""
     eeg_delete_channel(eeg; channel)
 
 Removes `channel` from the `eeg`.
@@ -16,7 +51,8 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
     if typeof(channel) <: AbstractRange
         channel = collect(channel)
     end
-    length(channel) == size(eeg.eeg_signals, 1) && throw(ArgumentError("You cannot delete all channels."))
+    channel_n = size(eeg.eeg_signals, 1)
+    length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
     length(channel) > 1 && (channel = sort!(channel, rev=true))
 
@@ -27,8 +63,7 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
     eeg_header = deepcopy(eeg.eeg_header)
     eeg_time = deepcopy(eeg.eeg_time)
     eeg_signals = deepcopy(eeg.eeg_signals)
-
-    channel_n = eeg_header[:channel_n]
+    eeg_components = []
 
     # update headers
     eeg_header[:channel_n] = channel_n - length(channel)
@@ -56,10 +91,13 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
     eeg_signals = eeg_signals[setdiff(1:end, (channel)), :, :]
 
     # create new dataset
-    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg_new = EEG(eeg_header, eeg.eeg_time, eeg.eeg_signals, deepcopy(eeg_components))
+
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_delete_channel(EEG, $channel)")
     
+    eeg_reset_components!(eeg_new)
+
     return eeg_new
 end
 
@@ -124,10 +162,12 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
     eeg_signals = eeg_signals[setdiff(1:end, (channel_to_remove)), :, :]
 
     # create new dataset
-    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_keep_channel(EEG, $channel)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -149,9 +189,11 @@ function eeg_derivative(eeg::EEG)
     s_der = signal_derivative(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_der)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_der, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -175,6 +217,23 @@ function eeg_total_power(eeg::EEG)
     size(stp, 3) == 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2)))
 
     return stp
+end
+
+"""
+    eeg_total_power!(eeg)
+
+Calculates total power of the `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_total_power!(eeg::EEG)
+    fs = eeg.eeg_header[:sampling_rate][1]
+    stp = signal_total_power(eeg.eeg_signals, fs=fs)
+    push!(eeg.eeg_components, stp)
+    push!(eeg.eeg_header[:components], :total_power)
+    push!(eeg.eeg_header[:history], "eeg_total_power(EEG)")
 end
 
 """
@@ -220,9 +279,11 @@ function eeg_detrend(eeg::EEG; type::Symbol=:linear)
     s_det = signal_detrend(eeg.eeg_signals, type=type)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_det)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_det, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, type=$type)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -242,16 +303,17 @@ References the `eeg` to specific channel `channel`.
 - `eeg::EEG`
 """
 function eeg_reference_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-    if typeof(channel) <: AbstractRange
-        channel = collect(channel)
-    end
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
+
     s_referenced = signal_reference_channel(eeg.eeg_signals, channel=channel)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:reference] = "channel: $channel"
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, channel=$channel)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -273,10 +335,12 @@ function eeg_reference_car(eeg::EEG)
     s_referenced = signal_reference_car(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:reference] = "CAR"
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -380,9 +444,11 @@ function eeg_taper(eeg::EEG; taper::Vector)
     s_tapered = signal_taper(eeg.eeg_signals, taper=taper)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_tapered)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_tapered, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -404,9 +470,11 @@ function eeg_demean(eeg::EEG)
     s_demeaned = signal_demean(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_demeaned)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_demeaned, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_demean(EEG)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -428,9 +496,11 @@ function eeg_normalize_zscore(eeg::EEG)
     s_normalized = signal_normalize_zscore(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_normalize_zscore(EEG)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -452,9 +522,11 @@ function eeg_normalize_minmax(eeg::EEG)
     s_normalized = signal_normalize_minmax(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_normalize_minmax(EEG)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -517,6 +589,23 @@ function eeg_cov(eeg::EEG; norm=true)
 end
 
 """
+    eeg_cov!(eeg; norm=true)
+
+Calculates covariance between all channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `norm::Bool` - normalize covariance
+"""
+function eeg_cov!(eeg::EEG; norm=true)
+    cov_mat = eeg_cov(eeg, norm=norm)
+    push!(eeg.eeg_components, cov_mat)
+    push!(eeg.eeg_header[:components], :cov_mat)
+    push!(eeg.eeg_header[:history], "eeg_cov!(EEG)")
+end
+
+"""
     eeg_cor(eeg)
 
 Calculates correlation coefficients between all channels of `eeg`.
@@ -533,6 +622,22 @@ function eeg_cor(eeg::EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
 
     return cor_mat
+end
+
+"""
+    eeg_cor!(eeg)
+
+Calculates correlation coefficients between all channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_cor!(eeg::EEG)
+    cor_mat = eeg_cor(eeg)
+    push!(eeg.eeg_components, cor_mat)
+    push!(eeg.eeg_header[:components], :cor_mat)
+    push!(eeg.eeg_header[:history], "eeg_cor!(EEG)")
 end
 
 """
@@ -555,7 +660,7 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
 
     # create new dataset
     eeg_time = collect(t_upsampled)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_upsampled)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_upsampled, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_upsampled, 2) * size(s_upsampled, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_upsampled, 2) * size(s_upsampled, 3)) / new_sr
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_upsampled, 2)
@@ -564,6 +669,8 @@ function eeg_upsample(eeg::EEG; new_sr::Int64)
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -627,10 +734,6 @@ Shows info.
 # Arguments
 
 - `eeg::EEG`
-
-# Returns
-
-- `eeg::EEG`
 """
 function eeg_info(eeg::EEG)
     println("          EEG file name: $(eeg.eeg_header[:eeg_filename])")
@@ -657,6 +760,21 @@ function eeg_info(eeg::EEG)
     else
         println("      Channel locations: yes")
     end
+    if eeg.eeg_header[:components] != []
+        print("             Components: ")
+        c = eeg_show_components(eeg)
+        if length(c) == 1
+            println(c[1])
+        else
+            for idx in 1:(length(c) - 1)
+                print(c[idx], ", ")
+            end
+            println(c[end])
+        end
+    else
+        println("      Channel locations: yes")
+    end
+
 end
 
 """
@@ -695,7 +813,7 @@ function eeg_epochs(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len:
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
     eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
-    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_split)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_split, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
     eeg_new.eeg_header[:epoch_n] = epoch_n
@@ -704,6 +822,8 @@ function eeg_epochs(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len:
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -728,13 +848,15 @@ function eeg_extract_epoch(eeg::EEG; epoch::Int64)
     end
 
     s_new = reshape(eeg.eeg_signals[:, :, epoch], size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2), 1)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_new)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_new, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:epoch_n] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch=$epoch)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -760,13 +882,15 @@ function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
     typeof(kernel) == Vector{ComplexF64} && (s_convoluted = abs.(s_convoluted))
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg_new)
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = size(s_convoluted, 2) / eeg_sr(eeg_new)
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_tconv(EEG, kernel=$kernel)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -815,9 +939,11 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=
                                     window=window)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_filtered)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_filtered, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -842,7 +968,7 @@ function eeg_downsample(eeg::EEG; new_sr::Int64)
 
     # create new dataset
     eeg_time = collect(t_downsampled)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_downsampled)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_downsampled, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_downsampled, 2) * size(s_downsampled, 3)) / new_sr
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_downsampled, 2)
@@ -851,6 +977,8 @@ function eeg_downsample(eeg::EEG; new_sr::Int64)
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_downsample(EEG, new_sr=$new_sr)")
+
+    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -871,7 +999,6 @@ Calculates autocovariance of each the `eeg` channels.
 
 - `acov::Matrix{Float64}`
 - `lags::Vector{Float64}
-
 """
 function eeg_autocov(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
     acov, lags = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, norm=norm)
@@ -879,6 +1006,27 @@ function eeg_autocov(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fals
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return acov, lags
+end
+
+"""
+    eeg_autocov(eeg; lag=1, demean=false, norm=false)
+
+Calculates autocovariance of each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `lag::Int64` - lags range is `-lag:lag`
+- `demean::Bool` - demean signal prior to analysis
+- `norm::Bool` - normalize autocovariance
+"""
+function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+    acov, lags = eeg_autocov(eeg, lag=lag, demean=demean, norm=norm)
+    push!(eeg.eeg_components, acov)
+    push!(eeg.eeg_components, lags)
+    push!(eeg.eeg_header[:components], :acov)
+    push!(eeg.eeg_header[:components], :acov_lags)
+    push!(eeg.eeg_header[:history], "eeg_autocov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 end
 
 """
@@ -904,6 +1052,27 @@ function eeg_crosscov(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fal
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return ccov, lags
+end
+
+"""
+    eeg_crosscov!(eeg; lag=1, demean=false, norm=false)
+
+Calculates cross-covariance of each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `lag::Int64` - lags range is `-lag:lag`
+- `demean::Bool` - demean signal prior to analysis
+- `norm::Bool` - normalize cross-covariance
+"""
+function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+    ccov, lags = eeg_crosscov(eeg, lag=lag, demean=demean, norm=norm)
+    push!(eeg.eeg_components, ccov)
+    push!(eeg.eeg_components, lags)
+    push!(eeg.eeg_header[:components], :ccov)
+    push!(eeg.eeg_header[:components], :ccov_lags)
+    push!(eeg.eeg_header[:history], "eeg_crosscov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 end
 
 """
@@ -956,6 +1125,25 @@ function eeg_psd(eeg::EEG; norm::Bool=false)
 end
 
 """
+    eeg_psd!(eeg; norm=false)
+
+Calculates total power for each the `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `norm::Bool` - normalize do dB
+"""
+function eeg_psd!(eeg::EEG; norm::Bool=false)
+    s_psd_powers, s_psd_frequencies = eeg_psd(eeg, norm=norm)
+    push!(eeg.eeg_components, s_psd_powers)
+    push!(eeg.eeg_components, s_psd_frequencies)
+    push!(eeg.eeg_header[:components], :psd_powers)
+    push!(eeg.eeg_header[:components], :psd_frequencies)
+    push!(eeg.eeg_header[:history], "eeg_psd!(EEG, norm=$norm)")
+end
+
+"""
     eeg_stationarity(eeg:EEG; window=10, method=:euclid)
 
 Calculates stationarity.
@@ -975,6 +1163,24 @@ function eeg_stationarity(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
     s_stationarity = signal_stationarity(eeg.eeg_signals, window=window, method=method)
 
     return s_stationarity
+end
+
+"""
+    eeg_stationarity!(eeg:EEG; window=10, method=:euclid)
+
+Calculates stationarity.
+
+# Arguments
+
+- `eeg:EEG`
+- `window::Int64` - time window in samples
+- `method::Symbol[:mean, :var, :euclid, :hilbert]
+"""
+function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
+    s_stationarity = eeg_stationarity(eeg, window=window, method=method)
+    push!(eeg.eeg_components, s_stationarity)
+    push!(eeg.eeg_header[:components], :s_stationarity)
+    push!(eeg.eeg_header[:history], "eeg_stationarity!(EEG, window=$window, method=$method)")
 end
 
 
@@ -1002,7 +1208,7 @@ function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:star
     eeg_signal = signal_trim(eeg_signal, trim_len=trim_len, from=from)
     eeg_time = signal_trim(eeg_time, trim_len=trim_len, from=from)
 
-    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signal)
+    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signal, deepcopy(eeg.eeg_components))
     eeg_trimmed.eeg_header[:eeg_duration_samples] -= trim_len
     eeg_trimmed.eeg_header[:eeg_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
     eeg_trimmed.eeg_header[:epoch_duration_samples] -= trim_len
@@ -1010,6 +1216,8 @@ function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:star
 
     # add entry to :history field
     push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, trim_len=$trim_len, from=$from)")
+
+    eeg_reset_components!(eeg_trimmed)
 
     return eeg_trimmed
 end
@@ -1035,6 +1243,23 @@ function eeg_mi(eeg::EEG)
 end
 
 """
+    eeg_mi!(eeg)
+
+Calculates mutual information between all channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_mi!(eeg::EEG)
+    mi = signal_mi(eeg.eeg_signals)
+    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
+    push!(eeg.eeg_components, mi)
+    push!(eeg.eeg_header[:components], :mi)
+    push!(eeg.eeg_header[:history], "eeg_mi!(EEG)")
+end
+
+"""
     eeg_mi(eeg1, eeg2)
 
 Calculates mutual information between all channels of `eeg1` and `eeg2`.
@@ -1056,9 +1281,9 @@ function eeg_mi(eeg1::EEG, eeg2::EEG)
 end
 
 """
-    eeg_entropy(eeg1)
+    eeg_entropy(eeg)
 
-Calculates entropy of all channels of `eeg1`.
+Calculates entropy of all channels of `eeg`.
 
 # Arguments
 
@@ -1073,6 +1298,22 @@ function eeg_entropy(eeg::EEG)
     size(ent, 3) == 1 && (ent = reshape(ent, size(ent, 1), size(ent, 2)))
 
     return ent
+end
+
+"""
+    eeg_entropy!(eeg)
+
+Calculates entropy of all channels of `eeg1`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_entropy!(eeg::EEG)
+    ent = eeg_entropy(eeg)
+    push!(eeg.eeg_components, ent)
+    push!(eeg.eeg_header[:components], :entropy)
+    push!(eeg.eeg_header[:history], "eeg_entropy!(EEG)")
 end
 
 """
@@ -1156,7 +1397,7 @@ function eeg_coherence(eeg::EEG; channel1::Int64, channel2::Int64, epoch1::Int64
 end
 
 """
-    eeg_frequencies(eeg)
+    eeg_freqs(eeg)
 
 Returns vector of frequencies and Nyquist frequency for `eeg`.
 
@@ -1166,12 +1407,31 @@ Returns vector of frequencies and Nyquist frequency for `eeg`.
 
 # Returns
 
-- `coherence::Array{ComplexF64, 3}`
+- `hz::Vector{Float64}`
+- `nyquist::Float64`
 """
 function eeg_freqs(eeg::EEG)
     hz, nyq = freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
 
     return hz, nyq
+end
+
+"""
+    eeg_freqs!(eeg)
+
+Returns vector of frequencies and Nyquist frequency for `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_freqs!(eeg::EEG)
+    hz, nyq = eeg_freqs(eeg)
+    push!(eeg.eeg_components, hz)
+    push!(eeg.eeg_components, nyq)
+    push!(eeg.eeg_header[:components], :hz)
+    push!(eeg.eeg_header[:components], :nyq)
+    push!(eeg.eeg_header[:history], "eeg_freqs!(EEG)")
 end
 
 """
@@ -1190,9 +1450,28 @@ Calculates `n` first PCs for `eeg`.
 - `pc_var::Matrix{Float64}` - PC_VAR(1)..PC_VAR(n) × epoch
 """
 function eeg_pca(eeg::EEG; n::Int64)
-    pc, pca_var = signal_pca(eeg.eeg_signals, n=n)
+    pc, pc_var = signal_pca(eeg.eeg_signals, n=n)
 
-    return pc, pca_var
+    return pc, pc_var
+end
+
+"""
+    eeg_pca!(eeg; n)
+
+Calculates `n` first PCs for `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `n::Int64` - number of PCs
+"""
+function eeg_pca!(eeg::EEG; n::Int64)
+    pc, pc_var = eeg_pca(eeg, n=n)
+    push!(eeg.eeg_components, pc)
+    push!(eeg.eeg_components, pc_var)
+    push!(eeg.eeg_header[:components], :pc)
+    push!(eeg.eeg_header[:components], :pc_var)
+    push!(eeg.eeg_header[:history], "eeg_pca!(EEG, n=$n)")
 end
 
 """
@@ -1249,7 +1528,7 @@ function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
     s_convoluted = abs.(s_convoluted)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted)
+    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg_new)
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
@@ -1257,11 +1536,13 @@ function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vecto
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_fconv(EEG, kernel=$kernel)")
 
+    eeg_reset_components!(eeg_new)
+
     return eeg_new
 end
 
 """
-    eeg_edit(eeg; field, value)
+    eeg_edit_header(eeg; field, value)
 
 Changes value of `eeg` `field` to `value`.
 
@@ -1275,7 +1556,7 @@ Changes value of `eeg` `field` to `value`.
 
 - `eeg:EEG`
 """
-function eeg_edit(eeg::EEG; field::Symbol, value)
+function eeg_edit_header(eeg::EEG; field::Symbol, value)
   value === nothing && throw(ArgumentError("Value cannot be empty."))
   
   eeg_new = deepcopy(eeg)
@@ -1290,7 +1571,7 @@ function eeg_edit(eeg::EEG; field::Symbol, value)
 end
 
 """
-    eeg_edit(eeg)
+    eeg_show_header(eeg)
 
 Shows keys and values of `eeg` header.
 
@@ -1301,7 +1582,7 @@ Shows keys and values of `eeg` header.
 function eeg_show_header(eeg::EEG)
     for (key, value) in eeg.eeg_header
         # println("$(rpad(key, 25, " ")) value: $value")
-        println("$key:$value")
+        println("$key: $value")
     end
 end
 
@@ -1350,10 +1631,12 @@ function eeg_delete_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractR
     eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
 
     # create new dataset
-    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_delete_epoch(EEG, $epoch)")
     
+    eeg_reset_components!(eeg_new)
+
     return eeg_new
 end
 
@@ -1404,10 +1687,12 @@ function eeg_keep_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
     eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
 
     # create new dataset
-    eeg_new = EEG(eeg_header, eeg_time, eeg_signals)
+    eeg_new = EEG(eeg_header, eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
     
+    eeg_reset_components!(eeg_new)
+
     return eeg_new
 end
 
@@ -1530,6 +1815,27 @@ function eeg_ica(eeg::EEG; n::Int64)
 end
 
 """
+    eeg_ica!(eeg; n)
+
+Calculates `n` first ICs for `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `n::Int64` - number of ICs
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_ica!(eeg::EEG; n::Int64)
+    ic = signal_ica(eeg.eeg_signals, n=n)
+    push!(eeg.eeg_components, ic)
+    push!(eeg.eeg_header[:components], :ica)
+    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=n)")
+end
+
+"""
     eeg_epochs_stats(eeg)
 
 Calculates mean, sd and variance of `eeg` epochs.
@@ -1540,6 +1846,8 @@ Calculates mean, sd and variance of `eeg` epochs.
 
 # Returns
 
+- `mean::Vector{Float64}`
+- `sd::Vector{Float64}`
 - `var::Vector{Float64}`
 """
 function eeg_epochs_stats(eeg::EEG)
@@ -1547,3 +1855,64 @@ function eeg_epochs_stats(eeg::EEG)
 
     return e_mean, e_sd, e_var
 end
+
+"""
+    eeg_epochs_stats!(eeg)
+
+Calculates mean, sd and variance of `eeg` epochs and stores in `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_epochs_stats!(eeg::EEG)
+    e_mean, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+    push!(eeg.eeg_components, e_mean)
+    push!(eeg.eeg_components, e_sd)
+    push!(eeg.eeg_components, e_var)
+    push!(eeg.eeg_header[:components], :epochs_mean)
+    push!(eeg.eeg_header[:components], :epochs_sd)
+    push!(eeg.eeg_header[:components], :epochs_var)
+    push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")
+end
+
+"""
+    eeg_show_components(eeg)
+
+Shows list of `eeg` components.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `components::Vector{Symbol}`
+"""
+function eeg_show_components(eeg::EEG)
+    return eeg.eeg_header[:components]
+end
+
+"""
+    eeg_component(eeg, component)
+
+Returns `component` of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- component::Symbol`
+
+# Returns
+
+- `component::Any`
+"""
+function eeg_component(eeg::EEG; c::Symbol)
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    for idx in 1:length(eeg.eeg_header[:components])
+        if c == eeg.eeg_header[:components][idx]
+            return eeg.eeg_components[idx]
+        end
+    end
+end
+

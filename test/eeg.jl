@@ -134,7 +134,7 @@ p, v = eeg_pca(edf, n=2)
 @test size(p) == (2, 354816, 1)
 @test size(v) == (2, 1)
 
-e = eeg_edit(edf, field=:patient, value="unknown")
+e = eeg_edit_header(edf, field=:patient, value="unknown")
 @test e.eeg_header[:patient] == "unknown"
 
 e = eeg_epochs(edf, epoch_n=10)
@@ -153,5 +153,11 @@ m, s, v = eeg_epochs_stats(e)
 e = eeg_epochs(edf, epoch_len=20, average=true)
 i = eeg_ica(e, n=5)
 @test size(i) == (5, 20, 1)
+
+eeg_epochs_stats!(edf)
+c = eeg_show_components(edf)
+@test size(c) == (3, )
+v = eeg_component(edf, c=:epochs_mean)
+@test size(v) == (1, )
 
 true

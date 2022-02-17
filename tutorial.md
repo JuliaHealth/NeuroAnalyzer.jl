@@ -40,7 +40,19 @@ eeg_sr(edf)
 Edit EEG header
 ```julia
 eeg_show_header(edf)
-eeg_edit(edf, field=:patient, value="N.N.")
+eeg_edit_header(edf, field=:patient, value="N.N.")
+```
+
+Show components (e.g. ICA, PCA):
+```julia
+eeg_show_components(edf)
+```
+Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
+
+
+Get component:
+```julia
+eeg_component(edf, c=:epochs_mean)
 ```
 
 Show labels:
@@ -439,13 +451,35 @@ bar(v)
 Misc:
 ```julia
 eeg_band(:alpha)
-alpha_band = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
 hz, nyq = eeg_freqs(edf)
 
 e = eeg_pick(edf, pick=:left)
 eeg_labels(edf)[e]
 e = eeg_pick(edf, pick=[:l, :f, :t])
 eeg_labels(edf)[e]
+```
+
+Mutators store results as embedded components in the EEG object:
+```julia
+eeg_autocov!(edf)
+eeg_cor!(edf)
+eeg_cov!(edf)
+eeg_entropy!(edf)
+eeg_freqs!(edf)
+eeg_mi!(edf)
+eeg_pca!(edf, n=2)
+eeg_psd!(edf)
+eeg_stationarity!(edf)
+eeg_total_power!(edf)
+
+eeg_ica!(edf, n=4)
+eeg_component(edf, c=:ica)
+
+eeg_epochs_stats!(edf)
+eeg_component(edf, c=:epochs_mean)
+
+eeg_info(edf)
 ```
 
 Benchmarking:

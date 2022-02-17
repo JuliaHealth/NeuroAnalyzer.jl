@@ -21,7 +21,7 @@ mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
-    eeg_ica::Array{Float64, 3}
+    eeg_components::Vector{Any}
 end
 
 if VERSION < v"1.0.0"
@@ -130,11 +130,14 @@ export signal_epochs_stats
 
 include("eeg.jl")
 export eeg_autocov
+export eeg_autocov!
 export eeg_band
 export eeg_band_power
 export eeg_coherence
 export eeg_cor
+export eeg_cor!
 export eeg_cov
+export eeg_cov!
 export eeg_crosscov
 export eeg_delete_channel
 export eeg_demean
@@ -143,41 +146,52 @@ export eeg_detrend
 export eeg_difference
 export eeg_downsample
 export eeg_entropy
+export eeg_entropy!
 export eeg_epochs
 export eeg_extract_channel
 export eeg_extract_epoch
 export eeg_fconv
 export eeg_filter
 export eeg_freqs
+export eeg_freqs!
 export eeg_get_channel
 export eeg_history
 export eeg_info
 export eeg_keep_channel
 export eeg_labels
 export eeg_mi
+export eeg_mi!
 export eeg_normalize_minmax
 export eeg_normalize_zscore
 export eeg_pca
-export eeg_pca
+export eeg_pca!
 export eeg_psd
+export eeg_psd!
 export eeg_reference_car
 export eeg_reference_channel
 export eeg_rename_channel
 export eeg_sr
 export eeg_stationarity
+export eeg_stationarity!
 export eeg_taper
 export eeg_tconv
 export eeg_total_power
+export eeg_total_power!
 export eeg_trim
 export eeg_upsample
-export eeg_edit
+export eeg_edit_header
 export eeg_show_header
 export eeg_delete_epoch
 export eeg_keep_epoch
 export eeg_pick
 export eeg_ica
+export eeg_ica!
 export eeg_epochs_stats
-
+export eeg_epochs_stats!
+export eeg_reset_components
+export eeg_reset_components!
+export eeg_show_components
+export eeg_component
 
 include("eeg_io.jl")
 export eeg_import_edf

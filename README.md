@@ -61,6 +61,7 @@ mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
+    eeg_components::Vector{Any}
 end
 ```
 
@@ -78,7 +79,7 @@ General:
 - performance optimization
 
 EEG:
-- ICA and PCA to be added to EEG object
+- export to CSV: export components
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: import from CSV

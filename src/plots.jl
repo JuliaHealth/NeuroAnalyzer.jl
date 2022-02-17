@@ -26,7 +26,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     if ylim === nothing
@@ -80,7 +80,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     channel_n = size(signal, 1)
@@ -458,7 +458,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     if norm == true
@@ -538,7 +538,7 @@ function eeg_plot_avg(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     # select channels, default is 1:20 or all channels
@@ -643,6 +643,10 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     channel_n = size(signal, 1)
+
+    # sampling interval → sampling rate
+    # fs = 1 / (t[2] - t[1])
+    xtick_step = 1
 
     if norm == true
         s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
@@ -1248,6 +1252,10 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     len === nothing && (len = length(signal) - offset)
     signal = signal_demean(signal[(1 + offset):(offset + len)])
 
+    # sampling interval → sampling rate
+    # fs = 1 / (t[2] - t[1])
+    xtick_step = 1
+
     nfft = length(signal)
     interval = fs
     overlap = round(Int64, fs * 0.85)
@@ -1398,7 +1406,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     if ylim === nothing
@@ -1452,7 +1460,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     # sampling interval → sampling rate
-    fs = 1 / (t[2] - t[1])
+    # fs = 1 / (t[2] - t[1])
     xtick_step = 1
 
     channel_n = size(ica, 1)
@@ -1529,11 +1537,12 @@ Plots ICs.
 function eeg_plot_ica(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing}=nothing, epoch::Int64=1, ic::Union{Int64, Vector{Float64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, labels::Vector{String}=[""], norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", figure::String="", kwargs...)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
-
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
+    ica_idx = findfirst(isequal(:epochs_mean), eeg.eeg_header[:components])
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    # select channels, default is all
-    ic === nothing && ic = size(eeg.eeg_ica, 1)
+    # select ic, default is all
+    ic === nothing && (ic = size(eeg.eeg_components[ica_idx], 1))
 
     # get epochs markers for len > epoch_len
     if (len + (offset / eeg_sr(eeg))) > eeg.eeg_header[:epoch_duration_seconds]
@@ -1551,7 +1560,7 @@ function eeg_plot_ica(eeg::EEG; t::Union{Vector{Float64}, AbstractRange, Nothing
         throw(ArgumentError("Epoch index out of range."))
     end
 
-    signal = eeg_tmp.eeg_ica[:, :, epoch]
+    signal = eeg_tmp.eeg_components[ica_idx][:, :, epoch]
 
     len > eeg_tmp.eeg_header[:epoch_duration_seconds] && (len = eeg_tmp.eeg_header[:epoch_duration_seconds])
     if t === nothing
