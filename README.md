@@ -79,7 +79,7 @@ General:
 - performance optimization
 
 EEG:
-- plot spectrogram: use embedded spectrogram
+- plot spectrogram/psd/ica: use embedded spectrogram/psd/ica
 - topographical plots
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots

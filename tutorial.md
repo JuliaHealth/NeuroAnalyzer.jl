@@ -118,9 +118,9 @@ eeg_downsample!(edf, new_sr=128)
 
 Remove parts of the signal:
 ```julia
-edf = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), from=:start)
-edf = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), offset=(10 * eeg_sr(edf)), from=:start)
-eeg_trim!(edf, trim_len=(10 * eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, trim_len=(10*eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, trim_len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
+eeg_trim!(edf, trim_len=(10*eeg_sr(edf)), from=:start)
 ```
 
 Split into 10-second epochs:
@@ -128,19 +128,19 @@ Split into 10-second epochs:
 e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
 eeg_info(e10)
 eeg_plot(e10)
-eeg_plot(e10, len=10)
-eeg_plot(e10, len=10, offset=12*256)
+eeg_plot(e10, len=10*eeg_sr(edf))
+eeg_plot(e10, len=10*eeg_sr(edf), offset=12*256)
 eeg_plot(edf)
 eeg_epochs!(edf, epoch_len=10*eeg_sr(edf))
 ```
 
 Trim 1 second from each epoch:
 ```julia
-e9 = eeg_trim(e10, trim_len=(1 * eeg_sr(edf)), from=:start)
+e9 = eeg_trim(e10, trim_len=(1*eeg_sr(e10)), from=:start)
 eeg_info(e9)
-eeg_plot(e9, len=11)
-eeg_plot(e9, len=2, offset=5*256)
-eeg_plot(e9, len=60, offset=0)
+eeg_plot(e9, len=11*eeg_sr(e9))
+eeg_plot(e9, len=2*eeg_sr(e9), offset=5*256)
+eeg_plot(e9, len=60*eeg_sr(e9), offset=0)
 ```
 
 Get 1st epoch:
@@ -219,28 +219,28 @@ Plot:
 ```julia
 eeg_plot(edf)
 eeg_plot(edf, channel=1:4)
-eeg_plot(edf, offset=20*eeg_sr(edf), len=20)
+eeg_plot(edf, offset=20*eeg_sr(edf), len=20*eeg_sr(edf))
 eeg_plot(edf, norm=false)
 eeg_plot(e9, head=true, figure="/tmp/1.png")
 
 eeg_plot_avg(edf, channel=1:4)
 eeg_plot_avg(edf)
 eeg_plot_avg(e9)
-eeg_plot_avg(e10, len=125)
-eeg_plot_avg(e9, len=5, offset=6 * eeg_sr(e9))
+eeg_plot_avg(e10, len=125*eeg_sr(edf))
+eeg_plot_avg(e9, len=5*eeg_sr(edf), offset=6*eeg_sr(e9))
 
 eeg_plot_butterfly(edf)
-eeg_plot_butterfly(edf, offset=20*256, len=120, channel=1:4, norm=true)
+eeg_plot_butterfly(edf, offset=20*256, len=120*eeg_sr(edf), channel=1:4, norm=true)
 eeg_plot_butterfly(edf, channel=1:4, norm=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
 e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19.ced")
-eeg_plot_butterfly(e9, len=9)
-eeg_plot_butterfly(e9, len=55)
-eeg_plot_butterfly(e9, len=55, head=true)
-eeg_plot_butterfly(e10, len=55, head=true)
+eeg_plot_butterfly(e9, len=9*eeg_sr(edf))
+eeg_plot_butterfly(e9, len=55*eeg_sr(edf))
+eeg_plot_butterfly(e9, len=55*eeg_sr(edf), head=true)
+eeg_plot_butterfly(e10, len=55*eeg_sr(edf), head=true)
 eeg_plot_butterfly(e10)
-eeg_plot_butterfly(e10, len=11, head=true)
+eeg_plot_butterfly(e10, len=11*eeg_sr(edf), head=true)
 
 # use kwargs
 p1 = eeg_plot(edf, title="edf1")
@@ -367,13 +367,13 @@ signal_plot_psd(f4, fs=256)
 eeg_psd!(edf, norm=true)
 
 eeg_plot_spectrogram(edf, channel=9, norm=true)
-eeg_plot_spectrogram(e10, channel=9, norm=true, len=110)
-eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=80, len=75)
-eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=40, len=80, offset=18*256)
+eeg_plot_spectrogram(e10, channel=9, norm=true, len=110*eeg_sr(edf))
+eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=80, len=75*eeg_sr(edf))
+eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=40, len=80*eeg_sr(edf), offset=18*256)
 eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=40)
 eeg_plot_psd(e10)
-eeg_plot_psd(e10, len=120)
-eeg_plot_psd(edf, len=240, channel=4, frq_lim=20)
+eeg_plot_psd(e10, len=120*eeg_sr(edf))
+eeg_plot_psd(edf, len=240*eeg_sr(edf), channel=4, frq_lim=20)
 ```
 
 Electrode positioning:
@@ -386,7 +386,7 @@ edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot(edf, channel=1:10)
 eeg_plot(edf, channel=1:10, head=false)
-eeg_plot_butterfly(edf, channel=1:10, head=true, len=55)
+eeg_plot_butterfly(edf, channel=1:10, head=true, len=55*eeg_sr(edf))
 eeg_plot_psd(edf, norm=true, channel=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
 eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
 eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
@@ -438,7 +438,7 @@ edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 3)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
-edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf1), average=true)
+edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 pc, pc_var = eeg_pca(edf1, n=4)
 plot(pc[1, :, 1, 1])
@@ -463,7 +463,7 @@ edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:delt
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 4)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
-edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf1), average=true)
+edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 s, ss, p = eeg_difference(edf1, edf2, n=10, method=:absdiff)
 s, ss, p = eeg_difference(edf1, edf2, n=10, method=:diff2int)
@@ -523,7 +523,7 @@ edf = eeg_import_edf("test/eeg-test-edf.edf");
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)
-        e10 = eeg_epochs(edf_new, epoch_len=10*eeg_sr(edf))
+        e10 = eeg_epochs(edf_new, epoch_len=10*eeg_sr(edf_new))
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
