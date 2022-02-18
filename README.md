@@ -79,6 +79,8 @@ General:
 - performance optimization
 
 EEG:
+- plot spectrogram: use embedded spectrogram
+- topographical plots
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: import from CSV
@@ -89,7 +91,6 @@ EEG:
 - bad channel marking / rejection
 - bad epoch marking / rejection
 - time-frequency analysis
-- topographical plots
 - signals comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats

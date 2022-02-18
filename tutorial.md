@@ -234,7 +234,7 @@ eeg_plot_butterfly(edf, offset=20*256, len=120, channel=1:4, norm=true)
 eeg_plot_butterfly(edf, channel=1:4, norm=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
-e9 = eeg_load_electrode_positions(e9, file_name="locs/standard-10-20-cap19.ced")
+e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19.ced")
 eeg_plot_butterfly(e9, len=9)
 eeg_plot_butterfly(e9, len=55)
 eeg_plot_butterfly(e9, len=55, head=true)
@@ -381,7 +381,8 @@ Electrode positioning:
 eeg_info(edf)
 using NeuroJ
 edf = eeg_import_edf("test/eeg-test-edf.edf")
-edf = eeg_load_electrode_positions(edf, file_name="locs/standard-10-20-cap19.ced")
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19.ced")
+edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot(edf, channel=1:10)
 eeg_plot(edf, channel=1:10, head=false)

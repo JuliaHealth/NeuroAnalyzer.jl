@@ -202,7 +202,7 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
 end
 
 """
-    eeg_load_electrode_positions(eeg; file_name)
+    eeg_load_electrodes(eeg; file_name)
 
 Loads electrode positions from 
 - CED
@@ -216,7 +216,7 @@ Loads electrode positions from
 
 - `eeg:EEG`
 """
-function eeg_load_electrode_positions(eeg::EEG; file_name)
+function eeg_load_electrodes(eeg::EEG; file_name)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     sensors = CSV.read(file_name, delim="\t", DataFrame)
@@ -239,6 +239,38 @@ function eeg_load_electrode_positions(eeg::EEG; file_name)
     return eeg_new
 end
 
+"""
+    eeg_load_electrodes!(eeg; file_name)
+
+Loads electrode positions from 
+- CED
+
+# Arguments
+
+- `eeg::EEG`
+- `file_name::String`
+"""
+function eeg_load_electrodes!(eeg::EEG; file_name)
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    sensors = CSV.read(file_name, delim="\t", DataFrame)
+    loc_x = zeros(length(sensors[:, :radius]))
+    loc_y = zeros(length(sensors[:, :theta]))
+    for idx in 1:length(sensors[:, :theta])
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * sensors[idx, :theta], sensors[idx, :radius])
+    end
+    length(loc_x) != eeg.eeg_header[:channel_n] && throw(ArgumentError("Number of channels and number of positions do not match."))
+
+    # create new dataset
+    eeg.eeg_header[:channel_locations] = true
+    eeg.eeg_header[:xlocs] = loc_x
+    eeg.eeg_header[:ylocs] = loc_y
+
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
+
+    return
+end
 
 """
     eeg_save(eeg; file_name, overwrite=false)

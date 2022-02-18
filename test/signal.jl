@@ -251,4 +251,9 @@ s = signal_fconv(signal_a1, kernel=[1, 2, 3])
 m, s, v = signal_epochs_stats(signal_a)
 @test size(s) == (2, )
 
+p, f, t = signal_spectrogram(signal_v, fs=fs)
+@test size(p) == (51, 46)
+p, f, t = signal_spectrogram(signal_a, fs=fs)
+@test size(p) == (51, 46, 2, 2)
+
 true

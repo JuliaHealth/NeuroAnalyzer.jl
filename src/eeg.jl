@@ -2511,13 +2511,14 @@ Calculates `n` first ICs for `eeg`.
 - `eeg::EEG`
 - `n::Int64` - number of ICs
 - `tol::Float64` - tolerance for ICA
-
+- `iter::Int64` - maximum number of iterations
+- `f::Symbol` - neg-entropy functor
 # Returns
 
 - `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch
 """
-function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6)
-    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol)
+function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
 
     return ic
 end
@@ -2532,17 +2533,18 @@ Calculates `n` first ICs for `eeg`.
 - `eeg::EEG`
 - `n::Int64` - number of ICs
 - `tol::Float64` - tolerance for ICA
-
+- `iter::Int64` - maximum number of iterations
+- `f::Symbol` - neg-entropy functor
 # Returns
 
 - `eeg::EEG`
 """
-function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6)
+function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
     :ica in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica)
-    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol)
+    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
     push!(eeg.eeg_components, ic)
     push!(eeg.eeg_header[:components], :ica)
-    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n)")
+    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n, tol=$tol, iter=$iter, f=$f))")
 
     return
 end
@@ -2625,7 +2627,7 @@ Extracts `component` of `eeg`.
 - `component::Any`
 """
 function eeg_extract_component(eeg::EEG; c::Symbol)
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
     for idx in 1:length(eeg.eeg_header[:components])
         if c == eeg.eeg_header[:components][idx]
             return eeg.eeg_components[idx]
@@ -2649,7 +2651,7 @@ Deletes `component` of `eeg`.
 """
 function eeg_delete_component(eeg::EEG; c::Symbol)
     eeg_new = deepcopy(eeg)
-    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
     for idx in 1:length(eeg.eeg_header[:components])
         if c == eeg_new.eeg_header[:components][idx]
             deleteat!(eeg_new.eeg_components, idx)
@@ -2671,7 +2673,7 @@ Deletes `component` of `eeg`.
 - `component::Symbol`
 """
 function eeg_delete_component!(eeg::EEG; c::Symbol)
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component does not exist."))
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
     for idx in length(eeg.eeg_header[:components]):-1:1
         if c == eeg.eeg_header[:components][idx]
             deleteat!(eeg.eeg_components, idx)
@@ -2679,6 +2681,57 @@ function eeg_delete_component!(eeg::EEG; c::Symbol)
             push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
         end
     end
+
+    return
+end
+
+"""
+    eeg_spectrogram(eeg; norm=true, demean=true)
+
+Calculates spectrogram of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `norm::Bool` - normalize powers to dB
+- `demean::Bool` - demean signal prior to analysis
+
+# Returns
+
+- `spec.power::Array{Float64, 3}`
+- `spec.freq::Matrix{Float64}`
+- `spec.time::Matrix{Float64}`
+"""
+function eeg_spectrogram(eeg::EEG; norm::Bool=true, demean::Bool=true)
+    s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
+
+    return s_pow, s_frq, s_t
+end
+
+
+"""
+    eeg_spectrogram!(eeg, norm=true, demean=true)
+
+Calculates spectrogram of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+- `norm::Bool` - normalize powers to dB
+- `demean::Bool` - demean signal prior to analysis
+"""
+function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
+    :spec_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_pow)
+    :spec_frq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_frq)
+    :spec_t in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_t)
+    s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
+    push!(eeg.eeg_components, s_pow)
+    push!(eeg.eeg_components, s_frq)
+    push!(eeg.eeg_components, s_t)
+    push!(eeg.eeg_header[:components], :spec_pow)
+    push!(eeg.eeg_header[:components], :spec_frq)
+    push!(eeg.eeg_header[:components], :spec_t)
+    push!(eeg.eeg_header[:history], "eeg_spectrogram!(EEG, norm=$norm, demean=$demean)")
 
     return
 end

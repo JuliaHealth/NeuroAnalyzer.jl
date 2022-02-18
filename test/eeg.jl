@@ -163,4 +163,8 @@ eeg_delete_component!(edf, c=:epochs_mean)
 c = eeg_list_components(edf)
 @test size(c) == (2, )
 
+e = eeg_epochs(edf, epoch_len=2560, average=true)
+p, f, t = eeg_spectrogram(e)
+@test size(p) == (1281, 61, 19, 1)
+
 true

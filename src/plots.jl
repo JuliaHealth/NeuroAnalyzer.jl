@@ -222,7 +222,7 @@ function eeg_plot(eeg::EEG; epoch::Int64=1, channel::Union{Int64, Vector{Float64
 end
 
 """
-    eeg_draw_head(p, loc_x, loc_y, add_labels=true)
+    eeg_draw_head(p, loc_x, loc_y; head_labels=true)
 
 Draws head over a topographical plot `p`.
 
@@ -231,13 +231,13 @@ Draws head over a topographical plot `p`.
 - `p::Plot` - topographical plot
 - `loc_x::Vector{Float64}` - vector of x electrode position
 - `loc_y::Vector{Float64}` - vector of y electrode position
-- `add_labels::Bool` - add text labels to the plot
+- `head_labels::Bool` - add text labels to the plot
 
 # Returns
 
 - `p::Plot`
 """
-function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_labels::Bool=true)
+function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 1.2
@@ -250,12 +250,13 @@ function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}, add_la
     plot!(p, nose, fill=nothing, label="")
     plot!(p, ear_l, fill=nothing, label="")
     plot!(p, ear_r, fill=nothing, label="")
-    if add_labels == true
+    if head_labels == true
         plot!(p, annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
         plot!(p, annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
         plot!(p, annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
         plot!(p, annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
+    plot!(p; kwargs...)
 end
 
 """
@@ -1074,7 +1075,7 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Float64}, Ab
     end
 
     p = plot(grid=false, framestyle=:none, palette=:darktest, size=plot_size, markerstrokewidth=0, border=:none, margins=0px, aspect_ratio=1)
-    head == true && eeg_draw_head(p, loc_x, loc_x, head_labels)
+    head == true && eeg_draw_head(p, loc_x, loc_x, head_labels=head_labels)
     if length(selected) >= eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0)
@@ -1181,7 +1182,7 @@ function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float6
 end
 
 """
-    signal_plot_spectrogram(signal; fs, offset=0, len=nothing, norm=true, ylim=nothing, xlabel="Time  ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+    signal_plot_spectrogram(signal; fs, offset=0, norm=true, demean=true, ylim=nothing, xlabel="Time  ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
 
 Plots spectrogram of `signal`.
 
@@ -1191,6 +1192,7 @@ Plots spectrogram of `signal`.
 - `fs::Int64` - sampling frequency
 - `offset::Int64` - displayed segment offset in samples
 - `norm::Bool` - normalize powers to dB
+- `demean::Bool` - demean signal prior to analysis
 - `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (0:ylim) Hz
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
@@ -1201,11 +1203,11 @@ Plots spectrogram of `signal`.
 
 - `p::Plot`
 """
-function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, ylim::Union{Int64, Float64, Nothing}=nothing, xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
     ylim > fs / 2 && throw(ArgumentError("ylim must be smaller than Nyquist frequency ($(fs/2) Hz)."))
 
-    signal = signal_demean(signal)
+    demean == true && (signal = signal_demean(signal))
 
     nfft = length(signal)
     interval = fs
@@ -1460,6 +1462,7 @@ Plots ICs.
 
 - `eeg::EEG` - EEG object
 - `epoch::Int64` - epoch number to display
+
 - `offset::Int64` - displayed segment offset in samples
 - `len::Int64` - length in seconds
 - `norm::Bool` - normalize the `signal` prior to calculations
@@ -1473,7 +1476,7 @@ Plots ICs.
 
 - `p::Plot`
 """
-function eeg_plot_ica(eeg::EEG; epoch::Int64=1, ica::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, offset::Int64=0, len::Int64=10, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", figure::String="", kwargs...)
+function eeg_plot_ica(eeg::EEG; epoch::Int64=1, ic::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=10, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", figure::String="", kwargs...)
     offset < 0 && throw(ArgumentError("Offset must be ≥ 0."))
     len <= 0 && throw(ArgumentError("Length must be > 0."))
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
@@ -1540,6 +1543,72 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, ica::Union{Int64, Vector{Int64},
         isfile(figure) && @warn "File $figure cannot be saved."
         savefig(p, figure)
     end
+
+    return p
+end
+
+"""
+    eeg_topoplot(eeg)
+
+Plots topographical view of `eeg` signals.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `plot`
+"""
+function eeg_topoplot(eeg::EEG; c::Symbol=:amplitude, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, t::Int64)
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+    c in [:amplitude, :psd, :ica] || throw(ArgumentError("c must be: :amplitude, :psd or :ica."))
+    (c !== :amplitude && c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
+    
+    c === :amplitude && (s_non_interpolated = @view eeg.eeg_signals[:, t, epoch])
+
+    c_idx <: AbstractRange && collect(c)
+    if c === :psd
+        for idx in 1:length(eeg.eeg_header[:components])
+            if c == eeg.eeg_header[:components][idx]
+                return eeg.eeg_components[idx]
+            end
+        end
+    end
+
+    # plot signal at electrodes at time
+    loc_x = eeg.eeg_header[:xlocs]
+    loc_y = eeg.eeg_header[:ylocs]
+    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
+    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+
+    # interpolate
+    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
+    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+    interpolation_factor = 100
+    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
+    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
+    for idx1 in 1:interpolation_factor
+        for idx2 in 1:interpolation_factor
+            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
+        end
+    end
+    time_point_idx = eeg.eeg_time[t]
+    s_interpolated = zeros(interpolation_factor, interpolation_factor)
+    electrode_locations = [loc_x loc_y]'
+    itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated)
+    for idx1 in 1:interpolation_factor
+        for idx2 in 1:interpolation_factor
+            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
+        end
+    end
+
+    p = plot(grid=false, framestyle=:none, border=:none, margins=0px, aspect_ratio=1)
+    p = plot!(interpolated_x, interpolated_y, s_interpolated, fill=:lighttest, seriestype=:contourf)
+    p = plot!((loc_x, loc_y), color=:black, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=4, markerstrokewidth=0, markerstrokealpha=0)
+    h = eeg_draw_head(p, loc_x, loc_y, head_labels=false; lw=2)
+    p = plot!(h)
 
     return p
 end

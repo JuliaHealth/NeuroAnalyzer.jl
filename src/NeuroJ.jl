@@ -127,6 +127,7 @@ export signal_tconv
 export signal_total_power
 export signal_trim
 export signal_upsample
+export signal_spectrogram
 
 include("eeg.jl")
 export eeg_autocov
@@ -216,11 +217,14 @@ export eeg_trim
 export eeg_trim!
 export eeg_upsample
 export eeg_upsample!
+export eeg_spectrogram
+export eeg_spectrogram!
 
 include("eeg_io.jl")
 export eeg_import_edf
 export eeg_load
-export eeg_load_electrode_positions
+export eeg_load_electrodes
+export eeg_load_electrodes!
 export eeg_save
 export eeg_export_csv
 
@@ -235,6 +239,7 @@ export eeg_plot_ica
 export eeg_plot_matrix
 export eeg_plot_psd
 export eeg_plot_spectrogram
+export eeg_topoplot
 export filter_response
 export signal_plot
 export signal_plot_avg

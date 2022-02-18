@@ -2685,7 +2685,7 @@ function signal_fconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Ve
 end
 
 """
-    signal_ica(signal, n)
+    signal_ica(signal, n, tol=1.0e-6, iter=100, f=:tanh)
 
 Calculates `n` first ICs for `signal`.
 
@@ -2694,15 +2694,16 @@ Calculates `n` first ICs for `signal`.
 - `signal::Array{Float64, 3}`
 - `n::Int64` - number of PCs
 - `tol::Float64` - tolerance for ICA
-
+- `iter::Int64` - maximum number of iterations
+- `f::Symbol` - neg-entropy functor
 # Returns
 
 - `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
 """
-function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6)
+function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+    f in [:tanh, :gaus] || throw(ArgumentError("ICA function must be :tanh or :gaus."))
     n < 0 && throw(ArgumentError("Number of ICs must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of ICs cannot be higher than signal rows."))
-
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     ic = zeros(n, size(signal, 2), epoch_n)
@@ -2710,7 +2711,9 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6)
     for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
 
-        M = MultivariateStats.fit(ICA, s, n, tol=tol)
+        f === :tanh && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
+        f === :gaus && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
+
         for idx in 1:n
             ic[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
         end
@@ -2747,4 +2750,81 @@ function signal_epochs_stats(signal::Array{Float64, 3})
     end
 
     return s_mean, s_sd, s_var
+end
+
+"""
+    signal_spectrogram(signal; fs, norm=true, demean=true)
+
+Calculates spectrogram of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64` - sampling frequency
+- `norm::Bool` - normalize powers to dB
+- `demean::Bool` - demean signal prior to analysis
+
+# Returns
+
+- `spec.power::Matrix{Float64}`
+- `spec.freq::Vector{Float64}`
+- `spec.time::Vector{Float64}`
+
+"""
+function signal_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
+    fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
+
+    demean == true && (signal = signal_demean(signal))
+
+    nfft = length(signal)
+    interval = fs
+    overlap = round(Int64, fs * 0.85)
+
+    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    s_t = collect(spec.time)
+    s_frq = Vector(spec.freq)
+    if norm == true
+        s_pow = pow2db.(spec.power)
+    else
+        s_pow = Vector(spec.power)
+    end
+
+    return s_pow, s_frq, s_t
+end
+
+
+"""
+    signal_spectrogram(signal; fs, norm=true, demean=true)
+
+Calculates spectrogram of `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `fs::Int64` - sampling frequency
+- `norm::Bool` - normalize powers to dB
+- `demean::Bool` - demean signal prior to analysis
+
+# Returns
+
+- `spec.power::Array{Float64, 4}`
+- `spec.freq::Matrix{Float64}`
+- `spec.time::Matrix{Float64}`
+"""
+function signal_spectrogram(signal::Array{Float64, 3}; fs::Int64, norm::Bool=true, demean::Bool=true)
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    p_tmp, f_tmp, t_tmp = signal_spectrogram(signal[1, :, 1], fs=fs, norm=norm, demean=demean)
+    s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
+    s_frq = zeros(length(f_tmp), epoch_n)
+    s_t = zeros(length(t_tmp), epoch_n)
+
+    for epoch in 1:epoch_n
+        for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            s_pow[:, :, idx, epoch], s_frq[:, epoch], s_t[:, epoch] = signal_spectrogram(s, fs=fs, norm=norm, demean=demean)
+        end
+    end
+
+    return s_pow, s_frq, s_t
 end
