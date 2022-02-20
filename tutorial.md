@@ -191,10 +191,10 @@ eeg_keep_channel!(edf, channel=1:4)
 
 Show filter response:
 ```julia
-filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=eeg_sr(edf), order=8)
-filter_response(fprototype=:chebyshev1, ftype=:bp, cutoff=[40, 50], fs=eeg_sr(edf), rs=1, order=12)
-filter_response(fprototype=:chebyshev2, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rp=10, order=4)
-filter_response(fprototype=:elliptic, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rs=1, rp=10, order=4)
+plot_filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=eeg_sr(edf), order=8)
+plot_filter_response(fprototype=:chebyshev1, ftype=:bp, cutoff=[40, 50], fs=eeg_sr(edf), rs=1, order=12)
+plot_filter_response(fprototype=:chebyshev2, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rp=10, order=4)
+plot_filter_response(fprototype=:elliptic, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rs=1, rp=10, order=4)
 ```
 
 FIR filtering:
@@ -207,9 +207,9 @@ eeg_filter!(edf, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generat
 
 IIR filtering:
 ```julia
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+eeg_filter!(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
+eeg_filter!(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
+eeg_filter!(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
 edf = eeg_filter(edf, fprototype=:elliptic, ftype=:bs, cutoff=[45.0, 55.0], rs=10, rp=1, order=12)
 edf = eeg_filter(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=[45.0, 55.0], rs=1, order=8)
 edf = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp=1, order=8)
@@ -218,6 +218,7 @@ edf = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp
 Plot:
 ```julia
 eeg_plot(edf)
+eeg_plot(edf, len=5*256)
 eeg_plot(edf, channel=1:4)
 eeg_plot(edf, offset=20*eeg_sr(edf), len=20*eeg_sr(edf))
 eeg_plot(edf, norm=false)
@@ -378,10 +379,10 @@ eeg_plot_psd(edf, len=240*eeg_sr(edf), channel=4, frq_lim=20)
 
 Electrode positioning:
 ```julia
-eeg_info(edf)
 using NeuroJ
 edf = eeg_import_edf("test/eeg-test-edf.edf")
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19.ced")
+eeg_info(edf)
 edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot(edf, channel=1:10)

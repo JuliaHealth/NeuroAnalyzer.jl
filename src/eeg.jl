@@ -1725,12 +1725,12 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 """
 function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
     # create new dataset
-    eeg_signal = deepcopy(eeg.eeg_signals)
+    eeg_signals = deepcopy(eeg.eeg_signals)
     eeg_time = deepcopy(eeg.eeg_time)
-    eeg_signal = signal_trim(eeg_signal, trim_len=trim_len, from=from)
+    eeg_signals = signal_trim(eeg_signal, trim_len=trim_len, from=from)
     eeg_time = signal_trim(eeg_time, trim_len=trim_len, from=from)
 
-    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signal, deepcopy(eeg.eeg_components))
+    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
     eeg_trimmed.eeg_header[:eeg_duration_samples] -= trim_len
     eeg_trimmed.eeg_header[:eeg_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
     eeg_trimmed.eeg_header[:epoch_duration_samples] -= trim_len
@@ -1758,7 +1758,7 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 """
 function eeg_trim!(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
-    eeg.eeg_signal = signal_trim(eeg.eeg_signal, trim_len=trim_len, from=from)
+    eeg.eeg_signals = signal_trim(eeg.eeg_signals, trim_len=trim_len, from=from)
     eeg.eeg_time = signal_trim(eeg.eeg_time, trim_len=trim_len, from=from)
 
     eeg.eeg_header[:eeg_duration_samples] -= trim_len
