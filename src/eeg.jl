@@ -1708,14 +1708,14 @@ function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
 end
 
 """
-    eeg_trim(eeg:EEG; trim_len, offset=0, from=:start)
+    eeg_trim(eeg:EEG; len, offset=0, from=:start)
 
-Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
 # Arguments
 
 - `eeg:EEG`
-- `trim_len::Int64` - number of samples to remove
+- `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
@@ -1723,21 +1723,21 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 
 - `eeg:EEG`
 """
-function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
+function eeg_trim(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
     # create new dataset
     eeg_signals = deepcopy(eeg.eeg_signals)
     eeg_time = deepcopy(eeg.eeg_time)
-    eeg_signals = signal_trim(eeg_signal, trim_len=trim_len, from=from)
-    eeg_time = signal_trim(eeg_time, trim_len=trim_len, from=from)
+    eeg_signals = signal_trim(eeg_signals, len=len, from=from)
+    eeg_time = signal_trim(eeg_time, len=len, from=from)
 
     eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
-    eeg_trimmed.eeg_header[:eeg_duration_samples] -= trim_len
-    eeg_trimmed.eeg_header[:eeg_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
-    eeg_trimmed.eeg_header[:epoch_duration_samples] -= trim_len
-    eeg_trimmed.eeg_header[:epoch_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
+    eeg_trimmed.eeg_header[:eeg_duration_samples] -= len
+    eeg_trimmed.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
+    eeg_trimmed.eeg_header[:epoch_duration_samples] -= len
+    eeg_trimmed.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
 
     # add entry to :history field
-    push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, trim_len=$trim_len, from=$from)")
+    push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, len=$len, from=$from)")
 
     eeg_reset_components!(eeg_trimmed)
 
@@ -1745,29 +1745,29 @@ function eeg_trim(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:star
 end
 
 """
-    eeg_trim!(eeg:EEG; trim_len, offset=0, from=:start)
+    eeg_trim!(eeg:EEG; len, offset=0, from=:start)
 
-Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
 # Arguments
 
 - `eeg:EEG`
-- `trim_len::Int64` - number of samples to remove
+- `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
 """
-function eeg_trim!(eeg::EEG; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
-    eeg.eeg_signals = signal_trim(eeg.eeg_signals, trim_len=trim_len, from=from)
-    eeg.eeg_time = signal_trim(eeg.eeg_time, trim_len=trim_len, from=from)
+function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
+    eeg.eeg_signals = signal_trim(eeg.eeg_signals, len=len, from=from)
+    eeg.eeg_time = signal_trim(eeg.eeg_time, len=len, from=from)
 
-    eeg.eeg_header[:eeg_duration_samples] -= trim_len
-    eeg.eeg_header[:eeg_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
-    eeg.eeg_header[:epoch_duration_samples] -= trim_len
-    eeg.eeg_header[:epoch_duration_seconds] -= trim_len * (1 / eeg_sr(eeg))
+    eeg.eeg_header[:eeg_duration_samples] -= len
+    eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
+    eeg.eeg_header[:epoch_duration_samples] -= len
+    eeg.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_trim!(EEG, trim_len=$trim_len, from=$from)")
+    push!(eeg.eeg_header[:history], "eeg_trim!(EEG, len=$len, from=$from)")
 
     eeg_reset_components!(eeg)
 

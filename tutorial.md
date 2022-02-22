@@ -118,9 +118,9 @@ eeg_downsample!(edf, new_sr=128)
 
 Remove parts of the signal:
 ```julia
-edf = eeg_trim(edf, trim_len=(10*eeg_sr(edf)), from=:start)
-edf = eeg_trim(edf, trim_len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
-eeg_trim!(edf, trim_len=(10*eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, len=(10*eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
+eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:start)
 ```
 
 Split into 10-second epochs:

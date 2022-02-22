@@ -77,7 +77,7 @@ p = signal_plot_histogram(signal_v)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = signal_plot_histogram(signal_m, type=:kd)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_histogram(edf, channel=1:10, figure="test.png")
+p = eeg_plot_histogram(edf, channel=1, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 

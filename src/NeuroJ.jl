@@ -14,6 +14,7 @@ using Pkg
 using Plots
 using Plots.PlotMeasures
 using Polynomials
+using ScatteredInterpolation
 using Simpson
 using StatsKit
 using StatsPlots
@@ -45,7 +46,9 @@ function neuroj_version()
                          "MultivariateStats",
                          "Plots",
                          "Polynomials",
+                         "ScatteredInterpolation",
                          "Simpson",
+                         "StatsKit",
                          "StatsKit"]
     for idx in 1:length(required_packages)
         pkg = lpad(required_packages[idx], 20 - length(idx), " ")

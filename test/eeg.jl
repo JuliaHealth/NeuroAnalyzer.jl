@@ -107,7 +107,7 @@ p = eeg_stationarity(edf, method=:hilbert)
 p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test size(p) == (37, 1)
 
-e = eeg_trim(edf, trim_len=(10 * eeg_sr(edf)), offset=(20 * eeg_sr(edf)), from=:start)
+e = eeg_trim(edf, len=(10 * eeg_sr(edf)), offset=(20 * eeg_sr(edf)), from=:start)
 @test size(e.eeg_signals) == (19, 352256, 1)
 
 m = eeg_mi(edf)

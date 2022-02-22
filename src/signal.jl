@@ -2222,14 +2222,14 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 end
 
 """
-    signal_trim(signal; trim_len::Int64)
+    signal_trim(signal; len::Int64)
 
-Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `trim_len::Int64` - trimming length in samples
+- `len::Int64` - trimming length in samples
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]
 
@@ -2238,30 +2238,30 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 - `s_trimmed::Vector{Float64}`
 
 """
-function signal_trim(signal::AbstractArray; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
+function signal_trim(signal::AbstractArray; len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
-    trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
-    trim_len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
+    len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
+    len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
     offset < 0 && throw(ArgumentError("Offset must be ≥ 1."))
     offset >= length(signal) - 1 && throw(ArgumentError("Offset must be less than signal length."))
-    (from ===:start && 1 + offset + trim_len > length(signal)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
+    (from ===:start && 1 + offset + len > length(signal)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
-    from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + trim_len):end]))
-    from === :end && (s_trimmed = signal[1:(end - trim_len)])
+    from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + len):end]))
+    from === :end && (s_trimmed = signal[1:(end - len)])
     
     return s_trimmed::Vector{Float64}
 end
 
 
 """
-    signal_trim(signal; trim_len, offset=0, from=:start)
+    signal_trim(signal; len, offset=0, from=:start)
 
-Removes `trim_len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `trim_len::Int64` - number of samples to remove
+- `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
@@ -2270,23 +2270,23 @@ Removes `trim_len` samples from the beginning (`from` = :start, default) or end 
 - `s_trimmed::Array{Float64, 3}`
 
 """
-function signal_trim(signal::Array{Float64, 3}; trim_len::Int64, offset::Int64=0, from::Symbol=:start)
+function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
-    trim_len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
-    trim_len >= size(signal, 2) && throw(ArgumentError("Trim length must be less than signal length."))
+    len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
+    len >= size(signal, 2) && throw(ArgumentError("Trim length must be less than signal length."))
     offset < 0 && throw(ArgumentError("Offset must be ≥ 1."))
     offset >= size(signal, 2) - 1 && throw(ArgumentError("Offset must be less than signal length."))
-    (from ===:start && 1 + offset + trim_len > size(signal, 2)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
+    (from ===:start && 1 + offset + len > size(signal, 2)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
     
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    s_trimmed = zeros(channel_n, (size(signal, 2) - trim_len), epoch_n)
+    s_trimmed = zeros(channel_n, (size(signal, 2) - len), epoch_n)
 
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_trimmed[idx, :, epoch] = signal_trim(s, trim_len=trim_len, from=from)
+            s_trimmed[idx, :, epoch] = signal_trim(s, len=len, from=from)
         end
     end
 
