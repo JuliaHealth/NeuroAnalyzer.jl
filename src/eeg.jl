@@ -2730,3 +2730,52 @@ function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
 
     return
 end
+
+"""
+    eeg_average(eeg)
+
+Returns the average signal of all `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_average(eeg::EEG)
+    # create new dataset
+    eeg_new = deepcopy(eeg)
+    eeg_keep_channel!(eeg_new, channel=1)
+    eeg_new.eeg_signals = signal_average(eeg.eeg_signals)
+
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_average(EEG)")
+
+    eeg_reset_components!(eeg_new)
+
+    return eeg_new
+end
+
+"""
+    eeg_average!(eeg)
+
+Returns the average signal of all `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG` - EEG object
+"""
+function eeg_average!(eeg::EEG)
+    s_avg = signal_average(eeg.eeg_signals)
+    eeg_delete_channel!(eeg, channel=2:size(eeg.eeg_signals, 1))
+    eeg.eeg_signals = s_avg
+
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_average!(EEG)")
+
+    eeg_reset_components!(eeg)
+
+    return
+end

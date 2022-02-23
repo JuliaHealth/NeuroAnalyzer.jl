@@ -2459,6 +2459,27 @@ function signal_average(signal1::AbstractArray, signal2::AbstractArray)
 end
 
 """
+    signal_average(signal)
+
+Averages all channels of `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `s_averaged::Array{Float64, 3}`
+
+"""
+function signal_average(signal::Array{Float64, 3})
+
+    s_averaged = mean(signal[:, :, :], dims=1)
+
+    return s_averaged
+end
+
+"""
     signal_average(signal1, signal2)
 
 Averages `signal1` and `signal2`.

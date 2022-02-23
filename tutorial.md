@@ -227,11 +227,13 @@ eeg_plot_avg(edf, channel=1:4)
 eeg_plot_avg(edf)
 eeg_plot_avg(e9)
 eeg_plot_avg(e10, len=125*eeg_sr(edf))
+eeg_plot_avg(e10, epoch=1:5)
 eeg_plot_avg(e9, len=5*eeg_sr(edf), offset=6*eeg_sr(e9))
 
 eeg_plot_butterfly(edf)
 eeg_plot_butterfly(edf, offset=20*256, len=120*eeg_sr(edf), channel=1:4, norm=true)
 eeg_plot_butterfly(edf, channel=1:4, norm=true)
+eeg_plot_butterfly(e10, epoch=1:5, channel=1:4, norm=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
 e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19.ced")

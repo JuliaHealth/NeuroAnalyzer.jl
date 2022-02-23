@@ -136,6 +136,8 @@ export signal_spectrogram
 include("eeg.jl")
 export eeg_autocov
 export eeg_autocov!
+export eeg_average
+export eeg_average!
 export eeg_band
 export eeg_band_power
 export eeg_coherence
@@ -208,6 +210,8 @@ export eeg_rename_channel!
 export eeg_reset_components
 export eeg_reset_components!
 export eeg_show_header
+export eeg_spectrogram
+export eeg_spectrogram!
 export eeg_sr
 export eeg_stationarity
 export eeg_stationarity!
@@ -221,8 +225,6 @@ export eeg_trim
 export eeg_trim!
 export eeg_upsample
 export eeg_upsample!
-export eeg_spectrogram
-export eeg_spectrogram!
 
 include("eeg_io.jl")
 export eeg_import_edf

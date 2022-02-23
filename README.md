@@ -79,6 +79,7 @@ General:
 - performance optimization
 
 EEG:
+- plots title fontsize
 - plot spectrogram/psd/ica: use embedded spectrogram/psd/ica
 - topographical plots
 - more re-referencing methods
