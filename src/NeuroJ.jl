@@ -245,7 +245,7 @@ export eeg_plot_psd
 export eeg_plot_spectrogram
 export eeg_topoplot
 export eeg_plot_histogram
-export plot_filter_response
+export eeg_plot_filter_response
 export signal_plot
 export signal_plot_avg
 export signal_plot_butterfly

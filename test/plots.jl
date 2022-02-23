@@ -18,7 +18,7 @@ p = eeg_plot(edf, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-p = plot_filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=256, order=8, figure="test.png")
+p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=10, order=8, figure="test.png")
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")

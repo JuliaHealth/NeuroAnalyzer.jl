@@ -15,7 +15,7 @@ edf1 = eeg_derivative(edf)
 tbp = eeg_total_power(edf)
 @test size(tbp) == (19, 1)
 
-abp = eeg_band_power(edf, f1=2, f2=4)
+abp = eeg_band_power(edf, f=(2, 4))
 @test size(abp) == (19, 1)
 
 edf1 = eeg_detrend(edf)

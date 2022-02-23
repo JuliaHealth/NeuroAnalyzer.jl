@@ -191,17 +191,16 @@ eeg_keep_channel!(edf, channel=1:4)
 
 Show filter response:
 ```julia
-plot_filter_response(fprototype=:butterworth, ftype=:hp, cutoff=10, fs=eeg_sr(edf), order=8)
-plot_filter_response(fprototype=:chebyshev1, ftype=:bp, cutoff=[40, 50], fs=eeg_sr(edf), rs=1, order=12)
-plot_filter_response(fprototype=:chebyshev2, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rp=10, order=4)
-plot_filter_response(fprototype=:elliptic, ftype=:bs, cutoff=[45, 55], fs=eeg_sr(edf), rs=1, rp=10, order=4)
+eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=9.12, order=8)
+eeg_plot_filter_response(edf, fprototype=:chebyshev1, ftype=:bp, cutoff=(40, 50), rs=1, order=12)
+eeg_plot_filter_response(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=10, order=4)
+eeg_plot_filter_response(edf, fprototype=:elliptic, ftype=:bs, cutoff=(45, 55), rs=10, rp=1, order=4)
 ```
 
 FIR filtering:
 ```julia
-edf = eeg_filter(edf, fprototype=:fir, ftype=:bs, cutoff=[45.0, 55.0], order=8, window=hann(128))
-edf = eeg_filter(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8)
-edf = eeg_filter(edf, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8)
+eeg_filter!(edf, fprototype=:fir, ftype=:bs, cutoff=(45, 55), order=8, window=generate_hanning(128))
+eeg_filter!(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8, window=generate_hanning(128))
 eeg_filter!(edf, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_hanning(128))
 ```
 
@@ -209,10 +208,10 @@ IIR filtering:
 ```julia
 eeg_filter!(edf, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
 eeg_filter!(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-eeg_filter!(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
-edf = eeg_filter(edf, fprototype=:elliptic, ftype=:bs, cutoff=[45.0, 55.0], rs=10, rp=1, order=12)
-edf = eeg_filter(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=[45.0, 55.0], rs=1, order=8)
-edf = eeg_filter(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=[45.0, 55.0], rp=1, order=8)
+eeg_filter!(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+eeg_filter!(edf, fprototype=:elliptic, ftype=:bs, cutoff=(45, 55), rs=10, rp=1, order=12)
+eeg_filter!(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=(45, 55), rs=1, order=8)
+eeg_filter!(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=1, order=8)
 ```
 
 Plot:
@@ -278,8 +277,8 @@ cc, lags = eeg_crosscov(edf, lag=20, demean=true)
 # channel by channel, all combinations
 plot(lags, cc[1, :])
 
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
-edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=12)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=12)
 cc, lags = eeg_crosscov(edf1, edf2, lag=20, demean=true, norm=true)
 plot(lags, cc[1, :])
 ```
@@ -527,7 +526,7 @@ function eeg_benchmark(n::Int64)
         e10 = eeg_epochs(edf_new, epoch_len=10*eeg_sr(edf_new))
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-        e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=[45.0, 55.0], order=8)
+        e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
         tbp = eeg_total_power(e10)
         ac = eeg_autocov(e10, norm=false)
         cc = eeg_crosscov(e10, lag=10, demean=true)

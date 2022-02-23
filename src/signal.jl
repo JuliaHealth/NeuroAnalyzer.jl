@@ -104,32 +104,32 @@ function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
 end
 
 """
-    signal_band_power(signal; fs, f1, f2)
+    signal_band_power(signal; fs, f)
 
-Calculates absolute band power between frequencies `f1` and `f2` for the `signal`.
+Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
 - `fs::Int64` - sampling rate of the signal
-- `f1::Union{Int64, Float64}` - lower frequency bound
-- `f2::Union{Int64, Float64}` - upper frequency bound
+- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` - lower and upper frequency bound
 
 # Returns
 
 - `sbp::Float64`
 """
-function signal_band_power(signal::AbstractArray; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
-    fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
-    f1 > f2 && throw(ArgumentError("Lower frequency bound must be lower than higher frequency bound."))
-    f1 < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
-    f2 > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
+function signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
+    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
+    f[1] > f[2] && (f = (f[2], f[1]))
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
 
     psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_freq = Vector(psd.freq)
     
-    f1_idx = vsearch(psd_freq, f1)
-    f2_idx = vsearch(psd_freq, f2)
+    f1_idx = vsearch(psd_freq, f[1])
+    f2_idx = vsearch(psd_freq, f[2])
     frq_idx = [f1_idx, f2_idx]
 
     # dx: frequency resolution
@@ -140,26 +140,26 @@ function signal_band_power(signal::AbstractArray; fs::Int64, f1::Union{Int64, Fl
 end
 
 """
-    signal_band_power(signal; fs, f1, f2)
+    signal_band_power(signal; fs, f)
 
-Calculates absolute band power between frequencies `f1` and `f2` for each the `signal` channels.
+Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `signal`.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
 - `fs::Int64` - sampling rate
-- `f1::Float64` - lower frequency bound
-- `f2::Float64` - upper frequency bound
+- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` - lower and upper frequency bound
 
 # Returns
 
 - `sbp::Matrix{Float64}`
 """
-function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
+function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f::Tuple)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
-    f1 > f2 && throw(ArgumentError("Lower frequency bound must be lower than higher frequency bound."))
-    f1 < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
-    f2 > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
+    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
+    f[1] > f[2] && (f = (f[2], f[1]))
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
 
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
@@ -168,7 +168,7 @@ function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f1::Union{Int64
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            sbp[idx, epoch] = signal_band_power(s, fs=fs, f1=f1, f2=f2)
+            sbp[idx, epoch] = signal_band_power(s, fs=fs, f=f)
         end
     end
 
@@ -1690,9 +1690,9 @@ function signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Ve
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
+    signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
 
-Filters `signal` using zero phase distortion filter.
+Filters `signal`.
 
 # Arguments
 
@@ -1701,12 +1701,11 @@ Filters `signal` using zero phase distortion filter.
     - `:mavg` - moving average (with threshold and/or weight window)
     - `:mmed` - moving median (with threshold and/or weight window)
     - `:poly` - polynomial of `order` order
-- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Union{Int64, Nothing}` - sampling rate
-- `order::Union{Int64, Nothing}` - filter order
-- `rp::Union{Float64, Nothing}` - dB ripple in the passband
-- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
+- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64` - filter order
+- `rp::Union{Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
 - `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
@@ -1716,16 +1715,16 @@ Filters `signal` using zero phase distortion filter.
 
 - `s_filtered::Vector{Float64}`
 """
-function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
-    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("Filter prototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
-    (fprototype === :fir && (window === nothing || length(window) < length(signal))) && throw(ArgumentError("For FIR filter window must be shorter than signal."))
-    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs.")))
-    (fprototype !== :mavg && fprototype !== :mmed) && (fs === nothing && throw(ArgumentError("Sampling frequency must be given.")))
-    dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("Filter direction must be :onepass, :onepass_reverse or :twopass."))
-    (order !== nothing && fprototype !== :poly) && (mod(order, 2) != 0 && throw(ArgumentError("Filter order must be even.")))
-    (order === 0 && fprototype === :poly) && throw(ArgumentError("Filter order must be ≥ 1."))
-    order !== nothing && (order < 0 && throw(ArgumentError("Filter order must be positive.")))
-    d > length(signal) && throw(ArgumentError("Value of d cannot be higher than signal length."))
+function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+
+    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
+    (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
+    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+    (fprototype !== :mavg && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
+    dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
+    (order < 2 && fprototype !== :poly) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
+    (order < 1 && (fprototype !== :mavg && fprototype !== :mmed)) && throw(ArgumentError("order must be > 0."))
+    d > length(signal) && throw(ArgumentError("d must be ≤ signal length."))
 
     if fprototype === :mavg
         if window === nothing
@@ -1809,38 +1808,38 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
     end
 
     if ftype === :lp
-        length(cutoff) > 1 && throw(ArgumentError("For low-pass filter one frequency must be given."))
+        length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
     elseif ftype === :hp
-        length(cutoff) > 1 && throw(ArgumentError("For high-pass filter one frequency must be given."))
+        length(cutoff) != 1 && throw(ArgumentError("For :hp filter one frequency must be given."))
         responsetype = Highpass(cutoff; fs=fs)
     elseif ftype === :bp
+        length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
     elseif ftype === :bs
-        (length(cutoff) < 2 || length(cutoff) > 2) && throw(ArgumentError("For band-stop filter two frequencies must be given."))
+        length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
     fprototype === :butterworth && (prototype = Butterworth(order))
     if fprototype === :fir
-        window === nothing && throw(ArgumentError("For FIR filter window must be given."))
+        window === nothing && throw(ArgumentError("For :fir filter window must be given."))
         if ftype === :hp || ftype === :bp || ftype === :bs
             mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
         end
         prototype = FIRWindow(window)
     end
     if fprototype === :chebyshev1
-        rs === nothing && throw(ArgumentError("For Chebyshev1 filter rs must be given."))
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev1(order, rs)
     end
     if fprototype === :chebyshev2
-        rp === nothing && throw(ArgumentError("For Chebyshev2 filter rp must be given."))
+        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be > 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev2(order, rp)
     end
     if fprototype === :elliptic
-        rs === nothing && throw(ArgumentError("For Elliptic filter rs must be given."))
-        rp === nothing && throw(ArgumentError("For Elliptic filter rp must be given."))
-        rp > rs && throw(ArgumentError("For Elliptic filter rp must be less than rs."))
+        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :elliptic filter rs must be > 0 and ≤ $(fs / 2)."))
+        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(fs / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
 
@@ -1854,7 +1853,7 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
 end
 
 """
-    signal_filter(signal; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
+    signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
 
 Filters `signal` using zero phase distortion filter.
 
@@ -1865,22 +1864,22 @@ Filters `signal` using zero phase distortion filter.
     - `:mavg` - moving average (with threshold and/or weight window)
     - `:mmed` - moving median (with threshold and/or weight window)
     - `:poly` - polynomial of `order` order
-- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Union{Int64, Nothing}` - sampling rate
-- `order::Union{Int64, Nothing}` - filter order
-- `rp::Union{Float64, Nothing}` - dB ripple in the passband
-- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
+- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64` - filter order
+- `rp::Union{Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
 - `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing} - window, required for :fir and :mavg filters
+- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `s_filtered::Array{Float64, 3}`
 """
-function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, fs::Union{Int64, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     s_filtered = zeros(size(signal))

@@ -24,8 +24,8 @@ signal_a2 = signal_a .* 0.2
 @test typeof(signal_total_power(signal_v, fs=fs)) == Float64
 @test size(signal_total_power(signal_a, fs=fs)) == (2, 2)
 
-@test typeof(signal_band_power(signal_v, fs=fs, f1=2, f2=4)) == Float64
-@test size(signal_band_power(signal_a, fs=fs, f1=2, f2=4)) == (2, 2)
+@test typeof(signal_band_power(signal_v, fs=fs, f=(2, 4))) == Float64
+@test size(signal_band_power(signal_a, fs=fs, f=(2, 4))) == (2, 2)
 
 signal_fft, signal_sf = signal_make_spectrum(signal_v, fs=fs)
 @test size(signal_sf) == (101, )

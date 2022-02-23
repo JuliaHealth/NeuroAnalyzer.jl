@@ -109,7 +109,7 @@ Removes `channel` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to be removed
 """
 function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
     typeof(channel) <: AbstractRange && (channel = collect(channel))
@@ -163,7 +163,7 @@ Keeps `channels` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep
 
 # Returns
 
@@ -232,7 +232,7 @@ Keeps `channels` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep
 """
 function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
     typeof(channel) <: AbstractRange && (channel = collect(channel))
@@ -370,23 +370,22 @@ function eeg_total_power!(eeg::EEG)
 end
 
 """
-    eeg_band_power(eeg; f1, f2)
+    eeg_band_power(eeg; f)
 
-Calculates absolute band power between frequencies `f1` and `f2` of the `eeg`.
+Calculates absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
 
 # Arguments
 
 - `eeg::EEG`
-- `f1::Union(Int64, Float64}` - lower frequency bound
-- `f2::Union(Int64, Float64}` - upper frequency bound
+- `f::Tuple(Union(Int64, Float64}, Union(Int64, Float64}}` - lower and upper frequency bounds
 
 # Returns
 
 - `sbp::Vector{Float64}`
 """
-function eeg_band_power(eeg::EEG; f1::Union{Int64, Float64}, f2::Union{Int64, Float64})
+function eeg_band_power(eeg::EEG; f::Tuple)
     fs = eeg.eeg_header[:sampling_rate][1]
-    sbp = signal_band_power(eeg.eeg_signals, fs=fs, f1=f1, f2=f2)
+    sbp = signal_band_power(eeg.eeg_signals, fs=fs, f=f)
     (size(sbp, 3) == 1) && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2)))
 
     return sbp
@@ -1327,7 +1326,7 @@ function eeg_tconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vect
 end
 
 """
-    eeg_filter(eeg; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
+    eeg_filter(eeg; fprototype, ftype=nothing, cutoff=0, order=-1, rp=-1, rs=-1, dir=:twopass, d=1, t=0, window=nothing)
 
 Filters `eeg` using zero phase distortion filter.
 
@@ -1339,11 +1338,10 @@ Filters `eeg` using zero phase distortion filter.
     - `:mmed` - moving median (with threshold and/or weight window)
     - `:poly` - polynomial of `order` order
 - `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Union{Int64, Nothing}` - sampling rate
-- `order::Union{Int64, Nothing}` - filter order
-- `rp::Union{Float64, Nothing}` - dB ripple in the passband
-- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64` - filter order
+- `rp::Union{Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
 - `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
@@ -1353,14 +1351,13 @@ Filters `eeg` using zero phase distortion filter.
 
 - `eeg::EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
-    fs = eeg.eeg_header[:sampling_rate][1]
+function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     s_filtered = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
                                     ftype=ftype,
                                     cutoff=cutoff,
-                                    fs=fs,
+                                    fs=eeg_sr(eeg),
                                     order=order,
                                     rp=rp,
                                     rs=rs,
@@ -1380,7 +1377,7 @@ function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=
 end
 
 """
-    eeg_filter!(eeg; fprototype, ftype, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
+    eeg_filter!(eeg; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
 
 Filters `eeg` using zero phase distortion filter.
 
@@ -1391,25 +1388,23 @@ Filters `eeg` using zero phase distortion filter.
     - `:mavg` - moving average (with threshold and/or weight window)
     - `:mmed` - moving median (with threshold and/or weight window)
     - `:poly` - polynomial of `order` order
-- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `fs::Union{Int64, Nothing}` - sampling rate
-- `order::Union{Int64, Nothing}` - filter order
-- `rp::Union{Float64, Nothing}` - dB ripple in the passband
-- `rs::Union{Float64, Nothing}` - dB attentuation in the stopband
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
+- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64` - filter order
+- `rp::Union{Int64, Float64}` - dB ripple in the passband
+- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
 - `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
 - `d::Int64` - window length for mean average and median average filter
 - `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Vector{Int64}, Vector{Float64}, Tuple, Nothing}=nothing, order::Union{Int64, Nothing}=nothing, rp::Union{Int64, Float64, Nothing}=nothing, rs::Union{Int64, Float64, Nothing}=nothing, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
-    fs = eeg.eeg_header[:sampling_rate][1]
+function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     eeg.eeg_signals = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
                                     ftype=ftype,
                                     cutoff=cutoff,
-                                    fs=fs,
+                                    fs=eeg_sr(eeg),
                                     order=order,
                                     rp=rp,
                                     rs=rs,
