@@ -2716,9 +2716,9 @@ Calculates spectrogram of `eeg`.
 - `demean::Bool` - demean signal prior to analysis
 """
 function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
-    :spec_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_pow)
-    :spec_frq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_frq)
-    :spec_t in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_t)
+    :spectrogram_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_pow)
+    :spectrogram_frq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_frq)
+    :spectrogram_t in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_t)
     s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
     push!(eeg.eeg_components, s_pow)
     push!(eeg.eeg_components, s_frq)
@@ -2779,3 +2779,57 @@ function eeg_average!(eeg::EEG)
 
     return
 end
+
+
+"""
+    eeg_spectrum(eeg; pad=0)
+
+Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
+
+# Arguments
+
+- `eeg::EEG` - the signal
+- `pad::Int64` - pad channels `pad` zeros
+
+# Returns
+
+- `fft::Array{ComplexF64, 3}`
+- `amplitudes::Array{Float64, 3}`
+- `powers::Array{Float64, 3}`
+- `phases::Array{Float64, 3}
+"""
+function eeg_spectrum(eeg::EEG; pad::Int64=0)
+    s_fft, s_amp, s_pow, s_pha = signal_spectrum(eeg.eeg_signals, pad=pad)
+
+    return s_fft, s_amp, s_pow, s_pha
+end
+
+"""
+    eeg_spectrum!(eeg; pad=0)
+
+Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
+
+# Arguments
+
+- `eeg::EEG` - the signal
+- `pad::Int64` - pad channels `pad` zeros
+"""
+function eeg_spectrum!(eeg::EEG; pad::Int64=0)
+    :spectrum_fft in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_fft)
+    :spectrum_amp in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_amp)
+    :spectrum_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_pow)
+    :spectrum_phase in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_phase)
+    s_fft, s_amplitudes, s_powers, s_phases = signal_spectrum(eeg.eeg_signals)
+    push!(eeg.eeg_components, s_fft)
+    push!(eeg.eeg_components, s_amplitudes)
+    push!(eeg.eeg_components, s_powers)
+    push!(eeg.eeg_components, s_phases)
+    push!(eeg.eeg_header[:components], :spectrum_fft)
+    push!(eeg.eeg_header[:components], :spectrum_amp)
+    push!(eeg.eeg_header[:components], :spectrum_pow)
+    push!(eeg.eeg_header[:components], :spectrum_phase)
+    push!(eeg.eeg_header[:history], "eeg_spectrum!(EEG, pad=$pad)")
+
+    return
+end
+

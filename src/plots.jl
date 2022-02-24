@@ -44,6 +44,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=:darktest,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=8,
@@ -104,6 +105,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
               yticks=[ylim[1], 0, ylim[2]],
               palette=:darktest,
               grid=false,
+              titlefontsize=10,
               xlabelfontsize=8,
               ylabelfontsize=8,
               xtickfontsize=4,
@@ -221,6 +223,8 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
         signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
     end
 
+    title == "" && (title = "Signal\n[epoch: $epoch, channel: $channel, offset: $offset samples, length: $len samples]")
+
     p = signal_plot(t,
                     signal,
                     labels=labels,
@@ -249,13 +253,13 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
 
     if typeof(signal) == Vector{Float64}
         # cannot plot electrodes without locations
+        psd = eeg_plot_psd(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
         eeg.eeg_header[:channel_locations] == false && (head = false)
-        psd = eeg_plot_psd(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="", legend=false)
-        s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="", legend=false)
-        ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="")
-        eeg_pow, eeg_frq = signal_psd(signal, fs=eeg_sr(eeg), norm=true)
-        # TO DO: convert eeg_pow to histogram
-        ht_p = signal_plot_histogram(vec(eeg_pow), offset=offset, len=len, type=hist, labels=[""], legend=false, title="")
+        frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
+        s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+        ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal")
+        _, _, _, s_phase = signal_spectrum(signal)
+        ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase", xticks=[-180, 0, 180], linecolor=:black)
         if head == true
             hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title=channel_name)
             l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
@@ -389,6 +393,7 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
               ylabel="Magnitude [dB]",
               xlabel="Frequency [Hz]",
               label="",
+              titlefontsize=10,
               xlabelfontsize=8,
               ylabelfontsize=8,
               xtickfontsize=4,
@@ -423,6 +428,7 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
               ylabel="Phase [°]",
               xlabel="Frequency [Hz]",
               label="",
+              titlefontsize=10,
               xlabelfontsize=8,
               ylabelfontsize=8,
               xtickfontsize=4,
@@ -456,6 +462,7 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
               ylabel="Group delay [samples]",
               xlabel="Frequency [Hz]",
               label="",
+              titlefontsize=10,
               xlabelfontsize=8,
               ylabelfontsize=8,
               xtickfontsize=4,
@@ -487,7 +494,7 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
 end
 
 """
-    signal_plot_avg(t, signal; norm=true, xlabel"Time [s]", ylabel="Amplitude [μV]" title="Averaged signal and 95% CI", ylim=(0, 0))
+    signal_plot_avg(t, signal; norm=true, xlabel"Time [s]", ylabel="Amplitude [μV]" title="", ylim=(0, 0))
 
 Plots averaged `signal` channels.
 
@@ -507,7 +514,7 @@ Plots averaged `signal` channels.
 - `p::Plot`
 - `ylim::Tuple`
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI", ylim::Tuple=(0, 0), kwargs...)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -532,6 +539,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              ylims=ylim,
              title=title,
              palette=:darktest,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -561,7 +569,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 end
 
 """
-    eeg_plot_avg(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Averaged signal and 95% CI", ylim=(0, 0), frq_lim=(0, 0), head=true, figure="", kwargs...)
+    eeg_plot_avg(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="", ylim=(0, 0), frq_lim=(0, 0), head=true, figure="", kwargs...)
 
 Plots averaged `eeg` channels.
 
@@ -587,7 +595,7 @@ Plots averaged `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Averaged signal and 95% CI", ylim::Tuple=(0, 0), frq_lim::Tuple=(0, 0), hist::Symbol=:hist, head::Bool=true, figure::String="", kwargs...)
+function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), frq_lim::Tuple=(0, 0), hist::Symbol=:hist, head::Bool=true, figure::String="", kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -648,6 +656,8 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
+    title == "" && (title = "Signal averaged\n[epoch: $epoch, channel: $channel, offset: $offset samples, length: $len samples]")
+
     p = signal_plot_avg(t,
                         signal,
                         offset=offset,
@@ -680,14 +690,14 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
     end
 
     # cannot plot electrodes without locations
-    eeg_avg = eeg_average(eeg)
     eeg.eeg_header[:channel_locations] == false && (head = false)
-    psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, frq_lim=frq_lim, title="", legend=false)
-    s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Averaged spectrogram", legend=false)
-    ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="")
-    eeg_pow, eeg_frq = signal_psd(signal, fs=eeg_sr(eeg), norm=true)
-    # TO DO: convert eeg_pow to histogram
-    ht_p = signal_plot_histogram(vec(eeg_pow), offset=offset, len=len, type=hist, labels=[""], legend=false, title="")
+    frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
+    eeg_avg = eeg_average(eeg)
+    psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, frq_lim=frq_lim, title="PSD averaged with 95%CI\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal")
+    _, _, _, s_phase = signal_spectrum(s_normalized_m)
+    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels")
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
@@ -760,6 +770,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
              ylims=ylim,
              title=title,
              palette=:darktest,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -936,6 +947,7 @@ function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; fr
              c=:black,
              title=title,
              palette=:darktest,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -978,6 +990,7 @@ function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, f
 
     p = signal_plot_psd(s_powers,
                         s_freqs,
+                        title=title,
                         xlabel=xlabel,
                         ylabel=ylabel,
                         xlims=frq_lim;
@@ -1029,7 +1042,6 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
         s_freqs = s_freqs[1, :]
         channel_n = 1
         labels == [""]
-        title = "Average PSD with 95%CI"
     end
 
     if labels == [""]
@@ -1045,6 +1057,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
              xlims=frq_lim,
              title=title,
              palette=:darktest,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -1243,7 +1256,7 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
         font_size = 8
     end
 
-    p = plot(grid=false, framestyle=:none, palette=:darktest, size=plot_size, markerstrokewidth=0, border=:none, aspect_ratio=1, margins=-20px; kwargs...)
+    p = plot(grid=false, framestyle=:none, palette=:darktest, size=plot_size, markerstrokewidth=0, border=:none, aspect_ratio=1, margins=-20px, titlefontsize=10; kwargs...)
     if length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0)
@@ -1409,6 +1422,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xticks=floor(t[1]):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end]),
                     title=title,
                     colorbar_title="Power/frequency [μV^2/Hz]",
+                    titlefontsize=10,
                     xlabelfontsize=8,
                     ylabelfontsize=8,
                     xtickfontsize=4,
@@ -1425,6 +1439,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xticks=floor(t[1]):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end]),
                     title=title,
                     colorbar_title="Power/frequency [dB/Hz]",
+                    titlefontsize=10,
                     xlabelfontsize=8,
                     ylabelfontsize=8,
                     xtickfontsize=4,
@@ -1577,6 +1592,7 @@ function signal_plot_histogram(signal::Vector{Float64}; type::Symbol=:hist, labe
              linewidth=0.5,
              margins=0px,
              yticks=false,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -1632,12 +1648,14 @@ function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; 
                                       linewidth=0.5,
                                       margins=0px,
                                       yticks=true,
+                                      titlefontsize=10,
                                       xlabelfontsize=8,
                                       ylabelfontsize=8,
                                       xtickfontsize=4,
                                       ytickfontsize=4,
-                                      xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)])
-    else
+                                      xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
+                                      kwargs...
+)    else
         p = []
         for idx in 1:channel_n
             push!(p, signal_plot_histogram(signal[idx, :],
@@ -1651,11 +1669,13 @@ function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; 
                                            linewidth=0.5,
                                            left_margin=30px,
                                            yticks=true,
+                                           titlefontsize=10,
                                            xlabelfontsize=8,
                                            ylabelfontsize=8,
                                            xtickfontsize=4,
                                            ytickfontsize=4,
-                                           xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)]))
+                                           xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
+                                           kwargs...))
         end
         p = plot(p...,
                  palette=:darktest,
@@ -1776,6 +1796,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              xticks=floor(t[1]):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end]),
              ylims=(-ylim, ylim),
              title=title,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -1845,6 +1866,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              xticks=floor(t[1]):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end]),
              ylims=(-0.5, ica_n-0.5),
              title=title,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,
@@ -2025,6 +2047,7 @@ function eeg_topoplot(eeg::EEG; t::Int64, epoch::Int64, c::Symbol=:amplitude, c_
              border=:none,
              margins=0px,
              aspect_ratio=1,
+             titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=4,

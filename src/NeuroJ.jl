@@ -225,6 +225,8 @@ export eeg_trim
 export eeg_trim!
 export eeg_upsample
 export eeg_upsample!
+export eeg_spectrum
+export eeg_spectrum!
 
 include("eeg_io.jl")
 export eeg_import_edf

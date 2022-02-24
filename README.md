@@ -79,7 +79,8 @@ General:
 - performance optimization
 
 EEG:
-- plots title fontsize
+
+- barplot total / band power, absolute and relative
 - plot spectrogram/psd/ica: use embedded spectrogram/psd/ica
 - topographical plots
 - more re-referencing methods
