@@ -81,4 +81,10 @@ p = eeg_plot_histogram(edf, channel=1, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
+p = signal_plot_bands(signal_v, fs=100, type=:abs)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_bands(edf, channel=1, type=:abs, figure="test.png")
+@test isfile("test.png") == true
+isfile("test.png") && rm("test.png")
+
 true

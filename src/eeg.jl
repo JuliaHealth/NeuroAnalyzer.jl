@@ -1880,22 +1880,22 @@ Return EEG band frequency limits.
 
 # Returns
 
-- `band_frequency::Tuple`
+- `band_frequency::Tuple{Float64, Float64}`
 
 """
 function eeg_band(band::Symbol)
     band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
 
-    band === :delta && (band_frequency = (0.5, 4))
-    band === :theta && (band_frequency = (4, 8))
-    band === :alpha && (band_frequency = (8, 13))
-    band === :beta && (band_frequency = (14, 30))
-    band === :high && (band_frequency = (25, 30))
-    band === :gamma && (band_frequency = (30, 150))
-    band === :gamma_1 && (band_frequency = (31, 40))
-    band === :gamma_2 && (band_frequency = (41, 50))
-    band === :gamma_lower && (band_frequency = (30, 80))
-    band === :gamma_higher && (band_frequency = (80, 150))
+    band === :delta && (band_frequency = (0.5, 4.0))
+    band === :theta && (band_frequency = (4.0, 8.0))
+    band === :alpha && (band_frequency = (8.0, 13.0))
+    band === :beta && (band_frequency = (14.0, 30.0))
+    band === :beta_high && (band_frequency = (25.0, 30.0))
+    band === :gamma && (band_frequency = (30.0, 150.0))
+    band === :gamma_1 && (band_frequency = (31.0, 40.0))
+    band === :gamma_2 && (band_frequency = (41.0, 50.0))
+    band === :gamma_lower && (band_frequency = (30.0, 80.0))
+    band === :gamma_higher && (band_frequency = (80.0, 150.0))
     
     return band_frequency
 end

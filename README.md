@@ -80,7 +80,6 @@ General:
 
 EEG:
 
-- barplot total / band power, absolute and relative
 - plot spectrogram/psd/ica: use embedded spectrogram/psd/ica
 - topographical plots
 - more re-referencing methods

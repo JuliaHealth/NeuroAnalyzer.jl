@@ -250,6 +250,7 @@ export eeg_plot_spectrogram
 export eeg_topoplot
 export eeg_plot_histogram
 export eeg_plot_filter_response
+export eeg_plot_bands
 export signal_plot
 export signal_plot_avg
 export signal_plot_butterfly
@@ -257,6 +258,7 @@ export signal_plot_ica
 export signal_plot_psd
 export signal_plot_spectrogram
 export signal_plot_histogram
+export signal_plot_bands
 
 include("nstim.jl")
 export tes_dose
