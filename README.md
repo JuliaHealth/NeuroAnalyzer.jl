@@ -86,7 +86,6 @@ EEG:
 - phase-amplitude cross-frequency coupling (PAC)
 - plot spectrogram/psd: use embedded spectrogram/psd
 - more re-referencing methods
-- improve: compose eeg_plots with electrode plots
 - io: import from CSV
 - create EEG object
 - automated DC line cleaning
