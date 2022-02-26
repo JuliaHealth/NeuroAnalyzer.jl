@@ -1253,8 +1253,8 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
         labels = false
     else
         plot_size = (800, 800)
-        marker_size = 8
-        font_size = 8
+        marker_size = 6
+        font_size = 4
     end
 
     p = plot(grid=false, framestyle=:none, palette=:darktest, size=plot_size, markerstrokewidth=0, border=:none, aspect_ratio=1, margins=-20Plots.px, titlefontsize=10; kwargs...)
@@ -1273,7 +1273,7 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     end
     if labels == true
         for idx in 1:length(eeg_tmp.eeg_header[:labels])
-        plot!(annotation=(loc_x[idx] + 0.00, loc_y[idx] + 0.04, text(eeg_tmp.eeg_header[:labels][idx], pointsize=font_size)))
+        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_tmp.eeg_header[:labels][idx], pointsize=font_size)))
         end
         p = plot!()
     end
@@ -1909,6 +1909,7 @@ Plots ICs.
 - `p::Plot`
 """
 function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", figure::String="", kwargs...)
+
     :ica_activations in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -2022,18 +2023,21 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
 end
 
 """
-    eeg_plot_topo(eeg; t, len=0, im=:shepard, c=:amp, c_idx=nothing, head_labels=false, cb_label="", title="", figure="", kwargs...)
+    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb_label="", title="", figure="", kwargs...)
 
 Plots topographical view of `eeg` component.
 
 # Arguments
 
 - `eeg::EEG`
-- `t::Int64` - time (in samples) at which to plot
+- `offset::Int64` - time (in samples) at which to plot
 - `len::Int64` - interpolation window
 - `m::Symbol[:shepard, :mq, :tp]` - interpolation method: Sherad, Multiquadratic, ThinPlate
-- `c::Symbol` - component name (:ica, :pca, :amp, :psd_p)
+- `c::Symbol` - component name (:ica, :pca, :amp, :power)
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}` - component index, e.g. ICA number or frequency range
+- `norm::Bool` - convert power as dB
+- `frq_lim::Tuple` - frequency limit for PSD and spectrogram
+- `head_labels::Bool` - plot head labels
 - `cb_label::String` - color bar label
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
@@ -2043,25 +2047,25 @@ Plots topographical view of `eeg` component.
 
 - `plot`
 """
-function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, head_labels::Bool=false, cb_label::String="", title::String="", figure::String="", kwargs...)
+function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb_label::String="", title::String="", figure::String="", kwargs...)
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
-    t < 0 || t > eeg.eeg_header[:eeg_duration_samples]  && throw(ArgumentError("t must be ≥ 0 and ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
+    offset < 0 || offset > eeg.eeg_header[:eeg_duration_samples]  && throw(ArgumentError("offset must be ≥ 0 and ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
     (c === :amp  || c === :power || c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $(c) not found."))
 
     # default length is 100 ms
     len == 0 && (len = round(Int64, eeg_sr(eeg) / 10))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    t + len > eeg.eeg_header[:eeg_duration_samples] && throw(ArgumentError("t + len must be ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
+    offset + len > eeg.eeg_header[:eeg_duration_samples] && throw(ArgumentError("offset + len must be ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
 
     # get epochs markers for len > epoch_len
-    t_tmp = t
-    if t > (eeg.eeg_header[:epoch_duration_samples] - len) && eeg.eeg_header[:epoch_n] > 1
+    t_tmp = offset
+    if offset > (eeg.eeg_header[:epoch_duration_samples] - len) && eeg.eeg_header[:epoch_n] > 1
         epoch = 0
-        while t > eeg.eeg_header[:epoch_duration_samples]
+        while offset > eeg.eeg_header[:epoch_duration_samples]
             epoch += 1
-            t -= eeg.eeg_header[:epoch_duration_samples]
+            offset -= eeg.eeg_header[:epoch_duration_samples]
         end
     else
         epoch = 1
@@ -2079,7 +2083,7 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
         length(c_idx) > 10 && (l_row = 4)
         l = (l_row, ceil(Int64, length(c_idx) / l_row))
         for idx in 1:length(c_idx)
-            push!(p, eeg_plot_topo(eeg; t=t, len=len, m=m, c=c, c_idx=c_idx[idx], head_labels=head_labels, title=""))
+            push!(p, eeg_plot_topo(eeg; offset=offset, len=len, m=m, c=c, c_idx=c_idx[idx], head_labels=head_labels, title=""))
         end
         for idx in (length(c_idx) + 1):l[1]*l[2]
             push!(p, plot(border=:none, title=""))
@@ -2103,8 +2107,8 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
     t_2 >= 1.0 && (t_s2 = string(round(t_2, digits=2)) * " s")
 
     if c === :amp
-        s_non_interpolated = @view eeg.eeg_signals[:, t:(t + len), epoch]
-        title = "Unweighted amplitude [A.U.]\nTime window: $t_s1:$t_s2"
+        s_non_interpolated = mean(eeg.eeg_signals[:, offset:(offset + len), epoch], dims=2)
+        title = "Unweighted amplitude [A.U.]"
     elseif c === :ica
         s = eeg.eeg_signals[:, :, epoch]
         s = reshape(s, size(s, 1), size(s, 2), 1)
@@ -2113,8 +2117,8 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
         component_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
         m_v = eeg.eeg_components[component_idx][:, c_idx, epoch]
         s_w = m_v * a'
-        s_non_interpolated = mean(s_w[:, t:(t + len), epoch], dims=2)
-        title = "$(uppercase(string(c))) #$(c_idx) [A.U.]\nTime window: $t_s1:$t_s2"
+        s_non_interpolated = mean(s_w[:, offset:(offset + len), epoch], dims=2)
+        title = "$(uppercase(string(c))) #$(c_idx) [A.U.]"
     elseif c === :pca
         s = eeg.eeg_signals[:, :, epoch]
         s = reshape(s, size(s, 1), size(s, 2), 1)
@@ -2123,17 +2127,29 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
         pca_m_idx = findfirst(isequal(:pca_m), eeg.eeg_header[:components])
         pca_m = eeg.eeg_components[pca_m_idx]
         s_reconstructed = reconstruct(pca_m, pca)
-        s_non_interpolated = mean(s_reconstructed[:, t:(t + len), epoch], dims=2)
-        title = "$(uppercase(string(c))) #1:$(size(pca, 1)) reconstruction [A.U.]\nTime window: $t_s1:$t_s2"
+        s_non_interpolated = mean(s_reconstructed[:, offset:(offset + len), epoch], dims=2)
+        title = "$(uppercase(string(c))) #1:$(size(pca, 1)) reconstruction [A.U.]"
     elseif c === :power
-        typeof(c_idx) <: Tuple || throw(ArgumentError("For :power component c_idx must be a tuple of (lower, upper) frequency bounds."))
-        c_idx == nothing && (c_idx = (0, eeg_sr(eeg) / 2))
-        s = eeg.eeg_signals[:, t:(t + len), epoch]
-        s_non_interpolated = zeros(size(s, 1))
-        for idx in 1:size(s_non_interpolated, 1)
-            s_non_interpolated[idx] = signal_band_power(s[idx, :], fs=eeg_sr(eeg), f=c_idx)
+        if typeof(c_idx) <: Tuple
+            s = eeg.eeg_signals[:, offset:(offset + len), epoch]
+            s_non_interpolated = zeros(size(s, 1))
+            for idx in 1:size(s_non_interpolated, 1)
+                s_non_interpolated[idx] = signal_band_power(s[idx, :], fs=eeg_sr(eeg), f=c_idx)
+            end
+            norm == true && s_non_interpolated[s_non_interpolated .<= 0] .= eps()
+            norm == true && (s_non_interpolated = pow2db.(s_non_interpolated))
+            title = "Power [A.U.]\n[frequency range: $(c_idx[1]):$(c_idx[end]) Hz]"
+        elseif typeof(c_idx) == Int64 || typeof(c_idx) == Float64
+            s = eeg.eeg_signals[:, offset:(offset + len), epoch]
+            s = reshape(s, size(s, 1), size(s, 2), 1)
+            s_psd, s_frq = signal_psd(s, fs=eeg_sr(eeg), norm=norm)
+            frq_idx = vsearch(c_idx, s_frq[1, :])
+            s_non_interpolated = zeros(size(s, 1))
+            for idx in 1:size(s_non_interpolated, 1)
+                s_non_interpolated[idx] = s_psd[idx, frq_idx]
+            end
+            title = "Power [A.U.]\n[frequency: $c_idx Hz]"
         end
-        title = "Power [A.U.]\nFrequency range: $(c_idx[1]):$(c_idx[end]) Hz\nTime window: $t_s1:$t_s2"
     else
         throw(ArgumentError("Component $(c) not found."))
     end
@@ -2147,7 +2163,7 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
     # interpolate
     x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
     y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
-    interpolation_factor = 100
+    interpolation_factor = 200
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
@@ -2210,6 +2226,17 @@ function eeg_plot_topo(eeg::EEG; t::Int64, len::Int64=0, m::Symbol=:shepard, c::
     end
     p = plot!(p, xlims=(x_lim_int), ylims=(y_lim_int))
 
+    if c !== :ica
+        frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
+        s = eeg_plot_butterfly(eeg, epoch=epoch, channel=0, len=len, offset=offset, title="Butterfly plot\n[time window: $t_s1:$t_s2]", legend=false)
+        ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false)
+        h = eeg_plot_electrodes(eeg, channel=0, selected=0, labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]")
+        l = @layout [a{0.5h} b{0.3w}; c{0.5h}; d{0.3w}]
+        p = plot(ps, p, s, h, layout=(2, 2))
+    end
+
+    plot(p)
+
     if figure !== ""
         isfile(figure) && @warn "File $figure will be overwritten."
         savefig(p, figure)
@@ -2240,6 +2267,7 @@ Plots absolute/relative band powers of `signal`.
 - `plot`
 """
 function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
     band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
@@ -2340,6 +2368,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `p::Plot`
 """
 function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", figure::String="", kwargs...)
+
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
     (channel < 1 || channel > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))

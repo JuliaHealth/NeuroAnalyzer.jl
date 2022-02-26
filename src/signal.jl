@@ -134,6 +134,7 @@ function signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
     # dx: frequency resolution
     dx = psd_freq[2] - psd_freq[1]
     sbp = simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
+    sbp[sbp .== -Inf] .= 0
 
     return sbp
 end
@@ -2233,12 +2234,12 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 - `s_trimmed::Vector{Float64}`
 """
 function signal_trim(signal::AbstractArray; len::Int64, offset::Int64=0, from::Symbol=:start)
-    from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
-    len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
-    len >= length(signal) && throw(ArgumentError("Trim length must be less than signal length."))
-    offset < 0 && throw(ArgumentError("Offset must be ≥ 1."))
-    offset >= length(signal) - 1 && throw(ArgumentError("Offset must be less than signal length."))
-    (from ===:start && 1 + offset + len > length(signal)) && throw(ArgumentError("Offset + trim length must be less than signal length."))
+    from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
+    len < 0 && throw(ArgumentError("len must be ≥ 1."))
+    len >= length(signal) && throw(ArgumentError("len must be < signal length."))
+    offset < 0 && throw(ArgumentError("offset must be ≥ 1."))
+    offset >= length(signal) - 1 && throw(ArgumentError("offset must be < signal length."))
+    (from ===:start && 1 + offset + len > length(signal)) && throw(ArgumentError("offset + len must be < signal length."))
     
     from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + len):end]))
     from === :end && (s_trimmed = signal[1:(end - len)])
@@ -2715,7 +2716,7 @@ Calculates `n` first ICs for `signal`.
 function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
     f in [:tanh, :gaus] || throw(ArgumentError("ICA function must be :tanh or :gaus."))
     n < 0 && throw(ArgumentError("Number of ICs must be ≥ 1."))
-    n > size(signal, 1) && throw(ArgumentError("Number of ICs cannot be higher than signal rows."))
+    n > size(signal, 1) && throw(ArgumentError("Number of ICs cannot be higher than signal channels ($(size(signal, 1)))."))
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     ic = zeros(n, size(signal, 2), epoch_n)

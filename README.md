@@ -74,6 +74,7 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 - epoch markers drawn too low in eeg_plot_ica() for few ICs
 - channel labels should be displayed as strings not vector
 - remove embedded components that are not useful
+- eeg_plot_topo() check minimum len value for frequency to analyze
 
 ### To do
 

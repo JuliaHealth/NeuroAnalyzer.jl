@@ -72,7 +72,7 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
             if idx2 == channel[idx1]
                 deleteat!(eeg_header[:labels], idx2)
                 eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:xlocs], idx2))
-                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:xlocs], idx2))
+                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:ylocs], idx2))
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -129,7 +129,7 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
             if idx2 == channel[idx1]
                 deleteat!(eeg.eeg_header[:labels], idx2)
                 eeg.eeg_header[:channel_locations] == true && (deleteat!(eeg.eeg_header[:xlocs], idx2))
-                eeg.eeg_header[:channel_locations] == true && (deleteat!(eeg.eeg_header[:xlocs], idx2))
+                eeg.eeg_header[:channel_locations] == true && (deleteat!(eeg.eeg_header[:ylocs], idx2))
                 deleteat!(eeg.eeg_header[:transducers], idx2)
                 deleteat!(eeg.eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg.eeg_header[:physical_minimum], idx2)
