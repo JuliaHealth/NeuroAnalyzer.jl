@@ -286,7 +286,6 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 # Returns
 
 - `success::Bool`
-
 """
 function eeg_save(eeg::EEG; file_name::String, overwrite::Bool=false)
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
@@ -339,7 +338,6 @@ Exports EEG data as CSV.
 # Returns
 
 - `success::Bool`
-
 """
 function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))

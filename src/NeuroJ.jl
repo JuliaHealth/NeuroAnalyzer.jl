@@ -132,6 +132,7 @@ export signal_total_power
 export signal_trim
 export signal_upsample
 export signal_spectrogram
+export signal_band
 
 include("eeg.jl")
 export eeg_autocov
@@ -247,7 +248,7 @@ export eeg_plot_ica
 export eeg_plot_matrix
 export eeg_plot_psd
 export eeg_plot_spectrogram
-export eeg_topoplot
+export eeg_plot_topo
 export eeg_plot_histogram
 export eeg_plot_filter_response
 export eeg_plot_bands

@@ -71,6 +71,10 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 ### Bugs
 
+- epoch markers drawn too low in eeg_plot_ica() for few ICs
+- channel labels should be displayed as strings not vector
+- remove embedded components that are not useful
+
 ### To do
 
 .. so much to do ..
@@ -79,9 +83,8 @@ General:
 - performance optimization
 
 EEG:
-
-- plot spectrogram/psd/ica: use embedded spectrogram/psd/ica
-- topographical plots
+- phase-amplitude cross-frequency coupling (PAC)
+- plot spectrogram/psd: use embedded spectrogram/psd
 - more re-referencing methods
 - improve: compose eeg_plots with electrode plots
 - io: import from CSV

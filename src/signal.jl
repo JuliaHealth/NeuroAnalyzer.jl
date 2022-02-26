@@ -10,7 +10,6 @@ Returns the derivative of the `signal` with length same as the signal.
 # Returns
 
 - `s_derivative::Union{Vector{Int64}, Vector{Float64}}`
-
 """
 function signal_derivative(signal::AbstractArray)
     s_der = diff(signal)
@@ -128,8 +127,8 @@ function signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
     psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_freq = Vector(psd.freq)
     
-    f1_idx = vsearch(psd_freq, f[1])
-    f2_idx = vsearch(psd_freq, f[2])
+    f1_idx = vsearch(f[1], psd_freq)
+    f2_idx = vsearch(f[2], psd_freq)
     frq_idx = [f1_idx, f2_idx]
 
     # dx: frequency resolution
@@ -1358,7 +1357,7 @@ end
 """
     signal_normalize_minmax(signal)
 
-Normalize (to 0…1) `signal`.
+Normalize `signal` in [-1, +1].
 
 # Arguments
 
@@ -1369,14 +1368,15 @@ Normalize (to 0…1) `signal`.
 - `s_normalized::Vector{Float64}`
 """
 function signal_normalize_minmax(signal::AbstractArray)
-    s_norm = (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal))
+    s_norm = 2 .* (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal)) .- 1
+
     return s_norm
 end
 
 """
     signal_normalize_minmax(signal)
 
-Normalize (to 0…1) each the `signal` channel.
+Normalize each the `signal` channel in [-1, +1].
 
 # Arguments
 
@@ -2083,7 +2083,6 @@ Calculates phase stationarity using Hilbert transformation.
 # Returns
 
 - `phase_stationarity::Vector{Float64}`
-
 """
 function signal_stationarity_hilbert(signal::AbstractArray)
     
@@ -2105,7 +2104,6 @@ Calculates mean stationarity.
 # Returns
 
 - `mean_stationarity::Vector{Float64}`
-
 """
 function signal_stationarity_mean(signal::AbstractArray; window::Int64)
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
@@ -2128,7 +2126,6 @@ Calculates variance stationarity.
 # Returns
 
 - `var_stationarity::Vector{Float64}`
-
 """
 function signal_stationarity_var(signal::AbstractArray; window::Int64)
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
@@ -2152,7 +2149,6 @@ Calculates stationarity.
 # Returns
 
 - `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
-
 """
 function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method::Symbol=:hilbert)
     method in [:mean, :var, :euclid, :hilbert] || throw(ArgumentError("Method must be must be :mean, :var, :euclid or :hilbert."))
@@ -2235,7 +2231,6 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 # Returns
 
 - `s_trimmed::Vector{Float64}`
-
 """
 function signal_trim(signal::AbstractArray; len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
@@ -2267,7 +2262,6 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 # Returns
 
 - `s_trimmed::Array{Float64, 3}`
-
 """
 function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=0, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
@@ -2305,7 +2299,6 @@ Calculates mutual information between `signal1` and `signal2`.
 # Returns
 
 - `mi::Float64`
-
 """
 function signal_mi(signal1::AbstractArray, signal2::AbstractArray)
     mi = get_mutual_information(signal1, signal2)
@@ -2389,7 +2382,6 @@ Calculates entropy of `signal`.
 # Returns
 
 - `ent::Float64`
-
 """
 function signal_entropy(signal::AbstractArray)
     n = length(signal)
@@ -2448,7 +2440,6 @@ Averages `signal1` and `signal2`.
 # Returns
 
 - `s_averaged::Vector{Float64}`
-
 """
 function signal_average(signal1::AbstractArray, signal2::AbstractArray)
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
@@ -2470,7 +2461,6 @@ Averages all channels of `signal`.
 # Returns
 
 - `s_averaged::Array{Float64, 3}`
-
 """
 function signal_average(signal::Array{Float64, 3})
 
@@ -2523,7 +2513,6 @@ Calculates coherence between `signal1` and `signal2`.
 # Returns
 
 - `coherence::Vector{ComplexF64}`
-
 """
 function signal_coherence(signal1::AbstractArray, signal2::AbstractArray)
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
@@ -2618,7 +2607,9 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
     epoch_n = size(signal, 3)
     pc = zeros(n, size(signal, 2), epoch_n)
     pc_var = zeros(n, epoch_n)
-
+    pc_reconstructed = zeros(size(signal))
+    M = []
+    
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
         # m_cov = signal_cov(s)
@@ -2638,7 +2629,7 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
         end
     end
 
-    return pc, pc_var
+    return pc, pc_var, M
 end
 
 """
@@ -2719,6 +2710,7 @@ Calculates `n` first ICs for `signal`.
 # Returns
 
 - `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+- `ic_mw::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
 """
 function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
     f in [:tanh, :gaus] || throw(ArgumentError("ICA function must be :tanh or :gaus."))
@@ -2727,6 +2719,7 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, it
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     ic = zeros(n, size(signal, 2), epoch_n)
+    ic_mw = zeros(channel_n, n, epoch_n)
 
     for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
@@ -2734,12 +2727,17 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, it
         f === :tanh && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
         f === :gaus && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
 
+        n == size(signal, 1) && (mw = inv(M.W)')
+        n < size(signal, 1) && (mw = pinv(M.W)')
+
         for idx in 1:n
             ic[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
         end
+
+        ic_mw[:, :, epoch] = mw
     end
 
-    return ic
+    return ic, ic_mw
 end
 
 """
@@ -2789,7 +2787,6 @@ Calculates spectrogram of `signal`.
 - `spec.power::Matrix{Float64}`
 - `spec.freq::Vector{Float64}`
 - `spec.time::Vector{Float64}`
-
 """
 function signal_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
@@ -2840,11 +2837,46 @@ function signal_spectrogram(signal::Array{Float64, 3}; fs::Int64, norm::Bool=tru
     s_t = zeros(length(t_tmp), epoch_n)
 
     for epoch in 1:epoch_n
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_pow[:, :, idx, epoch], s_frq[:, epoch], s_t[:, epoch] = signal_spectrogram(s, fs=fs, norm=norm, demean=demean)
         end
     end
 
     return s_pow, s_frq, s_t
+end
+
+"""
+    signal_band(fs, band)
+
+Return band frequency limits.
+
+# Arguments
+
+- `fs::Int64`
+- `band::Symbol`
+
+# Returns
+
+- `band_frequency::Tuple{Float64, Float64}`
+"""
+function signal_band(fs::Union{Int64, Float64}, band::Symbol)
+    fs <= 0 && throw(ArgumentError("fs must be > 0 Hz"))
+    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
+
+    band === :delta && (band_frequency = (0.5, 4.0))
+    band === :theta && (band_frequency = (4.0, 8.0))
+    band === :alpha && (band_frequency = (8.0, 13.0))
+    band === :beta && (band_frequency = (14.0, 30.0))
+    band === :beta_high && (band_frequency = (25.0, 30.0))
+    band === :gamma && (band_frequency = (30.0, 150.0))
+    band === :gamma_1 && (band_frequency = (31.0, 40.0))
+    band === :gamma_2 && (band_frequency = (41.0, 50.0))
+    band === :gamma_lower && (band_frequency = (30.0, 80.0))
+    band === :gamma_higher && (band_frequency = (80.0, 150.0))
+    
+    band_frequency[1] > fs / 2 && (band_frequency = (fs / 2, band_frequency[2]))
+    band_frequency[2] > fs / 2 && (band_frequency = (band_frequency[1], fs / 2))
+
+    return band_frequency
 end

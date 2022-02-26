@@ -394,6 +394,14 @@ eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
 eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
 ```
 
+Topographical plots:
+```julia
+eeg_plot_topo(edf, t=2560)
+eeg_plot_topo(edf, t=2560, c=:ica, c_idx=1:8)
+eeg_plot_topo(edf, t=2560, len=2560, c=:pca)
+eeg_plot_topo(edf, t=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
+```
+
 Stationarity:
 ```julia
 p = eeg_stationarity(edf, method=:mean)
@@ -424,7 +432,7 @@ m = eeg_coherence(edf1, edf2)
 hz, nyq = eeg_freqs(edf1)
 plot(hz, abs.(m[1, 1:length(hz)]), xlims=(0, 40))
 
-edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
 eeg_labels(edf_alpha)
 # O1 vs O2
 m = eeg_coherence(edf_alpha, channel1=9, channel2=10)
@@ -436,10 +444,10 @@ plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 
 PCA:
 ```julia
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 3)
-edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
 edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 pc, pc_var = eeg_pca(edf1, n=4)
@@ -461,10 +469,10 @@ eeg_plot_ica(edf, ica=1:5)
 
 Comparing two signals:
 ```julia
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:delta), order=8)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:delta), order=8)
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
 edf1 = eeg_keep_channel(edf1, 4)
-edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:beta), order=8)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
 edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
 edf2 = eeg_keep_channel(edf2, 4)
 s, ss, p = eeg_difference(edf1, edf2, n=10, method=:absdiff)
@@ -487,8 +495,8 @@ bar(v)
 
 Misc:
 ```julia
-eeg_band(:alpha)
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(:alpha), order=8)
+eeg_band(edf, band=:alpha)
+edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
 hz, nyq = eeg_freqs(edf)
 
 e = eeg_pick(edf, pick=:left)

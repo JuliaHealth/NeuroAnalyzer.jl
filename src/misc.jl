@@ -62,14 +62,14 @@ function zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
 end
 
 """
-    vsearch(x, y; return_distance=false)
+    vsearch(y, x; return_distance=false)
 
 Returns the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}}
 - `y::Union{Int64, Float64}`
+- `x::Union{Vector{Int64}, Vector{Float64}}
 - `return_distance::Bool`
 
 # Returns
@@ -77,7 +77,7 @@ Returns the positions of the `y` value in the vector `x` and the difference betw
 - `y_idx::Int64`
 -` y_dist::Union{Int64, Float64}`
 """
-function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float64}; return_distance::Bool=false)
+function vsearch(y::Union{Int64, Float64}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance::Bool=false)
     y_dist, y_idx = findmin(abs.(x .- y))
 
     return_distance == false && (return y_idx)
@@ -85,7 +85,7 @@ function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Int64, Float
 end
 
 """
-    vsearch(x, y)
+    vsearch(y, x; return_distance=false)
 
 Returns the positions of the `y` vector in the vector `x`.
 
@@ -100,7 +100,7 @@ Returns the positions of the `y` vector in the vector `x`.
 - `y_idx::Int64`
 - `y_dist::Union{Int64, Float64}`
 """
-function vsearch(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
+function vsearch(y::Union{Vector{Int64}, Vector{Float64}}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
     y_idx = zeros(length(y))

@@ -256,4 +256,7 @@ p, f, t = signal_spectrogram(signal_v, fs=fs)
 p, f, t = signal_spectrogram(signal_a, fs=fs)
 @test size(p) == (51, 46, 2, 2)
 
+i, mw = signal_ica(signal_a, n=1, tol=1.0)
+@test size(i) == (1, 101, 2)
+
 true

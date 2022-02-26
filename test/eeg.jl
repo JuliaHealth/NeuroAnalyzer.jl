@@ -118,7 +118,7 @@ m = eeg_mi(edf, edf)
 e = eeg_entropy(edf)
 @test size(e) == (19, 1)
 
-a = eeg_band(:alpha)
+a = eeg_band(edf, band=:alpha)
 @test a == (8, 13)
 
 m = eeg_coherence(edf, edf)
@@ -130,7 +130,7 @@ hz, _ = eeg_freqs(edf)
 e = eeg_fconv(edf, kernel=[1, 2, 3, 4])
 @test size(edf.eeg_signals) == (19, 354816, 1)
 
-p, v = eeg_pca(edf, n=2)
+p, v, m = eeg_pca(edf, n=2)
 @test size(p) == (2, 354816, 1)
 @test size(v) == (2, 1)
 
@@ -151,7 +151,7 @@ m, s, v = eeg_epochs_stats(e)
 @test size(v) == (69, )
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
-i = eeg_ica(e, n=5, tol=1.0)
+i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
 eeg_epochs_stats!(edf)
@@ -166,5 +166,7 @@ c = eeg_list_components(edf)
 e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
+f, a, p, ph = eeg_spectrum(e)
+@test size(p) == (19, 2560, 1)
 
 true

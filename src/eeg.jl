@@ -1647,13 +1647,13 @@ Calculates total power for each the `eeg` channels.
 - `norm::Bool` - normalize do dB
 """
 function eeg_psd!(eeg::EEG; norm::Bool=false)
-    :psd_powers in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_powers)
-    :psd_frequencies in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_frequencies)
+    :psd_p in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_p)
+    :psd_f in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_f)
     s_psd_powers, s_psd_frequencies = eeg_psd(eeg, norm=norm)
     push!(eeg.eeg_components, s_psd_powers)
     push!(eeg.eeg_components, s_psd_frequencies)
-    push!(eeg.eeg_header[:components], :psd_powers)
-    push!(eeg.eeg_header[:components], :psd_frequencies)
+    push!(eeg.eeg_header[:components], :psd_p)
+    push!(eeg.eeg_header[:components], :psd_f)
     push!(eeg.eeg_header[:history], "eeg_psd!(EEG, norm=$norm)")
 
     return
@@ -1673,7 +1673,6 @@ Calculates stationarity.
 # Returns
 
 - `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
-
 """
 function eeg_stationarity(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
     s_stationarity = signal_stationarity(eeg.eeg_signals, window=window, method=method)
@@ -1750,7 +1749,6 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 - `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
-
 """
 function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
     eeg.eeg_signals = signal_trim(eeg.eeg_signals, len=len, from=from)
@@ -1870,20 +1868,20 @@ function eeg_entropy!(eeg::EEG)
 end
 
 """
-    eeg_band(band)
+    eeg_band(eeg, band)
 
-Return EEG band frequency limits.
+Return `eeg` :band frequency limits.
 
 # Arguments
 
+- `eeg:EEG`
 - `band::Symbol`
 
 # Returns
 
 - `band_frequency::Tuple{Float64, Float64}`
-
 """
-function eeg_band(band::Symbol)
+function eeg_band(eeg; band::Symbol)
     band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
 
     band === :delta && (band_frequency = (0.5, 4.0))
@@ -1897,6 +1895,9 @@ function eeg_band(band::Symbol)
     band === :gamma_lower && (band_frequency = (30.0, 80.0))
     band === :gamma_higher && (band_frequency = (80.0, 150.0))
     
+    band_frequency[1] > eeg_sr(eeg) / 2 && (band_frequency = (eeg_sr(eeg) / 2, band_frequency[2]))
+    band_frequency[2] > eeg_sr(eeg) / 2 && (band_frequency = (band_frequency[1], eeg_sr(eeg) / 2))
+
     return band_frequency
 end
 
@@ -2007,9 +2008,9 @@ Calculates `n` first PCs for `eeg`.
 - `pc_var::Matrix{Float64}` - PC_VAR(1)..PC_VAR(n) × epoch
 """
 function eeg_pca(eeg::EEG; n::Int64)
-    pc, pc_var = signal_pca(eeg.eeg_signals, n=n)
+    pc, pc_var, m = signal_pca(eeg.eeg_signals, n=n)
 
-    return pc, pc_var
+    return pc, pc_var, m
 end
 
 """
@@ -2023,13 +2024,16 @@ Calculates `n` first PCs for `eeg`.
 - `n::Int64` - number of PCs
 """
 function eeg_pca!(eeg::EEG; n::Int64)
-    :pc in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pc)
-    :pc_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pc_var)
-    pc, pc_var = eeg_pca(eeg, n=n)
+    :pca in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca)
+    :pca_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_var)
+    :pca_m in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_m)
+    pc, pc_var, m = eeg_pca(eeg, n=n)
     push!(eeg.eeg_components, pc)
     push!(eeg.eeg_components, pc_var)
-    push!(eeg.eeg_header[:components], :pc)
-    push!(eeg.eeg_header[:components], :pc_var)
+    push!(eeg.eeg_components, m)
+    push!(eeg.eeg_header[:components], :pca)
+    push!(eeg.eeg_header[:components], :pca_var)
+    push!(eeg.eeg_header[:components], :pca_m)
     push!(eeg.eeg_header[:history], "eeg_pca!(EEG, n=$n)")
 
     return
@@ -2510,16 +2514,17 @@ Calculates `n` first ICs for `eeg`.
 - `f::Symbol` - neg-entropy functor
 # Returns
 
-- `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch
+- `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch (W * data)
+- `ic_mw::Array{Float64, 3}` - IC(1)..IC(n) × epoch inv(W)
 """
-function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
-    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
+function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=1000, f::Symbol=:tanh)
+    ic, ic_mw = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
 
-    return ic
+    return ic, ic_mw
 end
 
 """
-    eeg_ica!(eeg; n, tol)
+    eeg_ica!(eeg; n, tol, f=:tanh)
 
 Calculates `n` first ICs for `eeg`.
 
@@ -2536,9 +2541,12 @@ Calculates `n` first ICs for `eeg`.
 """
 function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
     :ica in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica)
-    ic = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
+    :ica_mw in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica_mw)
+    ic, ic_mw = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
     push!(eeg.eeg_components, ic)
+    push!(eeg.eeg_components, ic_mw)
     push!(eeg.eeg_header[:components], :ica)
+    push!(eeg.eeg_header[:components], :ica_mw)
     push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n, tol=$tol, iter=$iter, f=$f))")
 
     return
