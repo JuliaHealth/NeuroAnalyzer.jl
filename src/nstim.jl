@@ -21,6 +21,7 @@ Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety li
 """
 
 function tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Union{Int64, Float64})
+    
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)
     charge_density = (current / 1_000) / (pad_area / 10_000)

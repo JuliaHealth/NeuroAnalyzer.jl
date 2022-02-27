@@ -229,6 +229,10 @@ export eeg_upsample
 export eeg_upsample!
 export eeg_spectrum
 export eeg_spectrum!
+export eeg_channel_n
+export eeg_epoch_n
+export eeg_signal_len
+export eeg_epoch_len
 
 include("eeg_io.jl")
 export eeg_import_edf

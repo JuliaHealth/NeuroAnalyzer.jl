@@ -46,6 +46,7 @@ Pads the matrix `m` with zeros to make it square.
 - `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
 """
 function zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
+
     nr, nc = size(m)
 
     if nr > nc
@@ -78,6 +79,7 @@ Returns the positions of the `y` value in the vector `x` and the difference betw
 -` y_dist::Union{Int64, Float64}`
 """
 function vsearch(y::Union{Int64, Float64}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance::Bool=false)
+
     y_dist, y_idx = findmin(abs.(x .- y))
 
     return_distance == false && (return y_idx)
@@ -101,6 +103,7 @@ Returns the positions of the `y` vector in the vector `x`.
 - `y_dist::Union{Int64, Float64}`
 """
 function vsearch(y::Union{Vector{Int64}, Vector{Float64}}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
+
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
     y_idx = zeros(length(y))
@@ -130,6 +133,7 @@ Converts cartographic coordinates `x` and `y` to polar.
 - `theta::Float64`
 """
 function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
+
     rho = hypot(x, y)
     theta = atan(y, x)
 
@@ -152,6 +156,7 @@ Converts polar coordinates `theta` and `rho` to cartographic.
 - `y::Float64`
 """
 function pol2cart(theta::Float64, rho::Float64)
+
     x = rho * cos(theta)
     y = rho * sin(theta)
 
@@ -203,6 +208,7 @@ Calculates Jaccard similarity between two vectors `x` and `y`.
 - `j::Float64`
 """
 function jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
+
     intersection = length(intersect(x, y))
     union = length(x) + length(y) - intersection
     j = intersection / union
@@ -225,6 +231,7 @@ Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 - `fft0::Vector{ComplexF64}`
 """
 function fft0(x::AbstractArray, n::Int64)
+
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
@@ -247,6 +254,7 @@ Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at t
 - `ifft0::Vector{ComplexF64}`
 """
 function ifft0(x::AbstractArray, n::Int64)
+
     n < 0 && throw(ArgumentError("Pad must be positive."))
 
     n > length(x) && (n = n - length(x))
@@ -268,6 +276,7 @@ Returns the next power of 2 for given number `x`.
 - `nextpow::Int64`
 """
 function nextpow2(x::Int64)
+
     if x == 0
         return 1
     else
@@ -290,6 +299,7 @@ Splits the vector `x` into `n`-long pieces.
 - `x::Vector{Union{Vector{Int64}, Vector{Float64}}}`
 """
 function vsplit(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64=1)
+
     n < 0 && throw(ArgumentError("n must be positive."))
     length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
 
@@ -350,9 +360,8 @@ Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 - `nyquist_freq::Float64`
 """
 function freqs(t::Union{Vector{Int64}, Vector{Float64}, AbstractRange})
-    if typeof(t) <: AbstractRange
-        t = collect(t)
-    end
+
+    typeof(t) <: AbstractRange && (t = collect(t))
 
     # sampling interval
     dt = t[2] - t[1]
@@ -384,6 +393,7 @@ Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 - `nyquist_freq::Float64`
 """
 function freqs(signal::Vector{Float64}, fs::Union{Int64, Float64})
+
     fs < 0 && throw(ArgumentError("Sampling rate must be >0 Hz."))
 
     # Nyquist frequency
@@ -410,7 +420,9 @@ Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims
 - `m_idx::Matrix{Int64}`
 """
 function matrix_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
+
     (dims < 1 || dims > 2) && throw(ArgumentError("dims must be 1 or 2."))
+    
     m_idx = zeros(Int, size(m))
     idx=1
     if dims == 1
@@ -445,6 +457,7 @@ Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows 
 - `m_sorted::Matrix`
 """
 function matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
+
     (dims < 1 || dims > 2) && throw(ArgumentError("dims must be 1 or 2."))
 
     m_sorted = zeros(eltype(m), size(m))
@@ -482,6 +495,7 @@ Pads the vector `x` with `n` zeros at the beginning and at the end.
 """
 # to do: check if x is numeric vector
 function pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
+
     n < 1 && throw(ArgumentError("n must be positive."))
 
     v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
@@ -592,9 +606,11 @@ Generates sinc function.
 - `sinc::Vector{Float64}
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2, f::Union{Int64, Float64}=10.0, peak::Union{Int64, Float64}=0)
+
     y_sinc = @. sin(2 * pi * f * (t - peak)) / (t - peak)
     nan_idx = y_sinc[y_sinc .== NaN]
     y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2
+    
     return y_sinc
 end
 
@@ -616,12 +632,14 @@ Generates Morlet wavelet.
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
+
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
     w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
     gaussian = generate_gaussian(fs, wt[end], w)
     morlet = sin_wave .* gaussian
+
     return morlet
 end
 
@@ -641,6 +659,7 @@ Generates Gaussian wave.
 - `gaussian::Vector{Float64}`
 """
 function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
+
     t = -gt:1/fs:gt
     gaussian = MathConstants.e.^(-t.^2 ./ gw)
 
@@ -662,6 +681,7 @@ Order tuple elements in ascending or descending (rev=true) order.
 - `t`
 """
 function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
+    
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
 

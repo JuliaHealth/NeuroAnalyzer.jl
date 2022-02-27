@@ -21,7 +21,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    channel_n = size(signal, 1)
+    channel_n = eeg_channel_n(eeg)
 
     # reverse so 1st channel is on top
     channel_color = channel_n:-1:1
@@ -157,44 +157,44 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
     
     # select channels, default is 1:20 or all channels
     if channel == 0
-        if eeg.eeg_header[:channel_n] >= 20
+        if eeg_channel_n(eeg) >= 20
             channel = 1:20
         else
-            channel = 1:eeg.eeg_header[:channel_n]
+            channel = 1:eeg_channel_n(eeg)
         end
     end
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
@@ -203,14 +203,14 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
         eeg_tmp = eeg
     end
 
-    labels = eeg_tmp.eeg_header[:labels]
+    labels = eeg_labels(eeg_tmp)
 
     t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     if length(channel) == 1
         title = ""
@@ -241,7 +241,7 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
                     kwargs...)
 
     # add epochs markers
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
                    linestyle=:dash,
                    linewidth=0.2,
@@ -613,39 +613,39 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # select channels, default is all channels
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg.eeg_header[:channel_n])
+    channel == 0 && (channel = 1:eeg_channel_n(eeg))
     length(channel) == 1 && throw(ArgumentError("At least 2 channels are required."))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
@@ -654,14 +654,14 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
         eeg_tmp = eeg
     end
 
-    labels = eeg_tmp.eeg_header[:labels]
+    labels = eeg_labels(eeg_temp)
 
     t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
@@ -687,7 +687,7 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
     ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
     abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
     abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
                    linestyle=:dash,
                    linewidth=0.2,
@@ -751,10 +751,10 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    channel_n = size(signal, 1)
+    channel_n = eeg_channel_n(eeg)
 
     if norm == true
-        s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
+        s_normalized = signal_normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
     else
         s_normalized = signal
     end
@@ -830,39 +830,39 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # select channels, default is all channels
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg.eeg_header[:channel_n])
+    channel == 0 && (channel = 1:eeg_channel_n(eeg))
     length(channel) == 1 && throw(ArgumentError("number of channels must be ≥ 2."))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
@@ -871,14 +871,14 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
         eeg_tmp = eeg
     end
 
-    labels = eeg_tmp.eeg_header[:labels]
+    labels = eeg_labels(eeg_temp)
 
     t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-   (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+   (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
     ndims(signal) == 1 && (signal = vec(signal))
@@ -896,14 +896,14 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
 
     # add epochs markers
     if norm == true
-        s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
+        s_normalized = signal_normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
     else
         s_normalized = signal
     end
     ylim == (0, 0) && (ylim = (floor(minimum(s_normalized), digits=0), ceil(maximum(s_normalized), digits=0)))
     abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
     abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
                    linestyle=:dash,
                    linewidth=0.2,
@@ -942,6 +942,7 @@ Plots power spectrum density.
 - `p::Plot`
 """
 function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+
     (frq_lim[1] < 0 || frq_lim[2] < 0) && throw(ArgumentError("frq_lim must be ≥ 0."))
     frq_lim == (0, 0) && (frq_lim = (0, s_freqs[end]))
     frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
@@ -989,6 +990,7 @@ Plots power spectrum density.
 - `p::Plot`
 """
 function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, frq_lim::Tuple=(0, 0), xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", kwargs...)
+
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
@@ -1033,14 +1035,15 @@ Plots power spectrum density.
 - `p::Plot`
 """
 function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
     frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
 
     norm == true && (ylabel="Power [dB]")
 
-    channel_n = size(signal, 1)
-    signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
+    channel_n = eeg_channel_n(eeg)
+    signal = reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1)
     s_powers, s_freqs = signal_psd(signal, fs=fs, norm=norm)
     s_powers = s_powers[:, :, 1]
     s_freqs = s_freqs[:, :, 1]
@@ -1073,25 +1076,25 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
              ytickfontsize=4;
              kwargs...)
     if average == true
-    p = plot!(s_freqs,
-              s_powers_u,
-              fillrange = s_powers_l,
-              fillalpha = 0.35,
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
-    p = plot!(s_freqs,
-              s_powers_l,
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
-    p = plot!(s_freqs,
-              s_powers_m,
-              label=false,
-              t=:line,
-              c=:black)
+        p = plot!(s_freqs,
+                  s_powers_u,
+                  fillrange=s_powers_l,
+                  fillalpha=0.35,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_freqs,
+                  s_powers_l,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_freqs,
+                  s_powers_m,
+                  label=false,
+                  t=:line,
+                  c=:black)
     else
         for idx in 1:channel_n
             p = plot!(s_freqs[idx, :],
@@ -1140,55 +1143,55 @@ function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # select channels, default is 1:20 or all channels
     if channel == 0
-        if eeg.eeg_header[:channel_n] >= 20
+        if eeg_channel_n(eeg) >= 20
             channel = 1:20
         else
-            channel = 1:eeg.eeg_header[:channel_n]
+            channel = 1:eeg_channel_n(eeg)
         end
     end
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     (length(channel) == 1 && average == true) && throw(ArgumentError("channel must contain ≥ 2 channels if average=true"))
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
     else
         eeg_tmp = eeg
     end
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     fs = eeg_sr(eeg_tmp)
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch]
     ndims(signal) == 1 && (signal = vec(signal))
 
-    labels = eeg_tmp.eeg_header[:labels]
+    labels = eeg_labels(eeg_temp)
 
     p = signal_plot_psd(signal,
                         fs=fs,
@@ -1229,21 +1232,22 @@ Plots electrodes.
 - `p::Plot`
 """
 function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
+
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
 
     # select channels, default is all channels
-    channel == 0 && (channel = 1:eeg.eeg_header[:channel_n])
+    channel == 0 && (channel = 1:eeg_channel_n(eeg))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     typeof(channel) <: AbstractRange && (channel = collect(channel))
 
     # select channels, default is all channels
-    selected == 0 && (selected = 1:eeg.eeg_header[:channel_n])
+    selected == 0 && (selected = 1:eeg_channel_n(eeg))
     length(selected) > 1 && sort!(selected)
     for idx in 1:length(selected)
-        (selected[idx] < 1 || selected[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (selected[idx] < 1 || selected[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     typeof(selected) <: AbstractRange && (selected = collect(selected))
     length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
@@ -1280,8 +1284,8 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
         end
     end
     if labels == true
-        for idx in 1:length(eeg_tmp.eeg_header[:labels])
-        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_tmp.eeg_header[:labels][idx], pointsize=font_size)))
+        for idx in 1:length(eeg_labels(eeg_temp))
+        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_labels(eeg_temp)[idx], pointsize=font_size)))
         end
         p = plot!()
     end
@@ -1318,7 +1322,7 @@ Plots matrix `m` of `eeg` signals.
 - `p::Plot`
 """
 function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, figure::String="", kwargs...)
-    (epoch < 1 || epoch > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
 
     labels = eeg_labels(eeg)
     channel_n = size(m, 1)
@@ -1356,14 +1360,15 @@ Plots matrix `m` of `eeg` signals.
 - `p::Plot`
 """
 function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, figure::String="", kwargs...)
-    (epoch < 1 || epoch > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
 
     # select channels, default is 1:20 or all channels
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg.eeg_header[:channel_n])
+    channel == 0 && (channel = 1:eeg_channel_n(eeg))
     length(channel) > 1 && sort!(channel)
     for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 
     labels = eeg_labels(eeg)
@@ -1405,6 +1410,7 @@ Plots spectrogram of `signal`.
 - `p::Plot`
 """
 function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2 && throw(ArgumentError("frq_lim must be smaller than Nyquist frequency ($(fs/2) Hz)."))
     (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
@@ -1496,30 +1502,30 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
@@ -1528,8 +1534,8 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
         eeg_tmp = eeg
     end
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch]
 
@@ -1544,7 +1550,7 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
                                 kwargs...)
 
     # add epochs markers
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
                    linestyle=:dash,
                    linewidth=0.2,
@@ -1636,7 +1642,7 @@ Plots histogram of `signal`.
 """
 function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-    channel_n = size(signal, 1)
+    channel_n = eeg_channel_n(eeg)
 
     # reverse so 1st channel is on top
     signal = reverse(signal, dims = 1)
@@ -1722,31 +1728,32 @@ Plots `eeg` channels histograms.
 - `p::Plot`
 """
 function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", figure::String="", kwargs...)
+
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    (epoch < 1 || epoch > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (channel < 1 || channel > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
     else
         eeg_tmp = eeg
     end
 
-    label == "" && (label = eeg_tmp.eeg_header[:labels][channel])
+    label == "" && (label = eeg_labels(eeg_temp)[channel])
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = vec(eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch])
 
@@ -1922,15 +1929,15 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
 
-    len > eeg.eeg_header[:eeg_duration_samples] && throw(ArgumentError("len must be < $(eeg.eeg_header[:eeg_duration_samples])."))
-    (epoch < 1 || epoch > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    len > eeg_signal_len(eeg) && throw(ArgumentError("len must be < $(eeg_signal_len(eeg))."))
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
@@ -1949,10 +1956,10 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
     (typeof(ic) == Int64 && ic > size(eeg.eeg_components[ica_idx], 1)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(eeg.eeg_components[ica_idx], 1))."))
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         eeg_h = eeg_history(eeg)
@@ -1995,8 +2002,8 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     ica_m = eeg_tmp.eeg_components[ica_idx][ic, (1 + offset):(offset + Int(len)), epoch]
 
@@ -2009,13 +2016,13 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
                         title=(title * "\nIC #$(ic)"),
                         kwargs...)
     # add epochs markers
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
                   linestyle=:dash,
                   linewidth=0.5,
                   linecolor=:black,
                   label="")
-        for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+        for idx in 1:(floor(Int64, (offset + len) / eeg_epoch_len(eeg)))
             p = plot!(annotation=((epoch_markers[idx] - 1), ((length(ic) - 1) * 1.02), text("E$idx", pointsize=6, halign=:center, valign=:center)))
         end
     end
@@ -2059,22 +2066,22 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
-    offset < 0 || offset > eeg.eeg_header[:eeg_duration_samples]  && throw(ArgumentError("offset must be ≥ 0 and ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
+    offset < 0 || offset > eeg_signal_len(eeg)  && throw(ArgumentError("offset must be ≥ 0 and ≤ $(eeg_signal_len(eeg))."))
     (c === :amp  || c === :power || c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $(c) not found."))
     frq_lim = tuple_order(frq_lim)
 
     # default length is 100 ms
     len == 0 && (len = round(Int64, eeg_sr(eeg) / 10))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    offset + len > eeg.eeg_header[:eeg_duration_samples] && throw(ArgumentError("offset + len must be ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
+    offset + len > eeg_signal_len(eeg) && throw(ArgumentError("offset + len must be ≤ $(eeg_signal_len(eeg))."))
 
     # get epochs markers for len > epoch_len
     t_tmp = offset
-    if offset > (eeg.eeg_header[:epoch_duration_samples] - len) && eeg.eeg_header[:epoch_n] > 1
+    if offset > (eeg_epoch_len(eeg) - len) && eeg_epoch_n(eeg) > 1
         epoch = 0
-        while offset > eeg.eeg_header[:epoch_duration_samples]
+        while offset > eeg_epoch_len(eeg)
             epoch += 1
-            offset -= eeg.eeg_header[:epoch_duration_samples]
+            offset -= eeg_epoch_len(eeg)
         end
     else
         epoch = 1
@@ -2383,34 +2390,34 @@ function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    (channel < 1 || channel > eeg.eeg_header[:channel_n]) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n])) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
+    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     if length(epoch) > 1
         sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg.eeg_header[:epoch_n]) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg.eeg_header[:epoch_n])."))
-        len = eeg.eeg_header[:epoch_duration_samples] * length(epoch)
-        offset = eeg.eeg_header[:epoch_duration_samples] * (epoch[1] - 1)
+        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
         epoch = 1
     end
 
     # default length is one epoch or 20 seconds
     if len == 0
-        if eeg.eeg_header[:epoch_duration_samples] > 20 * eeg_sr(eeg)
+        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
             len = 20 * eeg_sr(eeg)
         else
-            len = eeg.eeg_header[:epoch_duration_samples]
+            len = eeg_epoch_len(eeg)
         end
     end
 
     # get epochs markers for len > epoch_len
-    if len + offset > eeg.eeg_header[:epoch_duration_samples] && eeg.eeg_header[:epoch_n] > 1
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = size(eeg.eeg_signals, 2)
-        epoch_n = size(eeg.eeg_signals, 3)
+        epoch_len = eeg_signal_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
@@ -2423,8 +2430,8 @@ function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
     t = t .+ (offset / eeg_sr(eeg_tmp))
     t = t[1:(end - 1)]
 
-    (offset < 0 || offset > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
-    (offset + len > eeg_tmp.eeg_header[:epoch_duration_samples]) && throw(ArgumentError("offset + len must be ≤ $(eeg_tmp.eeg_header[:epoch_duration_samples])."))
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
     signal = vec(signal)
