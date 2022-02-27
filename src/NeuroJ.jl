@@ -89,6 +89,7 @@ export vsearch
 export vsplit
 export z_score
 export zero_pad
+export tuple_order!
 
 include("signal.jl")
 export signal_add_noise

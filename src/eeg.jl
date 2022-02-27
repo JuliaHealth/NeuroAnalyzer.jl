@@ -1702,7 +1702,7 @@ function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
 end
 
 """
-    eeg_trim(eeg:EEG; len, offset=0, from=:start)
+    eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
 Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -1712,26 +1712,40 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 - `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
+- `keep_epochs::Bool` - remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching.
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_trim(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
-    # create new dataset
-    eeg_signals = deepcopy(eeg.eeg_signals)
-    eeg_time = deepcopy(eeg.eeg_time)
-    eeg_signals = signal_trim(eeg_signals, len=len, from=from)
-    eeg_time = signal_trim(eeg_time, len=len, from=from)
+function eeg_trim(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+    eeg.eeg_header[:epoch_n] == 1 && (keep_epochs = false)
+    if keep_epochs == false
+        @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
+        # create new dataset
+        eeg_tmp = deepcopy(eeg)
+        eeg.eeg_header[:epoch_n] > 1 && (eeg_epochs!(eeg_tmp, epoch_n=1))
+        eeg_signals = signal_trim(eeg_tmp.eeg_signals, len=len, offset=offset, from=from)
+        eeg_time = collect(0:(1 / eeg_sr(eeg)):(size(eeg.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
 
-    eeg_trimmed = EEG(deepcopy(eeg.eeg_header), eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
-    eeg_trimmed.eeg_header[:eeg_duration_samples] -= len
-    eeg_trimmed.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
-    eeg_trimmed.eeg_header[:epoch_duration_samples] -= len
-    eeg_trimmed.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
+        eeg_trimmed = EEG(eeg_tmp.eeg_header, eeg_time, eeg_signals, eeg_tmp.eeg_components)
+        eeg_trimmed.eeg_header[:eeg_duration_samples] -= len
+        eeg_trimmed.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
+        eeg_trimmed.eeg_header[:epoch_duration_samples] -= len
+        eeg_trimmed.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
+    else
+        if from === :start
+            epoch_from = floor(Int64, (offset / eeg.eeg_header[:epoch_duration_samples]) + 1)
+            epoch_to = ceil(Int64, ((offset + len) / eeg.eeg_header[:epoch_duration_samples]) + 1)
+        else
+            epoch_from = floor(Int64, ((eeg.eeg_header[:eeg_duration_samples] - len) / eeg.eeg_header[:epoch_duration_samples]) + 1)
+            epoch_to = eeg.eeg_header[:epoch_n]
+        end
+        eeg_trimmed = eeg_delete_epoch(eeg, epoch=epoch_from:epoch_to)
+    end
 
     # add entry to :history field
-    push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, len=$len, from=$from)")
+    push!(eeg_trimmed.eeg_header[:history], "eeg_trim(EEG, len=$len, from=$from, keep_epochs=$keep_epochs)")
 
     eeg_reset_components!(eeg_trimmed)
 
@@ -1739,7 +1753,7 @@ function eeg_trim(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
 end
 
 """
-    eeg_trim!(eeg:EEG; len, offset=0, from=:start)
+    eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
 Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -1749,15 +1763,29 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 - `len::Int64` - number of samples to remove
 - `offset::Int64` - offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
+- `keep_epochs::Bool` - remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching.
 """
-function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=0, from::Symbol=:start)
-    eeg.eeg_signals = signal_trim(eeg.eeg_signals, len=len, from=from)
-    eeg.eeg_time = signal_trim(eeg.eeg_time, len=len, from=from)
-
-    eeg.eeg_header[:eeg_duration_samples] -= len
-    eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
-    eeg.eeg_header[:epoch_duration_samples] -= len
-    eeg.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
+function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+    eeg.eeg_header[:epoch_n] == 1 && (keep_epochs = false)
+    if keep_epochs == false
+        @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
+        eeg.eeg_header[:epoch_n] > 1 && (eeg_epochs!(eeg, epoch_n=1))
+        eeg.eeg_signals = signal_trim(eeg.eeg_signals, len=len, offset=offset, from=from)
+        eeg.eeg_time = collect(0:(1 / eeg_sr(eeg)):(size(eeg.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
+        eeg.eeg_header[:eeg_duration_samples] -= len
+        eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
+        eeg.eeg_header[:epoch_duration_samples] -= len
+        eeg.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
+    else
+        if from === :start
+            epoch_from = floor(Int64, (offset / eeg.eeg_header[:epoch_duration_samples])) + 1
+            epoch_to = floor(Int64, ((offset + len) / eeg.eeg_header[:epoch_duration_samples])) + 1
+        else
+            epoch_from = floor(Int64, ((eeg.eeg_header[:eeg_duration_samples] - len) / eeg.eeg_header[:epoch_duration_samples]) + 1)
+            epoch_to = eeg.eeg_header[:epoch_n]
+        end
+        eeg_delete_epoch!(eeg, epoch=epoch_from:epoch_to)
+    end
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_trim!(EEG, len=$len, from=$from)")

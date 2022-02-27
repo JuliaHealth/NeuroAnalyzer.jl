@@ -87,7 +87,7 @@ p = eeg_plot_bands(edf, channel=1, type=:abs, figure="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-p = eeg_plot_topo(edf, t=1)
+p = eeg_plot_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 true

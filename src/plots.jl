@@ -87,7 +87,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     ylim == (0, 0) && (ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0)))
     abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
     abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
-    ylim[1] > ylim[2] && (ylim = (ylim[2], ylim[1]))
+    ylim = tuple_order(ylim)
 
     hl = plot((size(signal, 2), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
     p = plot!(t,
@@ -153,7 +153,7 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     frq_lim == (0, 0) && (frq_lim = (0, eeg_sr(eeg) / 2))
-    frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
+    frq_lim = tuple_order(frq_lim)
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
@@ -198,7 +198,7 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= Int(len / eeg_sr(eeg))]
+        epoch_markers = epoch_markers[epoch_markers .<= Int((offset + len) / eeg_sr(eeg))]
     else
         eeg_tmp = eeg
     end
@@ -223,7 +223,14 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
         signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
     end
 
-    title == "" && (title = "Signal\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
+    t_1 = t[1]
+    t_2 = t[end]
+    t_1 < 1.0 && (t_s1 = string(round(t_1 * 1000, digits=2)) * " ms")
+    t_1 >= 1.0 && (t_s1 = string(round(t_1, digits=2)) * " s")
+    t_2 < 1.0 && (t_s2 = string(round(t_2 * 1000, digits=2)) * " ms")
+    t_2 >= 1.0 && (t_s2 = string(round(t_2, digits=2)) * " s")
+
+    title == "" && (title = "Signal\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), time window: $t_s1:$t_s2]")
 
     p = signal_plot(t,
                     signal,
@@ -241,11 +248,11 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
                    linecolor=:black,
                    label="")
         if typeof(signal) == Vector{Float64}
-            for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+            for idx in 1:length(epoch_markers)
                 p = plot!(annotation=((epoch_markers[idx] - 1), (maximum(ceil.(abs.(signal))) * 1.02), text("E$idx", pointsize=6, halign=:center, valign=:center)))
             end
         else
-            for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+            for idx in 1:length(epoch_markers)
                 p = plot!(annotation=((epoch_markers[idx] - 1), ((channel[end] - 1) * 1.02), text("E$idx", pointsize=6, halign=:center, valign=:center)))
             end
         end
@@ -360,6 +367,7 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
     elseif ftype === :bs
         length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
+        cutoff = tuple_order(cutoff)
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
@@ -641,7 +649,7 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= Int(len / eeg_sr(eeg))]
+        epoch_markers = epoch_markers[epoch_markers .<= Int((offset + len) / eeg_sr(eeg))]
     else
         eeg_tmp = eeg
     end
@@ -685,7 +693,7 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
                    linewidth=0.2,
                    linecolor=:black,
                    label="")
-        for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+        for idx in 1:length(epoch_markers)
             p = plot!(annotation=((epoch_markers[idx] - 1), (ylim[2] * 1.02), text("E$idx", pointsize=6, halign=:center, valign=:center)))
         end
     end
@@ -858,7 +866,7 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= Int(len / eeg_sr(eeg))]
+        epoch_markers = epoch_markers[epoch_markers .<= Int((offset + len) / eeg_sr(eeg))]
     else
         eeg_tmp = eeg
     end
@@ -901,7 +909,7 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
                    linewidth=0.2,
                    linecolor=:black,
                    label="")
-        for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+        for idx in 1:length(epoch_markers)
             p = plot!(annotation=((epoch_markers[idx] - 1), (maximum(ceil.(abs.(signal))) * 1.02), text("E$idx", pointsize=6, halign=:center, valign=:center)))
         end
     end
@@ -1515,7 +1523,7 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
         epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
         epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
         epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= Int(len / eeg_sr(eeg))]
+        epoch_markers = epoch_markers[epoch_markers .<= Int((offset + len) / eeg_sr(eeg))]
     else
         eeg_tmp = eeg
     end
@@ -1542,7 +1550,7 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
                    linewidth=0.2,
                    linecolor=:black,
                    label="")
-        for idx in 1:(floor(Int64, (offset + len) / eeg.eeg_header[:epoch_duration_samples]))
+        for idx in 1:length(epoch_markers)
             p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2] * 1.05, text("E$idx", pointsize=6, halign=:center, valign=:center)))
         end
     end
@@ -2053,6 +2061,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     offset < 0 || offset > eeg.eeg_header[:eeg_duration_samples]  && throw(ArgumentError("offset must be ≥ 0 and ≤ $(eeg.eeg_header[:eeg_duration_samples])."))
     (c === :amp  || c === :power || c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $(c) not found."))
+    frq_lim = tuple_order(frq_lim)
 
     # default length is 100 ms
     len == 0 && (len = round(Int64, eeg_sr(eeg) / 10))
@@ -2143,6 +2152,9 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
             s = eeg.eeg_signals[:, offset:(offset + len), epoch]
             s = reshape(s, size(s, 1), size(s, 2), 1)
             s_psd, s_frq = signal_psd(s, fs=eeg_sr(eeg), norm=norm)
+            # _, _, s_p, _ = signal_spectrum(s)
+            # norm == true && (s_p = pow2db.(s_p[:, :, 1]))
+            # s_f = freqs(s, eeg_sr(eeg))
             frq_idx = vsearch(c_idx, s_frq[1, :])
             s_non_interpolated = zeros(size(s, 1))
             for idx in 1:size(s_non_interpolated, 1)

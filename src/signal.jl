@@ -120,8 +120,8 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `si
 function signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
-    f[1] > f[2] && (f = (f[2], f[1]))
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
+    f = tuple_order(f)
+    f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0 Hz."))
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
 
     psd = welch_pgram(signal, 4*fs, fs=fs)
@@ -134,7 +134,6 @@ function signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
     # dx: frequency resolution
     dx = psd_freq[2] - psd_freq[1]
     sbp = simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
-    sbp[sbp .== -Inf] .= 0
 
     return sbp
 end
@@ -157,8 +156,8 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `si
 function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f::Tuple)
     fs < 1 && throw(ArgumentError("Sampling rate must be ≥ 1 Hz."))
     length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
-    f[1] > f[2] && (f = (f[2], f[1]))
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 1 Hz."))
+    f = tuple_order(f)
+    f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0 Hz."))
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < Nyquist frequency ($(fs / 2) Hz)."))
 
     channel_n = size(signal, 1)
@@ -2233,18 +2232,19 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 
 - `s_trimmed::Vector{Float64}`
 """
-function signal_trim(signal::AbstractArray; len::Int64, offset::Int64=0, from::Symbol=:start)
+function signal_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
-    len < 0 && throw(ArgumentError("len must be ≥ 1."))
+    len < 1 && throw(ArgumentError("len must be ≥ 1."))
     len >= length(signal) && throw(ArgumentError("len must be < signal length."))
-    offset < 0 && throw(ArgumentError("offset must be ≥ 1."))
+    offset < 1 && throw(ArgumentError("offset must be ≥ 1."))
     offset >= length(signal) - 1 && throw(ArgumentError("offset must be < signal length."))
     (from ===:start && 1 + offset + len > length(signal)) && throw(ArgumentError("offset + len must be < signal length."))
     
-    from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + len):end]))
+    offset == 1 && (from === :start && (s_trimmed = signal[(offset + len):end]))
+    offset > 1 && (from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + len):end])))
     from === :end && (s_trimmed = signal[1:(end - len)])
     
-    return s_trimmed::Vector{Float64}
+    return s_trimmed
 end
 
 
@@ -2264,7 +2264,7 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 
 - `s_trimmed::Array{Float64, 3}`
 """
-function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=0, from::Symbol=:start)
+function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=1, from::Symbol=:start)
     from in [:start, :end] || throw(ArgumentError("Argument from must be :start or :end."))
     len < 0 && throw(ArgumentError("Trim length must be ≥ 1."))
     len >= size(signal, 2) && throw(ArgumentError("Trim length must be less than signal length."))
@@ -2280,7 +2280,7 @@ function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=0, fro
     for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_trimmed[idx, :, epoch] = signal_trim(s, len=len, from=from)
+            s_trimmed[idx, :, epoch] = signal_trim(s, len=len, offset=offset, from=from)
         end
     end
 

@@ -646,3 +646,24 @@ function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64
 
     return gaussian
 end
+
+"""
+    tuple_order(t, rev=false)
+
+Order tuple elements in ascending or descending (rev=true) order.
+
+# Arguments
+
+- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` 
+- `rev::Bool`
+
+# Returns
+
+- `t`
+"""
+function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
+    (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
+    (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
+
+    return t
+end
