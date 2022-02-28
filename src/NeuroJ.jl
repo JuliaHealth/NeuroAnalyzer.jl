@@ -135,6 +135,8 @@ export signal_upsample
 export signal_spectrogram
 export signal_band
 export signal_ica_reconstruct
+export signal_detect_flat
+export signal_detect_cor
 
 include("eeg.jl")
 export eeg_autocov
@@ -236,6 +238,8 @@ export eeg_signal_len
 export eeg_epoch_len
 export eeg_ica_reconstruct
 export eeg_ica_reconstruct!
+export eeg_detect_flat
+export eeg_detect_cor
 
 include("eeg_io.jl")
 export eeg_import_edf

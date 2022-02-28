@@ -1,5 +1,5 @@
 """
-    signal_plot(t, signal, labels="", xlabel="Time [s]", ylabel="", title="", kwargs...)
+    signal_plot(t, signal, labels="", bad_channels=0, xlabel="Time [s]", ylabel="", title="", kwargs...)
 
 Plots `signal` channels.
 
@@ -8,6 +8,7 @@ Plots `signal` channels.
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
 - `signal::AbstractArray`
 - `labels::Vector{String}` - labels vector
+- `bad_channels::Union{Int64, Vector{Int64}, AbstractRange}` - list of bad channels to plot
 - `xlabel::String` - x-axis label
 - `ylabel::String` - y-axis label
 - `title::String` - plot title
@@ -17,7 +18,7 @@ Plots `signal` channels.
 
 - `p::Plot`
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], bad_channels::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -51,11 +52,29 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
              ytickfontsize=8;
              kwargs...)
     for idx in 1:channel_n
-        p = plot!(t,
-                  s_normalized[idx, 1:length(t)],
-                  label="",
-                  color=channel_color[idx])
+        if bad_channels == 0
+            p = plot!(t,
+                      s_normalized[idx, 1:length(t)],
+                      label="",
+                      color=channel_color[idx])
+        end
     end
+    if bad_channels != 0
+        good_channels = setdiff(1:channel_n, bad_channels)
+        for idx in 1:channel_n
+            p = plot!(t,
+                      s_normalized[idx, 1:length(t)],
+                      label="",
+                    color=:blue)
+        end
+        for idx in bad_channels
+            p = plot!(t,
+                      s_normalized[idx, 1:length(t)],
+                      label="",
+                    color=:red)
+        end
+    end
+
     p = plot!(yticks=((channel_n - 1):-1:0, labels))
 
     return p
@@ -119,7 +138,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    eeg_plot(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", head=false, hist=:hist, norm=true, frq_lim=(0, 0), figure="", kwargs...)
+    eeg_plot(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", head=false, hist=:hist, norm=true, frq_lim=(0, 0), bad_channels=0, figure="", kwargs...)
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
@@ -138,6 +157,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `hist::Symbol` - histogram type
 - `norm::Bool` - convert power to dB
 - `frq_lim::Tuple` - frequency limit for PSD and spectrogram
+- `bad_channels::Union{Int64, Vector{Int64}, AbstractRange}` - list of bad channels to plot
 - `figure::String` - name of the output figure file
 - `kwargs` - other arguments for plot() function
 
@@ -145,7 +165,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 - `p::Plot`
 """
-function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple=(0, 0), figure::String="", kwargs...)
+function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple=(0, 0), bad_channels::Union{Int64, Vector{Int64}, AbstractRange}=0, figure::String="", kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
@@ -190,6 +210,9 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
+
+    typeof(bad_channels) <: AbstractRange && (bad_channels = collect(bad_channels))
+    length(bad_channels) > 1 && sort!(bad_channels)
 
     # get epochs markers for len > epoch_len
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -238,7 +261,8 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
                     labels=labels,
                     xlabel=xlabel,
                     ylabel=ylabel,
-                    title=title;
+                    title=title,
+                    bad_channels=bad_channels;
                     kwargs...)
 
     # add epochs markers

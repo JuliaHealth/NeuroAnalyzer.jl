@@ -1267,7 +1267,7 @@ function eeg_epochs(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len:
     # unsplit epochs
     s_merged = reshape(eeg.eeg_signals,
                        eeg_channel_n(eeg),
-                       eeg_signal_len(eeg) * eeg_epoch_n(eeg))
+                       eeg_epoch_len(eeg) * eeg_epoch_n(eeg))
     
     # split into epochs
     s_split = signal_epochs(s_merged, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
@@ -1315,7 +1315,7 @@ function eeg_epochs!(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len
     # unsplit epochs
     s_merged = reshape(eeg.eeg_signals,
                        eeg_channel_n(eeg),
-                       eeg_signal_len(eeg) * eeg_epoch_n(eeg))
+                       eeg_epoch_len(eeg) * eeg_epoch_n(eeg))
     
     # split into epochs
     s_split = signal_epochs(s_merged, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
@@ -2427,12 +2427,12 @@ function eeg_delete_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractR
     eeg_signals = eeg_signals[:, :, setdiff(1:end, (epoch))]
 
     # update headers
-    eeg_header[:epoch_n] = eeg_header[:epoch_n] - length(epoch)
+    eeg_header[:epoch_n] -= length(epoch)
     epoch_n = eeg_header[:epoch_n]
-    eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
-    eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
-    eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg_header[:epoch_duration_seconds] = round(eeg_signal_len(eeg) / eeg_sr(eeg), digits=2)
+    eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
+    eeg_header[:eeg_duration_seconds] = round((epoch_n * size(eeg.eeg_signals, 2)) / eeg_sr(eeg), digits=2)
+    eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
+    eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
 
     # create new dataset
     eeg_new = EEG(eeg_header, eeg_time, eeg_signals, deepcopy(eeg.eeg_components))
@@ -2470,16 +2470,16 @@ function eeg_delete_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstract
         throw(ArgumentError("epoch does not match signal epochs."))
     end
 
-      # remove epoch
+    # remove epoch
     eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch))]
 
     # update headers
-    eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch)
-    epoch_n = eeg_epoch_n(eeg)
-    eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
-    eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
-    eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg.eeg_header[:epoch_duration_seconds] = round(eeg_signal_len(eeg) / eeg_sr(eeg), digits=2)
+    eeg.eeg_header[:epoch_n] -= length(epoch)
+    epoch_n = eeg.eeg_header[:epoch_n]
+    eeg.eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
+    eeg.eeg_header[:eeg_duration_seconds] = round((epoch_n * size(eeg.eeg_signals, 2)) / eeg_sr(eeg), digits=2)
+    eeg.eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
+    eeg.eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_delete_epoch!(EEG, $epoch)")
@@ -3103,4 +3103,71 @@ function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, Abstrac
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
 
     return
+end
+
+"""
+    eeg_detect_flat(eeg; len=5, action=:view)
+
+Detect bad `signal` channel(s) based on: flat signal for `len` length (in samples or percentage of signal length).
+
+# Arguments
+
+- `eeg::EEG`
+- `len::Int64` - seconds
+- `action::Symbol=[:view, :trim, :remove_channel, :remove_epoch]` - how to remove bad signals
+
+# Returns
+
+- `eeg`
+- `bad_channel::Vector{Int64}
+- `bad_markers::Vector{Tuple{Int64, Int64}} - start:end of bad signal in samples
+"""
+function eeg_detect_flat(eeg::EEG; len::Int64=5, action::Symbol=:view)
+    
+    action in [:view, :trim, :remove_channel, :remove_epoch] || throw(ArgumentError("action must be :view, :trim, :remove_channel or :remove_epoch"))
+    (action === :remove_epoch && eeg_epoch_n(eeg) == 1) && throw(ArgumentError("You cannot delete the last epoch."))
+
+    len = floor(Int64, len * eeg_sr(eeg))
+
+    eeg_tmp = deepcopy(eeg)
+    bad_channels, bad_channels_markers = signal_detect_flat(eeg_tmp.eeg_signals, len=len)
+    bad_markers = sort(collect(bad_channels_markers), rev=true)
+
+    if action === :view
+        offset = floor(Int64, (bad_markers[idx][1] / eeg_sr(eeg))) * eeg_sr(eeg)
+        len = 10 * eeg_sr(eeg)
+        offset + len > eeg_signal_len(eeg) && (len = eeg_signal_len(eeg) - offset)
+        bad_channels = (eeg_channel_n(eeg) + 1) .- sort!(collect(bad_channels), rev=true)
+        eeg_plot(eeg, offset=offset, len=len, bad_channels=bad_channels)
+
+        return sort!(collect(bad_channels)), sort!(collect(bad_channels_markers))
+    end
+
+    if action === :trim
+        for idx in 1:length(bad_markers)
+            eeg_trim!(eeg_tmp, offset=bad_markers[idx][1]-1, len=(bad_markers[idx][2] - bad_markers[idx][1] + 2), keep_epochs=false)
+        end
+    end
+
+    if action === :remove_channel
+        channels_to_remove = sort!(collect(bad_channels))
+        eeg_delete_channel!(eeg_tmp, channel=channels_to_remove)
+    end
+
+    if action === :remove_epoch
+        sort!(bad_markers, rev=true)
+        epochs_to_remove = Set{Int64}()
+        for idx in 1:length(bad_markers)
+            push!(epochs_to_remove, floor(Int64, (bad_markers[idx][1] + eeg_tmp.eeg_header[:epoch_duration_samples]) / eeg_tmp.eeg_header[:epoch_duration_samples]))
+            push!(epochs_to_remove, floor(Int64, (bad_markers[idx][2] + eeg_tmp.eeg_header[:epoch_duration_samples]) / eeg_tmp.eeg_header[:epoch_duration_samples]))
+        end
+        epochs_to_remove = sort!(collect(epochs_to_remove), rev=true)
+        for idx in 1:length(epochs_to_remove)
+            eeg_delete_epoch!(eeg_tmp, epoch=epochs_to_remove[idx])
+        end
+    end
+
+    push!(eeg_tmp.eeg_header[:history], "eeg_detect_flat!(EEG, len=$len, action=$action")
+
+    return eeg_tmp
 end

@@ -261,4 +261,7 @@ i, mw = signal_ica(signal_a, n=1, tol=1.0)
 s = signal_ica_reconstruct(signal_a, ic_activations=i, ic_mw=mw, ic_v=1)
 @test size(s) == (2, 101, 2)
 
+c, b = signal_detect_flat(signal_a, len=2)
+@test typeof(c) == Set{Int64}
+
 true

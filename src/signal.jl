@@ -3005,22 +3005,88 @@ function signal_band(fs::Union{Int64, Float64}, band::Symbol)
 end
 
 """
-    signal_detect_bad_chanel(signal::Array{Float64, 3}, method::Union{Symbol, Vector{Symbols}})
+    signal_detect_flat(signal::Array{Float64, 3}, len::Int64)
 
-Detect bad `signal` channel(s) based on `method` criteria.
+Detect bad `signal` channel(s) based on: flat signal for `len` length.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `method::Union{Symbol, Vector{Symbols}[:]}`
+- `len::Int64`
 
 # Returns
 
-- `returned_value`
+- `bad_channels::Vector{Int64}`
+- `bad_channels_markers::Vector{Tuple{Int64, Int64}}`
+"""
+function signal_detect_flat(signal::Array{Float64, 3}; len::Int64)
+    
+    channel_n = size(signal, 1)
+    signal_len = size(signal, 2)
+    epoch_n = size(signal, 3)
+
+    s_tmp = reshape(signal, channel_n, epoch_n * signal_len)
+    typeof(len) == Float64 && (len = len * signal_len)
+
+    bad_channel_idx = Vector{Tuple{Int64, Int64, Int64}}()
+
+    # add tolerance around zero μV
+    flat_v = zeros(Float64, len)
+
+    for idx1 in 1:channel_n
+        c_tmp_diff = diff(s_tmp[idx1, :])
+        for idx2 in 1:len:(length(c_tmp_diff) - len)
+            if c_tmp_diff[idx2:(idx2 + len - 1)] == flat_v
+                bad_channel = (idx1, idx2, idx2 + len - 1)
+                push!(bad_channel_idx, bad_channel)
+            end
+        end
+    end
+
+    bad_channels = Set{Int64}()
+    for idx in 1:length(bad_channel_idx)
+         push!(bad_channels, bad_channel_idx[idx][1])
+    end
+
+    bad_channels_markers = Set{Tuple{Int64, Int64}}()
+    for idx in 1:length(bad_channel_idx)
+         push!(bad_channels_markers, (bad_channel_idx[idx][2], bad_channel_idx[idx][3]))
+    end
+
+    return bad_channels, bad_channels_markers
+end
 
 """
-function signal_detect_bad_chanel(signal::Array{Float64, 3}, method::Union{Symbol, Vector{Symbols}})
-    body
+    signal_detect_cor(signal::Array{Float64, 3}, r::Float64)
+
+Detect bad `signal` channel(s) based on: correlation < `r` with adjacent signal.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `r::Float64`
+
+# Returns
+
+- `bad_channel_idx::Vector{Int64}`
+"""
+function signal_detect_cor(signal::Array{Float64, 3}; r::Float64)
     
-    return returned_value
+    channel_n = size(signal, 1)
+    signal_len = size(signal, 2)
+    epoch_n = size(signal, 3)
+
+    bad_channel_idx = Set{Int64}()
+    s = reshape(signal, channel_n, epoch_n * signal_len)
+
+    c = abs(cor(s[1, :], s[2, :]))
+    c < r && (push!(bad_channel_idx, 1))
+    for idx in 2:(channel_n - 1)
+        c = abs(cor(s[idx, :], s[(idx + 1), :]))
+        c < r && (push!(bad_channel_idx, idx))
+    end
+    c = abs(cor(s[(end - 1), :], s[end, :]))
+    c < r && (push!(bad_channel_idx, eeg_channel_n(eeg)))
+
+    return sort!(collect(bad_channel_idx))
 end

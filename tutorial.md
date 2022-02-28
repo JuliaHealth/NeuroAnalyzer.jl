@@ -295,6 +295,14 @@ eeg_norm_zscore!(edf)
 eeg_norm_minmax!(edf)
 ```
 
+Detect bad signals based on flat signal (length in seconds):
+```julia
+eeg_detect_flat(edf, len=2)
+eeg_detect_flat(edf, len=2, action=:trim)
+eeg_detect_flat(edf, len=5, action=:remove_channel)
+eeg_detect_flat(edf, len=1, action=:remove_epoch)
+```
+
 Remove DC:
 ```julia
 eeg_demean(edf)
