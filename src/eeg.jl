@@ -2756,14 +2756,15 @@ Calculates mean, sd and variance of `eeg` epochs.
 # Returns
 
 - `mean::Vector{Float64}`
+- `median::Vector{Float64}`
 - `sd::Vector{Float64}`
 - `var::Vector{Float64}`
 """
 function eeg_epochs_stats(eeg::EEG)
 
-    e_mean, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+    e_mean, e_median, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
 
-    return e_mean, e_sd, e_var
+    return e_mean, e_median, e_sd, e_var
 end
 
 """
@@ -2778,13 +2779,16 @@ Calculates mean, sd and variance of `eeg` epochs and stores in `eeg`.
 function eeg_epochs_stats!(eeg::EEG)
 
     :epochs_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean)
+    :epochs_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median)
     :epochs_sd in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_sd)
     :epochs_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_var)
-    e_mean, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+    e_mean, e_median, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
     push!(eeg.eeg_components, e_mean)
+    push!(eeg.eeg_components, e_median)
     push!(eeg.eeg_components, e_sd)
     push!(eeg.eeg_components, e_var)
     push!(eeg.eeg_header[:components], :epochs_mean)
+    push!(eeg.eeg_header[:components], :epochs_median)
     push!(eeg.eeg_header[:components], :epochs_sd)
     push!(eeg.eeg_header[:components], :epochs_var)
     push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")

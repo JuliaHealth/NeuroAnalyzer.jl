@@ -2832,12 +2832,14 @@ function signal_epochs_stats(signal::Array{Float64, 3})
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     s_mean = zeros(epoch_n)
+    s_median = zeros(epoch_n)
     s_sd = zeros(epoch_n)
     s_var = zeros(epoch_n)
 
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
         s_mean[epoch] = mean(s)
+        s_median[epoch] = median(s)
         s_sd[epoch] = std(s)
         s_var[epoch] = var(s)
     end
