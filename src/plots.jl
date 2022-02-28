@@ -748,7 +748,7 @@ Butterfly plot of `signal` channels.
 
 - `p::Plot`
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), kwargs...)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), average::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -798,7 +798,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Butterfly plot", ylim=nothing, head=true, figure="", kwargs...)
+    eeg_plot_butterfly(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Butterfly plot", ylim=nothing, head=true, average=false, figure="", kwargs...)
 
 Butterfly plot of `eeg` channels.
 
@@ -817,6 +817,7 @@ Butterfly plot of `eeg` channels.
 - `ylim::Union{Int64, Float64, Nothing}` - y-axis limits (-ylim:ylim)
 - `head::Bool` - add head with electrodes
 - `hist::Bool` - add histograms
+- `average::Bool` - plot averaged signal
 - `figure::String` - name of the output figure file
 - `kwargs` - other arguments for plot() function
 
@@ -824,7 +825,7 @@ Butterfly plot of `eeg` channels.
 
 - `p::Plot`
 """
-function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), head::Bool=true, hist::Bool=true, figure::String="", kwargs...)
+function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, figure::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -884,16 +885,29 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
     ndims(signal) == 1 && (signal = vec(signal))
 
-    p = signal_plot_butterfly(t,
-                              signal,
-                              offset=offset,
-                              labels=labels,
-                              norm=norm,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              ylim=ylim;
-                              kwargs...)
+    if average == false
+        p = signal_plot_butterfly(t,
+                                  signal,
+                                  offset=offset,
+                                  labels=labels,
+                                  norm=norm,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  ylim=ylim;
+                                  kwargs...)
+    else
+        p = signal_plot_avg(t,
+                          signal,
+                          offset=offset,
+                          labels=labels,
+                          norm=norm,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          ylim=ylim;
+                          kwargs...)
+    end
 
     # add epochs markers
     if norm == true
@@ -2037,7 +2051,7 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
         ica_weights = round.(eeg.eeg_components[ica_weights_idx][:, ic, epoch], digits=1)
         eeg_tmp = deepcopy(eeg)
         eeg_tmp.eeg_header[:labels] = string.(ica_weights)
-        hd = eeg_plot_electrodes(eeg_tmp, labels=true, selected=0, head=true, title="Weights", alpha=1.0)
+        hd = eeg_plot_electrodes(eeg_tmp, labels=true, selected=0, head=true, title="Weights", alpha=1)
         p = plot!(p, hd, layout=(2, 1))
     end
 
@@ -2052,7 +2066,7 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
 end
 
 """
-    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb=false, cb_label="", title="", figure="", kwargs...)
+    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb=false, cb_label="", average=true, title="", figure="", kwargs...)
 
 Plots topographical view of `eeg` component.
 
@@ -2069,6 +2083,7 @@ Plots topographical view of `eeg` component.
 - `head_labels::Bool` - plot head labels
 - `cb::Bool` - add color bars to plots
 - `cb_label::String` - color bar label
+- `average::Bool` - plot averaged signal and PSD
 - `title::String` - plot title
 - `figure::String` - name of the output figure file
 - `kwargs` - other arguments for plot() function
@@ -2077,7 +2092,7 @@ Plots topographical view of `eeg` component.
 
 - `plot`
 """
-function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", title::String="", figure::String="", kwargs...)
+function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", figure::String="", kwargs...)
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
@@ -2139,7 +2154,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
 
     if c === :amp
         s_non_interpolated = mean(eeg.eeg_signals[:, offset:(offset + len), epoch], dims=2)
-        title = "Unweighted amplitude [A.U.]"
+        title = "Unweighted amplitude"
     elseif c === :ica
         s = eeg.eeg_signals[:, :, epoch]
         s = reshape(s, size(s, 1), size(s, 2), 1)
@@ -2264,9 +2279,12 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
 
     if c !== :ica
         frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
-        s = eeg_plot_butterfly(eeg, epoch=epoch, channel=0, len=len, offset=offset, title="Butterfly plot\n[time window: $t_s1:$t_s2]", legend=false)
-        ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false)
-        h = eeg_plot_electrodes(eeg, channel=0, selected=1:eeg_channel_n(eeg), labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]")
+        average == true && (s = eeg_plot_butterfly(eeg, epoch=epoch, channel=0, len=len, offset=offset, title="Averaged signal\n[time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
+        average == false && (s = eeg_plot_butterfly(eeg, epoch=epoch, channel=0, len=len, offset=offset, title="Butterfly plot\n[time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
+        average == true && (ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="Averaged PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
+        average == false && (ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
+        average == false && (h = eeg_plot_electrodes(eeg, channel=0, selected=1:eeg_channel_n(eeg), labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]"))
+        average == true && (h = eeg_plot_electrodes(eeg, channel=0, selected=0, labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]", alpha=1))
         l = @layout [a{0.5h} b{0.3w}; c{0.5h}; d{0.3w}]
         p = plot(ps, p, s, h, layout=(2, 2))
     end
