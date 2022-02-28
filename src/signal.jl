@@ -2876,6 +2876,7 @@ function signal_epochs_stats(signal::Array{Float64, 3})
     s_median = zeros(epoch_n)
     s_sd = zeros(epoch_n)
     s_var = zeros(epoch_n)
+    s_kurt = zeros(epoch_n)
 
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
@@ -2883,9 +2884,10 @@ function signal_epochs_stats(signal::Array{Float64, 3})
         s_median[epoch] = median(s)
         s_sd[epoch] = std(s)
         s_var[epoch] = var(s)
+        s_kurt[epoch] = kurtosis(s)
     end
 
-    return s_mean, s_median, s_sd, s_var
+    return s_mean, s_median, s_sd, s_var, s_kurt
 end
 
 """
@@ -3000,4 +3002,25 @@ function signal_band(fs::Union{Int64, Float64}, band::Symbol)
     band_frequency[2] > fs / 2 && (band_frequency = (band_frequency[1], fs / 2))
 
     return band_frequency
+end
+
+"""
+    signal_detect_bad_chanel(signal::Array{Float64, 3}, method::Union{Symbol, Vector{Symbols}})
+
+Detect bad `signal` channel(s) based on `method` criteria.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `method::Union{Symbol, Vector{Symbols}[:]}`
+
+# Returns
+
+- `returned_value`
+
+"""
+function signal_detect_bad_chanel(signal::Array{Float64, 3}, method::Union{Symbol, Vector{Symbols}})
+    body
+    
+    return returned_value
 end

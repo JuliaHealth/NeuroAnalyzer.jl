@@ -2744,7 +2744,7 @@ end
 """
     eeg_epochs_stats(eeg)
 
-Calculates mean, sd and variance of `eeg` epochs.
+Calculates mean, median, sd, kurtosis and variance of each `eeg` epoch.
 
 # Arguments
 
@@ -2756,12 +2756,13 @@ Calculates mean, sd and variance of `eeg` epochs.
 - `median::Vector{Float64}`
 - `sd::Vector{Float64}`
 - `var::Vector{Float64}`
+- `kurtosis::Vector{Float64}`
 """
 function eeg_epochs_stats(eeg::EEG)
 
-    e_mean, e_median, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+    e_mean, e_median, e_sd, e_var, e_kurt = signal_epochs_stats(eeg.eeg_signals)
 
-    return e_mean, e_median, e_sd, e_var
+    return e_mean, e_median, e_sd, e_var, e_kurt
 end
 
 """
@@ -2779,15 +2780,18 @@ function eeg_epochs_stats!(eeg::EEG)
     :epochs_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median)
     :epochs_sd in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_sd)
     :epochs_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_var)
-    e_mean, e_median, e_sd, e_var = signal_epochs_stats(eeg.eeg_signals)
+    :epochs_kurtosis in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_kurtosis)
+    e_mean, e_median, e_sd, e_var, e_kurt = signal_epochs_stats(eeg.eeg_signals)
     push!(eeg.eeg_components, e_mean)
     push!(eeg.eeg_components, e_median)
     push!(eeg.eeg_components, e_sd)
     push!(eeg.eeg_components, e_var)
+    push!(eeg.eeg_components, e_kurt)
     push!(eeg.eeg_header[:components], :epochs_mean)
     push!(eeg.eeg_header[:components], :epochs_median)
     push!(eeg.eeg_header[:components], :epochs_sd)
     push!(eeg.eeg_header[:components], :epochs_var)
+    push!(eeg.eeg_header[:components], :epochs_kurtosis)
     push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")
 
     return

@@ -84,6 +84,7 @@ General:
 - performance optimization
 
 EEG:
+- negative index channel to invert polarity
 - phase-amplitude cross-frequency coupling (PAC)
 - plot spectrogram/psd: use embedded spectrogram/psd
 - more re-referencing methods
