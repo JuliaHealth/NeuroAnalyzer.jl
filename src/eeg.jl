@@ -60,7 +60,7 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
     length(channel) > 1 && (channel = sort!(channel, rev=true))
 
     if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Channel index does not match signal channels."))
+        throw(ArgumentError("channel does not match signal channels."))
     end
 
     eeg_header = deepcopy(eeg.eeg_header)
@@ -123,7 +123,7 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     length(channel) > 1 && (channel = sort!(channel, rev=true))
 
     if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Channel index does not match signal channels."))
+        throw(ArgumentError("channel does not match signal channels."))
     end
 
     # update headers
@@ -179,7 +179,7 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
 
     length(channel) > 1 && (channel = sort!(channel, rev=true))
     if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Channel index does not match signal channels."))
+        throw(ArgumentError("channel does not match signal channels."))
     end
 
     channel_list = collect(1:eeg_channel_n(eeg))
@@ -245,7 +245,7 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
 
     length(channel) > 1 && (channel = sort!(channel, rev=true))
     if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Channel index does not match signal channels."))
+        throw(ArgumentError("channel does not match signal channels."))
     end
 
     channel_list = collect(1:eeg_channel_n(eeg))
@@ -577,12 +577,12 @@ function eeg_get_channel(eeg::EEG; channel::Union{Int64, String})
             end
         end
         if channel_idx === nothing
-            throw(ArgumentError("Channel name does not match signal labels."))
+            throw(ArgumentError("channel name does not match signal labels."))
         end
         return channel_idx
     else
         if channel < 1 || channel > length(labels)
-            throw(ArgumentError("Channel index does not match signal channels."))
+            throw(ArgumentError("channel index does not match signal channels."))
         end
         return labels[channel]
     end
@@ -618,11 +618,11 @@ function eeg_rename_channel(eeg::EEG; channel::Union{Int64, String}, new_name::S
             end
         end
         if channel_found === nothing
-            throw(ArgumentError("Channel name does not match signal labels."))
+            throw(ArgumentError("channel name does not match signal labels."))
         end
     else
         if channel < 1 || channel > length(labels)
-            throw(ArgumentError("Channel index does not match signal channels."))
+            throw(ArgumentError("channel index does not match signal channels."))
         else
             labels[channel] = new_name
         end
@@ -659,11 +659,11 @@ function eeg_rename_channel!(eeg::EEG; channel::Union{Int64, String}, new_name::
             end
         end
         if channel_found === nothing
-            throw(ArgumentError("Channel name does not match signal labels."))
+            throw(ArgumentError("channel name does not match signal labels."))
         end
     else
         if channel < 1 || channel > length(labels)
-            throw(ArgumentError("Channel index does not match signal channels."))
+            throw(ArgumentError("channel index does not match signal channels."))
         else
             labels[channel] = new_name
         end
@@ -895,11 +895,11 @@ function eeg_extract_channel(eeg::EEG; channel::Union{Int64, String})
             end
         end
         if channel_idx === nothing
-            throw(ArgumentError("Channel name does not match signal labels."))
+            throw(ArgumentError("channel name does not match signal labels."))
         end
     else
         if channel < 1 || channel > length(labels)
-            throw(ArgumentError("Channel index does not match signal channels."))
+            throw(ArgumentError("channel index does not match signal channels."))
         end
         channel_idx = channel
     end    
@@ -1363,8 +1363,8 @@ Extracts the `epoch` epoch.
 """
 function eeg_extract_epoch(eeg::EEG; epoch::Int64)
 
-    if epoch < 1 || epoch > eeg.eeg_header[:epoch_n]
-        throw(ArgumentError("Epoch index out of range."))
+    if epoch < 1 || epoch > eeg_epoch_n(eeg)
+        throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
 
     s_new = reshape(eeg.eeg_signals[:, :, epoch], eeg_channel_n(eeg), eeg_signal_len(eeg), 1)
@@ -1854,13 +1854,13 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 """
 function eeg_trim(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
-    eeg.eeg_header[:epoch_n] == 1 && (keep_epochs = false)
+    eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
 
     if keep_epochs == false
         @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
 
         eeg_tmp = deepcopy(eeg)
-        eeg.eeg_header[:epoch_n] > 1 && (eeg_epochs!(eeg_tmp, epoch_n=1))
+        eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg_tmp, epoch_n=1))
         eeg_signals = signal_trim(eeg_tmp.eeg_signals, len=len, offset=offset, from=from)
         eeg_time = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
 
@@ -1875,7 +1875,7 @@ function eeg_trim(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, ke
             epoch_to = ceil(Int64, ((offset + len) / eeg_epoch_len(eeg)) + 1)
         else
             epoch_from = floor(Int64, ((eeg.eeg_header[:eeg_duration_samples] - len) / eeg_epoch_len(eeg)) + 1)
-            epoch_to = eeg.eeg_header[:epoch_n]
+            epoch_to = eeg_epoch_n(eeg)
         end
         eeg_trimmed = eeg_delete_epoch(eeg, epoch=epoch_from:epoch_to)
     end
@@ -1903,11 +1903,11 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 """
 function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
-    eeg.eeg_header[:epoch_n] == 1 && (keep_epochs = false)
+    eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
     
     if keep_epochs == false
         @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
-        eeg.eeg_header[:epoch_n] > 1 && (eeg_epochs!(eeg, epoch_n=1))
+        eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg, epoch_n=1))
         eeg.eeg_signals = signal_trim(eeg.eeg_signals, len=len, offset=offset, from=from)
         eeg.eeg_time = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
         eeg.eeg_header[:eeg_duration_samples] -= len
@@ -1920,7 +1920,7 @@ function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, k
             epoch_to = floor(Int64, ((offset + len) / eeg_epoch_len(eeg))) + 1
         else
             epoch_from = floor(Int64, ((eeg.eeg_header[:eeg_duration_samples] - len) / eeg_epoch_len(eeg)) + 1)
-            epoch_to = eeg.eeg_header[:epoch_n]
+            epoch_to = eeg_epoch_n(eeg)
         end
         eeg_delete_epoch!(eeg, epoch=epoch_from:epoch_to)
     end
@@ -2054,7 +2054,7 @@ Return `eeg` :band frequency limits.
 """
 function eeg_band(eeg; band::Symbol)
 
-    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
+    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
     band === :delta && (band_frequency = (0.5, 4.0))
     band === :theta && (band_frequency = (4.0, 8.0))
@@ -2114,10 +2114,11 @@ Calculates coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `
 """
 function eeg_coherence(eeg::EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 
-    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("Channels/epochs indices must be > 0."))
+    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
     channel_n = eeg.eeg_header[:channel_n]
-    epoch_n = eeg.eeg_header[:epoch_n]
-    (channel1 > channel_n || channel2 > channel_n || epoch1 > epoch_n || epoch2 > epoch_n) && throw(ArgumentError("Channels/epochs indices out of range."))
+    epoch_n = eeg_epoch_n(eeg)
+    (channel1 > channel_n || channel2 > channel_n) && throw(ArgumentError("channel1/channel2 must be ≤ $(channel_n)."))
+    (epoch1 > epoch_n || epoch2 > epoch_n) && throw(ArgumentError("epoch1/epoch2 must be ≤ $(epoch_n)."))
 
     coherence = signal_coherence(eeg.eeg_signals[channel1, :, epoch1], eeg.eeg_signals[channel2, :, epoch2])
 
@@ -2330,12 +2331,12 @@ Changes value of `eeg` `field` to `value`.
 """
 function eeg_edit_header(eeg::EEG; field::Symbol, value::Any)
 
-  value === nothing && throw(ArgumentError("Value cannot be empty."))
+  value === nothing && throw(ArgumentError("value cannot be empty."))
   
   eeg_new = deepcopy(eeg)
   fields = keys(eeg_new.eeg_header)
-  field in fields || throw(ArgumentError("Field does not exist."))
-  typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("Field type does not mach value type."))
+  field in fields || throw(ArgumentError("field does not exist."))
+  typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
   eeg_new.eeg_header[field] = value
   # add entry to :history field
   push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
@@ -2360,11 +2361,11 @@ Changes value of `eeg` `field` to `value`.
 """
 function eeg_edit_header!(eeg::EEG; field::Symbol, value::Any)
 
-  value === nothing && throw(ArgumentError("Value cannot be empty."))
+  value === nothing && throw(ArgumentError("value cannot be empty."))
   
   fields = keys(eeg.eeg_header)
-  field in fields || throw(ArgumentError("Field does not exist."))
-  typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("Field type does not mach value type."))
+  field in fields || throw(ArgumentError("field does not exist."))
+  typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
   eeg.eeg_header[field] = value
   # add entry to :history field
   push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
@@ -2415,7 +2416,7 @@ function eeg_delete_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractR
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
 
     if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("Epoch index does not match signal epochs."))
+        throw(ArgumentError("epoch does not match signal epochs."))
     end
 
     eeg_header = deepcopy(eeg.eeg_header)
@@ -2466,15 +2467,15 @@ function eeg_delete_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstract
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
 
     if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("Epoch index does not match signal epochs."))
+        throw(ArgumentError("epoch does not match signal epochs."))
     end
 
       # remove epoch
     eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch))]
 
     # update headers
-    eeg.eeg_header[:epoch_n] = eeg.eeg_header[:epoch_n] - length(epoch)
-    epoch_n = eeg.eeg_header[:epoch_n]
+    eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch)
+    epoch_n = eeg_epoch_n(eeg)
     eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
     eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
     eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
@@ -2512,7 +2513,7 @@ function eeg_keep_epoch(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
 
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
     if epoch[end] < 1 || epoch[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Epoch index does not match signal epochs."))
+        throw(ArgumentError("epoch does not match signal epochs."))
     end
 
     epoch_list = collect(1:eeg_epoch_n(eeg))
@@ -2565,7 +2566,7 @@ function eeg_keep_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
 
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
     if epoch[end] < 1 || epoch[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("Epoch index does not match signal epochs."))
+        throw(ArgumentError("epoch does not match signal epochs."))
     end
 
     epoch_list = collect(1:eeg_epoch_n(eeg))
@@ -2577,8 +2578,8 @@ function eeg_keep_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
     eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch_to_remove))]
 
     # update headers
-    eeg.eeg_header[:epoch_n] = eeg.eeg_header[:epoch_n] - length(epoch_to_remove)
-    epoch_n = eeg.eeg_header[:epoch_n]
+    eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch_to_remove)
+    epoch_n = eeg_epoch_n(eeg)
     eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
     eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
     eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
@@ -2611,7 +2612,7 @@ function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
 
     if typeof(pick) == Vector{Symbol}
         for idx in 1:length(pick)
-            pick[idx] in [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
+            pick[idx] in [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("pick must be: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
         end
 
         c = Vector{Char}()
@@ -2666,7 +2667,7 @@ function eeg_pick(eeg::EEG; pick::Union{Symbol, Vector{Symbol}})
 
         return channels
     else
-        pick in [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("Available picks: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
+        pick in [:central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o] || throw(ArgumentError("pick must be: :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o"))
 
         c = Vector{Char}()
         (pick === :central || pick === :c) && (c = ['z'])

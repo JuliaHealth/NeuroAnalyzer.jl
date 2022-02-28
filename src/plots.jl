@@ -21,7 +21,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    channel_n = eeg_channel_n(eeg)
+    channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
     channel_color = channel_n:-1:1
@@ -353,8 +353,8 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
 
     fs = eeg_sr(eeg)
 
-    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("Filter type must be :bp, :hp, :bp or :bs."))
-    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("Filter prototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
+    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs."))
+    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
 
     if ftype === :lp
         length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
@@ -654,7 +654,7 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
         eeg_tmp = eeg
     end
 
-    labels = eeg_labels(eeg_temp)
+    labels = eeg_labels(eeg_tmp)
 
     t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg_tmp))
@@ -751,10 +751,10 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    channel_n = eeg_channel_n(eeg)
+    channel_n = size(signal, 1)
 
     if norm == true
-        s_normalized = signal_normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
+        s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
     else
         s_normalized = signal
     end
@@ -871,7 +871,7 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
         eeg_tmp = eeg
     end
 
-    labels = eeg_labels(eeg_temp)
+    labels = eeg_labels(eeg_tmp)
 
     t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg_tmp))
@@ -1042,8 +1042,8 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
 
     norm == true && (ylabel="Power [dB]")
 
-    channel_n = eeg_channel_n(eeg)
-    signal = reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1)
+    channel_n = size(signal, 1)
+    signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
     s_powers, s_freqs = signal_psd(signal, fs=fs, norm=norm)
     s_powers = s_powers[:, :, 1]
     s_freqs = s_freqs[:, :, 1]
@@ -1191,7 +1191,7 @@ function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch]
     ndims(signal) == 1 && (signal = vec(signal))
 
-    labels = eeg_labels(eeg_temp)
+    labels = eeg_labels(eeg_tmp)
 
     p = signal_plot_psd(signal,
                         fs=fs,
@@ -1284,8 +1284,8 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
         end
     end
     if labels == true
-        for idx in 1:length(eeg_labels(eeg_temp))
-        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_labels(eeg_temp)[idx], pointsize=font_size)))
+        for idx in 1:length(eeg_labels(eeg_tmp))
+        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_labels(eeg_tmp)[idx], pointsize=font_size)))
         end
         p = plot!()
     end
@@ -1412,9 +1412,9 @@ Plots spectrogram of `signal`.
 function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
-    frq_lim[1] > fs / 2 || frq_lim[2] > fs / 2 && throw(ArgumentError("frq_lim must be smaller than Nyquist frequency ($(fs/2) Hz)."))
-    (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
-    frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
+    (frq_lim[1] < 0 || frq_lim[1] > fs / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(fs / 2)."))
+    (frq_lim[2] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(fs / 2)."))
+    frq_lim = tuple_order(frq_lim)
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
 
     demean == true && (signal = signal_demean(signal))
@@ -1497,7 +1497,7 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     frq_lim == (0, 0) && (frq_lim = (0, eeg_sr(eeg) / 2))
-    frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
+    frq_lim = tuple_order(frq_lim)
     fs = eeg_sr(eeg)
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
@@ -1642,7 +1642,7 @@ Plots histogram of `signal`.
 """
 function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-    channel_n = eeg_channel_n(eeg)
+    channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
     signal = reverse(signal, dims = 1)
@@ -1750,7 +1750,7 @@ function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channe
         eeg_tmp = eeg
     end
 
-    label == "" && (label = eeg_labels(eeg_temp)[channel])
+    label == "" && (label = eeg_labels(eeg_tmp)[channel])
 
     (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
     (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
@@ -2067,7 +2067,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     offset < 0 || offset > eeg_signal_len(eeg)  && throw(ArgumentError("offset must be ≥ 0 and ≤ $(eeg_signal_len(eeg))."))
-    (c === :amp  || c === :power || c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $(c) not found."))
+    (c === :amp  || c === :power || c in eeg.eeg_header[:components]) || throw(ArgumentError("Component $c not found."))
     frq_lim = tuple_order(frq_lim)
 
     # default length is 100 ms
@@ -2092,7 +2092,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     if typeof(c_idx) == Vector{Int64} && c === :ica
         component_idx = findfirst(isequal(c), eeg.eeg_header[:components])
         for idx in length(c_idx):-1:1
-            c_idx[idx] > size(eeg.eeg_components[component_idx], 1) && throw(ArgumentError("For component $(c) range must be 1:$(size(eeg.eeg_components[component_idx], 1))"))
+            c_idx[idx] > size(eeg.eeg_components[component_idx], 1) && throw(ArgumentError("For component $c range must be 1:$(size(eeg.eeg_components[component_idx], 1))"))
         end
         p = []
         length(c_idx) <= 10 && (l_row = 2)
@@ -2170,7 +2170,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
             title = "Power [A.U.]\n[frequency: $c_idx Hz]"
         end
     else
-        throw(ArgumentError("Component $(c) not found."))
+        throw(ArgumentError("Component $c not found."))
     end
 
     # plot signal at electrodes at time
@@ -2292,7 +2292,7 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbo
     band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
     band_frq = Array{Tuple{Float64, Float64}}(undef, length(band))
     for idx in 1:length(band)
-        band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("Available bands: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher."))
+        band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
         band_frq[idx] = signal_band(fs, band[idx])
     end
     for idx in 1:length(band_frq)
