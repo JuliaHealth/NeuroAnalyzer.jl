@@ -152,7 +152,7 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel)), :, :]
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_delete_channel!(EEG, $channel)")
+    push!(eeg.eeg_header[:history], "eeg_delete_channel!(EEG, channel= $channel)")
     
     eeg_reset_components!(eeg)
 
@@ -281,7 +281,7 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
     eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel_to_remove)), :, :]
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_keep_channel!(EEG, $channel)")
+    push!(eeg.eeg_header[:history], "eeg_keep_channel!(EEG, channel=$channel)")
 
     eeg_reset_components!(eeg)
 
@@ -2701,7 +2701,7 @@ Calculates `n` first ICs for `eeg`.
 - `n::Int64` - number of ICs
 - `tol::Float64` - tolerance for ICA
 - `iter::Int64` - maximum number of iterations
-- `f::Symbol` - neg-entropy functor
+- `f::Symbol[:tanh, :gaus]` - neg-entropy functor
 # Returns
 
 - `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch (W * data)
@@ -2726,9 +2726,6 @@ Calculates `n` first ICs for `eeg`.
 - `tol::Float64` - tolerance for ICA
 - `iter::Int64` - maximum number of iterations
 - `f::Symbol` - neg-entropy functor
-# Returns
-
-- `eeg::EEG`
 """
 function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -3051,3 +3048,55 @@ function eeg_spectrum!(eeg::EEG; pad::Int64=0)
     return
 end
 
+"""
+    eeg_ica_reconstruct(eeg; ica)
+
+Reconstructs `eeg` signals using removal of `ica` ICA components.
+
+# Arguments
+
+- `eeg::EEG`
+- `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_ica_reconstruct(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+
+    eeg_new = deepcopy(eeg)
+    ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
+    ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
+    eeg_new.eeg_signals = signal_ica_reconstruct(eeg_new.eeg_signals, ic_activations=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
+    
+    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica")
+
+    return eeg_new
+end
+
+"""
+    eeg_ica_reconstruct!(eeg; ica)
+
+Reconstructs `eeg` signals using removal of `ica` ICA components.
+
+# Arguments
+
+- `eeg::EEG`
+- `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+"""
+function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+
+    ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
+    ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
+    eeg.eeg_signals = signal_ica_reconstruct(eeg.eeg_signals, ic_activations=eeg.eeg_components[ica_a_idx], ic_mw=eeg.eeg_components[ica_mw_idx], ic_v=ica)
+
+    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
+
+    return
+end

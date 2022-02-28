@@ -2779,7 +2779,8 @@ Calculates `n` first ICs for `signal`.
 - `n::Int64` - number of PCs
 - `tol::Float64` - tolerance for ICA
 - `iter::Int64` - maximum number of iterations
-- `f::Symbol` - neg-entropy functor
+- `f::Symbol[:tanh, :gaus]` - neg-entropy functor
+
 # Returns
 
 - `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
@@ -2815,6 +2816,46 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, it
 end
 
 """
+    signal_ica_reconstruct(signal, ic_activations, ic_mw, ic_v)
+
+Reconstructs `signal` using removal of `ic_v` ICA components.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `ic_activation::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+- `ic_mw::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+- `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+
+# Returns
+
+- `signal_reconstructed::Array{Float64, 3}`
+"""
+function signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array{Float64, 3}, ic_mw::Array{Float64, 3}, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
+
+    typeof(ic_v) <: AbstractRange && (ic_v = collect(ic_v))
+    if typeof(ic_v) == Vector{Int64}
+        sort!(ic_v)
+        for idx in 1:length(ic_v)
+            (ic_v[idx] < 1 || ic_v[idx] > size(ic_mw, 2)) && throw(ArgumentError("ic_v must be ≥ 1 and ≤ $(size(ic_mw, 2))"))
+        end
+    else
+        (ic_v < 1 || ic_v > size(ic_mw, 2)) && throw(ArgumentError("ic_v must be ≥ 1 and ≤ $(size(ic_mw, 2))"))
+    end
+    ic_removal = setdiff(1:size(ic_mw, 2), ic_v)
+
+    s_reconstructed = zeros(size(signal))
+
+    epoch_n = size(signal, 3)
+
+    for epoch in 1:epoch_n
+        s_reconstructed[:, :, epoch] = ic_mw[:, ic_removal, epoch] * ic_activations[ic_removal, :, epoch]
+    end
+
+    return s_reconstructed
+end
+
+"""
     signal_epochs_var(signal)
 
 Calculates variance for all `signal` epochs.
@@ -2844,7 +2885,7 @@ function signal_epochs_stats(signal::Array{Float64, 3})
         s_var[epoch] = var(s)
     end
 
-    return s_mean, s_sd, s_var
+    return s_mean, s_median, s_sd, s_var
 end
 
 """

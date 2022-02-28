@@ -258,5 +258,7 @@ p, f, t = signal_spectrogram(signal_a, fs=fs)
 
 i, mw = signal_ica(signal_a, n=1, tol=1.0)
 @test size(i) == (1, 101, 2)
+s = signal_ica_reconstruct(signal_a, ic_activations=i, ic_mw=mw, ic_v=1)
+@test size(s) == (2, 101, 2)
 
 true

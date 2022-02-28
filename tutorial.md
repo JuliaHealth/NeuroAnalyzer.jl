@@ -23,6 +23,8 @@ Get help:
 ?eeg_plot
 ```
 
+### IO
+
 Load EDF file:
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf")
@@ -402,7 +404,8 @@ eeg_plot_topo(edf, t=2560, len=2560, c=:pca)
 eeg_plot_topo(edf, t=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
 ```
 
-Stationarity:
+# Stationarity
+
 ```julia
 p = eeg_stationarity(edf, method=:mean)
 p = eeg_stationarity(edf, method=:var)
@@ -419,14 +422,16 @@ p = eeg_stationarity(edf, window=100, method=:euclid)
 plot(p[10:end])
 ```
 
-Entropy:
+# Entropy
+
 ```julia
 e = eeg_entropy(edf)
 plot(eeg_labels(edf), e, seriestype=:bar)
 eeg_entropy!(edf)
 ```
 
-Coherence:
+# Coherence
+
 ```julia
 m = eeg_coherence(edf1, edf2)
 hz, nyq = eeg_freqs(edf1)
@@ -442,7 +447,8 @@ m = eeg_coherence(edf_alpha, channel1=1, channel2=2)
 plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 ```
 
-PCA:
+# PCA
+
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
@@ -460,14 +466,37 @@ bar(vec(pc_var))
 eeg_pca!(edf, n=4)
 ```
 
-ICA:
+# ICA
+
+Generate ICAs:
 ```julia
 i = eeg_ica(edf, n=15, tol=1.0)
-eeg_ica!(edf, n=5, tol=1.0)
-eeg_plot_ica(edf, ica=1:5)
+eeg_ica!(edf, n=5, tol=1.0, iter=1000, f=:gauss)
 ```
 
-Comparing two signals:
+Plot ICAs:
+```julia
+eeg_plot_ica(edf, ica=1:5)
+eeg_plot_ica(edf, ica=1)
+```
+
+Remove ICA #001 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ica=1)
+```
+
+Remove ICA #001-007 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ica=1:7)
+```
+
+Remove ICA #001, 003 and 007 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ica=[1, 3, 7])
+```
+
+# Comparing two signals
+
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:delta), order=8)
 edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)

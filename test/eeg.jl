@@ -147,7 +147,7 @@ e = eeg_pick(edf, pick=:left)
 @test length(e) == 8
 
 e = eeg_epochs(edf, epoch_len=20*256)
-m, s, v = eeg_epochs_stats(e)
+m, md, s, v = eeg_epochs_stats(e)
 @test size(v) == (69, )
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
@@ -156,17 +156,23 @@ i, _ = eeg_ica(e, n=5, tol=1.0)
 
 eeg_epochs_stats!(edf)
 c = eeg_list_components(edf)
-@test size(c) == (3, )
+@test size(c) == (4, )
 v = eeg_extract_component(edf, c=:epochs_mean)
 @test size(v) == (1, )
 eeg_delete_component!(edf, c=:epochs_mean)
 c = eeg_list_components(edf)
-@test size(c) == (2, )
+@test size(c) == (3, )
 
 e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
 f, a, p, ph = eeg_spectrum(e)
 @test size(p) == (19, 2560, 1)
+
+e = edf
+eeg_ica!(e, tol=1.0, n=10)
+@test size(e.eeg_components[1]) == (1,)
+e2 = eeg_ica_reconstruct(e, ica=1)
+@test size(e2.eeg_signals) == (19, 354816, 1)
 
 true
