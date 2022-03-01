@@ -28,37 +28,13 @@ mutable struct EEG
 end
 
 if VERSION < v"1.0.0"
-    @warn("This version of EDFPlus requires Julia 1.0 or above.")
+    @warn("This version of NeuroJ requires Julia 1.0 or above.")
 end
 
-function neuroj_version()
-    m = Pkg.Operations.Context().env.manifest
-    println("NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
-    println("Imported packages:")
-    required_packages = ["CSV",
-                         "DataFrames",
-                         "Distances",
-                         "DSP",
-                         "FFTW",
-                         "InformationMeasures",
-                         "Interpolations",
-                         "JLD2",
-                         "LinearAlgebra",
-                         "MultivariateStats",
-                         "Plots",
-                         "Polynomials",
-                         "ScatteredInterpolation",
-                         "Simpson",
-                         "StatsKit",
-                         "StatsKit"]
-    for idx in 1:length(required_packages)
-        pkg = lpad(required_packages[idx], 20 - length(idx), " ")
-        pkg_ver = m[findfirst(v->v.name==required_packages[idx], m)].version
-        println("$pkg $pkg_ver")
-    end
-end
-
+include("neuroj.jl")
+export neuroj_reload_plugins
 export neuroj_version
+neuroj_reload_plugins()
 
 include("misc.jl")
 export cart2pol
