@@ -76,7 +76,7 @@ export hildebrand_rule
 export hz2rads
 export ifft0
 export jaccard_similarity
-export k
+export k_categories
 export linspace
 export logspace
 export matrix_sort
@@ -270,7 +270,6 @@ export eeg_plot_topo
 export eeg_plot_histogram
 export eeg_plot_filter_response
 export eeg_plot_bands
-export eeg_view_bad_epochs
 export signal_plot
 export signal_plot_avg
 export signal_plot_butterfly

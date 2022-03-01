@@ -5,9 +5,9 @@ Loads EDF/EDFPlus file and returns EEG object.
 
 # Arguments
 
-- `file_name::String` - name of the file to load
-- `read_annotations::Bool` - read annotations from EDF+ file (currently not implemented)
-- `clean_labels::Bool` - only keep channel names in channel labels
+- `file_name::String`: name of the file to load
+- `read_annotations::Bool`: read annotations from EDF+ file (currently not implemented)
+- `clean_labels::Bool`: only keep channel names in channel labels
 
 # Returns
 
@@ -242,7 +242,7 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Loads electrode positions from 
+Loads electrode positions from:
 - CED
 
 # Arguments
@@ -280,7 +280,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 # Arguments
 
 - `eeg::EEG`
-- `file_name::String` - file name
+- `file_name::String`: file name
 - `overwrite::Bool`
 
 # Returns
@@ -308,7 +308,7 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 
 # Arguments
 
-- `file_name::String` - file name
+- `file_name::String`: file name
 
 # Returns
 
@@ -331,8 +331,8 @@ Exports EEG data as CSV.
 
 - `eeg::EEG`
 - `file_name::String`
-- `header::Bool` - export header
-- `components::Bool` - export components
+- `header::Bool`: export header
+- `components::Bool`: export components
 - `overwrite::Bool`
 
 # Returns

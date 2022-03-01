@@ -546,7 +546,7 @@ Calculates Z-scores for each value of the vector `x`.
 z_score(x::Union{Vector{Int64}, Vector{Float64}}) = (x .- mean(x)) ./ std(x)
 
 """
-    k(n)
+    k_categories(n)
 
 Calculates number of categories for a given sample size `n`.
 
@@ -558,7 +558,7 @@ Calculates number of categories for a given sample size `n`.
 
 - `k::Float64`
 """
-k(n::Int64) = (sqrt(n), (1 + 3.222 * log10(n)))
+k_categories(n::Int64) = (sqrt(n), (1 + 3.222 * log10(n)))
 
 """
     cmax(x)
@@ -597,9 +597,9 @@ Generates sinc function.
 
 # Arguments
 
-- `t::AbstractRange` - time
-- `f::Union{Int64, Float64}` - frequency
-- `peak::Union{Int64, Float64}` - sinc peak time
+- `t::AbstractRange`: time
+- `f::Union{Int64, Float64}`: frequency
+- `peak::Union{Int64, Float64}`: sinc peak time
 
 # Returns
 
@@ -621,11 +621,11 @@ Generates Morlet wavelet.
 
 # Arguments
 
-- `fs::Int64` - sampling rate
-- `wt::Union{Int64, Float64}` - length = -wt:1/fs:wt
-- `wf::Union{Int64, Float64}` - frequency
-- `ncyc::Int64` - number of cycles
-- `complex::Bool` - generate complex Morlet
+- `fs::Int64`: sampling rate
+- `wt::Union{Int64, Float64}`: length = -wt:1/fs:wt
+- `wf::Union{Int64, Float64}`: frequency
+- `ncyc::Int64`: number of cycles
+- `complex::Bool`: generate complex Morlet
 
 # Returns
 
@@ -650,9 +650,9 @@ Generates Gaussian wave.
 
 # Arguments
 
-- `fs::Int64` - sampling rate
-- `gt::Union{Int64, Float64}` - length = -wt:1/fs:wt
-- `gw::Union{Int64, Float64}` - width
+- `fs::Int64`: sampling rate
+- `gt::Union{Int64, Float64}`: length = -wt:1/fs:wt
+- `gw::Union{Int64, Float64}`: width
 
 # Returns
 

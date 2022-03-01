@@ -45,7 +45,7 @@ Removes `channel` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
 
 # Returns
 
@@ -112,7 +112,7 @@ Removes `channel` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to be removed
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
 """
 function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -167,7 +167,7 @@ Keeps `channels` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 
 # Returns
 
@@ -237,7 +237,7 @@ Keeps `channels` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel index to keep
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 """
 function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -295,7 +295,7 @@ Returns the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 
 # Returns
 
@@ -322,7 +322,7 @@ Returns the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_derivative!(eeg::EEG)
 
@@ -387,7 +387,7 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` of the `eeg
 # Arguments
 
 - `eeg::EEG`
-- `f::Tuple(Union(Int64, Float64}, Union(Int64, Float64}}` - lower and upper frequency bounds
+- `f::Tuple(Union(Int64, Float64}, Union(Int64, Float64}}`: lower and upper frequency bounds
 
 # Returns
 
@@ -411,8 +411,8 @@ Removes linear trend from the `eeg`.
 
 - `eeg::EEG`
 - `type::Symbol[:linear, :constant]`, optional
-    - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant` - the mean of `signal` is subtracted
+    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `constant`: the mean of `signal` is subtracted
 
 # Returns
 
@@ -441,8 +441,8 @@ Removes linear trend from the `eeg`.
 
 - `eeg::EEG`
 - `type::Symbol[:linear, :constant]`, optional
-    - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant` - the mean of `signal` is subtracted
+    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `constant`: the mean of `signal` is subtracted
 """
 function eeg_detrend!(eeg::EEG; type::Symbol=:linear)
 
@@ -461,7 +461,7 @@ References the `eeg` to specific channel `channel`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 # Returns
 
@@ -492,7 +492,7 @@ References the `eeg` to specific channel `channel`.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
 function eeg_reference_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -560,7 +560,7 @@ Returns the `channel` index / name.
 # Arguments
 
 - `eeg::EEG`
-- `channel::Union{Int64, String}` - channel name
+- `channel::Union{Int64, String}`: channel name
 
 # Returns
 
@@ -781,7 +781,7 @@ Normalize by z-score.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 
 # Returns
 
@@ -808,7 +808,7 @@ Normalize by z-score.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_normalize_zscore!(eeg::EEG)
 
@@ -916,7 +916,7 @@ Calculates covariance between all channels of `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize covariance
+- `norm::Bool`: normalize covariance
 
 # Returns
 
@@ -937,7 +937,7 @@ Calculates covariance between all channels of `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize covariance
+- `norm::Bool`: normalize covariance
 """
 function eeg_cov!(eeg::EEG; norm=true)
 
@@ -998,7 +998,7 @@ Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 # Arguments
 
 - `eeg::EEG`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -1034,7 +1034,7 @@ Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 # Arguments
 
 - `eeg::EEG`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -1254,9 +1254,9 @@ Splits `eeg` into epochs.
 # Arguments
 
 - `eeg::EEG`
-- `epoch_n::Union{Int64, Nothing}` - number of epochs
-- `epoch_len::Union{Int64, Nothing}` - epoch length in samples
-- `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `epoch_n::Union{Int64, Nothing}`: number of epochs
+- `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 
 # Returns
 
@@ -1306,9 +1306,9 @@ Splits `eeg` into epochs.
 # Arguments
 
 - `eeg::EEG`
-- `epoch_n::Union{Int64, Nothing}` - number of epochs
-- `epoch_len::Union{Int64, Nothing}` - epoch length in samples
-- `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `epoch_n::Union{Int64, Nothing}`: number of epochs
+- `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 """
 function eeg_epochs!(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
@@ -1355,7 +1355,7 @@ Extracts the `epoch` epoch.
 # Arguments
 
 - `eeg::EEG`
-- `epoch::Int64` - epoch index
+- `epoch::Int64`: epoch index
 
 # Returns
 
@@ -1456,18 +1456,18 @@ Filters `eeg` using zero phase distortion filter.
 # Arguments
 
 - `eeg::EEG`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
-    - `:mavg` - moving average (with threshold and/or weight window)
-    - `:mmed` - moving median (with threshold and/or weight window)
-    - `:poly` - polynomial of `order` order
-- `ftype::Symbol[:lp, :hp, :bp, :bs]` - filter type
-- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64` - filter order
-- `rp::Union{Int64, Float64}` - dB ripple in the passband
-- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
-- `d::Int64` - window length for mean average and median average filter
-- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+    - `:mavg`: moving average (with threshold and/or weight window)
+    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:poly`: polynomial of `order` order
+- `ftype::Symbol[:lp, :hp, :bp, :bs]`: filter type
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`: filter order
+- `rp::Union{Int64, Float64}`: dB ripple in the passband
+- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+- `d::Int64`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
@@ -1507,18 +1507,18 @@ Filters `eeg` using zero phase distortion filter.
 # Arguments
 
 - `eeg::EEG`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
-    - `:mavg` - moving average (with threshold and/or weight window)
-    - `:mmed` - moving median (with threshold and/or weight window)
-    - `:poly` - polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
-- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64` - filter order
-- `rp::Union{Int64, Float64}` - dB ripple in the passband
-- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
-- `d::Int64` - window length for mean average and median average filter
-- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+    - `:mavg`: moving average (with threshold and/or weight window)
+    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:poly`: polynomial of `order` order
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`: filter order
+- `rp::Union{Int64, Float64}`: dB ripple in the passband
+- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+- `d::Int64`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 """
 function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
@@ -1553,7 +1553,7 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 # Arguments
 
 - `eeg::EEG`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -1589,7 +1589,7 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 # Arguments
 
 - `eeg::EEG`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 """
 function eeg_downsample!(eeg::EEG; new_sr::Int64)
 
@@ -1620,9 +1620,9 @@ Calculates autocovariance of each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize autocovariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize autocovariance
 
 # Returns
 
@@ -1646,9 +1646,9 @@ Calculates autocovariance of each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize autocovariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize autocovariance
 """
 function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -1672,9 +1672,9 @@ Calculates cross-covariance of each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize cross-covariance
 
 # Returns
 
@@ -1698,9 +1698,9 @@ Calculates cross-covariance of each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize cross-covariance
 """
 function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -1725,9 +1725,9 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 
 - `eeg1::EEG`
 - `eeg2::EEG`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize cross-covariance
 
 # Returns
 
@@ -1751,7 +1751,7 @@ Calculates total power for each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize do dB
+- `norm::Bool`: normalize do dB
 
 # Returns
 
@@ -1775,7 +1775,7 @@ Calculates total power for each the `eeg` channels.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize do dB
+- `norm::Bool`: normalize do dB
 """
 function eeg_psd!(eeg::EEG; norm::Bool=false)
 
@@ -1799,7 +1799,7 @@ Calculates stationarity.
 # Arguments
 
 - `eeg:EEG`
-- `window::Int64` - time window in samples
+- `window::Int64`: time window in samples
 - `method::Symbol[:mean, :var, :euclid, :hilbert]
 
 # Returns
@@ -1821,7 +1821,7 @@ Calculates stationarity.
 # Arguments
 
 - `eeg:EEG`
-- `window::Int64` - time window in samples
+- `window::Int64`: time window in samples
 - `method::Symbol[:mean, :var, :euclid, :hilbert]
 """
 function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
@@ -1843,10 +1843,10 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 # Arguments
 
 - `eeg:EEG`
-- `len::Int64` - number of samples to remove
-- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
-- `from::Symbol[:start, :end]` - trims from the signal start (default) or end
-- `keep_epochs::Bool` - remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+- `len::Int64`: number of samples to remove
+- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+- `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+- `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
 # Returns
 
@@ -1896,10 +1896,10 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 # Arguments
 
 - `eeg:EEG`
-- `len::Int64` - number of samples to remove
-- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
-- `from::Symbol[:start, :end]` - trims from the signal start (default) or end
-- `keep_epochs::Bool` - remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+- `len::Int64`: number of samples to remove
+- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+- `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+- `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 """
 function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
@@ -2177,12 +2177,12 @@ Calculates `n` first PCs for `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `n::Int64` - number of PCs
+- `n::Int64`: number of PCs
 
 # Returns
 
-- `pc::Array{Float64, 3}:` - PC(1)..PC(n) × epoch
-- `pc_var::Matrix{Float64}` - PC_VAR(1)..PC_VAR(n) × epoch
+- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc_var::Matrix{Float64}`: PC_VAR(1)..PC_VAR(n) × epoch
 """
 function eeg_pca(eeg::EEG; n::Int64)
 
@@ -2199,7 +2199,7 @@ Calculates `n` first PCs for `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `n::Int64` - number of PCs
+- `n::Int64`: number of PCs
 """
 function eeg_pca!(eeg::EEG; n::Int64)
 
@@ -2227,10 +2227,10 @@ Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
 
 - `eeg1::EEG`
 - `eeg2::EEG`
-- `n::Int64` - number of bootstraps
+- `n::Int64`: number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
-    - `:absdiff` - maximum difference
-    - `:diff2int` - integrated area of the squared difference
+    - `:absdiff`: maximum difference
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
@@ -2397,7 +2397,7 @@ Removes `epoch` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to be removed, vector of numbers or range
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 
 # Returns
 
@@ -2452,7 +2452,7 @@ Removes `epoch` from the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to be removed, vector of numbers or range
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 """
 function eeg_delete_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -2497,7 +2497,7 @@ Keeps `epoch` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to keep, vector of numbers or range
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 
 # Returns
 
@@ -2554,7 +2554,7 @@ Keeps `epoch` in the `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}` - epoch index to keep, vector of numbers or range
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 """
 function eeg_keep_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -2698,14 +2698,14 @@ Calculates `n` first ICs for `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `n::Int64` - number of ICs
-- `tol::Float64` - tolerance for ICA
-- `iter::Int64` - maximum number of iterations
-- `f::Symbol[:tanh, :gaus]` - neg-entropy functor
+- `n::Int64`: number of ICs
+- `tol::Float64`: tolerance for ICA
+- `iter::Int64`: maximum number of iterations
+- `f::Symbol[:tanh, :gaus]`: neg-entropy functor
 # Returns
 
-- `ic::Array{Float64, 3}` - IC(1)..IC(n) × epoch (W * data)
-- `ic_mw::Array{Float64, 3}` - IC(1)..IC(n) × epoch inv(W)
+- `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
+- `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
 """
 function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -2722,10 +2722,10 @@ Calculates `n` first ICs for `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `n::Int64` - number of ICs
-- `tol::Float64` - tolerance for ICA
-- `iter::Int64` - maximum number of iterations
-- `f::Symbol` - neg-entropy functor
+- `n::Int64`: number of ICs
+- `tol::Float64`: tolerance for ICA
+- `iter::Int64`: maximum number of iterations
+- `f::Symbol`: neg-entropy functor
 """
 function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -2901,8 +2901,8 @@ Calculates spectrogram of `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize powers to dB
-- `demean::Bool` - demean signal prior to analysis
+- `norm::Bool`: normalize powers to dB
+- `demean::Bool`: demean signal prior to analysis
 
 # Returns
 
@@ -2926,8 +2926,8 @@ Calculates spectrogram of `eeg`.
 # Arguments
 
 - `eeg::EEG`
-- `norm::Bool` - normalize powers to dB
-- `demean::Bool` - demean signal prior to analysis
+- `norm::Bool`: normalize powers to dB
+- `demean::Bool`: demean signal prior to analysis
 """
 function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
 
@@ -2953,7 +2953,7 @@ Returns the average signal of all `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 
 # Returns
 
@@ -2981,7 +2981,7 @@ Returns the average signal of all `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG` - EEG object
+- `eeg::EEG`
 """
 function eeg_average!(eeg::EEG)
 
@@ -3005,8 +3005,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - the signal
-- `pad::Int64` - pad channels `pad` zeros
+- `eeg::EEG`: the signal
+- `pad::Int64`: pad channels `pad` zeros
 
 # Returns
 
@@ -3029,8 +3029,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
 
 # Arguments
 
-- `eeg::EEG` - the signal
-- `pad::Int64` - pad channels `pad` zeros
+- `eeg::EEG`: the signal
+- `pad::Int64`: pad channels `pad` zeros
 """
 function eeg_spectrum!(eeg::EEG; pad::Int64=0)
 
@@ -3120,7 +3120,7 @@ Detect bad `eeg` epochs based on:
 
 - `eeg::EEG`
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
-- `ch_t::Float64` - percentage of bad channels to mark the epoch as bad
+- `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
 # Returns  
 
@@ -3198,7 +3198,7 @@ function eeg_delete_bad_epochs(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Boo
 end
 
 """
-    eeg_check_bad_epochs!(eeg; bad_epochs, confirm=true)
+    eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
 
 Deletes bad `eeg` epochs.
 

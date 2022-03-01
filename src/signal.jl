@@ -56,7 +56,7 @@ Calculates total power for the `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `fs::Int64` - sampling rate
+- `fs::Int64`: sampling rate
 
 # Returns
 
@@ -82,7 +82,7 @@ Calculates total power for each the `signal` channels.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fs::Int64` - sampling rate
+- `fs::Int64`: sampling rate
 
 # Returns
 
@@ -114,8 +114,8 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `si
 # Arguments
 
 - `signal::AbstractArray`
-- `fs::Int64` - sampling rate of the signal
-- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` - lower and upper frequency bound
+- `fs::Int64`: sampling rate of the signal
+- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`: lower and upper frequency bound
 
 # Returns
 
@@ -151,8 +151,8 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `si
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fs::Int64` - sampling rate
-- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` - lower and upper frequency bound
+- `fs::Int64`: sampling rate
+- `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`: lower and upper frequency bound
 
 # Returns
 
@@ -187,7 +187,7 @@ Returns FFT and DFT sample frequencies for a DFT for the `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `fs::Int64` - sampling rate
+- `fs::Int64`: sampling rate
 
 # Returns
 
@@ -216,7 +216,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fs::Int64` - sampling rate
+- `fs::Int64`: sampling rate
 
 # Returns
 
@@ -251,8 +251,8 @@ Removes linear trend from the `signal`.
 
 - `signal::AbstractArray`
 - `type::Symbol[:linear, :constant]`, optional
-    - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant` - the mean of `signal` is subtracted
+    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `constant`: the mean of `signal` is subtracted
 
 # Returns
 
@@ -282,8 +282,8 @@ Removes linear trend for each the `signal` channels.
 
 - `signal::Array{Float64, 3}`
 - `type::Symbol[:linear, :constant]`, optional
-    - `linear` - the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant` - the mean of `signal` is subtracted
+    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `constant`: the mean of `signal` is subtracted
 
 # Returns
 
@@ -315,8 +315,8 @@ Calculates mean, std and 95% confidence interval for `signal`.
 # Arguments
 
 - `signal::Vector{Float64}`
-- `n::Int64` - number of bootstraps
-- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
+- `n::Int64`: number of bootstraps
+- `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
 
 # Returns
 
@@ -346,8 +346,8 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 # Arguments
 
 - `signal::AbstractArray`
-- `n::Int64` - number of bootstraps
-- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
+- `n::Int64`: number of bootstraps
+- `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
 
 # Returns
 
@@ -394,8 +394,8 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `n::Int64` - number of bootstraps
-- `method::Symbol[:normal, :boot]` - use normal method or `n`-times boostrapping
+- `n::Int64`: number of bootstraps
+- `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
 
 # Returns
 
@@ -516,10 +516,10 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 - `signal1::AbstractArray`
 - `signal2::AbstractArray`
-- `n::Int64` - number of bootstraps
+- `n::Int64`: number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
-    - `:absdiff` - maximum difference
-    - `:diff2int` - integrated area of the squared difference
+    - `:absdiff`: maximum difference
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
@@ -590,10 +590,10 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 - `signal1::Array{Float64, 3}`
 - `signal2:Array{Float64, 3}`
-- `n::Int64` - number of bootstraps
+- `n::Int64`: number of bootstraps
 - `method::Symbol[:absdiff, :diff2int]`
-    - `:absdiff` - maximum difference
-    - `:diff2int` - integrated area of the squared difference
+    - `:absdiff`: maximum difference
+    - `:diff2int`: integrated area of the squared difference
 
 # Returns
 
@@ -628,9 +628,9 @@ Calculates autocovariance of the `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean `signal` prior to calculations
-- `norm::Bool` - normalize autocovariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean `signal` prior to calculations
+- `norm::Bool`: normalize autocovariance
 
 # Returns
 
@@ -684,9 +684,9 @@ Calculates autocovariance of each the `signal` channels.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize autocovariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize autocovariance
 
 # Returns
 
@@ -724,9 +724,9 @@ Calculates cross-covariance between `signal1` and `signal2`.
 
 - `signal1::AbstractArray`
 - `signal2::AbstractArray`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize cross-covariance
 
 # Returns
 
@@ -782,10 +782,10 @@ Calculates cross-covariance between all channels in the `signal`.
 
 # Arguments
 
-- `signal::Matrix{Float64}` - the signal
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean `signal` prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `signal::Matrix{Float64}`: the signal
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean `signal` prior to analysis
+- `norm::Bool`: normalize cross-covariance
 
 # Returns
 
@@ -831,9 +831,9 @@ Calculates cross-covariance between same channels in `signal1` and `signal2`.
 
 - `signal1::Array{Float64, 3}`
 - `signal2::Array{Float64, 3}`
-- `lag::Int64` - lags range is `-lag:lag`
-- `demean::Bool` - demean signal prior to analysis
-- `norm::Bool` - normalize cross-covariance
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`: normalize cross-covariance
 
 # Returns
 
@@ -873,7 +873,7 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `pad::Int64` - pad the `signal` with `pad` zeros
+- `pad::Int64`: pad the `signal` with `pad` zeros
 
 # Returns
 
@@ -910,8 +910,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `signal` m
 
 # Arguments
 
-- `signal::Array{Float64, 3}` - the signal
-- `pad::Int64` - pad the `signal` with `pad` zeros
+- `signal::Array{Float64, 3}`: the signal
+- `pad::Int64`: pad the `signal` with `pad` zeros
 
 # Returns
 
@@ -950,9 +950,9 @@ Splits `signal` into epochs.
 # Arguments
 
 - `signal::Vector{Float64}`
-- `epoch_n::Union{Int64, Nothing}` - number of epochs
-- `epoch_len::Union{Int64, Nothing}` - epoch length in samples
-- `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `epoch_n::Union{Int64, Nothing}`: number of epochs
+- `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 
 # Returns
 
@@ -992,9 +992,9 @@ Splits `signal` into epochs.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `epoch_n::Union{Int64, Nothing}` - number of epochs
-- `epoch_len::Union{Int64, Nothing}` - epoch length in samples
-- `average::Bool` - average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `epoch_n::Union{Int64, Nothing}`: number of epochs
+- `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
 
 # Returns
 
@@ -1041,7 +1041,7 @@ Removes `channel` from the `signal`.
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to be removed, vector of numbers or range
 
 # Returns
 
@@ -1070,7 +1070,7 @@ Removes `channel` from the `signal`.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}` - channel to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to be removed, vector of numbers or range
 
 # Returns
 
@@ -1098,7 +1098,7 @@ Re-references channels of the `signal` to specific signal channel.
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `reference::Union{Int64, Vector{Int64}, AbstractRange}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `reference::Union{Int64, Vector{Int64}, AbstractRange}}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 # Returns
 
@@ -1141,7 +1141,7 @@ Re-references channels of the `signal` to specific signal channel.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}}` - index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 # Returns
 
@@ -1449,7 +1449,7 @@ Calculates covariance between `signal1` and `signal2`.
 
 - `signal1::AbstractArray`
 - `signal2::AbstractArray`
-- `norm::Bool` - normalize covariance
+- `norm::Bool`: normalize covariance
 
 # Returns
 
@@ -1476,7 +1476,7 @@ Calculates covariance between all channels of the `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `norm::Bool` - normalize covariance
+- `norm::Bool`: normalize covariance
 
 # Returns
 
@@ -1503,7 +1503,7 @@ Calculates covariance between all channels of the `signal`.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `norm::Bool` - normalize covariance
+- `norm::Bool`: normalize covariance
 
 # Returns
 
@@ -1611,7 +1611,7 @@ Upsamples `signal` to `new_sr` sampling frequency.
 
 - `signal::AbstractArray`
 - `t::AbstractRange`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 # Returns
 
 - `s_upsampled::Vector{Float64}`
@@ -1645,7 +1645,7 @@ Upsamples all channels of `signal` to `new_sr` sampling frequency.
 
 - `signal::Array{Float64, 3}`
 - `t::AbstractRange`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -1746,18 +1746,18 @@ Filters `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
-    - `:mavg` - moving average (with threshold and/or weight window)
-    - `:mmed` - moving median (with threshold and/or weight window)
-    - `:poly` - polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
-- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64` - filter order
-- `rp::Union{Int64, Float64}` - dB ripple in the passband
-- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
-- `d::Int64` - window length for mean average and median average filter
-- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+    - `:mavg`: moving average (with threshold and/or weight window)
+    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:poly`: polynomial of `order` order
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`: filter order
+- `rp::Union{Int64, Float64}`: dB ripple in the passband
+- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+- `d::Int64`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
@@ -1909,18 +1909,18 @@ Filters `signal` using zero phase distortion filter.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]` - filter prototype:
-    - `:mavg` - moving average (with threshold and/or weight window)
-    - `:mmed` - moving median (with threshold and/or weight window)
-    - `:poly` - polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}` - filter type
-- `cutoff::Union{Int64, Float64, Tuple}` - filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64` - filter order
-- `rp::Union{Int64, Float64}` - dB ripple in the passband
-- `rs::Union{Int64, Float64}` - dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]` - filter direction
-- `d::Int64` - window length for mean average and median average filter
-- `t::Union{Int64, Float64}` - threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+    - `:mavg`: moving average (with threshold and/or weight window)
+    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:poly`: polynomial of `order` order
+- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`: filter order
+- `rp::Union{Int64, Float64}`: dB ripple in the passband
+- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+- `d::Int64`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
@@ -1963,7 +1963,7 @@ Downsamples the`signal` to `new_sr` sampling frequency.
 
 - `signal::AbstractArray`
 - `t::AbstractRange`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -1997,7 +1997,7 @@ Downsamples all channels of the`signal` to `new_sr` sampling frequency.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `new_sr::Int64` - new sampling rate
+- `new_sr::Int64`: new sampling rate
 - `t::AbstractRange`
 
 # Returns
@@ -2033,8 +2033,8 @@ Calculates power spectrum density of the `signal`.
 
 # Arguments
 - `signal::AbstractArray`
-- `fs::Int64` - sampling rate
-- `norm::Bool` - normalize do dB
+- `fs::Int64`: sampling rate
+- `norm::Bool`: normalize do dB
 
 # Returns
 
@@ -2061,8 +2061,8 @@ Calculates power spectrum density for each the `signal` channels.
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `fs::Int64` - sampling rate
-- `norm::Bool` - normalize do dB
+- `fs::Int64`: sampling rate
+- `norm::Bool`: normalize do dB
 
 # Returns
 
@@ -2096,7 +2096,7 @@ Calculates power spectrum density for each the `signal` channels.
 
 - `signal::Array{Float64, 3}`
 - `fs::Int64` sampling rate
-- `norm::Bool` - normalize do dB
+- `norm::Bool`: normalize do dB
 
 # Returns
 
@@ -2153,7 +2153,7 @@ Calculates mean stationarity.
 # Arguments
 
 - `signal::AbstractArray`
-- `window::Int64` - time window in samples
+- `window::Int64`: time window in samples
 
 # Returns
 
@@ -2176,7 +2176,7 @@ Calculates variance stationarity.
 # Arguments
 
 - `signal::AbstractArray`
-- `window::Int64` - time window in samples
+- `window::Int64`: time window in samples
 
 # Returns
 
@@ -2199,7 +2199,7 @@ Calculates stationarity.
 # Arguments
 
 - `signal:Array{Float64, 3}`
-- `window::Int64` - time window in samples
+- `window::Int64`: time window in samples
 - `method::Symbol[:mean, :var, :euclid, :hilbert]
 
 # Returns
@@ -2281,8 +2281,8 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 # Arguments
 
 - `signal::AbstractArray`
-- `len::Int64` - trimming length in samples
-- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
+- `len::Int64`: trimming length in samples
+- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]
 
 # Returns
@@ -2314,8 +2314,8 @@ Removes `len` samples from the beginning (`from` = :start, default) or end (`fro
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `len::Int64` - number of samples to remove
-- `offset::Int64` - offset from which trimming starts, only works for `from` = :start
+- `len::Int64`: number of samples to remove
+- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]`
 
 # Returns
@@ -2662,12 +2662,12 @@ Calculates `n` first PCs for `signal`.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `n::Int64` - number of PCs
+- `n::Int64`: number of PCs
 
 # Returns
 
-- `pc::Array{Float64, 3}:` - PC(1)..PC(n) × epoch
-- `pc_var::Matrix{Float64}` - PC_VAR(1)..PC_VAR(n) × epoch
+- `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+- `pc_var::Matrix{Float64}`: PC_VAR(1)..PC_VAR(n) × epoch
 """
 function signal_pca(signal::Array{Float64, 3}; n::Int64)
 
@@ -2776,15 +2776,15 @@ Calculates `n` first ICs for `signal`.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `n::Int64` - number of PCs
-- `tol::Float64` - tolerance for ICA
-- `iter::Int64` - maximum number of iterations
-- `f::Symbol[:tanh, :gaus]` - neg-entropy functor
+- `n::Int64`: number of PCs
+- `tol::Float64`: tolerance for ICA
+- `iter::Int64`: maximum number of iterations
+- `f::Symbol[:tanh, :gaus]`: neg-entropy functor
 
 # Returns
 
-- `ic::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
-- `ic_mw::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+- `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 """
 function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -2823,8 +2823,8 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `ic_activation::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
-- `ic_mw::Array{Float64, 3}:` - IC(1)..IC(n) × epoch
+- `ic_activation::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 - `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 # Returns
@@ -2878,7 +2878,7 @@ function signal_epochs_stats(signal::Array{Float64, 3})
     s_var = zeros(epoch_n)
     s_kurt = zeros(epoch_n)
 
-    Threads.@threads for epoch in 1:epoch_n
+    for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
         s_mean[epoch] = mean(s)
         s_median[epoch] = median(s)
@@ -2898,9 +2898,9 @@ Calculates spectrogram of `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `fs::Int64` - sampling frequency
-- `norm::Bool` - normalize powers to dB
-- `demean::Bool` - demean signal prior to analysis
+- `fs::Int64`: sampling frequency
+- `norm::Bool`: normalize powers to dB
+- `demean::Bool`: demean signal prior to analysis
 
 # Returns
 
@@ -2939,9 +2939,9 @@ Calculates spectrogram of `signal`.
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fs::Int64` - sampling frequency
-- `norm::Bool` - normalize powers to dB
-- `demean::Bool` - demean signal prior to analysis
+- `fs::Int64`: sampling frequency
+- `norm::Bool`: normalize powers to dB
+- `demean::Bool`: demean signal prior to analysis
 
 # Returns
 
@@ -2971,16 +2971,16 @@ end
 """
     signal_band(fs, band)
 
-Return band frequency limits.
+Returns EEG band frequency limits.
 
 # Arguments
 
 - `fs::Int64`
-- `band::Symbol`
+- `band::Symbol`: EEG band name (:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher)
 
 # Returns
 
-- `band_frequency::Tuple{Float64, Float64}`
+- `band_frequency::Tuple{Float64, Float64}`: lower and upper bounds
 """
 function signal_band(fs::Union{Int64, Float64}, band::Symbol)
 
@@ -3015,7 +3015,7 @@ Detect bad `signal` epochs based on: flat channel(s)
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
 function signal_detect_epoch_flat(signal::Array{Float64, 3})
     
@@ -3051,7 +3051,7 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
 function signal_detect_epoch_rmse(signal::Array{Float64, 3})
     
@@ -3068,7 +3068,7 @@ function signal_detect_epoch_rmse(signal::Array{Float64, 3})
             rmse_ch[idx] = rmse(signal[idx, :, epoch], ch_m)
         end
         for idx in 1:channel_n
-            rmse_ch[idx] > HypothesisTests.ci(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch] += 1)
+            rmse_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
 
@@ -3087,7 +3087,7 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
 function signal_detect_epoch_rmsd(signal::Array{Float64, 3})
     
@@ -3104,7 +3104,7 @@ function signal_detect_epoch_rmsd(signal::Array{Float64, 3})
             rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch], ch_m)
         end
         for idx in 1:channel_n
-            rmsd_ch[idx] > HypothesisTests.ci(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch] += 1)
+            rmsd_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
 
@@ -3124,7 +3124,7 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
 function signal_detect_epoch_euclid(signal::Array{Float64, 3})
     
@@ -3141,7 +3141,7 @@ function signal_detect_epoch_euclid(signal::Array{Float64, 3})
             ed_ch[idx] = euclidean(signal[idx, :, epoch], ch_m)
         end
         for idx in 1:channel_n
-            ed_ch[idx] > HypothesisTests.ci(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch] += 1)
+            ed_ch[idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
 
@@ -3161,7 +3161,7 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
 function signal_detect_epoch_p2p(signal::Array{Float64, 3})
     
@@ -3177,7 +3177,7 @@ function signal_detect_epoch_p2p(signal::Array{Float64, 3})
             p2p[idx] = maximum(signal[idx, :, epoch]) + abs(minimum(signal[idx, :, epoch]))
         end
         for idx in 1:channel_n
-            p2p[idx] > HypothesisTests.ci(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch] += 1)
+            p2p[idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
 
