@@ -261,7 +261,15 @@ i, mw = signal_ica(signal_a, n=1, tol=1.0)
 s = signal_ica_reconstruct(signal_a, ic_activations=i, ic_mw=mw, ic_v=1)
 @test size(s) == (2, 101, 2)
 
-c, b = signal_detect_flat(signal_a, len=2)
-@test typeof(c) == Set{Int64}
+b = signal_detect_epoch_flat(signal_a)
+@test b == [0.0, 0.0]
+b = signal_detect_epoch_rmse(signal_a)
+@test b == [0.0, 0.0]
+b = signal_detect_epoch_rmsd(signal_a)
+@test b == [0.0, 0.0]
+b = signal_detect_epoch_euclid(signal_a)
+@test b == [0.0, 0.0]
+b = signal_detect_epoch_p2p(signal_a)
+@test b == [0.0, 0.0]
 
 true

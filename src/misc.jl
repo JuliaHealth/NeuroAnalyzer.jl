@@ -687,3 +687,25 @@ function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev
 
     return t
 end
+
+"""
+    ransac(signal1, signal2)
+
+Calculates correlation between signal and its RANSAC reconstruction.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+
+# Returns
+
+- `r::Float64`
+
+"""
+function rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
+    # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
+    r = sqrt(mean(signal2 - signal1)^2)
+
+    return r
+end

@@ -175,7 +175,8 @@ eeg_ica!(e, tol=1.0, n=10)
 e2 = eeg_ica_reconstruct(e, ica=1)
 @test size(e2.eeg_signals) == (19, 354816, 1)
 
-c, b = eeg_detect_flat(edf, len=0.5)
+e = eeg_epochs(edf, epoch_len=20*256)
+b = eeg_detect_bad_epochs(edf)
 @test length(c) == 19
 
 true

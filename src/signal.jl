@@ -3005,88 +3005,183 @@ function signal_band(fs::Union{Int64, Float64}, band::Symbol)
 end
 
 """
-    signal_detect_flat(signal::Array{Float64, 3}, len::Int64)
+    signal_detect_epoch_flat(signal::Array{Float64, 3}, threshold=0.1)
 
-Detect bad `signal` channel(s) based on: flat signal for `len` length.
+Detect bad `signal` epochs based on: flat channel(s)
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `len::Int64`
 
 # Returns
 
-- `bad_channels::Vector{Int64}`
-- `bad_channels_markers::Vector{Tuple{Int64, Int64}}`
+- `bad_epochs_score::Vector{Int64}`
 """
-function signal_detect_flat(signal::Array{Float64, 3}; len::Int64)
+function signal_detect_epoch_flat(signal::Array{Float64, 3})
     
     channel_n = size(signal, 1)
     signal_len = size(signal, 2)
     epoch_n = size(signal, 3)
 
-    s_tmp = reshape(signal, channel_n, epoch_n * signal_len)
-    typeof(len) == Float64 && (len = len * signal_len)
+    bad_epochs_score = zeros(epoch_n)
 
-    bad_channel_idx = Vector{Tuple{Int64, Int64, Int64}}()
-
-    # add tolerance around zero μV
-    flat_v = zeros(Float64, len)
-
-    for idx1 in 1:channel_n
-        c_tmp_diff = diff(s_tmp[idx1, :])
-        for idx2 in 1:len:(length(c_tmp_diff) - len)
-            if c_tmp_diff[idx2:(idx2 + len - 1)] == flat_v
-                bad_channel = (idx1, idx2, idx2 + len - 1)
-                push!(bad_channel_idx, bad_channel)
-            end
+    for epoch in 1:epoch_n
+        for idx in 1:channel_n
+            idx=1
+            epoch=1
+            c_tmp_diff = abs.(diff(signal[idx, :, epoch]))
+            # add tolerance around zero μV
+            sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch] += 1)
         end
     end
 
-    bad_channels = Set{Int64}()
-    for idx in 1:length(bad_channel_idx)
-         push!(bad_channels, bad_channel_idx[idx][1])
-    end
+    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
 
-    bad_channels_markers = Set{Tuple{Int64, Int64}}()
-    for idx in 1:length(bad_channel_idx)
-         push!(bad_channels_markers, (bad_channel_idx[idx][2], bad_channel_idx[idx][3]))
-    end
-
-    return bad_channels, bad_channels_markers
+    return bad_epochs_score
 end
 
 """
-    signal_detect_cor(signal::Array{Float64, 3}, r::Float64)
+    signal_detect_epoch_rmse(signal::Array{Float64, 3})
 
-Detect bad `signal` channel(s) based on: correlation < `r` with adjacent signal.
+Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `r::Float64`
 
 # Returns
 
-- `bad_channel_idx::Vector{Int64}`
+- `bad_epochs_score::Vector{Int64}`
 """
-function signal_detect_cor(signal::Array{Float64, 3}; r::Float64)
+function signal_detect_epoch_rmse(signal::Array{Float64, 3})
     
     channel_n = size(signal, 1)
     signal_len = size(signal, 2)
     epoch_n = size(signal, 3)
 
-    bad_channel_idx = Set{Int64}()
-    s = reshape(signal, channel_n, epoch_n * signal_len)
+    bad_epochs_score = zeros(epoch_n)
 
-    c = abs(cor(s[1, :], s[2, :]))
-    c < r && (push!(bad_channel_idx, 1))
-    for idx in 2:(channel_n - 1)
-        c = abs(cor(s[idx, :], s[(idx + 1), :]))
-        c < r && (push!(bad_channel_idx, idx))
+    for epoch in 1:epoch_n
+        ch_m = vec(median(signal[:, :, epoch], dims=1))
+        rmse_ch = zeros(channel_n)
+        for idx in 1:channel_n
+            rmse_ch[idx] = rmse(signal[idx, :, epoch], ch_m)
+        end
+        for idx in 1:channel_n
+            rmse_ch[idx] > HypothesisTests.ci(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch] += 1)
+        end
     end
-    c = abs(cor(s[(end - 1), :], s[end, :]))
-    c < r && (push!(bad_channel_idx, eeg_channel_n(eeg)))
 
-    return sort!(collect(bad_channel_idx))
+    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
+
+    return bad_epochs_score
+end
+
+"""
+    signal_detect_epoch_rmsd(signal::Array{Float64, 3})
+
+Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `bad_epochs_score::Vector{Int64}`
+"""
+function signal_detect_epoch_rmsd(signal::Array{Float64, 3})
+    
+    channel_n = size(signal, 1)
+    signal_len = size(signal, 2)
+    epoch_n = size(signal, 3)
+
+    bad_epochs_score = zeros(epoch_n)
+
+    for epoch in 1:epoch_n
+        ch_m = median(signal[:, :, epoch], dims=1)
+        rmsd_ch = zeros(channel_n)
+        for idx in 1:channel_n
+            rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch], ch_m)
+        end
+        for idx in 1:channel_n
+            rmsd_ch[idx] > HypothesisTests.ci(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch] += 1)
+        end
+    end
+
+    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
+
+    return bad_epochs_score
+end
+
+"""
+    signal_detect_epoch_euclid(signal::Array{Float64, 3})
+
+Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `bad_epochs_score::Vector{Int64}`
+"""
+function signal_detect_epoch_euclid(signal::Array{Float64, 3})
+    
+    channel_n = size(signal, 1)
+    signal_len = size(signal, 2)
+    epoch_n = size(signal, 3)
+
+    bad_epochs_score = zeros(epoch_n)
+
+    for epoch in 1:epoch_n
+        ch_m = median(signal[:, :, epoch], dims=1)
+        ed_ch = zeros(channel_n)
+        for idx in 1:channel_n
+            ed_ch[idx] = euclidean(signal[idx, :, epoch], ch_m)
+        end
+        for idx in 1:channel_n
+            ed_ch[idx] > HypothesisTests.ci(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch] += 1)
+        end
+    end
+
+    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
+
+    return bad_epochs_score
+end
+
+"""
+    signal_detect_epoch_p2p(signal::Array{Float64, 3})
+
+Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `bad_epochs_score::Vector{Int64}`
+"""
+function signal_detect_epoch_p2p(signal::Array{Float64, 3})
+    
+    channel_n = size(signal, 1)
+    signal_len = size(signal, 2)
+    epoch_n = size(signal, 3)
+
+    bad_epochs_score = zeros(epoch_n)
+
+    for epoch in 1:epoch_n
+        p2p = zeros(channel_n)
+        for idx in 1:channel_n
+            p2p[idx] = maximum(signal[idx, :, epoch]) + abs(minimum(signal[idx, :, epoch]))
+        end
+        for idx in 1:channel_n
+            p2p[idx] > HypothesisTests.ci(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch] += 1)
+        end
+    end
+
+    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
+
+    return bad_epochs_score
 end

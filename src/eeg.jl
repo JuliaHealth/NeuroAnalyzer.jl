@@ -3106,68 +3106,127 @@ function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, Abstrac
 end
 
 """
-    eeg_detect_flat(eeg; len=5, action=:view)
+    eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
 
-Detect bad `signal` channel(s) based on: flat signal for `len` length (in samples or percentage of signal length).
+Detect bad `eeg` epochs based on:
+- flat channel(s)
+- RMSE
+- RMSD
+- Euclidean distance
+- peak-to-peak amplitude
+
 
 # Arguments
 
 - `eeg::EEG`
-- `len::Int64` - seconds
-- `action::Symbol=[:view, :trim, :remove_channel, :remove_epoch]` - how to remove bad signals
+- `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
+- `ch_t::Float64` - percentage of bad channels to mark the epoch as bad
+
+# Returns  
+
+- `bad_epochs_idx::Vector{Int64}`
+"""
+function eeg_detect_bad_epochs(eeg::EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
+
+    for idx in method
+        idx in [:flat, :rmse, :rmsd, :euclid, :p2p] || throw(ArgumentError("method must be :flat, :rmse, :rmsd, :euclid, :p2p"))
+    end
+
+    bad_epochs_idx = zeros(Int64, eeg_epoch_n(eeg))
+
+    if :flat in method
+        bad_epochs = signal_detect_epoch_flat(eeg.eeg_signals)
+        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+    end
+
+    if :rmse in method
+        bad_epochs = signal_detect_epoch_rmse(eeg.eeg_signals)
+        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+    end
+
+    if :rmsd in method
+        bad_epochs = signal_detect_epoch_rmsd(eeg.eeg_signals)
+        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+    end
+
+    if :euclid in method
+        bad_epochs = signal_detect_epoch_euclid(eeg.eeg_signals)
+        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+    end
+
+    if :p2p in method
+        bad_epochs = signal_detect_epoch_p2p(eeg.eeg_signals)
+        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+    end
+
+    return bad_epochs_idx
+end
+
+"""
+    eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
+
+Deletes bad `eeg` epochs.
+
+# Arguments
+
+- `eeg::EEG`
+- `bad_epochs_idx::Vector{Int64}`
 
 # Returns
 
-- `eeg`
-- `bad_channel::Vector{Int64}
-- `bad_markers::Vector{Tuple{Int64, Int64}} - start:end of bad signal in samples
+- `eeg::EEG`
 """
-function eeg_detect_flat(eeg::EEG; len::Int64=5, action::Symbol=:view)
-    
-    action in [:view, :trim, :remove_channel, :remove_epoch] || throw(ArgumentError("action must be :view, :trim, :remove_channel or :remove_epoch"))
-    (action === :remove_epoch && eeg_epoch_n(eeg) == 1) && throw(ArgumentError("You cannot delete the last epoch."))
-
-    len = floor(Int64, len * eeg_sr(eeg))
+function eeg_delete_bad_epochs(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
 
     eeg_tmp = deepcopy(eeg)
-    bad_channels, bad_channels_markers = signal_detect_flat(eeg_tmp.eeg_signals, len=len)
-    bad_markers = sort(collect(bad_channels_markers), rev=true)
 
-    if action === :view
-        offset = floor(Int64, (bad_markers[idx][1] / eeg_sr(eeg))) * eeg_sr(eeg)
-        len = 10 * eeg_sr(eeg)
-        offset + len > eeg_signal_len(eeg) && (len = eeg_signal_len(eeg) - offset)
-        bad_channels = (eeg_channel_n(eeg) + 1) .- sort!(collect(bad_channels), rev=true)
-        eeg_plot(eeg, offset=offset, len=len, bad_channels=bad_channels)
-
-        return sort!(collect(bad_channels)), sort!(collect(bad_channels_markers))
-    end
-
-    if action === :trim
-        for idx in 1:length(bad_markers)
-            eeg_trim!(eeg_tmp, offset=bad_markers[idx][1]-1, len=(bad_markers[idx][2] - bad_markers[idx][1] + 2), keep_epochs=false)
+    if confirm == false
+        eeg_tmp = eeg_delete_epoch(eeg_tmp, epoch=bad_epochs)
+    else
+        for idx in 1:length(bad_epochs)
+            title = "Bad epoch: #" * string(idx)
+            print(title * " of " * string(length(bad_epochs)) * ": remove [Y/n]? ")
+            ans = lowercase(readline())
+            ans == "" && (ans = "y")
+            ans == "y" && (eeg_tmp = eeg_delete_epoch(eeg_tmp, epoch=idx))
         end
     end
 
-    if action === :remove_channel
-        channels_to_remove = sort!(collect(bad_channels))
-        eeg_delete_channel!(eeg_tmp, channel=channels_to_remove)
-    end
-
-    if action === :remove_epoch
-        sort!(bad_markers, rev=true)
-        epochs_to_remove = Set{Int64}()
-        for idx in 1:length(bad_markers)
-            push!(epochs_to_remove, floor(Int64, (bad_markers[idx][1] + eeg_tmp.eeg_header[:epoch_duration_samples]) / eeg_tmp.eeg_header[:epoch_duration_samples]))
-            push!(epochs_to_remove, floor(Int64, (bad_markers[idx][2] + eeg_tmp.eeg_header[:epoch_duration_samples]) / eeg_tmp.eeg_header[:epoch_duration_samples]))
-        end
-        epochs_to_remove = sort!(collect(epochs_to_remove), rev=true)
-        for idx in 1:length(epochs_to_remove)
-            eeg_delete_epoch!(eeg_tmp, epoch=epochs_to_remove[idx])
-        end
-    end
-
-    push!(eeg_tmp.eeg_header[:history], "eeg_detect_flat!(EEG, len=$len, action=$action")
+    push!(eeg_tmp.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
 
     return eeg_tmp
 end
+
+"""
+    eeg_check_bad_epochs!(eeg; bad_epochs, confirm=true)
+
+Deletes bad `eeg` epochs.
+
+# Arguments
+
+- `eeg::EEG`
+- `bad_epochs_idx::Vector{Int64}`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_delete_bad_epochs!(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
+
+    if confirm == false
+        eeg_delete_epoch!(eeg, epoch=bad_epochs)
+    else
+        for idx in 1:length(bad_epochs)
+            title = "Bad epoch: #" * string(idx)
+            print(title * " of " * string(length(bad_epochs)) * ": remove [Y/n]? ")
+            ans = lowercase(readline())
+            ans == "" && (ans = "y")
+            ans == "y" && eeg_delete_epoch!(eeg, epoch=idx)
+        end
+    end
+
+    push!(eeg.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
+
+    return
+end
+

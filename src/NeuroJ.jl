@@ -5,6 +5,7 @@ using DataFrames
 using Distances
 using DSP
 using FFTW
+using HypothesisTests
 using InformationMeasures
 using Interpolations
 using JLD2
@@ -90,6 +91,7 @@ export vsplit
 export z_score
 export zero_pad
 export tuple_order!
+export rmse
 
 include("signal.jl")
 export signal_add_noise
@@ -135,8 +137,11 @@ export signal_upsample
 export signal_spectrogram
 export signal_band
 export signal_ica_reconstruct
-export signal_detect_flat
-export signal_detect_cor
+export signal_detect_epoch_flat
+export signal_detect_epoch_rmse
+export signal_detect_epoch_rmsd
+export signal_detect_epoch_euclid
+export signal_detect_epoch_p2p
 
 include("eeg.jl")
 export eeg_autocov
@@ -238,8 +243,9 @@ export eeg_signal_len
 export eeg_epoch_len
 export eeg_ica_reconstruct
 export eeg_ica_reconstruct!
-export eeg_detect_flat
-export eeg_detect_cor
+export eeg_detect_bad_epochs
+export eeg_delete_bad_epochs
+export eeg_delete_bad_epochs!
 
 include("eeg_io.jl")
 export eeg_import_edf
@@ -264,6 +270,7 @@ export eeg_plot_topo
 export eeg_plot_histogram
 export eeg_plot_filter_response
 export eeg_plot_bands
+export eeg_view_bad_epochs
 export signal_plot
 export signal_plot_avg
 export signal_plot_butterfly

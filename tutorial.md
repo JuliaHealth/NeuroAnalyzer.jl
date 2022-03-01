@@ -295,12 +295,11 @@ eeg_norm_zscore!(edf)
 eeg_norm_minmax!(edf)
 ```
 
-Detect bad signals based on flat signal (length in seconds):
+Detect bad epochs:
 ```julia
-eeg_detect_flat(edf, len=2)
-eeg_detect_flat(edf, len=2, action=:trim)
-eeg_detect_flat(edf, len=5, action=:remove_channel)
-eeg_detect_flat(edf, len=1, action=:remove_epoch)
+bad_epochs = eeg_detect_bad_epochs(e10, method=[:flat, :cor], r=0.7)
+eeg_check_bad_epochs(e10, bad_epochs)
+eeg_delete_epoch!(e10, epoch=bad_epochs)
 ```
 
 Remove DC:
