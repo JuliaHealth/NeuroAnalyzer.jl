@@ -34,7 +34,6 @@ function eeg_reset_components!(eeg::EEG)
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
 
-    return
 end
 
 """
@@ -156,7 +155,6 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -285,7 +283,6 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -333,7 +330,6 @@ function eeg_derivative!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -376,7 +372,6 @@ function eeg_total_power!(eeg::EEG)
     push!(eeg.eeg_header[:components], :total_power)
     push!(eeg.eeg_header[:history], "eeg_total_power!(EEG)")
 
-    return
 end
 
 """
@@ -450,7 +445,6 @@ function eeg_detrend!(eeg::EEG; type::Symbol=:linear)
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, type=$type)")
 
-    return
 end
 
 """
@@ -500,7 +494,6 @@ function eeg_reference_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, A
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
 
-    return
 end
 
 """
@@ -549,7 +542,6 @@ function eeg_reference_car!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -673,7 +665,6 @@ function eeg_rename_channel!(eeg::EEG; channel::Union{Int64, String}, new_name::
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, new_name=$new_name)")
 
-    return
 end
 
 """
@@ -723,7 +714,6 @@ function eeg_taper!(eeg::EEG; taper::Vector)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -771,7 +761,6 @@ function eeg_demean!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -819,7 +808,6 @@ function eeg_normalize_zscore!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -867,7 +855,6 @@ function eeg_normalize_minmax!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -947,7 +934,6 @@ function eeg_cov!(eeg::EEG; norm=true)
     push!(eeg.eeg_header[:components], :cov_mat)
     push!(eeg.eeg_header[:history], "eeg_cov!(EEG)")
 
-    return
 end
 
 """
@@ -987,7 +973,6 @@ function eeg_cor!(eeg::EEG)
     push!(eeg.eeg_header[:components], :cor_mat)
     push!(eeg.eeg_header[:history], "eeg_cor!(EEG)")
 
-    return
 end
 
 """
@@ -1057,7 +1042,6 @@ function eeg_upsample!(eeg::EEG; new_sr::Int64)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1344,7 +1328,6 @@ function eeg_epochs!(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1445,7 +1428,6 @@ function eeg_tconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vect
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1542,7 +1524,6 @@ function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1609,7 +1590,6 @@ function eeg_downsample!(eeg::EEG; new_sr::Int64)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1661,7 +1641,6 @@ function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fal
     push!(eeg.eeg_header[:components], :acov_lags)
     push!(eeg.eeg_header[:history], "eeg_autocov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 
-    return
 end
 
 """
@@ -1713,7 +1692,6 @@ function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fa
     push!(eeg.eeg_header[:components], :ccov_lags)
     push!(eeg.eeg_header[:history], "eeg_crosscov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 
-    return
 end
 
 """
@@ -1788,7 +1766,6 @@ function eeg_psd!(eeg::EEG; norm::Bool=false)
     push!(eeg.eeg_header[:components], :psd_f)
     push!(eeg.eeg_header[:history], "eeg_psd!(EEG, norm=$norm)")
 
-    return
 end
 
 """
@@ -1832,7 +1809,6 @@ function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
     push!(eeg.eeg_header[:components], :stationarity)
     push!(eeg.eeg_header[:history], "eeg_stationarity!(EEG, window=$window, method=$method)")
 
-    return
 end
 
 """
@@ -1930,7 +1906,6 @@ function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, k
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -1972,7 +1947,6 @@ function eeg_mi!(eeg::EEG)
     push!(eeg.eeg_header[:components], :mi)
     push!(eeg.eeg_header[:history], "eeg_mi!(EEG)")
 
-    return
 end
 
 """
@@ -2035,7 +2009,6 @@ function eeg_entropy!(eeg::EEG)
     push!(eeg.eeg_header[:components], :entropy)
     push!(eeg.eeg_header[:history], "eeg_entropy!(EEG)")
 
-    return
 end
 
 """
@@ -2166,7 +2139,6 @@ function eeg_freqs!(eeg::EEG)
     push!(eeg.eeg_header[:components], :nyq)
     push!(eeg.eeg_header[:history], "eeg_freqs!(EEG)")
 
-    return
 end
 
 """
@@ -2215,7 +2187,6 @@ function eeg_pca!(eeg::EEG; n::Int64)
     push!(eeg.eeg_header[:components], :pca_m)
     push!(eeg.eeg_header[:history], "eeg_pca!(EEG, n=$n)")
 
-    return
 end
 
 """
@@ -2311,7 +2282,6 @@ function eeg_fconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vect
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -2486,7 +2456,6 @@ function eeg_delete_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstract
     
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -2590,7 +2559,6 @@ function eeg_keep_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
     
     eeg_reset_components!(eeg)
 
-    return
 end
 
 """
@@ -2738,7 +2706,6 @@ function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::S
     push!(eeg.eeg_header[:components], :ica_mw)
     push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n, tol=$tol, iter=$iter, f=$f))")
 
-    return
 end
 
 """
@@ -2794,7 +2761,6 @@ function eeg_epochs_stats!(eeg::EEG)
     push!(eeg.eeg_header[:components], :epochs_kurtosis)
     push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")
 
-    return
 end
 
 """
@@ -2890,7 +2856,6 @@ function eeg_delete_component!(eeg::EEG; c::Symbol)
         end
     end
 
-    return
 end
 
 """
@@ -2943,7 +2908,6 @@ function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
     push!(eeg.eeg_header[:components], :spec_t)
     push!(eeg.eeg_header[:history], "eeg_spectrogram!(EEG, norm=$norm, demean=$demean)")
 
-    return
 end
 
 """
@@ -2994,7 +2958,6 @@ function eeg_average!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
-    return
 end
 
 
@@ -3049,7 +3012,6 @@ function eeg_spectrum!(eeg::EEG; pad::Int64=0)
     push!(eeg.eeg_header[:components], :spectrum_phase)
     push!(eeg.eeg_header[:history], "eeg_spectrum!(EEG, pad=$pad)")
 
-    return
 end
 
 """
@@ -3102,7 +3064,6 @@ function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, Abstrac
 
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
 
-    return
 end
 
 """
@@ -3227,6 +3188,5 @@ function eeg_delete_bad_epochs!(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bo
 
     push!(eeg.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
 
-    return
 end
 

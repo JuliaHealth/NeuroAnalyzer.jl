@@ -230,6 +230,8 @@ export eeg_load_electrodes
 export eeg_load_electrodes!
 export eeg_save
 export eeg_export_csv
+export eeg_add_labels
+export eeg_add_labels!
 
 include("plots.jl")
 export eeg_draw_head

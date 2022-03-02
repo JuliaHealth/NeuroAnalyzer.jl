@@ -251,20 +251,36 @@ Loads electrode positions from:
 - `file_name::String`
 """
 function eeg_load_electrodes!(eeg::EEG; file_name)
+    
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
     sensors = CSV.read(file_name, delim="\t", DataFrame)
     loc_x = zeros(length(sensors[:, :radius]))
     loc_y = zeros(length(sensors[:, :theta]))
+    loc_z = sensors[:, :Z]
     for idx in 1:length(sensors[:, :theta])
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * sensors[idx, :theta], sensors[idx, :radius])
     end
-    length(loc_x) != eeg.eeg_header[:channel_n] && throw(ArgumentError("Number of channels and number of positions do not match."))
 
+    file_labels = lowercase.(sensors[:, :labels])
+    eeg_labels = lowercase.(eeg.eeg_header[:labels])
+    no_match = setdiff(eeg_labels, file_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
+    length(eeg_labels) && throw(ArgumentError("Number of channels and number of positions do not match."))
+
+    labels_idx = zeros(Int64, length(eeg_labels))
+    for idx1 in 1:length(eeg_labels)
+        for idx2 in 1:length(file_labels)
+            eeg_labels[idx1] == file_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
     # create new dataset
     eeg.eeg_header[:channel_locations] = true
-    eeg.eeg_header[:xlocs] = loc_x
-    eeg.eeg_header[:ylocs] = loc_y
+    eeg.eeg_header[:xlocs] = loc_x[labels_idx]
+    eeg.eeg_header[:ylocs] = loc_y[labels_idx]
+    eeg.eeg_header[:zlocs] = loc_z[labels_idx]
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
@@ -377,4 +393,47 @@ function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, compone
     close(f)
 
     return true
+end
+
+"""
+    eeg_add_labels(eeg::EEG, labels::Vector{String})
+
+Adds `labels` to `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `labels::Vector{String}`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_add_labels(eeg::EEG, labels::Vector{String})
+    length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
+    
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:labels] = labels
+
+    push!(eeg_new.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+ 
+    return eeg_new
+end
+
+"""
+    eeg_add_labels!(eeg::EEG, labels::Vector{String})
+
+Adds `labels` to `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `labels::Vector{String}`
+"""
+function eeg_add_labels!(eeg::EEG, labels::Vector{String})
+    length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
+    
+    eeg.eeg_header[:labels] = labels
+
+    push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
 end
