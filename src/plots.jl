@@ -2268,17 +2268,17 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     end
 
     # plot signal at electrodes at time
-    if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_x_sph]
-        loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+    if length(eeg.eeg_header[:loc_x_sph]) > 0
+        loc_x = eeg.eeg_header[:loc_x_sph]
+        loc_y = eeg.eeg_header[:loc_y_sph]
     end
-    if length(eeg_tmp.eeg_header[:loc_x]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_x]
-        loc_y = eeg_tmp.eeg_header[:loc_y]
+    if length(eeg.eeg_header[:loc_x]) > 0
+        loc_x = eeg.eeg_header[:loc_x]
+        olc_y = eeg.eeg_header[:loc_y]
     end
-    if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_y_theta]
-        loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+    if length(eeg.eeg_header[:loc_x_theta]) > 0
+        loc_x = eeg.eeg_header[:loc_y_theta]
+        loc_y = eeg.eeg_header[:loc_x_theta]
     end
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
@@ -2286,7 +2286,7 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     # interpolate
     x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
     y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
-    interpolation_factor = 200
+    interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)

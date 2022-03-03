@@ -3,7 +3,7 @@ using Plots
 using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
-eeg_load_electrodes!(edf, file_name="standard-10-20-cap19.ced")
+eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 signal_v = rand(1000)
 signal_m = rand(10, 1000)
 t = linspace(0, 10, 1000)
