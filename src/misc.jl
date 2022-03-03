@@ -129,39 +129,46 @@ Converts cartographic coordinates `x` and `y` to polar.
 
 # Returns
 
-- `rho::Float64`
+- `phi::Float64`
 - `theta::Float64`
 """
-function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
-
-    rho = hypot(x, y)
-    theta = atan(y, x)
-
-    return rho, theta
-end
+cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64}) = hypot(x, y), atan(y, x)
 
 """
-    pol2cart(theta, rho)
+    pol2cart(theta, phi)
 
-Converts polar coordinates `theta` and `rho` to cartographic.
+Converts polar coordinates `theta` and `phi` to cartographic.
 
 # Arguments
 
-- `rho::Float64`
-- `theta::Float64`
+- `phi::Union{Float64, Int64}`
+- `theta::Union{Float64, Int64}`
 
 # Returns
 
 - `x::Float64`
 - `y::Float64`
 """
-function pol2cart(theta::Float64, rho::Float64)
+pol2cart(theta::Union{Float64, Int64}, phi::Union{Float64, Int64}) = phi * cos(theta), phi * sin(theta)
 
-    x = rho * cos(theta)
-    y = rho * sin(theta)
+"""
+    pol2cart_sph(ρ, theta, phi=0)
 
-    return x, y
-end
+Converts spherical coordinates `theta` and `phi` and `ρ` to cartographic.
+
+# Arguments
+
+- `phi::Union{Float64, Int64}`: the angle with respect to the z-axis (elevation)
+- `theta::Union{Float64, Int64}`: the angle in the xy plane with respect to the x-axis (azimuth)
+- `ρ::Union{Float64, Int64}`: the distance from the origin to the point, theta represents  and phi represents
+
+# Returns
+
+- `x::Float64`
+- `y::Float64`
+- `z::Float64`
+"""
+sph2cart(ρ::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0) = ρ * cos(phi) * cos(theta), ρ * cos(phi) * sin(theta), ρ * sin(phi)
 
 """
     generate_hanning(n)

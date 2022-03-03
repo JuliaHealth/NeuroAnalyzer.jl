@@ -26,6 +26,7 @@ value = (value - digital_minimum ) * gain + physical_minimum
 Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 """
 function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_labels::Bool=true)
+
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     fid = open(file_name)
@@ -173,10 +174,21 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :channel_n => channel_n,
                       :reference => "",
                       :channel_locations => false,
-                      :xlocs => Float64[],
-                      :ylocs => Float64[],
-                      :history => Vector{String}(),
-                      :components => Vector{Symbol}(),
+                      :loc_x_theta => Float64[],
+                      :loc_y_theta => Float64[],
+                      :loc_theta => Float64[],
+                      :loc_phi => Float64[],
+                      :loc_x => Float64[],
+                      :loc_y => Float64[],
+                      :loc_z => Float64[],
+                      :loc_x_sph => Float64[],
+                      :loc_x_sph => Float64[],
+                      :loc_y_sph => Float64[],
+                      :loc_radius_sph => Float64[],
+                      :loc_theta_sph => Float64[],
+                      :loc_phi_sph => Float64[],
+                      :history => String[],
+                      :components => String[],
                       :eeg_duration_samples => eeg_duration_samples,
                       :eeg_duration_seconds => eeg_duration_seconds,
                       :epoch_n => 1,
@@ -202,6 +214,95 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
 end
 
 """
+    eeg_import_ced(file_name)
+
+Loads electrode positions from CED file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `sensors::DataFrame`
+"""
+function eeg_import_ced(file_name)
+
+    sensors = CSV.read(file_name, delim="\t", DataFrame)
+    
+    return sensors
+end
+
+"""
+    eeg_import_locs(file_name)
+
+Loads electrode positions from LOCS file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `sensors::DataFrame`
+"""
+function eeg_import_locs(file_name)
+
+    sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
+    DataFrames.rename!(sensors, [:Number, :theta, :radius, :labels])
+
+    return sensors
+end
+
+"""
+    eeg_import_elc(file_name)
+
+Loads electrode positions from ELC file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `sensors::DataFrame`
+"""
+function eeg_import_elc(file_name)
+
+    f = open(file_name, "r")
+    elc_file = readlines(f)
+    close(f)
+    locs_n = 0
+    locs_l = 0
+    for idx in 1:length(elc_file)
+        if occursin("NumberPositions", elc_file[idx]) == true
+            locs_n = parse(Int64, replace(elc_file[idx], "NumberPositions=" => ""))
+            locs_l = idx + 2
+        end
+    end
+    labels = repeat([""], locs_n)
+    locx = zeros(locs_n)
+    locy = zeros(locs_n)
+    locz = zeros(locs_n)
+    idx2 = 1
+    for idx1 in locs_l:(locs_l + locs_n - 1)
+        l = elc_file[idx1]
+        l[1] == ' ' && (l = l[2:end])
+        locx[idx2], locy[idx2], locz[idx2] = parse.(Float64, split(l, ' '))
+        idx2 += 1
+    end
+    idx2 = 1
+    for idx1 in (locs_l + 1 + locs_n):(locs_l + (2 * locs_n))
+        labels[idx2] = elc_file[idx1]
+        idx2 += 1
+    end
+
+    sensors = DataFrame(:labels => labels, :xlocs => locx, :ylocs => locy, :zlocs => locz)
+
+    return sensors
+end
+
+"""
     eeg_load_electrodes(eeg; file_name)
 
 Loads electrode positions from 
@@ -217,21 +318,113 @@ Loads electrode positions from
 - `eeg:EEG`
 """
 function eeg_load_electrodes(eeg::EEG; file_name)
+
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+    length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    sensors = CSV.read(file_name, delim="\t", DataFrame)
-    loc_x = zeros(length(sensors[:, :radius]))
-    loc_y = zeros(length(sensors[:, :theta]))
-    for idx in 1:length(sensors[:, :theta])
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * sensors[idx, :theta], sensors[idx, :radius])
+    loc_x_theta = Vector{Float64}()
+    loc_y_theta = Vector{Float64}()
+    loc_theta = Vector{Float64}()
+    loc_phi = Vector{Float64}()
+    loc_x_sph = Vector{Float64}()
+    loc_y_sph = Vector{Float64}()
+    loc_z_sph = Vector{Float64}()
+    loc_X = Vector{Float64}()
+    loc_Y = Vector{Float64}()
+    loc_Z = Vector{Float64}()
+    loc_radius_sph = Vector{Float64}()
+    loc_theta_sph = Vector{Float64}()
+    loc_phi_sph = Vector{Float64}()
+
+
+    if splitext(file_name)[2] == ".ced"
+        sensors = eeg_import_ced(file_name)
+
+        f_labels = lowercase.(sensors[:, :labels])
+
+        loc_Y = sensors[:, :X]
+        loc_X = sensors[:, :Y]
+        loc_Z = sensors[:, :Z]
+
+        loc_theta = sensors[:, :theta]
+        loc_phi = sensors[:, :radius]
+
+        for idx in 1:length(f_labels)
+            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
+            push!(loc_x_theta, y)
+            push!(loc_y_theta, x)
+        end
+
+        loc_radius_sph = sensors[:, :sph_radius]
+        loc_theta_sph = sensors[:, :sph_theta]
+        loc_phi_sph = sensors[:, :sph_phi]
+
+        for idx in 1:length(f_labels)
+            x, y, z = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
+            push!(loc_x_sph, x)
+            push!(loc_y_sph, y)
+            push!(loc_z_sph, z)
+        end
     end
-    length(loc_x) != eeg.eeg_header[:channel_n] && throw(ArgumentError("Number of channels and number of positions do not match."))
 
+    if splitext(file_name)[2] == ".elc"
+        sensors = eeg_import_elc(file_name)
+
+        f_labels = lowercase.(sensors[:, :labels])
+        
+        x = sensors[:, :xlocs]
+        y = sensors[:, :ylocs]
+        z = sensors[:, :zlocs]
+
+        for idx in 1:length(f_labels)
+            push!(loc_x_sph, x[idx])
+            push!(loc_y_sph, y[idx])
+            push!(loc_z_sph, z[idx])
+        end
+    end
+
+    if splitext(file_name)[2] == ".locs"
+        sensors = eeg_import_locs(file_name)
+
+        f_labels = lowercase.(sensors[:, :labels])
+
+        loc_theta = sensors[:, :theta]
+        loc_phi = sensors[:, :radius]
+
+        for idx in 1:length(f_labels)
+            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
+            push!(loc_x_theta, y)
+            push!(loc_y_theta, x)
+        end
+    end
+
+    e_labels = lowercase.(eeg.eeg_header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in 1:length(e_labels)
+        for idx2 in 1:length(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals), deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:channel_locations] = true
-    eeg_new.eeg_header[:xlocs] = loc_x
-    eeg_new.eeg_header[:ylocs] = loc_y
+    length(loc_x_theta) > 0 && (eeg_new.eeg_header[:loc_x_theta] = loc_x_theta[labels_idx])
+    length(loc_y_theta) > 0 && (eeg_new.eeg_header[:loc_y_theta] = loc_y_theta[labels_idx])
+    length(loc_theta) > 0 && (eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx])
+    length(loc_phi) > 0 && (eeg_new.eeg_header[:loc_phi] = loc_phi[labels_idx])
+    length(loc_X) > 0 && (eeg_new.eeg_header[:loc_x] = loc_X[labels_idx])
+    length(loc_Y) > 0 && (eeg_new.eeg_header[:loc_y] = loc_Y[labels_idx])
+    length(loc_Z) > 0 && (eeg_new.eeg_header[:loc_z] = loc_Z[labels_idx])
+    length(loc_x_sph) > 0 && (eeg_new.eeg_header[:loc_x_sph] = loc_x_sph[labels_idx])
+    length(loc_y_sph) > 0 && (eeg_new.eeg_header[:loc_x_sph] = loc_y_sph[labels_idx])
+    length(loc_z_sph) > 0 && (eeg_new.eeg_header[:loc_y_sph] = loc_z_sph[labels_idx])
+    length(loc_radius_sph) > 0 && (eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
+    length(loc_theta_sph) > 0 && (eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
+    length(loc_phi_sph) > 0 && (eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
@@ -255,32 +448,108 @@ function eeg_load_electrodes!(eeg::EEG; file_name)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    sensors = CSV.read(file_name, delim="\t", DataFrame)
-    loc_x = zeros(length(sensors[:, :radius]))
-    loc_y = zeros(length(sensors[:, :theta]))
-    loc_z = sensors[:, :Z]
-    for idx in 1:length(sensors[:, :theta])
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * sensors[idx, :theta], sensors[idx, :radius])
+    loc_x_theta = Vector{Float64}()
+    loc_y_theta = Vector{Float64}()
+    loc_theta = Vector{Float64}()
+    loc_phi = Vector{Float64}()
+    loc_x_sph = Vector{Float64}()
+    loc_y_sph = Vector{Float64}()
+    loc_z_sph = Vector{Float64}()
+    loc_X = Vector{Float64}()
+    loc_Y = Vector{Float64}()
+    loc_Z = Vector{Float64}()
+    loc_radius_sph = Vector{Float64}()
+    loc_theta_sph = Vector{Float64}()
+    loc_phi_sph = Vector{Float64}()
+
+
+    if splitext(file_name)[2] == ".ced"
+        sensors = eeg_import_ced(file_name)
+
+        f_labels = lowercase.(sensors[:, :labels])
+
+        loc_Y = sensors[:, :X]
+        loc_X = sensors[:, :Y]
+        loc_Z = sensors[:, :Z]
+
+        loc_theta = sensors[:, :theta]
+        loc_phi = sensors[:, :radius]
+
+        for idx in 1:length(f_labels)
+            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
+            push!(loc_x_theta, y)
+            push!(loc_y_theta, x)
+        end
+
+        loc_radius_sph = sensors[:, :sph_radius]
+        loc_theta_sph = sensors[:, :sph_theta]
+        loc_phi_sph = sensors[:, :sph_phi]
+
+        for idx in 1:length(f_labels)
+            x, y, z = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
+            push!(loc_x_sph, x)
+            push!(loc_y_sph, y)
+            push!(loc_z_sph, z)
+        end
     end
 
-    file_labels = lowercase.(sensors[:, :labels])
-    eeg_labels = lowercase.(eeg.eeg_header[:labels])
-    no_match = setdiff(eeg_labels, file_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
-    length(eeg_labels) && throw(ArgumentError("Number of channels and number of positions do not match."))
+    if splitext(file_name)[2] == ".elc"
+        sensors = eeg_import_elc(file_name)
 
-    labels_idx = zeros(Int64, length(eeg_labels))
-    for idx1 in 1:length(eeg_labels)
-        for idx2 in 1:length(file_labels)
-            eeg_labels[idx1] == file_labels[idx2] && (labels_idx[idx1] = idx2)
+        f_labels = lowercase.(sensors[:, :labels])
+        
+        x = sensors[:, :xlocs]
+        y = sensors[:, :ylocs]
+        z = sensors[:, :zlocs]
+
+        for idx in 1:length(f_labels)
+            push!(loc_x_sph, x[idx])
+            push!(loc_y_sph, y[idx])
+            push!(loc_z_sph, z[idx])
+        end
+    end
+
+    if splitext(file_name)[2] == ".locs"
+        sensors = eeg_import_locs(file_name)
+
+        f_labels = lowercase.(sensors[:, :labels])
+
+        loc_theta = sensors[:, :theta]
+        loc_phi = sensors[:, :radius]
+
+        for idx in 1:length(f_labels)
+            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
+            push!(loc_x_theta, y)
+            push!(loc_y_theta, x)
+        end
+    end
+
+    e_labels = lowercase.(eeg.eeg_header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in 1:length(e_labels)
+        for idx2 in 1:length(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
         end
     end
     
     # create new dataset
     eeg.eeg_header[:channel_locations] = true
-    eeg.eeg_header[:xlocs] = loc_x[labels_idx]
-    eeg.eeg_header[:ylocs] = loc_y[labels_idx]
-    eeg.eeg_header[:zlocs] = loc_z[labels_idx]
+    length(loc_x_theta) > 0 && (eeg.eeg_header[:loc_x_theta] = loc_x_theta[labels_idx])
+    length(loc_y_theta) > 0 && (eeg.eeg_header[:loc_y_theta] = loc_y_theta[labels_idx])
+    length(loc_theta) > 0 && (eeg.eeg_header[:loc_theta] = loc_theta[labels_idx])
+    length(loc_phi) > 0 && (eeg.eeg_header[:loc_phi] = loc_phi[labels_idx])
+    length(loc_X) > 0 && (eeg.eeg_header[:loc_x] = loc_X[labels_idx])
+    length(loc_Y) > 0 && (eeg.eeg_header[:loc_y] = loc_Y[labels_idx])
+    length(loc_Z) > 0 && (eeg.eeg_header[:loc_z] = loc_Z[labels_idx])
+    length(loc_x_sph) > 0 && (eeg.eeg_header[:loc_x_sph] = loc_x_sph[labels_idx])
+    length(loc_y_sph) > 0 && (eeg.eeg_header[:loc_x_sph] = loc_y_sph[labels_idx])
+    length(loc_z_sph) > 0 && (eeg.eeg_header[:loc_y_sph] = loc_z_sph[labels_idx])
+    length(loc_radius_sph) > 0 && (eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
+    length(loc_theta_sph) > 0 && (eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
+    length(loc_phi_sph) > 0 && (eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
@@ -304,6 +573,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 - `success::Bool`
 """
 function eeg_save(eeg::EEG; file_name::String, overwrite::Bool=false)
+
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     eeg.eeg_header[:eeg_filename] = file_name
@@ -331,6 +601,7 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 - `eeg::EEG`
 """
 function eeg_load(file_name::String)
+
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg = load_object(file_name)
@@ -356,6 +627,7 @@ Exports EEG data as CSV.
 - `success::Bool`
 """
 function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
+
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
     eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
 
@@ -410,6 +682,7 @@ Adds `labels` to `eeg` channels.
 - `eeg::EEG`
 """
 function eeg_add_labels(eeg::EEG, labels::Vector{String})
+
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     
     eeg_new = deepcopy(eeg)
@@ -431,6 +704,7 @@ Adds `labels` to `eeg` channels.
 - `labels::Vector{String}`
 """
 function eeg_add_labels!(eeg::EEG, labels::Vector{String})
+
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     
     eeg.eeg_header[:labels] = labels

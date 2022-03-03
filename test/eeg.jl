@@ -179,4 +179,7 @@ e = eeg_epochs(edf, epoch_len=20*256)
 b = eeg_detect_bad_epochs(edf)
 @test length(b) == 1
 
+@test eeg_t2s(edf, t=10) == 2561
+@test eeg_s2t(edf, t=10) == 0.04
+
 true

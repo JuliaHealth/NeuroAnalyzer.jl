@@ -84,6 +84,8 @@ General:
 - performance optimization
 
 EEG:
+- 3d headplots
+- amplitude plots at electrode locations
 - negative index channel to invert polarity
 - phase-amplitude cross-frequency coupling (PAC)
 - plot spectrogram/psd: use embedded spectrogram/psd

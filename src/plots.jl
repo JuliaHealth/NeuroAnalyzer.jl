@@ -1272,10 +1272,23 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     
     eeg_tmp = eeg_keep_channel(eeg, channel=channel)
 
-    loc_x = eeg_tmp.eeg_header[:xlocs]
-    loc_y = eeg_tmp.eeg_header[:ylocs]
+    # look for location data
+    if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_x_sph]
+        loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+    end
+    if length(eeg_tmp.eeg_header[:loc_x]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_x]
+        loc_y = eeg_tmp.eeg_header[:loc_y]
+    end
+    if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_y_theta]
+        loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+    end
+
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+
     if small == true
         plot_size = (800, 800)
         marker_size = 4
@@ -1286,17 +1299,58 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
         font_size = 4
     end
 
-    p = plot(grid=false, framestyle=:none, palette=:darktest, size=plot_size, markerstrokewidth=0, border=:none, aspect_ratio=1, margins=-20Plots.px, titlefontsize=10; kwargs...)
+    p = plot(grid=true,
+             framestyle=:none,
+             palette=:darktest,
+             size=plot_size,
+             markerstrokewidth=0,
+             border=:none,
+             aspect_ratio=1,
+             margins=-20Plots.px,
+             titlefontsize=10;
+             kwargs...)
     if length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
-            p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0; kwargs...)
+            p = plot!((loc_x[idx], loc_y[idx]),
+                      color=idx,
+                      seriestype=:scatter,
+                      xlims=x_lim,
+                      ylims=x_lim,
+                      grid=true,
+                      label="",
+                      markersize=marker_size,
+                      markerstrokewidth=0,
+                      markerstrokealpha=0;
+                      kwargs...)
         end
     else
-        p = plot!(loc_x, loc_y, seriestype=:scatter, color=:black, alpha=0.2, xlims=x_lim, ylims=y_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0; kwargs...)
+        p = plot!(loc_x,
+                  loc_y,
+                  seriestype=:scatter,
+                  color=:black,
+                  alpha=0.2,
+                  xlims=x_lim,
+                  ylims=y_lim,
+                  grid=true,
+                  label="",
+                  markersize=marker_size,
+                  markerstrokewidth=0,
+                  markerstrokealpha=0;
+                  kwargs...)
         if selected != 0
             eeg_tmp = eeg_keep_channel(eeg, channel=selected)
-            loc_x = eeg_tmp.eeg_header[:xlocs]
-            loc_y = eeg_tmp.eeg_header[:ylocs]
+            if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
+                loc_x = eeg_tmp.eeg_header[:loc_x_sph]
+                loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+            end
+            if length(eeg_tmp.eeg_header[:loc_x]) > 0
+                loc_x = eeg_tmp.eeg_header[:loc_x]
+                loc_y = eeg_tmp.eeg_header[:loc_y]
+            end
+            if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
+                loc_x = eeg_tmp.eeg_header[:loc_y_theta]
+                loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+            end
             for idx in 1:eeg_tmp.eeg_header[:channel_n]
                 p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0)
             end
@@ -1304,16 +1358,25 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     end
     if labels == true
         for idx in 1:length(eeg_labels(eeg_tmp))
-        plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_labels(eeg_tmp)[idx], pointsize=font_size)))
+            plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, text(eeg_labels(eeg_tmp)[idx], pointsize=font_size)))
         end
         p = plot!()
     end
-
     if head == true
         # for some reason head is enlarged for channel > 1
         eeg_tmp = eeg_keep_channel(eeg, channel=1)
-        loc_x = eeg_tmp.eeg_header[:xlocs]
-        loc_y = eeg_tmp.eeg_header[:ylocs]
+        if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
+            loc_x = eeg_tmp.eeg_header[:loc_x_sph]
+            loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+        end
+        if length(eeg_tmp.eeg_header[:loc_x]) > 0
+            loc_x = eeg_tmp.eeg_header[:loc_x]
+            loc_y = eeg_tmp.eeg_header[:loc_y]
+        end
+        if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
+            loc_x = eeg_tmp.eeg_header[:loc_y_theta]
+            loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+        end
         hd = eeg_draw_head(p, loc_x, loc_x, head_labels=head_labels)
         plot!(hd)
     end
@@ -2205,8 +2268,18 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     end
 
     # plot signal at electrodes at time
-    loc_x = eeg.eeg_header[:xlocs]
-    loc_y = eeg.eeg_header[:ylocs]
+    if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_x_sph]
+        loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+    end
+    if length(eeg_tmp.eeg_header[:loc_x]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_x]
+        loc_y = eeg_tmp.eeg_header[:loc_y]
+    end
+    if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
+        loc_x = eeg_tmp.eeg_header[:loc_y_theta]
+        loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+    end
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 

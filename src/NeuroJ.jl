@@ -68,6 +68,7 @@ export z_score
 export zero_pad
 export tuple_order!
 export rmse
+export sph2cart
 
 include("signal.jl")
 export signal_add_noise
@@ -222,6 +223,8 @@ export eeg_ica_reconstruct!
 export eeg_detect_bad_epochs
 export eeg_delete_bad_epochs
 export eeg_delete_bad_epochs!
+export eeg_s2t
+export eeg_t2s
 
 include("eeg_io.jl")
 export eeg_import_edf
@@ -232,6 +235,9 @@ export eeg_save
 export eeg_export_csv
 export eeg_add_labels
 export eeg_add_labels!
+export eeg_import_ced
+export eeg_import_elc
+export eeg_import_locs
 
 include("plots.jl")
 export eeg_draw_head

@@ -73,8 +73,18 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
         for idx2 in 1:channel_n
             if idx2 == channel[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:xlocs], idx2))
-                eeg_header[:channel_locations] == true && (deleteat!(eeg_header[:ylocs], idx2))
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -130,9 +140,18 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     for idx1 in 1:length(channel)
         for idx2 in 1:channel_n
             if idx2 == channel[idx1]
-                deleteat!(eeg.eeg_header[:labels], idx2)
-                eeg.eeg_header[:channel_locations] == true && (deleteat!(eeg.eeg_header[:xlocs], idx2))
-                eeg.eeg_header[:channel_locations] == true && (deleteat!(eeg.eeg_header[:ylocs], idx2))
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
                 deleteat!(eeg.eeg_header[:transducers], idx2)
                 deleteat!(eeg.eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg.eeg_header[:physical_minimum], idx2)
@@ -194,11 +213,21 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
     # update headers
     eeg_header[:channel_n] = channel_n - length(channel_to_remove)
     for idx1 in 1:length(channel_to_remove)
-        for idx2 in 1:channel_n
+        for idx2 in channel_n:-1:1
             if idx2 == channel_to_remove[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                eeg_header[:channel_locations] == true && deleteat!(eeg_header[:xlocs], idx2)
-                eeg_header[:channel_locations] == true && deleteat!(eeg_header[:ylocs], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
                 deleteat!(eeg_header[:transducers], idx2)
                 deleteat!(eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg_header[:physical_minimum], idx2)
@@ -259,8 +288,18 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
         for idx2 in 1:channel_n
             if idx2 == channel_to_remove[idx1]
                 deleteat!(eeg.eeg_header[:labels], idx2)
-                eeg.eeg_header[:channel_locations] == true && deleteat!(eeg.eeg_header[:xlocs], idx2)
-                eeg.eeg_header[:channel_locations] == true && deleteat!(eeg.eeg_header[:ylocs], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
                 deleteat!(eeg.eeg_header[:transducers], idx2)
                 deleteat!(eeg.eeg_header[:physical_dimension], idx2)
                 deleteat!(eeg.eeg_header[:physical_minimum], idx2)
@@ -3190,3 +3229,42 @@ function eeg_delete_bad_epochs!(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bo
 
 end
 
+"""
+    eeg_s2t(eeg; t)
+
+Converts time `t` in samples to seconds using `eeg` sampling rate.
+
+# Arguments
+
+- `eeg::EEG`
+- `t::Int64`: time in samples
+
+# Returns
+
+- `t_s::Float64`: time in seconds
+"""
+function eeg_s2t(eeg::EEG; t::Int64)
+    t_s = round(t / eeg_sr(eeg), digits=2)
+    
+    return t_s
+end
+
+"""
+    eeg_t2s(eeg; t)
+
+Converts time `t` in seconds to samples using `eeg` sampling rate.
+
+# Arguments
+
+- `eeg::EEG`
+- `t::Union{Int64, Float64}`: time in seconds
+
+# Returns
+
+- `t_s::Float64`: time in samples
+"""
+function eeg_t2s(eeg::EEG; t::Union{Int64, Float64})
+    t_s = floor(Int64, t * eeg_sr(eeg)) + 1
+    
+    return t_s
+end

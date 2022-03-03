@@ -238,7 +238,7 @@ eeg_plot_butterfly(edf, channel=1:4, norm=true)
 eeg_plot_butterfly(e10, epoch=1:5, channel=1:4, norm=true)
 eeg_plot(edf, figure="/tmp/test.png")
 
-e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19.ced")
+e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_plot_butterfly(e9, len=9*eeg_sr(edf))
 eeg_plot_butterfly(e9, len=55*eeg_sr(edf))
 eeg_plot_butterfly(e9, len=55*eeg_sr(edf), head=true)
@@ -391,12 +391,12 @@ Electrode positioning:
 ```julia
 using NeuroJ
 edf = eeg_import_edf("test/eeg-test-edf.edf")
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19.ced")
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_info(edf)
-edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19.ced")
+edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot(edf, channel=1:10)
-eeg_plot(edf, channel=1:10, head=false)
+eeg_plot(edf, channel=1)
 eeg_plot_butterfly(edf, channel=1:10, head=true, len=55*eeg_sr(edf))
 eeg_plot_psd(edf, norm=true, channel=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
 eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
@@ -539,6 +539,12 @@ e = eeg_pick(edf, pick=:left)
 eeg_labels(edf)[e]
 e = eeg_pick(edf, pick=[:l, :f, :t])
 eeg_labels(edf)[e]
+```
+
+Convert samples to seconds/seconds to samples:
+```julia
+eeg_s2t(edf, t=1234)
+eeg_t2s(edf, t=10)
 ```
 
 Mutators store results as embedded components in the EEG object:
