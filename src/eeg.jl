@@ -73,15 +73,12 @@ function eeg_delete_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstr
         for idx2 in 1:channel_n
             if idx2 == channel[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                deleteat!(eeg_header[:channel_type], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius]) > 0) && deleteat!(eeg_header[:loc_radius], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
@@ -140,15 +137,13 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     for idx1 in 1:length(channel)
         for idx2 in 1:channel_n
             if idx2 == channel[idx1]
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_x_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_y_theta], idx2)
+                deleteat!(eeg.eeg_header[:labels], idx2)
+                deleteat!(eeg.eeg_header[:channel_type], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi]) > 0) && deleteat!(eeg.eeg_header[:loc_phi], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius]) > 0) && deleteat!(eeg.eeg_header[:loc_radius], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x]) > 0) && deleteat!(eeg.eeg_header[:loc_x], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y]) > 0) && deleteat!(eeg.eeg_header[:loc_y], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_z]) > 0) && deleteat!(eeg.eeg_header[:loc_z], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_x_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_y_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_radius_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_theta_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_phi_sph], idx2)
@@ -174,6 +169,7 @@ function eeg_delete_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -216,15 +212,12 @@ function eeg_keep_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstrac
         for idx2 in channel_n:-1:1
             if idx2 == channel_to_remove[idx1]
                 deleteat!(eeg_header[:labels], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg_header[:loc_x_theta], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg_header[:loc_y_theta], idx2)
+                deleteat!(eeg_header[:channel_type], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta]) > 0) && deleteat!(eeg_header[:loc_theta], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi]) > 0) && deleteat!(eeg_header[:loc_phi], idx2)
+                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius]) > 0) && deleteat!(eeg_header[:loc_radius], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x]) > 0) && deleteat!(eeg_header[:loc_x], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y]) > 0) && deleteat!(eeg_header[:loc_y], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_z]) > 0) && deleteat!(eeg_header[:loc_z], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg_header[:loc_x_sph], idx2)
-                (eeg_header[:channel_locations] == true && length(eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg_header[:loc_y_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_header[:loc_radius_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_header[:loc_theta_sph], idx2)
                 (eeg_header[:channel_locations] == true && length(eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_header[:loc_phi_sph], idx2)
@@ -288,15 +281,12 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
         for idx2 in 1:channel_n
             if idx2 == channel_to_remove[idx1]
                 deleteat!(eeg.eeg_header[:labels], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_x_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_y_theta], idx2)
+                deleteat!(eeg.eeg_header[:channel_type], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi]) > 0) && deleteat!(eeg.eeg_header[:loc_phi], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius]) > 0) && deleteat!(eeg.eeg_header[:loc_radius], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x]) > 0) && deleteat!(eeg.eeg_header[:loc_x], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y]) > 0) && deleteat!(eeg.eeg_header[:loc_y], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_z]) > 0) && deleteat!(eeg.eeg_header[:loc_z], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_x_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_y_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_radius_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_theta_sph], idx2)
                 (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_phi_sph], idx2)
@@ -1138,21 +1128,26 @@ function eeg_sr(eeg::EEG)
 end
 
 """
-    eeg_channel_n(eeg)
+    eeg_channel_n(eeg; type=:eeg)
 
-Returns number of `eeg` channels.
+Returns number of `eeg` channels of `type`.
 
 # Arguments
 
 - `eeg::EEG`
+- `type::Vector{Symbol}[:all, :eeg, :ecg, :eog, :emg]`
 
 # Returns
 
 - `channel_n::Int64`
 """
-function eeg_channel_n(eeg::EEG)
+function eeg_channel_n(eeg::EEG; type::Symbol=:all)
 
-    channel_n = eeg.eeg_header[:channel_n]
+    channel_n = 0
+    for idx in 1:eeg.eeg_header[:channel_n]
+        eeg.eeg_header[:channel_type][idx] == string(type) && (channel_n += 1)
+    end
+    type === :all && (channel_n = size(eeg.eeg_signals, 1))
 
     return channel_n
 end
@@ -2340,6 +2335,7 @@ Changes value of `eeg` `field` to `value`.
 """
 function eeg_edit_header(eeg::EEG; field::Symbol, value::Any)
 
+  field === nothing && throw(ArgumentError("field cannot be empty."))
   value === nothing && throw(ArgumentError("value cannot be empty."))
   
   eeg_new = deepcopy(eeg)
@@ -3312,4 +3308,111 @@ function eeg_add_labels!(eeg::EEG, labels::Vector{String})
     eeg.eeg_header[:labels] = labels
 
     push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+end
+
+"""
+    eeg_edit_channel(eeg; channel)
+
+Edits `eeg` `channel` properties.
+
+# Arguments
+
+- `eeg:EEG`
+- `channel::Int64`
+
+# Returns
+
+- `eeg_new::EEG`
+"""
+function eeg_edit_channel(eeg::EEG; channel::Int64, field::Any, value::Any)
+    
+    field === nothing && throw(ArgumentError("field cannot be empty."))
+    value === nothing && throw(ArgumentError("value cannot be empty."))
+    (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
+    
+    field in [:channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels] || throw(ArgumentError("field must be: :channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels."))
+
+    eeg_new = deepcopy(eeg)
+    typeof(eeg_new.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
+    eeg_new.eeg_header[field][channel] = value
+
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")   
+
+    return eeg_new
+end
+
+"""
+    eeg_edit_channel(eeg; channel)
+
+Edits `eeg` `channel` properties.
+
+# Arguments
+
+- `eeg:EEG`
+- `channel::Int64`
+
+# Returns
+
+- `eeg_new::EEG`
+"""
+function eeg_edit_channel!(eeg::EEG; channel::Int64, field::Any, value::Any)
+    
+    field === nothing && throw(ArgumentError("field cannot be empty."))
+    value === nothing && throw(ArgumentError("value cannot be empty."))
+    (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
+    
+    field in [:channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels] || throw(ArgumentError("field must be: :channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels."))
+
+    typeof(eeg.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
+    eeg.eeg_header[field][channel] = value
+
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")
+
+    return
+end
+
+"""
+    eeg_keep_eeg_channels(eeg::EEG)
+
+Keeps only EEG channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_keep_eeg_channels(eeg::EEG)
+
+    eeg_channels_idx = Vector{Int64}()
+    for idx in 1:eeg_channel_n(eeg, type=:all)
+        eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
+    end
+    eeg_new = eeg_keep_channel(eeg, channel=eeg_channels_idx)
+
+    return eeg_new
+end
+
+"""
+    eeg_keep_eeg_channels!(eeg::EEG)
+
+Keeps only EEG channels of `eeg`.
+
+# Arguments
+
+- `eeg::EEG`
+"""
+function eeg_keep_eeg_channels!(eeg::EEG)
+
+    eeg_channels_idx = Vector{Int64}()
+    for idx in 1:eeg_channel_n(eeg, type=:all)
+        eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
+    end
+    eeg_keep_channel!(eeg, channel=eeg_channels_idx)
+
+    return
 end

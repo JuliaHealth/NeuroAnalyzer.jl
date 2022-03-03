@@ -75,6 +75,7 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 - channel labels should be displayed as strings not vector
 - remove embedded components that are not useful
 - eeg_plot_topo() check minimum len value for frequency to analyze
+- remove non-eeg channels for eeg_plot_topo(), eeg_plot_psd(), eeg_plot_spectrogram()
 
 ### To do
 

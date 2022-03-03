@@ -161,6 +161,13 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
+    channel_type = repeat(["eeg"], channel_n)
+    for idx in 1:channel_n
+        lowercase(labels[idx]) == "ecg" && channel_type[idx] == "ecg"
+        lowercase(labels[idx]) == "eog" && channel_type[idx] == "eog"
+        lowercase(labels[idx]) == "emg" && channel_type[idx] == "emg"
+    end
+
     eeg_header = Dict(:version => version,
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
@@ -172,18 +179,14 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :data_records => data_records,
                       :data_records_duration => data_records_duration,
                       :channel_n => channel_n,
+                      :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
-                      :loc_x_theta => Float64[],
-                      :loc_y_theta => Float64[],
                       :loc_theta => Float64[],
-                      :loc_phi => Float64[],
+                      :loc_radius => Float64[],
                       :loc_x => Float64[],
                       :loc_y => Float64[],
                       :loc_z => Float64[],
-                      :loc_x_sph => Float64[],
-                      :loc_x_sph => Float64[],
-                      :loc_y_sph => Float64[],
                       :loc_radius_sph => Float64[],
                       :loc_theta_sph => Float64[],
                       :loc_phi_sph => Float64[],
@@ -297,7 +300,7 @@ function eeg_import_elc(file_name)
         idx2 += 1
     end
 
-    sensors = DataFrame(:labels => labels, :xlocs => locx, :ylocs => locy, :zlocs => locz)
+    sensors = DataFrame(:labels => labels, :x => locx, :y => locy, :y => locz)
 
     return sensors
 end
@@ -322,49 +325,25 @@ function eeg_load_electrodes(eeg::EEG; file_name)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    loc_x_theta = Vector{Float64}()
-    loc_y_theta = Vector{Float64}()
-    loc_theta = Vector{Float64}()
-    loc_phi = Vector{Float64}()
-    loc_x_sph = Vector{Float64}()
-    loc_y_sph = Vector{Float64}()
-    loc_z_sph = Vector{Float64}()
-    loc_X = Vector{Float64}()
-    loc_Y = Vector{Float64}()
-    loc_Z = Vector{Float64}()
-    loc_radius_sph = Vector{Float64}()
-    loc_theta_sph = Vector{Float64}()
-    loc_phi_sph = Vector{Float64}()
-
+    loc_theta = Vector{Float64}()       # polar angle
+    loc_radius = Vector{Float64}()      # polar radius
+    loc_x = Vector{Float64}()           # cartesian x
+    loc_y = Vector{Float64}()           # cartesian y
+    loc_z = Vector{Float64}()           # cartesian z
+    loc_radius_sph = Vector{Float64}()  # sperical radius
+    loc_theta_sph = Vector{Float64}()   # spherical horizontal angle
+    loc_phi_sph = Vector{Float64}()     # spherical azimuth angle
 
     if splitext(file_name)[2] == ".ced"
         sensors = eeg_import_ced(file_name)
 
         f_labels = lowercase.(sensors[:, :labels])
 
-        loc_Y = sensors[:, :X]
-        loc_X = sensors[:, :Y]
-        loc_Z = sensors[:, :Z]
-
         loc_theta = sensors[:, :theta]
-        loc_phi = sensors[:, :radius]
-
-        for idx in 1:length(f_labels)
-            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
-            push!(loc_x_theta, y)
-            push!(loc_y_theta, x)
-        end
-
+        loc_radius = sensors[:, :radius]
         loc_radius_sph = sensors[:, :sph_radius]
         loc_theta_sph = sensors[:, :sph_theta]
         loc_phi_sph = sensors[:, :sph_phi]
-
-        for idx in 1:length(f_labels)
-            x, y, z = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
-            push!(loc_x_sph, x)
-            push!(loc_y_sph, y)
-            push!(loc_z_sph, z)
-        end
     end
 
     if splitext(file_name)[2] == ".elc"
@@ -372,15 +351,9 @@ function eeg_load_electrodes(eeg::EEG; file_name)
 
         f_labels = lowercase.(sensors[:, :labels])
         
-        x = sensors[:, :xlocs]
-        y = sensors[:, :ylocs]
-        z = sensors[:, :zlocs]
-
-        for idx in 1:length(f_labels)
-            push!(loc_x_sph, x[idx])
-            push!(loc_y_sph, y[idx])
-            push!(loc_z_sph, z[idx])
-        end
+        loc_x = sensors[:, :x]
+        loc_y = sensors[:, :y]
+        loc_z = sensors[:, :y]
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -389,13 +362,7 @@ function eeg_load_electrodes(eeg::EEG; file_name)
         f_labels = lowercase.(sensors[:, :labels])
 
         loc_theta = sensors[:, :theta]
-        loc_phi = sensors[:, :radius]
-
-        for idx in 1:length(f_labels)
-            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
-            push!(loc_x_theta, y)
-            push!(loc_y_theta, x)
-        end
+        loc_radius = sensors[:, :radius]
     end
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
@@ -412,16 +379,11 @@ function eeg_load_electrodes(eeg::EEG; file_name)
     # create new dataset
     eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals), deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:channel_locations] = true
-    length(loc_x_theta) > 0 && (eeg_new.eeg_header[:loc_x_theta] = loc_x_theta[labels_idx])
-    length(loc_y_theta) > 0 && (eeg_new.eeg_header[:loc_y_theta] = loc_y_theta[labels_idx])
     length(loc_theta) > 0 && (eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx])
-    length(loc_phi) > 0 && (eeg_new.eeg_header[:loc_phi] = loc_phi[labels_idx])
-    length(loc_X) > 0 && (eeg_new.eeg_header[:loc_x] = loc_X[labels_idx])
-    length(loc_Y) > 0 && (eeg_new.eeg_header[:loc_y] = loc_Y[labels_idx])
-    length(loc_Z) > 0 && (eeg_new.eeg_header[:loc_z] = loc_Z[labels_idx])
-    length(loc_x_sph) > 0 && (eeg_new.eeg_header[:loc_x_sph] = loc_x_sph[labels_idx])
-    length(loc_y_sph) > 0 && (eeg_new.eeg_header[:loc_x_sph] = loc_y_sph[labels_idx])
-    length(loc_z_sph) > 0 && (eeg_new.eeg_header[:loc_y_sph] = loc_z_sph[labels_idx])
+    length(loc_radius) > 0 && (eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx])
+    length(loc_x) > 0 && (eeg_new.eeg_header[:loc_x] = loc_x[labels_idx])
+    length(loc_y) > 0 && (eeg_new.eeg_header[:loc_x] = loc_y[labels_idx])
+    length(loc_z) > 0 && (eeg_new.eeg_header[:loc_y] = loc_z[labels_idx])
     length(loc_radius_sph) > 0 && (eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
     length(loc_theta_sph) > 0 && (eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
     length(loc_phi_sph) > 0 && (eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
@@ -448,49 +410,25 @@ function eeg_load_electrodes!(eeg::EEG; file_name)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    loc_x_theta = Vector{Float64}()
-    loc_y_theta = Vector{Float64}()
-    loc_theta = Vector{Float64}()
-    loc_phi = Vector{Float64}()
-    loc_x_sph = Vector{Float64}()
-    loc_y_sph = Vector{Float64}()
-    loc_z_sph = Vector{Float64}()
-    loc_X = Vector{Float64}()
-    loc_Y = Vector{Float64}()
-    loc_Z = Vector{Float64}()
-    loc_radius_sph = Vector{Float64}()
-    loc_theta_sph = Vector{Float64}()
-    loc_phi_sph = Vector{Float64}()
-
+    loc_theta = Vector{Float64}()       # polar angle
+    loc_radius = Vector{Float64}()      # polar radius
+    loc_x = Vector{Float64}()           # cartesian x
+    loc_y = Vector{Float64}()           # cartesian y
+    loc_z = Vector{Float64}()           # cartesian z
+    loc_radius_sph = Vector{Float64}()  # sperical radius
+    loc_theta_sph = Vector{Float64}()   # spherical horizontal angle
+    loc_phi_sph = Vector{Float64}()     # spherical azimuth angle
 
     if splitext(file_name)[2] == ".ced"
         sensors = eeg_import_ced(file_name)
 
         f_labels = lowercase.(sensors[:, :labels])
 
-        loc_Y = sensors[:, :X]
-        loc_X = sensors[:, :Y]
-        loc_Z = sensors[:, :Z]
-
         loc_theta = sensors[:, :theta]
-        loc_phi = sensors[:, :radius]
-
-        for idx in 1:length(f_labels)
-            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
-            push!(loc_x_theta, y)
-            push!(loc_y_theta, x)
-        end
-
+        loc_radius = sensors[:, :radius]
         loc_radius_sph = sensors[:, :sph_radius]
         loc_theta_sph = sensors[:, :sph_theta]
         loc_phi_sph = sensors[:, :sph_phi]
-
-        for idx in 1:length(f_labels)
-            x, y, z = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
-            push!(loc_x_sph, x)
-            push!(loc_y_sph, y)
-            push!(loc_z_sph, z)
-        end
     end
 
     if splitext(file_name)[2] == ".elc"
@@ -498,15 +436,9 @@ function eeg_load_electrodes!(eeg::EEG; file_name)
 
         f_labels = lowercase.(sensors[:, :labels])
         
-        x = sensors[:, :xlocs]
-        y = sensors[:, :ylocs]
-        z = sensors[:, :zlocs]
-
-        for idx in 1:length(f_labels)
-            push!(loc_x_sph, x[idx])
-            push!(loc_y_sph, y[idx])
-            push!(loc_z_sph, z[idx])
-        end
+        loc_x = sensors[:, :x]
+        loc_y = sensors[:, :y]
+        loc_z = sensors[:, :y]
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -515,13 +447,7 @@ function eeg_load_electrodes!(eeg::EEG; file_name)
         f_labels = lowercase.(sensors[:, :labels])
 
         loc_theta = sensors[:, :theta]
-        loc_phi = sensors[:, :radius]
-
-        for idx in 1:length(f_labels)
-            y, x = pol2cart(pi / 180 * loc_theta[idx], loc_phi[idx])
-            push!(loc_x_theta, y)
-            push!(loc_y_theta, x)
-        end
+        loc_radius = sensors[:, :radius]
     end
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
@@ -537,16 +463,11 @@ function eeg_load_electrodes!(eeg::EEG; file_name)
     
     # create new dataset
     eeg.eeg_header[:channel_locations] = true
-    length(loc_x_theta) > 0 && (eeg.eeg_header[:loc_x_theta] = loc_x_theta[labels_idx])
-    length(loc_y_theta) > 0 && (eeg.eeg_header[:loc_y_theta] = loc_y_theta[labels_idx])
     length(loc_theta) > 0 && (eeg.eeg_header[:loc_theta] = loc_theta[labels_idx])
-    length(loc_phi) > 0 && (eeg.eeg_header[:loc_phi] = loc_phi[labels_idx])
-    length(loc_X) > 0 && (eeg.eeg_header[:loc_x] = loc_X[labels_idx])
-    length(loc_Y) > 0 && (eeg.eeg_header[:loc_y] = loc_Y[labels_idx])
-    length(loc_Z) > 0 && (eeg.eeg_header[:loc_z] = loc_Z[labels_idx])
-    length(loc_x_sph) > 0 && (eeg.eeg_header[:loc_x_sph] = loc_x_sph[labels_idx])
-    length(loc_y_sph) > 0 && (eeg.eeg_header[:loc_x_sph] = loc_y_sph[labels_idx])
-    length(loc_z_sph) > 0 && (eeg.eeg_header[:loc_y_sph] = loc_z_sph[labels_idx])
+    length(loc_radius) > 0 && (eeg.eeg_header[:loc_radius] = loc_radius[labels_idx])
+    length(loc_x) > 0 && (eeg.eeg_header[:loc_x] = loc_x[labels_idx])
+    length(loc_y) > 0 && (eeg.eeg_header[:loc_x] = loc_y[labels_idx])
+    length(loc_z) > 0 && (eeg.eeg_header[:loc_y] = loc_z[labels_idx])
     length(loc_radius_sph) > 0 && (eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
     length(loc_theta_sph) > 0 && (eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
     length(loc_phi_sph) > 0 && (eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])

@@ -182,4 +182,10 @@ b = eeg_detect_bad_epochs(edf)
 @test eeg_t2s(edf, t=10) == 2561
 @test eeg_s2t(edf, t=10) == 0.04
 
+e = eeg_keep_eeg_channels(edf)
+@test size(e.eeg_signals) == (19, 156672, 1)
+eeg_edit_channel!(e, channel=19, field=:channel_type, value="ecg")
+eeg_keep_eeg_channels!(e)
+@test size(e.eeg_signals) == (18, 156672, 1)
+
 true
