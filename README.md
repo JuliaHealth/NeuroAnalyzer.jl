@@ -84,6 +84,7 @@ General:
 - performance optimization
 
 EEG:
+- virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots
 - amplitude plots at electrode locations
 - negative index channel to invert polarity

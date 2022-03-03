@@ -34,11 +34,10 @@ Returns the derivative of each the `signal` channels with length same as the sig
 """
 function signal_derivative(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_der = zeros(size(signal))
     
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_der[idx, :, epoch] = signal_derivative(s)
@@ -92,11 +91,10 @@ function signal_total_power(signal::Array{Float64, 3}; fs::Int64)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     stp = zeros(channel_n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             stp[idx, epoch] = signal_total_power(s, fs=fs)
@@ -165,11 +163,10 @@ function signal_band_power(signal::Array{Float64, 3}; fs::Int64, f::Tuple)
     f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     sbp = zeros(channel_n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             sbp[idx, epoch] = signal_band_power(s, fs=fs, f=f)
@@ -227,12 +224,11 @@ function signal_make_spectrum(signal::Array{Float64, 3}; fs::Int64)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_fft = zeros(ComplexF64, size(signal))
     s_sf = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_fft[idx, :, epoch], s_sf[idx, :, epoch] = signal_make_spectrum(s, fs=fs)
@@ -293,11 +289,10 @@ function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
 
     type in [:linear, :constant] || throw(ArgumentError("type must be :linear or :constant."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_det = zeros(size(signal))
     
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_det[idx, :, epoch] = signal_detrend(s, type=type)
@@ -414,7 +409,7 @@ function signal_ci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:norm
     s_u = zeros(size(signal, 3), size(signal, 2))
     s_l = zeros(size(signal, 3), size(signal, 2))
 
-    epoch_n = size(signal, 3)
+    _, _, epoch_n = size(signal)
 
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
@@ -483,8 +478,7 @@ function signal_mean(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same as size."))
 
-    s_len = size(signal1, 2)
-    epoch_n = size(signal1, 3)
+    _, s_len, epoch_n = size(signal1)
 
     s_m = zeros(epoch_n, s_len)
     s_s = zeros(epoch_n, s_len)
@@ -606,7 +600,7 @@ function signal_difference(signal1::Array{Float64, 3}, signal2::Array{Float64, 3
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("method must be :absdiff or :diff2int."))
 
-    epoch_n = size(signal1, 3)
+    _, _, epoch_n = size(signal1)
     s_statistic = zeros(epoch_n, size(signal1, 1) * n)
     s_statistic_single = zeros(epoch_n)
     p = zeros(epoch_n)
@@ -698,11 +692,10 @@ function signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=fa
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
 
     lags = collect(-lag:lag)
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     acov = zeros(channel_n, length(lags), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             acov[idx, :, epoch], lags = signal_autocov(s,
@@ -782,7 +775,7 @@ Calculates cross-covariance between all channels in the `signal`.
 
 # Arguments
 
-- `signal::Matrix{Float64}`: the signal
+- `signal::Array{Float64, 3}`: the signal
 - `lag::Int64`: lags range is `-lag:lag`
 - `demean::Bool`: demean `signal` prior to analysis
 - `norm::Bool`: normalize cross-covariance
@@ -797,11 +790,10 @@ function signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=f
     lag < 1 && throw(ArgumentError("lag must be ≥ 1 Hz."))
 
     lags = collect(-lag:lag)
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     ccov = zeros(channel_n^2, length(lags), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         ccov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
         Threads.@threads for idx1 in 1:channel_n
             for idx2 in 1:channel_n
@@ -846,11 +838,10 @@ function signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3};
     lag < 1 && throw(ArgumentError("lag must be ≥ 1 Hz."))
 
     lags = collect(-lag:lag)
-    channel_n = size(signal1, 1)
-    epoch_n = size(signal1, 3)
+    channel_n, _, epoch_n = size(signal1)
     ccov = zeros(channel_n, length(lags), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s1 = @view signal1[idx, :, epoch]
             s2 = @view signal2[idx, :, epoch]
@@ -924,15 +915,14 @@ function signal_spectrum(signal::Array{Float64, 3}; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_fft = zeros(ComplexF64, channel_n, size(signal, 2) + pad, epoch_n)
     s_amplitudes = zeros(channel_n, size(signal, 2) + pad, epoch_n)
     s_powers = zeros(channel_n, size(signal, 2) + pad, epoch_n)
     s_phases = zeros(channel_n, size(signal, 2) + pad, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = signal_spectrum(s, pad=pad)
@@ -1007,7 +997,7 @@ function signal_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=n
     (epoch_len != nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
     (epoch_n != nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
 
-    channel_n = size(signal, 1)
+    channel_n, _ = size(signal)
 
     if epoch_n === nothing
         epoch_n = size(signal, 2) ÷ epoch_len
@@ -1110,7 +1100,7 @@ function signal_reference_channel(signal::Matrix{Float64}; channel::Union{Int64,
         channel = collect(channel)
     end
 
-    channel_n = size(signal, 1)
+    channel_n, _, = size(signal)
     s_ref = zeros(size(signal))
 
     channel_list = collect(1:channel_n)
@@ -1153,8 +1143,7 @@ function signal_reference_channel(signal::Array{Float64, 3}; channel::Union{Int6
         channel = collect(channel)
     end
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_ref = zeros(size(signal))
 
     channel_list = collect(1:channel_n)
@@ -1164,7 +1153,7 @@ function signal_reference_channel(signal::Array{Float64, 3}; channel::Union{Int6
         end
     end
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         s = @view signal[channel, :, epoch]
         if length(channel) == 1
             reference_channel = mean(s, dims=2)
@@ -1196,11 +1185,11 @@ Re-references channels of the `signal` to common average reference.
 """
 function signal_reference_car(signal::Matrix{Float64})
 
-    channel_n = size(signal, 1)
+    channel_n, _ = size(signal)
     reference_channel = vec(mean(signal, dims=1))
     s_ref = zeros(size(signal))
 
-    for idx in 1:channel_n
+    @inbounds @simd for idx in 1:channel_n
         s = @view signal[idx, :]
         s_ref[idx, :] = s .- reference_channel
     end
@@ -1223,11 +1212,10 @@ Re-references channels of the `signal` to common average reference.
 """
 function signal_reference_car(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_ref = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         reference_channel = vec(mean(signal[:, :, epoch], dims=1))
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
@@ -1278,12 +1266,11 @@ function signal_taper(signal::Array{Float64, 3}; taper::Union{Vector{Int64}, Vec
 
     length(taper) == size(signal, 2) || throw(ArgumentError("Taper and signal lengths must be equal."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_tap = zeros(eltype(taper), size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_tap[idx, :, epoch] = signal_taper(s, taper=taper)
@@ -1328,11 +1315,10 @@ Removes mean value (DC offset) for each the `signal` channels.
 """
 function signal_demean(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_dem = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_dem[idx, :, epoch] = signal_demean(s)
@@ -1377,11 +1363,10 @@ Normalize (by z-score) each the `signal` channel.
 """
 function signal_normalize_zscore(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_norm = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_norm[idx, :, epoch] = signal_normalize_zscore(s)
@@ -1426,11 +1411,10 @@ Normalize each the `signal` channel in [-1, +1].
 """
 function signal_normalize_minmax(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_norm = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_norm[idx, :, epoch] = signal_normalize_minmax(s)
@@ -1511,7 +1495,7 @@ Calculates covariance between all channels of the `signal`.
 """
 function signal_cov(signal::Array{Float64, 3}; norm::Bool=false)
 
-    epoch_n = size(signal, 3)
+    _, _, epoch_n = size(signal)
     cov_mat = zeros(size(signal, 1), size(signal, 1), epoch_n)
 
     Threads.@threads for epoch in 1:epoch_n
@@ -1541,7 +1525,7 @@ Calculates correlation coefficients between all channels of the `signal`.
 """
 function signal_cor(signal::Array{Float64, 3})
 
-    epoch_n = size(signal, 3)
+    _, _, epoch_n = size(signal)
     cor_mat = zeros(size(signal, 1), size(signal, 1), epoch_n)
 
     Threads.@threads for epoch in 1:epoch_n
@@ -1588,11 +1572,10 @@ Add random noise to the `signal` channels.
 """
 function signal_add_noise(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_noise = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_noise[idx, :, epoch] = signal_add_noise(s)
@@ -1656,14 +1639,13 @@ function signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::In
 
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_upsampled_len = length(signal_upsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
     s_upsampled = zeros(channel_n, s_upsampled_len, epoch_n) 
 
     t_upsampled = nothing
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_upsampled[idx, :, epoch], t_upsampled = signal_upsample(s, t=t, new_sr=new_sr)
@@ -1719,8 +1701,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 """
 function signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     if typeof(kernel) == Vector{ComplexF64}
         s_conv = zeros(ComplexF64, size(signal))
@@ -1728,7 +1709,7 @@ function signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Ve
         s_conv = zeros(size(signal))
     end
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_conv[idx, :, epoch] = signal_tconv(s, kernel=kernel)
@@ -1929,11 +1910,10 @@ Filters `signal` using zero phase distortion filter.
 """
 function signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_filtered = zeros(size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_filtered[idx, :, epoch] = signal_filter(s,
@@ -2009,14 +1989,13 @@ function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::
 
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
     
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_downsampled_len = length(signal_downsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
     s_downsampled = zeros(channel_n, s_downsampled_len, epoch_n) 
 
     t_downsampled = nothing
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_downsampled[idx, :, epoch], t_downsampled = signal_downsample(s, t=t, new_sr=new_sr)
@@ -2073,7 +2052,7 @@ function signal_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    channel_n = size(signal, 1)
+    channel_n, _, = size(signal)
     psd_len, _ = signal_psd(signal[1, :], fs=fs, norm=norm)
     psd_pow = zeros(channel_n, length(psd_len))
     psd_frq = zeros(channel_n, length(psd_len))
@@ -2107,13 +2086,12 @@ function signal_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1"))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     psd_len, _ = signal_psd(signal[1, :, 1], fs=fs, norm=norm)
     psd_pow = zeros(channel_n, length(psd_len), epoch_n)
     psd_frq = zeros(channel_n, length(psd_len), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = signal[idx, :, epoch]
             psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = signal_psd(s,
@@ -2212,12 +2190,11 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
     (typeof(window) == Int64 && window < 1) && throw(ArgumentError("window must be ≥ 1."))
     (typeof(window) == Int64 && window > size(signal, 2)) && throw(ArgumentError("window must be ≤ $(size(signal, 2))."))
     
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     if method === :mean
         stationarity = zeros(channel_n, window, epoch_n)
-        for epoch in 1:epoch_n
+        @inbounds @simd for epoch in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
                 s = @view signal[idx, :, epoch]
                 stationarity[idx, :, epoch] = signal_stationarity_mean(s, window=window)
@@ -2227,7 +2204,7 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 
     if method === :var
         stationarity = zeros(channel_n, window, epoch_n)
-        for epoch in 1:epoch_n
+        @inbounds @simd for epoch in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
                 s = @view signal[idx, :, epoch]
                 stationarity[idx, :, epoch] = signal_stationarity_var(s, window=window)
@@ -2237,7 +2214,7 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
 
     if method === :hilbert
         stationarity = zeros(channel_n, size(signal, 2) - 1, epoch_n)
-        for epoch in 1:epoch_n
+        @inbounds @simd for epoch in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
                 s = @view signal[idx, :, epoch]
                 stationarity[idx, :, epoch] = signal_stationarity_hilbert(s)
@@ -2251,14 +2228,14 @@ function signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method
         cov_mat = zeros(channel_n, channel_n, window_n, epoch_n)
         stationarity = zeros(1 + length(2:window:window_n), epoch_n)
 
-        for epoch in 1:epoch_n
+        @inbounds @simd for epoch in 1:epoch_n
             Threads.@threads for idx = 1:window_n
                 s = @view signal[:, idx, epoch]
                 cov_mat[:, :, idx, epoch] = signal_cov(s, s)
             end
         end
 
-        for epoch in 1:epoch_n
+        @inbounds @simd for epoch in 1:epoch_n
             phase_idx = 1
             Threads.@threads for idx = 2:window:window_n
                 stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
@@ -2331,12 +2308,11 @@ function signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=1, fro
     offset >= size(signal, 2) - 1 && throw(ArgumentError("Offset must be < $(size(signal, 2))."))
     (from ===:start && 1 + offset + len > size(signal, 2)) && throw(ArgumentError("offset + len must be < $(size(signal, 2))."))
     
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_trimmed = zeros(channel_n, (size(signal, 2) - len), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_trimmed[idx, :, epoch] = signal_trim(s, len=len, offset=offset, from=from)
@@ -2382,11 +2358,10 @@ Calculates mutual information between each the `signal` channels.
 """
 function signal_mi(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     mi = zeros(channel_n, channel_n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx1 in 1:channel_n
             for idx2 in 1:channel_n
                 s = @view signal[idx2, :, epoch]
@@ -2416,11 +2391,10 @@ function signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 
     size(signal1, 1) == size(signal2, 1) || throw(ArgumentError("Both signals must have the same number of channels."))
     size(signal1, 3) == size(signal2, 3) || throw(ArgumentError("Both signals must have the same number of epochs."))
-    channel_n = size(signal1, 1)
-    epoch_n = size(signal1, 3)
+    channel_n, _, epoch_n = size(signal1)
     mi = zeros(channel_n, channel_n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx1 in 1:channel_n
             for idx2 in 1:channel_n
                 s1 = signal1[idx2, :, epoch]
@@ -2478,11 +2452,10 @@ Calculates mutual information between each the `signal1` and `signal2` channels.
 """
 function signal_entropy(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_entropy = zeros(channel_n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_entropy[idx, epoch] = signal_entropy(s)
@@ -2552,11 +2525,10 @@ Averages `signal1` and `signal2`.
 function signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 
     size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-    channel_n = size(signal1, 1)
-    epoch_n = size(signal1, 3)
+    channel_n, _, epoch_n = size(signal1)
     s_averaged = zeros(size(signal1))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s1 = @view signal1[idx, :, epoch]
             s2 = @view signal2[idx, :, epoch]
@@ -2610,7 +2582,7 @@ Calculates coherence between `signal1` and `signal2`.
 function signal_coherence(signal1::Matrix{Float64}, signal2::Matrix{Float64})
 
     size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-    channel_n = size(signal1, 1)
+    channel_n, _, _ = size(signal1)
     coherence = zeros(ComplexF64, size(signal1))
 
     Threads.@threads for idx in 1:channel_n
@@ -2639,11 +2611,10 @@ Calculates coherence between `signal1` and `signal2`.
 function signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
 
     size(signal1) == size(signal2) || throw(ArgumentError("Both signals must have the same size."))
-    channel_n = size(signal1, 1)
-    epoch_n = size(signal1, 3)
+    channel_n, _, epoch_n = size(signal1)
     coherence = zeros(ComplexF64, size(signal1))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s1 = @view signal1[idx, :, epoch]
             s2 = @view signal2[idx, :, epoch]
@@ -2674,8 +2645,7 @@ function signal_pca(signal::Array{Float64, 3}; n::Int64)
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of PCs must be ≤ $(size(signal, 1))."))
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     pc = zeros(n, size(signal, 2), epoch_n)
     pc_var = zeros(n, epoch_n)
     pc_reconstructed = zeros(size(signal))
@@ -2753,12 +2723,11 @@ Performs convolution in the frequency domain between `signal` and `kernel`.
 """
 function signal_fconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     s_conv = zeros(ComplexF64, size(signal))
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_conv[idx, :, epoch] = signal_fconv(s, kernel=kernel)
@@ -2791,12 +2760,11 @@ function signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, it
     f in [:tanh, :gaus] || throw(ArgumentError("f must be :tanh or :gaus."))
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of ICs must be ≤ $(size(signal, 1))."))
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     ic = zeros(n, size(signal, 2), epoch_n)
     ic_mw = zeros(channel_n, n, epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
 
         f === :tanh && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
@@ -2846,9 +2814,9 @@ function signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array
 
     s_reconstructed = zeros(size(signal))
 
-    epoch_n = size(signal, 3)
+    _, _, epoch_n = size(signal)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         s_reconstructed[:, :, epoch] = ic_mw[:, ic_removal, epoch] * ic_activations[ic_removal, :, epoch]
     end
 
@@ -2870,15 +2838,14 @@ Calculates variance for all `signal` epochs.
 """
 function signal_epochs_stats(signal::Array{Float64, 3})
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     s_mean = zeros(epoch_n)
     s_median = zeros(epoch_n)
     s_sd = zeros(epoch_n)
     s_var = zeros(epoch_n)
     s_kurt = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
         s_mean[epoch] = mean(s)
         s_median[epoch] = median(s)
@@ -2951,14 +2918,13 @@ Calculates spectrogram of `signal`.
 """
 function signal_spectrogram(signal::Array{Float64, 3}; fs::Int64, norm::Bool=true, demean::Bool=true)
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
     p_tmp, f_tmp, t_tmp = signal_spectrogram(signal[1, :, 1], fs=fs, norm=norm, demean=demean)
     s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
     s_frq = zeros(length(f_tmp), epoch_n)
     s_t = zeros(length(t_tmp), epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
             s_pow[:, :, idx, epoch], s_frq[:, epoch], s_t[:, epoch] = signal_spectrogram(s, fs=fs, norm=norm, demean=demean)
@@ -3019,14 +2985,12 @@ Detect bad `signal` epochs based on: flat channel(s)
 """
 function signal_detect_epoch_flat(signal::Array{Float64, 3})
     
-    channel_n = size(signal, 1)
-    signal_len = size(signal, 2)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
-        for idx in 1:channel_n
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
             idx=1
             epoch=1
             c_tmp_diff = abs.(diff(signal[idx, :, epoch]))
@@ -3055,19 +3019,17 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 """
 function signal_detect_epoch_rmse(signal::Array{Float64, 3})
     
-    channel_n = size(signal, 1)
-    signal_len = size(signal, 2)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         ch_m = vec(median(signal[:, :, epoch], dims=1))
         rmse_ch = zeros(channel_n)
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             rmse_ch[idx] = rmse(signal[idx, :, epoch], ch_m)
         end
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             rmse_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
@@ -3091,19 +3053,17 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 """
 function signal_detect_epoch_rmsd(signal::Array{Float64, 3})
     
-    channel_n = size(signal, 1)
-    signal_len = size(signal, 2)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         ch_m = median(signal[:, :, epoch], dims=1)
         rmsd_ch = zeros(channel_n)
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch], ch_m)
         end
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             rmsd_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
@@ -3128,19 +3088,17 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 """
 function signal_detect_epoch_euclid(signal::Array{Float64, 3})
     
-    channel_n = size(signal, 1)
-    signal_len = size(signal, 2)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         ch_m = median(signal[:, :, epoch], dims=1)
         ed_ch = zeros(channel_n)
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             ed_ch[idx] = euclidean(signal[idx, :, epoch], ch_m)
         end
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             ed_ch[idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch] += 1)
         end
     end
@@ -3165,18 +3123,16 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 """
 function signal_detect_epoch_p2p(signal::Array{Float64, 3})
     
-    channel_n = size(signal, 1)
-    signal_len = size(signal, 2)
-    epoch_n = size(signal, 3)
+    channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
 
-    for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         p2p = zeros(channel_n)
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             p2p[idx] = maximum(signal[idx, :, epoch]) + abs(minimum(signal[idx, :, epoch]))
         end
-        for idx in 1:channel_n
+        Threads.@threads for idx in 1:channel_n
             p2p[idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch] += 1)
         end
     end

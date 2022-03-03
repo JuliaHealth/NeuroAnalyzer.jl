@@ -2255,7 +2255,7 @@ function eeg_difference(eeg1::EEG, eeg2::EEG; n::Int64=3, method::Symbol=:absdif
     signals_statistic_single = zeros(epoch_n)
     p = zeros(epoch_n)
 
-    Threads.@threads for epoch in 1:epoch_n
+    @inbounds @simd for epoch in 1:epoch_n
         signals_statistic[epoch, :], signals_statistic_single[epoch], p[epoch] = signal_difference(eeg1.eeg_signals[:, :, epoch], eeg2.eeg_signals[:, :, epoch], n=n, method=method)
     end
 
@@ -3267,4 +3267,49 @@ function eeg_t2s(eeg::EEG; t::Union{Int64, Float64})
     t_s = floor(Int64, t * eeg_sr(eeg)) + 1
     
     return t_s
+end
+
+"""
+    eeg_add_labels(eeg::EEG, labels::Vector{String})
+
+Adds `labels` to `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `labels::Vector{String}`
+
+# Returns
+
+- `eeg::EEG`
+"""
+function eeg_add_labels(eeg::EEG, labels::Vector{String})
+
+    length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
+    
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:labels] = labels
+
+    push!(eeg_new.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+ 
+    return eeg_new
+end
+
+"""
+    eeg_add_labels!(eeg::EEG, labels::Vector{String})
+
+Adds `labels` to `eeg` channels.
+
+# Arguments
+
+- `eeg::EEG`
+- `labels::Vector{String}`
+"""
+function eeg_add_labels!(eeg::EEG, labels::Vector{String})
+
+    length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
+    
+    eeg.eeg_header[:labels] = labels
+
+    push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
 end

@@ -591,4 +591,5 @@ end
 # workstation: 54.460665 seconds (126.95 M allocations: 622.011 GiB, 21.19% gc time, 0.04% compilation time)
 
 # laptop: 92.209796 seconds (114.60 M allocations: 642.148 GiB, 10.88% gc time)
+# laptop: 40.043600 seconds (55.26 M allocations: 274.877 GiB, 17.69% gc time, 0.04% compilation time)
 ```
