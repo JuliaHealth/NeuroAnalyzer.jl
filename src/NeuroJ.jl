@@ -155,6 +155,8 @@ export eeg_detrend!
 export eeg_difference
 export eeg_downsample
 export eeg_downsample!
+export eeg_edit_channel
+export eeg_edit_channel!
 export eeg_edit_header
 export eeg_edit_header!
 export eeg_entropy
@@ -182,6 +184,8 @@ export eeg_ica_reconstruct
 export eeg_ica_reconstruct!
 export eeg_info
 export eeg_keep_channel
+export eeg_keep_eeg_channels
+export eeg_keep_eeg_channels!
 export eeg_keep_channel!
 export eeg_keep_epoch
 export eeg_keep_epoch!

@@ -1273,19 +1273,12 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     eeg_tmp = eeg_keep_channel(eeg, channel=channel)
 
     # look for location data
-    if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_x_sph]
-        loc_y = eeg_tmp.eeg_header[:loc_y_sph]
+    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
+                                          eeg_tmp.eeg_header[:loc_radius][idx])
     end
-    if length(eeg_tmp.eeg_header[:loc_x]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_x]
-        loc_y = eeg_tmp.eeg_header[:loc_y]
-    end
-    if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
-        loc_x = eeg_tmp.eeg_header[:loc_y_theta]
-        loc_y = eeg_tmp.eeg_header[:loc_x_theta]
-    end
-
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -1339,17 +1332,11 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
                   kwargs...)
         if selected != 0
             eeg_tmp = eeg_keep_channel(eeg, channel=selected)
-            if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
-                loc_x = eeg_tmp.eeg_header[:loc_x_sph]
-                loc_y = eeg_tmp.eeg_header[:loc_y_sph]
-            end
-            if length(eeg_tmp.eeg_header[:loc_x]) > 0
-                loc_x = eeg_tmp.eeg_header[:loc_x]
-                loc_y = eeg_tmp.eeg_header[:loc_y]
-            end
-            if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
-                loc_x = eeg_tmp.eeg_header[:loc_y_theta]
-                loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+            loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+            loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+            for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+                loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
+                                                  eeg_tmp.eeg_header[:loc_radius][idx])
             end
             for idx in 1:eeg_tmp.eeg_header[:channel_n]
                 p = plot!((loc_x[idx], loc_y[idx]), color=idx, seriestype=:scatter, xlims=x_lim, ylims=x_lim, grid=true, label="", markersize=marker_size, markerstrokewidth=0, markerstrokealpha=0)
@@ -1365,17 +1352,11 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
     if head == true
         # for some reason head is enlarged for channel > 1
         eeg_tmp = eeg_keep_channel(eeg, channel=1)
-        if length(eeg_tmp.eeg_header[:loc_x_sph]) > 0
-            loc_x = eeg_tmp.eeg_header[:loc_x_sph]
-            loc_y = eeg_tmp.eeg_header[:loc_y_sph]
-        end
-        if length(eeg_tmp.eeg_header[:loc_x]) > 0
-            loc_x = eeg_tmp.eeg_header[:loc_x]
-            loc_y = eeg_tmp.eeg_header[:loc_y]
-        end
-        if length(eeg_tmp.eeg_header[:loc_x_theta]) > 0
-            loc_x = eeg_tmp.eeg_header[:loc_y_theta]
-            loc_y = eeg_tmp.eeg_header[:loc_x_theta]
+        loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+        loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+        for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+            loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
+                                              eeg_tmp.eeg_header[:loc_radius][idx])
         end
         hd = eeg_draw_head(p, loc_x, loc_x, head_labels=head_labels)
         plot!(hd)
@@ -2268,17 +2249,11 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
     end
 
     # plot signal at electrodes at time
-    if length(eeg.eeg_header[:loc_x_sph]) > 0
-        loc_x = eeg.eeg_header[:loc_x_sph]
-        loc_y = eeg.eeg_header[:loc_y_sph]
-    end
-    if length(eeg.eeg_header[:loc_x]) > 0
-        loc_x = eeg.eeg_header[:loc_x]
-        olc_y = eeg.eeg_header[:loc_y]
-    end
-    if length(eeg.eeg_header[:loc_x_theta]) > 0
-        loc_x = eeg.eeg_header[:loc_y_theta]
-        loc_y = eeg.eeg_header[:loc_x_theta]
+    loc_x = zeros(eeg_channel_n(eeg))
+    loc_y = zeros(eeg_channel_n(eeg))
+    for idx in 1:eeg_channel_n(eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
     end
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
