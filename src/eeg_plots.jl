@@ -65,7 +65,7 @@ end
 """
     signal_plot(t, signal; <keyword arguments>)
 
-Plot single-channel `signal` channel.
+Plot single-channel `signal`.
 
 # Arguments
 
