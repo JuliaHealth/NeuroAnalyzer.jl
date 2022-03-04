@@ -33,19 +33,20 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 Load electrode positions:
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-eeg_info(edf)
-eeg_plot_electrodes(edf, labels=true, head=true)
+p = eeg_plot_electrodes(edf, labels=true, head=true)
+eeg_plot_save(p, file_name="edf_electrodes.png")
 ```
+
+[EDF electrodes](src/edf_electrodes.png)
 
 ### Metadata
 
 Show EEG object properties:
 ```julia
 eeg_info(edf)
-edf.eeg_header[:sampling_rate][1]
-edf.eeg_header[:eeg_duration_seconds]
-edf.eeg_header[:eeg_duration_samples]
 eeg_sr(edf)
+eeg_signal_len(edf)
+edf.eeg_header[:eeg_duration_seconds]
 ```
 
 Edit EEG header
