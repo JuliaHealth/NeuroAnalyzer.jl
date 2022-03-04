@@ -1,7 +1,7 @@
 """
     eeg_reference_channel(eeg; channel)
 
-References the `eeg` to specific channel `channel`.
+Reference the `eeg` to specific channel `channel`.
 
 # Arguments
 
@@ -30,10 +30,11 @@ function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
 
     return eeg_new
 end
+
 """
     eeg_reference_channel!(eeg; channel)
 
-References the `eeg` to specific channel `channel`.
+Reference the `eeg` to specific channel `channel`.
 
 # Arguments
 
@@ -50,10 +51,11 @@ function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{In
 
     return
 end
+
 """
     eeg_reference_car(eeg)
 
-References the `eeg` to common average reference.
+Reference the `eeg` to common average reference.
 
 # Arguments
 
@@ -79,10 +81,11 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_reference_car!(eeg)
 
-References the `eeg` to common average reference.
+Reference the `eeg` to common average reference.
 
 # Arguments
 
@@ -105,7 +108,7 @@ end
 """
     eeg_derivative(eeg)
 
-Returns the derivative of the `eeg` with length same as the signal.
+Return the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
@@ -130,10 +133,11 @@ function eeg_derivative(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_derivative!(eeg)
 
-Returns the derivative of the `eeg` with length same as the signal.
+Return the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
@@ -152,17 +156,18 @@ function eeg_derivative!(eeg::NeuroJ.EEG)
 
     return
 end
-"""
-    eeg_detrend(eeg; type=:linear)
 
-Removes linear trend from the `eeg`.
+"""
+    eeg_detrend(eeg; type)
+
+Remove linear trend from the `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Symbol[:linear, :constant]`, optional
-    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant`: the mean of `signal` is subtracted
+- `type::Symbol=:linear`, optional
+    - `:linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:constant`: the mean of `signal` is subtracted
 
 # Returns
 
@@ -183,17 +188,18 @@ function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
     return eeg_new
 end
-"""
-    eeg_detrend!(eeg; type=:linear)
 
-Removes linear trend from the `eeg`.
+"""
+    eeg_detrend!(eeg; type)
+
+Remove linear trend from the `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Symbol[:linear, :constant]`, optional
-    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant`: the mean of `signal` is subtracted
+- `type::Symbol=:linear`, optional
+    - `:linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:constant`: the mean of `signal` is subtracted
 """
 function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
@@ -205,6 +211,7 @@ function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
     return
 end
+
 """
     eeg_taper(eeg; taper)
 
@@ -234,6 +241,7 @@ function eeg_taper(eeg::NeuroJ.EEG; taper::Vector)
 
     return eeg_new
 end
+
 """
     eeg_taper!(eeg; taper)
 
@@ -257,10 +265,11 @@ function eeg_taper!(eeg::NeuroJ.EEG; taper::Vector)
 
     return
 end
+
 """
     eeg_demean(eeg)
 
-Removes mean value (DC offset).
+Remove mean value (DC offset).
 
 # Arguments
 
@@ -285,10 +294,11 @@ function eeg_demean(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_demean!(eeg)
 
-Removes mean value (DC offset).
+Remove mean value (DC offset).
 
 # Arguments
 
@@ -307,6 +317,7 @@ function eeg_demean!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_normalize_zscore(eeg)
 
@@ -335,6 +346,7 @@ function eeg_normalize_zscore(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_normalize_zscore!(eeg)
 
@@ -357,6 +369,7 @@ function eeg_normalize_zscore!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_normalize_minmax(eeg)
 
@@ -385,6 +398,7 @@ function eeg_normalize_minmax(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_normalize_minmax!(eeg)
 
@@ -407,10 +421,11 @@ function eeg_normalize_minmax!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_upsample(eeg; new_sr)
 
-Upsamples all channels of `eeg` to `new_sr` sampling frequency.
+Upsample all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -442,10 +457,11 @@ function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
     return eeg_new
 end
+
 """
     eeg_upsample!(eeg; new_sr)
 
-Upsamples all channels of `eeg` to `new_sr` sampling frequency.
+Upsample all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -475,15 +491,16 @@ function eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
     return
 end
+
 """
     eeg_tconv(eeg; kernel)
 
-Performs convolution in the time domain.
+Perform convolution in the time domain.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
 
 # Returns
 
@@ -511,15 +528,16 @@ function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}
 
     return eeg_new
 end
+
 """
     eeg_tconv!(eeg; kernel)
 
-Performs convolution in the time domain.
+Perform convolution in the time domain.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
 """
 function eeg_tconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
@@ -544,32 +562,43 @@ function eeg_tconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64
 
     return
 end
-"""
-    eeg_filter(eeg; fprototype, ftype=nothing, cutoff=0, order=-1, rp=-1, rs=-1, dir=:twopass, d=1, t=0, window=nothing)
 
-Filters `eeg` using zero phase distortion filter.
+"""
+    eeg_filter(eeg; <keyword arguments>)
+
+Filter `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
     - `:poly`: polynomial of `order` order
-- `ftype::Symbol[:lp, :hp, :bp, :bs]`: filter type
-- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-- `d::Int64`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Int64, Float64, Tuple}=0`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`=0: filter order
+- `rp::Union{Int64, Float64}=-1`: dB ripple in the passband
+- `rs::Union{Int64, Float64}=-1`: dB attentuation in the stopband
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass)
+- `d::Int64=1`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}=0`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `window::Union{Vector{Float64}, Nothing}=nothing`: window, required for FIR filter
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
+
 function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     s_filtered = signal_filter(eeg.eeg_signals,
@@ -594,27 +623,37 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
 
     return eeg_new
 end
-"""
-    eeg_filter!(eeg; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window)
 
-Filters `eeg` using zero phase distortion filter.
+"""
+    eeg_filter!(eeg; <keyword arguments>)
+
+Filter `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
     - `:poly`: polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
-- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-- `d::Int64`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Int64, Float64, Tuple}=0`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`=0: filter order
+- `rp::Union{Int64, Float64}=-1`: dB ripple in the passband
+- `rs::Union{Int64, Float64}=-1`: dB attentuation in the stopband
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass)
+- `d::Int64=1`: window length for mean average and median average filter
+- `t::Union{Int64, Float64}=0`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `window::Union{Vector{Float64}, Nothing}=nothing`: window, required for FIR filter
 """
 function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
@@ -639,6 +678,7 @@ function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, N
 
     return
 end
+
 """
     eeg_downsample(eeg; new_sr)
 
@@ -674,6 +714,7 @@ function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
     return eeg_new
 end
+
 """
     eeg_downsample!(eeg; new_sr)
 
@@ -693,7 +734,7 @@ function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg.eeg_time = collect(t_downsampled)
     eeg.eeg_header[:eeg_duration_samples] = eeg_signal_len(eeg) * eeg_epoch_n(eeg)
     eeg.eeg_header[:eeg_duration_seconds] = (eeg_signal_len(eeg) * eeg_epoch_n(eeg)) / new_sr
-   eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
+    eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
     eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg) / new_sr
     eeg.eeg_header[:sampling_rate] = repeat([new_sr], eeg.eeg_header[:channel_n])
 
@@ -704,6 +745,7 @@ function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
     return
 end
+
 """
     eeg_pca(eeg; n)
 
@@ -727,6 +769,7 @@ function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
 
     return pc, pc_var, m
 end
+
 """
     eeg_pca!(eeg; n)
 
@@ -755,6 +798,7 @@ function eeg_pca!(eeg::NeuroJ.EEG; n::Int64)
 
     return
 end
+
 """
     eeg_fconv(eeg, kernel)
 
@@ -763,7 +807,7 @@ Performs convolution in the time domain.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
 
 # Returns
 
@@ -791,6 +835,7 @@ function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}
 
     return eeg_new
 end
+
 """
     eeg_fconv!(eeg, kernel)
 
@@ -799,7 +844,7 @@ Performs convolution in the time domain.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
 """
 function eeg_fconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
@@ -819,8 +864,9 @@ function eeg_fconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64
 
     return
 end
+
 """
-    eeg_ica(eeg; n)
+    eeg_ica(eeg; <keyword arguments>)
 
 Calculates `n` first ICs for `eeg`.
 
@@ -828,9 +874,10 @@ Calculates `n` first ICs for `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `n::Int64`: number of ICs
-- `tol::Float64`: tolerance for ICA
-- `iter::Int64`: maximum number of iterations
-- `f::Symbol[:tanh, :gaus]`: neg-entropy functor
+- `tol::Float64=1.0e-6`: tolerance for ICA
+- `iter::Int64=100`: maximum number of iterations
+- `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
+
 # Returns
 
 - `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
@@ -844,8 +891,9 @@ function eeg_ica(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100
 
     return ic, ic_mw
 end
+
 """
-    eeg_ica!(eeg; n, tol, f=:tanh)
+    eeg_ica!(eeg; <keyword arguments>)
 
 Calculates `n` first ICs for `eeg`.
 
@@ -853,9 +901,9 @@ Calculates `n` first ICs for `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `n::Int64`: number of ICs
-- `tol::Float64`: tolerance for ICA
-- `iter::Int64`: maximum number of iterations
-- `f::Symbol`: neg-entropy functor
+- `tol::Float64=1.0e-6`: tolerance for ICA
+- `iter::Int64=100`: maximum number of iterations
+- `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
 """
 function eeg_ica!(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -872,6 +920,7 @@ function eeg_ica!(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=10
 
     return
 end
+
 """
     eeg_average(eeg)
 
@@ -901,6 +950,7 @@ function eeg_average(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_average!(eeg)
 
@@ -925,6 +975,7 @@ function eeg_average!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_ica_reconstruct(eeg; ica)
 
@@ -955,6 +1006,7 @@ function eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, A
 
     return eeg_new
 end
+
 """
     eeg_ica_reconstruct!(eeg; ica)
 
@@ -981,3 +1033,43 @@ function eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, 
     return
 end
 
+"""
+    eeg_resample(eeg; new_sr)
+
+Resample all channels of `eeg` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `new_sr::Int64`: new sampling rate
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_resample(eeg::NeuroJ.EEG; new_sr::Int64)
+
+    new_sr > eeg_sr(eeg) && (eeg_new = eeg_upsample(eeg, new_sr=new_sr))
+    new_sr < eeg_sr(eeg) && (eeg_new = eeg_downsample(eeg, new_sr=new_sr))
+    new_sr = eeg_sr(eeg) && (eeg_new = eeg)
+
+    return eeg_new
+end
+
+"""
+    eeg_resample!(eeg; new_sr)
+
+Resample all channels of `eeg` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `new_sr::Int64`: new sampling rate
+"""
+function eeg_resample!(eeg::NeuroJ.EEG; new_sr::Int64)
+
+    new_sr > eeg_sr(eeg) eeg_upsample!(eeg, new_sr=new_sr)
+    new_sr < eeg_sr(eeg) eeg_downsample!(eeg, new_sr=new_sr)
+
+    return
+end

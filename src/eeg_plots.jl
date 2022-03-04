@@ -1793,19 +1793,19 @@ function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1,
 end
 
 """
-    signal_plot_ica(t, ica; label="", norm=true, xlabel="Time [s]", ylabel="Amplitude [μV]", title="ICA", ylim=nothing, kwargs...)
+    signal_plot_ica(t, ica; <keyword arguments>)
 
-Plots `ica` against time vector `t`.
+Plot `ica` components against time vector `t`.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`: the time vector
 - `ica::Vector{Float64}`
-- `label::String`: channel label
-- `norm::Bool`: normalize the `ica` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `label::String=""`: channel label
+- `norm::Bool=true`: normalize the `ica` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
 - `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits (-ylim:ylim)
 - `kwargs`: other arguments for plot() function
 
@@ -1813,7 +1813,7 @@ Plots `ica` against time vector `t`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="ICA", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
+function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -1845,26 +1845,26 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 end
 
 """
-    signal_plot_ica(t, ica, labels="", norm=true, xlabel="Time [s]", ylabel="", title="ICA", kwargs...)
+    signal_plot_ica(t, ica; <keyword arguments>)
 
-Plots `ica`.
+Plots `ica` components.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
 - `ica::Matrix{Float64}`
-- `labels::Vector{String}`: labels vector
-- `norm::Bool`: normalize the `ica` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `labels::Vector{String}=[""]`: labels vector
+- `norm::Bool=true`: normalize the ICs prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,}, ica::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
+function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,}, ica::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -1920,28 +1920,28 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,
 end
 
 """
-    eeg_plot_ica(eeg; epoch=1, offset=0, len=0, ic=nothing, norm=true, xlabel="Time  ylabel="", title="ICA", kwargs...)
+    eeg_plot_ica(eeg; <keyword arguments>)
 
-Plots ICs.
+Plots embedded ICs components.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
-- `epoch::Int64`: epoch number to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: which IC to plot
-- `norm::Bool`: normalize the `signal` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `eeg::NeuroJ.EEG`
+- `epoch::Int64=1`: epoch number to display
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
+- `ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing`: which IC to plot, default all
+- `norm::Bool=true`: normalize the ICs prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
+function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2063,25 +2063,25 @@ function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int
 end
 
 """
-    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb=false, cb_label="", average=true, title="", kwargs...)
+    eeg_plot_topo(eeg; <keyword arguments>)
 
-Plots topographical view of `eeg` component.
+Plot topographical view of `eeg` component.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
 - `offset::Int64`: time (in samples) at which to plot
-- `len::Int64`: interpolation window
-- `m::Symbol[:shepard, :mq, :tp]`: interpolation method: Shepard, Multiquadratic, ThinPlate
-- `c::Symbol`: component name (:ica, :pca, :amp, :power)
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}`: component index, e.g. ICA number or frequency range
-- `norm::Bool`: convert power as dB
+- `len::Int64=0`: interpolation window, default 100 ms
+- `m::Symbol=:shepard`: interpolation method :shepard (Shepard), :mq (Multiquadratic), :tp (ThinPlate)
+- `c::Symbol=:amp`: component name (:ica, :pca, :amp, :power)
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing`: component index, e.g. ICA number or frequency range
+- `norm::Bool=true`: convert power as dB
 - `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
-- `head_labels::Bool`: plot head labels
-- `cb::Bool`: add color bars to plots
-- `cb_label::String`: color bar label
-- `average::Bool`: plot averaged signal and PSD
-- `title::String`: plot title
+- `head_labels::Bool=false`: plot head labels
+- `cb::Bool=false`: add color bars to plots
+- `cb_label::String=""`: color bar label
+- `average::Bool=true`: plot averaged signal and PSD
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -2297,20 +2297,20 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:
 end
 
 """
-    signal_plot_bands(signal; fs, band=:all, type)
+    signal_plot_bands(signal; <keyword arguments>)
 
-Plots absolute/relative band powers of `signal`.
+Plot absolute/relative band powers of `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling rate
-- `band:Vector{Symbols}`: band name, e.g. :delta (see `eeg_band()`)
-- `type::Symbol[:abs, :rel]`: plots absolute or relative power
-- `norm::Bool`: convert power to dB if true
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+- `norm::Bool=true`: convert power to dB if true
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -2394,23 +2394,23 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbo
 end
 
 """
-    eeg_plot_bands(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", kwargs...)
+    eeg_plot_bands(eeg; <keyword arguments>)
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epochs to display
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `band:Vector{Symbols}`: band name, e.g. :delta (see `eeg_band()`)
-- `type::Symbol[:abs, :rel]`: plots absolute or relative power
-- `norm::Bool`: convert power to dB if true
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+- `norm::Bool=true`: convert power to dB if true
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns

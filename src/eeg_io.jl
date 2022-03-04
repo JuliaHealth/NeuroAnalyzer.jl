@@ -306,8 +306,10 @@ end
 """
     eeg_load_electrodes(eeg; file_name)
 
-Loads electrode positions from 
+Loads electrode positions from `file_name`. Accepted formats:
 - CED
+- LOCS
+- ELC
 
 # Arguments
 
@@ -395,8 +397,10 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Loads electrode positions from:
+Loads electrode positions from `file_name`. Accepted formats:
 - CED
+- LOCS
+- ELC
 
 # Arguments
 
@@ -485,7 +489,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 - `eeg::NeuroJ.EEG`
 - `file_name::String`: file name
-- `overwrite::Bool`
+- `overwrite::Bool=false`
 
 # Returns
 
@@ -537,9 +541,9 @@ Exports EEG data as CSV.
 
 - `eeg::NeuroJ.EEG`
 - `file_name::String`
-- `header::Bool`: export header
-- `components::Bool`: export components
-- `overwrite::Bool`
+- `header::Bool=false`: export header
+- `components::Bool=false`: export components
+- `overwrite::Bool=false`
 
 # Returns
 

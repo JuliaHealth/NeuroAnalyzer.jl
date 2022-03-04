@@ -238,6 +238,8 @@ export eeg_average
 export eeg_average!
 export eeg_ica_reconstruct
 export eeg_ica_reconstruct!
+export eeg_resample
+export eeg_resample!
 
 include("eeg_io.jl")
 export eeg_export_csv
