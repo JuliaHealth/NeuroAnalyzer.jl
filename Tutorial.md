@@ -33,11 +33,29 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 Load electrode positions:
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-p = eeg_plot_electrodes(edf, labels=true, head=true)
-eeg_plot_save(p, file_name="edf_electrodes.png")
+p = eeg_plot_electrodes(edf, labels=true, head=true, size=(300, 300))
+eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
 ![EDF electrodes](images/edf_electrodes.png)
+
+
+Save EEG object:
+```julia
+eeg_save(edf, file_name="test.bin")
+eeg_save(edf, file_name="test.bin", overwrite=true)
+eeg_info(edf)
+```
+
+Load EEG object:
+```julia
+edf = eeg_load("test.bin")
+```
+
+Export EEG data and header to .csv:
+```julia
+eeg_export_csv(edf, file_name="edf.csv", header=true)
+```
 
 ### Metadata
 
@@ -45,7 +63,10 @@ Show EEG object properties:
 ```julia
 eeg_info(edf)
 eeg_sr(edf)
+eeg_channel_n(edf)
+eeg_epoch_n(edf)
 eeg_signal_len(edf)
+eeg_epoch_len(edf)
 edf.eeg_header[:eeg_duration_seconds]
 ```
 
@@ -54,6 +75,13 @@ Edit EEG header
 eeg_show_header(edf)
 eeg_edit_header!(edf, field=:patient, value="N.N.")
 ```
+
+Show labels:
+```julia
+eeg_labels(edf)
+```
+
+## Components
 
 Show components (e.g. ICA, PCA):
 ```julia
@@ -71,28 +99,6 @@ Delete component:
 ```julia
 edf = eeg_delete_component(edf, c=:ica)
 eeg_delete_component!(edf, c=:ica)
-```
-
-Show labels:
-```julia
-eeg_labels(edf)
-```
-
-Save EEG object:
-```julia
-eeg_save(edf, file_name="test.bin")
-eeg_save(edf, file_name="test.bin", overwrite=true)
-eeg_info(edf)
-```
-
-Load EEG object:
-```julia
-edf = eeg_load("test.bin")
-```
-
-Export EEG data and header to .csv:
-```julia
-eeg_export_csv(edf, file_name="edf.csv", header=true)
 ```
 
 Get channel index:
@@ -118,7 +124,7 @@ eeg_sr(edf)
 eeg_info(edf)
 edf_512 = eeg_upsample(edf, new_sr=512)
 eeg_info(edf_512)
-eeg_upsample!(edf, new_sr=512)
+eeg_upsample!(edf, new_sr=1024)
 ```
 
 Downsample:
@@ -126,7 +132,7 @@ Downsample:
 eeg_sr(edf)
 edf_128 = eeg_downsample(edf, new_sr=128)
 eeg_info(edf_128)
-eeg_downsample!(edf, new_sr=128)
+eeg_downsample!(edf, new_sr=64)
 ```
 
 Remove parts of the signal:
