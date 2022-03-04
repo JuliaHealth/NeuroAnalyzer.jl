@@ -1,16 +1,16 @@
 """
-    signal_plot(t, signal, labels="", xlabel="Time [s]", ylabel="", title="", kwargs...)
+    signal_plot(t, signal; <keyword arguments>)
 
-Plots `signal` channels.
+Plot multi-channel `signal`.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
 - `signal::AbstractArray`
-- `labels::Vector{String}`: labels vector
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `labels::Vector{String}=[""]`: labels vector
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -63,25 +63,25 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    signal_plot(t, signal; ylim=(0, 0), xlabel="Time [s]", ylabel="Amplitude [μV]", title="", kwargs...)
+    signal_plot(t, signal; <keyword arguments>)
 
-Plots `signal` channel.
+Plot single-channel `signal` channel.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
 - `signal::Vector{Float64}`
-- `ylim::Tuple`: y-axis limit (-ylim:ylim)
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; ylim::Tuple=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -120,32 +120,32 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    eeg_plot(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", head=false, hist=:hist, norm=true, frq_lim=(0, 0), kwargs...)
+    eeg_plot(eeg; <keyword arguments>)
 
-Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
+Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
 # Arguments
 
 - `eeg::EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epochs to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `labels::Vector{String}`: channel labels vector
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `head::Bool`: add head with electrodes
-- `hist::Symbol`: histogram type
-- `norm::Bool`: convert power to dB
-- `frq_lim::Tuple`: frequency limit for PSD and spectrogram
-- `kwargs`: other arguments for plot() function
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `labels::Vector{String}=[""]`: channel labels vector
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `head::Bool=true`: add head with electrodes
+- `hist::Symbol[:hist, :kd]=:hist`: histogram type
+- `norm::Bool=true`: convert power to dB
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+- `kwargs`: other arguments for plot() function; <keyword arguments>
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple=(0, 0), kwargs...)
+function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
@@ -285,16 +285,17 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
 end
 
 """
-    eeg_draw_head(p, loc_x, loc_y; head_labels=true)
+    eeg_draw_head(p, loc_x, loc_y; head_labels, kwargs)
 
-Draws head over a topographical plot `p`.
+Draw head over a topographical plot `p`.
 
 # Arguments
 
 - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
 - `loc_x::Vector{Float64}`: vector of x electrode position
 - `loc_y::Vector{Float64}`: vector of y electrode position
-- `head_labels::Bool`: add text labels to the plot
+- `head_labels::Bool=true`: add text labels to the plot
+- `kwargs`: other arguments for plot() function
 
 # Returns
 
@@ -326,19 +327,20 @@ function eeg_draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, l
 end
 
 """
-    eeg_plot_filter_response(eeg; fprototype, ftype, cutoff, order, rp, rs, window=nothing, figure, kwargs...)
+    eeg_plot_filter_response(eeg; <keyword arguments>)
 
-Returns zero phase distortion filter response.
+Plot filter response.
 
 # Arguments
 
-- `fprototype::Symbol[:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-- `ftype::Symbol[:lp, :hp, :bp, :bs]`: filter type
+- `eeg::EEG`
+- `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
+- `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `order::Int64`: filter order
 - `rp::Union{Int64, Float64}`: dB ripple in the passband
 - `rs::Union{Int64, Float64}`: dB attenuation in the stopband
-- `window::window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+- `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -494,27 +496,26 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
 end
 
 """
-    signal_plot_avg(t, signal; norm=true, xlabel"Time [s]", ylabel="Amplitude [μV]" title="", ylim=(0, 0))
+    signal_plot_avg(t, signal; <keyword arguments>)
 
-Plots averaged `signal` channels.
+Plot averaged `signal` channels.
 
 # Arguments
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange`
 - `signal::Matrix{Float64}`
-- `norm::Bool`: normalize the `signal` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `ylim::Tuple`: y-axis limits
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
-- `ylim::Tuple`
 """
-function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), kwargs...)
+function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -569,32 +570,32 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 end
 
 """
-    eeg_plot_avg(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="", ylim=(0, 0), frq_lim=(0, 0), head=true, kwargs...)
+    eeg_plot_avg(eeg; <keyword arguments>)
 
-Plots averaged `eeg` channels.
+Plot averaged `eeg` channels.
 
 # Arguments
 
 - `eeg::EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `norm::Bool`: normalize the `signal` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `ylim::Tuple`: y-axis limits
-- `frq_lim::Tuple`: frequency limit for PSD and spectrogram
-- `hist::Symbol[:hist, :kd]`: histogram type
-- `head::Bool`: add head plot
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+- `hist::Symbol=:hist`: histogram type: :hist, :kd
+- `head::Bool=true`: add head plot
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), frq_lim::Tuple=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
+function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -713,7 +714,7 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 end
 
 """
-    signal_plot_butterfly(t, signal; labels=[""], norm=true, xlabel"Time [s]", ylabel="Amplitude [μV]", title="Butterfly plot", ylim=(0, 0), kwargs...)
+    signal_plot_butterfly(t, signal; <keyword arguments>)
 
 Butterfly plot of `signal` channels.
 
@@ -721,19 +722,19 @@ Butterfly plot of `signal` channels.
 
 - `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange`
 - `signal::Matrix{Float64}`
-- `labels::Vector{String}`: channel labels vector
-- `norm::Bool`: normalize the `signal` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `ylim::Tuple`: y-axis limits
+- `labels::Vector{String}=[""]`: channel labels vector
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `ylim::Tuple`: y-axis limits, default (0, 0)
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), average::Bool=false, kwargs...)
+function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -783,33 +784,33 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Butterfly plot", ylim=nothing, head=true, average=false, kwargs...)
+    eeg_plot_butterfly(eeg; <keyword arguments>)
 
 Butterfly plot of `eeg` channels.
 
 # Arguments
 
 - `eeg::EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `labels::Vector{String}`: channel labels vector
-- `norm::Bool`: normalize the `signal` prior to calculations
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `ylim::Union{Int64, Float64, Nothing}`: y-axis limits (-ylim:ylim)
-- `head::Bool`: add head with electrodes
-- `hist::Bool`: add histograms
-- `average::Bool`: plot averaged signal
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `labels::Vector{String}=[""]`: channel labels vector
+- `norm::Bool=false`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `head::Bool=true`: add head with electrodes
+- `hist::Bool=true`: add histograms
+- `average::Bool=true`: plot averaged signal
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
+function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -918,25 +919,25 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
 end
 
 """
-    signal_plot_psd(s_powers, s_freqs; frq_lim=(0, 0), xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", kwargs...)
+    signal_plot_psd(s_powers, s_freqs; <keyword arguments>)
 
-Plots power spectrum density.
+Plot power spectrum density.
 
 # Arguments
 
-- `s_powers::Vector{Float64}`
-- `s_freqs::Vector{Float64}`
-- `frq_lim::Tuple`: x-axis limit
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `s_powers::Vector{Float64}`: signal powers
+- `s_freqs::Vector{Float64}`: signal frequencies
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]"`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[2] < 0) && throw(ArgumentError("frq_lim must be ≥ 0."))
     frq_lim == (0, 0) && (frq_lim = (0, s_freqs[end]))
@@ -965,26 +966,26 @@ function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; fr
 end
 
 """
-    signal_plot_psd(signal; fs, norm=false, frq_lim=nothing, xlabel="Frequency [Hz]", ylabel="Power [μV^2/ title="", kwargs...)
+    signal_plot_psd(signal; <keyword arguments>)
 
-Plots power spectrum density.
+Plot `signal` channel power spectrum density.
 
 # Arguments
 
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling frequency
-- `norm::Bool`: converts power to dB
-- `frq_lim::Tuple`: x-axis limit
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `norm::Bool=false`: converts power to dB
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]"`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, frq_lim::Tuple=(0, 0), xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", kwargs...)
+function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", kwargs...)
 
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
@@ -1008,28 +1009,28 @@ function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, f
 end
 
 """
-    signal_plot_psd(signal; fs, norm=false, average=false, frq_lim=nothing, labels=[""], xlabel="Frequency [ ylabel="Power [μV^2/Hz]", title="", kwargs...)
+    signal_plot_psd(signal; <keyword arguments>)
 
-Plots power spectrum density.
+Plot `signal` channels power spectrum density.
 
 # Arguments
 
 - `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
-- `norm::Bool`: power in dB
-- `average::Bool`: plots average power and 95%CI for all channels
-- `frq_lim::Tuple`: x-axis limit
-- `labels::Vector{String}`: channel labels vector
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `norm::Bool=false`: power in dB
+- `average::Bool=false`: plots average power and 95%CI for all channels
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
+- `labels::Vector{String}=[""]`: channel labels vector
+- `xlabel::String="Frequency [Hz]"`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, average::Bool=false, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     (frq_lim[1] < 0 || frq_lim[2]) < 0 && throw(ArgumentError("frq_lim must be ≥ 0."))
@@ -1103,32 +1104,32 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
 end
 
 """
-    eeg_plot_psd(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=false, average=false, frq_lim=not xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", head=false, kwargs...)
+    eeg_plot_psd(eeg; <keyword arguments>)
 
-Plots power spectrum density.
+Plot `eeg` channels power spectrum density.
 
 # Arguments
 
 - `eeg::EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `labels::Vector{String}`: channel labels vector
-- `norm::Bool`: power in dB
-- `average::Bool`: plots average power and 95%CI for all channels
-- `frq_lim::Tuple`: x-axis limit
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `head::Bool`: add head with electrodes
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `labels::Vector{String}=[""]`: channel labels vector
+- `norm::Bool=false`: power in dB
+- `average::Bool=false`: plots average power and 95%CI for all channels
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `head::Bool=false`: add head with electrodes
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, kwargs...)
+function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -1203,19 +1204,20 @@ function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 end
 
 """
-    eeg_plot_electrodes(eeg; channel=0, selected=0, labels=true, head=true, head_labels=false, small=false)
+    eeg_plot_electrodes(eeg; <keyword arguments>)
 
-Plots electrodes.
+Plot `eeg` electrodes.
 
 # Arguments
 
 - `eeg:EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to display
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}`: which channel should be highlighted
-- `labels::Bool`: plot electrode labels
-- `head::Bool`: plot head
-- `head_labels::Bool`: plot head labels
-- `small::Bool`: draws small plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted, default is all channels
+- `labels::Bool=true`: plot electrode labels
+- `head::Bool`=true: plot head
+- `head_labels::Bool=false`: plot head labels
+- `small::Bool=false`: draws small plot
+- `kwargs`: other arguments for plot() function
 
 # Returns
 
@@ -1343,15 +1345,15 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
 end
 
 """
-    eeg_plot_matrix(eeg, m; epoch, kwargs...)
+    eeg_plot_matrix(eeg, m; <keyword arguments>)
 
-Plots matrix `m` of `eeg` signals.
+Plot matrix `m` of `eeg` channels.
 
 # Arguments
 
 - `eeg:EEG`
 - `m::Union{Matrix{Float64}, Array{Float64, 3}}`: channels by channels matrix
-- `epoch::Int64`: epoch number to display
+- `epoch::Int64=1`: epoch number to display
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -1374,17 +1376,17 @@ function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}};
 end
 
 """
-    eeg_plot_matrix(eeg, cov_m, lags; epoch, kwargs...)
+    eeg_plot_matrix(eeg, cov_m, lags; <keyword arguments>)
 
-Plots matrix `m` of `eeg` signals.
+Plot covariance matrix `m` of `eeg` channels.
 
 # Arguments
 
 - `eeg:EEG`
 - `cov_m::Union{Matrix{Float64}, Array{Float64, 3}}`: covariance matrix
-- `lags::Union{Vector{Int64}, Vector{Float64}}`: covariance matrix
+- `lags::Union{Vector{Int64}, Vector{Float64}}`: covariance lags
 - `channel::Union{Int64, Vector{Int64}, UnitRange{Int64}, Nothing}`: channel to display
-- `epoch::Int64`: epoch number to display
+- `epoch::Int64=1`: epoch number to display
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -1416,28 +1418,28 @@ function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float6
 end
 
 """
-    signal_plot_spectrogram(signal; fs, offset=0, norm=true, demean=true, ylim=(0, 0), xlabel="Time  ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+    signal_plot_spectrogram(signal; <keyword arguments>)
 
-Plots spectrogram of `signal`.
+Plot spectrogram of `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling frequency
-- `offset::Int64`: displayed segment offset in samples
-- `norm::Bool`: normalize powers to dB
-- `demean::Bool`: demean signal prior to analysis
-- `ylim::Tuple`: y-axis limits
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `offset::Int64=0`: displayed segment offset in samples
+- `norm::Bool=true`: normalize powers to dB
+- `demean::Bool=true`: demean signal prior to analysis
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     (frq_lim[1] < 0 || frq_lim[1] > fs / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(fs / 2)."))
@@ -1494,29 +1496,29 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
 end
 
 """
-    eeg_plot_spectrogram(eeg; epoch=1, channel, offset=0, len=0, norm=true, frq_lim=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
+    eeg_plot_spectrogram(eeg; <keyword arguments>)
 
 Plots spectrogram of `eeg` channel.
 
 # Arguments
 
 - `eeg:EEG`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch to plot
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch to plot
 - `channel::Int64`: channel to plot
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `norm::Bool`: normalize powers to dB
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
-- `frq_lim::Tuple`: y-axis limits
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize powers to dB
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="Spectrogram", kwargs...)
+function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1804,14 +1806,14 @@ Plots `ica` against time vector `t`.
 - `xlabel::String`: x-axis label
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
-- `ylim::Union{Int64, Float64, Nothing}`: y-axis limits (-ylim:ylim)
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits (-ylim:ylim)
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="ICA", ylim::Union{Int64, Float64, Nothing}=nothing, kwargs...)
+function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="ICA", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -2074,7 +2076,7 @@ Plots topographical view of `eeg` component.
 - `c::Symbol`: component name (:ica, :pca, :amp, :power)
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}`: component index, e.g. ICA number or frequency range
 - `norm::Bool`: convert power as dB
-- `frq_lim::Tuple`: frequency limit for PSD and spectrogram
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
 - `head_labels::Bool`: plot head labels
 - `cb::Bool`: add color bars to plots
 - `cb_label::String`: color bar label
