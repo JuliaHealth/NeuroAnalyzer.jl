@@ -227,7 +227,7 @@ Loads electrode positions from CED file.
 
 - `sensors::DataFrame`
 """
-function eeg_import_ced(file_name)
+function eeg_import_ced(file_name::String)
 
     sensors = CSV.read(file_name, delim="\t", DataFrame)
     
@@ -247,7 +247,7 @@ Loads electrode positions from LOCS file.
 
 - `sensors::DataFrame`
 """
-function eeg_import_locs(file_name)
+function eeg_import_locs(file_name::String)
 
     sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
     DataFrames.rename!(sensors, [:Number, :theta, :radius, :labels])
@@ -268,7 +268,7 @@ Loads electrode positions from ELC file.
 
 - `sensors::DataFrame`
 """
-function eeg_import_elc(file_name)
+function eeg_import_elc(file_name::String)
 
     f = open(file_name, "r")
     elc_file = readlines(f)
@@ -320,7 +320,7 @@ Loads electrode positions from `file_name`. Accepted formats:
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name)
+function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -407,7 +407,7 @@ Loads electrode positions from `file_name`. Accepted formats:
 - `eeg::NeuroJ.EEG`
 - `file_name::String`
 """
-function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name)
+function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))

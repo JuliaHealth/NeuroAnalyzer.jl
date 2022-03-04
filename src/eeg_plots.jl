@@ -2086,7 +2086,7 @@ Plot topographical view of `eeg` component.
 
 # Returns
 
-- `plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
 
@@ -2315,7 +2315,7 @@ Plot absolute/relative band powers of `signal`.
 
 # Returns
 
-- `plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 

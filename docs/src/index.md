@@ -4,7 +4,7 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ## NeuroJ
 
-```@doc
+```@docs
 neuroj_version()
 
 neuroj_reload_plugins()
@@ -15,15 +15,15 @@ neuroj_reload_plugins()
 ```@docs
 eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_labels::Bool=true)
 
-eeg_import_ced(file_name)
+eeg_import_ced(file_name::String)
 
-eeg_import_locs(file_name)
+eeg_import_locs(file_name::String)
 
-eeg_import_elc(file_name)
+eeg_import_elc(file_name::String)
 
-eeg_load_electrodes(eeg::NeuroJ.EEG; file_name)
+eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
-eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name)
+eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
 eeg_load(file_name::String)
 
@@ -178,6 +178,6 @@ eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
 
 ## NSTIM
 
-```@doc
+```@docs
 tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Int64)
 ```

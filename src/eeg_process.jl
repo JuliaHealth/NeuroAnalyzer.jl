@@ -598,7 +598,6 @@ Filter `eeg`.
 
 - `eeg::NeuroJ.EEG`
 """
-
 function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     s_filtered = signal_filter(eeg.eeg_signals,
@@ -1068,8 +1067,8 @@ Resample all channels of `eeg` to `new_sr` sampling frequency.
 """
 function eeg_resample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
-    new_sr > eeg_sr(eeg) eeg_upsample!(eeg, new_sr=new_sr)
-    new_sr < eeg_sr(eeg) eeg_downsample!(eeg, new_sr=new_sr)
+    new_sr > eeg_sr(eeg) && eeg_upsample!(eeg, new_sr=new_sr)
+    new_sr < eeg_sr(eeg) && eeg_downsample!(eeg, new_sr=new_sr)
 
     return
 end
