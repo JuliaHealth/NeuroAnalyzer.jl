@@ -126,7 +126,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -145,7 +145,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
+function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
@@ -333,7 +333,7 @@ Plot filter response.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
 - `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
@@ -347,7 +347,7 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
+function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 
     fs = eeg_sr(eeg)
 
@@ -576,7 +576,7 @@ Plot averaged `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -595,7 +595,7 @@ Plot averaged `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
+function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -790,7 +790,7 @@ Butterfly plot of `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -810,7 +810,7 @@ Butterfly plot of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
+function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1110,7 +1110,7 @@ Plot `eeg` channels power spectrum density.
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -1129,7 +1129,7 @@ Plot `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, kwargs...)
+function eeg_plot_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -1223,7 +1223,7 @@ Plot `eeg` electrodes.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
+function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -1360,7 +1360,7 @@ Plot matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, kwargs...)
+function eeg_plot_matrix(eeg::NeuroJ.EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, kwargs...)
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -1393,7 +1393,7 @@ Plot covariance matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, kwargs...)
+function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -1518,7 +1518,7 @@ Plots spectrogram of `eeg` channel.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1597,18 +1597,18 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
 end
 
 """
-    signal_plot_histogram(signal; type=:hist, label="", xlabel="", ylabel="", title="", kwargs...)
+    signal_plot_histogram(signal; <keyword arguments>)
 
-Plots histogram of `signal`.
+Plot histogram of `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
-- `type::Symbol[:hist, :kd]`: type of histogram: regular `:hist` or kernel density `:kd`
-- `label::String`: channel label
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
+- `label::String=""`: channel label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -1647,18 +1647,18 @@ end
 
 
 """
-    signal_plot_histogram(signal, type=:hist, labels=[""], xlabel="", ylabel="", title="", kwargs...)
+    signal_plot_histogram(signal; <keyword arguments>)
 
-Plots histogram of `signal`.
+Plot histogram of `signal`.
 
 # Arguments
 
 - `signal::Matrix{Float64}`
-- `type::Symbol[:hist, :kd]`: type of histogram: regular `:hist` or kernel density `:kd`
-- `labels::Vector{String}`
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `type::Symbol`: type of histogram: :hist or :kd
+- `labels::Vector{String}=[""]`
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
@@ -1729,29 +1729,29 @@ function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; 
 end
 
 """
-    eeg_plot_histogram(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="", ylabel="", title="", kwargs...)
+    eeg_plot_histogram(eeg; <keyword arguments>)
 
-Plots `eeg` channels histograms.
+Plot `eeg` channel histograms.
 
 # Arguments
 
-- `eeg::EEG`: EEG object
-- `type::Symbol[:hist, :kd]`: type of histogram: regular `:hist` or kernel density `:kd`
-- `epoch::Int64`: epoch number to display
+- `eeg::NeuroJ.EEG`: EEG object
+- `type::Symbol: type of histogram: :hist or :kd
+- `epoch::Int64=1`: epoch number to display
 - `channel::Int64`: channel to display
-- `offset::Int64`: displayed segment offset in samples
-- `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `labels::String`: channel label
-- `xlabel::String`: x-axis label
-- `ylabel::String`: y-axis label
-- `title::String`: plot title
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
+- `label::String=""`: channel label
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1926,7 +1926,7 @@ Plots ICs.
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Int64`: epoch number to display
 - `offset::Int64`: displayed segment offset in samples
 - `len::Int64`: displayed segment length in samples, default 1 epoch or 20 seconds
@@ -1941,7 +1941,7 @@ Plots ICs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
+function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2069,7 +2069,7 @@ Plots topographical view of `eeg` component.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `offset::Int64`: time (in samples) at which to plot
 - `len::Int64`: interpolation window
 - `m::Symbol[:shepard, :mq, :tp]`: interpolation method: Shepard, Multiquadratic, ThinPlate
@@ -2088,7 +2088,7 @@ Plots topographical view of `eeg` component.
 
 - `plot`
 """
-function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
+function eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2400,7 +2400,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 # Arguments
 
-- `eeg::EEG`: EEG object
+- `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
 - `offset::Int64`: displayed segment offset in samples
@@ -2417,7 +2417,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 

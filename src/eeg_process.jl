@@ -5,14 +5,14 @@ References the `eeg` to specific channel `channel`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_reference_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -37,10 +37,10 @@ References the `eeg` to specific channel `channel`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
-function eeg_reference_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -57,13 +57,13 @@ References the `eeg` to common average reference.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_reference_car(eeg::EEG)
+function eeg_reference_car(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -86,9 +86,9 @@ References the `eeg` to common average reference.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_reference_car!(eeg::EEG)
+function eeg_reference_car!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -109,13 +109,13 @@ Returns the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_derivative(eeg::EEG)
+function eeg_derivative(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -137,9 +137,9 @@ Returns the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_derivative!(eeg::EEG)
+function eeg_derivative!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -159,16 +159,16 @@ Removes linear trend from the `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `type::Symbol[:linear, :constant]`, optional
     - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant`: the mean of `signal` is subtracted
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_detrend(eeg::EEG; type::Symbol=:linear)
+function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -190,12 +190,12 @@ Removes linear trend from the `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `type::Symbol[:linear, :constant]`, optional
     - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `constant`: the mean of `signal` is subtracted
 """
-function eeg_detrend!(eeg::EEG; type::Symbol=:linear)
+function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -212,14 +212,14 @@ Taper `eeg` with `taper`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `taper::Vector`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_taper(eeg::EEG; taper::Vector)
+function eeg_taper(eeg::NeuroJ.EEG; taper::Vector)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -241,10 +241,10 @@ Taper `eeg` with `taper`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `taper::Vector`
 """
-function eeg_taper!(eeg::EEG; taper::Vector)
+function eeg_taper!(eeg::NeuroJ.EEG; taper::Vector)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -264,13 +264,13 @@ Removes mean value (DC offset).
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_demean(eeg::EEG)
+function eeg_demean(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -292,9 +292,9 @@ Removes mean value (DC offset).
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_demean!(eeg::EEG)
+function eeg_demean!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -314,13 +314,13 @@ Normalize by z-score.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_normalize_zscore(eeg::EEG)
+function eeg_normalize_zscore(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -342,9 +342,9 @@ Normalize by z-score.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_normalize_zscore!(eeg::EEG)
+function eeg_normalize_zscore!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -364,13 +364,13 @@ Normalize to 0...1
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_normalize_minmax(eeg::EEG)
+function eeg_normalize_minmax(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -392,9 +392,9 @@ Normalize to 0...1
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_normalize_minmax!(eeg::EEG)
+function eeg_normalize_minmax!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -414,14 +414,14 @@ Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `new_sr::Int64`: new sampling rate
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_upsample(eeg::EEG; new_sr::Int64)
+function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -449,14 +449,14 @@ Upsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `new_sr::Int64`: new sampling rate
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_upsample!(eeg::EEG; new_sr::Int64)
+function eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     eeg.eeg_signals, t_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -482,14 +482,14 @@ Performs convolution in the time domain.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -518,10 +518,10 @@ Performs convolution in the time domain.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 """
-function eeg_tconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_tconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -551,7 +551,7 @@ Filters `eeg` using zero phase distortion filter.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
@@ -568,9 +568,9 @@ Filters `eeg` using zero phase distortion filter.
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_filter(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     s_filtered = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
@@ -601,7 +601,7 @@ Filters `eeg` using zero phase distortion filter.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
@@ -616,7 +616,7 @@ Filters `eeg` using zero phase distortion filter.
 - `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     eeg.eeg_signals = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
@@ -646,14 +646,14 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `new_sr::Int64`: new sampling rate
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_downsample(eeg::EEG; new_sr::Int64)
+function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -681,10 +681,10 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `new_sr::Int64`: new sampling rate
 """
-function eeg_downsample!(eeg::EEG; new_sr::Int64)
+function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     eeg.eeg_signals, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -711,7 +711,7 @@ Calculates `n` first PCs for `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `n::Int64`: number of PCs
 
 # Returns
@@ -719,7 +719,7 @@ Calculates `n` first PCs for `eeg`.
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_var::Matrix{Float64}`: PC_VAR(1)..PC_VAR(n) × epoch
 """
-function eeg_pca(eeg::EEG; n::Int64)
+function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -734,10 +734,10 @@ Calculates `n` first PCs for `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `n::Int64`: number of PCs
 """
-function eeg_pca!(eeg::EEG; n::Int64)
+function eeg_pca!(eeg::NeuroJ.EEG; n::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -762,14 +762,14 @@ Performs convolution in the time domain.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -798,10 +798,10 @@ Performs convolution in the time domain.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
 """
-function eeg_fconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_fconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -826,7 +826,7 @@ Calculates `n` first ICs for `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `n::Int64`: number of ICs
 - `tol::Float64`: tolerance for ICA
 - `iter::Int64`: maximum number of iterations
@@ -836,7 +836,7 @@ Calculates `n` first ICs for `eeg`.
 - `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
 """
-function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+function eeg_ica(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -851,13 +851,13 @@ Calculates `n` first ICs for `eeg`.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `n::Int64`: number of ICs
 - `tol::Float64`: tolerance for ICA
 - `iter::Int64`: maximum number of iterations
 - `f::Symbol`: neg-entropy functor
 """
-function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+function eeg_ica!(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -879,13 +879,13 @@ Returns the average signal of all `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_average(eeg::EEG)
+function eeg_average(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -908,9 +908,9 @@ Returns the average signal of all `eeg` channels.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_average!(eeg::EEG)
+function eeg_average!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -932,14 +932,14 @@ Reconstructs `eeg` signals using removal of `ica` ICA components.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
-function eeg_ica_reconstruct(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -962,10 +962,10 @@ Reconstructs `eeg` signals using removal of `ica` ICA components.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 """
-function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 

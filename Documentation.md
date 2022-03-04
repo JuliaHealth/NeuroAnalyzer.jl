@@ -78,7 +78,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 
 **Arguments**
 
-  * `eeg::EEG`: EEG object
+  * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -136,7 +136,7 @@ Plot averaged `eeg` channels.
 
 **Arguments**
 
-  * `eeg::EEG`: EEG object
+  * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -195,7 +195,7 @@ Butterfly plot of `eeg` channels.
 
 **Arguments**
 
-  * `eeg::EEG`: EEG object
+  * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -307,7 +307,7 @@ Plot `eeg` channels power spectrum density.
 
 **Arguments**
 
-  * `eeg::EEG`: EEG object
+  * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -377,6 +377,85 @@ Plots spectrogram of `eeg` channel.
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.signal_plot_histogram-Tuple{Vector{Float64}}' href='#NeuroJ.signal_plot_histogram-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.signal_plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+signal_plot_histogram(signal; <keyword arguments>)
+```
+
+Plot histogram of `signal`.
+
+**Arguments**
+
+  * `signal::Vector{Float64}`
+  * `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
+  * `label::String=""`: channel label
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.signal_plot_histogram-Tuple{VecOrMat{Float64}}' href='#NeuroJ.signal_plot_histogram-Tuple{VecOrMat{Float64}}'>#</a>
+**`NeuroJ.signal_plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+signal_plot_histogram(signal; <keyword arguments>)
+```
+
+Plot histogram of `signal`.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `type::Symbol`: type of histogram: :hist or :kd
+  * `labels::Vector{String}=[""]`
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_histogram(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channel histograms.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `type::Symbol: type of histogram: :hist or :kd
+  * `epoch::Int64=1`: epoch number to display
+  * `channel::Int64`: channel to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
+  * `label::String=""`: channel label
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
   * `kwargs`: other arguments for plot() function
 
 **Returns**
@@ -491,7 +570,7 @@ Plot filter response.
 
 **Arguments**
 
-  * `eeg::EEG`
+  * `eeg::NeuroJ.EEG`
   * `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
   * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
   * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)

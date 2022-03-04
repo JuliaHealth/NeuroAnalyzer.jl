@@ -311,14 +311,14 @@ Loads electrode positions from
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `file_name::String`
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::EEG; file_name)
+function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -400,10 +400,10 @@ Loads electrode positions from:
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `file_name::String`
 """
-function eeg_load_electrodes!(eeg::EEG; file_name)
+function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name)
     
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -483,7 +483,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `file_name::String`: file name
 - `overwrite::Bool`
 
@@ -491,7 +491,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 
 - `success::Bool`
 """
-function eeg_save(eeg::EEG; file_name::String, overwrite::Bool=false)
+function eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
@@ -517,7 +517,7 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 
 # Returns
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 """
 function eeg_load(file_name::String)
 
@@ -535,7 +535,7 @@ Exports EEG data as CSV.
 
 # Arguments
 
-- `eeg::EEG`
+- `eeg::NeuroJ.EEG`
 - `file_name::String`
 - `header::Bool`: export header
 - `components::Bool`: export components
@@ -545,7 +545,7 @@ Exports EEG data as CSV.
 
 - `success::Bool`
 """
-function eeg_export_csv(eeg::EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
+function eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
     eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
