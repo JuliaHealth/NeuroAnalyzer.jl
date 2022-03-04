@@ -15,7 +15,7 @@ Plots `signal` channels.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
@@ -79,7 +79,7 @@ Plots `signal` channel.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; ylim::Tuple=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
 
@@ -120,7 +120,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    eeg_plot(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", head=false, hist=:hist, norm=true, frq_lim=(0, 0), figure="", kwargs...)
+    eeg_plot(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", head=false, hist=:hist, norm=true, frq_lim=(0, 0), kwargs...)
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
@@ -139,14 +139,13 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `hist::Symbol`: histogram type
 - `norm::Bool`: convert power to dB
 - `frq_lim::Tuple`: frequency limit for PSD and spectrogram
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple=(0, 0), figure::String="", kwargs...)
+function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
@@ -282,11 +281,6 @@ function eeg_plot(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1,
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -297,16 +291,16 @@ Draws head over a topographical plot `p`.
 
 # Arguments
 
-- `p::Plot`: electrodes plot
+- `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
 - `loc_x::Vector{Float64}`: vector of x electrode position
 - `loc_y::Vector{Float64}`: vector of y electrode position
 - `head_labels::Bool`: add text labels to the plot
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_draw_head(p, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
+function eeg_draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
 
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
@@ -345,14 +339,13 @@ Returns zero phase distortion filter response.
 - `rp::Union{Int64, Float64}`: dB ripple in the passband
 - `rs::Union{Int64, Float64}`: dB attenuation in the stopband
 - `window::window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, figure::String="", kwargs...)
+function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 
     fs = eeg_sr(eeg)
 
@@ -497,11 +490,6 @@ function eeg_plot_filter_response(eeg::EEG; fprototype::Symbol, ftype::Symbol, c
 
     p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -523,7 +511,7 @@ Plots averaged `signal` channels.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 - `ylim::Tuple`
 """
 function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), kwargs...)
@@ -581,7 +569,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 end
 
 """
-    eeg_plot_avg(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="", ylim=(0, 0), frq_lim=(0, 0), head=true, figure="", kwargs...)
+    eeg_plot_avg(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="", ylim=(0, 0), frq_lim=(0, 0), head=true, kwargs...)
 
 Plots averaged `eeg` channels.
 
@@ -600,14 +588,13 @@ Plots averaged `eeg` channels.
 - `frq_lim::Tuple`: frequency limit for PSD and spectrogram
 - `hist::Symbol[:hist, :kd]`: histogram type
 - `head::Bool`: add head plot
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), frq_lim::Tuple=(0, 0), hist::Symbol=:hist, head::Bool=true, figure::String="", kwargs...)
+function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple=(0, 0), frq_lim::Tuple=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -722,11 +709,6 @@ function eeg_plot_avg(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -749,7 +731,7 @@ Butterfly plot of `signal` channels.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), average::Bool=false, kwargs...)
 
@@ -801,7 +783,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Butterfly plot", ylim=nothing, head=true, average=false, figure="", kwargs...)
+    eeg_plot_butterfly(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=true, xlabel="Time  ylabel="Channels", title="Butterfly plot", ylim=nothing, head=true, average=false, kwargs...)
 
 Butterfly plot of `eeg` channels.
 
@@ -821,14 +803,13 @@ Butterfly plot of `eeg` channels.
 - `head::Bool`: add head with electrodes
 - `hist::Bool`: add histograms
 - `average::Bool`: plot averaged signal
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, figure::String="", kwargs...)
+function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="Butterfly plot", ylim::Tuple=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -933,11 +914,6 @@ function eeg_plot_butterfly(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstrac
         end
     end
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -958,7 +934,7 @@ Plots power spectrum density.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
@@ -1006,7 +982,7 @@ Plots power spectrum density.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, frq_lim::Tuple=(0, 0), xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", kwargs...)
 
@@ -1051,7 +1027,7 @@ Plots power spectrum density.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
@@ -1127,7 +1103,7 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
 end
 
 """
-    eeg_plot_psd(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=false, average=false, frq_lim=not xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", head=false, figure="", kwargs...)
+    eeg_plot_psd(eeg; epoch=1, channel=0, offset=0, len=0, labels=[""], norm=false, average=false, frq_lim=not xlabel="Frequency [Hz]", ylabel="Power [μV^2/Hz]", title="", head=false, kwargs...)
 
 Plots power spectrum density.
 
@@ -1146,14 +1122,13 @@ Plots power spectrum density.
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
 - `head::Bool`: add head with electrodes
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, figure::String="", kwargs...)
+function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, average::Bool=false, frq_lim::Tuple=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", head::Bool=false, kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -1224,11 +1199,6 @@ function eeg_plot_psd(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange
                         title=title;
                         kwargs...)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -1249,7 +1219,7 @@ Plots electrodes.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
 
@@ -1373,7 +1343,7 @@ function eeg_plot_electrodes(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abst
 end
 
 """
-    eeg_plot_matrix(eeg, m; epoch, figure="", kwargs...)
+    eeg_plot_matrix(eeg, m; epoch, kwargs...)
 
 Plots matrix `m` of `eeg` signals.
 
@@ -1382,14 +1352,13 @@ Plots matrix `m` of `eeg` signals.
 - `eeg:EEG`
 - `m::Union{Matrix{Float64}, Array{Float64, 3}}`: channels by channels matrix
 - `epoch::Int64`: epoch number to display
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, figure::String="", kwargs...)
+function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}}; epoch::Int64=1, kwargs...)
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -1401,16 +1370,11 @@ function eeg_plot_matrix(eeg::EEG, m::Union{Matrix{Float64}, Array{Float64, 3}};
              ylabelfontsize=8, xtickfontsize=4, ytickfontsize=4; kwargs...)
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
 """
-    eeg_plot_matrix(eeg, cov_m, lags; epoch, figure="", kwargs...)
+    eeg_plot_matrix(eeg, cov_m, lags; epoch, kwargs...)
 
 Plots matrix `m` of `eeg` signals.
 
@@ -1421,14 +1385,13 @@ Plots matrix `m` of `eeg` signals.
 - `lags::Union{Vector{Int64}, Vector{Float64}}`: covariance matrix
 - `channel::Union{Int64, Vector{Int64}, UnitRange{Int64}, Nothing}`: channel to display
 - `epoch::Int64`: epoch number to display
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, figure::String="", kwargs...)
+function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float64, 3}}, lags::Union{Vector{Int64}, Vector{Float64}}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -1448,11 +1411,6 @@ function eeg_plot_covmatrix(eeg::EEG, cov_m::Union{Matrix{Float64}, Array{Float6
         push!(p, plot(lags, cov_m[idx, :], title="ch: $(labels[idx])", label="", titlefontsize=6, xlabelfontsize=8, ylabelfontsize=8, xtickfontsize=4, ytickfontsize=4, lw=0.5))
     end
     p = plot(p...; kwargs...)
-
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
 
     return p
 end
@@ -1477,7 +1435,7 @@ Plots spectrogram of `signal`.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="Spectrogram", kwargs...)
 
@@ -1552,14 +1510,13 @@ Plots spectrogram of `eeg` channel.
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
 - `frq_lim::Tuple`: y-axis limits
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="Spectrogram", figure="", kwargs...)
+function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="Spectrogram", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1634,11 +1591,6 @@ function eeg_plot_spectrogram(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstr
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -1659,7 +1611,7 @@ Plots histogram of `signal`.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_histogram(signal::Vector{Float64}; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
@@ -1709,7 +1661,7 @@ Plots histogram of `signal`.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
@@ -1775,7 +1727,7 @@ function signal_plot_histogram(signal::Union{Vector{Float64}, Matrix{Float64}}; 
 end
 
 """
-    eeg_plot_histogram(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="", ylabel="", title="", figure="", kwargs...)
+    eeg_plot_histogram(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="", ylabel="", title="", kwargs...)
 
 Plots `eeg` channels histograms.
 
@@ -1791,14 +1743,13 @@ Plots `eeg` channels histograms.
 - `xlabel::String`: x-axis label
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", figure::String="", kwargs...)
+function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -1836,11 +1787,6 @@ function eeg_plot_histogram(eeg::EEG; type::Symbol=:hist, epoch::Int64=1, channe
                               title=title;
                               kwargs...)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -1863,7 +1809,7 @@ Plots `ica` against time vector `t`.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="ICA", ylim::Union{Int64, Float64, Nothing}=nothing, kwargs...)
 
@@ -1914,7 +1860,7 @@ Plots `ica`.
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
 function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,}, ica::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
 
@@ -1972,7 +1918,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,
 end
 
 """
-    eeg_plot_ica(eeg; epoch=1, offset=0, len=0, ic=nothing, norm=true, xlabel="Time  ylabel="", title="ICA", figure="", kwargs...)
+    eeg_plot_ica(eeg; epoch=1, offset=0, len=0, ic=nothing, norm=true, xlabel="Time  ylabel="", title="ICA", kwargs...)
 
 Plots ICs.
 
@@ -1987,14 +1933,13 @@ Plots ICs.
 - `xlabel::String`: x-axis label
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", figure::String="", kwargs...)
+function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="ICA", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2112,16 +2057,11 @@ function eeg_plot_ica(eeg::EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, i
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
 """
-    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb=false, cb_label="", average=true, title="", figure="", kwargs...)
+    eeg_plot_topo(eeg; offset, len=0, m=:shepard, c=:amp, c_idx=nothing, norm=true, frq_lim=(0,0) head_labels=false, cb=false, cb_label="", average=true, title="", kwargs...)
 
 Plots topographical view of `eeg` component.
 
@@ -2140,14 +2080,13 @@ Plots topographical view of `eeg` component.
 - `cb_label::String`: color bar label
 - `average::Bool`: plot averaged signal and PSD
 - `title::String`: plot title
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
 - `plot`
 """
-function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", figure::String="", kwargs...)
+function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2352,11 +2291,6 @@ function eeg_plot_topo(eeg::EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
 end
 
@@ -2458,7 +2392,7 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbo
 end
 
 """
-    eeg_plot_bands(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", figure="", kwargs...)
+    eeg_plot_bands(eeg; epoch=1, channel, offset=0, len=0, labels=[""], xlabel="Time  ylabel="Channels", title="", kwargs...)
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
@@ -2475,14 +2409,13 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `xlabel::String`: x-axis label
 - `ylabel::String`: y-axis label
 - `title::String`: plot title
-- `figure::String`: name of the output figure file
 - `kwargs`: other arguments for plot() function
 
 # Returns
 
-- `p::Plot`
+- `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", figure::String="", kwargs...)
+function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2548,10 +2481,25 @@ function eeg_plot_bands(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRan
 
     plot(p)
 
-    if figure !== ""
-        isfile(figure) && @warn "File $figure will be overwritten."
-        savefig(p, figure)
-    end
-
     return p
+end
+
+"""
+    eeg_plot_save(p; file_name::String)
+
+Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
+
+# Arguments
+
+- `p::Plots.Plot{Plots.GRBackend}`
+- `file_name::String`
+"""
+function eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
+
+    ext = splitext(file_name)[2]
+    ext in [".png", ".pdf", ".jpg", ".tiff"] || throw(ArgumentError("Fiel format must be: .png, .pdf, .tiff or .jpg"))
+    isfile(file_name) && @warn "File $file_name will be overwritten."
+    savefig(p, file_name)
+
+    return
 end

@@ -67,24 +67,36 @@ end
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input object 
 
-## Roadmap
+## Plugins (extensions)
 
-### Bugs
+Rudimentary plugin architecture is already available, just put .jl plugin scripts into `~/Documents/NeuroJ/plugins`.
+
+Run `neuroj_reload_plugins()` to refresh plugins.
+
+```julia
+neuroj_reload_plugins()
+neuroj_plugin_demo()
+```
+
+## Known bugs
 
 - epoch markers drawn too low in eeg_plot_ica() for few ICs
 - channel labels should be displayed as strings not vector
 - remove embedded components that are not useful
 - eeg_plot_topo() check minimum len value for frequency to analyze
-- remove non-eeg channels for eeg_plot_topo(), eeg_plot_psd(), eeg_plot_spectrogram()
+- ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels
 
-### To do
+## To do
 
 .. so much to do ..
 
 General:
-- performance optimization
+- performance optimization: CUDA/AMD ROCm acceleration
 
 EEG:
+- rewrite plotting functions to be more modular
+- piecewise detrending
+- store any calculations (e.g. median delta power) as a component for topo plots
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes
@@ -97,7 +109,7 @@ EEG:
 - negative index channel to invert polarity
 - phase-amplitude cross-frequency coupling (PAC)
 - plot spectrogram/psd: use embedded spectrogram/psd
-- more re-referencing methods
+- more re-referencing methods: Laplacian, REST
 - io: import from CSV
 - create EEG object
 - automated DC line cleaning
@@ -112,7 +124,6 @@ EEG:
 - channel interpolation
 - source localization
 - ERPs
-- CUDA/AMD ROCm acceleration
 
 NIRS
 - import and process data

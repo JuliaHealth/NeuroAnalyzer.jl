@@ -16,9 +16,7 @@ Loads EDF/EDFPlus file and returns EEG object.
 # Notes
 
 sampling_rate = n.samples / data.record.duration
-
 gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-
 value = (value - digital_minimum ) * gain + physical_minimum
 
 # Source

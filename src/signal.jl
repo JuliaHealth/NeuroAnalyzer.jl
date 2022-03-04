@@ -9,7 +9,7 @@ Returns the derivative of the `signal` with length same as the signal.
 
 # Returns
 
-- `s_derivative::Union{Vector{Int64}, Vector{Float64}}`
+- `s_der::Union{Vector{Int64}, Vector{Float64}}`
 """
 function signal_derivative(signal::AbstractArray)
 
@@ -30,7 +30,7 @@ Returns the derivative of each the `signal` channels with length same as the sig
 
 # Returns
 
-- `s_derivative::Array{Float64, 3}`
+- `s_der::Array{Float64, 3}`
 """
 function signal_derivative(signal::Array{Float64, 3})
 
@@ -200,9 +200,9 @@ function signal_make_spectrum(signal::AbstractArray; fs::Int64)
     n = length(signal)
     # time between samples
     d = 1 / fs
-    s_sf = fftfreq(n, d)
+    s_sf = Vector(fftfreq(n, d))
 
-    return s_fft, Vector(s_sf)
+    return s_fft, s_sf
 end
 
 """
@@ -315,10 +315,10 @@ Calculates mean, std and 95% confidence interval for `signal`.
 
 # Returns
 
-- `s_m::Float64`
-- `s_s::Float64`
-- `s_u::Float64`
-- `s_l::Float64`
+- `s_m::Float64`: mean
+- `s_s::Float64`: standard deviation
+- `s_u::Float64`: upper 95% CI
+- `s_l::Float64`: lower 95% CI
 """
 function signal_ci95(signal::Vector{Float64}; n::Int64=3, method::Symbol=:normal)
 
@@ -346,10 +346,10 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Returns
 
-- `s_m::Vector{Float64}`
-- `s_s::Vector{Float64}`
-- `s_u::Vector{Float64}`
-- `s_l::Vector{Float64}`
+- `s_m::Vector{Float64}`: mean
+- `s_s::Vector{Float64}`: standard deviation
+- `s_u::Vector{Float64}`: upper 95% CI
+- `s_l::Vector{Float64}`: lower 95% CI
 """
 function signal_ci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
 
@@ -394,10 +394,10 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Returns
 
-- `s_m::Matrix{Float64}`
-- `s_s::Matrix{Float64}`
-- `s_u::Matrix{Float64}`
-- `s_l::Matrix{Float64}`
+- `s_m::Matrix{Float64}`: mean
+- `s_s::Matrix{Float64}`: standard deviation
+- `s_u::Matrix{Float64}`: upper 95% CI
+- `s_l::Matrix{Float64}`: lower 95% CI
 """
 function signal_ci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
 
@@ -431,10 +431,10 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `s_mean::Float64`
-- `s_sd::Float64`
-- `s_u::Float64`
-- `s_l::Float64`
+- `s_m::Float64`: mean
+- `s_s::Float64`: standard deviation
+- `s_u::Float64`: upper 95% CI
+- `s_l::Float64`: lower 95% CI
 """
 function signal_mean(signal1::Vector{Float64}, signal2::Vector{Float64})
 
@@ -469,8 +469,8 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `s_mean::Matrix{Float64}`
-- `s_sd::Matrix{Float64}`
+- `s_m::Matrix{Float64}`
+- `s_s::Matrix{Float64}`
 - `s_u::Matrix{Float64}`
 - `s_l::Matrix{Float64}`
 """

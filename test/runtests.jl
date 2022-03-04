@@ -1,22 +1,19 @@
 using NeuroJ
 using Test
 
-print("Running misc.jl tests.. ")
-@test include("misc.jl")
-println("passed")
+@testset "runtests.jl" begin
+    println("\tRunning misc.jl tests.. ")
+    @test include("misc.jl")
 
-print("Running signal.jl tests.. ")
-@test include("signal.jl")
-println("passed")
+    println("\tRunning signal.jl tests.. ")
+    @test include("signal.jl")
 
-print("Running eeg_io.jl tests.. ")
-@test include("eeg_io.jl")
-println("passed")
+    println("\tRunning eeg_io.jl tests.. ")
+    @test include("eeg_io.jl")
 
-print("Running eeg.jl tests.. ")
-@test include("eeg.jl")
-println("passed")
+    println("\tRunning eeg.jl tests.. ")
+    @test include("eeg.jl")
 
-print("Running plots.jl tests.. ")
-@test include("plots.jl")
-println("passed")
+    println("\tRunning plots.jl tests.. ")
+    @test include("plots.jl")
+end

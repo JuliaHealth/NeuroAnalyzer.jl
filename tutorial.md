@@ -30,6 +30,15 @@ Load EDF file:
 edf = eeg_import_edf("test/eeg-test-edf.edf")
 ```
 
+Load electrode positions:
+```julia
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+eeg_info(edf)
+eeg_plot_electrodes(edf, labels=true, head=true)
+```
+
+### Metadata
+
 Show EEG object properties:
 ```julia
 eeg_info(edf)
@@ -49,6 +58,7 @@ Show components (e.g. ICA, PCA):
 ```julia
 eeg_list_components(edf)
 ```
+
 Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
 
 Get component:
@@ -223,7 +233,8 @@ eeg_plot(edf, len=5*256)
 eeg_plot(edf, channel=1:4)
 eeg_plot(edf, offset=20*eeg_sr(edf), len=20*eeg_sr(edf))
 eeg_plot(edf, norm=false)
-eeg_plot(e9, head=true, figure="/tmp/1.png")
+p = eeg_plot(e9, head=true)
+eeg_save_plot(p, file_name="/tmp/e9.png")
 
 eeg_plot_avg(edf, channel=1:4)
 eeg_plot_avg(edf)
@@ -236,7 +247,8 @@ eeg_plot_butterfly(edf)
 eeg_plot_butterfly(edf, offset=20*256, len=120*eeg_sr(edf), channel=1:4, norm=true)
 eeg_plot_butterfly(edf, channel=1:4, norm=true)
 eeg_plot_butterfly(e10, epoch=1:5, channel=1:4, norm=true)
-eeg_plot(edf, figure="/tmp/test.png")
+p = eeg_plot(edf)
+eeg_save_plot(p, file_name="/tmp/edf.pdf")
 
 e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_plot_butterfly(e9, len=9*eeg_sr(edf))
@@ -336,7 +348,7 @@ eeg_total_power!(edf)
 
 Calculate signal band power:
 ```julia
-abp = eeg_band_power(edf, f1=8.0, f2=12.0)
+abp = eeg_band_power(edf, f=(8, 12.5))
 bar(eeg_labels(edf), abp, xticks=(1:length(eeg_labels(edf)), eeg_labels(edf)))
 ```
 
@@ -385,22 +397,6 @@ eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=40)
 eeg_plot_psd(e10)
 eeg_plot_psd(e10, len=120*eeg_sr(edf))
 eeg_plot_psd(edf, len=240*eeg_sr(edf), channel=4, frq_lim=20)
-```
-
-Electrode positioning:
-```julia
-using NeuroJ
-edf = eeg_import_edf("test/eeg-test-edf.edf")
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-eeg_info(edf)
-edf = eeg_load_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-eeg_plot_electrodes(edf, labels=true, head=true)
-eeg_plot(edf, channel=1:10)
-eeg_plot(edf, channel=1)
-eeg_plot_butterfly(edf, channel=1:10, head=true, len=55*eeg_sr(edf))
-eeg_plot_psd(edf, norm=true, channel=1:19, head=true, figure="/tmp/1.pdf", frq_lim=40)
-eeg_plot_electrodes(edf, labels=true, selected=1:, small=false)
-eeg_plot_electrodes(edf, labels=true, selected=1:15, small=true)
 ```
 
 Topographical plots:
