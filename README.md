@@ -84,6 +84,12 @@ General:
 - performance optimization
 
 EEG:
+- export channel locs to .CED
+- preview 2d/3d channel locs
+- swap channel locs axes
+- insert channel
+- modify channel data
+- view channel parameters
 - virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots
 - amplitude plots at electrode locations
