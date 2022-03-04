@@ -1,12 +1,6 @@
 # NeuroJ.jl Documentation
 
-Welcome fellow researcher! NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
-
-This is a non-commercial projected, aimed for researchers in psychiatry, neurology and neuroscience.
-
-Initially NeuroJ.jl will be focused on resting-state EEG analysis, but ERP and other type of analyses will be developed in future versions.
-
-Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
+This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
 
 ## EEG plots
 
