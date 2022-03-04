@@ -681,7 +681,7 @@ end
 """
     eeg_downsample(eeg; new_sr)
 
-Downsamples all channels of `eeg` to `new_sr` sampling frequency.
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -717,7 +717,7 @@ end
 """
     eeg_downsample!(eeg; new_sr)
 
-Downsamples all channels of `eeg` to `new_sr` sampling frequency.
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -978,7 +978,7 @@ end
 """
     eeg_ica_reconstruct(eeg; ica)
 
-Reconstructs `eeg` signals using removal of `ica` ICA components.
+Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 # Arguments
 
@@ -1009,7 +1009,7 @@ end
 """
     eeg_ica_reconstruct!(eeg; ica)
 
-Reconstructs `eeg` signals using removal of `ica` ICA components.
+Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 # Arguments
 

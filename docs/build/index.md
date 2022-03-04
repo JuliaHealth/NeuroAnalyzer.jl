@@ -554,10 +554,20 @@ Returns the average signal of all `eeg` channels.
 
   * `eeg::NeuroJ.EEG`
 
+<a id='NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_average!`** &mdash; *Method*.
 
-!!! warning "Missing docstring."
-    Missing docstring for `eeg_average!(eeg)`. Check Documenter's build log for details.
 
+
+```julia
+eeg_average!(eeg)
+```
+
+Returns the average signal of all `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
 
 <a id='NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_resample`** &mdash; *Method*.
@@ -644,7 +654,7 @@ Upsample all channels of `eeg` to `new_sr` sampling frequency.
 eeg_downsample(eeg; new_sr)
 ```
 
-Downsamples all channels of `eeg` to `new_sr` sampling frequency.
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
@@ -664,7 +674,7 @@ Downsamples all channels of `eeg` to `new_sr` sampling frequency.
 eeg_downsample!(eeg; new_sr)
 ```
 
-Downsamples all channels of `eeg` to `new_sr` sampling frequency.
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
@@ -914,7 +924,7 @@ Calculates `n` first ICs for `eeg`.
 eeg_ica_reconstruct(eeg; ica)
 ```
 
-Reconstructs `eeg` signals using removal of `ica` ICA components.
+Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 **Arguments**
 
@@ -934,7 +944,7 @@ Reconstructs `eeg` signals using removal of `ica` ICA components.
 eeg_ica_reconstruct!(eeg; ica)
 ```
 
-Reconstructs `eeg` signals using removal of `ica` ICA components.
+Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 **Arguments**
 

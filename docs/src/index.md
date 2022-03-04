@@ -71,7 +71,7 @@ eeg_normalize_minmax!(eeg::NeuroJ.EEG)
 
 eeg_average(eeg::NeuroJ.EEG)
 
-eeg_average!(eeg)
+eeg_average!(eeg::NeuroJ.EEG)
 
 eeg_resample(eeg::NeuroJ.EEG; new_sr::Int64)
 
