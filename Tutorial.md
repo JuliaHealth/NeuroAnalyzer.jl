@@ -37,7 +37,7 @@ p = eeg_plot_electrodes(edf, labels=true, head=true)
 eeg_plot_save(p, file_name="edf_electrodes.png")
 ```
 
-[EDF electrodes](src/edf_electrodes.png)
+[EDF electrodes](images/edf_electrodes.png)
 
 ### Metadata
 
