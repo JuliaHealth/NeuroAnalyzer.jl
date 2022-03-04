@@ -34,6 +34,7 @@ function eeg_reset_components!(eeg::EEG)
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
 
+    return
 end
 
 """
@@ -312,6 +313,7 @@ function eeg_keep_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, Abstra
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -328,6 +330,8 @@ Returns the derivative of the `eeg` with length same as the signal.
 - `eeg::EEG`
 """
 function eeg_derivative(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_der = signal_derivative(eeg.eeg_signals)
 
@@ -352,6 +356,8 @@ Returns the derivative of the `eeg` with length same as the signal.
 """
 function eeg_derivative!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_derivative(eeg.eeg_signals)
 
     # add entry to :history field
@@ -359,6 +365,7 @@ function eeg_derivative!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -376,11 +383,14 @@ Calculates total power of the `eeg`.
 """
 function eeg_total_power(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     fs = eeg.eeg_header[:sampling_rate][1]
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
     size(stp, 3) == 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2)))
 
     return stp
+    return
 end
 
 """
@@ -393,6 +403,8 @@ Calculates total power of the `eeg`.
 - `eeg::EEG`
 """
 function eeg_total_power!(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     :total_power in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:total_power)
     fs = eeg.eeg_header[:sampling_rate][1]
@@ -419,6 +431,8 @@ Calculates absolute band power between frequencies `f[1]` and `f[2]` of the `eeg
 """
 function eeg_band_power(eeg::EEG; f::Tuple)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     fs = eeg.eeg_header[:sampling_rate][1]
     sbp = signal_band_power(eeg.eeg_signals, fs=fs, f=f)
     size(sbp, 3) == 1 && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2)))
@@ -443,6 +457,8 @@ Removes linear trend from the `eeg`.
 - `eeg::EEG`
 """
 function eeg_detrend(eeg::EEG; type::Symbol=:linear)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_det = signal_detrend(eeg.eeg_signals, type=type)
 
@@ -470,10 +486,13 @@ Removes linear trend from the `eeg`.
 """
 function eeg_detrend!(eeg::EEG; type::Symbol=:linear)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_detrend(eeg.eeg_signals, type=type)
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, type=$type)")
 
+    return
 end
 
 """
@@ -491,6 +510,8 @@ References the `eeg` to specific channel `channel`.
 - `eeg::EEG`
 """
 function eeg_reference_channel(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
 
@@ -519,10 +540,13 @@ References the `eeg` to specific channel `channel`.
 """
 function eeg_reference_channel!(eeg::EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_reference_channel(eeg.eeg_signals, channel=channel)
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
 
+    return
 end
 
 """
@@ -539,6 +563,8 @@ References the `eeg` to common average reference.
 - `eeg::EEG`
 """
 function eeg_reference_car(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_referenced = signal_reference_car(eeg.eeg_signals)
 
@@ -564,6 +590,8 @@ References the `eeg` to common average reference.
 """
 function eeg_reference_car!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_reference_car(eeg.eeg_signals)
 
     # add entry to :history field
@@ -571,6 +599,7 @@ function eeg_reference_car!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -607,6 +636,8 @@ function eeg_get_channel(eeg::EEG; channel::Union{Int64, String})
         end
         return labels[channel]
     end
+
+    return
 end
 
 """
@@ -694,6 +725,7 @@ function eeg_rename_channel!(eeg::EEG; channel::Union{Int64, String}, new_name::
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, new_name=$new_name)")
 
+    return
 end
 
 """
@@ -711,6 +743,8 @@ Taper `eeg` with `taper`.
 - `eeg::EEG`
 """
 function eeg_taper(eeg::EEG; taper::Vector)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_tapered = signal_taper(eeg.eeg_signals, taper=taper)
 
@@ -736,6 +770,8 @@ Taper `eeg` with `taper`.
 """
 function eeg_taper!(eeg::EEG; taper::Vector)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_taper(eeg.eeg_signals, taper=taper)
 
     # add entry to :history field
@@ -743,6 +779,7 @@ function eeg_taper!(eeg::EEG; taper::Vector)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -759,6 +796,8 @@ Removes mean value (DC offset).
 - `eeg::EEG`
 """
 function eeg_demean(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_demeaned = signal_demean(eeg.eeg_signals)
 
@@ -783,6 +822,8 @@ Removes mean value (DC offset).
 """
 function eeg_demean!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_demean(eeg.eeg_signals)
 
     # add entry to :history field
@@ -790,6 +831,7 @@ function eeg_demean!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -806,6 +848,8 @@ Normalize by z-score.
 - `eeg::EEG`
 """
 function eeg_normalize_zscore(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_normalized = signal_normalize_zscore(eeg.eeg_signals)
 
@@ -830,6 +874,8 @@ Normalize by z-score.
 """
 function eeg_normalize_zscore!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_normalize_zscore(eeg.eeg_signals)
 
     # add entry to :history field
@@ -837,6 +883,7 @@ function eeg_normalize_zscore!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -853,6 +900,8 @@ Normalize to 0...1
 - `eeg::EEG`
 """
 function eeg_normalize_minmax(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_normalized = signal_normalize_minmax(eeg.eeg_signals)
 
@@ -877,6 +926,8 @@ Normalize to 0...1
 """
 function eeg_normalize_minmax!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg.eeg_signals = signal_normalize_minmax(eeg.eeg_signals)
 
     # add entry to :history field
@@ -884,6 +935,7 @@ function eeg_normalize_minmax!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -940,6 +992,8 @@ Calculates covariance between all channels of `eeg`.
 """
 function eeg_cov(eeg::EEG; norm=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     cov_mat = signal_cov(eeg.eeg_signals, norm=norm)
 
     return cov_mat
@@ -957,12 +1011,15 @@ Calculates covariance between all channels of `eeg`.
 """
 function eeg_cov!(eeg::EEG; norm=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :cov_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cov_mat)
     cov_mat = eeg_cov(eeg, norm=norm)
     push!(eeg.eeg_components, cov_mat)
     push!(eeg.eeg_header[:components], :cov_mat)
     push!(eeg.eeg_header[:history], "eeg_cov!(EEG)")
 
+    return
 end
 
 """
@@ -980,6 +1037,8 @@ Calculates correlation coefficients between all channels of `eeg`.
 """
 function eeg_cor(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     cor_mat = signal_cor(eeg.eeg_signals)
 
     return cor_mat
@@ -996,12 +1055,15 @@ Calculates correlation coefficients between all channels of `eeg`.
 """
 function eeg_cor!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :cor_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cor_mat)
     cor_mat = eeg_cor(eeg)
     push!(eeg.eeg_components, cor_mat)
     push!(eeg.eeg_header[:components], :cor_mat)
     push!(eeg.eeg_header[:history], "eeg_cor!(EEG)")
 
+    return
 end
 
 """
@@ -1071,6 +1133,7 @@ function eeg_upsample!(eeg::EEG; new_sr::Int64)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1262,6 +1325,7 @@ function eeg_info(eeg::EEG)
         print("             Components: no")
     end
 
+    return
 end
 
 """
@@ -1362,6 +1426,7 @@ function eeg_epochs!(eeg::EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1414,6 +1479,8 @@ Performs convolution in the time domain.
 """
 function eeg_tconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_convoluted = signal_tconv(eeg.eeg_signals, kernel=kernel)
 
     ## EEG signal can only store Float64
@@ -1445,6 +1512,8 @@ Performs convolution in the time domain.
 """
 function eeg_tconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     # EEG signal can only store Float64
     if typeof(kernel) == Vector{ComplexF64}
         eeg.eeg_signals = abs.(signal_tconv(eeg.eeg_signals, kernel=kernel))
@@ -1462,6 +1531,7 @@ function eeg_tconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vect
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1558,6 +1628,7 @@ function eeg_filter!(eeg::EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1624,6 +1695,7 @@ function eeg_downsample!(eeg::EEG; new_sr::Int64)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1644,6 +1716,8 @@ Calculates autocovariance of each the `eeg` channels.
 - `lags::Vector{Float64}
 """
 function eeg_autocov(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     acov, lags = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, norm=norm)
     size(acov, 3) == 1 && (acov = reshape(acov, size(acov, 1), size(acov, 2)))
@@ -1666,6 +1740,8 @@ Calculates autocovariance of each the `eeg` channels.
 """
 function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :acov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov)
     :acov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov_lags)
     acov, lags = eeg_autocov(eeg, lag=lag, demean=demean, norm=norm)
@@ -1675,6 +1751,7 @@ function eeg_autocov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fal
     push!(eeg.eeg_header[:components], :acov_lags)
     push!(eeg.eeg_header[:history], "eeg_autocov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 
+    return
 end
 
 """
@@ -1695,6 +1772,8 @@ Calculates cross-covariance of each the `eeg` channels.
 - `lags::Vector{Float64}
 """
 function eeg_crosscov(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     ccov, lags = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, norm=norm)
     size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
@@ -1717,6 +1796,8 @@ Calculates cross-covariance of each the `eeg` channels.
 """
 function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :ccov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov)
     :ccov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov_lags)
     ccov, lags = eeg_crosscov(eeg, lag=lag, demean=demean, norm=norm)
@@ -1726,6 +1807,7 @@ function eeg_crosscov!(eeg::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=fa
     push!(eeg.eeg_header[:components], :ccov_lags)
     push!(eeg.eeg_header[:history], "eeg_crosscov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
 
+    return
 end
 
 """
@@ -1747,6 +1829,8 @@ Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
 - `lags::Vector{Float64}
 """
 function eeg_crosscov(eeg1::EEG, eeg2::EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     ccov, lags = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, norm=norm)
     size(ccov, 3) == 1 && (ccov = reshape(ccov, size(ccov, 1), size(ccov, 2)))
@@ -1772,6 +1856,8 @@ Calculates total power for each the `eeg` channels.
 """
 function eeg_psd(eeg::EEG; norm::Bool=false)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_psd_powers, s_psd_frequencies = signal_psd(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm)
     size(s_psd_powers, 3) == 1 && (s_psd_powers = reshape(s_psd_powers, size(s_psd_powers, 1), size(s_psd_powers, 2)))
     size(s_psd_frequencies, 3) == 1 && (s_psd_frequencies = reshape(s_psd_frequencies, size(s_psd_frequencies, 1), size(s_psd_frequencies, 2)))
@@ -1791,6 +1877,8 @@ Calculates total power for each the `eeg` channels.
 """
 function eeg_psd!(eeg::EEG; norm::Bool=false)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :psd_p in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_p)
     :psd_f in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_f)
     s_psd_powers, s_psd_frequencies = eeg_psd(eeg, norm=norm)
@@ -1800,6 +1888,7 @@ function eeg_psd!(eeg::EEG; norm::Bool=false)
     push!(eeg.eeg_header[:components], :psd_f)
     push!(eeg.eeg_header[:history], "eeg_psd!(EEG, norm=$norm)")
 
+    return
 end
 
 """
@@ -1819,6 +1908,8 @@ Calculates stationarity.
 """
 function eeg_stationarity(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_stationarity = signal_stationarity(eeg.eeg_signals, window=window, method=method)
 
     return s_stationarity
@@ -1837,12 +1928,15 @@ Calculates stationarity.
 """
 function eeg_stationarity!(eeg::EEG; window::Int64=10, method::Symbol=:hilbert)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :stationarity in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:stationarity)
     s_stationarity = eeg_stationarity(eeg, window=window, method=method)
     push!(eeg.eeg_components, s_stationarity)
     push!(eeg.eeg_header[:components], :stationarity)
     push!(eeg.eeg_header[:history], "eeg_stationarity!(EEG, window=$window, method=$method)")
 
+    return
 end
 
 """
@@ -1940,6 +2034,7 @@ function eeg_trim!(eeg::EEG; len::Int64, offset::Int64=1, from::Symbol=:start, k
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -1956,6 +2051,8 @@ Calculates mutual information between all channels of `eeg`.
 - `mi::Array{Float64, 3}`
 """
 function eeg_mi(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     mi = signal_mi(eeg.eeg_signals)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
@@ -1974,6 +2071,8 @@ Calculates mutual information between all channels of `eeg` and stores into :mi 
 """
 function eeg_mi!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :mi in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:mi)
     mi = signal_mi(eeg.eeg_signals)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
@@ -1981,6 +2080,7 @@ function eeg_mi!(eeg::EEG)
     push!(eeg.eeg_header[:components], :mi)
     push!(eeg.eeg_header[:history], "eeg_mi!(EEG)")
 
+    return
 end
 
 """
@@ -1998,6 +2098,8 @@ Calculates mutual information between all channels of `eeg1` and `eeg2`.
 - `mi::Array{Float64, 3}`
 """
 function eeg_mi(eeg1::EEG, eeg2::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     mi = signal_mi(eeg1.eeg_signals, eeg2.eeg_signals)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
@@ -2020,6 +2122,8 @@ Calculates entropy of all channels of `eeg`.
 """
 function eeg_entropy(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     ent = signal_entropy(eeg.eeg_signals)
     size(ent, 3) == 1 && (ent = reshape(ent, size(ent, 1), size(ent, 2)))
 
@@ -2037,12 +2141,15 @@ Calculates entropy of all channels of `eeg1` and stores into :entropy component.
 """
 function eeg_entropy!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :entropy in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:entropy)
     ent = eeg_entropy(eeg)
     push!(eeg.eeg_components, ent)
     push!(eeg.eeg_header[:components], :entropy)
     push!(eeg.eeg_header[:history], "eeg_entropy!(EEG)")
 
+    return
 end
 
 """
@@ -2096,6 +2203,8 @@ Calculates coherence between all channels of `eeg1` and `eeg2`.
 """
 function eeg_coherence(eeg1::EEG, eeg2::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     coherence = signal_coherence(eeg1.eeg_signals, eeg2.eeg_signals)
     size(coherence, 3) == 1 && (coherence = reshape(coherence, size(coherence, 1), size(coherence, 2)))
 
@@ -2120,6 +2229,8 @@ Calculates coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `
 - `coherence::Vector{ComplexF64}`
 """
 function eeg_coherence(eeg::EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
     channel_n = eeg.eeg_header[:channel_n]
@@ -2173,6 +2284,7 @@ function eeg_freqs!(eeg::EEG)
     push!(eeg.eeg_header[:components], :nyq)
     push!(eeg.eeg_header[:history], "eeg_freqs!(EEG)")
 
+    return
 end
 
 """
@@ -2192,6 +2304,8 @@ Calculates `n` first PCs for `eeg`.
 """
 function eeg_pca(eeg::EEG; n::Int64)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     pc, pc_var, m = signal_pca(eeg.eeg_signals, n=n)
 
     return pc, pc_var, m
@@ -2209,6 +2323,8 @@ Calculates `n` first PCs for `eeg`.
 """
 function eeg_pca!(eeg::EEG; n::Int64)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :pca in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca)
     :pca_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_var)
     :pca_m in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_m)
@@ -2221,6 +2337,7 @@ function eeg_pca!(eeg::EEG; n::Int64)
     push!(eeg.eeg_header[:components], :pca_m)
     push!(eeg.eeg_header[:history], "eeg_pca!(EEG, n=$n)")
 
+    return
 end
 
 """
@@ -2244,6 +2361,8 @@ Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
 - `p::Vector{Float64}`
 """
 function eeg_difference(eeg1::EEG, eeg2::EEG; n::Int64=3, method::Symbol=:absdiff)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     epoch_n = size(eeg1.eeg_signals, 3)
     signals_statistic = zeros(epoch_n, size(eeg1.eeg_signals, 1) * n)
@@ -2272,6 +2391,8 @@ Performs convolution in the time domain.
 - `eeg::EEG`
 """
 function eeg_fconv(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     s_convoluted = signal_fconv(eeg.eeg_signals, kernel=kernel)
 
@@ -2304,6 +2425,8 @@ Performs convolution in the time domain.
 """
 function eeg_fconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     # EEG signal can only store Float64
     eeg.eeg_signals = abs.(signal_fconv(eeg.eeg_signals, kernel=kernel))
 
@@ -2316,6 +2439,7 @@ function eeg_fconv!(eeg::EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vect
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -2335,18 +2459,18 @@ Changes value of `eeg` `field` to `value`.
 """
 function eeg_edit_header(eeg::EEG; field::Symbol, value::Any)
 
-  field === nothing && throw(ArgumentError("field cannot be empty."))
-  value === nothing && throw(ArgumentError("value cannot be empty."))
-  
-  eeg_new = deepcopy(eeg)
-  fields = keys(eeg_new.eeg_header)
-  field in fields || throw(ArgumentError("field does not exist."))
-  typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
-  eeg_new.eeg_header[field] = value
-  # add entry to :history field
-  push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
+    field === nothing && throw(ArgumentError("field cannot be empty."))
+    value === nothing && throw(ArgumentError("value cannot be empty."))
 
-  return eeg_new
+    eeg_new = deepcopy(eeg)
+    fields = keys(eeg_new.eeg_header)
+    field in fields || throw(ArgumentError("field does not exist."))
+    typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
+    eeg_new.eeg_header[field] = value
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
+
+    return eeg_new
 end
 
 """
@@ -2366,16 +2490,16 @@ Changes value of `eeg` `field` to `value`.
 """
 function eeg_edit_header!(eeg::EEG; field::Symbol, value::Any)
 
-  value === nothing && throw(ArgumentError("value cannot be empty."))
-  
-  fields = keys(eeg.eeg_header)
-  field in fields || throw(ArgumentError("field does not exist."))
-  typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
-  eeg.eeg_header[field] = value
-  # add entry to :history field
-  push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
+    value === nothing && throw(ArgumentError("value cannot be empty."))
 
-  return
+    fields = keys(eeg.eeg_header)
+    field in fields || throw(ArgumentError("field does not exist."))
+    typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
+    eeg.eeg_header[field] = value
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
+
+    return
 end
 
 """
@@ -2491,6 +2615,7 @@ function eeg_delete_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, Abstract
     
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -2594,6 +2719,7 @@ function eeg_keep_epoch!(eeg::EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
     
     eeg_reset_components!(eeg)
 
+    return
 end
 
 """
@@ -2712,6 +2838,8 @@ Calculates `n` first ICs for `eeg`.
 """
 function eeg_ica(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     ic, ic_mw = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
 
     return ic, ic_mw
@@ -2732,6 +2860,8 @@ Calculates `n` first ICs for `eeg`.
 """
 function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :ica in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica)
     :ica_mw in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica_mw)
     ic, ic_mw = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
@@ -2741,6 +2871,7 @@ function eeg_ica!(eeg::EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::S
     push!(eeg.eeg_header[:components], :ica_mw)
     push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n, tol=$tol, iter=$iter, f=$f))")
 
+    return
 end
 
 """
@@ -2762,6 +2893,8 @@ Calculates mean, median, sd, kurtosis and variance of each `eeg` epoch.
 """
 function eeg_epochs_stats(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     e_mean, e_median, e_sd, e_var, e_kurt = signal_epochs_stats(eeg.eeg_signals)
 
     return e_mean, e_median, e_sd, e_var, e_kurt
@@ -2777,6 +2910,8 @@ Calculates mean, sd and variance of `eeg` epochs and stores in `eeg`.
 - `eeg::EEG`
 """
 function eeg_epochs_stats!(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     :epochs_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean)
     :epochs_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median)
@@ -2796,6 +2931,7 @@ function eeg_epochs_stats!(eeg::EEG)
     push!(eeg.eeg_header[:components], :epochs_kurtosis)
     push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")
 
+    return
 end
 
 """
@@ -2839,6 +2975,8 @@ function eeg_extract_component(eeg::EEG; c::Symbol)
             return eeg.eeg_components[idx]
         end
     end
+
+    return
 end
 
 """
@@ -2867,6 +3005,8 @@ function eeg_delete_component(eeg::EEG; c::Symbol)
             return eeg_new
         end
     end
+    
+    return
 end
 
 """
@@ -2891,6 +3031,7 @@ function eeg_delete_component!(eeg::EEG; c::Symbol)
         end
     end
 
+    return
 end
 
 """
@@ -2912,6 +3053,8 @@ Calculates spectrogram of `eeg`.
 """
 function eeg_spectrogram(eeg::EEG; norm::Bool=true, demean::Bool=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
 
     return s_pow, s_frq, s_t
@@ -2931,6 +3074,8 @@ Calculates spectrogram of `eeg`.
 """
 function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :spectrogram_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_pow)
     :spectrogram_frq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_frq)
     :spectrogram_t in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_t)
@@ -2943,6 +3088,7 @@ function eeg_spectrogram!(eeg::EEG; norm::Bool=true, demean::Bool=true)
     push!(eeg.eeg_header[:components], :spec_t)
     push!(eeg.eeg_header[:history], "eeg_spectrogram!(EEG, norm=$norm, demean=$demean)")
 
+    return
 end
 
 """
@@ -2959,6 +3105,8 @@ Returns the average signal of all `eeg` channels.
 - `eeg::EEG`
 """
 function eeg_average(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     # create new dataset
     eeg_new = deepcopy(eeg)
@@ -2984,6 +3132,8 @@ Returns the average signal of all `eeg` channels.
 """
 function eeg_average!(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_avg = signal_average(eeg.eeg_signals)
     eeg_delete_channel!(eeg, channel=2:eeg_channel_n(eeg))
     eeg.eeg_signals = s_avg
@@ -2993,6 +3143,7 @@ function eeg_average!(eeg::EEG)
 
     eeg_reset_components!(eeg)
 
+    return
 end
 
 
@@ -3015,6 +3166,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
 """
 function eeg_spectrum(eeg::EEG; pad::Int64=0)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     s_fft, s_amp, s_pow, s_pha = signal_spectrum(eeg.eeg_signals, pad=pad)
 
     return s_fft, s_amp, s_pow, s_pha
@@ -3032,6 +3185,8 @@ Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
 """
 function eeg_spectrum!(eeg::EEG; pad::Int64=0)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :spectrum_fft in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_fft)
     :spectrum_amp in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_amp)
     :spectrum_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_pow)
@@ -3047,6 +3202,7 @@ function eeg_spectrum!(eeg::EEG; pad::Int64=0)
     push!(eeg.eeg_header[:components], :spectrum_phase)
     push!(eeg.eeg_header[:history], "eeg_spectrum!(EEG, pad=$pad)")
 
+    return
 end
 
 """
@@ -3064,6 +3220,8 @@ Reconstructs `eeg` signals using removal of `ica` ICA components.
 - `eeg::EEG`
 """
 function eeg_ica_reconstruct(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
@@ -3090,6 +3248,8 @@ Reconstructs `eeg` signals using removal of `ica` ICA components.
 """
 function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
 
@@ -3099,6 +3259,7 @@ function eeg_ica_reconstruct!(eeg::EEG; ica::Union{Int64, Vector{Int64}, Abstrac
 
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
 
+    return
 end
 
 """
@@ -3111,7 +3272,6 @@ Detect bad `eeg` epochs based on:
 - Euclidean distance
 - peak-to-peak amplitude
 
-
 # Arguments
 
 - `eeg::EEG`
@@ -3123,6 +3283,8 @@ Detect bad `eeg` epochs based on:
 - `bad_epochs_idx::Vector{Int64}`
 """
 function eeg_detect_bad_epochs(eeg::EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     for idx in method
         idx in [:flat, :rmse, :rmsd, :euclid, :p2p] || throw(ArgumentError("method must be :flat, :rmse, :rmsd, :euclid, :p2p"))
@@ -3174,6 +3336,8 @@ Deletes bad `eeg` epochs.
 """
 function eeg_delete_bad_epochs(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     eeg_tmp = deepcopy(eeg)
 
     if confirm == false
@@ -3209,6 +3373,8 @@ Deletes bad `eeg` epochs.
 """
 function eeg_delete_bad_epochs!(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
 
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
     if confirm == false
         eeg_delete_epoch!(eeg, epoch=bad_epochs)
     else
@@ -3223,6 +3389,7 @@ function eeg_delete_bad_epochs!(eeg::EEG; bad_epochs::Vector{Int64}, confirm::Bo
 
     push!(eeg.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
 
+    return
 end
 
 """
@@ -3308,10 +3475,11 @@ function eeg_add_labels!(eeg::EEG, labels::Vector{String})
     eeg.eeg_header[:labels] = labels
 
     push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+    return
 end
 
 """
-    eeg_edit_channel(eeg; channel)
+    eeg_edit_channel(eeg; channel, field, value)
 
 Edits `eeg` `channel` properties.
 
@@ -3319,6 +3487,8 @@ Edits `eeg` `channel` properties.
 
 - `eeg:EEG`
 - `channel::Int64`
+- `field::Any`
+- `value::Any`
 
 # Returns
 
@@ -3343,7 +3513,7 @@ function eeg_edit_channel(eeg::EEG; channel::Int64, field::Any, value::Any)
 end
 
 """
-    eeg_edit_channel(eeg; channel)
+    eeg_edit_channel!(eeg; channel, field, value)
 
 Edits `eeg` `channel` properties.
 
@@ -3351,10 +3521,8 @@ Edits `eeg` `channel` properties.
 
 - `eeg:EEG`
 - `channel::Int64`
-
-# Returns
-
-- `eeg_new::EEG`
+- `field::Any`
+- `value::Any`
 """
 function eeg_edit_channel!(eeg::EEG; channel::Int64, field::Any, value::Any)
     
@@ -3388,6 +3556,8 @@ Keeps only EEG channels of `eeg`.
 """
 function eeg_keep_eeg_channels(eeg::EEG)
 
+    eeg_channel_n(eeg, type=:eeg) == eeg_channel_n(eeg, type=:all) && (return eeg)
+
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
         eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
@@ -3407,6 +3577,8 @@ Keeps only EEG channels of `eeg`.
 - `eeg::EEG`
 """
 function eeg_keep_eeg_channels!(eeg::EEG)
+
+    eeg_channel_n(eeg, type=:eeg) == eeg_channel_n(eeg, type=:all) && return
 
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
