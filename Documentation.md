@@ -26,20 +26,6 @@ neuroj_version()
 
 Show NeuroJ and imported packages versions.
 
-<a id='NeuroJ.neuroj_reload_plugins-Tuple{}' href='#NeuroJ.neuroj_reload_plugins-Tuple{}'>#</a>
-**`NeuroJ.neuroj_reload_plugins`** &mdash; *Method*.
-
-
-
-```julia
-neuroj_reload_plugins()
-```
-
-Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
-
-
----
-
 
 <a id='EEG-io'></a>
 
@@ -53,16 +39,16 @@ Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 
 
 ```julia
-eeg_edit(file_name; read_annotations=true, header_only=false, clean_labels=true)
+eeg_edit(file_name; read_annotations, clean_labels)
 ```
 
-Loads EDF/EDFPlus file and returns EEG object.
+Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `read_annotations::Bool`: read annotations from EDF+ file (currently not implemented)
-  * `clean_labels::Bool`: only keep channel names in channel labels
+  * `read_annotations::Bool=true`: read annotations from EDF+ file (currently not implemented)
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
 
 **Returns**
 
@@ -70,7 +56,9 @@ Loads EDF/EDFPlus file and returns EEG object.
 
 **Notes**
 
-sampling*rate = n.samples / data.record.duration gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum) value = (value - digital*minimum ) * gain + physical_minimum
+  * sampling_rate = n.samples / data.record.duration
+  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
+  * value = (value - digital*minimum ) * gain + physical*minimum
 
 **Source**
 
@@ -85,7 +73,7 @@ Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of d
 eeg_import_ced(file_name)
 ```
 
-Loads electrode positions from CED file.
+Load electrode positions from CED file.
 
 **Arguments**
 
@@ -104,7 +92,7 @@ Loads electrode positions from CED file.
 eeg_import_locs(file_name)
 ```
 
-Loads electrode positions from LOCS file.
+Load electrode positions from LOCS file.
 
 **Arguments**
 
@@ -123,7 +111,7 @@ Loads electrode positions from LOCS file.
 eeg_import_elc(file_name)
 ```
 
-Loads electrode positions from ELC file.
+Load electrode positions from ELC file.
 
 **Arguments**
 
@@ -142,7 +130,7 @@ Loads electrode positions from ELC file.
 eeg_load_electrodes(eeg; file_name)
 ```
 
-Loads electrode positions from `file_name`. Accepted formats:
+Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
 
   * CED
   * LOCS
@@ -166,7 +154,7 @@ Loads electrode positions from `file_name`. Accepted formats:
 eeg_load_electrodes!(eeg; file_name)
 ```
 
-Loads electrode positions from `file_name`. Accepted formats:
+Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
 
   * CED
   * LOCS
@@ -186,7 +174,7 @@ Loads electrode positions from `file_name`. Accepted formats:
 eeg_load(file_name)
 ```
 
-Loads the `eeg` from `file_name` file (HDF5-based).
+Load the `eeg` from `file_name` file (HDF5-based).
 
 **Arguments**
 
@@ -202,10 +190,10 @@ Loads the `eeg` from `file_name` file (HDF5-based).
 
 
 ```julia
-eeg_save(eeg; file_name, overwrite=false)
+eeg_save(eeg; file_name, overwrite)
 ```
 
-Saves the `eeg` to `file_name` file (HDF5-based).
+Save the `eeg` to `file_name` file (HDF5-based).
 
 **Arguments**
 
@@ -226,7 +214,7 @@ Saves the `eeg` to `file_name` file (HDF5-based).
 eeg_export_csv(eeg, file_name, header, overwrite)
 ```
 
-Exports EEG data as CSV.
+Export EEG data as CSV.
 
 **Arguments**
 

@@ -1,13 +1,13 @@
 """
-    eeg_edit(file_name; read_annotations=true, header_only=false, clean_labels=true)
+    eeg_edit(file_name; read_annotations, clean_labels)
 
-Loads EDF/EDFPlus file and returns EEG object.
+Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `read_annotations::Bool`: read annotations from EDF+ file (currently not implemented)
-- `clean_labels::Bool`: only keep channel names in channel labels
+- `read_annotations::Bool=true`: read annotations from EDF+ file (currently not implemented)
+- `clean_labels::Bool=true`: only keep channel names in channel labels
 
 # Returns
 
@@ -15,9 +15,9 @@ Loads EDF/EDFPlus file and returns EEG object.
 
 # Notes
 
-sampling_rate = n.samples / data.record.duration
-gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-value = (value - digital_minimum ) * gain + physical_minimum
+- sampling_rate = n.samples / data.record.duration
+- gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
+- value = (value - digital_minimum ) * gain + physical_minimum
 
 # Source
 
@@ -217,7 +217,7 @@ end
 """
     eeg_import_ced(file_name)
 
-Loads electrode positions from CED file.
+Load electrode positions from CED file.
 
 # Arguments
 
@@ -237,7 +237,7 @@ end
 """
     eeg_import_locs(file_name)
 
-Loads electrode positions from LOCS file.
+Load electrode positions from LOCS file.
 
 # Arguments
 
@@ -258,7 +258,7 @@ end
 """
     eeg_import_elc(file_name)
 
-Loads electrode positions from ELC file.
+Load electrode positions from ELC file.
 
 # Arguments
 
@@ -306,7 +306,7 @@ end
 """
     eeg_load_electrodes(eeg; file_name)
 
-Loads electrode positions from `file_name`. Accepted formats:
+Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
 - CED
 - LOCS
 - ELC
@@ -397,7 +397,7 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Loads electrode positions from `file_name`. Accepted formats:
+Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
 - CED
 - LOCS
 - ELC
@@ -481,9 +481,9 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 end
 
 """
-    eeg_save(eeg; file_name, overwrite=false)
+    eeg_save(eeg; file_name, overwrite)
 
-Saves the `eeg` to `file_name` file (HDF5-based).
+Save the `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -513,7 +513,7 @@ end
 """
     eeg_load(file_name)
 
-Loads the `eeg` from `file_name` file (HDF5-based).
+Load the `eeg` from `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -535,7 +535,7 @@ end
 """
     eeg_export_csv(eeg, file_name, header, overwrite)
 
-Exports EEG data as CSV.
+Export EEG data as CSV.
 
 # Arguments
 
