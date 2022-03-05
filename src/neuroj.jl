@@ -1,7 +1,7 @@
 """
     neuroj_version()
 
-Shows NeuroJ and imported packages versions.
+Show NeuroJ and imported packages versions.
 """
 function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
@@ -34,7 +34,7 @@ end
 """
     neuroj_reload_plugins()
 
-Reload NeuroJ plugins. Plugins path is: ~/Documents/NeuroJ/plugins/
+Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 """
 function neuroj_reload_plugins()
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))

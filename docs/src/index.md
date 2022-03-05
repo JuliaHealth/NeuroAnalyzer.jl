@@ -10,6 +10,8 @@ neuroj_version()
 neuroj_reload_plugins()
 ```
 
+---
+
 ## EEG io
 
 ```@docs
@@ -32,7 +34,99 @@ eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
 ```
 
+---
+
 ## EEG edit
+
+```@docs
+eeg_delete_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_delete_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_keep_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_keep_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_get_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+
+eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_name::String)
+
+eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_name::String)
+
+eeg_extract_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+
+eeg_history(eeg::NeuroJ.EEG)
+
+eeg_labels(eeg::NeuroJ.EEG)
+
+eeg_sr(eeg::NeuroJ.EEG)
+
+eeg_channel_n(eeg::NeuroJ.EEG; type::Symbol=:all)
+
+eeg_epoch_n(eeg::NeuroJ.EEG)
+
+eeg_signal_len(eeg::NeuroJ.EEG)
+
+eeg_epoch_len(eeg::NeuroJ.EEG)
+
+eeg_info(eeg::NeuroJ.EEG)
+
+eeg_epochs(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+
+eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+
+eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
+
+eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+
+eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+
+eeg_edit_header(eeg::NeuroJ.EEG; field::Symbol, value::Any)
+
+eeg_edit_header!(eeg::NeuroJ.EEG; field::Symbol, value::Any)
+
+eeg_show_header(eeg::NeuroJ.EEG)
+
+eeg_delete_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_delete_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
+
+eeg_delete_bad_epochs(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
+
+eeg_delete_bad_epochs!(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
+
+eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+
+eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+
+eeg_edit_channel(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
+
+eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
+
+eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
+
+eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
+
+eeg_list_components(eeg::NeuroJ.EEG)
+
+eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
+
+eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
+
+eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
+
+eeg_reset_components(eeg::NeuroJ.EEG)
+
+eeg_reset_components!(eeg::NeuroJ.EEG)
+```
+
+---
 
 ## EEG process
 
@@ -110,7 +204,85 @@ eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRa
 eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 ```
 
+---
+
 ## EEG analyze
+
+```@docs
+eeg_total_power(eeg::NeuroJ.EEG)
+
+eeg_total_power!(eeg::NeuroJ.EEG)
+
+eeg_band_power(eeg::NeuroJ.EEG; f::Tuple)
+
+eeg_cov(eeg::NeuroJ.EEG; norm=true)
+
+eeg_cov!(eeg::NeuroJ.EEG; norm=true)
+
+eeg_cor(eeg::NeuroJ.EEG)
+
+eeg_cor!(eeg::NeuroJ.EEG)
+
+eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+eeg_autocov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+eeg_crosscov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
+
+eeg_psd!(eeg::NeuroJ.EEG; norm::Bool=false)
+
+eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
+
+eeg_stationarity!(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
+
+eeg_mi(eeg::NeuroJ.EEG)
+
+eeg_mi!(eeg::NeuroJ.EEG)
+
+eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+eeg_entropy(eeg::NeuroJ.EEG)
+
+eeg_entropy!(eeg::NeuroJ.EEG)
+
+eeg_band(eeg; band::Symbol)
+
+eeg_coherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+eeg_coherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+eeg_freqs(eeg::NeuroJ.EEG)
+
+eeg_freqs!(eeg::NeuroJ.EEG)
+
+eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::Symbol=:absdiff)
+
+eeg_pick(eeg::NeuroJ.EEG; pick::Union{Symbol, Vector{Symbol}})
+
+eeg_epochs_stats(eeg::NeuroJ.EEG)
+
+eeg_epochs_stats!(eeg::NeuroJ.EEG)
+
+eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
+
+eeg_spectrogram!(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
+
+eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
+
+eeg_spectrum!(eeg::NeuroJ.EEG; pad::Int64=0)
+
+eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
+
+eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
+```
+
+---
 
 ## EEG plots
 
@@ -172,12 +344,20 @@ eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cut
 eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
 ```
 
+---
+
 ## Signal
 
+---
+
 ## Misc
+
+---
 
 ## NSTIM
 
 ```@docs
 tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Int64)
 ```
+
+---

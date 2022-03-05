@@ -1,7 +1,7 @@
 """
     eeg_total_power(eeg)
 
-Calculates total power of the `eeg`.
+Calculate total power of the `eeg`.
 
 # Arguments
 
@@ -25,7 +25,7 @@ end
 """
     eeg_total_power!(eeg)
 
-Calculates total power of the `eeg`.
+Calculate total power of the `eeg`.
 
 # Arguments
 
@@ -46,7 +46,7 @@ end
 """
     eeg_band_power(eeg; f)
 
-Calculates absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
+Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
 
 # Arguments
 
@@ -70,7 +70,7 @@ end
 """
     eeg_cov(eeg; norm=true)
 
-Calculates covariance between all channels of `eeg`.
+Calculate covariance between all channels of `eeg`.
 
 # Arguments
 
@@ -90,14 +90,14 @@ function eeg_cov(eeg::NeuroJ.EEG; norm=true)
     return cov_mat
 end
 """
-    eeg_cov!(eeg; norm=true)
+    eeg_cov!(eeg; norm)
 
-Calculates covariance between all channels of `eeg`.
+Calculate covariance between all channels of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize covariance
+- `norm::Bool=true`: normalize covariance
 """
 function eeg_cov!(eeg::NeuroJ.EEG; norm=true)
 
@@ -114,7 +114,7 @@ end
 """
     eeg_cor(eeg)
 
-Calculates correlation coefficients between all channels of `eeg`.
+Calculate correlation coefficients between all channels of `eeg`.
 
 # Arguments
 
@@ -135,7 +135,7 @@ end
 """
     eeg_cor!(eeg)
 
-Calculates correlation coefficients between all channels of `eeg`.
+Calculate correlation coefficients between all channels of `eeg`.
 
 # Arguments
 
@@ -154,16 +154,16 @@ function eeg_cor!(eeg::NeuroJ.EEG)
     return
 end
 """
-    eeg_autocov(eeg; lag=1, demean=false, norm=false)
+    eeg_autocov(eeg; lag, demean, norm)
 
-Calculates autocovariance of each the `eeg` channels.
+Calculate autocovariance of each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
-- `norm::Bool`: normalize autocovariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean signal prior to analysis
+- `norm::Bool=false`: normalize autocovariance
 
 # Returns
 
@@ -181,16 +181,16 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
     return acov, lags
 end
 """
-    eeg_autocov!(eeg; lag=1, demean=false, norm=false)
+    eeg_autocov!(eeg; lag, demean, norm)
 
-Calculates autocovariance of each the `eeg` channels.
+Calculate autocovariance of each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
-- `norm::Bool`: normalize autocovariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean signal prior to analysis
+- `norm::Bool=false`: normalize autocovariance
 """
 function eeg_autocov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -208,16 +208,16 @@ function eeg_autocov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
     return
 end
 """
-    eeg_crosscov(eeg; lag=1, demean=false, norm=false)
+    eeg_crosscov(eeg; lag, demean, norm)
 
-Calculates cross-covariance of each the `eeg` channels.
+Calculate cross-covariance of each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
-- `norm::Bool`: normalize cross-covariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean signal prior to analysis
+- `norm::Bool=false`: normalize cross-covariance
 
 # Returns
 
@@ -235,16 +235,16 @@ function eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
     return ccov, lags
 end
 """
-    eeg_crosscov!(eeg; lag=1, demean=false, norm=false)
+    eeg_crosscov!(eeg; lag, demean, norm)
 
-Calculates cross-covariance of each the `eeg` channels.
+Calculate cross-covariance of each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
-- `norm::Bool`: normalize cross-covariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean signal prior to analysis
+- `norm::Bool=false`: normalize cross-covariance
 """
 function eeg_crosscov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -262,17 +262,17 @@ function eeg_crosscov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::
     return
 end
 """
-    eeg_crosscov(eeg1, eeg2; lag=1, demean=false, norm=false)
+    eeg_crosscov(eeg1, eeg2; lag, demean, norm)
 
-Calculates cross-covariance between same channels in `eeg1` and `eeg2`.
+Calculate cross-covariance between `eeg1` and `eeg2` channels.
 
 # Arguments
 
 - `eeg1::NeuroJ.EEG`
 - `eeg2::NeuroJ.EEG`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
-- `norm::Bool`: normalize cross-covariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean signal prior to analysis
+- `norm::Bool=false`: normalize cross-covariance
 
 # Returns
 
@@ -291,14 +291,14 @@ function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::
     return ccov, lags
 end
 """
-    eeg_psd(eeg; norm=false)
+    eeg_psd(eeg; norm)
 
-Calculates total power for each the `eeg` channels.
+Calculate total power for each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 
 # Returns
 
@@ -316,14 +316,14 @@ function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
     return s_psd_powers, s_psd_frequencies
 end
 """
-    eeg_psd!(eeg; norm=false)
+    eeg_psd!(eeg; norm)
 
-Calculates total power for each the `eeg` channels.
+Calculate total power for each the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 """
 function eeg_psd!(eeg::NeuroJ.EEG; norm::Bool=false)
 
@@ -341,15 +341,15 @@ function eeg_psd!(eeg::NeuroJ.EEG; norm::Bool=false)
     return
 end
 """
-    eeg_stationarity(eeg:EEG; window=10, method=:euclid)
+    eeg_stationarity(eeg; window, method)
 
-Calculates stationarity.
+Calculate stationarity.
 
 # Arguments
 
 - `eeg:EEG`
-- `window::Int64`: time window in samples
-- `method::Symbol[:mean, :var, :euclid, :hilbert]
+- `window::Int64=10`: time window in samples
+- `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
 
 # Returns
 
@@ -364,15 +364,15 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
     return s_stationarity
 end
 """
-    eeg_stationarity!(eeg:EEG; window=10, method=:euclid)
+    eeg_stationarity!(eeg; window, method)
 
-Calculates stationarity.
+Calculate stationarity.
 
 # Arguments
 
 - `eeg:EEG`
-- `window::Int64`: time window in samples
-- `method::Symbol[:mean, :var, :euclid, :hilbert]
+- `window::Int64=10`: time window in samples
+- `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
 """
 function eeg_stationarity!(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
 
@@ -389,7 +389,7 @@ end
 """
     eeg_mi(eeg)
 
-Calculates mutual information between all channels of `eeg`.
+Calculate mutual information between all channels of `eeg`.
 
 # Arguments
 
@@ -411,7 +411,7 @@ end
 """
     eeg_mi!(eeg)
 
-Calculates mutual information between all channels of `eeg` and stores into :mi component.
+Calculate mutual information between all channels of `eeg` and store into :mi component.
 
 # Arguments
 
@@ -433,7 +433,7 @@ end
 """
     eeg_mi(eeg1, eeg2)
 
-Calculates mutual information between all channels of `eeg1` and `eeg2`.
+Calculate mutual information between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -457,7 +457,7 @@ end
 """
     eeg_entropy(eeg)
 
-Calculates entropy of all channels of `eeg`.
+Calculate entropy of all channels of `eeg`.
 
 # Arguments
 
@@ -479,7 +479,7 @@ end
 """
     eeg_entropy!(eeg)
 
-Calculates entropy of all channels of `eeg` and stores into :entropy component.
+Calculate entropy of all channels of `eeg` and store into :entropy component.
 
 # Arguments
 
@@ -500,12 +500,12 @@ end
 """
     eeg_band(eeg, band)
 
-Return `eeg` :band frequency limits.
+Return frequency limits for a `band` range.
 
 # Arguments
 
 - `eeg:EEG`
-- `band::Symbol`
+- `band::Symbol`: name of band range: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
 
 # Returns
 
@@ -534,7 +534,7 @@ end
 """
     eeg_coherence(eeg1, eeg2)
 
-Calculates coherence between all channels of `eeg1` and `eeg2`.
+Calculate coherence between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -558,7 +558,7 @@ end
 """
     eeg_coherence(eeg; channel1, channel2, epoch1, epoch2)
 
-Calculates coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 # Arguments
 
@@ -589,7 +589,7 @@ end
 """
     eeg_freqs(eeg)
 
-Returns vector of frequencies and Nyquist frequency for `eeg`.
+Return vector of frequencies and Nyquist frequency for `eeg`.
 
 # Arguments
 
@@ -609,7 +609,7 @@ end
 """
     eeg_freqs!(eeg)
 
-Returns vector of frequencies and Nyquist frequency for `eeg`.
+Return vector of frequencies and Nyquist frequency for `eeg`.
 
 # Arguments
 
@@ -629,16 +629,16 @@ function eeg_freqs!(eeg::NeuroJ.EEG)
     return
 end
 """
-    eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
+    eeg_difference(eeg1, eeg2; n, method)
 
-Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
+Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
 
 # Arguments
 
 - `eeg1::NeuroJ.EEG`
 - `eeg2::NeuroJ.EEG`
-- `n::Int64`: number of bootstraps
-- `method::Symbol[:absdiff, :diff2int]`
+- `n::Int64=3`: number of bootstraps
+- `method::Symbol=:absdiff`
     - `:absdiff`: maximum difference
     - `:diff2int`: integrated area of the squared difference
 
@@ -763,7 +763,7 @@ end
 """
     eeg_epochs_stats(eeg)
 
-Calculates mean, median, sd, kurtosis and variance of each `eeg` epoch.
+Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch.
 
 # Arguments
 
@@ -788,7 +788,7 @@ end
 """
     eeg_epochs_stats!(eeg)
 
-Calculates mean, sd and variance of `eeg` epochs and stores in `eeg`.
+Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch and store these in `eeg` components: `:epochs_mean`, `:epochs_median`, `:epochs_sd`, `:epochs_var`, `:epochs_kurtosis`. 
 
 # Arguments
 
@@ -819,15 +819,15 @@ function eeg_epochs_stats!(eeg::NeuroJ.EEG)
     return
 end
 """
-    eeg_spectrogram(eeg; norm=true, demean=true)
+    eeg_spectrogram(eeg; norm, demean)
 
-Calculates spectrogram of `eeg`.
+Return spectrogram of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize powers to dB
-- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool`=true: normalize powers to dB
+- `demean::Bool`=true: demean signal prior to analysis
 
 # Returns
 
@@ -845,15 +845,15 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
 end
 
 """
-    eeg_spectrogram!(eeg, norm=true, demean=true)
+    eeg_spectrogram!(eeg, norm, demean)
 
-Calculates spectrogram of `eeg`.
+Calculate spectrogram of `eeg`. and sore in `eeg` components: `:spectrogram_pow`, `:spectrogram_frq`, `:spectrogram_t`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize powers to dB
-- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool=true`: normalize powers to dB
+- `demean::Bool=true`: demean signal prior to analysis
 """
 function eeg_spectrogram!(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
 
@@ -874,14 +874,14 @@ function eeg_spectrogram!(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
     return
 end
 """
-    eeg_spectrum(eeg; pad=0)
+    eeg_spectrum(eeg; pad)
 
-Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
+Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: the signal
-- `pad::Int64`: pad channels `pad` zeros
+- `eeg::NeuroJ.EEG`
+- `pad::Int64=0`: number of 0s to pad
 
 # Returns
 
@@ -899,9 +899,9 @@ function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
     return s_fft, s_amp, s_pow, s_pha
 end
 """
-    eeg_spectrum!(eeg; pad=0)
+    eeg_spectrum!(eeg; pad)
 
-Calculates FFT, amplitudes, powers and phases for each channel of the `eeg`.
+Calculate FFT, amplitudes, powers and phases for each channel of the `eeg` and store in `eeg` components: `:spectrum_fft`, `:spectrum_amp`, `:spectrum_pow`, `:spectrum_phase`. For `pad` > 0 channels are padded with 0s.
 
 # Arguments
 
@@ -932,7 +932,7 @@ end
 """
     eeg_s2t(eeg; t)
 
-Converts time `t` in samples to seconds using `eeg` sampling rate.
+Convert time `t` in samples to seconds using `eeg` sampling rate.
 
 # Arguments
 
@@ -951,7 +951,7 @@ end
 """
     eeg_t2s(eeg; t)
 
-Converts time `t` in seconds to samples using `eeg` sampling rate.
+Convert time `t` in seconds to samples using `eeg` sampling rate.
 
 # Arguments
 

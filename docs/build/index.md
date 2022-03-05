@@ -24,7 +24,7 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 neuroj_version()
 ```
 
-Shows NeuroJ and imported packages versions.
+Show NeuroJ and imported packages versions.
 
 <a id='NeuroJ.neuroj_reload_plugins-Tuple{}' href='#NeuroJ.neuroj_reload_plugins-Tuple{}'>#</a>
 **`NeuroJ.neuroj_reload_plugins`** &mdash; *Method*.
@@ -35,7 +35,10 @@ Shows NeuroJ and imported packages versions.
 neuroj_reload_plugins()
 ```
 
-Reload NeuroJ plugins. Plugins path is: ~/Documents/NeuroJ/plugins/
+Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
+
+
+---
 
 
 <a id='EEG-io'></a>
@@ -238,11 +241,833 @@ Exports EEG data as CSV.
   * `success::Bool`
 
 
+---
+
+
 <a id='EEG-edit'></a>
 
 <a id='EEG-edit-1'></a>
 
 ## EEG edit
+
+<a id='NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_channel(eeg; channel)
+```
+
+Removes `channel` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_channel!(eeg; channel)
+```
+
+Removes `channel` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
+
+<a id='NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel(eeg; channel)
+```
+
+Keeps `channels` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel!(eeg; channel)
+```
+
+Keeps `channels` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+
+<a id='NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_get_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_get_channel(eeg; channel)
+```
+
+Returns the `channel` index / name.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+
+**Returns**
+
+  * `channel_idx::Int64`
+
+<a id='NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_channel(eeg; channel, new_name)
+```
+
+Renames the `eeg` `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `new_name::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_channel!(eeg; channel, new_name)
+```
+
+Renames the `eeg` `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `new_name::String`
+
+<a id='NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_channel(eeg; channel)
+```
+
+Extracts `channel` number or name.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+
+**Returns**
+
+  * `channel::Vector{Float64}`
+
+<a id='NeuroJ.eeg_history-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_history-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_history`** &mdash; *Method*.
+
+
+
+```julia
+eeg_history(eeg)
+```
+
+Shows processing history.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_labels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_labels(eeg)
+```
+
+Returns labels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_sr`** &mdash; *Method*.
+
+
+
+```julia
+eeg_sr(eeg)
+```
+
+Returns sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_n`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_n(eeg; type=:eeg)
+```
+
+Returns number of `eeg` channels of `type`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Vector{Symbol}[:all, :eeg, :ecg, :eog, :emg]`
+
+**Returns**
+
+  * `channel_n::Int64`
+
+<a id='NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epoch_n`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_n(eeg)
+```
+
+Returns number of `eeg` epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `epoch_n::Int64`
+
+<a id='NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_signal_len`** &mdash; *Method*.
+
+
+
+```julia
+eeg_signal_len(eeg)
+```
+
+Returns length of `eeg` signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `signal_len::Int64`
+
+<a id='NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epoch_len`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_len(eeg)
+```
+
+Returns length of `eeg` signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `epoch_len::Int64`
+
+<a id='NeuroJ.eeg_info-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_info-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_info`** &mdash; *Method*.
+
+
+
+```julia
+eeg_info(eeg)
+```
+
+Shows info.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+```
+
+Splits `eeg` into epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+```
+
+Splits `eeg` into epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+
+<a id='NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_epoch(eeg; epoch)
+```
+
+Extracts the `epoch` epoch.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Int64`: epoch index
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_trim`** &mdash; *Method*.
+
+
+
+```julia
+eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+```
+
+Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `len::Int64`: number of samples to remove
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_trim!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+```
+
+Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `len::Int64`: number of samples to remove
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+
+<a id='NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_header`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_header(eeg; field, value)
+```
+
+Changes value of `eeg` `field` to `value`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `field::Symbol`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_header!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_header!(eeg; field, value)
+```
+
+Changes value of `eeg` `field` to `value`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `field::Symbol`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_show_header`** &mdash; *Method*.
+
+
+
+```julia
+eeg_show_header(eeg)
+```
+
+Shows keys and values of `eeg` header.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_epoch(eeg; epoch)
+```
+
+Removes `epoch` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_epoch!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_epoch!(eeg; epoch)
+```
+
+Removes `epoch` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+
+<a id='NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_epoch(eeg; epoch)
+```
+
+Keeps `epoch` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_epoch!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_epoch!(eeg; epoch)
+```
+
+Keeps `epoch` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+
+<a id='NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_detect_bad_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
+```
+
+Detect bad `eeg` epochs based on:
+
+  * flat channel(s)
+  * RMSE
+  * RMSD
+  * Euclidean distance
+  * peak-to-peak amplitude
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
+  * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
+
+**Returns**
+
+  * `bad_epochs_idx::Vector{Int64}`
+
+<a id='NeuroJ.eeg_delete_bad_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_bad_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_bad_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
+```
+
+Deletes bad `eeg` epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `bad_epochs_idx::Vector{Int64}`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_bad_epochs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_bad_epochs!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_bad_epochs!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
+```
+
+Deletes bad `eeg` epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `bad_epochs_idx::Vector{Int64}`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
+**`NeuroJ.eeg_add_labels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+```
+
+Adds `labels` to `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `labels::Vector{String}`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
+**`NeuroJ.eeg_add_labels!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+```
+
+Adds `labels` to `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `labels::Vector{String}`
+
+<a id='NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_channel(eeg; channel, field, value)
+```
+
+Edits `eeg` `channel` properties.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`
+  * `field::Any`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_channel!(eeg; channel, field, value)
+```
+
+Edits `eeg` `channel` properties.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`
+  * `field::Any`
+  * `value::Any`
+
+<a id='NeuroJ.eeg_keep_eeg_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_eeg_channels-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_eeg_channels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
+```
+
+Keeps only EEG channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_eeg_channels!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_eeg_channels!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_eeg_channels!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
+```
+
+Keeps only EEG channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_list_components`** &mdash; *Method*.
+
+
+
+```julia
+eeg_list_components(eeg)
+```
+
+Lists `eeg` components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `components::Vector{Symbol}`
+
+<a id='NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_component(eeg, c)
+```
+
+Extracts `component` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `component::Symbol`
+
+**Returns**
+
+  * `component::Any`
+
+<a id='NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_component(eeg, c)
+```
+
+Deletes `component` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `component::Symbol`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_component!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_component!(eeg, c)
+```
+
+Deletes `component` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `component::Symbol`
+
+<a id='NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reset_components`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reset_components(eeg)
+```
+
+Resets `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reset_components!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reset_components!(eeg)
+```
+
+Resets `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+
+
+---
 
 
 <a id='EEG-process'></a>
@@ -952,11 +1777,711 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
   * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 
+---
+
+
 <a id='EEG-analyze'></a>
 
 <a id='EEG-analyze-1'></a>
 
 ## EEG analyze
+
+<a id='NeuroJ.eeg_total_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_total_power-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_total_power`** &mdash; *Method*.
+
+
+
+```julia
+eeg_total_power(eeg)
+```
+
+Calculate total power of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `stp::Vector{Float64}`
+
+<a id='NeuroJ.eeg_total_power!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_total_power!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_total_power!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_total_power!(eeg)
+```
+
+Calculate total power of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_band_power`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band_power(eeg; f)
+```
+
+Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `f::Tuple(Union(Int64, Float64}, Union(Int64, Float64}}`: lower and upper frequency bounds
+
+**Returns**
+
+  * `sbp::Vector{Float64}`
+
+<a id='NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cov(eeg; norm=true)
+```
+
+Calculate covariance between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool`: normalize covariance
+
+**Returns**
+
+  * `cov_mat::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_cov!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cov!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cov!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cov!(eeg; norm)
+```
+
+Calculate covariance between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize covariance
+
+<a id='NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cor`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cor(eeg)
+```
+
+Calculate correlation coefficients between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `cov_mat::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_cor!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cor!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cor!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cor!(eeg)
+```
+
+Calculate correlation coefficients between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_autocov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_autocov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_autocov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_autocov(eeg; lag, demean, norm)
+```
+
+Calculate autocovariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize autocovariance
+
+**Returns**
+
+  * `acov::Matrix{Float64}`
+  * `lags::Vector{Float64}
+
+<a id='NeuroJ.eeg_autocov!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_autocov!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_autocov!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_autocov!(eeg; lag, demean, norm)
+```
+
+Calculate autocovariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize autocovariance
+
+<a id='NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_crosscov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_crosscov(eeg; lag, demean, norm)
+```
+
+Calculate cross-covariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize cross-covariance
+
+**Returns**
+
+  * `ccov::Matrix{Float64}`
+  * `lags::Vector{Float64}
+
+<a id='NeuroJ.eeg_crosscov!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_crosscov!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_crosscov!(eeg; lag, demean, norm)
+```
+
+Calculate cross-covariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize cross-covariance
+
+<a id='NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_crosscov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_crosscov(eeg1, eeg2; lag, demean, norm)
+```
+
+Calculate cross-covariance between `eeg1` and `eeg2` channels.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize cross-covariance
+
+**Returns**
+
+  * `ccov::Matrix{Float64}`
+  * `lags::Vector{Float64}
+
+<a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_psd(eeg; norm)
+```
+
+Calculate total power for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=false`: normalize do dB
+
+**Returns**
+
+  * `powers::Array{Float64, 3}`
+  * `frequencies::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_psd!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_psd!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_psd!(eeg; norm)
+```
+
+Calculate total power for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=false`: normalize do dB
+
+<a id='NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_stationarity`** &mdash; *Method*.
+
+
+
+```julia
+eeg_stationarity(eeg; window, method)
+```
+
+Calculate stationarity.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `window::Int64=10`: time window in samples
+  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
+
+**Returns**
+
+  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
+
+<a id='NeuroJ.eeg_stationarity!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_stationarity!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_stationarity!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_stationarity!(eeg; window, method)
+```
+
+Calculate stationarity.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `window::Int64=10`: time window in samples
+  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
+
+<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mi`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mi(eeg)
+```
+
+Calculate mutual information between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_mi!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mi!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mi!(eeg)
+```
+
+Calculate mutual information between all channels of `eeg` and store into :mi component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mi`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mi(eeg1, eeg2)
+```
+
+Calculate mutual information between all channels of `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_entropy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_entropy(eeg)
+```
+
+Calculate entropy of all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `entropy::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_entropy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_entropy!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_entropy!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_entropy!(eeg)
+```
+
+Calculate entropy of all channels of `eeg` and store into :entropy component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_band-Tuple{Any}' href='#NeuroJ.eeg_band-Tuple{Any}'>#</a>
+**`NeuroJ.eeg_band`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band(eeg, band)
+```
+
+Return frequency limits for a `band` range.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `band::Symbol`: name of band range: :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
+
+**Returns**
+
+  * `band_frequency::Tuple{Float64, Float64}`
+
+<a id='NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_coherence`** &mdash; *Method*.
+
+
+
+```julia
+eeg_coherence(eeg1, eeg2)
+```
+
+Calculate coherence between all channels of `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+  * `coherence::Union{Matrix{Float64}, Array{ComplexF64, 3}}`
+
+<a id='NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_coherence`** &mdash; *Method*.
+
+
+
+```julia
+eeg_coherence(eeg; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+
+**Returns**
+
+  * `coherence::Vector{ComplexF64}`
+
+<a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_freqs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_freqs(eeg)
+```
+
+Return vector of frequencies and Nyquist frequency for `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `hz::Vector{Float64}`
+  * `nyquist::Float64`
+
+<a id='NeuroJ.eeg_freqs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_freqs!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_freqs!(eeg)
+```
+
+Return vector of frequencies and Nyquist frequency for `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_difference`** &mdash; *Method*.
+
+
+
+```julia
+eeg_difference(eeg1, eeg2; n, method)
+```
+
+Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `n::Int64=3`: number of bootstraps
+  * `method::Symbol=:absdiff`
+
+      * `:absdiff`: maximum difference
+      * `:diff2int`: integrated area of the squared difference
+
+**Returns**
+
+  * `signals_statistic::Matrix{Float64}`
+  * `signals_statistic_single::Vector{Float64}`
+  * `p::Vector{Float64}`
+
+<a id='NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pick`** &mdash; *Method*.
+
+
+
+```julia
+eeg_picks(eeg; pick)
+```
+
+Return `pick` of electrodes for `eeg` electrodes.
+
+**Arguments**
+
+  * `pick::Vector{Symbol}`
+
+**Returns**
+
+  * `channels::Vector{Int64}`
+
+<a id='NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_stats`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_stats(eeg)
+```
+
+Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `mean::Vector{Float64}`
+  * `median::Vector{Float64}`
+  * `sd::Vector{Float64}`
+  * `var::Vector{Float64}`
+  * `kurtosis::Vector{Float64}`
+
+<a id='NeuroJ.eeg_epochs_stats!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_stats!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_stats!(eeg)
+```
+
+Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch and store these in `eeg` components: `:epochs_mean`, `:epochs_median`, `:epochs_sd`, `:epochs_var`, `:epochs_kurtosis`. 
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrogram(eeg; norm, demean)
+```
+
+Return spectrogram of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool`=true: normalize powers to dB
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+  * `spec.power::Array{Float64, 3}`
+  * `spec.freq::Matrix{Float64}`
+  * `spec.time::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_spectrogram!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrogram!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrogram!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrogram!(eeg, norm, demean)
+```
+
+Calculate spectrogram of `eeg`. and sore in `eeg` components: `:spectrogram_pow`, `:spectrogram_frq`, `:spectrogram_t`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize powers to dB
+  * `demean::Bool=true`: demean signal prior to analysis
+
+<a id='NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrum(eeg; pad)
+```
+
+Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: number of 0s to pad
+
+**Returns**
+
+  * `fft::Array{ComplexF64, 3}`
+  * `amplitudes::Array{Float64, 3}`
+  * `powers::Array{Float64, 3}`
+  * `phases::Array{Float64, 3}
+
+<a id='NeuroJ.eeg_spectrum!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrum!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrum!(eeg; pad)
+```
+
+Calculate FFT, amplitudes, powers and phases for each channel of the `eeg` and store in `eeg` components: `:spectrum_fft`, `:spectrum_amp`, `:spectrum_pow`, `:spectrum_phase`. For `pad` > 0 channels are padded with 0s.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: the signal
+  * `pad::Int64`: pad channels `pad` zeros
+
+<a id='NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_s2t`** &mdash; *Method*.
+
+
+
+```julia
+eeg_s2t(eeg; t)
+```
+
+Convert time `t` in samples to seconds using `eeg` sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `t::Int64`: time in samples
+
+**Returns**
+
+  * `t_s::Float64`: time in seconds
+
+<a id='NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_t2s`** &mdash; *Method*.
+
+
+
+```julia
+eeg_t2s(eeg; t)
+```
+
+Convert time `t` in seconds to samples using `eeg` sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `t::Union{Int64, Float64}`: time in seconds
+
+**Returns**
+
+  * `t_s::Float64`: time in samples
+
+
+---
 
 
 <a id='EEG-plots'></a>
@@ -1721,6 +3246,9 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
   * `file_name::String`
 
 
+---
+
+
 <a id='Signal'></a>
 
 <a id='Signal-1'></a>
@@ -1728,11 +3256,17 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 ## Signal
 
 
+---
+
+
 <a id='Misc'></a>
 
 <a id='Misc-1'></a>
 
 ## Misc
+
+
+---
 
 
 <a id='NSTIM'></a>
@@ -1767,4 +3301,7 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 **Source**
 
 1. Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
+
+
+---
 
