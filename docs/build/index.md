@@ -15,14 +15,27 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ## NeuroJ
 
-
-`@docs neuroj_version()`
-
-
----
+<a id='NeuroJ.neuroj_version-Tuple{}' href='#NeuroJ.neuroj_version-Tuple{}'>#</a>
+**`NeuroJ.neuroj_version`** &mdash; *Method*.
 
 
-`@docs neuroj_reload_plugins()`
+
+```julia
+neuroj_version()
+```
+
+Show NeuroJ and imported packages versions.
+
+<a id='NeuroJ.neuroj_reload_plugins-Tuple{}' href='#NeuroJ.neuroj_reload_plugins-Tuple{}'>#</a>
+**`NeuroJ.neuroj_reload_plugins`** &mdash; *Method*.
+
+
+
+```julia
+neuroj_reload_plugins()
+```
+
+Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 
 
 <a id='EEG-io'></a>
@@ -225,9 +238,6 @@ Export EEG data as CSV.
 **Returns**
 
   * `success::Bool`
-
-
----
 
 
 <a id='EEG-edit'></a>
@@ -1053,9 +1063,6 @@ Resets `eeg` components.
   * `eeg:EEG`
 
 
----
-
-
 <a id='EEG-process'></a>
 
 <a id='EEG-process-1'></a>
@@ -1763,9 +1770,6 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
   * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 
----
-
-
 <a id='EEG-analyze'></a>
 
 <a id='EEG-analyze-1'></a>
@@ -2465,9 +2469,6 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 **Returns**
 
   * `t_s::Float64`: time in samples
-
-
----
 
 
 <a id='EEG-plots'></a>
@@ -3232,9 +3233,6 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
   * `file_name::String`
 
 
----
-
-
 <a id='Signal'></a>
 
 <a id='Signal-1'></a>
@@ -3242,17 +3240,11 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 ## Signal
 
 
----
-
-
 <a id='Misc'></a>
 
 <a id='Misc-1'></a>
 
 ## Misc
-
-
----
 
 
 <a id='NSTIM'></a>
@@ -3287,7 +3279,4 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 **Source**
 
 1. Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
-
-
----
 

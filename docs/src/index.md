@@ -4,11 +4,11 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ## NeuroJ
 
-`@docs neuroj_version()`
+```@docs
+neuroj_version()
 
----
-
-`@docs neuroj_reload_plugins()`
+neuroj_reload_plugins()
+```
 
 ## EEG io
 
@@ -31,8 +31,6 @@ eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 
 eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
 ```
-
----
 
 ## EEG edit
 
@@ -124,8 +122,6 @@ eeg_reset_components(eeg::NeuroJ.EEG)
 eeg_reset_components!(eeg::NeuroJ.EEG)
 ```
 
----
-
 ## EEG process
 
 ```@docs
@@ -201,8 +197,6 @@ eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRa
 
 eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 ```
-
----
 
 ## EEG analyze
 
@@ -280,8 +274,6 @@ eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
 eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
 ```
 
----
-
 ## EEG plots
 
 ```@docs
@@ -342,20 +334,12 @@ eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cut
 eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
 ```
 
----
-
 ## Signal
 
----
-
 ## Misc
-
----
 
 ## NSTIM
 
 ```@docs
 tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Int64)
 ```
-
----

@@ -395,9 +395,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
     ftype === :hp && (x_max = cutoff * 10)
     p1 = plot(w,
               H,
-              title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response",
+              title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
               xlims=(0, x_max),
-              ylabel="Magnitude [dB]",
+              ylabel="Magnitude\n[dB]",
               xlabel="Frequency [Hz]",
               label="",
               titlefontsize=10,
@@ -432,7 +432,7 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
               title="Phase response",
               ylims=(-180, 180),
               xlims=(0, x_max),
-              ylabel="Phase [°]",
+              ylabel="Phase\n[°]",
               xlabel="Frequency [Hz]",
               label="",
               titlefontsize=10,
@@ -466,7 +466,7 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
               tau,
               title="Group delay",
               xlims=(0, x_max),
-              ylabel="Group delay [samples]",
+              ylabel="Group delay\n[samples]",
               xlabel="Frequency [Hz]",
               label="",
               titlefontsize=10,
@@ -2353,6 +2353,9 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbo
         labels[idx] = replace(labels[idx], "delta" => "δ")
         labels[idx] = replace(labels[idx], "theta" => "θ")
         labels[idx] = replace(labels[idx], "gamma" => "γ")
+        labels[idx] = replace(labels[idx], " high" => "\nhigh")
+        labels[idx] = replace(labels[idx], " lower" => "\nlower")
+        labels[idx] = replace(labels[idx], " higher" => "\nhigher")
     end
     if type === :abs
         ylabel == "" && (ylabel = "Absolute power")

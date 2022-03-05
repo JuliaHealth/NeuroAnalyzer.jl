@@ -23,7 +23,7 @@ Get help:
 ?eeg_plot
 ```
 
-### IO
+### EEG IO
 
 Load EDF file:
 ```julia
@@ -57,7 +57,7 @@ Export EEG data and header to .csv:
 eeg_export_csv(edf, file_name="edf.csv", header=true)
 ```
 
-### Metadata
+### EEG Edit
 
 Show EEG object properties:
 ```julia
@@ -81,7 +81,24 @@ Show labels:
 eeg_labels(edf)
 ```
 
-## Components
+Get channel index:
+```julia
+eeg_get_channel(edf, channel="Cz")
+eeg_get_channel(edf, channel=18)
+```
+
+Rename channel:
+```julia
+edf = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
+eeg_rename_channel!(edf, channel=18, new_name="Cz")
+```
+
+Show processing history:
+```julia
+eeg_history(edf)
+```
+
+### EEG Process
 
 Show components (e.g. ICA, PCA):
 ```julia
@@ -99,23 +116,6 @@ Delete component:
 ```julia
 edf = eeg_delete_component(edf, c=:ica)
 eeg_delete_component!(edf, c=:ica)
-```
-
-Get channel index:
-```julia
-eeg_get_channel(edf, channel="Cz")
-eeg_get_channel(edf, channel=18)
-```
-
-Rename channel:
-```julia
-edf = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
-eeg_rename_channel!(edf, channel=18, new_name="Cz")
-```
-
-Show processing history:
-```julia
-eeg_history(edf)
 ```
 
 Upsample:
@@ -208,13 +208,13 @@ edf = eeg_keep_channel(edf, channel=1:4)
 eeg_keep_channel!(edf, channel=1:4)
 ```
 
-Show filter response:
+Filter response:
 ```julia
-eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=9.12, order=8)
-eeg_plot_filter_response(edf, fprototype=:chebyshev1, ftype=:bp, cutoff=(40, 50), rs=1, order=12)
-eeg_plot_filter_response(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=10, order=4)
-eeg_plot_filter_response(edf, fprototype=:elliptic, ftype=:bs, cutoff=(45, 55), rs=10, rp=1, order=4)
+p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
 ```
+
+![BS Butterworth (45, 55), 8](images/butter_bs_45-55_8.png)
 
 FIR filtering:
 ```julia
@@ -235,14 +235,36 @@ eeg_filter!(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=1, order
 
 Plot:
 ```julia
-eeg_plot(edf)
+p = eeg_plot(edf)
+eeg_plot_save(p, file_name="images/edf_channels.png")
+```
+
+![edf_channels](images/edf_channels.png)
+
+```julia
+p = eeg_plot(edf, channel=1, frq_lim=(0, 20))
+eeg_plot_save(p, file_name="images/edf_channel_1.png")
+```
+
+![edf_channel1](images/edf_channel_1.png)
+
+```julia
 eeg_plot(edf, len=5*256)
 eeg_plot(edf, channel=1:4)
 eeg_plot(edf, offset=20*eeg_sr(edf), len=20*eeg_sr(edf))
 eeg_plot(edf, norm=false)
 p = eeg_plot(e9, head=true)
 eeg_save_plot(p, file_name="/tmp/e9.png")
+```
 
+```juia
+p = eeg_plot_avg(edf, frq_lim=(0, 20), channel=1:4)
+eeg_plot_save(p, file_name="images/edf_avg.png")
+```
+
+![edf_avg](images/edf_avg.png)
+
+```julia
 eeg_plot_avg(edf, channel=1:4)
 eeg_plot_avg(edf)
 eeg_plot_avg(e9)
@@ -276,9 +298,12 @@ plot(p1, p2, layout=(1, 2))
 Calculate covariance matrix:
 ```julia
 edf_cov = eeg_cov(edf)
-eeg_plot_matrix(edf, edf_cov)
+p = eeg_plot_matrix(edf, edf_cov)
+eeg_plot_save(p, file_name="images/edf_cov.png")
 eeg_cov!(edf)
 ```
+
+![edf cov](images/edf_cov.png)
 
 Calculate correlation matrix
 ```julia
@@ -356,8 +381,11 @@ eeg_total_power!(edf)
 Calculate signal band power:
 ```julia
 abp = eeg_band_power(edf, f=(8, 12.5))
-bar(eeg_labels(edf), abp, xticks=(1:length(eeg_labels(edf)), eeg_labels(edf)))
+p = eeg_plot_bands(edf, channel=1, type=:abs)
+eeg_plot_save(p, file_name="images/edf_bands.png")
 ```
+
+![edf bands](images/edf_bands.png)
 
 Get channel index/name:
 ```julia
@@ -379,6 +407,8 @@ mw = generate_morlet(256, 1, 32, complex=true)
 eeg_fconv(e10, kernel=mw)
 eeg_fconv!(e10, kernel=mw)
 ```
+
+### EEG Plots
 
 Spectral analysis:
 ```julia
@@ -408,10 +438,16 @@ eeg_plot_psd(edf, len=240*eeg_sr(edf), channel=4, frq_lim=20)
 
 Topographical plots:
 ```julia
-eeg_plot_topo(edf, t=2560)
-eeg_plot_topo(edf, t=2560, c=:ica, c_idx=1:8)
-eeg_plot_topo(edf, t=2560, len=2560, c=:pca)
-eeg_plot_topo(edf, t=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
+p = eeg_plot_topo(edf, offset=1, len=2560)
+eeg_plot_save(p, file_name="images/edf_amp.png")
+```
+
+![edf_topo :amp](images/edf_amp.png)
+
+```julia
+eeg_plot_topo(edf, offset=2560, c=:ica, c_idx=1:8)
+eeg_plot_topo(edf, offset=2560, len=2560, c=:pca)
+eeg_plot_topo(edf, offset=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
 ```
 
 # Stationarity
@@ -457,7 +493,7 @@ m = eeg_coherence(edf_alpha, channel1=1, channel2=2)
 plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 ```
 
-# PCA
+### EEG PCA
 
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
@@ -476,7 +512,7 @@ bar(vec(pc_var))
 eeg_pca!(edf, n=4)
 ```
 
-# ICA
+### EEG ICA
 
 Generate ICAs:
 ```julia
@@ -505,7 +541,7 @@ Remove ICA #001, 003 and 007 component from the signal:
 eeg_ica_reconstruct!(edf, ica=[1, 3, 7])
 ```
 
-# Comparing two signals
+### EEG Comparing two signals
 
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:delta), order=8)
@@ -532,7 +568,8 @@ m, s, v = eeg_epochs_stats(edf)
 bar(v)
 ```
 
-Misc:
+### EEG Misc
+
 ```julia
 eeg_band(edf, band=:alpha)
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
@@ -572,7 +609,8 @@ eeg_component(edf, c=:epochs_mean)
 eeg_info(edf)
 ```
 
-Benchmarking:
+### EEG Benchmarking
+
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 function eeg_benchmark(n::Int64)
@@ -590,10 +628,6 @@ function eeg_benchmark(n::Int64)
 end
 @time eeg_benchmark(10)
 
-# workstation: 71.059454 seconds (116.09 M allocations: 644.196 GiB, 18.44% gc time)
-# workstation: 54.460665 seconds (126.95 M allocations: 622.011 GiB, 21.19% gc time, 0.04% compilation time)
 # workstation: 24.408695 seconds (55.97 M allocations: 274.946 GiB, 27.82% gc time)
-
-# laptop: 92.209796 seconds (114.60 M allocations: 642.148 GiB, 10.88% gc time)
 # laptop: 40.043600 seconds (55.26 M allocations: 274.877 GiB, 17.69% gc time, 0.04% compilation time)
 ```
