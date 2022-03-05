@@ -50,7 +50,7 @@ Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 
 
 ```julia
-eeg_edit(file_name; read_annotations, clean_labels)
+eeg_import_edf(file_name; read_annotations, clean_labels)
 ```
 
 Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
@@ -255,7 +255,7 @@ Export EEG data as CSV.
 eeg_delete_channel(eeg; channel)
 ```
 
-Removes `channel` from the `eeg`.
+Remove `channel` from the `eeg`.
 
 **Arguments**
 
@@ -275,7 +275,7 @@ Removes `channel` from the `eeg`.
 eeg_delete_channel!(eeg; channel)
 ```
 
-Removes `channel` from the `eeg`.
+Remove `channel` from the `eeg`.
 
 **Arguments**
 
@@ -291,7 +291,7 @@ Removes `channel` from the `eeg`.
 eeg_keep_channel(eeg; channel)
 ```
 
-Keeps `channels` in the `eeg`.
+Keep `channels` in the `eeg`.
 
 **Arguments**
 
@@ -311,7 +311,7 @@ Keeps `channels` in the `eeg`.
 eeg_keep_channel!(eeg; channel)
 ```
 
-Keeps `channels` in the `eeg`.
+Keep `channels` in the `eeg`.
 
 **Arguments**
 
@@ -327,7 +327,7 @@ Keeps `channels` in the `eeg`.
 eeg_get_channel(eeg; channel)
 ```
 
-Returns the `channel` index / name.
+Returnthe `channel` index / name.
 
 **Arguments**
 
@@ -385,7 +385,7 @@ Renames the `eeg` `channel`.
 eeg_extract_channel(eeg; channel)
 ```
 
-Extracts `channel` number or name.
+Extract `channel` number or name.
 
 **Arguments**
 
@@ -405,7 +405,7 @@ Extracts `channel` number or name.
 eeg_history(eeg)
 ```
 
-Shows processing history.
+Show processing history.
 
 **Arguments**
 
@@ -424,7 +424,7 @@ Shows processing history.
 eeg_labels(eeg)
 ```
 
-Returns labels.
+Returnlabels.
 
 **Arguments**
 
@@ -443,7 +443,7 @@ Returns labels.
 eeg_sr(eeg)
 ```
 
-Returns sampling rate.
+Returnsampling rate.
 
 **Arguments**
 
@@ -462,7 +462,7 @@ Returns sampling rate.
 eeg_channel_n(eeg; type=:eeg)
 ```
 
-Returns number of `eeg` channels of `type`.
+Returnnumber of `eeg` channels of `type`.
 
 **Arguments**
 
@@ -482,7 +482,7 @@ Returns number of `eeg` channels of `type`.
 eeg_epoch_n(eeg)
 ```
 
-Returns number of `eeg` epochs.
+Returnnumber of `eeg` epochs.
 
 **Arguments**
 
@@ -501,7 +501,7 @@ Returns number of `eeg` epochs.
 eeg_signal_len(eeg)
 ```
 
-Returns length of `eeg` signal.
+Returnlength of `eeg` signal.
 
 **Arguments**
 
@@ -520,7 +520,7 @@ Returns length of `eeg` signal.
 eeg_epoch_len(eeg)
 ```
 
-Returns length of `eeg` signal.
+Returnlength of `eeg` signal.
 
 **Arguments**
 
@@ -539,7 +539,7 @@ Returns length of `eeg` signal.
 eeg_info(eeg)
 ```
 
-Shows info.
+Show info.
 
 **Arguments**
 
@@ -561,7 +561,7 @@ Splits `eeg` into epochs.
   * `eeg::NeuroJ.EEG`
   * `epoch_n::Union{Int64, Nothing}`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+  * `average::Bool`: average all epochs, returnone averaged epoch; if false than returnarray of epochs, each row is one epoch
 
 **Returns**
 
@@ -583,7 +583,7 @@ Splits `eeg` into epochs.
   * `eeg::NeuroJ.EEG`
   * `epoch_n::Union{Int64, Nothing}`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+  * `average::Bool`: average all epochs, returnone averaged epoch; if false than returnarray of epochs, each row is one epoch
 
 <a id='NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_extract_epoch`** &mdash; *Method*.
@@ -594,7 +594,7 @@ Splits `eeg` into epochs.
 eeg_extract_epoch(eeg; epoch)
 ```
 
-Extracts the `epoch` epoch.
+Extract the `epoch` epoch.
 
 **Arguments**
 
@@ -614,7 +614,7 @@ Extracts the `epoch` epoch.
 eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 ```
 
-Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
 
 **Arguments**
 
@@ -637,7 +637,7 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 ```
 
-Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
 
 **Arguments**
 
@@ -656,7 +656,7 @@ Removes `len` samples from the beginning + `offset` (`from` = :start, default) o
 eeg_edit_header(eeg; field, value)
 ```
 
-Changes value of `eeg` `field` to `value`.
+Change value of `eeg` `field` to `value`.
 
 **Arguments**
 
@@ -677,7 +677,7 @@ Changes value of `eeg` `field` to `value`.
 eeg_edit_header!(eeg; field, value)
 ```
 
-Changes value of `eeg` `field` to `value`.
+Change value of `eeg` `field` to `value`.
 
 **Arguments**
 
@@ -698,7 +698,7 @@ Changes value of `eeg` `field` to `value`.
 eeg_show_header(eeg)
 ```
 
-Shows keys and values of `eeg` header.
+Show keys and values of `eeg` header.
 
 **Arguments**
 
@@ -713,7 +713,7 @@ Shows keys and values of `eeg` header.
 eeg_delete_epoch(eeg; epoch)
 ```
 
-Removes `epoch` from the `eeg`.
+Remove `epoch` from the `eeg`.
 
 **Arguments**
 
@@ -733,7 +733,7 @@ Removes `epoch` from the `eeg`.
 eeg_delete_epoch!(eeg; epoch)
 ```
 
-Removes `epoch` from the `eeg`.
+Remove `epoch` from the `eeg`.
 
 **Arguments**
 
@@ -749,7 +749,7 @@ Removes `epoch` from the `eeg`.
 eeg_keep_epoch(eeg; epoch)
 ```
 
-Keeps `epoch` in the `eeg`.
+Keep `epoch` in the `eeg`.
 
 **Arguments**
 
@@ -769,7 +769,7 @@ Keeps `epoch` in the `eeg`.
 eeg_keep_epoch!(eeg; epoch)
 ```
 
-Keeps `epoch` in the `eeg`.
+Keep `epoch` in the `eeg`.
 
 **Arguments**
 
@@ -812,7 +812,7 @@ Detect bad `eeg` epochs based on:
 eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
 ```
 
-Deletes bad `eeg` epochs.
+Delete bad `eeg` epochs.
 
 **Arguments**
 
@@ -832,7 +832,7 @@ Deletes bad `eeg` epochs.
 eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
 ```
 
-Deletes bad `eeg` epochs.
+Delete bad `eeg` epochs.
 
 **Arguments**
 
@@ -852,7 +852,7 @@ Deletes bad `eeg` epochs.
 eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
 ```
 
-Adds `labels` to `eeg` channels.
+Add `labels` to `eeg` channels.
 
 **Arguments**
 
@@ -872,7 +872,7 @@ Adds `labels` to `eeg` channels.
 eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
 ```
 
-Adds `labels` to `eeg` channels.
+Add `labels` to `eeg` channels.
 
 **Arguments**
 
@@ -910,7 +910,7 @@ Edits `eeg` `channel` properties.
 eeg_edit_channel!(eeg; channel, field, value)
 ```
 
-Edits `eeg` `channel` properties.
+Edit `eeg` `channel` properties.
 
 **Arguments**
 
@@ -928,7 +928,7 @@ Edits `eeg` `channel` properties.
 eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 ```
 
-Keeps only EEG channels of `eeg`.
+Keep only EEG channels of `eeg`.
 
 **Arguments**
 
@@ -947,7 +947,7 @@ Keeps only EEG channels of `eeg`.
 eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
 ```
 
-Keeps only EEG channels of `eeg`.
+Keep only EEG channels of `eeg`.
 
 **Arguments**
 
@@ -962,7 +962,7 @@ Keeps only EEG channels of `eeg`.
 eeg_list_components(eeg)
 ```
 
-Lists `eeg` components.
+List `eeg` components.
 
 **Arguments**
 
@@ -981,7 +981,7 @@ Lists `eeg` components.
 eeg_extract_component(eeg, c)
 ```
 
-Extracts `component` of `eeg`.
+Extract `component` of `eeg`.
 
 **Arguments**
 
@@ -1001,7 +1001,7 @@ Extracts `component` of `eeg`.
 eeg_delete_component(eeg, c)
 ```
 
-Deletes `component` of `eeg`.
+Delete `component` of `eeg`.
 
 **Arguments**
 
@@ -1021,7 +1021,7 @@ Deletes `component` of `eeg`.
 eeg_delete_component!(eeg, c)
 ```
 
-Deletes `component` of `eeg`.
+Delete `component` of `eeg`.
 
 **Arguments**
 
@@ -1037,7 +1037,7 @@ Deletes `component` of `eeg`.
 eeg_reset_components(eeg)
 ```
 
-Resets `eeg` components.
+Reset `eeg` components.
 
 **Arguments**
 
@@ -1056,7 +1056,7 @@ Resets `eeg` components.
 eeg_reset_components!(eeg)
 ```
 
-Resets `eeg` components.
+Reset `eeg` components.
 
 **Arguments**
 
