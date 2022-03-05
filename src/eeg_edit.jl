@@ -1,7 +1,7 @@
 """
     eeg_reset_components(eeg)
 
-Resets `eeg` components.
+Reset `eeg` components.
 
 # Arguments
 
@@ -22,7 +22,7 @@ end
 """
     eeg_reset_components!(eeg)
 
-Resets `eeg` components.
+Reset `eeg` components.
 
 # Arguments
 
@@ -38,7 +38,7 @@ end
 """
     eeg_delete_channel(eeg; channel)
 
-Removes `channel` from the `eeg`.
+Remove `channel` from the `eeg`.
 
 # Arguments
 
@@ -111,7 +111,7 @@ end
 """
     eeg_delete_channel!(eeg; channel)
 
-Removes `channel` from the `eeg`.
+Remove `channel` from the `eeg`.
 
 # Arguments
 
@@ -172,7 +172,7 @@ end
 """
     eeg_keep_channel(eeg; channel)
 
-Keeps `channels` in the `eeg`.
+Keep `channels` in the `eeg`.
 
 # Arguments
 
@@ -248,7 +248,7 @@ end
 """
     eeg_keep_channel!(eeg; channel)
 
-Keeps `channels` in the `eeg`.
+Keep `channels` in the `eeg`.
 
 # Arguments
 
@@ -313,7 +313,7 @@ end
 """
     eeg_get_channel(eeg; channel)
 
-Returns the `channel` index / name.
+Returnthe `channel` index / name.
 
 # Arguments
 
@@ -436,7 +436,7 @@ end
 """
     eeg_extract_channel(eeg; channel)
 
-Extracts `channel` number or name.
+Extract `channel` number or name.
 
 # Arguments
 
@@ -473,7 +473,7 @@ end
 """
     eeg_history(eeg)
 
-Shows processing history.
+Show processing history.
 
 # Arguments
 
@@ -490,7 +490,7 @@ end
 """
     eeg_labels(eeg)
 
-Returns labels.
+Returnlabels.
 
 # Arguments
 
@@ -507,7 +507,7 @@ end
 """
     eeg_sr(eeg)
 
-Returns sampling rate.
+Returnsampling rate.
 
 # Arguments
 
@@ -524,7 +524,7 @@ end
 """
     eeg_channel_n(eeg; type=:eeg)
 
-Returns number of `eeg` channels of `type`.
+Returnnumber of `eeg` channels of `type`.
 
 # Arguments
 
@@ -548,7 +548,7 @@ end
 """
     eeg_epoch_n(eeg)
 
-Returns number of `eeg` epochs.
+Returnnumber of `eeg` epochs.
 
 # Arguments
 
@@ -567,7 +567,7 @@ end
 """
     eeg_signal_len(eeg)
 
-Returns length of `eeg` signal.
+Returnlength of `eeg` signal.
 
 # Arguments
 
@@ -586,7 +586,7 @@ end
 """
     eeg_epoch_len(eeg)
 
-Returns length of `eeg` signal.
+Returnlength of `eeg` signal.
 
 # Arguments
 
@@ -605,7 +605,7 @@ end
 """
     eeg_info(eeg)
 
-Shows info.
+Show info.
 
 # Arguments
 
@@ -664,7 +664,7 @@ Splits `eeg` into epochs.
 - `eeg::NeuroJ.EEG`
 - `epoch_n::Union{Int64, Nothing}`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `average::Bool`: average all epochs, returnone averaged epoch; if false than returnarray of epochs, each row is one epoch
 
 # Returns
 
@@ -715,7 +715,7 @@ Splits `eeg` into epochs.
 - `eeg::NeuroJ.EEG`
 - `epoch_n::Union{Int64, Nothing}`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-- `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+- `average::Bool`: average all epochs, returnone averaged epoch; if false than returnarray of epochs, each row is one epoch
 """
 function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
@@ -756,7 +756,7 @@ end
 """
     eeg_extract_epoch(eeg; epoch)
 
-Extracts the `epoch` epoch.
+Extract the `epoch` epoch.
 
 # Arguments
 
@@ -789,7 +789,7 @@ end
 """
     eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
-Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
 
 # Arguments
 
@@ -841,7 +841,7 @@ end
 """
     eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
-Removes `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
 
 # Arguments
 
@@ -885,7 +885,7 @@ end
 """
     eeg_edit_header(eeg; field, value)
 
-Changes value of `eeg` `field` to `value`.
+Change value of `eeg` `field` to `value`.
 
 # Arguments
 
@@ -915,7 +915,7 @@ end
 """
     eeg_edit_header!(eeg; field, value)
 
-Changes value of `eeg` `field` to `value`.
+Change value of `eeg` `field` to `value`.
 
 # Arguments
 
@@ -943,7 +943,7 @@ end
 """
     eeg_show_header(eeg)
 
-Shows keys and values of `eeg` header.
+Show keys and values of `eeg` header.
 
 # Arguments
 
@@ -958,7 +958,7 @@ end
 """
     eeg_delete_epoch(eeg; epoch)
 
-Removes `epoch` from the `eeg`.
+Remove `epoch` from the `eeg`.
 
 # Arguments
 
@@ -1012,7 +1012,7 @@ end
 """
     eeg_delete_epoch!(eeg; epoch)
 
-Removes `epoch` from the `eeg`.
+Remove `epoch` from the `eeg`.
 
 # Arguments
 
@@ -1056,7 +1056,7 @@ end
 """
     eeg_keep_epoch(eeg; epoch)
 
-Keeps `epoch` in the `eeg`.
+Keep `epoch` in the `eeg`.
 
 # Arguments
 
@@ -1112,7 +1112,7 @@ end
 """
     eeg_keep_epoch!(eeg; epoch)
 
-Keeps `epoch` in the `eeg`.
+Keep `epoch` in the `eeg`.
 
 # Arguments
 
@@ -1158,7 +1158,7 @@ end
 """
     eeg_list_components(eeg)
 
-Lists `eeg` components.
+List `eeg` components.
 
 # Arguments
 
@@ -1175,7 +1175,7 @@ end
 """
     eeg_extract_component(eeg, c)
 
-Extracts `component` of `eeg`.
+Extract `component` of `eeg`.
 
 # Arguments
 
@@ -1201,7 +1201,7 @@ end
 """
     eeg_delete_component(eeg, c)
 
-Deletes `component` of `eeg`.
+Delete `component` of `eeg`.
 
 # Arguments
 
@@ -1230,7 +1230,7 @@ end
 """
     eeg_delete_component!(eeg, c)
 
-Deletes `component` of `eeg`.
+Delete `component` of `eeg`.
 
 # Arguments
 
@@ -1267,7 +1267,7 @@ Detect bad `eeg` epochs based on:
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
 - `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
-# Returns  
+# Returns
 
 - `bad_epochs_idx::Vector{Int64}`
 """
@@ -1311,7 +1311,7 @@ end
 """
     eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
 
-Deletes bad `eeg` epochs.
+Delete bad `eeg` epochs.
 
 # Arguments
 
@@ -1347,7 +1347,7 @@ end
 """
     eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
 
-Deletes bad `eeg` epochs.
+Delete bad `eeg` epochs.
 
 # Arguments
 
@@ -1381,7 +1381,7 @@ end
 """
     eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
 
-Adds `labels` to `eeg` channels.
+Add `labels` to `eeg` channels.
 
 # Arguments
 
@@ -1406,7 +1406,7 @@ end
 """
     eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
 
-Adds `labels` to `eeg` channels.
+Add `labels` to `eeg` channels.
 
 # Arguments
 
@@ -1424,7 +1424,6 @@ function eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
 end
 """
     eeg_edit_channel(eeg; channel, field, value)
-
 Edits `eeg` `channel` properties.
 
 # Arguments
@@ -1458,7 +1457,7 @@ end
 """
     eeg_edit_channel!(eeg; channel, field, value)
 
-Edits `eeg` `channel` properties.
+Edit `eeg` `channel` properties.
 
 # Arguments
 
@@ -1486,7 +1485,7 @@ end
 """
     eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 
-Keeps only EEG channels of `eeg`.
+Keep only EEG channels of `eeg`.
 
 # Arguments
 
@@ -1511,7 +1510,7 @@ end
 """
     eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
 
-Keeps only EEG channels of `eeg`.
+Keep only EEG channels of `eeg`.
 
 # Arguments
 
