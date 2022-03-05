@@ -17,7 +17,7 @@ using Pkg
 Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 ```
 
-### Requirements
+## Requirements
 
 - CSV
 - DataFrames

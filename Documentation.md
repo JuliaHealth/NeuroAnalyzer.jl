@@ -5122,7 +5122,7 @@ Pads the matrix `m` with zeros to make it square.
 vsearch(y, x; return_distance=false)
 ```
 
-Returns the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
+Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
 
 **Arguments**
 
@@ -5145,7 +5145,7 @@ Returns the positions of the `y` value in the vector `x` and the difference betw
 vsearch(y, x; return_distance=false)
 ```
 
-Returns the positions of the `y` vector in the vector `x`.
+Return the positions of the `y` vector in the vector `x`.
 
 **Arguments**
 
@@ -5167,7 +5167,7 @@ Returns the positions of the `y` vector in the vector `x`.
 jaccard_similarity(x, y)
 ```
 
-Calculates Jaccard similarity between two vectors `x` and `y`.
+Calculate Jaccard similarity between two vectors `x` and `y`.
 
 **Arguments**
 
@@ -5186,7 +5186,7 @@ Calculates Jaccard similarity between two vectors `x` and `y`.
 fft0(x, n)
 ```
 
-Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 
 **Arguments**
 
@@ -5206,7 +5206,7 @@ Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 ifft0(x, n)
 ```
 
-Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 
 **Arguments**
 
@@ -5226,7 +5226,7 @@ Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at t
 nextpow2(x)
 ```
 
-Returns the next power of 2 for given number `x`.
+Return the next power of 2 for given number `x`.
 
 **Argument**
 
@@ -5265,7 +5265,7 @@ Splits the vector `x` into `n`-long pieces.
 freqs(t)
 ```
 
-Returns vector of frequencies and Nyquist frequency for given time vector `t`.
+Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 **Arguments**
 
@@ -5285,7 +5285,7 @@ Returns vector of frequencies and Nyquist frequency for given time vector `t`.
 freqs(signal, fs)
 ```
 
-Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 
 **Arguments**
 
@@ -5371,7 +5371,7 @@ To do: check if x is numeric vector
 generate_sinc(t, f, peak)
 ```
 
-Generates sinc function.
+Generate sinc function.
 
 **Arguments**
 
@@ -5392,7 +5392,7 @@ Generates sinc function.
 generate_morlet(fs, wt, wf)
 ```
 
-Generates Morlet wavelet.
+Generate Morlet wavelet.
 
 **Arguments**
 
@@ -5415,7 +5415,7 @@ Generates Morlet wavelet.
 generate_gaussian(fs, wt, wf)
 ```
 
-Generates Gaussian wave.
+Generate Gaussian wave.
 
 **Arguments**
 
@@ -5427,10 +5427,25 @@ Generates Gaussian wave.
 
   * `gaussian::Vector{Float64}`
 
+<a id='NeuroJ.tuple_order' href='#NeuroJ.tuple_order'>#</a>
+**`NeuroJ.tuple_order`** &mdash; *Function*.
 
-!!! warning "Missing docstring."
-    Missing docstring for `tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)`. Check Documenter's build log for details.
 
+
+```julia
+tuple_order(t, rev)
+```
+
+Order tuple elements in ascending or descending (rev=true) order.
+
+**Arguments**
+
+  * `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
+  * `rev::Bool=false`
+
+**Returns**
+
+  * `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
 
 <a id='NeuroJ.rmse-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.rmse-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
 **`NeuroJ.rmse`** &mdash; *Method*.
@@ -5438,10 +5453,10 @@ Generates Gaussian wave.
 
 
 ```julia
-ransac(signal1, signal2)
+rmse(signal1, signal2)
 ```
 
-Calculates correlation between signal and its RANSAC reconstruction.
+Calculate RMSE between `signal1` and `signal2`.
 
 **Arguments**
 

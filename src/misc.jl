@@ -65,7 +65,7 @@ end
 """
     vsearch(y, x; return_distance=false)
 
-Returns the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
+Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
 
 # Arguments
 
@@ -89,7 +89,7 @@ end
 """
     vsearch(y, x; return_distance=false)
 
-Returns the positions of the `y` vector in the vector `x`.
+Return the positions of the `y` vector in the vector `x`.
 
 # Arguments
 
@@ -120,7 +120,7 @@ end
 """
     cart2pol(x, y)
 
-Converts cartographic coordinates `x` and `y` to polar.
+Convert cartographic coordinates `x` and `y` to polar.
 
 # Arguments
 
@@ -137,7 +137,7 @@ cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64}) = hypot(x, y), atan
 """
     pol2cart(theta, phi)
 
-Converts polar coordinates `theta` and `phi` to cartographic.
+Convert polar coordinates `theta` and `phi` to cartographic.
 
 # Arguments
 
@@ -154,7 +154,7 @@ pol2cart(theta::Union{Float64, Int64}, phi::Union{Float64, Int64}) = phi * cos(t
 """
     pol2cart_sph(ρ, theta, phi=0)
 
-Converts spherical coordinates `theta` and `phi` and `ρ` to cartographic.
+Convert spherical coordinates `theta` and `phi` and `ρ` to cartographic.
 
 # Arguments
 
@@ -173,7 +173,7 @@ sph2cart(ρ::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Flo
 """
     generate_hanning(n)
 
-Returns the `n`-point long symmetric Hanning window.
+Return the `n`-point long symmetric Hanning window.
 
 # Arguments
 
@@ -188,7 +188,7 @@ generate_hanning(n::Int64) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n
 """
     hildebrand_rule(x)
 
-Calculates Hildebrand rule for vector `x`.
+Calculate Hildebrand rule for vector `x`.
 If H < 0.2 then the vector `x` is symmetrical.
 
 # Arguments
@@ -204,7 +204,7 @@ hildebrand_rule(x::Union{Vector{Int64}, Vector{Float64}}) = (mean(x) - median(x)
 """
     jaccard_similarity(x, y)
 
-Calculates Jaccard similarity between two vectors `x` and `y`.
+Calculate Jaccard similarity between two vectors `x` and `y`.
 
 # Arguments
 
@@ -226,7 +226,7 @@ end
 """
     fft0(x, n)
 
-Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 
 # Arguments
 
@@ -249,7 +249,7 @@ end
 """
     ifft0(x, n)
 
-Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
 
 # Arguments
 
@@ -272,7 +272,7 @@ end
 """
     nextpow2(x)
 
-Returns the next power of 2 for given number `x`.
+Return the next power of 2 for given number `x`.
 
 # Argument
 
@@ -322,7 +322,7 @@ end
 """
     rms(x)
 
-Calculates Root Mean Square of the vector `x`.
+Calculate Root Mean Square of the vector `x`.
 
 # Arguments
 
@@ -355,7 +355,7 @@ generate_sine(f::Union{Int64, Float64}, t::Union{Vector{Int64}, Vector{Float64}}
 """
     freqs(t)
 
-Returns vector of frequencies and Nyquist frequency for given time vector `t`.
+Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 # Arguments
 
@@ -387,7 +387,7 @@ end
 """
     freqs(signal, fs)
 
-Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 
 # Arguments
 
@@ -511,7 +511,7 @@ end
 """
     hz2rads(f)
 
-Converts frequency `f` in Hz to rad/s.
+Convert frequency `f` in Hz to rad/s.
 
 # Arguments
 
@@ -526,7 +526,7 @@ hz2rads(f::Union{Int64, Float64}) = 2 * pi * f
 """
     rads2hz(f)
 
-Converts frequency `f` in rad/s to Hz.
+Convert frequency `f` in rad/s to Hz.
 
 # Arguments
 
@@ -541,7 +541,7 @@ rads2hz(f::Union{Int64, Float64}) = f / 2 * pi
 """
     z_score(x)
 
-Calculates Z-scores for each value of the vector `x`.
+Calculate Z-scores for each value of the vector `x`.
 
 # Arguments
 
@@ -556,7 +556,7 @@ z_score(x::Union{Vector{Int64}, Vector{Float64}}) = (x .- mean(x)) ./ std(x)
 """
     k_categories(n)
 
-Calculates number of categories for a given sample size `n`.
+Calculate number of categories for a given sample size `n`.
 
 # Arguments
 
@@ -571,7 +571,7 @@ k_categories(n::Int64) = (sqrt(n), (1 + 3.222 * log10(n)))
 """
     cmax(x)
 
-Returns maximum value of the complex vector`x`.
+Return maximum value of the complex vector`x`.
 
 # Arguments
 
@@ -586,7 +586,7 @@ cmax(x::Vector{ComplexF64}) = argmax(abs, x)
 """
     cmin(x)
 
-Returns minimum value of the complex vector`x`.
+Return minimum value of the complex vector`x`.
 
 # Arguments
 
@@ -601,7 +601,7 @@ cmin(x::Vector{ComplexF64}) = argmin(abs, x)
 """
     generate_sinc(t, f, peak)
 
-Generates sinc function.
+Generate sinc function.
 
 # Arguments
 
@@ -625,7 +625,7 @@ end
 """
     generate_morlet(fs, wt, wf)
 
-Generates Morlet wavelet.
+Generate Morlet wavelet.
 
 # Arguments
 
@@ -654,7 +654,7 @@ end
 """
     generate_gaussian(fs, wt, wf)
 
-Generates Gaussian wave.
+Generate Gaussian wave.
 
 # Arguments
 
@@ -681,7 +681,7 @@ Order tuple elements in ascending or descending (rev=true) order.
 
 # Arguments
 
-- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` 
+- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
 - `rev::Bool=false`
 
 # Returns
@@ -697,9 +697,9 @@ function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev
 end
 
 """
-    ransac(signal1, signal2)
+    rmse(signal1, signal2)
 
-Calculates correlation between signal and its RANSAC reconstruction.
+Calculate RMSE between `signal1` and `signal2`.
 
 # Arguments
 
@@ -709,7 +709,6 @@ Calculates correlation between signal and its RANSAC reconstruction.
 # Returns
 
 - `r::Float64`
-
 """
 function rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
 
