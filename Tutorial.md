@@ -438,7 +438,7 @@ eeg_plot_psd(edf, len=240*eeg_sr(edf), channel=4, frq_lim=20)
 
 Topographical plots:
 ```julia
-p = eeg_plot_topo(edf, offset=1, len=2560)
+p = eeg_plot_topo(edf, offset=1, len=2560, frq_lim=(0, 20))
 eeg_plot_save(p, file_name="images/edf_amp.png")
 ```
 
