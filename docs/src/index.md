@@ -4,11 +4,11 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ## NeuroJ
 
-```@docs
-neuroj_version()
+`@docs neuroj_version()`
+
 ---
-neuroj_reload_plugins()
-```
+
+`@docs neuroj_reload_plugins()`
 
 ## EEG io
 

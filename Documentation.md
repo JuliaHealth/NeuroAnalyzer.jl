@@ -15,16 +15,14 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ## NeuroJ
 
-<a id='NeuroJ.neuroj_version-Tuple{}' href='#NeuroJ.neuroj_version-Tuple{}'>#</a>
-**`NeuroJ.neuroj_version`** &mdash; *Method*.
+
+`@docs neuroj_version()`
 
 
+---
 
-```julia
-neuroj_version()
-```
 
-Show NeuroJ and imported packages versions.
+`@docs neuroj_reload_plugins()`
 
 
 <a id='EEG-io'></a>
