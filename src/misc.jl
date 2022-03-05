@@ -491,6 +491,8 @@ end
 
 Pads the vector `x` with `n` zeros at the beginning and at the end.
 
+To do: check if x is numeric vector
+
 # Arguments
 
 - `x::Union{Vector{Int64}, Vector{Float64}}`
@@ -500,7 +502,6 @@ Pads the vector `x` with `n` zeros at the beginning and at the end.
 
 - `v_pad::Union{Vector{Int64}, Vector{Float64}}`
 """
-# to do: check if x is numeric vector
 function pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
 
     n < 1 && throw(ArgumentError("n must be positive."))
@@ -598,15 +599,15 @@ Returns minimum value of the complex vector`x`.
 cmin(x::Vector{ComplexF64}) = argmin(abs, x)
 
 """
-    generate_sinc(t=0:0.01:10, f=10, peak=4)
+    generate_sinc(t, f, peak)
 
 Generates sinc function.
 
 # Arguments
 
-- `t::AbstractRange`: time
-- `f::Union{Int64, Float64}`: frequency
-- `peak::Union{Int64, Float64}`: sinc peak time
+- `t::AbstractRange=-2:0.01:2`: time
+- `f::Union{Int64, Float64}=10.0`: frequency
+- `peak::Union{Int64, Float64}=0`: sinc peak time
 
 # Returns
 
@@ -631,8 +632,8 @@ Generates Morlet wavelet.
 - `fs::Int64`: sampling rate
 - `wt::Union{Int64, Float64}`: length = -wt:1/fs:wt
 - `wf::Union{Int64, Float64}`: frequency
-- `ncyc::Int64`: number of cycles
-- `complex::Bool`: generate complex Morlet
+- `ncyc::Int64=5`: number of cycles
+- `complex::Bool=false`: generate complex Morlet
 
 # Returns
 
@@ -674,18 +675,18 @@ function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64
 end
 
 """
-    tuple_order(t, rev=false)
+    tuple_order(t, rev)
 
 Order tuple elements in ascending or descending (rev=true) order.
 
 # Arguments
 
 - `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}` 
-- `rev::Bool`
+- `rev::Bool=false`
 
 # Returns
 
-- `t`
+- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
 """
 function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
     
@@ -711,6 +712,7 @@ Calculates correlation between signal and its RANSAC reconstruction.
 
 """
 function rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
+
     # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
     r = sqrt(mean(signal2 - signal1)^2)
 

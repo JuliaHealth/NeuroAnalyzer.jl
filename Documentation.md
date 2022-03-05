@@ -3239,12 +3239,2218 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 
 ## Signal
 
+<a id='NeuroJ.signal_derivative-Tuple{AbstractArray}' href='#NeuroJ.signal_derivative-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_derivative`** &mdash; *Method*.
+
+
+
+```julia
+signal_derivative(signal)
+```
+
+Returns the derivative of the `signal` with length same as the signal.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_der::Union{Vector{Int64}, Vector{Float64}}`
+
+<a id='NeuroJ.signal_derivative-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_derivative-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_derivative`** &mdash; *Method*.
+
+
+
+```julia
+signal_derivative(signal)
+```
+
+Returns the derivative of each the `signal` channels with length same as the signal.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_der::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_total_power-Tuple{AbstractArray}' href='#NeuroJ.signal_total_power-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_total_power`** &mdash; *Method*.
+
+
+
+```julia
+signal_total_power(signal; fs)
+```
+
+Calculates total power for the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `stp::Float64`
+
+<a id='NeuroJ.signal_total_power-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_total_power-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_total_power`** &mdash; *Method*.
+
+
+
+```julia
+signal_total_power(signal; fs)
+```
+
+Calculates total power for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `stp::Matrix{Float64}`
+
+<a id='NeuroJ.signal_band_power-Tuple{AbstractArray}' href='#NeuroJ.signal_band_power-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_band_power`** &mdash; *Method*.
+
+
+
+```julia
+signal_band_power(signal; fs, f)
+```
+
+Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate of the signal
+  * `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`: lower and upper frequency bound
+
+**Returns**
+
+  * `sbp::Float64`
+
+<a id='NeuroJ.signal_band_power-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_band_power-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_band_power`** &mdash; *Method*.
+
+
+
+```julia
+signal_band_power(signal; fs, f)
+```
+
+Calculates absolute band power between frequencies `f[1]` and `f[2]` for the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling rate
+  * `f::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`: lower and upper frequency bound
+
+**Returns**
+
+  * `sbp::Matrix{Float64}`
+
+<a id='NeuroJ.signal_make_spectrum-Tuple{AbstractArray}' href='#NeuroJ.signal_make_spectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_make_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+signal_make_spectrum(signal; fs)
+```
+
+Returns FFT and DFT sample frequencies for a DFT for the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `s_fft::Vector{ComplexF64}`
+  * `s_sf::Vector{Float64}`
+
+<a id='NeuroJ.signal_make_spectrum-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_make_spectrum-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_make_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+signal_make_spectrum(signal; fs)
+```
+
+Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `s_fft::Array{ComplexF64, 3}`
+  * `s_sf::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_detrend-Tuple{AbstractArray}' href='#NeuroJ.signal_detrend-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_detrend`** &mdash; *Method*.
+
+
+
+```julia
+signal_detrend(signal; type=:linear)
+```
+
+Removes linear trend from the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `type::Symbol[:linear, :constant]`, optional
+
+      * `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `constant`: the mean of `signal` is subtracted
+
+**Returns**
+
+  * `s_detrended::Vector{Float64}`
+
+<a id='NeuroJ.signal_detrend-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detrend-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detrend`** &mdash; *Method*.
+
+
+
+```julia
+signal_detrend(signal; type=:linear)
+```
+
+Removes linear trend for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `type::Symbol[:linear, :constant]`, optional
+
+      * `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `constant`: the mean of `signal` is subtracted
+
+**Returns**
+
+  * `s_detrended::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_ci95-Tuple{Vector{Float64}}' href='#NeuroJ.signal_ci95-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.signal_ci95`** &mdash; *Method*.
+
+
+
+```julia
+signal_ci95(signal; n=3, method=:normal)
+```
+
+Calculates mean, std and 95% confidence interval for `signal`.
+
+**Arguments**
+
+  * `signal::Vector{Float64}`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+
+**Returns**
+
+  * `s_m::Float64`: mean
+  * `s_s::Float64`: standard deviation
+  * `s_u::Float64`: upper 95% CI
+  * `s_l::Float64`: lower 95% CI
+
+<a id='NeuroJ.signal_ci95-Tuple{AbstractArray}' href='#NeuroJ.signal_ci95-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_ci95`** &mdash; *Method*.
+
+
+
+```julia
+signal_ci95(signal; n=3, method=:normal)
+```
+
+Calculates mean, std and 95% confidence interval for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+
+**Returns**
+
+  * `s_m::Vector{Float64}`: mean
+  * `s_s::Vector{Float64}`: standard deviation
+  * `s_u::Vector{Float64}`: upper 95% CI
+  * `s_l::Vector{Float64}`: lower 95% CI
+
+<a id='NeuroJ.signal_ci95-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_ci95-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_ci95`** &mdash; *Method*.
+
+
+
+```julia
+signal_ci95(signal; n::=3, method=:normal)
+```
+
+Calculates mean, std and 95% confidence interval for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+
+**Returns**
+
+  * `s_m::Matrix{Float64}`: mean
+  * `s_s::Matrix{Float64}`: standard deviation
+  * `s_u::Matrix{Float64}`: upper 95% CI
+  * `s_l::Matrix{Float64}`: lower 95% CI
+
+<a id='NeuroJ.signal_mean-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.signal_mean-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.signal_mean`** &mdash; *Method*.
+
+
+
+```julia
+signal_mean(signal1, signal2)
+```
+
+Calculates mean and 95% confidence interval for 2 signals.
+
+**Arguments**
+
+  * `signal1::Vector{Float64}`
+  * `signal2:Vector{Float64}`
+
+**Returns**
+
+  * `s_m::Float64`: mean
+  * `s_s::Float64`: standard deviation
+  * `s_u::Float64`: upper 95% CI
+  * `s_l::Float64`: lower 95% CI
+
+<a id='NeuroJ.signal_mean-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_mean-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_mean`** &mdash; *Method*.
+
+
+
+```julia
+signal_mean(signal1, signal2)
+```
+
+Calculates mean and 95% confidence interval for 2 signals.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2:Array{Float64, 3}`
+
+**Returns**
+
+  * `s_m::Matrix{Float64}`
+  * `s_s::Matrix{Float64}`
+  * `s_u::Matrix{Float64}`
+  * `s_l::Matrix{Float64}`
+
+<a id='NeuroJ.signal_difference-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_difference-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_difference`** &mdash; *Method*.
+
+
+
+```julia
+signal_difference(signal1, signal2; n=3, method=:absdiff)
+```
+
+Calculates mean difference and 95% confidence interval for 2 signals.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:absdiff, :diff2int]`
+
+      * `:absdiff`: maximum difference
+      * `:diff2int`: integrated area of the squared difference
+
+**Returns**
+
+  * `s_statistic::Vector{Float64}`
+  * `s_statistic_single::Float64`
+  * `p::Float64`
+
+<a id='NeuroJ.signal_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_difference`** &mdash; *Method*.
+
+
+
+```julia
+signal_difference(signal1, signal2; n=3, method=:absdiff)
+```
+
+Calculates mean difference and 95% confidence interval for 2 signals.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2:Array{Float64, 3}`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:absdiff, :diff2int]`
+
+      * `:absdiff`: maximum difference
+      * `:diff2int`: integrated area of the squared difference
+
+**Returns**
+
+  * `s_statistic::Matrix{Float64}`
+  * `s_statistic_single::Vector{Float64}`
+  * `p::Vector{Float64}`
+
+<a id='NeuroJ.signal_autocov-Tuple{AbstractArray}' href='#NeuroJ.signal_autocov-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_autocov`** &mdash; *Method*.
+
+
+
+signal_autocov(signal; lag=1, demean=false, norm=false)
+
+Calculates autocovariance of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean `signal` prior to calculations
+  * `norm::Bool`: normalize autocovariance
+
+**Returns**
+
+  * `acov::Vector{Float64}`
+  * `lags::Vector{Int64}`
+
+<a id='NeuroJ.signal_autocov-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_autocov-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_autocov`** &mdash; *Method*.
+
+
+
+signal_autocov(signal; lag=1, demean=false, norm=false)
+
+Calculates autocovariance of each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean signal prior to analysis
+  * `norm::Bool`: normalize autocovariance
+
+**Returns**
+
+  * `acov::Matrix{Float64}`
+  * `lags::Vector{Int64}`
+
+<a id='NeuroJ.signal_crosscov-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_crosscov-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_crosscov`** &mdash; *Method*.
+
+
+
+signal_crosscov(signal1, signal2; lag=1, demean=false, norm=false)
+
+Calculates cross-covariance between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean signal prior to analysis
+  * `norm::Bool`: normalize cross-covariance
+
+**Returns**
+
+  * `ccov::Vector{Float64}`
+  * `lags::Vector{Int64}`
+
+<a id='NeuroJ.signal_crosscov-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_crosscov-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_crosscov`** &mdash; *Method*.
+
+
+
+signal_crosscov(signal; lag=1, demean=false, norm=false)
+
+Calculates cross-covariance between all channels in the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`: the signal
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean `signal` prior to analysis
+  * `norm::Bool`: normalize cross-covariance
+
+**Returns**
+
+  * `ccov::Array{Float64, 3}`
+  * `lags::Vector{Int64}`
+
+<a id='NeuroJ.signal_crosscov-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_crosscov-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_crosscov`** &mdash; *Method*.
+
+
+
+signal_crosscov(signal1, signal2; lag=1, demean=false, norm=false)
+
+Calculates cross-covariance between same channels in `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2::Array{Float64, 3}`
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean signal prior to analysis
+  * `norm::Bool`: normalize cross-covariance
+
+**Returns**
+
+  * `ccov::Array{Float64, 3}`
+  * `lags::Vector{Int64}`
+
+<a id='NeuroJ.signal_spectrum-Tuple{AbstractArray}' href='#NeuroJ.signal_spectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+signal_spectrum(signal; pad=0)
+```
+
+Calculates FFT, amplitudes, powers and phases of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+
+**Returns**
+
+  * `fft::Vector(ComplexF64}`
+  * `amplitudes::Vector{Float64}`
+  * `powers::Vector{Float64}`
+  * `phases::Vector{Float64}
+
+<a id='NeuroJ.signal_spectrum-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_spectrum-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+signal_spectrum(signal; pad=0)
+```
+
+Calculates FFT, amplitudes, powers and phases for each channel of the `signal` matrix.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`: the signal
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+
+**Returns**
+
+  * `fft::Array{ComplexF64, 3}`
+  * `amplitudes::Array{Float64, 3}`
+  * `powers::Array{Float64, 3}`
+  * `phases::Array{Float64, 3}
+
+<a id='NeuroJ.signal_epochs-Tuple{Vector{Float64}}' href='#NeuroJ.signal_epochs-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.signal_epochs`** &mdash; *Method*.
+
+
+
+```julia
+signal_epochs(signal; epoch_n, epoch_len, average=true)
+```
+
+Splits `signal` into epochs.
+
+**Arguments**
+
+  * `signal::Vector{Float64}`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+
+**Returns**
+
+  * `epochs::Matrix{Float64}`
+
+<a id='NeuroJ.signal_epochs-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_epochs-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_epochs`** &mdash; *Method*.
+
+
+
+```julia
+signal_epochs(signal; epoch_n=nothing, epoch_len=nothing, average=true)
+```
+
+Splits `signal` into epochs.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, returns one averaged epoch; if false than returns array of epochs, each row is one epoch
+
+**Returns**
+
+  * `epochs::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_delete_channel-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_delete_channel-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_delete_channel`** &mdash; *Method*.
+
+
+
+```julia
+signal_delete_channel(signal; channel)
+```
+
+Removes `channel` from the `signal`.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to be removed, vector of numbers or range
+
+**Returns**
+
+  * `signal::Matrix{Float64}`
+
+<a id='NeuroJ.signal_delete_channel-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_delete_channel-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_delete_channel`** &mdash; *Method*.
+
+
+
+```julia
+signal_delete_channel(signal; channel)
+```
+
+Removes `channel` from the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel to be removed, vector of numbers or range
+
+**Returns**
+
+  * `signal::Matrix{Float64}`
+
+<a id='NeuroJ.signal_reference_channel-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_reference_channel-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_reference_channel`** &mdash; *Method*.
+
+
+
+```julia
+signal_reference_channel(signal, reference)
+```
+
+Re-references channels of the `signal` to specific signal channel.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `reference::Union{Int64, Vector{Int64}, AbstractRange}}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+
+**Returns**
+
+  * `s_referenced::Matrix{Float64}`
+
+<a id='NeuroJ.signal_reference_channel-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_reference_channel-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_reference_channel`** &mdash; *Method*.
+
+
+
+```julia
+signal_reference_channel(signal, channel)
+```
+
+Re-references channels of the `signal` to specific signal channel.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+
+**Returns**
+
+  * `s_referenced::Matrix{Float64}`
+
+<a id='NeuroJ.signal_reference_car-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_reference_car-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_reference_car`** &mdash; *Method*.
+
+
+
+```julia
+signal_reference_car(signal)
+```
+
+Re-references channels of the `signal` to common average reference.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+
+**Returns**
+
+  * `s_referenced::Matrix{Float64}`
+
+<a id='NeuroJ.signal_reference_car-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_reference_car-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_reference_car`** &mdash; *Method*.
+
+
+
+```julia
+signal_reference_car(signal)
+```
+
+Re-references channels of the `signal` to common average reference.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_referenced::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_taper-Tuple{AbstractArray}' href='#NeuroJ.signal_taper-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_taper`** &mdash; *Method*.
+
+
+
+```julia
+signal_taper(signal; taper)
+```
+
+Taper the `signal` with `taper`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_tapered::Vector{Union{Float64, ComplexF64}}`
+
+<a id='NeuroJ.signal_taper-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_taper-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_taper`** &mdash; *Method*.
+
+
+
+```julia
+signal_taper(signal; taper)
+```
+
+Tapers channels of the `signal` with `taper`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_tapered::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
+
+<a id='NeuroJ.signal_demean-Tuple{AbstractArray}' href='#NeuroJ.signal_demean-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_demean`** &mdash; *Method*.
+
+
+
+```julia
+signal_demean(signal)
+```
+
+Removes mean value (DC offset) from the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_demeaned::Vector{Float64}`
+
+<a id='NeuroJ.signal_demean-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_demean-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_demean`** &mdash; *Method*.
+
+
+
+```julia
+signal_demean(signal)
+```
+
+Removes mean value (DC offset) for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_demeaned::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_normalize_zscore-Tuple{AbstractArray}' href='#NeuroJ.signal_normalize_zscore-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_normalize_zscore`** &mdash; *Method*.
+
+
+
+```julia
+signal_normalize_zscore(signal)
+```
+
+Normalize (by z-score) `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroJ.signal_normalize_zscore-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_normalize_zscore-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_normalize_zscore`** &mdash; *Method*.
+
+
+
+```julia
+signal_normalize_zscore(signal)
+```
+
+Normalize (by z-score) each the `signal` channel.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_normalized::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_normalize_minmax-Tuple{AbstractArray}' href='#NeuroJ.signal_normalize_minmax-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_normalize_minmax`** &mdash; *Method*.
+
+
+
+```julia
+signal_normalize_minmax(signal)
+```
+
+Normalize `signal` in [-1, +1].
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroJ.signal_normalize_minmax-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_normalize_minmax-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_normalize_minmax`** &mdash; *Method*.
+
+
+
+```julia
+signal_normalize_minmax(signal)
+```
+
+Normalize each the `signal` channel in [-1, +1].
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_normalized::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_cov-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_cov-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_cov`** &mdash; *Method*.
+
+
+
+signal_cov(signal1, signal2; norm=true)
+
+Calculates covariance between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+  * `norm::Bool`: normalize covariance
+
+**Returns**
+
+  * `cov_mat::Matrix{Float64}`
+
+<a id='NeuroJ.signal_cov-Tuple{AbstractArray}' href='#NeuroJ.signal_cov-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_cov`** &mdash; *Method*.
+
+
+
+signal_cov(signal; norm=true)
+
+Calculates covariance between all channels of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `norm::Bool`: normalize covariance
+
+**Returns**
+
+  * `cov_mat::Matrix{Float64}`
+
+<a id='NeuroJ.signal_cov-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_cov-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_cov`** &mdash; *Method*.
+
+
+
+signal_cov(signal; norm=true)
+
+Calculates covariance between all channels of the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `norm::Bool`: normalize covariance
+
+**Returns**
+
+  * `cov_mat::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_cor-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_cor-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_cor`** &mdash; *Method*.
+
+
+
+signal_cor(signal)
+
+Calculates correlation coefficients between all channels of the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `cor_mat::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_add_noise-Tuple{AbstractArray}' href='#NeuroJ.signal_add_noise-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_add_noise`** &mdash; *Method*.
+
+
+
+```julia
+signal_add_noise(signal)
+```
+
+Adds random noise to the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_noisy::Vector{Float64}`
+
+<a id='NeuroJ.signal_add_noise-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_add_noise-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_add_noise`** &mdash; *Method*.
+
+
+
+```julia
+signal_add_noise(signal)
+```
+
+Add random noise to the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_noisy::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_upsample-Tuple{AbstractArray}' href='#NeuroJ.signal_upsample-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_upsample`** &mdash; *Method*.
+
+
+
+```julia
+signal_upsample(signal; t, new_sr)
+```
+
+Upsamples `signal` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `t::AbstractRange`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `s_upsampled::Vector{Float64}`
+  * `t_upsampled::AbstractRange`
+
+<a id='NeuroJ.signal_upsample-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_upsample-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_upsample`** &mdash; *Method*.
+
+
+
+```julia
+signal_upsample(signal; t, new_sr)
+```
+
+Upsamples all channels of `signal` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `t::AbstractRange`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `s_upsampled::Array{Float64, 3}`
+  * `t_upsampled::AbstractRange`
+
+<a id='NeuroJ.signal_tconv-Tuple{AbstractArray}' href='#NeuroJ.signal_tconv-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_tconv`** &mdash; *Method*.
+
+
+
+```julia
+signal_tconv(signal; kernel)
+```
+
+Performs convolution in the time domain between `signal` and `kernel`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
+
+<a id='NeuroJ.signal_tconv-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_tconv-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_tconv`** &mdash; *Method*.
+
+
+
+```julia
+signal_tconv(signal; kernel)
+```
+
+Performs convolution in the time domain between `signal` and `kernel`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_conv::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`
+
+<a id='NeuroJ.signal_filter-Tuple{AbstractArray}' href='#NeuroJ.signal_filter-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_filter`** &mdash; *Method*.
+
+
+
+```julia
+signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+```
+
+Filters `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+
+      * `:mavg`: moving average (with threshold and/or weight window)
+      * `:mmed`: moving median (with threshold and/or weight window)
+      * `:poly`: polynomial of `order` order
+  * `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64`: filter order
+  * `rp::Union{Int64, Float64}`: dB ripple in the passband
+  * `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+  * `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+  * `d::Int64`: window length for mean average and median average filter
+  * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+
+**Returns**
+
+  * `s_filtered::Vector{Float64}`
+
+<a id='NeuroJ.signal_filter-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_filter-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_filter`** &mdash; *Method*.
+
+
+
+```julia
+signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+```
+
+Filters `signal` using zero phase distortion filter.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+
+      * `:mavg`: moving average (with threshold and/or weight window)
+      * `:mmed`: moving median (with threshold and/or weight window)
+      * `:poly`: polynomial of `order` order
+  * `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64`: filter order
+  * `rp::Union{Int64, Float64}`: dB ripple in the passband
+  * `rs::Union{Int64, Float64}`: dB attentuation in the stopband
+  * `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
+  * `d::Int64`: window length for mean average and median average filter
+  * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+
+**Returns**
+
+  * `s_filtered::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_downsample-Tuple{AbstractArray}' href='#NeuroJ.signal_downsample-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_downsample`** &mdash; *Method*.
+
+
+
+```julia
+signal_downsample(signal; t, new_sr)
+```
+
+Downsamples the`signal` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `t::AbstractRange`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `s_downsampled::Vector{Float64}`
+  * `t_downsampled::Vector{Float64}`
+
+<a id='NeuroJ.signal_downsample-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_downsample-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_downsample`** &mdash; *Method*.
+
+
+
+```julia
+signal_downsample(signal; t, new_sr)
+```
+
+Downsamples all channels of the`signal` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `new_sr::Int64`: new sampling rate
+  * `t::AbstractRange`
+
+**Returns**
+
+  * `s_downsampled::Array{Float64, 3}`
+  * `t_downsampled::AbstractRange`
+
+<a id='NeuroJ.signal_psd-Tuple{AbstractArray}' href='#NeuroJ.signal_psd-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_psd`** &mdash; *Method*.
+
+
+
+```julia
+signal_psd(signal; fs, norm=false)
+```
+
+Calculates power spectrum density of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool`: normalize do dB
+
+**Returns**
+
+  * `psd_pow::Vector{Float64}`
+  * `psd_frq::Vector{Float64}`
+
+<a id='NeuroJ.signal_psd-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_psd-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_psd`** &mdash; *Method*.
+
+
+
+```julia
+signal_psd(signal; fs, norm=false)
+```
+
+Calculates power spectrum density for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool`: normalize do dB
+
+**Returns**
+
+  * `psd_pow::Matrix{Float64}`
+  * `psd_frq::Matrix{Float64}`
+
+<a id='NeuroJ.signal_psd-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_psd-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_psd`** &mdash; *Method*.
+
+
+
+```julia
+signal_psd(signal; fs, norm=false)
+```
+
+Calculates power spectrum density for each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64` sampling rate
+  * `norm::Bool`: normalize do dB
+
+**Returns**
+
+  * `psd_pow::Array{Float64, 3}`
+  * `psd_frq::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_stationarity_hilbert-Tuple{AbstractArray}' href='#NeuroJ.signal_stationarity_hilbert-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_stationarity_hilbert`** &mdash; *Method*.
+
+
+
+```julia
+signal_stationarity_hilbert(signal::Vector{Float64})
+```
+
+Calculates phase stationarity using Hilbert transformation.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `phase_stationarity::Vector{Float64}`
+
+<a id='NeuroJ.signal_stationarity_mean-Tuple{AbstractArray}' href='#NeuroJ.signal_stationarity_mean-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_stationarity_mean`** &mdash; *Method*.
+
+
+
+```julia
+signal_stationarity_mean(signal)
+```
+
+Calculates mean stationarity.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `window::Int64`: time window in samples
+
+**Returns**
+
+  * `mean_stationarity::Vector{Float64}`
+
+<a id='NeuroJ.signal_stationarity_var-Tuple{AbstractArray}' href='#NeuroJ.signal_stationarity_var-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_stationarity_var`** &mdash; *Method*.
+
+
+
+```julia
+signal_stationarity_var(signal)
+```
+
+Calculates variance stationarity.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `window::Int64`: time window in samples
+
+**Returns**
+
+  * `var_stationarity::Vector{Float64}`
+
+<a id='NeuroJ.signal_stationarity-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_stationarity-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_stationarity`** &mdash; *Method*.
+
+
+
+```julia
+signal_stationarity(signal; window=10, method=:euclid)
+```
+
+Calculates stationarity.
+
+**Arguments**
+
+  * `signal:Array{Float64, 3}`
+  * `window::Int64`: time window in samples
+  * `method::Symbol[:mean, :var, :euclid, :hilbert]
+
+**Returns**
+
+  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
+
+<a id='NeuroJ.signal_trim-Tuple{AbstractArray}' href='#NeuroJ.signal_trim-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_trim`** &mdash; *Method*.
+
+
+
+```julia
+signal_trim(signal; len::Int64)
+```
+
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `len::Int64`: trimming length in samples
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]
+
+**Returns**
+
+  * `s_trimmed::Vector{Float64}`
+
+<a id='NeuroJ.signal_trim-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_trim-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_trim`** &mdash; *Method*.
+
+
+
+```julia
+signal_trim(signal; len, offset=0, from=:start)
+```
+
+Removes `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `len::Int64`: number of samples to remove
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]`
+
+**Returns**
+
+  * `s_trimmed::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_mi-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_mi-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_mi`** &mdash; *Method*.
+
+
+
+```julia
+signal_mi(signal1::Vector{Float64}, signal2::Vector{Float64})
+```
+
+Calculates mutual information between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `mi::Float64`
+
+<a id='NeuroJ.signal_mi-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_mi-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_mi`** &mdash; *Method*.
+
+
+
+```julia
+signal_mi(signal)
+```
+
+Calculates mutual information between each the `signal` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_mi-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_mi-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_mi`** &mdash; *Method*.
+
+
+
+```julia
+signal_mi(signal1, signal2)
+```
+
+Calculates mutual information between each the `signal1` and `signal2` channels.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2::Array{Float64, 3}`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_entropy-Tuple{AbstractArray}' href='#NeuroJ.signal_entropy-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_entropy`** &mdash; *Method*.
+
+
+
+```julia
+signal_entropy(signal)
+```
+
+Calculates entropy of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `ent::Float64`
+
+<a id='NeuroJ.signal_entropy-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_entropy-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_entropy`** &mdash; *Method*.
+
+
+
+```julia
+signal_entropy(signal)
+```
+
+Calculates mutual information between each the `signal1` and `signal2` channels.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_entropy::Matrix{Float64}`
+
+<a id='NeuroJ.signal_average-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_average-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_average`** &mdash; *Method*.
+
+
+
+```julia
+signal_average(signal1, signal2)
+```
+
+Averages `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `s_averaged::Vector{Float64}`
+
+<a id='NeuroJ.signal_average-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_average-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_average`** &mdash; *Method*.
+
+
+
+```julia
+signal_average(signal)
+```
+
+Averages all channels of `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_averaged::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_average-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_average-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_average`** &mdash; *Method*.
+
+
+
+```julia
+signal_average(signal1, signal2)
+```
+
+Averages `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2::Array{Float64, 3}`
+
+**Returns**
+
+  * `s_averaged::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_coherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.signal_coherence-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.signal_coherence`** &mdash; *Method*.
+
+
+
+```julia
+signal_coherence(signal1, signal2)
+```
+
+Calculates coherence between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `coherence::Vector{ComplexF64}`
+
+<a id='NeuroJ.signal_coherence-Tuple{Matrix{Float64}, Matrix{Float64}}' href='#NeuroJ.signal_coherence-Tuple{Matrix{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_coherence`** &mdash; *Method*.
+
+
+
+```julia
+signal_coherence(signal1, signal2)
+```
+
+Calculates coherence between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::Matrix{Float64}`
+  * `signal2::Matrix{Float64}`
+
+**Returns**
+
+  * `coherence::Matrix{Float64}`
+
+<a id='NeuroJ.signal_coherence-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.signal_coherence-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_coherence`** &mdash; *Method*.
+
+
+
+```julia
+signal_coherence(signal1, signal2)
+```
+
+Calculates coherence between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::Array{Float64, 3}`
+  * `signal2::Array{Float64, 3}`
+
+**Returns**
+
+  * `coherence::Array{ComplexF64, 3}`
+
+<a id='NeuroJ.signal_pca-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_pca-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_pca`** &mdash; *Method*.
+
+
+
+```julia
+signal_pca(signal, n)
+```
+
+Calculates `n` first PCs for `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `n::Int64`: number of PCs
+
+**Returns**
+
+  * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+  * `pc_var::Matrix{Float64}`: PC*VAR(1)..PC*VAR(n) × epoch
+
+<a id='NeuroJ.signal_fconv-Tuple{AbstractArray}' href='#NeuroJ.signal_fconv-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_fconv`** &mdash; *Method*.
+
+
+
+```julia
+signal_fconv(signal; kernel)
+```
+
+Performs convolution in the frequency domain between `signal` and `kernel`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_conv::Vector{ComplexF64}`
+
+<a id='NeuroJ.signal_fconv-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_fconv-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_fconv`** &mdash; *Method*.
+
+
+
+```julia
+signal_fconv(signal; kernel)
+```
+
+Performs convolution in the frequency domain between `signal` and `kernel`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+
+**Returns**
+
+  * `s_conv::Array{ComplexF64, 3}`
+
+<a id='NeuroJ.signal_ica-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_ica-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_ica`** &mdash; *Method*.
+
+
+
+```julia
+signal_ica(signal, n, tol=1.0e-6, iter=100, f=:tanh)
+```
+
+Calculates `n` first ICs for `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `n::Int64`: number of PCs
+  * `tol::Float64`: tolerance for ICA
+  * `iter::Int64`: maximum number of iterations
+  * `f::Symbol[:tanh, :gaus]`: neg-entropy functor
+
+**Returns**
+
+  * `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+
+<a id='NeuroJ.signal_ica_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_ica_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_ica_reconstruct`** &mdash; *Method*.
+
+
+
+```julia
+signal_ica_reconstruct(signal, ic_activations, ic_mw, ic_v)
+```
+
+Reconstructs `signal` using removal of `ic_v` ICA components.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `ic_activation::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+
+**Returns**
+
+  * `signal_reconstructed::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_epochs_stats-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_epochs_stats-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_epochs_stats`** &mdash; *Method*.
+
+
+
+```julia
+signal_epochs_var(signal)
+```
+
+Calculates variance for all `signal` epochs.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `var::Vector{Float64}`
+
+<a id='NeuroJ.signal_spectrogram-Tuple{AbstractArray}' href='#NeuroJ.signal_spectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+signal_spectrogram(signal; fs, norm=true, demean=true)
+```
+
+Calculates spectrogram of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool`: normalize powers to dB
+  * `demean::Bool`: demean signal prior to analysis
+
+**Returns**
+
+  * `spec.power::Matrix{Float64}`
+  * `spec.freq::Vector{Float64}`
+  * `spec.time::Vector{Float64}`
+
+<a id='NeuroJ.signal_spectrogram-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_spectrogram-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+signal_spectrogram(signal; fs, norm=true, demean=true)
+```
+
+Calculates spectrogram of `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool`: normalize powers to dB
+  * `demean::Bool`: demean signal prior to analysis
+
+**Returns**
+
+  * `spec.power::Array{Float64, 4}`
+  * `spec.freq::Matrix{Float64}`
+  * `spec.time::Matrix{Float64}`
+
+<a id='NeuroJ.signal_band-Tuple{Union{Float64, Int64}, Symbol}' href='#NeuroJ.signal_band-Tuple{Union{Float64, Int64}, Symbol}'>#</a>
+**`NeuroJ.signal_band`** &mdash; *Method*.
+
+
+
+```julia
+signal_band(fs, band)
+```
+
+Returns EEG band frequency limits.
+
+**Arguments**
+
+  * `fs::Int64`
+  * `band::Symbol`: EEG band name (:delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher)
+
+**Returns**
+
+  * `band_frequency::Tuple{Float64, Float64}`: lower and upper bounds
+
+<a id='NeuroJ.signal_detect_epoch_flat-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detect_epoch_flat-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detect_epoch_flat`** &mdash; *Method*.
+
+
+
+```julia
+signal_detect_epoch_flat(signal::Array{Float64, 3}, threshold=0.1)
+```
+
+Detect bad `signal` epochs based on: flat channel(s)
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.signal_detect_epoch_rmse-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detect_epoch_rmse-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detect_epoch_rmse`** &mdash; *Method*.
+
+
+
+```julia
+signal_detect_epoch_rmse(signal::Array{Float64, 3})
+```
+
+Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.signal_detect_epoch_rmsd-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detect_epoch_rmsd-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detect_epoch_rmsd`** &mdash; *Method*.
+
+
+
+```julia
+signal_detect_epoch_rmsd(signal::Array{Float64, 3})
+```
+
+Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.signal_detect_epoch_euclid-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detect_epoch_euclid-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detect_epoch_euclid`** &mdash; *Method*.
+
+
+
+```julia
+signal_detect_epoch_euclid(signal::Array{Float64, 3})
+```
+
+Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.signal_detect_epoch_p2p-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_detect_epoch_p2p-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_detect_epoch_p2p`** &mdash; *Method*.
+
+
+
+```julia
+signal_detect_epoch_p2p(signal::Array{Float64, 3})
+```
+
+Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
 
 <a id='Misc'></a>
 
 <a id='Misc-1'></a>
 
 ## Misc
+
+<a id='NeuroJ.zero_pad-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}' href='#NeuroJ.zero_pad-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}'>#</a>
+**`NeuroJ.zero_pad`** &mdash; *Method*.
+
+
+
+```julia
+zero_pad(m)
+```
+
+Pads the matrix `m` with zeros to make it square.
+
+**Arguments**
+
+  * `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+
+**Returns**
+
+  * `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+
+<a id='NeuroJ.vsearch-Tuple{Union{Float64, Int64}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.vsearch-Tuple{Union{Float64, Int64}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+**`NeuroJ.vsearch`** &mdash; *Method*.
+
+
+
+```julia
+vsearch(y, x; return_distance=false)
+```
+
+Returns the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
+
+**Arguments**
+
+  * `y::Union{Int64, Float64}`
+  * `x::Union{Vector{Int64}, Vector{Float64}}
+  * `return_distance::Bool`
+
+**Returns**
+
+  * `y_idx::Int64`
+
+-`y_dist::Union{Int64, Float64}`
+
+<a id='NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+**`NeuroJ.vsearch`** &mdash; *Method*.
+
+
+
+```julia
+vsearch(y, x; return_distance=false)
+```
+
+Returns the positions of the `y` vector in the vector `x`.
+
+**Arguments**
+
+  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `y::Union{Vector{Int64}, Vector{Float64}}
+  * `return_distance::Bool`
+
+**Returns**
+
+  * `y_idx::Int64`
+  * `y_dist::Union{Int64, Float64}`
+
+<a id='NeuroJ.jaccard_similarity-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.jaccard_similarity-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+**`NeuroJ.jaccard_similarity`** &mdash; *Method*.
+
+
+
+```julia
+jaccard_similarity(x, y)
+```
+
+Calculates Jaccard similarity between two vectors `x` and `y`.
+
+**Arguments**
+
+  * `n::Int64`
+
+**Returns**
+
+  * `j::Float64`
+
+<a id='NeuroJ.fft0-Tuple{AbstractArray, Int64}' href='#NeuroJ.fft0-Tuple{AbstractArray, Int64}'>#</a>
+**`NeuroJ.fft0`** &mdash; *Method*.
+
+
+
+```julia
+fft0(x, n)
+```
+
+Calculates FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+
+**Arguments**
+
+  * `x::AbstractArray`
+  * `n::Int64`
+
+**Returns**
+
+  * `fft0::Vector{ComplexF64}`
+
+<a id='NeuroJ.ifft0-Tuple{AbstractArray, Int64}' href='#NeuroJ.ifft0-Tuple{AbstractArray, Int64}'>#</a>
+**`NeuroJ.ifft0`** &mdash; *Method*.
+
+
+
+```julia
+ifft0(x, n)
+```
+
+Calculates IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+
+**Arguments**
+
+  * `x::AbstractArray`
+  * `n::Int64`
+
+**Returns**
+
+  * `ifft0::Vector{ComplexF64}`
+
+<a id='NeuroJ.nextpow2-Tuple{Int64}' href='#NeuroJ.nextpow2-Tuple{Int64}'>#</a>
+**`NeuroJ.nextpow2`** &mdash; *Method*.
+
+
+
+```julia
+nextpow2(x)
+```
+
+Returns the next power of 2 for given number `x`.
+
+**Argument**
+
+  * `x::Int64`
+
+**Returns**
+
+  * `nextpow::Int64`
+
+<a id='NeuroJ.vsplit' href='#NeuroJ.vsplit'>#</a>
+**`NeuroJ.vsplit`** &mdash; *Function*.
+
+
+
+```julia
+vsplit(x, n)
+```
+
+Splits the vector `x` into `n`-long pieces.
+
+**Argument**
+
+  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `n::Int64`
+
+**Returns**
+
+  * `x::Vector{Union{Vector{Int64}, Vector{Float64}}}`
+
+<a id='NeuroJ.freqs-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}}' href='#NeuroJ.freqs-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}}'>#</a>
+**`NeuroJ.freqs`** &mdash; *Method*.
+
+
+
+```julia
+freqs(t)
+```
+
+Returns vector of frequencies and Nyquist frequency for given time vector `t`.
+
+**Arguments**
+
+  * `t::Union{Vector{Int64}, Vector{Float64}, AbstractRange}`
+
+**Returns**
+
+  * `hz::Vector{Float64}
+  * `nyquist_freq::Float64`
+
+<a id='NeuroJ.freqs-Tuple{Vector{Float64}, Union{Float64, Int64}}' href='#NeuroJ.freqs-Tuple{Vector{Float64}, Union{Float64, Int64}}'>#</a>
+**`NeuroJ.freqs`** &mdash; *Method*.
+
+
+
+```julia
+freqs(signal, fs)
+```
+
+Returns vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+
+**Arguments**
+
+  * `signal::Vector{Float64}`
+  * `fs::Union{Int64, Float64}`
+
+**Returns**
+
+  * `hz::Vector{Float64}
+  * `nyquist_freq::Float64`
+
+<a id='NeuroJ.matrix_sortperm-Tuple{Matrix}' href='#NeuroJ.matrix_sortperm-Tuple{Matrix}'>#</a>
+**`NeuroJ.matrix_sortperm`** &mdash; *Method*.
+
+
+
+```julia
+matrix_sortperm(m; rev=false, dims=1)
+```
+
+Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
+
+**Arguments**
+
+  * `m::Matrix`
+  * `rev::Bool`
+  * `dims::Int64`
+
+**Returns**
+
+  * `m_idx::Matrix{Int64}`
+
+<a id='NeuroJ.matrix_sort-Tuple{Matrix, Vector{Int64}}' href='#NeuroJ.matrix_sort-Tuple{Matrix, Vector{Int64}}'>#</a>
+**`NeuroJ.matrix_sort`** &mdash; *Method*.
+
+
+
+```julia
+matrix_sort(m, m_idx; rev=false, dims=1)
+```
+
+Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
+
+**Arguments**
+
+  * `m::Matrix`
+  * `m_idx::Vector{Int64}`
+  * `rev::Bool`
+  * `dims::Int64`
+
+**Returns**
+
+  * `m_sorted::Matrix`
+
+<a id='NeuroJ.pad0-Tuple{Union{Vector{Float64}, Vector{Int64}}, Any}' href='#NeuroJ.pad0-Tuple{Union{Vector{Float64}, Vector{Int64}}, Any}'>#</a>
+**`NeuroJ.pad0`** &mdash; *Method*.
+
+
+
+```julia
+pad0(x, n)
+```
+
+Pads the vector `x` with `n` zeros at the beginning and at the end.
+
+To do: check if x is numeric vector
+
+**Arguments**
+
+  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `n::Int64`
+
+**Returns**
+
+  * `v_pad::Union{Vector{Int64}, Vector{Float64}}`
+
+<a id='NeuroJ.generate_sinc' href='#NeuroJ.generate_sinc'>#</a>
+**`NeuroJ.generate_sinc`** &mdash; *Function*.
+
+
+
+```julia
+generate_sinc(t, f, peak)
+```
+
+Generates sinc function.
+
+**Arguments**
+
+  * `t::AbstractRange=-2:0.01:2`: time
+  * `f::Union{Int64, Float64}=10.0`: frequency
+  * `peak::Union{Int64, Float64}=0`: sinc peak time
+
+**Returns**
+
+  * `sinc::Vector{Float64}
+
+<a id='NeuroJ.generate_morlet-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.generate_morlet-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
+**`NeuroJ.generate_morlet`** &mdash; *Method*.
+
+
+
+```julia
+generate_morlet(fs, wt, wf)
+```
+
+Generates Morlet wavelet.
+
+**Arguments**
+
+  * `fs::Int64`: sampling rate
+  * `wt::Union{Int64, Float64}`: length = -wt:1/fs:wt
+  * `wf::Union{Int64, Float64}`: frequency
+  * `ncyc::Int64=5`: number of cycles
+  * `complex::Bool=false`: generate complex Morlet
+
+**Returns**
+
+  * `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
+
+<a id='NeuroJ.generate_gaussian-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.generate_gaussian-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
+**`NeuroJ.generate_gaussian`** &mdash; *Method*.
+
+
+
+```julia
+generate_gaussian(fs, wt, wf)
+```
+
+Generates Gaussian wave.
+
+**Arguments**
+
+  * `fs::Int64`: sampling rate
+  * `gt::Union{Int64, Float64}`: length = -wt:1/fs:wt
+  * `gw::Union{Int64, Float64}`: width
+
+**Returns**
+
+  * `gaussian::Vector{Float64}`
+
+
+!!! warning "Missing docstring."
+    Missing docstring for `tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)`. Check Documenter's build log for details.
+
+
+<a id='NeuroJ.rmse-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.rmse-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.rmse`** &mdash; *Method*.
+
+
+
+```julia
+ransac(signal1, signal2)
+```
+
+Calculates correlation between signal and its RANSAC reconstruction.
+
+**Arguments**
+
+  * `signal1::Vector{Float64}`
+  * `signal2::Vector{Float64}`
+
+**Returns**
+
+  * `r::Float64`
 
 
 <a id='NSTIM'></a>
