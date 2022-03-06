@@ -1,6 +1,8 @@
 ![neuroj](images/neuroj.png)
 
-Welcome fellow researcher! NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
+Welcome fellow researcher!
+
+NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
 This is a non-commercial projected, aimed for researchers in psychiatry, neurology and neuroscience.
 
