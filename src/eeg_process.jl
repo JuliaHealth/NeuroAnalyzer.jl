@@ -1050,7 +1050,7 @@ function eeg_resample(eeg::NeuroJ.EEG; new_sr::Int64)
 
     new_sr > eeg_sr(eeg) && (eeg_new = eeg_upsample(eeg, new_sr=new_sr))
     new_sr < eeg_sr(eeg) && (eeg_new = eeg_downsample(eeg, new_sr=new_sr))
-    new_sr = eeg_sr(eeg) && (eeg_new = eeg)
+    new_sr == eeg_sr(eeg) && (eeg_new = eeg)
 
     return eeg_new
 end
