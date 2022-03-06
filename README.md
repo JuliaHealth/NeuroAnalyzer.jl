@@ -72,9 +72,9 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 ## Documentation
 
-NeuroJ.jl documentation is available [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
+NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
 
-Tutorial introducing NeuroJ.jl functions is [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
+Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
 
 ## Plugins (extensions)
 
