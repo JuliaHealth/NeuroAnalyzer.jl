@@ -147,6 +147,7 @@ NSTIM
 If you've contributed, add your name below!
 
 [Adam Wysokiński](adam.wysokinski@umed.lodz.pl)
+
 ![umed](images/umed.jpg)
 
 ## License
