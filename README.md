@@ -147,7 +147,7 @@ NSTIM
 
 If you've contributed, add your name below!
 
-[Adam Wysokiński](adam.wysokinski@umed.lodz.pl)
+[Adam Wysokiński](mailto:adam.wysokinski@umed.lodz.pl)
 
 ![umed](images/umed.jpg)
 
