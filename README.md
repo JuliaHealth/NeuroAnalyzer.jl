@@ -14,7 +14,7 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ```
 using Pkg
-Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 ```
 
 ## Requirements
@@ -33,7 +33,7 @@ The following packages are required:
 - MultivariateStats
 - Pkg
 - Plots
-- [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
+- [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 
 NeuroJ.jl will be 100% Julia based.
