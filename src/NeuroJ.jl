@@ -64,7 +64,7 @@ export rads2hz
 export rms
 export rmse
 export sph2cart
-export tuple_order!
+export tuple_order
 export vsearch
 export vsplit
 export z_score

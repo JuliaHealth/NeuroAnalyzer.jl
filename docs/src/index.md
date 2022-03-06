@@ -336,7 +336,223 @@ eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
 
 ## Signal
 
+```@docs
+signal_derivative(signal::AbstractArray)
+
+signal_derivative(signal::Array{Float64, 3})
+
+signal_total_power(signal::AbstractArray; fs::Int64)
+
+signal_total_power(signal::Array{Float64, 3}; fs::Int64)
+
+signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
+
+signal_band_power(signal::Array{Float64, 3}; fs::Int64, f::Tuple)
+
+signal_make_spectrum(signal::AbstractArray; fs::Int64)
+
+signal_make_spectrum(signal::Array{Float64, 3}; fs::Int64)
+
+signal_detrend(signal::AbstractArray; type::Symbol=:linear)
+
+signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
+
+signal_ci95(signal::Vector{Float64}; n::Int64=3, method::Symbol=:normal)
+
+signal_ci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
+
+signal_ci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
+
+signal_mean(signal1::Vector{Float64}, signal2::Vector{Float64})
+
+signal_mean(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+
+signal_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
+
+signal_difference(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
+
+signal_autocov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+signal_autocov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+signal_crosscov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+signal_crosscov(signal::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+signal_crosscov(signal1::Array{Float64, 3}, signal2::Array{Float64, 3}; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+signal_spectrum(signal::AbstractArray; pad::Int64=0)
+
+signal_spectrum(signal::Array{Float64, 3}; pad::Int64=0)
+
+signal_epochs(signal::Vector{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+
+signal_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+
+signal_delete_channel(signal::Matrix{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+signal_delete_channel(signal::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+signal_reference_channel(signal::Matrix{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+signal_reference_channel(signal::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+signal_reference_car(signal::Matrix{Float64})
+
+signal_reference_car(signal::Array{Float64, 3})
+
+signal_taper(signal::AbstractArray; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_taper(signal::Array{Float64, 3}; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_demean(signal::AbstractArray)
+
+signal_demean(signal::Array{Float64, 3})
+
+signal_normalize_zscore(signal::AbstractArray)
+
+signal_normalize_zscore(signal::Array{Float64, 3})
+
+signal_normalize_minmax(signal::AbstractArray)
+
+signal_normalize_minmax(signal::Array{Float64, 3})
+
+signal_cov(signal1::AbstractArray, signal2::AbstractArray; norm::Bool=false)
+
+signal_cov(signal::AbstractArray; norm::Bool=false)
+
+signal_cov(signal::Array{Float64, 3}; norm::Bool=false)
+
+signal_cor(signal::Array{Float64, 3})
+
+signal_add_noise(signal::AbstractArray)
+
+signal_add_noise(signal::Array{Float64, 3})
+
+signal_upsample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
+
+signal_upsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
+
+signal_tconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+
+signal_filter(signal::Array{Float64, 3}; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+
+signal_downsample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
+
+signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
+
+signal_psd(signal::AbstractArray; fs::Int64, norm::Bool=false)
+
+signal_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false)
+
+signal_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
+
+signal_stationarity_hilbert(signal::AbstractArray)
+
+signal_stationarity_mean(signal::AbstractArray; window::Int64)
+
+signal_stationarity_var(signal::AbstractArray; window::Int64)
+
+signal_stationarity(signal::Array{Float64, 3}; window::Int64=10, method::Symbol=:hilbert)
+
+signal_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol=:start)
+
+signal_trim(signal::Array{Float64, 3}; len::Int64, offset::Int64=1, from::Symbol=:start)
+
+signal_mi(signal1::AbstractArray, signal2::AbstractArray)
+
+signal_mi(signal::Array{Float64, 3})
+
+signal_mi(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+
+signal_entropy(signal::AbstractArray)
+
+signal_entropy(signal::Array{Float64, 3})
+
+signal_average(signal1::AbstractArray, signal2::AbstractArray)
+
+signal_average(signal::Array{Float64, 3})
+
+signal_average(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+
+signal_coherence(signal1::AbstractArray, signal2::AbstractArray)
+
+signal_coherence(signal1::Matrix{Float64}, signal2::Matrix{Float64})
+
+signal_coherence(signal1::Array{Float64, 3}, signal2::Array{Float64, 3})
+
+signal_pca(signal::Array{Float64, 3}; n::Int64)
+
+signal_fconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_fconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+
+signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array{Float64, 3}, ic_mw::Array{Float64, 3}, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
+
+signal_epochs_stats(signal::Array{Float64, 3})
+
+signal_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
+
+signal_spectrogram(signal::Array{Float64, 3}; fs::Int64, norm::Bool=true, demean::Bool=true)
+
+signal_band(fs::Union{Int64, Float64}, band::Symbol)
+
+signal_detect_epoch_flat(signal::Array{Float64, 3})
+
+signal_detect_epoch_rmse(signal::Array{Float64, 3})
+
+signal_detect_epoch_rmsd(signal::Array{Float64, 3})
+
+signal_detect_epoch_euclid(signal::Array{Float64, 3})
+
+signal_detect_epoch_p2p(signal::Array{Float64, 3})
+```
+
 ## Misc
+
+```@docs
+zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
+
+vsearch(y::Union{Int64, Float64}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance::Bool=false)
+
+vsearch(y::Union{Vector{Int64}, Vector{Float64}}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
+
+jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
+
+fft0(x::AbstractArray, n::Int64)
+
+ifft0(x::AbstractArray, n::Int64)
+
+nextpow2(x::Int64)
+
+vsplit(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64=1)
+
+freqs(t::Union{Vector{Int64}, Vector{Float64}, AbstractRange})
+
+freqs(signal::Vector{Float64}, fs::Union{Int64, Float64})
+
+matrix_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
+
+matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
+
+pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
+
+generate_sinc(t::AbstractRange=-2:0.01:2, f::Union{Int64, Float64}=10.0, peak::Union{Int64, Float64}=0)
+
+generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
+
+generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
+
+tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
+
+rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
+```
 
 ## NSTIM
 

@@ -1,5 +1,5 @@
 """
-    eeg_edit(file_name; read_annotations, clean_labels)
+    eeg_import_edf(file_name; read_annotations, clean_labels)
 
 Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
 

@@ -14,11 +14,14 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ```
 using Pkg
-Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 ```
 
-### Requirements
+## Requirements
 
+Julia version ≥ 1.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroJ.jl is only tested against it.
+
+The following packages are required:
 - CSV
 - DataFrames
 - Distances
@@ -30,32 +33,30 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - MultivariateStats
 - Pkg
 - Plots
-- [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
+- [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 
-NeuroJ will be 100% Julia based.
+NeuroJ.jl will be 100% Julia based.
 
 ## General remarks
 
-NeuroJ.jl processes both EEG objects (EEG epoched signals + header) and signals (single-channel or multi-channel/multi-trial). These have no header, therefore some functions will be limited.
+NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel/multi-trial). The latter have no header, therefore some functions will be limited.
 
 The following conventions are used:
 
-- single-channel signals and time      :: `Vector{Float64}`
-- multi-channel or multi-trial signals :: `Array{Float64, 3}` channels/trials × signals × epochs
+- single-channel signals and time `Vector{Float64}`
+- multi-channel signals `Array{Float64, 3}` (channels × signals × epochs)
 
 If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
 Functions name prefix:
 
-- `signal_`  :: functions taking single-/multi-channel signals as an argument
-- `eeg_`     :: functions taking EEG object as an argument
+- `signal_` functions taking single-/multi-channel signals as an argument
+- `eeg_` functions taking EEG object as an argument
 
-All `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_extract_channel()`, `eeg_extract_epoch()`)
+The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array)
 
 `eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s).
-
-For `eeg_plot_*()` channels and epochs may be specified.
 
 EEG object (headers + data) is stored in the EEG structure:
 ```
@@ -67,7 +68,13 @@ mutable struct EEG
 end
 ```
 
-Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input object 
+Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object, e.g. `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
+
+## Documentation
+
+NeuroJ.jl documentation is available [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
+
+Tutorial introducing NeuroJ.jl functions is [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
 
 ## Plugins (extensions)
 
@@ -84,7 +91,6 @@ neuroj_plugin_demo()
 
 - epoch markers drawn too low in eeg_plot_ica() for few ICs
 - channel labels should be displayed as strings not vector
-- remove embedded components that are not useful
 - eeg_plot_topo() check minimum len value for frequency to analyze
 - ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels
 
@@ -96,6 +102,7 @@ General:
 - performance optimization: CUDA/AMD ROCm acceleration
 
 EEG:
+- remove embedded components that are not useful
 - rewrite plotting functions to be more modular
 - piecewise detrending
 - store any calculations (e.g. median delta power) as a component for topo plots
@@ -140,7 +147,9 @@ NSTIM
 
 If you've contributed, add your name below!
 
-[Adam Wysokiński](adam.wysokinski@umed.lodz.pl)
+[Adam Wysokiński](mailto:adam.wysokinski@umed.lodz.pl)
+
+![umed](images/umed.jpg)
 
 ## License
 
