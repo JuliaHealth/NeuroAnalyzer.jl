@@ -1,4 +1,4 @@
-# Neuro.jl
+# Neuro.jl Tutorial
 
 ## EEG
 
