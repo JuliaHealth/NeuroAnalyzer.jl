@@ -2,11 +2,6 @@
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
 
-## TOC
-
-```@contents
-```
-
 ## NeuroJ
 
 ```@docs
@@ -563,9 +558,4 @@ rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
 
 ```@docs
 tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Int64)
-```
-
-## Index
-
-```@index
 ```
