@@ -33,7 +33,7 @@ Pkg.add(url="https://notabug.org/AdamWysokinski/NeuroJ.jl")
 - [Simpson](https://notabug.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 
-NeuroJ will be 100% Julia based.
+NeuroJ.jl will be 100% Julia based.
 
 ## General remarks
 
@@ -41,15 +41,15 @@ NeuroJ.jl processes both EEG objects (EEG epoched signals + header) and signals 
 
 The following conventions are used:
 
-- single-channel signals and time      :: `Vector{Float64}`
-- multi-channel or multi-trial signals :: `Array{Float64, 3}` channels/trials × signals × epochs
+- single-channel signals and time `Vector{Float64}`
+- multi-channel or multi-trial signals `Array{Float64, 3}` (channels/trials × signals × epochs)
 
 If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
 Functions name prefix:
 
-- `signal_`  :: functions taking single-/multi-channel signals as an argument
-- `eeg_`     :: functions taking EEG object as an argument
+- `signal_` functions taking single-/multi-channel signals as an argument
+- `eeg_` functions taking EEG object as an argument
 
 All `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_extract_channel()`, `eeg_extract_epoch()`)
 
@@ -67,13 +67,13 @@ mutable struct EEG
 end
 ```
 
-Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input object 
+Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object.
 
 ## Documentation
 
-Tutorial introducing NeuroJ functions is [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
+Tutorial introducing NeuroJ.jl functions is [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
 
-NeuroJ documentation is available [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
+NeuroJ.jl documentation is available [here](https://notabug.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
 
 ## Plugins (extensions)
 
@@ -147,6 +147,7 @@ NSTIM
 If you've contributed, add your name below!
 
 [Adam Wysokiński](adam.wysokinski@umed.lodz.pl)
+![umed](images/umed.jpg)
 
 ## License
 
