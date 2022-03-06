@@ -90,7 +90,6 @@ neuroj_plugin_demo()
 ## Known bugs
 
 - epoch markers drawn too low in eeg_plot_ica() for few ICs
-- channel labels should be displayed as strings not vector
 - eeg_plot_topo() check minimum len value for frequency to analyze
 - ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels
 
@@ -99,7 +98,8 @@ neuroj_plugin_demo()
 .. so much to do ..
 
 General:
-- performance optimization: CUDA/AMD ROCm acceleration
+- performance optimization
+- CUDA/AMD ROCm acceleration
 
 EEG:
 - remove embedded components that are not useful

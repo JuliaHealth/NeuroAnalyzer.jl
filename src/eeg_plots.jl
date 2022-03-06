@@ -232,7 +232,7 @@ function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
     t_2 < 1.0 && (t_s2 = string(round(t_2 * 1000, digits=2)) * " ms")
     t_2 >= 1.0 && (t_s2 = string(round(t_2, digits=2)) * " s")
 
-    title == "" && (title = "Signal\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), time window: $t_s1:$t_s2]")
+    title == "" && (title = "Signal\n[epoch: $epoch, time window: $t_s1:$t_s2]")
 
     p = signal_plot(t,
                     signal,
@@ -270,7 +270,7 @@ function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
         _, _, _, s_phase = signal_spectrum(signal)
         ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
         if head == true
-            hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel:\n" * channel_name)
+            hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name")
             l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
             p = plot(p, ht_a, psd, ht_p, s, hd, layout=l)
         else
@@ -657,7 +657,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
-    title == "" && (title = "Signal averaged\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
+    title == "" && (title = "Signal averaged\n[epoch: $epoch, offset: $offset samples, length: $len samples]")
 
     p = signal_plot_avg(t,
                         signal,
@@ -700,7 +700,17 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     _, _, _, s_phase = signal_spectrum(s_normalized_m)
     ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
-        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels")
+        if collect(channel[1]:channel[end]) == channel
+            channel_list = string(channel[1]) * ":" * string(channel[end])
+        else
+            channel_list = "" 
+            for idx in 1:(length(channel) - 1)
+                channel_list *= string(channel[idx])
+                channel_list *= ", "
+            end
+            channel_list *= string(channel[end])
+        end
+        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels:\n$channel_list")
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
         p = plot(p, ht_a, psd, ht_p, s, hd, layout=l)
     else
@@ -1368,8 +1378,15 @@ function eeg_plot_matrix(eeg::NeuroJ.EEG, m::Union{Matrix{Float64}, Array{Float6
     channel_n = size(m, 1)
     ndims(m) == 3 && (m = m[:, :, epoch])
 
-    p = heatmap(m, xticks=(1:channel_n, labels), yticks=(1:channel_n, eeg_labels(eeg)), xlabelfontsize=8,
-             ylabelfontsize=8, xtickfontsize=4, ytickfontsize=4; kwargs...)
+    p = heatmap(m,
+                xticks=(1:channel_n, labels),
+                yticks=(1:channel_n, eeg_labels(eeg)),
+                titlefontsize=10,
+                xlabelfontsize=8,
+                ylabelfontsize=8,
+                xtickfontsize=4,
+                ytickfontsize=4;
+                kwargs...)
     plot(p)
 
     return p
