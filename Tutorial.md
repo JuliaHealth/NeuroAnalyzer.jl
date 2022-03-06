@@ -298,7 +298,7 @@ plot(p1, p2, layout=(1, 2))
 Calculate covariance matrix:
 ```julia
 edf_cov = eeg_cov(edf)
-p = eeg_plot_matrix(edf, edf_cov)
+p = eeg_plot_matrix(edf, edf_cov, title="Covariance matrix")
 eeg_plot_save(p, file_name="images/edf_cov.png")
 eeg_cov!(edf)
 ```

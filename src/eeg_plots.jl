@@ -657,7 +657,14 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
-    title == "" && (title = "Signal averaged\n[epoch: $epoch, offset: $offset samples, length: $len samples]")
+    t_1 = t[1]
+    t_2 = t[end]
+    t_1 < 1.0 && (t_s1 = string(round(t_1 * 1000, digits=2)) * " ms")
+    t_1 >= 1.0 && (t_s1 = string(round(t_1, digits=2)) * " s")
+    t_2 < 1.0 && (t_s2 = string(round(t_2 * 1000, digits=2)) * " ms")
+    t_2 >= 1.0 && (t_s2 = string(round(t_2, digits=2)) * " s")
+
+    title == "" && (title = "Signal averaged\n[epoch: $epoch, time window: $t_s1:$t_s2]")
 
     p = signal_plot_avg(t,
                         signal,
@@ -694,11 +701,11 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     eeg.eeg_header[:channel_locations] == false && (head = false)
     frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
     eeg_avg = eeg_average(eeg)
-    psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, frq_lim=frq_lim, title="PSD averaged with 95%CI\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, norm=true, frq_lim=frq_lim, title="PSD averaged with 95%CI [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
-    ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal")
+    ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = signal_spectrum(s_normalized_m)
-    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase", xticks=[-180, 0, 180], linecolor=:black)
+    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         if collect(channel[1]:channel[end]) == channel
             channel_list = string(channel[1]) * ":" * string(channel[end])
@@ -710,7 +717,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
             end
             channel_list *= string(channel[end])
         end
-        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels:\n$channel_list")
+        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels\n$channel_list")
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
         p = plot(p, ht_a, psd, ht_p, s, hd, layout=l)
     else
@@ -2303,7 +2310,7 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:
         average == true && (ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="Averaged PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
         average == false && (ps = eeg_plot_psd(eeg, epoch=epoch, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
         average == false && (h = eeg_plot_electrodes(eeg, channel=0, selected=1:eeg_channel_n(eeg), labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]"))
-        average == true && (h = eeg_plot_electrodes(eeg, channel=0, selected=0, labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]", alpha=1))
+        average == true && (h = eeg_plot_electrodes(eeg, channel=0, selected=0, labels=true, head_labels=false, title="Channels\n1:$(eeg_channel_n(eeg, type=:eeg))", alpha=1))
         l = @layout [a{0.5h} b{0.3w}; c{0.5h}; d{0.3w}]
         p = plot(ps, p, s, h, layout=(2, 2))
     end
