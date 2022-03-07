@@ -2321,15 +2321,15 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:
 end
 
 """
-    signal_plot_bands(signal; <keyword arguments>)
+    signal_plot_band(signal; <keyword arguments>)
 
-Plot absolute/relative band powers of `signal`.
+Plot absolute/relative bands powers of a single-channel `signal`.
 
 # Arguments
 
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling rate
-- `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+- `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha] (see `eeg_band()`)
 - `type::Symbol`: plots absolute (:abs) or relative power (:rel)
 - `norm::Bool=true`: convert power to dB if true
 - `xlabel::String=""`: x-axis label
@@ -2341,11 +2341,10 @@ Plot absolute/relative band powers of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function signal_plot_band(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
-    band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
     band_frq = Array{Tuple{Float64, Float64}}(undef, length(band))
     for idx in 1:length(band)
         band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
@@ -2421,7 +2420,103 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbo
 end
 
 """
-    eeg_plot_bands(eeg; <keyword arguments>)
+    signal_plot_band(signal; <keyword arguments>)
+
+Plot absolute/relative band power of `signal` channels.
+
+# Arguments
+
+- `signal::Matrix{Float64}`
+- `fs::Int64`: sampling rate
+- `band:Symbols=:total`: band name, e.g. :delta (see `eeg_band()`)
+- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+- `norm::Bool=true`: convert power to dB if true
+- `labels::Vector{String}=[""]`: x-axis labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function signal_plot_band(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol, norm::Bool=true, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
+
+    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
+    (band === :total && type === :rel) && throw(ArgumentError("for band :total, type must be :abs."))
+    type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
+    band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
+    
+    band_frq = signal_band(fs, band)
+    channel_n = size(signal, 1)
+
+    total_pow = zeros(channel_n)
+    for idx in 1:channel_n
+        total_pow[idx] = round(signal_total_power(signal[idx, :], fs=fs), digits=2)
+    end
+
+    if band !== :total
+        abs_band_pow = zeros(channel_n)
+        for idx in 1:channel_n
+            abs_band_pow[idx] = round(signal_band_power(signal[idx, :], fs=fs, f=band_frq), digits=2)
+        end
+    else
+        abs_band_pow = total_pow
+    end
+
+    norm == true && (total_pow = pow2db.(total_pow))
+    norm == true && (abs_band_pow = pow2db.(abs_band_pow))
+    type === :rel && (rel_band_pow = abs_band_pow ./ total_pow)
+    if labels == [""]
+        labels = Vector{String}(undef, channel_n)
+        for idx in 1:channel_n
+            labels[idx] = "ch " * string(idx)
+        end
+    end
+    if type === :abs
+        ylabel == "" && (ylabel = "Absolute power")
+        norm == true && (ylabel *= " [dB]")
+        norm == false && (ylabel *= " [μV^2/Hz]")
+        p = plot(labels,
+                 abs_band_pow,
+                 seriestype=:bar,
+                 label="",
+                 xticks=(0.5:(length(labels) - 0.5), labels),
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 title=title,
+                 palette=:darktest,
+                 titlefontsize=10,
+                 xlabelfontsize=8,
+                 ylabelfontsize=8,
+                 xtickfontsize=8,
+                 ytickfontsize=8;
+                 kwargs...)
+    else
+        ylabel == "" && (ylabel = "Relative power")
+        p = plot(labels,
+                 rel_band_pow,
+                 seriestype=:bar,
+                 label="",
+                 xticks=(0.5:(length(labels) - 0.5), labels),
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 title=title,
+                 palette=:darktest,
+                 titlefontsize=10,
+                 xlabelfontsize=8,
+                 ylabelfontsize=8,
+                 xtickfontsize=8,
+                 ytickfontsize=8;
+                 kwargs...)
+    end
+
+    return p
+end
+
+"""
+    eeg_plot_band(eeg; <keyword arguments>)
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
@@ -2444,13 +2539,14 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_band(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
+    (band === :all && (typeof(channel) != Int64 || length(channel) != 1)) && throw(ArgumentError("For band :all only one channel may be specified."))
+    band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    (typeof(channel) == Int64 && (channel < 1 || channel > eeg_channel_n(eeg))) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
@@ -2476,12 +2572,6 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
     # get epochs markers for len > epoch_len
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = eeg_signal_len(eeg)
-        epoch_n = eeg_epoch_n(eeg)
-        epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
-        epoch_markers = epoch_markers[epoch_markers .> Int(offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= Int(len / eeg_sr(eeg))]
     else
         eeg_tmp = eeg
     end
@@ -2494,19 +2584,49 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
     (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-    signal = vec(signal)
 
-    title == "" && (title = "Band powers\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
+    if typeof(band) == Symbol
+        typeof(channel) <: AbstractRange && (channel = collect(channel))
+        if collect(channel[1]:channel[end]) == channel
+            channel_list = string(channel[1]) * ":" * string(channel[end])
+        elseif typeof(channel) != Int64
+            channel_list = "" 
+            for idx in 1:(length(channel) - 1)
+                channel_list *= string(channel[idx])
+                channel_list *= ", "
+            end
+            channel_list *= string(channel[end])
+        else
+            channel_list = string(channel)
+        end
+        typeof(signal) == Vector{Float64} && (signal = reshape(signal, 1, length(signal)))
+        title == "" && (title = "$(titlecase(string(band))) power\n[epoch: $epoch, channel(s): $channel_list]\n[offset: $offset samples, length: $len samples]")
+        labels = eeg_labels(eeg)[channel]
+        typeof(labels) == String && (labels = [labels])
+        p = signal_plot_band(signal,
+                             band=band,
+                             fs=eeg_sr(eeg),
+                             type=type,
+                             labels=labels,
+                             norm=norm,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             title=title;
+                             kwargs...)
+    else
+        signal = vec(signal)
+        title == "" && (title = "Band powers\n[epoch: $epoch, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
 
-    p = signal_plot_bands(signal,
-                          band=band,
-                          fs=eeg_sr(eeg),
-                          type=type,
-                          norm=norm,
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          title=title;
-                          kwargs...)
+        p = signal_plot_band(signal,
+                             band=band,
+                             fs=eeg_sr(eeg),
+                             type=type,
+                             norm=norm,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             title=title;
+                             kwargs...)
+    end
 
     plot(p)
 

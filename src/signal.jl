@@ -2951,8 +2951,9 @@ Returns EEG band frequency limits.
 function signal_band(fs::Union{Int64, Float64}, band::Symbol)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0 Hz"))
-    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
+    band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
+    band === :total && (band_frequency = (0, fs / 2))
     band === :delta && (band_frequency = (0.5, 4.0))
     band === :theta && (band_frequency = (4.0, 8.0))
     band === :alpha && (band_frequency = (8.0, 13.0))

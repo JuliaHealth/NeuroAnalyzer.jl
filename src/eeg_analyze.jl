@@ -505,7 +505,7 @@ Return frequency limits for a `band` range.
 # Arguments
 
 - `eeg:EEG`
-- `band::Symbol`: name of band range: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
+- `band::Symbol`: name of band range: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
 
 # Returns
 
@@ -513,8 +513,9 @@ Return frequency limits for a `band` range.
 """
 function eeg_band(eeg; band::Symbol)
 
-    band in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
+    band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
+    band === :total && (band_frequency = (0, (eeg_sr(eeg) / 2)))
     band === :delta && (band_frequency = (0.5, 4.0))
     band === :theta && (band_frequency = (4.0, 8.0))
     band === :alpha && (band_frequency = (8.0, 13.0))

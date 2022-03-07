@@ -21,14 +21,14 @@ using StatsKit
 using StatsPlots
 
 mutable struct EEG
-  eeg_header::Dict
-  eeg_time::Vector{Float64}
-  eeg_signals::Array{Float64, 3}
-  eeg_components::Vector{Any}
+    eeg_header::Dict
+    eeg_time::Vector{Float64}
+    eeg_signals::Array{Float64, 3}
+    eeg_components::Vector{Any}
 end
 
 if VERSION < v"1.0.0"
-  @warn("This version of NeuroJ requires Julia 1.0 or above.")
+    @warn("This version of NeuroJ requires Julia 1.0 or above.")
 end
 
 include("neuroj.jl")
@@ -120,43 +120,16 @@ export signal_total_power
 export signal_trim
 export signal_upsample
 
-include("eeg_analyze.jl")
-export eeg_total_power
-export eeg_total_power!
-export eeg_band_power
-export eeg_cov
-export eeg_cov!
-export eeg_cor
-export eeg_cor!
-export eeg_autocov
-export eeg_autocov!
-export eeg_crosscov
-export eeg_crosscov!
-export eeg_crosscov
-export eeg_psd
-export eeg_psd!
-export eeg_stationarity
-export eeg_stationarity!
-export eeg_mi
-export eeg_mi!
-export eeg_mi
-export eeg_entropy
-export eeg_entropy!
-export eeg_band
-export eeg_coherence
-export eeg_coherence
-export eeg_freqs
-export eeg_freqs!
-export eeg_difference
-export eeg_pick
-export eeg_epochs_stats
-export eeg_epochs_stats!
-export eeg_spectrogram
-export eeg_spectrogram!
-export eeg_spectrum
-export eeg_spectrum!
-export eeg_s2t
-export eeg_t2s
+include("eeg_io.jl")
+export eeg_export_csv
+export eeg_import_ced
+export eeg_import_edf
+export eeg_import_elc
+export eeg_import_locs
+export eeg_load
+export eeg_load_electrodes
+export eeg_load_electrodes!
+export eeg_save
 
 include("eeg_edit.jl")
 export eeg_reset_components
@@ -241,22 +214,48 @@ export eeg_ica_reconstruct!
 export eeg_resample
 export eeg_resample!
 
-include("eeg_io.jl")
-export eeg_export_csv
-export eeg_import_ced
-export eeg_import_edf
-export eeg_import_elc
-export eeg_import_locs
-export eeg_load
-export eeg_load_electrodes
-export eeg_load_electrodes!
-export eeg_save
+include("eeg_analyze.jl")
+export eeg_total_power
+export eeg_total_power!
+export eeg_band_power
+export eeg_cov
+export eeg_cov!
+export eeg_cor
+export eeg_cor!
+export eeg_autocov
+export eeg_autocov!
+export eeg_crosscov
+export eeg_crosscov!
+export eeg_crosscov
+export eeg_psd
+export eeg_psd!
+export eeg_stationarity
+export eeg_stationarity!
+export eeg_mi
+export eeg_mi!
+export eeg_mi
+export eeg_entropy
+export eeg_entropy!
+export eeg_band
+export eeg_coherence
+export eeg_coherence
+export eeg_freqs
+export eeg_freqs!
+export eeg_difference
+export eeg_pick
+export eeg_epochs_stats
+export eeg_epochs_stats!
+export eeg_spectrogram
+export eeg_spectrogram!
+export eeg_spectrum
+export eeg_spectrum!
+export eeg_s2t
+export eeg_t2s
 
 include("eeg_plots.jl")
 export eeg_draw_head
 export eeg_plot
 export eeg_plot_avg
-export eeg_plot_bands
 export eeg_plot_butterfly
 export eeg_plot_covmatrix
 export eeg_plot_electrodes
@@ -267,15 +266,16 @@ export eeg_plot_matrix
 export eeg_plot_psd
 export eeg_plot_spectrogram
 export eeg_plot_topo
+export eeg_plot_band
+export eeg_plot_save
 export signal_plot
 export signal_plot_avg
-export signal_plot_bands
+export signal_plot_band
 export signal_plot_butterfly
 export signal_plot_histogram
 export signal_plot_ica
 export signal_plot_psd
 export signal_plot_spectrogram
-export eeg_plot_save
 
 include("nstim.jl")
 export tes_dose

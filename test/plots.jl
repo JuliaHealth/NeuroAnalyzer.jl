@@ -66,9 +66,9 @@ p = signal_plot_histogram(signal_m, type=:kd)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_histogram(edf, channel=1)
 
-p = signal_plot_bands(signal_v, fs=100, type=:abs)
+p = signal_plot_band(signal_v, fs=100, type=:abs)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_bands(edf, channel=1, type=:abs)
+p = eeg_plot_band(edf, channel=1, type=:abs)
 
 p = eeg_plot_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}

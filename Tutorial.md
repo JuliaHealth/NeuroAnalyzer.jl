@@ -1,6 +1,6 @@
 # Neuro.jl Tutorial
 
-## EEG
+## Start NeuroJ.jl
 
 For interactive processing it's best to use Pluto:
 ```julia
@@ -23,6 +23,8 @@ Get help:
 ?eeg_plot
 ```
 
+## EEG
+
 ### EEG IO
 
 Load EDF file:
@@ -37,10 +39,10 @@ p = eeg_plot_electrodes(edf, labels=true, head=true, size=(300, 300))
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
-![EDF electrodes](images/edf_electrodes.png)
+![edf electrodes](images/edf_electrodes.png)
 
 
-Save EEG object:
+Save EEG object as HDF5-based file:
 ```julia
 eeg_save(edf, file_name="test.bin", overwrite=true)
 ```
@@ -50,7 +52,7 @@ Load EEG object:
 edf = eeg_load("test.bin")
 ```
 
-Export EEG data and header to .csv:
+Export EEG data, header and components to .csv:
 ```julia
 eeg_export_csv(edf, file_name="edf.csv", header=true, components=true)
 ```
@@ -62,7 +64,13 @@ All operations on EEG are stored within the object. To show its processing histo
 eeg_history(edf)
 ```
 
-Show EEG object properties:
+Edit EEG header
+```julia
+eeg_show_header(edf)
+eeg_edit_header!(edf, field=:patient, value="N.N.")
+```
+
+Show EEG properties:
 ```julia
 eeg_info(edf)
 eeg_sr(edf)
@@ -70,13 +78,11 @@ eeg_channel_n(edf)
 eeg_epoch_n(edf)
 eeg_signal_len(edf)
 eeg_epoch_len(edf)
-edf.eeg_header[:eeg_duration_seconds]
 ```
 
-Edit EEG header
+Any metadata can be extracted via eeg_header:
 ```julia
-eeg_show_header(edf)
-eeg_edit_header!(edf, field=:patient, value="N.N.")
+edf.eeg_header[:eeg_duration_seconds]
 ```
 
 Show labels:
@@ -90,48 +96,13 @@ eeg_get_channel(edf, channel="Cz")
 eeg_get_channel(edf, channel=18)
 ```
 
-Rename channel (by name or number):
+Rename channels:
 ```julia
 edf = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
-edf = eeg_rename_channel(edf, channel=18, new_name="CZ")
+eeg_rename_channel!(edf, channel=18, new_name="Cz")
 ```
 
-Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):
-```julia
-edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
-```
-
-Split into 10-second epochs:
-```julia
-e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
-```
-
-Get 1st epoch:
-```julia
-e = eeg_extract_epoch(e10, epoch=1)
-```
-
-Trim 1 second from each epoch:
-```julia
-e9 = eeg_trim(e10, trim_len=(1*eeg_sr(e10)), from=:start)
-```
-
-Remove epochs (epochs and channels may be specified using number, range or vector):
-```julia
-e = eeg_delete_epoch(e10, epoch=8:10)
-```
-
-Keep epochs:
-```julia
-e = eeg_keep_epoch(e, epoch=[1, 3, 5, 9])
-```
-
-Split into 5-second averaged epoch
-```julia
-e2avg = eeg_epochs(edf, epoch_len=5*eeg_sr(edf), average=true)
-```
-
-Remove channel:
+Delete channels (epochs and channels may be specified using number, range or vector):
 ```julia
 edf = eeg_delete_channel(edf, channel=1)
 edf = eeg_delete_channel(edf, channel=10:18)
@@ -139,7 +110,57 @@ edf = eeg_delete_channel(edf, channel=10:18)
 
 Keep channel:
 ```julia
-edf = eeg_keep_channel(edf, channel=[1, 2, 5])
+edf = eeg_keep_channel(edf, channel=1:4)
+```
+
+Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):
+```julia
+edf = eeg_trim(edf, len=(10*eeg_sr(edf)), from=:start)
+edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
+eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:start)
+```
+
+Split into 10-second epochs:
+```julia
+e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
+```
+
+Trim 1 second from each epoch:
+```julia
+e9 = eeg_trim(e10, trim_len=(1*eeg_sr(e10)), from=:start)
+eeg_info(e9)
+eeg_plot(e9, len=11*eeg_sr(e9))
+eeg_plot(e9, len=2*eeg_sr(e9), offset=5*256)
+eeg_plot(e9, len=60*eeg_sr(e9), offset=0)
+```
+
+Get 1st epoch:
+```julia
+e10e1 = eeg_extract_epoch(e10, epoch=1)
+eeg_info(e10e1)
+```
+
+Delete epochs:
+```julia
+e = eeg_delete_epoch(e10, epoch=8:10)
+```
+
+Keep epochs:
+```julia
+e1 = eeg_keep_epoch(e, epoch=[1, 3, 5, 9])
+```
+
+Split into 5-second averaged epoch
+```julia
+e2avg = eeg_epochs(edf, epoch_len=5*eeg_sr(edf), average=true)
+eeg_info(e2avg)
+```
+
+Detect bad epochs:
+```julia
+bad_epochs = eeg_detect_bad_epochs(e10, method=[:flat, :cor], r=0.7)
+eeg_check_bad_epochs(e10, bad_epochs)
+eeg_delete_epoch!(e10, epoch=bad_epochs)
 ```
 
 ### EEG Process
@@ -150,6 +171,8 @@ Show components (e.g. ICA, PCA):
 ```julia
 eeg_list_components(edf)
 ```
+
+Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
 
 Get component:
 ```julia
@@ -162,11 +185,11 @@ edf = eeg_delete_component(edf, c=:ica)
 eeg_delete_component!(edf, c=:ica)
 ```
 
-Resample (upsample or downsample):
+Resample:
 ```julia
 eeg_sr(edf)
 edf_512 = eeg_resample(edf, new_sr=512)
-edf_128 = eeg_resample(edf, new_sr=128)
+edf_128 = eeg_rewnsample(edf, new_sr=128)
 ```
 
 Re-reference to channel(s) - if more than one channel is used as reference, the average of these channels is used:
@@ -199,90 +222,65 @@ eeg_filter!(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=(45, 55), rs=1, order
 eeg_filter!(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=1, order=8)
 ```
 
-PCA:
+Normalize:
 ```julia
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
-edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
-edf1 = eeg_keep_channel(edf1, 3)
-edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
-edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
-edf2 = eeg_keep_channel(edf2, 4)
-pc, pc_var = eeg_pca(edf1, n=4)
-plot(pc[1, :, 1, 1])
-bar(vec(pc_var))
-
-pc, pc_var = eeg_pca(edf, n=4)
-plot(pc[1, :, 1, 1])
-bar(vec(pc_var))
-eeg_pca!(edf, n=4)
+eeg_norm_zscore(edf)
+eeg_norm_minmax(edf)
+eeg_norm_zscore!(edf)
+eeg_norm_minmax!(edf)
 ```
 
-Generate ICAs:
+Remove DC:
 ```julia
-i = eeg_ica(edf, n=15, tol=1.0)
-eeg_ica!(edf, n=5, tol=1.0, iter=1000, f=:gauss)
+eeg_demean(edf)
+eeg_demean!(edf)
 ```
 
-Remove ICA #001 component from the signal:
+Taper:
 ```julia
-eeg_ica_reconstruct!(edf, ica=1)
+h = hann(edf.eeg_header[:epoch_duration_samples])
+eeg_taper(edf, taper=h)
+eeg_taper!(edf, taper=h)
 ```
 
-Remove ICA #001-007 component from the signal:
+Calculate signal derivative:
 ```julia
-eeg_ica_reconstruct!(edf, ica=1:7)
+eeg_derivative(edf)
+eeg_derivative!(edf)
 ```
 
-Remove ICA #001, 003 and 007 component from the signal:
+Detrend:
 ```julia
-eeg_ica_reconstruct!(edf, ica=[1, 3, 7])
+eeg_detrend(edf, type=:linear)
+eeg_detrend!(edf, type=:constant)
 ```
 
-### EEG Analysis
-
-Stationarity:
-
+Time-domain convolution:
 ```julia
-p = eeg_stationarity(edf, method=:mean)
-p = eeg_stationarity(edf, method=:var)
-plot(p[1, :, :], legend=false)
-eeg_stationarity!(edf, method=:var)
-
-p = eeg_stationarity(edf, method=:hilbert)
-signal_mi(p[1, :, 1], p[2, :, 1])
-m = eeg_mi(edf)
-eeg_plot_matrix(edf, m)
-
-plot(p[1, :, :], ylims=(-10, 10), legend=false)
-p = eeg_stationarity(edf, window=100, method=:euclid)
-plot(p[10:end])
+mw = generate_morlet(256, 1, 32, complex=true)
+eeg_tconv(e10, kernel=mw)
+eeg_tconv!(e10, kernel=mw)
 ```
 
-Entropy:
-
+Frequency-domain convolution:
 ```julia
-e = eeg_entropy(edf)
-plot(eeg_labels(edf), e, seriestype=:bar)
-eeg_entropy!(edf)
+mw = generate_morlet(256, 1, 32, complex=true)
+eeg_fconv(e10, kernel=mw)
+eeg_fconv!(e10, kernel=mw)
 ```
 
-Coherence:
+### EEG Analyze
 
+Calculate signal total power:
 ```julia
-m = eeg_coherence(edf1, edf2)
-plot(hz, abs.(m[1, 1:length(hz)]), xlims=(0, 40))
+tbp = eeg_total_power(edf)
+bar(eeg_labels(edf), tbp, xtickfontsize=4, xticks=(0.5:length(eeg_labels(edf)) - 0.5, eeg_labels(edf)))
+eeg_total_power!(edf)
+```
 
-eeg_labels(edf_alpha)
-
-edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
-# O1 vs O2
-hz, nyq = eeg_freqs(edf_alpha)
-m = eeg_coherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1)
-plot(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
-
-# Fp1 vs Fp2
-m = eeg_coherence(edf_alpha, channel1=1, channel2=2, epoch1=1, epoch2=1)
-plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+Calculate band power:
+```julia
+abp = eeg_band_power(edf, f=(8, 12.5))
 ```
 
 Calculate covariance matrix:
@@ -312,66 +310,89 @@ cc, lags = eeg_crosscov(edf1, edf2, lag=20, demean=true, norm=true)
 plot(lags, cc[1, :])
 ```
 
-Normalize:
+Stationarity:
 ```julia
-eeg_norm_zscore(edf)
-eeg_norm_minmax(edf)
-eeg_norm_zscore!(edf)
-eeg_norm_minmax!(edf)
+p = eeg_stationarity(edf, method=:mean)
+p = eeg_stationarity(edf, method=:var)
+plot(p[1, :, :], legend=false)
+eeg_stationarity!(edf, method=:var)
+
+p = eeg_stationarity(edf, method=:hilbert)
+signal_mi(p[1, :, 1], p[2, :, 1])
+m = eeg_mi(edf)
+eeg_plot_matrix(edf, m)
+
+plot(p[1, :, :], ylims=(-10, 10), legend=false)
+p = eeg_stationarity(edf, window=100, method=:euclid)
+plot(p[10:end])
 ```
 
-Detect bad epochs:
+Entropy:
 ```julia
-bad_epochs = eeg_detect_bad_epochs(e10, method=[:flat, :cor], r=0.7)
-eeg_check_bad_epochs(e10, bad_epochs)
-eeg_delete_epoch!(e10, epoch=bad_epochs)
+e = eeg_entropy(edf)
+plot(eeg_labels(edf), e, seriestype=:bar)
+eeg_entropy!(edf)
 ```
 
-Remove DC:
+Coherence:
 ```julia
-edf = eeg_demean(edf)
+m = eeg_coherence(edf1, edf2)
+hz, nyq = eeg_freqs(edf1)
+plot(hz, abs.(m[1, 1:length(hz)]), xlims=(0, 40))
+
+edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
+eeg_labels(edf_alpha)
+# O1 vs O2
+m = eeg_coherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=2)
+plot(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+# Fp1 vs Fp2
+m = eeg_coherence(edf_alpha, channel1=1, channel2=2, epoch1=1, epoch2=2)
+plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 ```
 
-Taper:
+PCA:
 ```julia
-h = generate_hanning(eeg_epoch_len(edf))
-eeg_taper(edf, taper=h)
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
+edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
+edf1 = eeg_keep_channel(edf1, 3)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
+edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
+edf2 = eeg_keep_channel(edf2, 4)
+pc, pc_var = eeg_pca(edf1, n=4)
+plot(pc[1, :, 1, 1])
+bar(vec(pc_var))
+
+pc, pc_var = eeg_pca(edf, n=4)
+plot(pc[1, :, 1, 1])
+bar(vec(pc_var))
+eeg_pca!(edf, n=4)
 ```
 
-Calculate signal derivative:
+Generate ICAs:
 ```julia
-eeg_derivative(edf)
+i = eeg_ica(edf, n=15, tol=1.0)
+eeg_ica!(edf, n=5, tol=1.0, iter=1000, f=:gauss)
 ```
 
-Detrend:
+Plot ICAs:
 ```julia
-eeg_detrend(edf, type=:linear)
+eeg_plot_ica(edf, ic=1:5)
+eeg_plot_ica(edf, ic=1)
 ```
 
-Calculate signal total power:
+Remove ICA #001 component from the signal:
 ```julia
-tbp = eeg_total_power(edf)
-bar(eeg_labels(edf), tbp, xticks=(1:length(eeg_labels(edf)), eeg_labels(edf)))
-eeg_total_power!(edf)
+eeg_ica_reconstruct!(edf, ic=1)
 ```
 
-Calculate band power:
+Remove ICA #001-007 component from the signal:
 ```julia
-abp = eeg_band_power(edf, f=(8, 12.5))
+eeg_ica_reconstruct!(edf, ic=1:7)
 ```
 
-Time-domain convolution:
+Remove ICA #001, 003 and 007 component from the signal:
 ```julia
-mw = generate_morlet(256, 1, 32, complex=true)
-eeg_tconv(e10, kernel=mw)
-eeg_tconv!(e10, kernel=mw)
-```
-
-Frequency-domain convolution:
-```julia
-mw = generate_morlet(256, 1, 32, complex=true)
-eeg_fconv(e10, kernel=mw)
-eeg_fconv!(e10, kernel=mw)
+eeg_ica_reconstruct!(edf, ic=[1, 3, 7])
 ```
 
 Comparing two signals:
@@ -402,14 +423,7 @@ bar(v)
 
 ### EEG Plots
 
-Filter response:
-```julia
-p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
-eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
-```
-
-![BS Butterworth (45, 55), 8](images/butter_bs_45-55_8.png)
-
+Plot:
 ```julia
 p = eeg_plot(edf)
 eeg_plot_save(p, file_name="images/edf_channels.png")
@@ -462,14 +476,32 @@ eeg_plot_butterfly(e9, len=55*eeg_sr(edf), head=true)
 eeg_plot_butterfly(e10, len=55*eeg_sr(edf), head=true)
 eeg_plot_butterfly(e10)
 eeg_plot_butterfly(e10, len=11*eeg_sr(edf), head=true)
+```
 
-# use kwargs
+Use kwargs:
+```julia
 p1 = eeg_plot(edf, title="edf1")
 p2 = eeg_plot(edf)
 # or modify plots
 p2 = plot!(title="edf2")
 plot(p1, p2, layout=(1, 2))
 ```
+
+Plot filter response:
+```julia
+p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
+```
+
+![BS Butterworth (45, 55), 8](images/butter_bs_45-55_8.png)
+
+Plot band power:
+```julia
+p = eeg_plot_band(edf, channel=1, type=:abs)
+eeg_plot_save(p, file_name="images/edf_bands.png")
+```
+
+![edf bands](images/edf_bands.png)
 
 Spectral analysis:
 ```julia
@@ -511,20 +543,6 @@ eeg_plot_topo(edf, offset=2560, len=2560, c=:pca)
 eeg_plot_topo(edf, offset=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
 ```
 
-Plot band power:
-```julia
-p = eeg_plot_bands(edf, channel=1, type=:abs)
-eeg_plot_save(p, file_name="images/edf_bands.png")
-```
-
-![edf bands](images/edf_bands.png)
-
-Plot ICAs:
-```julia
-eeg_ica!(edf, n=10, tol=0.99)
-eeg_plot_ica(edf, ic=1:5)
-```
-
 Plot covariance matrix:
 ```julia
 edf_cov = eeg_cov(edf)
@@ -534,6 +552,15 @@ eeg_cov!(edf)
 ```
 
 ![edf cov](images/edf_cov.png)
+
+Plot autocovariance matrix:
+```julia
+ac, lags = eeg_autocov(edf, lag=5, norm=false)
+p = eeg_plot_covmatrix(edf, ac, lags)
+eeg_plot_save(p, file_name="images/edf_autocov.png")
+```
+
+![edf autocov](images/edf_autocov.png)
 
 ### EEG Misc
 
@@ -576,7 +603,7 @@ eeg_component(edf, c=:epochs_mean)
 eeg_info(edf)
 ```
 
-### EEG Benchmarking
+# NeuroJ.jl Benchmarking
 
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf");
@@ -596,5 +623,5 @@ end
 @time eeg_benchmark(10)
 
 # workstation: 24.408695 seconds (55.97 M allocations: 274.946 GiB, 27.82% gc time)
-# laptop: 40.043600 seconds (55.26 M allocations: 274.877 GiB, 17.69% gc time, 0.04% compilation time)
+# laptop: 41.675390 seconds (55.12 M allocations: 274.873 GiB, 13.15% gc time)
 ```
