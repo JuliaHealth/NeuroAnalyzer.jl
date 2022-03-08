@@ -10,6 +10,7 @@ using InformationMeasures
 using Interpolations
 using JLD2
 using LinearAlgebra
+using Loess
 using MultivariateStats
 using Pkg
 using Plots

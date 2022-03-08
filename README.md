@@ -30,6 +30,7 @@ The following packages are required:
 - Interpolations
 - JLD2
 - LinearAlgebra
+- Loess
 - MultivariateStats
 - Pkg
 - Plots
@@ -89,9 +90,7 @@ neuroj_plugin_demo()
 
 ## Known bugs
 
-- epoch markers drawn too low in eeg_plot_ica() for few ICs
-- eeg_plot_topo() check minimum len value for frequency to analyze
-- ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels
+- ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
 
 ## To do
 
@@ -104,8 +103,8 @@ General:
 EEG:
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular
-- piecewise detrending
-- store any calculations (e.g. median delta power) as a component for topo plots
+- eeg_add_component()
+- use any calculations (e.g. median delta power) stored as a component for topo plots
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes

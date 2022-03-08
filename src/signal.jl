@@ -239,55 +239,110 @@ function signal_make_spectrum(signal::Array{Float64, 3}; fs::Int64)
 end
 
 """
-    signal_detrend(signal; type=:linear)
+    signal_detrend(signal; type, order, span)
 
-Removes linear trend from the `signal`.
+Perform piecewise detrending of the `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `type::Symbol[:linear, :constant]`, optional
-    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant`: the mean of `signal` is subtracted
+- `type::Symbol`, optional
+    - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:linear`: linear trend is subtracted from `signal`
+    - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+    - `:poly`: polynomial of `order` order is subtracted
+    - `:loess`: fit and subtract loess approximation
+- `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+- `order::Int64=1`: polynomial fitting order
+- `span::Float64`: smoothing of loess
 
 # Returns
 
 - `s_detrended::Vector{Float64}`
 """
-function signal_detrend(signal::AbstractArray; type::Symbol=:linear)
+function signal_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
 
-    type in [:linear, :constant] || throw(ArgumentError("type must be :linear or :constant."))
+    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
 
-    if type === :constant
-        s_det = signal_demean(signal)
-    else
-        A = ones(length(signal))
-        coef = A \ signal
-        s_det = @. signal - dot(A, coef)
+    if type === :loess
+        t = collect(1.0:1:length(signal))
+        model = loess(t, signal, span=span)
+        trend = Loess.predict(model, t)
+        s_det = signal .- trend
+
+        return s_det
     end
 
-    return s_det
+    if type === :poly
+        t = collect(1:1:length(signal))        
+        p = Polynomials.fit(t, signal, order)
+        trend = zeros(length(signal))
+        for idx in 1:length(signal)
+            trend[idx] = p(t[idx])
+        end
+        s_det = signal .- trend
+
+        return s_det
+    end
+
+    if type === :constant
+        offset == 0 && (offset = mean(signal))
+        s_det = signal .- mean(signal)
+
+        return s_det
+    end
+
+    if type === :ls
+        T = eltype(signal)
+        N = size(signal, 1)
+        # create linear trend matrix
+        A = similar(signal, T, N, 2)
+        A[:,2] .= T(1)
+        A[:,1] .= range(T(0),T(1),length=N)
+        # create linear trend matrix
+        R = transpose(A) * A
+        # do the matrix inverse for 2x2 matrix
+        Rinv = inv(Array(R)) |> typeof(R)
+        factor = Rinv * transpose(A)
+        s_det = signal .- A * (factor * signal)
+
+        return s_det
+    end
+
+    if type == :linear
+        trend = linspace(signal[1], signal[end], length(signal))
+        s_det = signal .- trend
+
+        return s_det
+    end
+
 end
 
 """
-    signal_detrend(signal; type=:linear)
+    signal_detrend(signal; type, order, span)
 
-Removes linear trend for each the `signal` channels.
+Perform piecewise detrending of the `signal`.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `type::Symbol[:linear, :constant]`, optional
-    - `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `constant`: the mean of `signal` is subtracted
+- `type::Symbol`, optional
+    - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:linear`: linear trend is subtracted from `signal`
+    - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+    - `:poly`: polynomial of `order` order is subtracted
+    - `:loess`: fit and subtract loess approximation
+- `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+- `order::Int64=1`: polynomial fitting order
+- `span::Float64`: smoothing of loess
 
 # Returns
 
 - `s_detrended::Array{Float64, 3}`
 """
-function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
+function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:ls, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
 
-    type in [:linear, :constant] || throw(ArgumentError("type must be :linear or :constant."))
+    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
 
     channel_n, _, epoch_n = size(signal)
     s_det = zeros(size(signal))
@@ -295,7 +350,7 @@ function signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_det[idx, :, epoch] = signal_detrend(s, type=type)
+            s_det[idx, :, epoch] = signal_detrend(s, type=type, offset=offset, order=order, span=span)
         end
     end
 
