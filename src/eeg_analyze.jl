@@ -20,8 +20,8 @@ function eeg_total_power(eeg::NeuroJ.EEG)
     size(stp, 3) == 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2)))
 
     return stp
-    return
 end
+
 """
     eeg_total_power!(eeg)
 
@@ -42,7 +42,9 @@ function eeg_total_power!(eeg::NeuroJ.EEG)
     push!(eeg.eeg_header[:components], :total_power)
     push!(eeg.eeg_header[:history], "eeg_total_power!(EEG)")
 
+    return
 end
+
 """
     eeg_band_power(eeg; f)
 
@@ -67,6 +69,7 @@ function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple)
 
     return sbp
 end
+
 """
     eeg_cov(eeg; norm=true)
 
@@ -89,6 +92,7 @@ function eeg_cov(eeg::NeuroJ.EEG; norm=true)
 
     return cov_mat
 end
+
 """
     eeg_cov!(eeg; norm)
 
@@ -111,6 +115,7 @@ function eeg_cov!(eeg::NeuroJ.EEG; norm=true)
 
     return
 end
+
 """
     eeg_cor(eeg)
 
@@ -132,6 +137,7 @@ function eeg_cor(eeg::NeuroJ.EEG)
 
     return cor_mat
 end
+
 """
     eeg_cor!(eeg)
 
@@ -153,6 +159,7 @@ function eeg_cor!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_autocov(eeg; lag, demean, norm)
 
@@ -180,6 +187,7 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
 
     return acov, lags
 end
+
 """
     eeg_autocov!(eeg; lag, demean, norm)
 
@@ -207,6 +215,7 @@ function eeg_autocov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
 
     return
 end
+
 """
     eeg_crosscov(eeg; lag, demean, norm)
 
@@ -234,6 +243,7 @@ function eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
 
     return ccov, lags
 end
+
 """
     eeg_crosscov!(eeg; lag, demean, norm)
 
@@ -261,6 +271,7 @@ function eeg_crosscov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::
 
     return
 end
+
 """
     eeg_crosscov(eeg1, eeg2; lag, demean, norm)
 
@@ -290,6 +301,7 @@ function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::
 
     return ccov, lags
 end
+
 """
     eeg_psd(eeg; norm)
 
@@ -315,6 +327,7 @@ function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
 
     return s_psd_powers, s_psd_frequencies
 end
+
 """
     eeg_psd!(eeg; norm)
 
@@ -340,6 +353,7 @@ function eeg_psd!(eeg::NeuroJ.EEG; norm::Bool=false)
 
     return
 end
+
 """
     eeg_stationarity(eeg; window, method)
 
@@ -363,6 +377,7 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
 
     return s_stationarity
 end
+
 """
     eeg_stationarity!(eeg; window, method)
 
@@ -386,6 +401,7 @@ function eeg_stationarity!(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hi
 
     return
 end
+
 """
     eeg_mi(eeg)
 
@@ -408,6 +424,7 @@ function eeg_mi(eeg::NeuroJ.EEG)
 
     return mi
 end
+
 """
     eeg_mi!(eeg)
 
@@ -430,6 +447,7 @@ function eeg_mi!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_mi(eeg1, eeg2)
 
@@ -454,6 +472,7 @@ function eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     return mi
 end
+
 """
     eeg_entropy(eeg)
 
@@ -476,6 +495,7 @@ function eeg_entropy(eeg::NeuroJ.EEG)
 
     return ent
 end
+
 """
     eeg_entropy!(eeg)
 
@@ -497,6 +517,7 @@ function eeg_entropy!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_band(eeg, band)
 
@@ -532,6 +553,7 @@ function eeg_band(eeg; band::Symbol)
 
     return band_frequency
 end
+
 """
     eeg_coherence(eeg1, eeg2)
 
@@ -556,6 +578,7 @@ function eeg_coherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     return coherence
 end
+
 """
     eeg_coherence(eeg; channel1, channel2, epoch1, epoch2)
 
@@ -587,6 +610,7 @@ function eeg_coherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1
 
     return coherence
 end
+
 """
     eeg_freqs(eeg)
 
@@ -607,6 +631,7 @@ function eeg_freqs(eeg::NeuroJ.EEG)
 
     return hz, nyq
 end
+
 """
     eeg_freqs!(eeg)
 
@@ -629,6 +654,7 @@ function eeg_freqs!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_difference(eeg1, eeg2; n, method)
 
@@ -665,6 +691,7 @@ function eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::
 
     return signals_statistic, signals_statistic_single, p
 end
+
 """
     eeg_picks(eeg; pick)
 
@@ -761,6 +788,7 @@ function eeg_pick(eeg::NeuroJ.EEG; pick::Union{Symbol, Vector{Symbol}})
         return channels
     end
 end
+
 """
     eeg_epochs_stats(eeg)
 
@@ -786,6 +814,7 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
 
     return e_mean, e_median, e_sd, e_var, e_kurt
 end
+
 """
     eeg_epochs_stats!(eeg)
 
@@ -819,6 +848,7 @@ function eeg_epochs_stats!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_spectrogram(eeg; norm, demean)
 
@@ -874,6 +904,7 @@ function eeg_spectrogram!(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
 
     return
 end
+
 """
     eeg_spectrum(eeg; pad)
 
@@ -899,6 +930,7 @@ function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
 
     return s_fft, s_amp, s_pow, s_pha
 end
+
 """
     eeg_spectrum!(eeg; pad)
 
@@ -930,6 +962,7 @@ function eeg_spectrum!(eeg::NeuroJ.EEG; pad::Int64=0)
 
     return
 end
+
 """
     eeg_s2t(eeg; t)
 
@@ -949,6 +982,7 @@ function eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
     
     return t_s
 end
+
 """
     eeg_t2s(eeg; t)
 

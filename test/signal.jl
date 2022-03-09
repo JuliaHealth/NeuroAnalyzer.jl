@@ -272,4 +272,7 @@ b = signal_detect_epoch_euclid(signal_a)
 b = signal_detect_epoch_p2p(signal_a)
 @test b == [0.0, 0.0]
 
+v = signal_invert_polarity([1, 2, 3])
+@test v == [-1, -2, -3]
+
 true

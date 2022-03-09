@@ -1072,3 +1072,52 @@ function eeg_resample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
     return
 end
+
+"""
+    eeg_invert_polarity(eeg; channel)
+
+Invert polarity of `channel` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`: channel to invert
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_invert_polarity(eeg::NeuroJ.EEG; channel::Int64)
+
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+
+    eeg_new = deepcopy(eeg)
+    eeg_inv = signal_invert_polarity(eeg_new.eeg_signals[channel, :, :])
+    eeg_new.eeg_signals[channel, :, :] = eeg_inv
+
+    push!(eeg_new.eeg_header[:history], "eeg_invert_polarity(EEG, channel=$channel)")
+
+    return eeg_new
+end
+
+"""
+    eeg_invert_polarity!(eeg; channel)
+
+Invert polarity of `channel` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
+"""
+function eeg_invert_polarity!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+
+    eeg_inv = signal_invert_polarity(eeg.eeg_signals[channel, :, :])
+    eeg.eeg_signals[channel, :, :] = eeg_inv
+
+    push!(eeg.eeg_header[:history], "eeg_invert_polarity!(EEG, channel=$channel)")
+
+    return
+end

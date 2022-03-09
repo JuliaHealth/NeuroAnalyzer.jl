@@ -1135,6 +1135,7 @@ function signal_delete_channel(signal::Array{Float64, 3}; channel::Union{Int64, 
 
     return s_new
 end
+
 """
     signal_reference_channel(signal, reference)
 
@@ -3196,4 +3197,50 @@ function signal_detect_epoch_p2p(signal::Array{Float64, 3})
     bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
 
     return bad_epochs_score
+end
+
+"""
+    signal_invert_polarity(signal::AbstractArray)
+
+Invert polarity of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `signal_inv::AbstractArray`
+"""
+function signal_invert_polarity(signal::AbstractArray)
+    signal_inv = .-signal
+    
+    return signal_inv
+end
+
+"""
+    signal_invert_polarity(signal::Array{Float64, 3})
+
+Invert polarity of `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `signal_inv::Array{Float64, 3}`
+"""
+function signal_invert_polarity(signal::Array{Float64, 3})
+    
+    channel_n, signal_len, epoch_n = size(signal)
+    signal_inv = similar(signal)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            signal_inv[idx] = signal_invert_polarity(signal[idx, :, epoch])
+        end
+    end
+
+    return signal_inv
 end

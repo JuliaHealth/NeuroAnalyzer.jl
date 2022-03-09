@@ -19,6 +19,7 @@ function eeg_reset_components(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_reset_components!(eeg)
 
@@ -35,6 +36,7 @@ function eeg_reset_components!(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_delete_channel(eeg; channel)
 
@@ -108,6 +110,7 @@ function eeg_delete_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}
 
     return eeg_new
 end
+
 """
     eeg_delete_channel!(eeg; channel)
 
@@ -169,6 +172,7 @@ function eeg_delete_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
 
     return
 end
+
 """
     eeg_keep_channel(eeg; channel)
 
@@ -245,6 +249,7 @@ function eeg_keep_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, 
 
     return eeg_new
 end
+
 """
     eeg_keep_channel!(eeg; channel)
 
@@ -310,6 +315,7 @@ function eeg_keep_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64},
 
     return
 end
+
 """
     eeg_get_channel(eeg; channel)
 
@@ -347,6 +353,7 @@ function eeg_get_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
 
     return
 end
+
 """
     eeg_rename_channel(eeg; channel, new_name)
 
@@ -393,6 +400,7 @@ function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_
 
     return eeg_new
 end
+
 """
     eeg_rename_channel!(eeg; channel, new_name)
 
@@ -433,6 +441,7 @@ function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new
 
     return
 end
+
 """
     eeg_extract_channel(eeg; channel)
 
@@ -470,6 +479,7 @@ function eeg_extract_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
 
     return eeg_channel
 end
+
 """
     eeg_history(eeg)
 
@@ -487,6 +497,7 @@ function eeg_history(eeg::NeuroJ.EEG)
 
     return eeg.eeg_header[:history]
 end
+
 """
     eeg_labels(eeg)
 
@@ -504,6 +515,7 @@ function eeg_labels(eeg::NeuroJ.EEG)
 
     return eeg.eeg_header[:labels]
 end
+
 """
     eeg_sr(eeg)
 
@@ -521,6 +533,7 @@ function eeg_sr(eeg::NeuroJ.EEG)
 
     return eeg.eeg_header[:sampling_rate][1]
 end
+
 """
     eeg_channel_n(eeg; type=:eeg)
 
@@ -545,6 +558,7 @@ function eeg_channel_n(eeg::NeuroJ.EEG; type::Symbol=:all)
 
     return channel_n
 end
+
 """
     eeg_epoch_n(eeg)
 
@@ -564,6 +578,7 @@ function eeg_epoch_n(eeg::NeuroJ.EEG)
 
     return epoch_n
 end
+
 """
     eeg_signal_len(eeg)
 
@@ -583,6 +598,7 @@ function eeg_signal_len(eeg::NeuroJ.EEG)
 
     return signal_len
 end
+
 """
     eeg_epoch_len(eeg)
 
@@ -602,6 +618,7 @@ function eeg_epoch_len(eeg::NeuroJ.EEG)
 
     return epoch_len
 end
+
 """
     eeg_info(eeg)
 
@@ -654,6 +671,7 @@ function eeg_info(eeg::NeuroJ.EEG)
 
     return
 end
+
 """
     eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 
@@ -705,6 +723,7 @@ function eeg_epochs(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epo
 
     return eeg_new
 end
+
 """
     eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 
@@ -753,6 +772,7 @@ function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, ep
 
     return
 end
+
 """
     eeg_extract_epoch(eeg; epoch)
 
@@ -786,6 +806,7 @@ function eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
 
     return eeg_new
 end
+
 """
     eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
@@ -838,6 +859,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
 
     return eeg_trimmed
 end
+
 """
     eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
@@ -882,6 +904,7 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
 
     return
 end
+
 """
     eeg_edit_header(eeg; field, value)
 
@@ -912,6 +935,7 @@ function eeg_edit_header(eeg::NeuroJ.EEG; field::Symbol, value::Any)
 
     return eeg_new
 end
+
 """
     eeg_edit_header!(eeg; field, value)
 
@@ -940,6 +964,7 @@ function eeg_edit_header!(eeg::NeuroJ.EEG; field::Symbol, value::Any)
 
     return
 end
+
 """
     eeg_show_header(eeg)
 
@@ -955,6 +980,7 @@ function eeg_show_header(eeg::NeuroJ.EEG)
         println("$key: $value")
     end
 end
+
 """
     eeg_delete_epoch(eeg; epoch)
 
@@ -1009,6 +1035,7 @@ function eeg_delete_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Ab
 
     return eeg_new
 end
+
 """
     eeg_delete_epoch!(eeg; epoch)
 
@@ -1053,6 +1080,7 @@ function eeg_delete_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, A
 
     return
 end
+
 """
     eeg_keep_epoch(eeg; epoch)
 
@@ -1109,6 +1137,7 @@ function eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
 
     return eeg_new
 end
+
 """
     eeg_keep_epoch!(eeg; epoch)
 
@@ -1155,6 +1184,7 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
 
     return
 end
+
 """
     eeg_list_components(eeg)
 
@@ -1172,15 +1202,16 @@ function eeg_list_components(eeg::NeuroJ.EEG)
 
     return eeg.eeg_header[:components]
 end
+
 """
     eeg_extract_component(eeg, c)
 
-Extract `component` of `eeg`.
+Extract component `c` of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `component::Symbol`
+- `c::Symbol`: component name
 
 # Returns
 
@@ -1198,15 +1229,16 @@ function eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
 
     return
 end
-"""
-    eeg_delete_component(eeg, c)
 
-Delete `component` of `eeg`.
+"""
+    eeg_delete_component(eeg; c)
+
+Delete component `c` of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `component::Symbol`
+- `c::Symbol`: component name
 
 # Returns
 
@@ -1224,18 +1256,17 @@ function eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
             return eeg_new
         end
     end
-    
-    return
 end
-"""
-    eeg_delete_component!(eeg, c)
 
-Delete `component` of `eeg`.
+"""
+    eeg_delete_component!(eeg; c)
+
+Delete component `c` of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `component::Symbol`
+- `c::Symbol`: component name
 """
 function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
 
@@ -1251,6 +1282,7 @@ function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
 
     return
 end
+
 """
     eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
 
@@ -1308,6 +1340,7 @@ function eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :
 
     return bad_epochs_idx
 end
+
 """
     eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
 
@@ -1344,6 +1377,7 @@ function eeg_delete_bad_epochs(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confi
 
     return eeg_tmp
 end
+
 """
     eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
 
@@ -1378,6 +1412,7 @@ function eeg_delete_bad_epochs!(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, conf
 
     return
 end
+
 """
     eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
 
@@ -1403,6 +1438,7 @@ function eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
  
     return eeg_new
 end
+
 """
     eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
 
@@ -1422,6 +1458,7 @@ function eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
     push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
     return
 end
+
 """
     eeg_edit_channel(eeg; channel, field, value)
 Edits `eeg` `channel` properties.
@@ -1454,6 +1491,7 @@ function eeg_edit_channel(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::An
 
     return eeg_new
 end
+
 """
     eeg_edit_channel!(eeg; channel, field, value)
 
@@ -1482,6 +1520,7 @@ function eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::A
 
     return
 end
+
 """
     eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 
@@ -1507,6 +1546,7 @@ function eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 
     return eeg_new
 end
+
 """
     eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
 
@@ -1525,6 +1565,53 @@ function eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
         eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
+
+    return
+end
+
+"""
+    eeg_add_component(eeg; c, v)
+
+Add component name `c` of value `v` to `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+- `v::Any`: component value
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
+    eeg_new = deepcopy(eeg)
+    c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
+    push!(eeg_new.eeg_header[:components], c)
+    push!(eeg_new.eeg_components, v)
+    push!(eeg_new.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
+
+    return eeg_new
+end
+
+"""
+    eeg_add_component!(eeg; c, v)
+
+Add component name `c` of value `v` to `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+- `v::Any`: component value
+"""
+function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
+    c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
+    push!(eeg.eeg_header[:components], c)
+    push!(eeg.eeg_components, v)
+    push!(eeg.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
 
     return
 end

@@ -981,12 +981,12 @@ List `eeg` components.
 eeg_extract_component(eeg, c)
 ```
 
-Extract `component` of `eeg`.
+Extract component `c` of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `component::Symbol`
+  * `c::Symbol`: component name
 
 **Returns**
 
@@ -998,15 +998,15 @@ Extract `component` of `eeg`.
 
 
 ```julia
-eeg_delete_component(eeg, c)
+eeg_delete_component(eeg; c)
 ```
 
-Delete `component` of `eeg`.
+Delete component `c` of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `component::Symbol`
+  * `c::Symbol`: component name
 
 **Returns**
 
@@ -1018,15 +1018,53 @@ Delete `component` of `eeg`.
 
 
 ```julia
-eeg_delete_component!(eeg, c)
+eeg_delete_component!(eeg; c)
 ```
 
-Delete `component` of `eeg`.
+Delete component `c` of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `component::Symbol`
+  * `c::Symbol`: component name
+
+<a id='NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_component(eeg; c, v)
+```
+
+Add component name `c` of value `v` to `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+  * `v::Any`: component value
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_component!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_component!(eeg; c, v)
+```
+
+Add component name `c` of value `v` to `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+  * `v::Any`: component value
 
 <a id='NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_reset_components`** &mdash; *Method*.
@@ -1068,6 +1106,42 @@ Reset `eeg` components.
 <a id='EEG-process-1'></a>
 
 ## EEG process
+
+<a id='NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_invert_polarity`** &mdash; *Method*.
+
+
+
+```julia
+eeg_invert_polarity(eeg; channel)
+```
+
+Invert polarity of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`: channel to invert
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_invert_polarity!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_invert_polarity!(eeg; channel)
+```
+
+Invert polarity of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
 
 <a id='NeuroJ.eeg_reference_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_channel-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_reference_channel`** &mdash; *Method*.
@@ -2183,7 +2257,7 @@ Return frequency limits for a `band` range.
 **Arguments**
 
   * `eeg:EEG`
-  * `band::Symbol`: name of band range: :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
+  * `band::Symbol`: name of band range: :total, :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
 
 **Returns**
 
@@ -3065,8 +3139,9 @@ Plot topographical view of `eeg` component.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `offset::Int64`: time (in samples) at which to plot
-  * `len::Int64=0`: interpolation window, default 100 ms
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
+  * `offset::Int64=1`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 second
   * `m::Symbol=:shepard`: interpolation method :shepard (Shepard), :mq (Multiquadratic), :tp (ThinPlate)
   * `c::Symbol=:amp`: component name (:ica, :pca, :amp, :power)
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing`: component index, e.g. ICA number or frequency range
@@ -3083,22 +3158,22 @@ Plot topographical view of `eeg` component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.signal_plot_bands-Tuple{Vector{Float64}}' href='#NeuroJ.signal_plot_bands-Tuple{Vector{Float64}}'>#</a>
-**`NeuroJ.signal_plot_bands`** &mdash; *Method*.
+<a id='NeuroJ.signal_plot_band-Tuple{Vector{Float64}}' href='#NeuroJ.signal_plot_band-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.signal_plot_band`** &mdash; *Method*.
 
 
 
 ```julia
-signal_plot_bands(signal; <keyword arguments>)
+signal_plot_band(signal; <keyword arguments>)
 ```
 
-Plot absolute/relative band powers of `signal`.
+Plot absolute/relative bands powers of a single-channel `signal`.
 
 **Arguments**
 
   * `signal::Vector{Float64}`
   * `fs::Int64`: sampling rate
-  * `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha](see `eeg_band()`)
   * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
   * `norm::Bool=true`: convert power to dB if true
   * `xlabel::String=""`: x-axis label
@@ -3110,13 +3185,41 @@ Plot absolute/relative band powers of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_bands`** &mdash; *Method*.
+<a id='NeuroJ.signal_plot_band-Tuple{Matrix{Float64}}' href='#NeuroJ.signal_plot_band-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.signal_plot_band`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_bands(eeg; <keyword arguments>)
+signal_plot_band(signal; <keyword arguments>)
+```
+
+Plot absolute/relative band power of `signal` channels.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling rate
+  * `band:Symbols=:total`: band name, e.g. :delta (see `eeg_band()`)
+  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+  * `norm::Bool=true`: convert power to dB if true
+  * `labels::Vector{String}=[""]`: x-axis labels
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_band-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_band-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_band`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_band(eeg; <keyword arguments>)
 ```
 
 Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
@@ -3407,18 +3510,24 @@ Returns FFT and DFT sample frequencies for a DFT for each the `signal` channels.
 
 
 ```julia
-signal_detrend(signal; type=:linear)
+signal_detrend(signal; type, order, span)
 ```
 
-Removes linear trend from the `signal`.
+Perform piecewise detrending of the `signal`.
 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `type::Symbol[:linear, :constant]`, optional
+  * `type::Symbol`, optional
 
-      * `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-      * `constant`: the mean of `signal` is subtracted
+      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `:linear`: linear trend is subtracted from `signal`
+      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+      * `:poly`: polynomial of `order` order is subtracted
+      * `:loess`: fit and subtract loess approximation
+  * `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+  * `order::Int64=1`: polynomial fitting order
+  * `span::Float64`: smoothing of loess
 
 **Returns**
 
@@ -3430,18 +3539,24 @@ Removes linear trend from the `signal`.
 
 
 ```julia
-signal_detrend(signal; type=:linear)
+signal_detrend(signal; type, order, span)
 ```
 
-Removes linear trend for each the `signal` channels.
+Perform piecewise detrending of the `signal`.
 
 **Arguments**
 
   * `signal::Array{Float64, 3}`
-  * `type::Symbol[:linear, :constant]`, optional
+  * `type::Symbol`, optional
 
-      * `linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-      * `constant`: the mean of `signal` is subtracted
+      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `:linear`: linear trend is subtracted from `signal`
+      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+      * `:poly`: polynomial of `order` order is subtracted
+      * `:loess`: fit and subtract loess approximation
+  * `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+  * `order::Int64=1`: polynomial fitting order
+  * `span::Float64`: smoothing of loess
 
 **Returns**
 
@@ -5086,6 +5201,44 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.signal_invert_polarity-Tuple{AbstractArray}' href='#NeuroJ.signal_invert_polarity-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_invert_polarity`** &mdash; *Method*.
+
+
+
+```julia
+signal_invert_polarity(signal::AbstractArray)
+```
+
+Invert polarity of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `signal_inv::AbstractArray`
+
+<a id='NeuroJ.signal_invert_polarity-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_invert_polarity-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_invert_polarity`** &mdash; *Method*.
+
+
+
+```julia
+signal_invert_polarity(signal::Array{Float64, 3})
+```
+
+Invert polarity of `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `signal_inv::Array{Float64, 3}`
 
 
 <a id='Misc'></a>

@@ -188,4 +188,10 @@ eeg_edit_channel!(e, channel=19, field=:channel_type, value="ecg")
 eeg_keep_eeg_channels!(e)
 @test size(e.eeg_signals) == (18, 156672, 1)
 
+e = eeg_add_component(edf, c=:test, v=true)
+@test e.eeg_components[1] == true
+
+e = eeg_invert_polarity(edf, channel=1)
+@test e.eeg_signals[1, 1, 1] == -edf.eeg_signals[1, 1, 1]
+
 true

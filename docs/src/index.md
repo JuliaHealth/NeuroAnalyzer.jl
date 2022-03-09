@@ -117,6 +117,10 @@ eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
 
 eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
 
+eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
+eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
 eeg_reset_components(eeg::NeuroJ.EEG)
 
 eeg_reset_components!(eeg::NeuroJ.EEG)
@@ -125,6 +129,10 @@ eeg_reset_components!(eeg::NeuroJ.EEG)
 ## EEG process
 
 ```@docs
+eeg_invert_polarity(eeg::NeuroJ.EEG; channel::Int64)
+
+eeg_invert_polarity!(eeg::NeuroJ.EEG; channel::Int64)
+
 eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
 eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
@@ -321,9 +329,11 @@ eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic:
 
 eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
 
-signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+signal_plot_band(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+signal_plot_band(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol, norm::Bool=true, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
+
+eeg_plot_band(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
 eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
 
@@ -512,6 +522,10 @@ signal_detect_epoch_rmsd(signal::Array{Float64, 3})
 signal_detect_epoch_euclid(signal::Array{Float64, 3})
 
 signal_detect_epoch_p2p(signal::Array{Float64, 3})
+
+signal_invert_polarity(signal::AbstractArray)
+
+signal_invert_polarity(signal::Array{Float64, 3})
 ```
 
 ## Misc

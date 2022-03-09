@@ -100,6 +100,7 @@ export signal_fconv
 export signal_filter
 export signal_ica
 export signal_ica_reconstruct
+export signal_invert_polarity
 export signal_make_spectrum
 export signal_mean
 export signal_mi
@@ -167,6 +168,8 @@ export eeg_list_components
 export eeg_extract_component
 export eeg_delete_component
 export eeg_delete_component!
+export eeg_add_component
+export eeg_add_component!
 export eeg_detect_bad_epochs
 export eeg_delete_bad_epochs
 export eeg_delete_bad_epochs!
@@ -214,6 +217,8 @@ export eeg_ica_reconstruct
 export eeg_ica_reconstruct!
 export eeg_resample
 export eeg_resample!
+export eeg_invert_polarity
+export eeg_invert_polarity!
 
 include("eeg_analyze.jl")
 export eeg_total_power
