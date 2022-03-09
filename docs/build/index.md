@@ -2899,13 +2899,13 @@ Plot spectrogram of `signal`.
 eeg_plot_spectrogram(eeg; <keyword arguments>)
 ```
 
-Plots spectrogram of `eeg` channel.
+Plots spectrogram of `eeg` channel(s).
 
 **Arguments**
 
   * `eeg:EEG`
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch to plot
-  * `channel::Int64`: channel to plot
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB

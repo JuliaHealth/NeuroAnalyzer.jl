@@ -105,6 +105,7 @@ EEG:
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular
 - use any calculations (e.g. median delta power) stored as a component for topo plots
+- plot spectrogram/psd: use embedded spectrogram/psd
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes
@@ -115,7 +116,6 @@ EEG:
 - 3d headplots
 - small amplitude plots at electrode locations
 - phase-amplitude cross-frequency coupling (PAC)
-- plot spectrogram/psd: use embedded spectrogram/psd
 - more re-referencing methods: Laplacian, REST
 - io: import from CSV
 - create EEG object

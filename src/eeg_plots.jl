@@ -1534,13 +1534,13 @@ end
 """
     eeg_plot_spectrogram(eeg; <keyword arguments>)
 
-Plots spectrogram of `eeg` channel.
+Plots spectrogram of `eeg` channel(s).
 
 # Arguments
 
 - `eeg:EEG`
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch to plot
-- `channel::Int64`: channel to plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
@@ -1554,19 +1554,28 @@ Plots spectrogram of `eeg` channel.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
+    # select channels, default is all channels
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    channel == 0 && (channel = 1:eeg_channel_n(eeg))
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    length(channel) > 1 && sort!(channel)
+    for idx in 1:length(channel)
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    end
+    length(channel) > 1 && len < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
+    
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     frq_lim == (0, 0) && (frq_lim = (0, eeg_sr(eeg) / 2))
     frq_lim = tuple_order(frq_lim)
     fs = eeg_sr(eeg)
 
-    (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
+    (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For single channel plot and epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
     (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
@@ -1605,27 +1614,49 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
     (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch]
+    if length(channel) == 1
+        p = signal_plot_spectrogram(signal,
+                                    fs=fs,
+                                    offset=offset,
+                                    norm=norm,
+                                    xlabel=xlabel,
+                                    ylabel=ylabel,
+                                    frq_lim=frq_lim,
+                                    title=title;
+                                    kwargs...)
 
-    p = signal_plot_spectrogram(signal,
-                                fs=fs,
-                                offset=offset,
-                                norm=norm,
-                                xlabel=xlabel,
-                                ylabel=ylabel,
-                                frq_lim=frq_lim,
-                                title=title;
-                                kwargs...)
-
-    # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
+        # add epochs markers
+        if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+            p = vline!(epoch_markers,
+                       linestyle=:dash,
+                       linewidth=0.2,
+                       linecolor=:black,
+                       label="")
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
+            end
         end
+    else
+        ylabel = "Channels"
+        xlabel = "Frequency [Hz]"
+        s_powers, s_freqs = signal_psd(signal, fs=fs, norm=norm)
+        colorbar_title="Power/frequency [μV^2/Hz]"
+        norm == true && (colorbar_title = "Power/frequency [dB/Hz]")
+        p = heatmap(s_freqs[1, :],
+                    channel,
+                    s_powers,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    xlims=frq_lim,
+                    yticks=channel,
+                    title=title,
+                    colorbar_title=colorbar_title,
+                    titlefontsize=10,
+                    xlabelfontsize=8,
+                    ylabelfontsize=8,
+                    xtickfontsize=4,
+                    ytickfontsize=4;
+                    kwargs...)
     end
 
     plot(p)
@@ -2146,19 +2177,6 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
     # offset == 0 && (offset = (epoch - 1) * eeg_epoch_len(eeg) + 1)
     epoch == 0 && (epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1)
     offset + len > epoch * eeg_epoch_len(eeg) && throw(ArgumentError("offset + len must be ≤ $(epoch * eeg_epoch_len(eeg))."))
-    # offset < ((epoch - 1) * eeg_epoch_len(eeg) + 1 + offset) && throw(ArgumentError("offset must be ≥ $((epoch - 1) * eeg_epoch_len(eeg) + 1)."))
-
-#=
-    if offset > (eeg_epoch_len(eeg) - len) && eeg_epoch_n(eeg) > 1
-        epoch = 0
-        while offset > eeg_epoch_len(eeg)
-            epoch += 1
-            offset -= eeg_epoch_len(eeg)
-        end
-    else
-        epoch = 1
-    end
-=#
 
     typeof(c_idx) <: AbstractRange && (c_idx = collect(c_idx))
     # ignore c_idx for components other than ICA
@@ -2242,8 +2260,6 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
             end
             title = "Power [A.U.]\n[frequency: $c_idx Hz]"
         end
-    else
-        throw(ArgumentError("Component $c not found."))
     end
 
     # plot signal at electrodes at time

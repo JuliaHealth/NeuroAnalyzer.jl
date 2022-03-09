@@ -518,8 +518,25 @@ signal_plot_psd(f3, fs=256)
 signal_plot_psd(f4, fs=256)
 
 eeg_psd!(edf, norm=true)
+```
 
-eeg_plot_spectrogram(edf, channel=9, norm=true)
+Plot spectrogram:
+```julia
+p = eeg_plot_spectrogram(edf, channel=9, norm=true)
+eeg_plot_save(p, file_name="images/edf_spec1.png")
+```
+
+![edf_topo :amp](images/edf_spec1.png)
+
+Plot multi-channel spectrogram:
+```julia
+p = eeg_plot_spectrogram(edf, channel=1:19, len=1024, norm=true)
+eeg_plot_save(p, file_name="images/edf_spec2.png")
+```
+
+![edf_topo :amp](images/edf_spec2.png)
+
+```julia
 eeg_plot_spectrogram(e10, channel=9, norm=true, len=110*eeg_sr(edf))
 eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=80, len=75*eeg_sr(edf))
 eeg_plot_spectrogram(e9, channel=9, norm=true, ylim=40, len=80*eeg_sr(edf), offset=18*256)

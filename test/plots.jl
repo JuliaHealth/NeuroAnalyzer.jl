@@ -59,6 +59,8 @@ p = eeg_plot_covmatrix(edf, cc, lags)
 
 p = eeg_plot_spectrogram(edf, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_spectrogram(edf, channel=1:10, len=1024)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = signal_plot_histogram(signal_v)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
