@@ -1568,7 +1568,7 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     length(channel) > 1 && len < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
-    
+
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
     frq_lim == (0, 0) && (frq_lim = (0, eeg_sr(eeg) / 2))
@@ -2196,12 +2196,8 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
             push!(p, plot(border=:none, title=""))
         end
         p = plot!(p..., layout=l, size=(l[2] * 800, l[1] * 800))
-        plot(p)
 
-        if figure !== ""
-            isfile(figure) && @warn "File $figure will be overwritten."
-            savefig(p, figure)
-        end
+        plot(p)
 
         return p
     end
