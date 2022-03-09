@@ -265,6 +265,10 @@ eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::Symbol=:a
 
 eeg_pick(eeg::NeuroJ.EEG; pick::Union{Symbol, Vector{Symbol}})
 
+eeg_channels_stats(eeg::NeuroJ.EEG)
+
+eeg_channels_stats!(eeg::NeuroJ.EEG)
+
 eeg_epochs_stats(eeg::NeuroJ.EEG)
 
 eeg_epochs_stats!(eeg::NeuroJ.EEG)
@@ -506,6 +510,10 @@ signal_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64
 signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array{Float64, 3}, ic_mw::Array{Float64, 3}, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
 
 signal_epochs_stats(signal::Array{Float64, 3})
+
+signal_channels_stats(signal::AbstractArray)
+
+signal_channels_stats(signal::Array{Float64, 3})
 
 signal_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
 

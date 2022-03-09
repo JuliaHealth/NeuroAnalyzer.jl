@@ -248,8 +248,8 @@ s = signal_fconv(signal_v1, kernel=[1, 2, 3])
 s = signal_fconv(signal_a1, kernel=[1, 2, 3])
 @test size(s) == (2, 101, 2)
 
-m, md, s, v, k = signal_epochs_stats(signal_a)
-@test size(s) == (2, )
+v = signal_epochs_stats(signal_a)
+@test size(s) == (2, 101, 2)
 
 p, f, t = signal_spectrogram(signal_v, fs=fs)
 @test size(p) == (51, 46)
@@ -260,7 +260,6 @@ i, mw = signal_ica(signal_a, n=1, tol=1.0)
 @test size(i) == (1, 101, 2)
 s = signal_ica_reconstruct(signal_a, ic_activations=i, ic_mw=mw, ic_v=1)
 @test size(s) == (2, 101, 2)
-
 b = signal_detect_epoch_flat(signal_a)
 @test b == [0.0, 0.0]
 b = signal_detect_epoch_rmse(signal_a)
@@ -274,5 +273,10 @@ b = signal_detect_epoch_p2p(signal_a)
 
 v = signal_invert_polarity([1, 2, 3])
 @test v == [-1, -2, -3]
+
+v = signal_channels_stats(signal_v)
+@test length(v) == 9
+v = signal_channels_stats(signal_a)
+@test length(v) == 9
 
 true

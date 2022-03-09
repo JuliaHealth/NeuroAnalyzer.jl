@@ -107,6 +107,7 @@ export signal_mi
 export signal_normalize_minmax
 export signal_normalize_zscore
 export signal_pca
+export signal_channels_stats
 export signal_psd
 export signal_reference_car
 export signal_reference_channel
@@ -251,6 +252,8 @@ export eeg_freqs
 export eeg_freqs!
 export eeg_difference
 export eeg_pick
+export eeg_channels_stats
+export eeg_channels_stats!
 export eeg_epochs_stats
 export eeg_epochs_stats!
 export eeg_spectrogram

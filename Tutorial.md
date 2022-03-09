@@ -282,6 +282,11 @@ eeg_fconv!(e10, kernel=mw)
 
 ### EEG Analyze
 
+Channels stats:
+```julia
+eeg_channels_stats(edf)
+```
+
 Calculate signal total power:
 ```julia
 tbp = eeg_total_power(edf)

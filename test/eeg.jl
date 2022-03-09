@@ -147,21 +147,22 @@ e = eeg_pick(edf, pick=:left)
 @test length(e) == 8
 
 e = eeg_epochs(edf, epoch_len=20*256)
-m, md, s, v, k = eeg_epochs_stats(e)
-@test size(v) == (30, )
+v = eeg_epochs_stats(e)
+@test length(v) == 9
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
 i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
-eeg_epochs_stats!(edf)
-c = eeg_list_components(edf)
-@test size(c) == (5, )
-v = eeg_extract_component(edf, c=:epochs_mean)
+e = edf
+eeg_epochs_stats!(e)
+c = eeg_list_components(e)
+@test size(c) == (9, )
+v = eeg_extract_component(e, c=:epochs_mean)
 @test size(v) == (1, )
-eeg_delete_component!(edf, c=:epochs_mean)
-c = eeg_list_components(edf)
-@test size(c) == (4, )
+eeg_delete_component!(e, c=:epochs_mean)
+c = eeg_list_components(e)
+@test size(c) == (8, )
 
 e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
@@ -196,5 +197,8 @@ e = eeg_invert_polarity(edf, channel=1)
 
 c = eeg_comment(edf)
 @test c == ""
+
+v = eeg_channels_stats(edf)
+@test length(v) == 9
 
 true

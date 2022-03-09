@@ -1776,24 +1776,33 @@ function signal_tconv(signal::Array{Float64, 3}; kernel::Union{Vector{Int64}, Ve
 end
 
 """
-    signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+    signal_filter(signal; <keyword arguments>)
 
-Filters `signal`.
+Filter `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
     - `:poly`: polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-- `d::Int64`: window length for mean average and median average filter
+- `order::Int64=8`: filter order
+- `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+- `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+- `d::Int64=1`: window length for mean average and median average filter
 - `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
@@ -1801,7 +1810,7 @@ Filters `signal`.
 
 - `s_filtered::Vector{Float64}`
 """
-function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
@@ -1811,6 +1820,22 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
     (order < 2 && fprototype !== :poly) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
     (order < 1 && (fprototype !== :mavg && fprototype !== :mmed)) && throw(ArgumentError("order must be > 0."))
     d > length(signal) && throw(ArgumentError("d must be ≤ signal length."))
+    
+    if rp == -1
+        if fprototype === :elliptic
+            rp = 0.0025
+        else
+            rp = 2
+        end
+    end
+    
+    if rs == -1
+        if fprototype === :elliptic
+            rp = 40
+        else
+            rp = 20
+        end
+    end
 
     if fprototype === :mavg
         if window === nothing
@@ -1909,14 +1934,17 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
 
     fprototype === :butterworth && (prototype = Butterworth(order))
     if fprototype === :fir
-        window === nothing && throw(ArgumentError("For :fir filter window must be given."))
+        if window === nothing
+            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            window = hanning(3 * floor(Int64, fs / cutoff[1]))
+        end
         if ftype === :hp || ftype === :bp || ftype === :bs
             mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
         end
         prototype = FIRWindow(window)
     end
     if fprototype === :chebyshev1
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(fs / 2)."))
+        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev1(order, rs)
     end
     if fprototype === :chebyshev2
@@ -1939,24 +1967,33 @@ function signal_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{S
 end
 
 """
-    signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+    signal_filter(signal; <keyword arguments>)
 
-Filters `signal` using zero phase distortion filter.
+Filter `signal` channels.
 
 # Arguments
 
 - `signal::Array{Float64, 3}`
-- `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
     - `:poly`: polynomial of `order` order
-- `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-- `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-- `d::Int64`: window length for mean average and median average filter
+- `order::Int64=8`: filter order
+- `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+- `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+- `d::Int64=1`: window length for mean average and median average filter
 - `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
@@ -2880,9 +2917,9 @@ function signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array
 end
 
 """
-    signal_epochs_var(signal)
+    signal_epochs_stats(signal)
 
-Calculates variance for all `signal` epochs.
+Return `signal` epochs properties.
 
 # Arguments
 
@@ -2890,27 +2927,43 @@ Calculates variance for all `signal` epochs.
 
 # Returns
 
-- `var::Vector{Float64}`
+- `e_mean::Vector(Float64)`: mean
+- `e_median::Vector(Float64)`: median
+- `e_std::Vector(Float64)`: standard deviation
+- `e_var::Vector(Float64)`: variance
+- `e_kurt::Vector(Float64)`: kurtosis
+- `e_mean_diff::Vector(Float64)`: mean diff value
+- `e_median_diff::Vector(Float64)`: median diff value
+- `e_max_dif::Vector(Float64)`: max difference
+- `e_dev_mean::Vector(Float64)`: deviation from channel mean
 """
 function signal_epochs_stats(signal::Array{Float64, 3})
 
-    channel_n, _, epoch_n = size(signal)
-    s_mean = zeros(epoch_n)
-    s_median = zeros(epoch_n)
-    s_sd = zeros(epoch_n)
-    s_var = zeros(epoch_n)
-    s_kurt = zeros(epoch_n)
+    _, _, epoch_n = size(signal)
+    e_mean = zeros(epoch_n)
+    e_median = zeros(epoch_n)
+    e_sd = zeros(epoch_n)
+    e_var = zeros(epoch_n)
+    e_kurt = zeros(epoch_n)
+    e_mean_diff = zeros(epoch_n)
+    e_median_diff = zeros(epoch_n)
+    e_max_dif = zeros(epoch_n)
+    e_dev_mean = zeros(epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
-        s_mean[epoch] = mean(s)
-        s_median[epoch] = median(s)
-        s_sd[epoch] = std(s)
-        s_var[epoch] = var(s)
-        s_kurt[epoch] = kurtosis(s)
+        e_mean[epoch] = mean(s)
+        e_median[epoch] = median(s)
+        e_sd[epoch] = std(s)
+        e_var[epoch] = var(s)
+        e_kurt[epoch] = kurtosis(s)
+        e_mean_diff = mean(diff(signal, dims=2))
+        e_median_diff = median(diff(signal, dims=2))
+        e_max_dif = maximum(signal) - minimum(signal)
+        e_dev_mean = abs(mean(signal)) - mean(signal)
     end
 
-    return s_mean, s_median, s_sd, s_var, s_kurt
+    return e_mean, e_median, e_sd, e_var, e_kurt, e_mean_diff, e_median_diff, e_max_dif, e_dev_mean
 end
 
 """
@@ -3243,4 +3296,83 @@ function signal_invert_polarity(signal::Array{Float64, 3})
     end
 
     return signal_inv
+end
+
+"""
+    signal_channels_stats(signal::AbstractArray)
+
+Return `signal` properties.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `c_mean::Float64`: mean
+- `c_median::Float64`: median
+- `c_std::Float64`: standard deviation
+- `c_var::Float64`: variance
+- `c_kurt::Float64`: kurtosis
+- `c_mean_diff::Float64`: mean diff value
+- `c_median_diff::Float64`: median diff value
+- `c_max_dif::Float64`: max difference
+- `c_dev_mean::Float64`: deviation from channel mean
+"""
+function signal_channels_stats(signal::AbstractArray)
+    c_mean = mean(signal)
+    c_median = median(signal)
+    c_std = std(signal)
+    c_var = var(signal)
+    c_kurt = kurtosis(signal)
+    c_mean_diff = mean(diff(signal))
+    c_median_diff = median(diff(signal))
+    c_max_dif = maximum(signal) - minimum(signal)
+    c_dev_mean = abs(mean(signal)) - mean(signal)
+    
+    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_max_dif, c_dev_mean
+end
+
+"""
+    signal_channels_stats(signal::Array{Float64, 3})
+
+Return `signal` properties.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `c_mean::Matrix(Float64)`: mean
+- `c_median::Matrix(Float64)`: median
+- `c_std::Matrix(Float64)`: standard deviation
+- `c_var::Matrix(Float64)`: variance
+- `c_kurt::Matrix(Float64)`: kurtosis
+- `c_mean_diff::Matrix(Float64)`: mean diff value
+- `c_median_diff::Matrix(Float64)`: median diff value
+- `c_max_dif::Matrix(Float64)`: max difference
+- `c_dev_mean::Matrix(Float64)`: deviation from channel mean
+"""
+function signal_channels_stats(signal::Array{Float64, 3})
+    
+    channel_n, signal_len, epoch_n = size(signal)
+    c_mean = zeros(channel_n, epoch_n)
+    c_median = zeros(channel_n, epoch_n)
+    c_std = zeros(channel_n, epoch_n)
+    c_var = zeros(channel_n, epoch_n)
+    c_kurt = zeros(channel_n, epoch_n)
+    c_mean_diff = zeros(channel_n, epoch_n)
+    c_median_diff = zeros(channel_n, epoch_n)
+    c_dev_mean = zeros(channel_n, epoch_n)
+    c_max_dif = zeros(channel_n, epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            c_mean[idx, epoch], c_median[idx, epoch], c_std[idx, epoch], c_var[idx, epoch], c_kurt[idx, epoch], c_mean_diff[idx, epoch], c_median_diff[idx, epoch], c_dev_mean[idx, epoch], c_max_dif[idx, epoch] = signal_channels_stats(s)
+        end
+    end
+
+    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif
 end

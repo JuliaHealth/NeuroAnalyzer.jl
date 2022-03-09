@@ -63,7 +63,7 @@ The majority of `eeg_` functions will process all channels and epochs of the inp
 `eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
 EEG object (headers + time + components + EEG signal) is stored in the EEG structure:
-```
+```julia
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
@@ -104,12 +104,12 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- events
+- events markers; epoch by event markers
 - eeg_keep_eeg_channels -> keep_channels_type
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular
 - use any calculations (e.g. median delta power) stored as a component for topo plots
-- plot spectrogram/psd: use embedded spectrogram/psd
+- plot spectrogram/psd: use embedded spectrogram/psd (plot by epoch)
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes
@@ -129,10 +129,10 @@ EEG:
 - bad channel marking / rejection
 - bad epoch marking / rejection
 - time-frequency analysis
-- signals comparison
+- signals/spectra comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats
-- channel interpolation
+- channel interpolation: manual, automated
 - source localization
 - ERPs
 

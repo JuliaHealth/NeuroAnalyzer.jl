@@ -566,7 +566,7 @@ end
 """
     eeg_filter(eeg; <keyword arguments>)
 
-Filter `eeg`.
+Filter `eeg` channels.
 
 # Arguments
 
@@ -585,14 +585,14 @@ Filter `eeg`.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Int64, Float64, Tuple}=0`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`=0: filter order
-- `rp::Union{Int64, Float64}=-1`: dB ripple in the passband
-- `rs::Union{Int64, Float64}=-1`: dB attentuation in the stopband
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass)
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64=8`: filter order
+- `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+- `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `d::Int64=1`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}=0`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing}=nothing`: window, required for FIR filter
+- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 

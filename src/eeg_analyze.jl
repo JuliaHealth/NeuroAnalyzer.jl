@@ -792,7 +792,7 @@ end
 """
     eeg_epochs_stats(eeg)
 
-Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch.
+Calculate `eeg` epochs statistics.
 
 # Arguments
 
@@ -800,25 +800,38 @@ Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` 
 
 # Returns
 
-- `mean::Vector{Float64}`
-- `median::Vector{Float64}`
-- `sd::Vector{Float64}`
-- `var::Vector{Float64}`
-- `kurtosis::Vector{Float64}`
+- `e_mean::Matrix(Float64)`: mean
+- `e_median::Matrix(Float64)`: median
+- `e_std::Matrix(Float64)`: standard deviation
+- `e_var::Matrix(Float64)`: variance
+- `e_kurt::Matrix(Float64)`: kurtosis
+- `e_mean_diff::Matrix(Float64)`: mean diff value
+- `e_median_diff::Matrix(Float64)`: median diff value
+- `e_max_dif::Matrix(Float64)`: max difference
+- `e_dev_mean::Matrix(Float64)`: deviation from channel mean
 """
 function eeg_epochs_stats(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    e_mean, e_median, e_sd, e_var, e_kurt = signal_epochs_stats(eeg.eeg_signals)
+    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_channels_stats(eeg.eeg_signals)
 
-    return e_mean, e_median, e_sd, e_var, e_kurt
+    return e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif
 end
 
 """
     eeg_epochs_stats!(eeg)
 
-Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch and store these in `eeg` components: `:epochs_mean`, `:epochs_median`, `:epochs_sd`, `:epochs_var`, `:epochs_kurtosis`. 
+Calculate `eeg` epochs statistics and store in `eeg` components:
+- `epochs_mean::Matrix(Float64)`: mean
+- `epochs_median::Matrix(Float64)`: median
+- `epochs_std::Matrix(Float64)`: standard deviation
+- `epochs_var::Matrix(Float64)`: variance
+- `epochs_kurt::Matrix(Float64)`: kurtosis
+- `epochs_mean_diff::Matrix(Float64)`: mean diff value
+- `epochs_median_diff::Matrix(Float64)`: median diff value
+- `epochs_max_dif::Matrix(Float64)`: max difference
+- `epochs_dev_mean::Matrix(Float64)`: deviation from channel mean
 
 # Arguments
 
@@ -830,21 +843,34 @@ function eeg_epochs_stats!(eeg::NeuroJ.EEG)
 
     :epochs_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean)
     :epochs_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median)
-    :epochs_sd in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_sd)
+    :epochs_std in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_std)
     :epochs_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_var)
-    :epochs_kurtosis in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_kurtosis)
-    e_mean, e_median, e_sd, e_var, e_kurt = signal_epochs_stats(eeg.eeg_signals)
+    :epochs_kurt in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_kurt)
+    :epochs_mean_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean_diff)
+    :epochs_median_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median_diff)
+    :epochs_max_dif in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_max_dif)
+    :epochs_dev_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_dev_mean)
+
+    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_epochs_stats(eeg.eeg_signals)
     push!(eeg.eeg_components, e_mean)
     push!(eeg.eeg_components, e_median)
-    push!(eeg.eeg_components, e_sd)
+    push!(eeg.eeg_components, e_std)
     push!(eeg.eeg_components, e_var)
     push!(eeg.eeg_components, e_kurt)
+    push!(eeg.eeg_components, e_mean_diff)
+    push!(eeg.eeg_components, e_median_diff)
+    push!(eeg.eeg_components, e_dev_mean)
+    push!(eeg.eeg_components, e_max_dif)
+
     push!(eeg.eeg_header[:components], :epochs_mean)
     push!(eeg.eeg_header[:components], :epochs_median)
-    push!(eeg.eeg_header[:components], :epochs_sd)
+    push!(eeg.eeg_header[:components], :epochs_std)
     push!(eeg.eeg_header[:components], :epochs_var)
-    push!(eeg.eeg_header[:components], :epochs_kurtosis)
-    push!(eeg.eeg_header[:history], "eeg_epochs_stats!(EEG)")
+    push!(eeg.eeg_header[:components], :epochs_kurt)
+    push!(eeg.eeg_header[:components], :epochs_mean_diff)
+    push!(eeg.eeg_header[:components], :epochs_median_diff)
+    push!(eeg.eeg_header[:components], :epochs_dev_mean)
+    push!(eeg.eeg_header[:components], :epochs_max_dif)
 
     return
 end
@@ -1001,4 +1027,92 @@ function eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
     t_s = floor(Int64, t * eeg_sr(eeg)) + 1
     
     return t_s
+end
+
+"""
+    eeg_channels_stats(eeg)
+
+Calculate `eeg` channels statistics.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `c_mean::Matrix(Float64)`: mean
+- `c_median::Matrix(Float64)`: median
+- `c_std::Matrix(Float64)`: standard deviation
+- `c_var::Matrix(Float64)`: variance
+- `c_kurt::Matrix(Float64)`: kurtosis
+- `c_mean_diff::Matrix(Float64)`: mean diff value
+- `c_median_diff::Matrix(Float64)`: median diff value
+- `c_max_dif::Matrix(Float64)`: max difference
+- `c_dev_mean::Matrix(Float64)`: deviation from channel mean
+"""
+function eeg_channels_stats(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif = signal_channels_stats(eeg.eeg_signals)
+
+    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif
+end
+
+"""
+    eeg_channels_stats!(eeg)
+
+Calculate `eeg` channels statistics and store in `eeg` components:
+- `channels_mean::Matrix(Float64)`: mean
+- `channels_median::Matrix(Float64)`: median
+- `channels_std::Matrix(Float64)`: standard deviation
+- `channels_var::Matrix(Float64)`: variance
+- `channels_kurt::Matrix(Float64)`: kurtosis
+- `channels_mean_diff::Matrix(Float64)`: mean diff value
+- `channels_median_diff::Matrix(Float64)`: median diff value
+- `channels_max_dif::Matrix(Float64)`: max difference
+- `channels_dev_mean::Matrix(Float64)`: deviation from channel mean
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_channels_stats!(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    :channels_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_mean)
+    :channels_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_median)
+    :channels_std in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_std)
+    :channels_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_var)
+    :channels_kurt in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_kurt)
+    :channels_mean_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_mean_diff)
+    :channels_median_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_median_diff)
+    :channels_max_dif in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_max_dif)
+    :channels_dev_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_dev_mean)
+
+    c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif = signal_channels_stats(eeg.eeg_signals)
+    push!(eeg.eeg_components, c_mean)
+    push!(eeg.eeg_components, c_median)
+    push!(eeg.eeg_components, c_std)
+    push!(eeg.eeg_components, c_var)
+    push!(eeg.eeg_components, c_kurt)
+    push!(eeg.eeg_components, c_mean_diff)
+    push!(eeg.eeg_components, c_median_diff)
+    push!(eeg.eeg_components, c_dev_mean)
+    push!(eeg.eeg_components, c_max_dif)
+
+    push!(eeg.eeg_header[:components], :channels_mean)
+    push!(eeg.eeg_header[:components], :channels_median)
+    push!(eeg.eeg_header[:components], :channels_std)
+    push!(eeg.eeg_header[:components], :channels_var)
+    push!(eeg.eeg_header[:components], :channels_kurt)
+    push!(eeg.eeg_header[:components], :channels_mean_diff)
+    push!(eeg.eeg_header[:components], :channels_median_diff)
+    push!(eeg.eeg_header[:components], :channels_dev_mean)
+    push!(eeg.eeg_header[:components], :channels_max_dif)
+
+    push!(eeg.eeg_header[:history], "eeg_channels_stats!(EEG)")
+
+    return
 end
