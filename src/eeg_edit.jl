@@ -319,7 +319,7 @@ end
 """
     eeg_get_channel(eeg; channel)
 
-Returnthe `channel` index / name.
+Return the `channel` index / name.
 
 # Arguments
 
@@ -501,7 +501,7 @@ end
 """
     eeg_labels(eeg)
 
-Returnlabels.
+Return `eeg` labels.
 
 # Arguments
 
@@ -509,7 +509,7 @@ Returnlabels.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `labels::Vector{String}`
 """
 function eeg_labels(eeg::NeuroJ.EEG)
 
@@ -519,7 +519,7 @@ end
 """
     eeg_sr(eeg)
 
-Returnsampling rate.
+Return `eeg` sampling rate.
 
 # Arguments
 
@@ -527,7 +527,7 @@ Returnsampling rate.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `sr::Int64`
 """
 function eeg_sr(eeg::NeuroJ.EEG)
 
@@ -537,7 +537,7 @@ end
 """
     eeg_channel_n(eeg; type=:eeg)
 
-Returnnumber of `eeg` channels of `type`.
+Return number of `eeg` channels of `type`.
 
 # Arguments
 
@@ -562,7 +562,7 @@ end
 """
     eeg_epoch_n(eeg)
 
-Returnnumber of `eeg` epochs.
+Return number of `eeg` epochs.
 
 # Arguments
 
@@ -582,7 +582,7 @@ end
 """
     eeg_signal_len(eeg)
 
-Returnlength of `eeg` signal.
+Return length of `eeg` signal.
 
 # Arguments
 
@@ -602,7 +602,7 @@ end
 """
     eeg_epoch_len(eeg)
 
-Returnlength of `eeg` signal.
+Return length of `eeg` signal.
 
 # Arguments
 
@@ -1613,5 +1613,34 @@ function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
     push!(eeg.eeg_components, v)
     push!(eeg.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
 
+    return
+end
+
+"""
+    eeg_comment(eeg)
+
+Return `eeg` comment.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_comment(eeg::NeuroJ.EEG)
+
+    return eeg.eeg_header[:comment]
+end
+
+"""
+    eeg_delete(eeg)
+
+Remove `eeg` from memory.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_delete(eeg::NeuroJ.EEG)
+    eeg = nothing
+    
     return
 end

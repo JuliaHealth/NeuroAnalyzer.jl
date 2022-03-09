@@ -179,6 +179,8 @@ export eeg_edit_channel
 export eeg_edit_channel!
 export eeg_keep_eeg_channels
 export eeg_keep_eeg_channels!
+export eeg_comment
+export eeg_delete
 
 include("eeg_process.jl")
 export eeg_reference_channel

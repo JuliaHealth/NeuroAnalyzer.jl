@@ -205,7 +205,8 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :prefiltering => prefiltering,
                       :samples_per_datarecord => samples_per_datarecord,
                       :sampling_rate => sampling_rate,
-                      :gain => gain)
+                      :gain => gain,
+                      :comment => "")
 
     eeg_components = Vector{Any}()
 

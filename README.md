@@ -4,9 +4,11 @@ Welcome fellow researcher!
 
 NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
-This is a non-commercial projected, aimed for researchers in psychiatry, neurology and neuroscience.
+NeuroJ.jl contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroJ.jl functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroJ.jl particularly useful for processing large amounts of research data.
 
-Initially NeuroJ.jl will be focused on resting-state EEG analysis, but ERP and other type of analyses will be developed in future versions.
+NeuroJ.jl is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
+
+Initially NeuroJ.jl will be focused on resting-state EEG analysis, but ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and elastic environment for EEG/MRI/NIRS/NIBS analyses.
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
@@ -41,7 +43,7 @@ NeuroJ.jl will be 100% Julia based.
 
 ## General remarks
 
-NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel/multi-trial). The latter have no header, therefore some functions will be limited.
+NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel/multi-trial). The latter have no metadata header, therefore some functions will be limited.
 
 The following conventions are used:
 
@@ -54,12 +56,13 @@ Functions name prefix:
 
 - `signal_` functions taking single-/multi-channel signals as an argument
 - `eeg_` functions taking EEG object as an argument
+- `eeg_plot_` plotting functions
 
 The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array)
 
-`eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s).
+`eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
-EEG object (headers + data) is stored in the EEG structure:
+EEG object (headers + time + components + EEG signal) is stored in the EEG structure:
 ```
 mutable struct EEG
     eeg_header::Dict
@@ -101,6 +104,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- events
 - eeg_keep_eeg_channels -> keep_channels_type
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular

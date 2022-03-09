@@ -194,4 +194,7 @@ e = eeg_add_component(edf, c=:test, v=true)
 e = eeg_invert_polarity(edf, channel=1)
 @test e.eeg_signals[1, 1, 1] == -edf.eeg_signals[1, 1, 1]
 
+c = eeg_comment(edf)
+@test c == ""
+
 true

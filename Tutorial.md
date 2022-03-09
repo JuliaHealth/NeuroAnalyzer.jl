@@ -59,6 +59,11 @@ eeg_export_csv(edf, file_name="edf.csv", header=true, components=true)
 
 ### EEG Edit
 
+Remove EEG from memory:
+```julia
+eeg_delete(edf)
+```
+
 All operations on EEG are stored within the object. To show its processing history:
 ```julia
 eeg_history(edf)
@@ -68,6 +73,7 @@ Edit EEG header
 ```julia
 eeg_show_header(edf)
 eeg_edit_header!(edf, field=:patient, value="N.N.")
+eeg_edit_header!(edf, field=:comment, value="This is a tutorial EEG dataset.")
 ```
 
 Show EEG properties:
@@ -88,6 +94,11 @@ edf.eeg_header[:eeg_duration_seconds]
 Show labels:
 ```julia
 eeg_labels(edf)
+```
+
+Show comment:
+```julia
+eeg_comment(edf)
 ```
 
 Get channel (by name or number):
