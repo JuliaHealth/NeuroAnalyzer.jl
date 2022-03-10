@@ -44,8 +44,7 @@ export cmin
 export demean
 export fft0
 export freqs
-export generate_gaussian
-export generate_hanning
+export generate_window
 export generate_morlet
 export generate_sinc
 export generate_sine

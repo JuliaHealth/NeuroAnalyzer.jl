@@ -171,19 +171,44 @@ Convert spherical coordinates `theta` and `phi` and `ρ` to cartographic.
 sph2cart(ρ::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0) = ρ * cos(phi) * cos(theta), ρ * cos(phi) * sin(theta), ρ * sin(phi)
 
 """
-    generate_hanning(n)
+    generate_window(type, n)
 
-Return the `n`-point long symmetric Hanning window.
+Return the `n`-point long symmetric window `type`.
 
 # Arguments
 
-- `n::Int64`
+- `type::Symbol`: window type:
+    - `:hanning`: Hanning
+    - `:blackmanharris`: Blackman-Harris
+    - `:bohman`: Bohman
+    - `:flattop`: Flat-top window
+    - `:nutall`: Blackman-Nuttall
+- `n::Int64`: window length
 
 # Returns
 
-- `hanning::Vector{Float64}`
+- `window::Vector{Float64}`
 """
-generate_hanning(n::Int64) = 0.5 .* (1 .+ cos.(2 .* pi .* range(0, 1, length = n)))
+function generate_window(type::Symbol, n::Int64)
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    mod(n, 2) == 0 && (n += 1)
+    t = range(-0.5, 0.5, length = n)
+    if type === :hanning
+        window = @. 0.5 * (1 + cos.(2 * pi * t))
+    elseif type === :blackmanharris
+        window = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
+    elseif type === :bohman
+        window = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
+    elseif type === :flattop
+        window = @. 0.2157 - 0.4163 * cos.(2 * pi * t) + 0.2783 * cos.(4 * pi * t) - 0.0837 * cos.(6 * pi * t) + 0.0060 * cos.(8 * pi * t)
+    elseif type === :nutall
+        window = @. 0.3635819 - 0.4891775*cos(2*pi*t) + 0.1365995*cos(4*pi*t) - 0.0106411*cos(6*pi*t)
+    else
+        throw(ArgumentError("Window type must be :hanning, :blackmanharris, :bohman, :flattop, nutall."))
+    end
+
+    return window
+end
 
 """
     hildebrand_rule(x)

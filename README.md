@@ -104,10 +104,11 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- events markers; epoch by event markers
+- events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)
 - eeg_keep_eeg_channels -> keep_channels_type
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular
+- plot by time (continuous) or by epoch - separate functions
 - use any calculations (e.g. median delta power) stored as a component for topo plots
 - plot spectrogram/psd: use embedded spectrogram/psd (plot by epoch)
 - export channel locs to .CED
@@ -115,7 +116,6 @@ EEG:
 - swap channel locs axes
 - insert channel
 - modify channel data
-- view channel parameters (mean, sd, var, etc.)
 - virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots
 - small amplitude plots at electrode locations
@@ -135,6 +135,7 @@ EEG:
 - channel interpolation: manual, automated
 - source localization
 - ERPs
+- ML/DL analysis
 
 NIRS
 - import and process data

@@ -565,6 +565,8 @@ matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
 pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
 
+generate_window(type::Symbol, n::Int64)
+
 generate_sinc(t::AbstractRange=-2:0.01:2, f::Union{Int64, Float64}=10.0, peak::Union{Int64, Float64}=0)
 
 generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)

@@ -25,6 +25,13 @@ Get help:
 
 ## EEG
 
+The tutorial is divided into five major steps of typical pipeline:
+1. import EEG data, electrode positions
+2. edit EEG (e.g. rename labels, trim signal, detect and remove/interpolate bad channels, divide into epochs)
+3. process EEG (rereference, filter)
+4. analyze
+5. plot
+
 ### EEG IO
 
 Load EDF file:
@@ -117,6 +124,7 @@ Delete channels (epochs and channels may be specified using number, range or vec
 ```julia
 edf = eeg_delete_channel(edf, channel=1)
 edf = eeg_delete_channel(edf, channel=10:18)
+edf = eeg_delete_channel(edf, channel=[1, 5, 9])
 ```
 
 Keep channel:
@@ -128,7 +136,7 @@ Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time
 ```julia
 edf = eeg_trim(edf, len=(10*eeg_sr(edf)), from=:start)
 edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
-eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:start)
+eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:end)
 ```
 
 Split into 10-second epochs:
@@ -139,9 +147,6 @@ e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
 Trim 1 second from each epoch:
 ```julia
 e9 = eeg_trim(e10, trim_len=(1*eeg_sr(e10)), from=:start)
-eeg_info(e9)
-eeg_plot(e9, len=11*eeg_sr(e9))
-eeg_plot(e9, len=2*eeg_sr(e9), offset=5*256)
 eeg_plot(e9, len=60*eeg_sr(e9), offset=0)
 ```
 
@@ -176,7 +181,7 @@ eeg_delete_epoch!(e10, epoch=bad_epochs)
 
 ### EEG Process
 
-Certain data (e.g. ICA, PCA) are stored within the EEG object for further use. Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
+Certain data (e.g. ICA, PCA) are stored within the EEG object for further use. Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components. Also, any calculation may be stored as user-defined component (see `eeg_add_component()`) for later use (see `eeg_extract_component()`).
 
 Show components (e.g. ICA, PCA):
 ```julia
@@ -218,9 +223,9 @@ eeg_reference_car!(edf)
 
 FIR filtering:
 ```julia
-eeg_filter!(edf, fprototype=:fir, ftype=:bs, cutoff=(45, 55), order=8, window=generate_hanning(128))
-eeg_filter!(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8, window=generate_hanning(128))
-eeg_filter!(edf, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_hanning(128))
+eeg_filter!(edf, fprototype=:fir, ftype=:bs, cutoff=(45, 55), order=8, window=hanning(128))
+eeg_filter!(edf, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8, window=hanning(128))
+eeg_filter!(edf, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=hanning(128))
 ```
 
 IIR filtering:
