@@ -46,6 +46,7 @@ export fft0
 export freqs
 export generate_window
 export generate_morlet
+export generate_gaussian
 export generate_sinc
 export generate_sine
 export hildebrand_rule

@@ -74,7 +74,7 @@ edf1 = eeg_epochs(edf, epoch_len=10, average=true)
 edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 156672, 1)
 
-edf1 = eeg_tconv(edf, kernel=generate_hanning(256))
+edf1 = eeg_tconv(edf, kernel=generate_window(:hanning, 256))
 @test size(edf1.eeg_signals) == (19, 156672, 1)
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)

@@ -131,10 +131,21 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    if clean_labels == true
-        labels = replace.(labels, "EEG " => "")
-        labels = replace.(labels, "ECG " => "")
+    channel_type = repeat(["unknown"], channel_n)
+    for idx in 1:channel_n
+        occursin("eeg", lowercase(labels[idx])) && (channel_type[idx] = "eeg")
+        occursin("meg", lowercase(labels[idx])) && (channel_type[idx] = "meg")
+        occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
+        occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
+        occursin("eog", lowercase(labels[idx])) && (channel_type[idx] = "eog")
+        occursin("a1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("a2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("m1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("m2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
     end
+
+    clean_labels == true && (labels = replace.(labels, "EEG " => ""))
+    clean_labels == true && (labels = replace.(labels, "MEG " => ""))
 
     fid = open(file_name)
     header = zeros(UInt8, data_offset)
@@ -158,13 +169,6 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     eeg_time = eeg_time[1:end - 1]
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
-
-    channel_type = repeat(["eeg"], channel_n)
-    for idx in 1:channel_n
-        lowercase(labels[idx]) == "ecg" && channel_type[idx] == "ecg"
-        lowercase(labels[idx]) == "eog" && channel_type[idx] == "eog"
-        lowercase(labels[idx]) == "emg" && channel_type[idx] == "emg"
-    end
 
     eeg_header = Dict(:version => version,
                       :eeg_filename => file_name,

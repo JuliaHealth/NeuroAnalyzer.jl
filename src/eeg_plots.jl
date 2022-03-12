@@ -1,4 +1,10 @@
 """
+Some low-level plotting functions
+"""
+_xlims(t::Vector{Float64}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
+_xticks(t::Vector{Float64}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+
+"""
     signal_plot(t, signal; <keyword arguments>)
 
 Plot multi-channel `signal`.
@@ -39,8 +45,8 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     # plot channels
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
-             xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-             xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+             xlims=_xlims(t),
+             xticks=_xticks(t),
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=:darktest,
@@ -98,8 +104,8 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
               legend=false,
               title=title,
               xlabel=xlabel,                  
-              xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-              xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+              xlims=_xlims(t),
+              xticks=_xticks(t),
               ylabel=ylabel,
               ylims=ylim,
               yguidefontrotation=0,
@@ -540,8 +546,8 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     # plot channels
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
-             xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-             xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+             xlims=_xlims(t),
+             xticks=_xticks(t),
              ylims=ylim,
              title=title,
              palette=:darktest,
@@ -787,8 +793,8 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     # plot channels
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
-             xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-             xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+             xlims=_xlims(t),
+             xticks=_xticks(t),
              ylims=ylim,
              title=title,
              palette=:darktest,
@@ -1500,7 +1506,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xlabel=xlabel,
                     ylabel=ylabel,
                     ylims=frq_lim,
-                    xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+                    xticks=_xticks(t),
                     title=title,
                     colorbar_title="Power/frequency [μV^2/Hz]",
                     titlefontsize=10,
@@ -1517,7 +1523,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     xlabel=xlabel,
                     ylabel=ylabel,
                     ylims=frq_lim,
-                    xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+                    xticks=_xticks(t),
                     title=title,
                     colorbar_title="Power/frequency [dB/Hz]",
                     titlefontsize=10,
@@ -1895,8 +1901,8 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              xlabel=xlabel,
              ylabel=ylabel,
              label="",
-             xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-             xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+             xlims=_xlims(t),
+             xticks=_xticks(t),
              ylims=(-ylim, ylim),
              title=title,
              titlefontsize=10,
@@ -1965,8 +1971,8 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange,
     # plot channels
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
-             xlims=(floor(t[1], digits=2), ceil(t[end], digits=2)),
-             xticks=floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2),
+             xlims=_xlims(t),
+             xticks=_xticks(t),
              ylims=(-0.5, ica_n-0.5),
              title=title,
              titlefontsize=10,

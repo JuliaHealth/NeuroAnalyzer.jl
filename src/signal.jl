@@ -1668,9 +1668,11 @@ function signal_upsample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
     new_sr == sr && return(signal)
 
     # interpolate
-    signal_interpolation = CubicSplineInterpolation(t, signal)
+    sr_ratio = new_sr / sr
+    s_upsampled = resample(signal, sr_ratio)
+    # signal_interpolation = CubicSplineInterpolation(t, signal)
     t_upsampled = t[1]:1/new_sr:t[end]
-    s_upsampled = signal_interpolation(t_upsampled)
+    # s_upsampled = signal_interpolation(t_upsampled)
 
     return s_upsampled, t_upsampled
 end

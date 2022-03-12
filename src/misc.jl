@@ -512,26 +512,28 @@ function matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int
 end
 
 """
-    pad0(x, n)
+    pad0(x, n, sym)
 
-Pads the vector `x` with `n` zeros at the beginning and at the end.
-
-To do: check if x is numeric vector
+Pad the vector `x` with `n` zeros.
 
 # Arguments
 
 - `x::Union{Vector{Int64}, Vector{Float64}}`
 - `n::Int64`
+- `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 # Returns
 
 - `v_pad::Union{Vector{Int64}, Vector{Float64}}`
 """
-function pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
+function pad0(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64, sym::Bool=false)
 
     n < 1 && throw(ArgumentError("n must be positive."))
 
-    v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n))
+    sym == false && (v_pad = vcat(x, zeros(eltype(x), n)))
+    sym == true && (v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)))
+
+    return v_pad
 end
 """
     hz2rads(f)
@@ -624,25 +626,26 @@ Return minimum value of the complex vector`x`.
 cmin(x::Vector{ComplexF64}) = argmin(abs, x)
 
 """
-    generate_sinc(t, f, peak)
+    generate_sinc(t; f, peak, norm)
 
-Generate sinc function.
+Generate normalized or unnormalized sinc function.
 
 # Arguments
 
 - `t::AbstractRange=-2:0.01:2`: time
 - `f::Union{Int64, Float64}=10.0`: frequency
 - `peak::Union{Int64, Float64}=0`: sinc peak time
-
+- `norm::Bool=true`: generate normalzied function
 # Returns
 
 - `sinc::Vector{Float64}
 """
-function generate_sinc(t::AbstractRange=-2:0.01:2, f::Union{Int64, Float64}=10.0, peak::Union{Int64, Float64}=0)
+function generate_sinc(t::AbstractRange=-2:0.01:2; f::Union{Int64, Float64}=1, peak::Union{Int64, Float64}=0, norm::Bool=true)
 
-    y_sinc = @. sin(2 * pi * f * (t - peak)) / (t - peak)
+    norm == true && (y_sinc = @. sin(2 * pi * f * (t - peak)) / (pi * (t - peak)))
+    norm == false && (y_sinc = @. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = y_sinc[y_sinc .== NaN]
-    y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2
+    length(nan_idx) !=0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
     
     return y_sinc
 end

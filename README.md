@@ -104,6 +104,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- split eeg_ and signal_ functions into separate files, create low-level _ functions
 - events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)
 - eeg_keep_eeg_channels -> keep_channels_type
 - remove embedded components that are not useful
