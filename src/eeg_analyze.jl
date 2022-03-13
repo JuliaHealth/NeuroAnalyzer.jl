@@ -15,7 +15,7 @@ function eeg_total_power(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    fs = eeg.eeg_header[:sampling_rate][1]
+    fs = eeg_sr(eeg)
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
     size(stp, 3) == 1 && (stp = reshape(stp, size(stp, 1), size(stp, 2)))
 
@@ -25,7 +25,7 @@ end
 """
     eeg_total_power!(eeg)
 
-Calculate total power of the `eeg`.
+Calculate total power of the `eeg` and store into :total_power component.
 
 # Arguments
 
@@ -36,7 +36,7 @@ function eeg_total_power!(eeg::NeuroJ.EEG)
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     :total_power in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:total_power)
-    fs = eeg.eeg_header[:sampling_rate][1]
+    fs = eeg_sr(eeg)
     stp = signal_total_power(eeg.eeg_signals, fs=fs)
     push!(eeg.eeg_components, stp)
     push!(eeg.eeg_header[:components], :total_power)
@@ -63,7 +63,7 @@ function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    fs = eeg.eeg_header[:sampling_rate][1]
+    fs = eeg_sr(eeg)
     sbp = signal_band_power(eeg.eeg_signals, fs=fs, f=f)
     size(sbp, 3) == 1 && (sbp = reshape(sbp, size(sbp, 1), size(sbp, 2)))
 

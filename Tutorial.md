@@ -659,6 +659,6 @@ function eeg_benchmark(n::Int64)
 end
 @time eeg_benchmark(10)
 
-# workstation: 24.408695 seconds (55.97 M allocations: 274.946 GiB, 27.82% gc time)
+# workstation: 14.271216 seconds (51.62 M allocations: 106.612 GiB, 38.88% gc time)
 # laptop: 41.675390 seconds (55.12 M allocations: 274.873 GiB, 13.15% gc time)
 ```

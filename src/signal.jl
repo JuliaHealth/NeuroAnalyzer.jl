@@ -707,12 +707,14 @@ function signal_autocov(signal::AbstractArray; lag::Int64=1, demean::Bool=false,
             s_mul = s_demeaned .* s_lagged
         elseif lags[idx] > 0
             # positive lag
-            s_lagged = s_demeaned[1:(end - lags[idx])]
-            s_mul = s_demeaned[(1 + lags[idx]):end] .* s_lagged
+            s1 = @view s_demeaned[(1 + lags[idx]):end]
+            s2 = @view s_demeaned[1:(end - lags[idx])]
+            s_mul =  s1 .* s2
         elseif lags[idx] < 0
             # negative lag
-            s_lagged = s_demeaned[(1 + abs(lags[idx])):end]
-            s_mul = s_demeaned[1:(end - abs(lags[idx]))] .* s_lagged
+            s1 = @view s_demeaned[1:(end - abs(lags[idx]))]
+            s2 = @view s_demeaned[(1 + abs(lags[idx])):end]
+            s_mul = s1 .* s2
         end
         s_sum = sum(s_mul)
         if norm == true
@@ -805,12 +807,14 @@ function signal_crosscov(signal1::AbstractArray, signal2::AbstractArray; lag::In
             s_mul = s_demeaned1 .* s_lagged
         elseif lags[idx] > 0
             # positive lag
-            s_lagged = s_demeaned2[1:(end - lags[idx])]
-            s_mul = s_demeaned1[(1 + lags[idx]):end] .* s_lagged
+            s1 = @view s_demeaned1[(1 + lags[idx]):end]
+            s2 = @view s_demeaned2[1:(end - lags[idx])]
+            s_mul = s1 .* s2
         elseif lags[idx] < 0
             # negative lag
-            s_lagged = s_demeaned2[(1 + abs(lags[idx])):end]
-            s_mul = s_demeaned1[1:(end - abs(lags[idx]))] .* s_lagged
+            s1 = @view s_demeaned1[1:(end - abs(lags[idx]))] 
+            s2 = @view s_demeaned2[(1 + abs(lags[idx])):end]
+            s_mul = s1 .* s2
         end
         s_sum = sum(s_mul)
         if norm == true
@@ -1351,7 +1355,8 @@ Removes mean value (DC offset) from the `signal`.
 """
 function signal_demean(signal::AbstractArray)
 
-    s_dem = signal .- mean(signal)
+    m = mean(signal)
+    s_dem = signal .- m
 
     return s_dem
 end
@@ -1399,7 +1404,9 @@ Normalize (by z-score) `signal`.
 """
 function signal_normalize_zscore(signal::AbstractArray)
 
-    s_norm = (signal .- mean(signal)) ./ std(signal)
+    m = mean(signal)
+    s = std(signal)
+    s_norm = (signal .- m) ./ s
 
     return s_norm
 end
@@ -1447,7 +1454,9 @@ Normalize `signal` in [-1, +1].
 """
 function signal_normalize_minmax(signal::AbstractArray)
 
-    s_norm = 2 .* (signal .- minimum(signal)) ./ (maximum(signal) - minimum(signal)) .- 1
+    mi = minimum(signal)
+    mx = maximum(signal)
+    s_norm = 2 .* (signal .- mi) ./ (mx - mi) .- 1
 
     return s_norm
 end
