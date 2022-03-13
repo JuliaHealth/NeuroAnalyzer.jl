@@ -152,15 +152,15 @@ Convert polar coordinates `theta` and `phi` to cartographic.
 pol2cart(theta::Union{Float64, Int64}, phi::Union{Float64, Int64}) = phi * cos(theta), phi * sin(theta)
 
 """
-    pol2cart_sph(ρ, theta, phi=0)
+    pol2cart_sph(rho, theta, phi=0)
 
-Convert spherical coordinates `theta` and `phi` and `ρ` to cartographic.
+Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 
 # Arguments
 
 - `phi::Union{Float64, Int64}`: the angle with respect to the z-axis (elevation)
 - `theta::Union{Float64, Int64}`: the angle in the xy plane with respect to the x-axis (azimuth)
-- `ρ::Union{Float64, Int64}`: the distance from the origin to the point, theta represents  and phi represents
+- `rho::Union{Float64, Int64}`: the distance from the origin to the point
 
 # Returns
 
@@ -168,7 +168,7 @@ Convert spherical coordinates `theta` and `phi` and `ρ` to cartographic.
 - `y::Float64`
 - `z::Float64`
 """
-sph2cart(ρ::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0) = ρ * cos(phi) * cos(theta), ρ * cos(phi) * sin(theta), ρ * sin(phi)
+sph2cart(rho::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0) = rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta), rho * sin(phi)
 
 """
     generate_window(type, n)
@@ -187,27 +187,27 @@ Return the `n`-point long symmetric window `type`.
 
 # Returns
 
-- `window::Vector{Float64}`
+- `w::Vector{Float64}`:: generated window
 """
 function generate_window(type::Symbol, n::Int64)
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
     mod(n, 2) == 0 && (n += 1)
     t = range(-0.5, 0.5, length = n)
     if type === :hanning
-        window = @. 0.5 * (1 + cos.(2 * pi * t))
+        w = @. 0.5 * (1 + cos.(2 * pi * t))
     elseif type === :blackmanharris
-        window = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
+        w = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
     elseif type === :bohman
-        window = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
+        w = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
     elseif type === :flattop
-        window = @. 0.2157 - 0.4163 * cos.(2 * pi * t) + 0.2783 * cos.(4 * pi * t) - 0.0837 * cos.(6 * pi * t) + 0.0060 * cos.(8 * pi * t)
+        w = @. 0.2157 - 0.4163 * cos.(2 * pi * t) + 0.2783 * cos.(4 * pi * t) - 0.0837 * cos.(6 * pi * t) + 0.0060 * cos.(8 * pi * t)
     elseif type === :nutall
-        window = @. 0.3635819 - 0.4891775*cos(2*pi*t) + 0.1365995*cos(4*pi*t) - 0.0106411*cos(6*pi*t)
+        w = @. 0.3635819 - 0.4891775*cos(2*pi*t) + 0.1365995*cos(4*pi*t) - 0.0106411*cos(6*pi*t)
     else
         throw(ArgumentError("Window type must be :hanning, :blackmanharris, :bohman, :flattop, nutall."))
     end
 
-    return window
+    return w
 end
 
 """
@@ -241,9 +241,9 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 """
 function jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
 
-    intersection = length(intersect(x, y))
-    union = length(x) + length(y) - intersection
-    j = intersection / union
+    i = length(intersect(x, y))
+    u = length(x) + length(y) - i
+    j = i / u
 
     return j
 end
@@ -673,10 +673,10 @@ function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, 
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
     w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
-    gaussian = generate_gaussian(fs, wt[end], w)
-    morlet = sin_wave .* gaussian
+    g = generate_gaussian(fs, wt[end], w)
+    m = sin_wave .* g
 
-    return morlet
+    return m
 end
 
 """
@@ -697,9 +697,9 @@ Generate Gaussian wave.
 function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
 
     t = -gt:1/fs:gt
-    gaussian = MathConstants.e.^(-t.^2 ./ gw)
+    g = MathConstants.e.^(-t.^2 ./ gw)
 
-    return gaussian
+    return g
 end
 
 """
