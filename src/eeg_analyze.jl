@@ -1116,3 +1116,45 @@ function eeg_channels_stats!(eeg::NeuroJ.EEG)
 
     return
 end
+
+"""
+    eeg_snr(eeg)
+
+Calculate SNR of `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `snr::Matrix(Float64)`
+"""
+function eeg_snr(eeg::NeuroJ.EEG)
+
+    snr = signal_snr(eeg.eeg_signals)
+
+    return snr
+end
+
+"""
+    eeg_snr!(eeg)
+
+Calculate SNR of `eeg` channels and store in `eeg` :snr component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_snr!(eeg::NeuroJ.EEG)
+
+    :snr in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:snr)
+
+    snr = signal_snr(eeg.eeg_signals)
+    push!(eeg.eeg_components, snr)
+    push!(eeg.eeg_header[:components], :snr)
+
+    push!(eeg.eeg_header[:history], "eeg_snr!(EEG)")
+
+    return
+end

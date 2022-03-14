@@ -122,6 +122,7 @@ export signal_tconv
 export signal_total_power
 export signal_trim
 export signal_upsample
+export signal_snr
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -262,6 +263,8 @@ export eeg_spectrum
 export eeg_spectrum!
 export eeg_s2t
 export eeg_t2s
+export eeg_snr
+export eeg_snr!
 
 include("eeg_plots.jl")
 export eeg_draw_head

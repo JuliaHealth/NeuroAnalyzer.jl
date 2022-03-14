@@ -284,6 +284,10 @@ eeg_spectrum!(eeg::NeuroJ.EEG; pad::Int64=0)
 eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
 
 eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
+
+eeg_snr(eeg::NeuroJ.EEG)
+
+eeg_snr!(eeg::NeuroJ.EEG)
 ```
 
 ## EEG plots
@@ -534,6 +538,10 @@ signal_detect_epoch_p2p(signal::Array{Float64, 3})
 signal_invert_polarity(signal::AbstractArray)
 
 signal_invert_polarity(signal::Array{Float64, 3})
+
+signal_snr(signal::AbstractArray)
+
+signal_snr(signal::Array{Float64, 3})
 ```
 
 ## Misc

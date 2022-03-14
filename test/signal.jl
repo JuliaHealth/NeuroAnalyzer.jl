@@ -279,4 +279,7 @@ v = signal_channels_stats(signal_v)
 v = signal_channels_stats(signal_a)
 @test length(v) == 9
 
+@test round(signal_snr(signal_v), digits=1) == 0.0
+@test round.(signal_snr(signal_a), digits=1) == [0.0 0.0; 0.0 0.0]
+
 true

@@ -201,4 +201,8 @@ c = eeg_comment(edf)
 v = eeg_channels_stats(edf)
 @test length(v) == 9
 
+edf = eeg_import_edf("eeg-test-edf.edf")
+v = eeg_snr(edf)
+@test size(v) == (19, 1)
+
 true

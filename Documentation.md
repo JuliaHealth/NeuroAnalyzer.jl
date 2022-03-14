@@ -2610,6 +2610,40 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 
   * `t_s::Float64`: time in samples
 
+<a id='NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_snr`** &mdash; *Method*.
+
+
+
+```julia
+eeg_snr(eeg)
+```
+
+Calculate SNR of `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `snr::Matrix(Float64)`
+
+<a id='NeuroJ.eeg_snr!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_snr!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_snr!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_snr!(eeg)
+```
+
+Calculate SNR of `eeg` channels and store in `eeg` :snr component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-plots'></a>
 
@@ -5387,6 +5421,44 @@ Invert polarity of `signal`.
 **Returns**
 
   * `signal_inv::Array{Float64, 3}`
+
+<a id='NeuroJ.signal_snr-Tuple{AbstractArray}' href='#NeuroJ.signal_snr-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_snr`** &mdash; *Method*.
+
+
+
+```julia
+signal_snr(signal::AbstractArray)
+```
+
+Calculate SNR of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `snr::Float64`
+
+<a id='NeuroJ.signal_snr-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_snr-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_snr`** &mdash; *Method*.
+
+
+
+```julia
+signal_snr(signal::Array{Float64, 3})
+```
+
+Calculate SNR of `signal` channels and epochs.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `snr::Matrix{Float64}`
 
 
 <a id='Misc'></a>

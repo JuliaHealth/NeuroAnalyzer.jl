@@ -2092,7 +2092,7 @@ Downsamples all channels of the`signal` to `new_sr` sampling frequency.
 function signal_downsample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
-    
+
     channel_n, _, epoch_n = size(signal)
 
     s_downsampled_len = length(signal_downsample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
@@ -3386,4 +3386,50 @@ function signal_channels_stats(signal::Array{Float64, 3})
     end
 
     return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif
+end
+
+"""
+    signal_snr(signal::AbstractArray)
+
+Calculate SNR of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `snr::Float64`
+"""
+function signal_snr(signal::AbstractArray)
+    snr = mean(signal_detrend(signal)) / std(signal_detrend(signal))
+    
+    return snr
+end
+
+"""
+    signal_snr(signal::Array{Float64, 3})
+
+Calculate SNR of `signal` channels and epochs.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `snr::Matrix{Float64}`
+"""
+function signal_snr(signal::Array{Float64, 3})
+    
+    channel_n, signal_len, epoch_n = size(signal)
+    snr = zeros(channel_n, epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            snr[idx, epoch] = signal_snr(signal[idx, :, epoch])
+        end
+    end
+
+    return snr
 end
