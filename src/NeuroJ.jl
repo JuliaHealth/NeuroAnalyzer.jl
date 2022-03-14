@@ -123,6 +123,7 @@ export signal_total_power
 export signal_trim
 export signal_upsample
 export signal_snr
+export signal_standardize
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -223,6 +224,8 @@ export eeg_resample
 export eeg_resample!
 export eeg_invert_polarity
 export eeg_invert_polarity!
+export eeg_standardize
+export eeg_standardize!
 
 include("eeg_analyze.jl")
 export eeg_total_power

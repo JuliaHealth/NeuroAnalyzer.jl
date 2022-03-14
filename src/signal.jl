@@ -3433,3 +3433,32 @@ function signal_snr(signal::Array{Float64, 3})
 
     return snr
 end
+
+"""
+    signal_standardize(signal::Array{Float64, 3})
+
+Standardize `signal` channels for ML.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `ss::Matrix{Float64}`: standardized signal
+- `scaler::Matrix{Float64}`: scaler
+"""
+function signal_standardize(signal::Array{Float64, 3})
+    
+    channel_n, signal_len, epoch_n = size(signal)
+    ss = similar(signal)
+    scaler = Vector{Any}()
+
+    @inbounds @simd for epoch in 1:epoch_n
+        s = @view signal[:, :, epoch]
+        push!(scaler, StatsBase.fit(ZScoreTransform, s, dims=2)) 
+        ss[:,:, epoch] = StatsBase.transform(scaler[epoch], s)
+    end
+
+    return ss, scaler
+end

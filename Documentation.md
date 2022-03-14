@@ -2644,6 +2644,41 @@ Calculate SNR of `eeg` channels and store in `eeg` :snr component.
 
   * `eeg::NeuroJ.EEG`
 
+<a id='NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_standardize`** &mdash; *Method*.
+
+
+
+```julia
+eeg_standardize(eeg)
+```
+
+Standardize `eeg` channels for ML.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`: standardized EEG
+  * `scaler::Matrix{Float64}`: standardized EEG
+
+<a id='NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_standardize!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_standardize!(eeg)
+```
+
+Standardize `eeg` channels for ML; store scaler in the :scaler component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-plots'></a>
 
@@ -5459,6 +5494,26 @@ Calculate SNR of `signal` channels and epochs.
 **Returns**
 
   * `snr::Matrix{Float64}`
+
+<a id='NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_standardize`** &mdash; *Method*.
+
+
+
+```julia
+signal_standardize(signal::Array{Float64, 3})
+```
+
+Standardize `signal` channels for ML.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `ss::Matrix{Float64}`: standardized signal
+  * `scaler::Matrix{Float64}`: scaler
 
 
 <a id='Misc'></a>

@@ -282,4 +282,7 @@ v = signal_channels_stats(signal_a)
 @test round(signal_snr(signal_v), digits=1) == 0.0
 @test round.(signal_snr(signal_a), digits=1) == [0.0 0.0; 0.0 0.0]
 
+s, scaler = signal_standardize(signal_a)
+@test size(s) == (2, 101, 2)
+
 true

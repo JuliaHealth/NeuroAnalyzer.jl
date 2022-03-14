@@ -288,6 +288,10 @@ eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
 eeg_snr(eeg::NeuroJ.EEG)
 
 eeg_snr!(eeg::NeuroJ.EEG)
+
+eeg_standardize(eeg::NeuroJ.EEG)
+
+eeg_standardize!(eeg::NeuroJ.EEG)
 ```
 
 ## EEG plots
@@ -542,6 +546,8 @@ signal_invert_polarity(signal::Array{Float64, 3})
 signal_snr(signal::AbstractArray)
 
 signal_snr(signal::Array{Float64, 3})
+
+signal_standardize(signal::Array{Float64, 3})
 ```
 
 ## Misc

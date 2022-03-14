@@ -205,4 +205,7 @@ edf = eeg_import_edf("eeg-test-edf.edf")
 v = eeg_snr(edf)
 @test size(v) == (19, 1)
 
+s, _ = eeg_standardize(edf)
+@test size(s.eeg_signals) == (19, 156672, 1)
+
 true

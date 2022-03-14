@@ -1158,3 +1158,49 @@ function eeg_snr!(eeg::NeuroJ.EEG)
 
     return
 end
+
+"""
+    eeg_standardize(eeg)
+
+Standardize `eeg` channels for ML.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`: standardized EEG
+- `scaler::Matrix{Float64}`: standardized EEG
+"""
+function eeg_standardize(eeg::NeuroJ.EEG)
+    ss, scaler = signal_standardize(eeg.eeg_signals)
+    eeg_new = deepcopy(eeg)
+    eeg.eeg_signals = ss
+
+    push!(eeg_new.eeg_header[:history], "eeg_standardize!(EEG)")
+
+    return eeg_new, scaler
+end
+
+"""
+    eeg_standardize!(eeg)
+
+Standardize `eeg` channels for ML; store scaler in the :scaler component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_standardize!(eeg::NeuroJ.EEG)
+
+    :scaler in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:scaler)
+
+    ss, scaler = signal_standardize(eeg.eeg_signals)
+    eeg.eeg_signals = ss
+    push!(eeg.eeg_header[:components], :scaler)
+
+    push!(eeg.eeg_header[:history], "eeg_standardize!(EEG)")
+
+    return
+end
