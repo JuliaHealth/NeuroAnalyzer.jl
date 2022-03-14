@@ -3,6 +3,7 @@ Some low-level plotting functions
 """
 _xlims(t::Vector{Float64}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
 _xticks(t::Vector{Float64}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+_pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
 
 """
     signal_plot(t, signal; <keyword arguments>)

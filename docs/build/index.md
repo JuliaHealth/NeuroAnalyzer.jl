@@ -327,7 +327,7 @@ Keep `channels` in the `eeg`.
 eeg_get_channel(eeg; channel)
 ```
 
-Returnthe `channel` index / name.
+Return the `channel` index / name.
 
 **Arguments**
 
@@ -424,7 +424,7 @@ Show processing history.
 eeg_labels(eeg)
 ```
 
-Returnlabels.
+Return `eeg` labels.
 
 **Arguments**
 
@@ -432,7 +432,7 @@ Returnlabels.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `labels::Vector{String}`
 
 <a id='NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_sr`** &mdash; *Method*.
@@ -443,7 +443,7 @@ Returnlabels.
 eeg_sr(eeg)
 ```
 
-Returnsampling rate.
+Return `eeg` sampling rate.
 
 **Arguments**
 
@@ -451,7 +451,7 @@ Returnsampling rate.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `sr::Int64`
 
 <a id='NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_channel_n`** &mdash; *Method*.
@@ -462,7 +462,7 @@ Returnsampling rate.
 eeg_channel_n(eeg; type=:eeg)
 ```
 
-Returnnumber of `eeg` channels of `type`.
+Return number of `eeg` channels of `type`.
 
 **Arguments**
 
@@ -482,7 +482,7 @@ Returnnumber of `eeg` channels of `type`.
 eeg_epoch_n(eeg)
 ```
 
-Returnnumber of `eeg` epochs.
+Return number of `eeg` epochs.
 
 **Arguments**
 
@@ -501,7 +501,7 @@ Returnnumber of `eeg` epochs.
 eeg_signal_len(eeg)
 ```
 
-Returnlength of `eeg` signal.
+Return length of `eeg` signal.
 
 **Arguments**
 
@@ -520,7 +520,7 @@ Returnlength of `eeg` signal.
 eeg_epoch_len(eeg)
 ```
 
-Returnlength of `eeg` signal.
+Return length of `eeg` signal.
 
 **Arguments**
 
@@ -1582,7 +1582,7 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 eeg_filter(eeg; <keyword arguments>)
 ```
 
-Filter `eeg`.
+Filter `eeg` channels.
 
 **Arguments**
 
@@ -1603,14 +1603,14 @@ Filter `eeg`.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Int64, Float64, Tuple}=0`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64`=0: filter order
-  * `rp::Union{Int64, Float64}=-1`: dB ripple in the passband
-  * `rs::Union{Int64, Float64}=-1`: dB attentuation in the stopband
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass)
+  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64=8`: filter order
+  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Union{Int64, Float64}=0`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{Float64}, Nothing}=nothing`: window, required for FIR filter
+  * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 **Returns**
 
@@ -1878,7 +1878,7 @@ Calculate total power of the `eeg`.
 eeg_total_power!(eeg)
 ```
 
-Calculate total power of the `eeg`.
+Calculate total power of the `eeg` and store into :total_power component.
 
 **Arguments**
 
@@ -2387,6 +2387,58 @@ Return `pick` of electrodes for `eeg` electrodes.
 
   * `channels::Vector{Int64}`
 
+<a id='NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channels_stats`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channels_stats(eeg)
+```
+
+Calculate `eeg` channels statistics.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `c_mean::Matrix(Float64)`: mean
+  * `c_median::Matrix(Float64)`: median
+  * `c_std::Matrix(Float64)`: standard deviation
+  * `c_var::Matrix(Float64)`: variance
+  * `c_kurt::Matrix(Float64)`: kurtosis
+  * `c_mean_diff::Matrix(Float64)`: mean diff value
+  * `c_median_diff::Matrix(Float64)`: median diff value
+  * `c_max_dif::Matrix(Float64)`: max difference
+  * `c_dev_mean::Matrix(Float64)`: deviation from channel mean
+
+<a id='NeuroJ.eeg_channels_stats!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channels_stats!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channels_stats!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channels_stats!(eeg)
+```
+
+Calculate `eeg` channels statistics and store in `eeg` components:
+
+  * `channels_mean::Matrix(Float64)`: mean
+  * `channels_median::Matrix(Float64)`: median
+  * `channels_std::Matrix(Float64)`: standard deviation
+  * `channels_var::Matrix(Float64)`: variance
+  * `channels_kurt::Matrix(Float64)`: kurtosis
+  * `channels_mean_diff::Matrix(Float64)`: mean diff value
+  * `channels_median_diff::Matrix(Float64)`: median diff value
+  * `channels_max_dif::Matrix(Float64)`: max difference
+  * `channels_dev_mean::Matrix(Float64)`: deviation from channel mean
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 <a id='NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_epochs_stats`** &mdash; *Method*.
 
@@ -2396,7 +2448,7 @@ Return `pick` of electrodes for `eeg` electrodes.
 eeg_epochs_stats(eeg)
 ```
 
-Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch.
+Calculate `eeg` epochs statistics.
 
 **Arguments**
 
@@ -2404,11 +2456,15 @@ Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` 
 
 **Returns**
 
-  * `mean::Vector{Float64}`
-  * `median::Vector{Float64}`
-  * `sd::Vector{Float64}`
-  * `var::Vector{Float64}`
-  * `kurtosis::Vector{Float64}`
+  * `e_mean::Matrix(Float64)`: mean
+  * `e_median::Matrix(Float64)`: median
+  * `e_std::Matrix(Float64)`: standard deviation
+  * `e_var::Matrix(Float64)`: variance
+  * `e_kurt::Matrix(Float64)`: kurtosis
+  * `e_mean_diff::Matrix(Float64)`: mean diff value
+  * `e_median_diff::Matrix(Float64)`: median diff value
+  * `e_max_dif::Matrix(Float64)`: max difference
+  * `e_dev_mean::Matrix(Float64)`: deviation from channel mean
 
 <a id='NeuroJ.eeg_epochs_stats!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats!-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_epochs_stats!`** &mdash; *Method*.
@@ -2419,7 +2475,17 @@ Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` 
 eeg_epochs_stats!(eeg)
 ```
 
-Calculate mean, median, standard deviation, variance and kurtosis of each `eeg` epoch and store these in `eeg` components: `:epochs_mean`, `:epochs_median`, `:epochs_sd`, `:epochs_var`, `:epochs_kurtosis`. 
+Calculate `eeg` epochs statistics and store in `eeg` components:
+
+  * `epochs_mean::Matrix(Float64)`: mean
+  * `epochs_median::Matrix(Float64)`: median
+  * `epochs_std::Matrix(Float64)`: standard deviation
+  * `epochs_var::Matrix(Float64)`: variance
+  * `epochs_kurt::Matrix(Float64)`: kurtosis
+  * `epochs_mean_diff::Matrix(Float64)`: mean diff value
+  * `epochs_median_diff::Matrix(Float64)`: median diff value
+  * `epochs_max_dif::Matrix(Float64)`: max difference
+  * `epochs_dev_mean::Matrix(Float64)`: deviation from channel mean
 
 **Arguments**
 
@@ -4403,26 +4469,36 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 
 ```julia
-signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+signal_filter(signal; <keyword arguments>)
 ```
 
-Filters `signal`.
+Filter `signal`.
 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+  * `fprototype::Symbol`: filter prototype:
 
+      * `:butterworth`
+      * `:chebyshev1`
+      * `:chebyshev2`
+      * `:elliptic`
+      * `:fir`
       * `:mavg`: moving average (with threshold and/or weight window)
       * `:mmed`: moving median (with threshold and/or weight window)
       * `:poly`: polynomial of `order` order
-  * `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+  * `ftype::Symbol`: filter type:
+
+      * `:lp`: low pass
+      * `:hp`: high pass
+      * `:bp`: band pass
+      * `:bs`: band stop
   * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64`: filter order
-  * `rp::Union{Int64, Float64}`: dB ripple in the passband
-  * `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-  * `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-  * `d::Int64`: window length for mean average and median average filter
+  * `order::Int64=8`: filter order
+  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+  * `d::Int64=1`: window length for mean average and median average filter
   * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
@@ -4436,26 +4512,36 @@ Filters `signal`.
 
 
 ```julia
-signal_filter(signal; fprototype, ftype=nothing, cutoff, fs, order, rp, rs, dir=:twopass, d=1, window=nothing)
+signal_filter(signal; <keyword arguments>)
 ```
 
-Filters `signal` using zero phase distortion filter.
+Filter `signal` channels.
 
 **Arguments**
 
   * `signal::Array{Float64, 3}`
-  * `fprototype::Symbol[:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir]`: filter prototype:
+  * `fprototype::Symbol`: filter prototype:
 
+      * `:butterworth`
+      * `:chebyshev1`
+      * `:chebyshev2`
+      * `:elliptic`
+      * `:fir`
       * `:mavg`: moving average (with threshold and/or weight window)
       * `:mmed`: moving median (with threshold and/or weight window)
       * `:poly`: polynomial of `order` order
-  * `ftype::Union{Symbol[:lp, :hp, :bp, :bs], Nothing}`: filter type
+  * `ftype::Symbol`: filter type:
+
+      * `:lp`: low pass
+      * `:hp`: high pass
+      * `:bp`: band pass
+      * `:bs`: band stop
   * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64`: filter order
-  * `rp::Union{Int64, Float64}`: dB ripple in the passband
-  * `rs::Union{Int64, Float64}`: dB attentuation in the stopband
-  * `dir:Symbol[:onepass, :onepass_reverse, :twopass]`: filter direction
-  * `d::Int64`: window length for mean average and median average filter
+  * `order::Int64=8`: filter order
+  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+  * `d::Int64=1`: window length for mean average and median average filter
   * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
@@ -5026,10 +5112,10 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
 
 ```julia
-signal_epochs_var(signal)
+signal_epochs_stats(signal)
 ```
 
-Calculates variance for all `signal` epochs.
+Return `signal` epochs properties.
 
 **Arguments**
 
@@ -5037,7 +5123,69 @@ Calculates variance for all `signal` epochs.
 
 **Returns**
 
-  * `var::Vector{Float64}`
+  * `e_mean::Vector(Float64)`: mean
+  * `e_median::Vector(Float64)`: median
+  * `e_std::Vector(Float64)`: standard deviation
+  * `e_var::Vector(Float64)`: variance
+  * `e_kurt::Vector(Float64)`: kurtosis
+  * `e_mean_diff::Vector(Float64)`: mean diff value
+  * `e_median_diff::Vector(Float64)`: median diff value
+  * `e_max_dif::Vector(Float64)`: max difference
+  * `e_dev_mean::Vector(Float64)`: deviation from channel mean
+
+<a id='NeuroJ.signal_channels_stats-Tuple{AbstractArray}' href='#NeuroJ.signal_channels_stats-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.signal_channels_stats`** &mdash; *Method*.
+
+
+
+```julia
+signal_channels_stats(signal::AbstractArray)
+```
+
+Return `signal` properties.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `c_mean::Float64`: mean
+  * `c_median::Float64`: median
+  * `c_std::Float64`: standard deviation
+  * `c_var::Float64`: variance
+  * `c_kurt::Float64`: kurtosis
+  * `c_mean_diff::Float64`: mean diff value
+  * `c_median_diff::Float64`: median diff value
+  * `c_max_dif::Float64`: max difference
+  * `c_dev_mean::Float64`: deviation from channel mean
+
+<a id='NeuroJ.signal_channels_stats-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_channels_stats-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.signal_channels_stats`** &mdash; *Method*.
+
+
+
+```julia
+signal_channels_stats(signal::Array{Float64, 3})
+```
+
+Return `signal` properties.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `c_mean::Matrix(Float64)`: mean
+  * `c_median::Matrix(Float64)`: median
+  * `c_std::Matrix(Float64)`: standard deviation
+  * `c_var::Matrix(Float64)`: variance
+  * `c_kurt::Matrix(Float64)`: kurtosis
+  * `c_mean_diff::Matrix(Float64)`: mean diff value
+  * `c_median_diff::Matrix(Float64)`: median diff value
+  * `c_max_dif::Matrix(Float64)`: max difference
+  * `c_dev_mean::Matrix(Float64)`: deviation from channel mean
 
 <a id='NeuroJ.signal_spectrogram-Tuple{AbstractArray}' href='#NeuroJ.signal_spectrogram-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.signal_spectrogram`** &mdash; *Method*.
@@ -5247,16 +5395,16 @@ Invert polarity of `signal`.
 
 ## Misc
 
-<a id='NeuroJ.zero_pad-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}' href='#NeuroJ.zero_pad-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}'>#</a>
-**`NeuroJ.zero_pad`** &mdash; *Method*.
+<a id='NeuroJ.pad0m-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}' href='#NeuroJ.pad0m-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}'>#</a>
+**`NeuroJ.pad0m`** &mdash; *Method*.
 
 
 
 ```julia
-zero_pad(m)
+pad0m(m)
 ```
 
-Pads the matrix `m` with zeros to make it square.
+Pad the matrix `m` with zeros to make it square.
 
 **Arguments**
 
@@ -5493,27 +5641,54 @@ Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows 
 
   * `m_sorted::Matrix`
 
-<a id='NeuroJ.pad0-Tuple{Union{Vector{Float64}, Vector{Int64}}, Any}' href='#NeuroJ.pad0-Tuple{Union{Vector{Float64}, Vector{Int64}}, Any}'>#</a>
-**`NeuroJ.pad0`** &mdash; *Method*.
+<a id='NeuroJ.pad0' href='#NeuroJ.pad0'>#</a>
+**`NeuroJ.pad0`** &mdash; *Function*.
 
 
 
 ```julia
-pad0(x, n)
+pad0(x, n, sym)
 ```
 
-Pads the vector `x` with `n` zeros at the beginning and at the end.
-
-To do: check if x is numeric vector
+Pad the vector `x` with `n` zeros.
 
 **Arguments**
 
   * `x::Union{Vector{Int64}, Vector{Float64}}`
   * `n::Int64`
+  * `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 **Returns**
 
   * `v_pad::Union{Vector{Int64}, Vector{Float64}}`
+
+<a id='NeuroJ.generate_window-Tuple{Symbol, Int64}' href='#NeuroJ.generate_window-Tuple{Symbol, Int64}'>#</a>
+**`NeuroJ.generate_window`** &mdash; *Method*.
+
+
+
+```julia
+generate_window(type, n; even)
+```
+
+Return the `n`-point long symmetric window `type`.
+
+**Arguments**
+
+  * `type::Symbol`: window type:
+
+      * `:hann`: Hann
+      * `:bh`: Blackman-Harris
+      * `:bohman`: Bohman
+      * `:flat`: Flat-top window
+      * `:bn`: Blackman-Nuttall
+      * `:nutall`: Nuttall
+  * `n::Int64`: window length
+  * `even::Bool=false`: if true, make the window of even length (+1 for odd n)
+
+**Returns**
+
+  * `w::Vector{Float64}`:: generated window
 
 <a id='NeuroJ.generate_sinc' href='#NeuroJ.generate_sinc'>#</a>
 **`NeuroJ.generate_sinc`** &mdash; *Function*.
@@ -5521,16 +5696,17 @@ To do: check if x is numeric vector
 
 
 ```julia
-generate_sinc(t, f, peak)
+generate_sinc(t; f, peak, norm)
 ```
 
-Generate sinc function.
+Generate normalized or unnormalized sinc function.
 
 **Arguments**
 
   * `t::AbstractRange=-2:0.01:2`: time
   * `f::Union{Int64, Float64}=10.0`: frequency
   * `peak::Union{Int64, Float64}=0`: sinc peak time
+  * `norm::Bool=true`: generate normalzied function
 
 **Returns**
 

@@ -539,7 +539,7 @@ signal_invert_polarity(signal::Array{Float64, 3})
 ## Misc
 
 ```@docs
-zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
+pad0m(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
 
 vsearch(y::Union{Int64, Float64}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance::Bool=false)
 
@@ -563,11 +563,11 @@ matrix_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
 
 matrix_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
-pad0(x::Union{Vector{Int64}, Vector{Float64}}, n)
+pad0(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64, sym::Bool=false)
 
-generate_window(type::Symbol, n::Int64)
+generate_window(type::Symbol, n::Int64; even::Bool=false)
 
-generate_sinc(t::AbstractRange=-2:0.01:2, f::Union{Int64, Float64}=10.0, peak::Union{Int64, Float64}=0)
+generate_sinc(t::AbstractRange=-2:0.01:2; f::Union{Int64, Float64}=1, peak::Union{Int64, Float64}=0, norm::Bool=true)
 
 generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
 

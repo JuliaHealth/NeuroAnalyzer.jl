@@ -104,6 +104,8 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- MEG data (fT insted of μV)
+- reports in .md format
 - brain topography
 - split eeg_ and signal_ functions into separate files, create low-level _ functions
 - events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)

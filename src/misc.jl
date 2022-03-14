@@ -33,9 +33,9 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 logspace(start::Union{Int64, Float64}, stop::Union{Int64, Float64}, length::Int64) = collect(exp10.(range(start, stop, length)))
 
 """
-    zero_pad(m)
+    pad0m(m)
 
-Pads the matrix `m` with zeros to make it square.
+Pad the matrix `m` with zeros to make it square.
 
 # Arguments
 
@@ -45,7 +45,7 @@ Pads the matrix `m` with zeros to make it square.
 
 - `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
 """
-function zero_pad(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
+function pad0m(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
 
     nr, nc = size(m)
 
@@ -171,40 +171,43 @@ Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 sph2cart(rho::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0) = rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta), rho * sin(phi)
 
 """
-    generate_window(type, n)
+    generate_window(type, n; even)
 
 Return the `n`-point long symmetric window `type`.
 
 # Arguments
 
 - `type::Symbol`: window type:
-    - `:hanning`: Hanning
-    - `:blackmanharris`: Blackman-Harris
+    - `:hann`: Hann
+    - `:bh`: Blackman-Harris
     - `:bohman`: Bohman
-    - `:flattop`: Flat-top window
-    - `:nutall`: Blackman-Nuttall
+    - `:flat`: Flat-top window
+    - `:bn`: Blackman-Nuttall
+    - `:nutall`: Nuttall
 - `n::Int64`: window length
-
+- `even::Bool=false`: if true, make the window of even length (+1 for odd n)
 # Returns
 
 - `w::Vector{Float64}`:: generated window
 """
-function generate_window(type::Symbol, n::Int64)
+function generate_window(type::Symbol, n::Int64; even::Bool=false)
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    mod(n, 2) == 0 && (n += 1)
-    t = range(-0.5, 0.5, length = n)
-    if type === :hanning
-        w = @. 0.5 * (1 + cos.(2 * pi * t))
-    elseif type === :blackmanharris
+    even == true && mod(n, 2) != 0 && (n += 1)
+    t = range(0, 1, n)
+    if type === :hann
+        w = @. 0.5 * (1 - cos.(2 * pi * t))
+    elseif type === :bh
         w = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
     elseif type === :bohman
         w = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
-    elseif type === :flattop
-        w = @. 0.2157 - 0.4163 * cos.(2 * pi * t) + 0.2783 * cos.(4 * pi * t) - 0.0837 * cos.(6 * pi * t) + 0.0060 * cos.(8 * pi * t)
+    elseif type === :flat
+        w = @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
+    elseif type === :bn
+        w = @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
     elseif type === :nutall
-        w = @. 0.3635819 - 0.4891775*cos(2*pi*t) + 0.1365995*cos(4*pi*t) - 0.0106411*cos(6*pi*t)
+        w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
     else
-        throw(ArgumentError("Window type must be :hanning, :blackmanharris, :bohman, :flattop, nutall."))
+        throw(ArgumentError("Window type must be :hann, :bh, :bohman, :flat, :bn, :nutall."))
     end
 
     return w

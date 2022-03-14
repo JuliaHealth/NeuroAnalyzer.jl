@@ -660,5 +660,5 @@ end
 @time eeg_benchmark(10)
 
 # workstation: 14.271216 seconds (51.62 M allocations: 106.612 GiB, 38.88% gc time)
-# laptop: 41.675390 seconds (55.12 M allocations: 274.873 GiB, 13.15% gc time)
+# laptop: 21.264225 seconds (50.79 M allocations: 106.541 GiB, 11.73% gc time, 0.11% compilation time)
 ```
