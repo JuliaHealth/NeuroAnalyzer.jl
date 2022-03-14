@@ -5862,13 +5862,13 @@ Generate Morlet wavelet.
 
   * `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 
-<a id='NeuroJ.generate_gaussian-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.generate_gaussian-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
-**`NeuroJ.generate_gaussian`** &mdash; *Method*.
+<a id='NeuroJ.generate_gaussian' href='#NeuroJ.generate_gaussian'>#</a>
+**`NeuroJ.generate_gaussian`** &mdash; *Function*.
 
 
 
 ```julia
-generate_gaussian(fs, wt, wf)
+generate_gaussian(fs, gt, gw, pt, pa)
 ```
 
 Generate Gaussian wave.
@@ -5876,8 +5876,11 @@ Generate Gaussian wave.
 **Arguments**
 
   * `fs::Int64`: sampling rate
-  * `gt::Union{Int64, Float64}`: length = -wt:1/fs:wt
-  * `gw::Union{Int64, Float64}`: width
+  * `gt::Union{Int64, Float64}`: length = 0:1/fs:gt
+  * `gw::Union{Int64, Float64}=1`: width
+  * `pt::Union{Int64, Float64}=0`: peak time
+  * `pa::Union{Int64, Float64}=1`: peak amp
+  * 
 
 **Returns**
 

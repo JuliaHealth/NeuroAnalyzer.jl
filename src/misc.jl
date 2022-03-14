@@ -683,24 +683,26 @@ function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, 
 end
 
 """
-    generate_gaussian(fs, wt, wf)
+    generate_gaussian(fs, gt, gw, pt, pa)
 
 Generate Gaussian wave.
 
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `gt::Union{Int64, Float64}`: length = -wt:1/fs:wt
-- `gw::Union{Int64, Float64}`: width
-
+- `gt::Union{Int64, Float64}`: length = 0:1/fs:gt
+- `gw::Union{Int64, Float64}=1`: width
+- `pt::Union{Int64, Float64}=0`: peak time
+- `pa::Union{Int64, Float64}=1`: peak amp
+- 
 # Returns
 
 - `gaussian::Vector{Float64}`
 """
-function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
+function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64}=1, pt::Union{Int64, Float64}=0, pa::Union{Int64, Float64}=1.0)
 
     t = -gt:1/fs:gt
-    g = MathConstants.e.^(-t.^2 ./ gw)
+    g = @. pa * exp(-(t - pt)^2 / gw)
 
     return g
 end

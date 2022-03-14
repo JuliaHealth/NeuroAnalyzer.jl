@@ -585,7 +585,7 @@ generate_sinc(t::AbstractRange=-2:0.01:2; f::Union{Int64, Float64}=1, peak::Unio
 
 generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
 
-generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64})
+generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64}=1, pt::Union{Int64, Float64}=0, pa::Union{Int64, Float64}=1.0)
 
 tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
 
