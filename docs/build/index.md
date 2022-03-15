@@ -3378,6 +3378,57 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG, Union{Matrix{Float64}, Matrix{Int64}, Symbol}}' href='#NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG, Union{Matrix{Float64}, Matrix{Int64}, Symbol}}'>#</a>
+**`NeuroJ.eeg_plot_channels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_channels(eeg; <keyword arguments>)
+```
+
+Plot values of `v` for selected channels of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
+  * `epoch::Int64`: number of epoch for which `v` should be plotted
+  * `xlabel::String="Channels"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG, Union{Vector{Float64}, Vector{Int64}, Symbol}}' href='#NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG, Union{Vector{Float64}, Vector{Int64}, Symbol}}'>#</a>
+**`NeuroJ.eeg_plot_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_epochs(eeg; <keyword arguments>)
+```
+
+Plot values of `v` for selected epoch of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `v::Union{Vector{Int64}, Vector{Float64}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
+  * `xlabel::String="Epochs"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: other arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
 <a id='NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_plot_electrodes`** &mdash; *Method*.
 
@@ -5474,7 +5525,11 @@ Calculate SNR of `signal`.
 
 **Returns**
 
-  * `snr::Float64`
+  * `snr::Float64`: SNR in dB
+
+**Source**
+
+D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 
 <a id='NeuroJ.signal_snr-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_snr-Tuple{Array{Float64, 3}}'>#</a>
 **`NeuroJ.signal_snr`** &mdash; *Method*.
@@ -5490,10 +5545,11 @@ Calculate SNR of `signal` channels and epochs.
 **Arguments**
 
   * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling rate
 
 **Returns**
 
-  * `snr::Matrix{Float64}`
+  * `snr::Matrix{Float64}`: SNR in dB
 
 <a id='NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}'>#</a>
 **`NeuroJ.signal_standardize`** &mdash; *Method*.
