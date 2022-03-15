@@ -3399,11 +3399,19 @@ Calculate SNR of `signal`.
 
 # Returns
 
-- `snr::Float64`
+- `snr::Float64`: SNR in dB
+
+# Source
+
+D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function signal_snr(signal::AbstractArray)
-    snr = mean(signal_detrend(signal)) / std(signal_detrend(signal))
-    
+
+    # make signal positive
+    signal .+= abs(minimum(signal))
+
+    snr = mean(signal) / std(signal)
+
     return snr
 end
 
@@ -3415,19 +3423,22 @@ Calculate SNR of `signal` channels and epochs.
 # Arguments
 
 - `signal::Array{Float64, 3}`
+- `fs::Int64`: sampling rate
 
 # Returns
 
-- `snr::Matrix{Float64}`
+- `snr::Matrix{Float64}`: SNR in dB
 """
 function signal_snr(signal::Array{Float64, 3})
     
+
     channel_n, signal_len, epoch_n = size(signal)
     snr = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
-            snr[idx, epoch] = signal_snr(signal[idx, :, epoch])
+            s = @view signal[idx, :, epoch]
+            snr[idx, epoch] = signal_snr(s)
         end
     end
 

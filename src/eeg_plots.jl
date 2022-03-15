@@ -4,6 +4,20 @@ Some low-level plotting functions
 _xlims(t::Vector{Float64}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
 _xticks(t::Vector{Float64}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
 _pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
+function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64)
+    # select channels, default is all or def_chn
+    def_chn > eeg_channel_n(eeg) && (def_chn = eeg_channel_n(eeg))
+    def_chn == 0 && (def_chn = eeg_channel_n(eeg))
+    channel == 0 && (channel = 1:def_chn)
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    length(channel) > 1 && sort!(channel)
+    for idx in 1:length(channel)
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    end
+    length(channel) == 1 && eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+
+    return channel
+end
 
 """
     signal_plot(t, signal; <keyword arguments>)
@@ -184,20 +198,8 @@ function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
         end
     end
     
-    # select channels, default is 1:20 or all channels
-    if channel == 0
-        if eeg_channel_n(eeg) >= 20
-            channel = 1:20
-        else
-            channel = 1:eeg_channel_n(eeg)
-        end
-    end
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
-    length(channel) == 1 && eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    # select channels, default is 20 channels
+    channel = _select_channels(eeg, channel, 20)
 
     # get epochs markers for len > epoch_len
     epoch_markers = Vector{Int64}[]
@@ -637,13 +639,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     end
 
     # select channels, default is all channels
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg_channel_n(eeg))
-    length(channel) == 1 && throw(ArgumentError("At least 2 channels are required."))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
+    channel = _select_channels(eeg, channel, 0)
 
     # get epochs markers for len > epoch_len
     epoch_markers = Vector{Int64}[]
@@ -871,13 +867,7 @@ function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, 
     end
 
     # select channels, default is all channels
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg_channel_n(eeg))
-    length(channel) == 1 && throw(ArgumentError("number of channels must be ≥ 2."))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
+    channel = _select_channels(eeg, channel, 0)
 
     # get epochs markers for len > epoch_len
     epoch_markers = Vector{Int64}[]
@@ -1195,19 +1185,7 @@ function eeg_plot_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     end
 
     # select channels, default is 1:20 or all channels
-    if channel == 0
-        if eeg_channel_n(eeg) >= 20
-            channel = 1:20
-        else
-            channel = 1:eeg_channel_n(eeg)
-        end
-    end
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
-    (length(channel) == 1 && average == true) && throw(ArgumentError("channel must contain ≥ 2 channels if average=true"))
+    channel = _select_channels(eeg, channel, 20)
 
     # get epochs markers for len > epoch_len
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -1265,12 +1243,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     # select channels, default is all channels
-    channel == 0 && (channel = 1:eeg_channel_n(eeg))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    channel = _select_channels(eeg, channel, 0)
 
     # select channels, default is all channels
     if selected != 0
@@ -1441,13 +1414,8 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    # select channels, default is 1:20 or all channels
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel == 0 && (channel = 1:eeg_channel_n(eeg))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
+    # select channels, default is all channels
+    channel = _select_channels(eeg, channel, 0)
 
     labels = eeg_labels(eeg)
     ndims(cov_m) == 3 && (cov_m = cov_m[:, :, epoch])
@@ -1567,13 +1535,7 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
     len < 0 && throw(ArgumentError("len must be > 0."))
 
     # select channels, default is all channels
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-    channel == 0 && (channel = 1:eeg_channel_n(eeg))
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    length(channel) > 1 && sort!(channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
+    channel = _select_channels(eeg, channel, 0)
     length(channel) > 1 && len < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
 
     (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
@@ -2699,4 +2661,47 @@ function eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
     savefig(p, file_name)
 
     return
+end
+
+"""
+    eeg_plot_channels(eeg; <keyword arguments>)
+
+Plot values of `v` for selected `channel` of `eeg`.
+
+# Arguments
+
+- `eeg:NeuroJ.EEG`
+- `v::Union{Matrix{Int64}, Matrix{Float64}}`:: values to plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`
+- `epoch::Int64`: for which epoch `v` should be plotted
+- `xlabel::String="Channels"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
+
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    channel = _select_channels(eeg, channel, 0)
+    labels = eeg_labels(eeg)[channel]
+    length(v[:, epoch]) == eeg_channel_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of EEG channels ($(length(channel))) do not match."))
+
+    p = plot(v[channel, epoch],
+             label="",
+             xticks=(1:length(labels), labels),
+             xlabel=xlabel,
+             ylabel=ylabel,
+             title=title,
+             palette=:darktest,
+             titlefontsize=10,
+             xlabelfontsize=8,
+             ylabelfontsize=8,
+             xtickfontsize=8,
+             ytickfontsize=8;
+             kwargs...)
+
+    return p
 end

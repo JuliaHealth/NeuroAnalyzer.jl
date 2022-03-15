@@ -75,4 +75,8 @@ p = eeg_plot_band(edf, channel=1, type=:abs)
 p = eeg_plot_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+snr = eeg_snr(edf)
+p = eeg_plot_channels(edf, snr, epoch=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true

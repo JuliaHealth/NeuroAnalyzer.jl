@@ -208,4 +208,7 @@ v = eeg_snr(edf)
 s, _ = eeg_standardize(edf)
 @test size(s.eeg_signals) == (19, 156672, 1)
 
+snr = eeg_snr(edf)
+@test length(snr) == 19
+
 true

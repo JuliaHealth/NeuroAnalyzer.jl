@@ -1150,7 +1150,7 @@ function eeg_snr!(eeg::NeuroJ.EEG)
 
     :snr in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:snr)
 
-    snr = signal_snr(eeg.eeg_signals)
+    snr = signal_snr(eeg.eeg_signals, eeg_sr(eeg))
     push!(eeg.eeg_components, snr)
     push!(eeg.eeg_header[:components], :snr)
 

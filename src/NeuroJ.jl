@@ -293,6 +293,7 @@ export signal_plot_histogram
 export signal_plot_ica
 export signal_plot_psd
 export signal_plot_spectrogram
+export eeg_plot_channels
 
 include("nstim.jl")
 export tes_dose
