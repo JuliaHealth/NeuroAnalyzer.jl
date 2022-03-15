@@ -18,6 +18,19 @@ function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, 
 
     return channel
 end
+function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange}, def_ep::Int64)
+    # select epochs, default is all
+    def_ep > eeg_epoch_n(eeg) && (def_ep = eeg_epoch_n(eeg))
+    def_ep == 0 && (def_ep = eeg_epoch_n(eeg))
+    epoch == 0 && (epoch = 1:def_ep)
+    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+    length(epoch) > 1 && sort!(epoch)
+    for idx in 1:length(epoch)
+        (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    end
+
+    return epoch
+end
 
 """
     signal_plot(t, signal; <keyword arguments>)
@@ -2666,32 +2679,90 @@ end
 """
     eeg_plot_channels(eeg; <keyword arguments>)
 
-Plot values of `v` for selected `channel` of `eeg`.
+Plot values of `v` for selected channels of `eeg`.
 
 # Arguments
 
 - `eeg:NeuroJ.EEG`
-- `v::Union{Matrix{Int64}, Matrix{Float64}}`:: values to plot
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`
-- `epoch::Int64`: for which epoch `v` should be plotted
+- `v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
+- `epoch::Int64`: number of epoch for which `v` should be plotted
 - `xlabel::String="Channels"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
+
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     channel = _select_channels(eeg, channel, 0)
     labels = eeg_labels(eeg)[channel]
-    length(v[:, epoch]) == eeg_channel_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of EEG channels ($(length(channel))) do not match."))
 
-    p = plot(v[channel, epoch],
+    if typeof(v) != Symbol
+        length(v[:, epoch]) == eeg_channel_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of EEG channels ($(length(channel))) do not match."))
+        var = v[channel, epoch]
+    else
+        v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
+        component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        var = eeg.eeg_components[component_idx][channel, epoch]
+    end
+
+    p = plot(var,
              label="",
              xticks=(1:length(labels), labels),
+             xlabel=xlabel,
+             ylabel=ylabel,
+             title=title,
+             palette=:darktest,
+             titlefontsize=10,
+             xlabelfontsize=8,
+             ylabelfontsize=8,
+             xtickfontsize=8,
+             ytickfontsize=8;
+             kwargs...)
+
+    return p
+end
+
+"""
+    eeg_plot_epochs(eeg; <keyword arguments>)
+
+Plot values of `v` for selected epoch of `eeg`.
+
+# Arguments
+
+- `eeg:NeuroJ.EEG`
+- `v::Union{Vector{Int64}, Vector{Float64}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
+- `xlabel::String="Epochs"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_epochs(eeg::NeuroJ.EEG, v::Union{Vector{Int64}, Vector{Float64}, Symbol}; epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", kwargs...)
+
+    epoch = _select_epochs(eeg, epoch, 0)
+
+    if typeof(v) != Symbol
+        length(v) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of EEG epochs ($(length(epoch))) do not match."))
+        var = v[epoch]
+    else
+        v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
+        component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        var = eeg.eeg_components[component_idx][epoch]
+    end
+
+    p = plot(var,
+             label="",
+             xticks=epoch,
              xlabel=xlabel,
              ylabel=ylabel,
              title=title,

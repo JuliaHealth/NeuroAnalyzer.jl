@@ -347,7 +347,9 @@ signal_plot_band(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol,
 
 eeg_plot_band(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
+eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
+
+eeg_plot_epochs(eeg::NeuroJ.EEG, v::Union{Vector{Int64}, Vector{Float64}, Symbol}; epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", kwargs...)
 
 eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
 

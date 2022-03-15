@@ -599,6 +599,21 @@ eeg_plot_save(p, file_name="images/edf_autocov.png")
 
 ![edf autocov](images/edf_autocov.png)
 
+Plot channels stats:
+```julia
+e10 = eeg_epochs(edf, epoch_n=10)
+eeg_channels_stats!(e10)
+eeg_epochs_stats!(e10)
+p = eeg_plot_channels(e10, :channels_var, epoch=1, title="Channels variance\n[epoch: 1]")
+eeg_plot_save(p, file_name="images/e10_channels.png")
+p = eeg_plot_epochs(e10, :epochs_var, title="Epochs variance")
+eeg_plot_save(p, file_name="images/e10_epochs.png")
+```
+
+![e10 channels](images/e10_channels.png)
+
+![e10 epochs](images/e10_epochs.png)
+
 ### EEG Misc
 
 ```julia
