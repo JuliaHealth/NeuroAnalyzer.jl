@@ -17,6 +17,7 @@ function neuroj_version()
                          "Interpolations",
                          "JLD2",
                          "LinearAlgebra",
+                         "Loess",
                          "MultivariateStats",
                          "Plots",
                          "Polynomials",

@@ -29,6 +29,8 @@ The following packages are required:
 - Distances
 - DSP
 - FFTW
+- HypothesisTests
+- InformationMeasures
 - Interpolations
 - JLD2
 - LinearAlgebra
@@ -36,8 +38,11 @@ The following packages are required:
 - MultivariateStats
 - Pkg
 - Plots
+- Polynomials
+- ScatteredInterpolation
 - [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsKit
+- StatsPlots
 
 NeuroJ.jl will be 100% Julia based.
 
@@ -99,23 +104,24 @@ neuroj_plugin_demo()
 
 .. so much to do ..
 
+The lists below are not in any particular order.
+
 General:
 - performance optimization
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- MEG data (fT insted of μV)
-- join EEG objects
+- MEG data (fT instead of μV)
+- merge EEG objects
 - reports in .md format
 - brain topography
-- split eeg_ and signal_ functions into separate files, create low-level _ functions
 - events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)
-- eeg_keep_eeg_channels -> keep_channels_type
+- eeg_keep_eeg_channels → keep_channels(type)
 - remove embedded components that are not useful
 - rewrite plotting functions to be more modular
 - plot by time (continuous) or by epoch - separate functions
-- use any calculations (e.g. median delta power) stored as a component for topo plots
-- plot spectrogram/psd: use embedded spectrogram/psd (plot by epoch)
+- use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
+- plot spectrogram/psd: use embedded spectrogram/psd (if plot by epoch)
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes
@@ -128,6 +134,7 @@ EEG:
 - more re-referencing methods: Laplacian, REST
 - io: import from CSV
 - create EEG object
+- dipoles
 - automated DC line cleaning
 - automated channel rejection
 - automated cleaning of artifacts
