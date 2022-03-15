@@ -71,12 +71,12 @@ Remove EEG from memory:
 eeg_delete(edf)
 ```
 
-All operations on EEG are stored within the object. To show its processing history:
+All operations on EEG are stored within the object. Show processing history:
 ```julia
 eeg_history(edf)
 ```
 
-Edit EEG header
+Edit EEG header:
 ```julia
 eeg_show_header(edf)
 eeg_edit_header!(edf, field=:patient, value="N.N.")
@@ -93,7 +93,7 @@ eeg_signal_len(edf)
 eeg_epoch_len(edf)
 ```
 
-Any metadata can be extracted via eeg_header:
+Any metadata can be extracted via `eeg_header`:
 ```julia
 edf.eeg_header[:eeg_duration_seconds]
 ```

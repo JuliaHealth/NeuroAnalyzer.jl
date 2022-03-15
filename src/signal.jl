@@ -3399,7 +3399,7 @@ Calculate SNR of `signal`.
 
 # Returns
 
-- `snr::Float64`: SNR in dB
+- `snr::Float64`
 
 # Source
 
@@ -3427,7 +3427,7 @@ Calculate SNR of `signal` channels and epochs.
 
 # Returns
 
-- `snr::Matrix{Float64}`: SNR in dB
+- `snr::Matrix{Float64}`
 """
 function signal_snr(signal::Array{Float64, 3})
     

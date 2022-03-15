@@ -5525,7 +5525,7 @@ Calculate SNR of `signal`.
 
 **Returns**
 
-  * `snr::Float64`: SNR in dB
+  * `snr::Float64`
 
 **Source**
 
@@ -5549,7 +5549,7 @@ Calculate SNR of `signal` channels and epochs.
 
 **Returns**
 
-  * `snr::Matrix{Float64}`: SNR in dB
+  * `snr::Matrix{Float64}`
 
 <a id='NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}' href='#NeuroJ.signal_standardize-Tuple{Array{Float64, 3}}'>#</a>
 **`NeuroJ.signal_standardize`** &mdash; *Method*.
