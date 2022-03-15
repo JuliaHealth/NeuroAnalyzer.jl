@@ -105,6 +105,7 @@ General:
 
 EEG:
 - MEG data (fT insted of μV)
+- join EEG objects
 - reports in .md format
 - brain topography
 - split eeg_ and signal_ functions into separate files, create low-level _ functions
