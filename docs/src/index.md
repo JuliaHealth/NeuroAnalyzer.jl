@@ -93,10 +93,6 @@ eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRang
 
 eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
 
-eeg_delete_bad_epochs(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
-
-eeg_delete_bad_epochs!(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
-
 eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
 
 eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
@@ -140,14 +136,6 @@ eeg_rename_component!(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
 eeg_invert_polarity(eeg::NeuroJ.EEG; channel::Int64)
 
 eeg_invert_polarity!(eeg::NeuroJ.EEG; channel::Int64)
-
-eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-
-eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-
-eeg_reference_car(eeg::NeuroJ.EEG)
-
-eeg_reference_car!(eeg::NeuroJ.EEG)
 
 eeg_derivative(eeg::NeuroJ.EEG)
 
@@ -313,11 +301,11 @@ eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic:
 
 eeg_plot_topo(eeg::NeuroJ.EEG; offset::Int64, len::Int64=0, m::Symbol=:shepard, c::Symbol=:amp, c_idx::Union{Int64, Vector{Int64}, AbstractRange, Tuple, Nothing}=nothing, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0,0), head_labels::Bool=false, cb::Bool=false, cb_label::String="", average::Bool=true, title::String="", kwargs...)
 
-signal_plot_band(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-signal_plot_band(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol, norm::Bool=true, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
+signal_plot_bands(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol, norm::Bool=true, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-eeg_plot_band(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
 eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
 
@@ -335,25 +323,9 @@ eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
 ## Signal
 
 ```@docs
-signal_derivative(signal::AbstractArray)
-
-signal_derivative(signal::Array{Float64, 3})
-
-signal_total_power(signal::AbstractArray; fs::Int64)
-
-signal_total_power(signal::Array{Float64, 3}; fs::Int64)
-
-signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
-
-signal_band_power(signal::Array{Float64, 3}; fs::Int64, f::Tuple)
-
 signal_make_spectrum(signal::AbstractArray; fs::Int64)
 
 signal_make_spectrum(signal::Array{Float64, 3}; fs::Int64)
-
-signal_detrend(signal::AbstractArray; type::Symbol=:linear)
-
-signal_detrend(signal::Array{Float64, 3}; type::Symbol=:linear)
 
 signal_ci95(signal::Vector{Float64}; n::Int64=3, method::Symbol=:normal)
 
@@ -495,10 +467,6 @@ signal_ica_reconstruct(signal::Array{Float64, 3}; ic_activations::Array{Float64,
 
 signal_epochs_stats(signal::Array{Float64, 3})
 
-signal_channels_stats(signal::AbstractArray)
-
-signal_channels_stats(signal::Array{Float64, 3})
-
 signal_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
 
 signal_spectrogram(signal::Array{Float64, 3}; fs::Int64, norm::Bool=true, demean::Bool=true)
@@ -514,16 +482,6 @@ signal_detect_epoch_rmsd(signal::Array{Float64, 3})
 signal_detect_epoch_euclid(signal::Array{Float64, 3})
 
 signal_detect_epoch_p2p(signal::Array{Float64, 3})
-
-signal_invert_polarity(signal::AbstractArray)
-
-signal_invert_polarity(signal::Array{Float64, 3})
-
-signal_snr(signal::AbstractArray)
-
-signal_snr(signal::Array{Float64, 3})
-
-signal_standardize(signal::Array{Float64, 3})
 ```
 
 ## Misc

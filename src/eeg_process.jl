@@ -1,7 +1,7 @@
 """
     eeg_reference_channel(eeg; channel)
 
-Reference the `eeg` to specific channel `channel`.
+Reference the `eeg` to specific `channel`.
 
 # Arguments
 
@@ -16,12 +16,33 @@ function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_ref = zeros(size(eeg.eeg_signals))
 
-    s_referenced = signal_reference_channel(eeg.eeg_signals, channel=channel)
+    channel_list = collect(1:channel_n)
+    for idx in 1:length(channel)
+        if (channel[idx] in channel_list) == false
+            throw(ArgumentError("channel does not match signal channels."))
+        end
+    end
+
+    @inbounds @simd for epoch in 1:epoch_n
+        s = @view eeg.eeg_signals[channel, :, epoch]
+        if length(channel) == 1
+            reference_channel = mean(s, dims=2)
+        else
+            reference_channel = vec(mean(s, dims=1))
+        end
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_ref[idx, :, epoch] = s .- reference_channel
+        end
+        length(channel) == 1 && (s_ref[channel, :, epoch] = reference_channel)
+    end
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_referenced
+    eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "channel: $channel"
     eeg_reset_components!(eeg_new)
 
@@ -42,9 +63,9 @@ Reference the `eeg` to specific channel `channel`.
 """
 function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = signal_reference_channel(eeg.eeg_signals, channel=channel)
+    s = eeg_reference_channel(eeg, channel=channel)
+    eeg.eeg_signals = s.eeg_signals
+    eeg_reset_components!(eeg)
 
     push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
 
@@ -68,15 +89,24 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_referenced = signal_reference_car(eeg.eeg_signals)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_ref = zeros(size(eeg.eeg_signals))
+
+    @inbounds @simd for epoch in 1:epoch_n
+        reference_channel = vec(mean(eeg.eeg_signals[:, :, epoch], dims=1))
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_ref[idx, :, epoch] = s .- reference_channel
+        end
+    end
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_referenced
+    eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "CAR"
     eeg_reset_components!(eeg_new)
 
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
-
 
     return eeg_new
 end
@@ -92,15 +122,20 @@ Reference the `eeg` to common average reference.
 """
 function eeg_reference_car!(eeg::NeuroJ.EEG)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = signal_reference_car(eeg.eeg_signals)
+    eeg.eeg_signals = eeg_reference_car(eeg).eeg_signals
 
     push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG)")
-
     eeg_reset_components!(eeg)
 
     return
+end
+
+function _signal_derivative(signal::AbstractArray)
+
+    s_der = diff(signal)
+    s_der = vcat(s_der, s_der[end])
+    
+    return s_der
 end
 
 """
@@ -120,9 +155,17 @@ function eeg_derivative(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_der = signal_derivative(eeg.eeg_signals)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_der = zeros(size(eeg.eeg_signals))
+    
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_der[idx, :, epoch] = _signal_derivative(s)
+        end
+    end
 
-    # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_der
     eeg_reset_components!(eeg_new)
@@ -153,27 +196,101 @@ function eeg_derivative!(eeg::NeuroJ.EEG)
     return
 end
 
+function _signal_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
+
+    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
+
+    if type === :loess
+        t = collect(1.0:1:length(signal))
+        model = loess(t, signal, span=span)
+        trend = Loess.predict(model, t)
+        s_det = signal .- trend
+
+        return s_det
+    end
+
+    if type === :poly
+        t = collect(1:1:length(signal))        
+        p = Polynomials.fit(t, signal, order)
+        trend = zeros(length(signal))
+        for idx in 1:length(signal)
+            trend[idx] = p(t[idx])
+        end
+        s_det = signal .- trend
+
+        return s_det
+    end
+
+    if type === :constant
+        offset == 0 && (offset = mean(signal))
+        s_det = signal .- mean(signal)
+
+        return s_det
+    end
+
+    if type === :ls
+        T = eltype(signal)
+        N = size(signal, 1)
+        # create linear trend matrix
+        A = similar(signal, T, N, 2)
+        A[:,2] .= T(1)
+        A[:,1] .= range(T(0),T(1),length=N)
+        # create linear trend matrix
+        R = transpose(A) * A
+        # do the matrix inverse for 2x2 matrix
+        Rinv = inv(Array(R)) |> typeof(R)
+        factor = Rinv * transpose(A)
+        s_det = signal .- A * (factor * signal)
+
+        return s_det
+    end
+
+    if type == :linear
+        trend = linspace(signal[1], signal[end], length(signal))
+        s_det = signal .- trend
+
+        return s_det
+    end
+end
+
 """
     eeg_detrend(eeg; type)
 
-Remove linear trend from the `eeg`.
+Perform piecewise detrending of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Symbol=:linear`, optional
-    - `:linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `:constant`: the mean of `signal` is subtracted
+- `type::Symbol`, optional
+    - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:linear`: linear trend is subtracted from `signal`
+    - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+    - `:poly`: polynomial of `order` is subtracted
+    - `:loess`: fit and subtract loess approximation
+- `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+- `order::Int64=1`: polynomial fitting order
+- `span::Float64`: smoothing of loess
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear)
+function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_det = signal_detrend(eeg.eeg_signals, type=type)
+    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_det = zeros(size(eeg.eeg_signals))
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            s_det[idx, :, epoch] = _signal_detrend(s, type=type, offset=offset, order=order, span=span)
+        end
+    end
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_det
@@ -192,16 +309,32 @@ Remove linear trend from the `eeg`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Symbol=:linear`, optional
-    - `:linear`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-    - `:constant`: the mean of `signal` is subtracted
+- `type::Symbol`, optional
+    - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+    - `:linear`: linear trend is subtracted from `signal`
+    - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+    - `:poly`: polynomial of `order` order is subtracted
+    - `:loess`: fit and subtract loess approximation
+- `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+- `order::Int64=1`: polynomial fitting order
+- `span::Float64`: smoothing of loess
 """
-function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear)
+function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    eeg.eeg_signals = signal_detrend(eeg.eeg_signals, type=type)
-    # add entry to :history field
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_det = zeros(size(eeg.eeg_signals))
+    
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            s_det[idx, :, epoch] = _signal_detrend(s, type=type, offset=offset, order=order, span=span)
+        end
+    end
+    eeg.eeg_signals = s_det
+
     push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, type=$type)")
 
     return
@@ -849,6 +982,8 @@ function eeg_resample!(eeg::NeuroJ.EEG; new_sr::Int64)
     return
 end
 
+_signal_invert_polarity(signal::AbstractArray) = .- signal
+
 """
     eeg_invert_polarity(eeg; channel)
 
@@ -868,7 +1003,7 @@ function eeg_invert_polarity(eeg::NeuroJ.EEG; channel::Int64)
     (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
     eeg_new = deepcopy(eeg)
-    eeg_inv = signal_invert_polarity(eeg_new.eeg_signals[channel, :, :])
+    eeg_inv = _signal_invert_polarity(eeg_new.eeg_signals[channel, :, :])
     eeg_new.eeg_signals[channel, :, :] = eeg_inv
 
     push!(eeg_new.eeg_header[:history], "eeg_invert_polarity(EEG, channel=$channel)")

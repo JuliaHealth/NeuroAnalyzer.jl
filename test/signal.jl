@@ -19,25 +19,12 @@ signal_m2 = signal_m .* 0.2
 signal_a1 = signal_a .* 0.1
 signal_a2 = signal_a .* 0.2
 
-@test size(signal_derivative(signal_v)) == (101, )
-
-@test typeof(signal_total_power(signal_v, fs=fs)) == Float64
-@test size(signal_total_power(signal_a, fs=fs)) == (2, 2)
-
-@test typeof(signal_band_power(signal_v, fs=fs, f=(2, 4))) == Float64
-@test size(signal_band_power(signal_a, fs=fs, f=(2, 4))) == (2, 2)
-
 signal_fft, signal_sf = signal_make_spectrum(signal_v, fs=fs)
 @test size(signal_sf) == (101, )
 
 signal_fft, signal_sf = signal_make_spectrum(signal_a, fs=fs)
 @test size(abs.(signal_fft)) == (2, 101, 2)
 @test size(signal_sf) == (2, 101, 2)
-
-@test typeof(signal_detrend(signal_v, type=:linear)) == Vector{Float64}
-@test size(signal_detrend(signal_v, type=:constant)) == (101, )
-@test typeof(signal_detrend(signal_a, type=:linear)) == Array{Float64, 3}
-@test size(signal_detrend(signal_a, type=:constant)) == (2, 101, 2)
 
 m, s, u, l = signal_ci95(signal_v)
 @test typeof(m) == Float64
@@ -104,18 +91,6 @@ signal = signal_delete_channel(signal_m, channel=1)
 
 signal = signal_delete_channel(signal_a, channel=1)
 @test size(signal) == (1, 101, 2)
-
-signal_ref = signal_reference_channel(signal_m, channel=1)
-@test size(signal_ref) == (2, 101)
-
-signal_ref = signal_reference_channel(signal_a, channel=1)
-@test size(signal_ref) == (2, 101, 2)
-
-signal_ref = signal_reference_car(signal_m)
-@test size(signal_ref) == (2, 101)
-
-signal_ref = signal_reference_car(signal_a)
-@test size(signal_ref) == (2, 101, 2)
 
 signal_tap = signal_taper(signal_v, taper=signal_v)
 @test size(signal_tap) == (101, )
@@ -270,19 +245,5 @@ b = signal_detect_epoch_euclid(signal_a)
 @test b == [0.0, 0.0]
 b = signal_detect_epoch_p2p(signal_a)
 @test b == [0.0, 0.0]
-
-v = signal_invert_polarity([1, 2, 3])
-@test v == [-1, -2, -3]
-
-v = signal_channels_stats(signal_v)
-@test length(v) == 9
-v = signal_channels_stats(signal_a)
-@test length(v) == 9
-
-s, scaler = signal_standardize(signal_a)
-@test size(s) == (2, 101, 2)
-
-@test round(signal_snr(signal_v), digits=2) == 3.07
-@test round.(signal_snr(signal_a), digits=2) == [1.34 1.34; 1.34 1.34]
 
 true

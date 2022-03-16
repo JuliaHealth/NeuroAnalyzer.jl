@@ -1,4 +1,3 @@
-
 """
     eeg_add_component(eeg; c, v)
 
@@ -45,7 +44,6 @@ function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
 
     return
 end
-
 
 """
     eeg_list_components(eeg)
@@ -1039,7 +1037,8 @@ function eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
     end
 
     s_new = reshape(eeg.eeg_signals[:, :, epoch], eeg_channel_n(eeg), eeg_signal_len(eeg), 1)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_new, deepcopy(eeg.eeg_components))
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_new
     eeg_new.eeg_header[:epoch_n] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
@@ -1486,78 +1485,6 @@ function eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :
     end
 
     return bad_epochs_idx
-end
-
-"""
-    eeg_check_bad_epochs(eeg; bad_epochs, confirm=true)
-
-Delete bad `eeg` epochs.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `bad_epochs_idx::Vector{Int64}`
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_delete_bad_epochs(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg_tmp = deepcopy(eeg)
-
-    if confirm == false
-        eeg_tmp = eeg_delete_epoch(eeg_tmp, epoch=bad_epochs)
-    else
-        for idx in 1:length(bad_epochs)
-            title = "Bad epoch: #" * string(idx)
-            print(title * " of " * string(length(bad_epochs)) * ": remove [Y/n]? ")
-            ans = lowercase(readline())
-            ans == "" && (ans = "y")
-            ans == "y" && (eeg_tmp = eeg_delete_epoch(eeg_tmp, epoch=idx))
-        end
-    end
-
-    push!(eeg_tmp.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
-
-    return eeg_tmp
-end
-
-"""
-    eeg_delete_bad_epochs!(eeg; bad_epochs, confirm=true)
-
-Delete bad `eeg` epochs.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `bad_epochs_idx::Vector{Int64}`
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_delete_bad_epochs!(eeg::NeuroJ.EEG; bad_epochs::Vector{Int64}, confirm::Bool=true)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    if confirm == false
-        eeg_delete_epoch!(eeg, epoch=bad_epochs)
-    else
-        for idx in 1:length(bad_epochs)
-            title = "Bad epoch: #" * string(idx)
-            print(title * " of " * string(length(bad_epochs)) * ": remove [Y/n]? ")
-            ans = lowercase(readline())
-            ans == "" && (ans = "y")
-            ans == "y" && eeg_delete_epoch!(eeg, epoch=idx)
-        end
-    end
-
-    push!(eeg.eeg_header[:history], "eeg_delete_bad_epochs(EEG, bad_epochs=$bad_epochs, confirm=$confirm")
-
-    return
 end
 
 """

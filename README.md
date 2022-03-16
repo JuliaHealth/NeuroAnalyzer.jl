@@ -111,11 +111,32 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- remove intermediate signal functions, move signal functions to eeg_*.jl
+- new plotting architecture:
+```
+eeg_plot → single channel / component
+           multi-channel / multi-component (e.g. ICAs)
+
+eeg_plot_avg → multi-channel / multi-component (e.g. phase per channel)
+eeg_plot_butterfly → multi-channel / multi-component (e.g. phase per channel)
+
+eeg_plot_psd
+eeg_plot_psd_avg
+eeg_plot_psd_butterfly
+
+eeg_plot_spectrogram → single channel / component
+eeg_plot_spectrogram_avg → multi-channel / multi-component (e.g. convoluted channels)
+
+eeg_plot_topo → single component
+eeg_plot_topo → multi-component (e.g. ICAs)
+eeg_plot_topo_avg → multi-channel / multi-component (e.g. delta power per channel)
+
+eeg_plot_complex - templates based
+```
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
 - split signal into frequency bands
 - continuous wavelet transform (using ContinuousWavelets.jl)
-- spectrogram of averaged signals
 - spectrogram: mean temporal and spectral envelope
 - conectomes graph
 - coherence spectrum (y: relative amplitude, x: frequencies)

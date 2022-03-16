@@ -76,7 +76,6 @@ export signal_add_noise
 export signal_autocov
 export signal_average
 export signal_band
-export signal_band_power
 export signal_ci95
 export signal_coherence
 export signal_cor
@@ -84,13 +83,11 @@ export signal_cov
 export signal_crosscov
 export signal_delete_channel
 export signal_demean
-export signal_derivative
 export signal_detect_epoch_euclid
 export signal_detect_epoch_flat
 export signal_detect_epoch_p2p
 export signal_detect_epoch_rmsd
 export signal_detect_epoch_rmse
-export signal_detrend
 export signal_difference
 export signal_downsample
 export signal_entropy
@@ -109,8 +106,6 @@ export signal_normalize_zscore
 export signal_pca
 export signal_channels_stats
 export signal_psd
-export signal_reference_car
-export signal_reference_channel
 export signal_spectrogram
 export signal_spectrum
 export signal_stationarity
@@ -119,11 +114,8 @@ export signal_stationarity_mean
 export signal_stationarity_var
 export signal_taper
 export signal_tconv
-export signal_total_power
 export signal_trim
 export signal_upsample
-export signal_snr
-export signal_standardize
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -178,8 +170,6 @@ export eeg_delete_epoch!
 export eeg_keep_epoch
 export eeg_keep_epoch!
 export eeg_detect_bad_epochs
-export eeg_delete_bad_epochs
-export eeg_delete_bad_epochs!
 export eeg_add_labels
 export eeg_add_labels!
 export eeg_edit_channel
@@ -253,30 +243,33 @@ export eeg_fconv
 
 include("eeg_plots.jl")
 export eeg_draw_head
+export eeg_plot_electrodes
+export eeg_plot_filter_response
+
 export eeg_plot
 export eeg_plot_avg
 export eeg_plot_butterfly
 export eeg_plot_covmatrix
-export eeg_plot_electrodes
-export eeg_plot_filter_response
-export eeg_plot_histogram
 export eeg_plot_ica
 export eeg_plot_matrix
 export eeg_plot_psd
 export eeg_plot_spectrogram
 export eeg_plot_topo
-export eeg_plot_band
-export eeg_plot_save
+
 export signal_plot
 export signal_plot_avg
-export signal_plot_band
 export signal_plot_butterfly
-export signal_plot_histogram
 export signal_plot_ica
 export signal_plot_psd
 export signal_plot_spectrogram
+
+export signal_plot_histogram
+export eeg_plot_histogram
+export signal_plot_bands
+export eeg_plot_bands
 export eeg_plot_channels
 export eeg_plot_epochs
+export eeg_plot_save
 
 include("nstim.jl")
 export tes_dose
