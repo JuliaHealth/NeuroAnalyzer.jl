@@ -74,8 +74,8 @@ edf1 = eeg_epochs(edf, epoch_len=10, average=true)
 edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 156672, 1)
 
-edf1 = eeg_tconv(edf, kernel=generate_window(:hann, 256))
-@test size(edf1.eeg_signals) == (19, 156672, 1)
+s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
+@test size(s_conv) == (19, 156672, 1)
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test size(edf1.eeg_signals) == (19, 156672, 1)
@@ -127,8 +127,8 @@ m = eeg_coherence(edf, edf)
 hz, _ = eeg_freqs(edf)
 @test typeof(hz) == Vector{Float64}
 
-e = eeg_fconv(edf, kernel=[1, 2, 3, 4])
-@test size(edf.eeg_signals) == (19, 156672, 1)
+s_conv = eeg_fconv(edf, kernel=[1, 2, 3, 4])
+@test size(s_conv) == (19, 156672, 1)
 
 p, v, m = eeg_pca(edf, n=2)
 @test size(p) == (2, 156672, 1)
@@ -155,14 +155,22 @@ i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
 e = edf
-eeg_epochs_stats!(e)
-c = eeg_list_components(e)
-@test size(c) == (9, )
+e_stats = eeg_epochs_stats(e)
+@test length(e_stats) == (9)
+eeg_add_component!(e, c=:epochs_mean, v=e_stats[1])
 v = eeg_extract_component(e, c=:epochs_mean)
 @test size(v) == (1, )
-eeg_delete_component!(e, c=:epochs_mean)
+eeg_rename_component!(e, c_old=:epochs_mean, c_new=:epochs_m)
 c = eeg_list_components(e)
-@test size(c) == (8, )
+@test size(c) == (1, )
+c = eeg_component_type(e, c=:epochs_m)
+@test c == Vector{Float64}
+eeg_delete_component!(e, c=:epochs_m)
+c = eeg_list_components(e)
+@test size(c) == (0, )
+eeg_reset_components!(e)
+c = eeg_list_components(e)
+@test size(c) == (0, )
 
 e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
@@ -171,8 +179,10 @@ f, a, p, ph = eeg_spectrum(e)
 @test size(p) == (19, 2560, 1)
 
 e = edf
-eeg_ica!(e, tol=1.0, n=10)
-@test size(e.eeg_components[1]) == (1,)
+i, iw = eeg_ica(e, tol=1.0, n=10)
+eeg_add_component!(e, c=:ica, v=i)
+eeg_add_component!(e, c=:ica_mw, v=iw)
+@test size(e.eeg_components[1]) == (10, 156672, 1)
 e2 = eeg_ica_reconstruct(e, ica=1)
 @test size(e2.eeg_signals) == (19, 156672, 1)
 
@@ -188,9 +198,6 @@ e = eeg_keep_eeg_channels(edf)
 eeg_edit_channel!(e, channel=19, field=:channel_type, value="ecg")
 eeg_keep_eeg_channels!(e)
 @test size(e.eeg_signals) == (18, 156672, 1)
-
-e = eeg_add_component(edf, c=:test, v=true)
-@test e.eeg_components[1] == true
 
 e = eeg_invert_polarity(edf, channel=1)
 @test e.eeg_signals[1, 1, 1] == -edf.eeg_signals[1, 1, 1]

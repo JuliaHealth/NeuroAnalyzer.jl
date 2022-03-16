@@ -181,24 +181,34 @@ eeg_delete_epoch!(e10, epoch=bad_epochs)
 
 ### EEG Process
 
-Certain data (e.g. ICA, PCA) are stored within the EEG object for further use. Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components. Also, any calculation may be stored as user-defined component (see `eeg_add_component()`) for later use (see `eeg_extract_component()`).
+Any analysis data (e.g. ICA, PCA) can be stored within the EEG object (see `eeg_add_component()`, `eeg_delete_component()`, `eeg_rename_component()`, `eeg_component_type()`) for later use (see `eeg_extract_component()`). Note: any function that changes EEG signal data (e.g. channel removal, filtering) must reset embedded components (see `eeg_reset_components()`.
 
 Show components (e.g. ICA, PCA):
 ```julia
 eeg_list_components(edf)
 ```
 
-Any action that changes EEG signal data (e.g. channel removal, filtering) resets embedded components.
-
-Get component:
+Add component:
 ```julia
-eeg_extract_component(edf, c=:epochs_mean)
+e = eeg_epochs_stats(edf)
+eeg_add_component!(edf, c=:epoch_mean, v=e[1])
+```
+
+Get component type:
+```julia
+eeg_component_type(edf, c=:epoch_mean)
+```
+
+Get component content:
+```julia
+eeg_extract_component(edf, c=:epoch_mean)
 ```
 
 Delete component:
 ```julia
 edf = eeg_delete_component(edf, c=:ica)
 eeg_delete_component!(edf, c=:ica)
+eeg_reset_components!(edf)
 ```
 
 Resample:
@@ -294,29 +304,27 @@ eeg_channels_stats(edf)
 
 Calculate signal total power:
 ```julia
-tbp = eeg_total_power(edf)
-bar(eeg_labels(edf), tbp, xtickfontsize=4, xticks=(0.5:length(eeg_labels(edf)) - 0.5, eeg_labels(edf)))
-eeg_total_power!(edf)
+eeg_total_power(edf)
 ```
 
 Calculate band power:
 ```julia
-abp = eeg_band_power(edf, f=(8, 12.5))
+eeg_band_power(edf, f=(8, 12.5))
 ```
 
 Calculate covariance matrix:
 ```julia
-edf_cov = eeg_cov(edf)
+eeg_cov(edf)
 ```
 
 Calculate correlation matrix
 ```julia
-edf_cor = eeg_cor(edf)
+eeg_cor(edf)
 ```
 
 Calculate auto-covariance:
 ```julia
-ac, lags = eeg_autocov(edf, lag=20, norm=false)
+eeg_autocov(edf, lag=20, norm=false)
 ```
 
 Calculate cross-covariance:
@@ -352,7 +360,6 @@ Entropy:
 ```julia
 e = eeg_entropy(edf)
 plot(eeg_labels(edf), e, seriestype=:bar)
-eeg_entropy!(edf)
 ```
 
 Coherence:
@@ -386,13 +393,11 @@ bar(vec(pc_var))
 pc, pc_var = eeg_pca(edf, n=4)
 plot(pc[1, :, 1, 1])
 bar(vec(pc_var))
-eeg_pca!(edf, n=4)
 ```
 
 Generate ICAs:
 ```julia
-i = eeg_ica(edf, n=15, tol=1.0)
-eeg_ica!(edf, n=5, tol=1.0, iter=1000, f=:gauss)
+i, i_w, i_m = eeg_ica(edf, n=15, tol=1.0)
 ```
 
 Plot ICAs:
@@ -585,7 +590,6 @@ Plot covariance matrix:
 edf_cov = eeg_cov(edf)
 p = eeg_plot_matrix(edf, edf_cov, title="Covariance matrix")
 eeg_plot_save(p, file_name="images/edf_cov.png")
-eeg_cov!(edf)
 ```
 
 ![edf cov](images/edf_cov.png)
@@ -602,8 +606,10 @@ eeg_plot_save(p, file_name="images/edf_autocov.png")
 Plot channels stats:
 ```julia
 e10 = eeg_epochs(edf, epoch_n=10)
-eeg_channels_stats!(e10)
-eeg_epochs_stats!(e10)
+c = eeg_channels_stats(e10)
+e = eeg_epochs_stats(e10)
+eeg_add_component!(e10, c=:channels_var, v=c[4])
+eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_channels(e10, :channels_var, epoch=1, title="Channels variance\n[epoch: 1]")
 eeg_plot_save(p, file_name="images/e10_channels.png")
 p = eeg_plot_epochs(e10, :epochs_var, title="Epochs variance")

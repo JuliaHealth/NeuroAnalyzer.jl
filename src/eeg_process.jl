@@ -20,13 +20,12 @@ function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
 
     s_referenced = signal_reference_channel(eeg.eeg_signals, channel=channel)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced, deepcopy(eeg.eeg_components))
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_referenced
     eeg_new.eeg_header[:reference] = "channel: $channel"
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, channel=$channel)")
-
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, channel=$channel)")
 
     return eeg_new
 end
@@ -46,7 +45,7 @@ function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{In
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     eeg.eeg_signals = signal_reference_channel(eeg.eeg_signals, channel=channel)
-    # add entry to :history field
+
     push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
 
     return
@@ -71,13 +70,13 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
 
     s_referenced = signal_reference_car(eeg.eeg_signals)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_referenced, deepcopy(eeg.eeg_components))
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_referenced
     eeg_new.eeg_header[:reference] = "CAR"
-    # add entry to :history field
+    eeg_reset_components!(eeg_new)
+
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
 
-    eeg_reset_components!(eeg_new)
 
     return eeg_new
 end
@@ -97,7 +96,6 @@ function eeg_reference_car!(eeg::NeuroJ.EEG)
 
     eeg.eeg_signals = signal_reference_car(eeg.eeg_signals)
 
-    # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG)")
 
     eeg_reset_components!(eeg)
@@ -125,11 +123,11 @@ function eeg_derivative(eeg::NeuroJ.EEG)
     s_der = signal_derivative(eeg.eeg_signals)
 
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_der, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_der
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG)")
 
     return eeg_new
 end
@@ -148,11 +146,9 @@ function eeg_derivative!(eeg::NeuroJ.EEG)
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     eeg.eeg_signals = signal_derivative(eeg.eeg_signals)
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_derivative!(EEG)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_derivative!(EEG)")
 
     return
 end
@@ -179,12 +175,11 @@ function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear)
 
     s_det = signal_detrend(eeg.eeg_signals, type=type)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_det, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, type=$type)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_det
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, type=$type)")
 
     return eeg_new
 end
@@ -232,12 +227,11 @@ function eeg_taper(eeg::NeuroJ.EEG; taper::Vector)
 
     s_tapered = signal_taper(eeg.eeg_signals, taper=taper)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_tapered, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_tapered
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
 
     return eeg_new
 end
@@ -257,11 +251,9 @@ function eeg_taper!(eeg::NeuroJ.EEG; taper::Vector)
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     eeg.eeg_signals = signal_taper(eeg.eeg_signals, taper=taper)
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_taper!(EEG, taper=$taper)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_taper!(EEG, taper=$taper)")
 
     return
 end
@@ -285,12 +277,11 @@ function eeg_demean(eeg::NeuroJ.EEG)
 
     s_demeaned = signal_demean(eeg.eeg_signals)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_demeaned, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_demean(EEG)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_demeaned
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_demean(EEG)")
 
     return eeg_new
 end
@@ -310,10 +301,8 @@ function eeg_demean!(eeg::NeuroJ.EEG)
 
     eeg.eeg_signals = signal_demean(eeg.eeg_signals)
 
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_demean!(EEG)")
-
     eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_demean!(EEG)")
 
     return
 end
@@ -337,12 +326,11 @@ function eeg_normalize_zscore(eeg::NeuroJ.EEG)
 
     s_normalized = signal_normalize_zscore(eeg.eeg_signals)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_zscore(EEG)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_normalized
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_normalize_zscore(EEG)")
 
     return eeg_new
 end
@@ -361,11 +349,9 @@ function eeg_normalize_zscore!(eeg::NeuroJ.EEG)
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     eeg.eeg_signals = signal_normalize_zscore(eeg.eeg_signals)
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_normalize_zscore!(EEG)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_normalize_zscore!(EEG)")
 
     return
 end
@@ -389,12 +375,11 @@ function eeg_normalize_minmax(eeg::NeuroJ.EEG)
 
     s_normalized = signal_normalize_minmax(eeg.eeg_signals)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_normalized, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_minmax(EEG)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_normalized
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_normalize_minmax(EEG)")
 
     return eeg_new
 end
@@ -413,11 +398,9 @@ function eeg_normalize_minmax!(eeg::NeuroJ.EEG)
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     eeg.eeg_signals = signal_normalize_minmax(eeg.eeg_signals)
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_normalize_minmax!(EEG)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_normalize_minmax!(EEG)")
 
     return
 end
@@ -441,7 +424,6 @@ function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = signal_upsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
-    # create new dataset
     eeg_time = collect(t_upsampled)
     eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_upsampled, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_upsampled, 2) * size(s_upsampled, 3)
@@ -449,11 +431,9 @@ function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_upsampled, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = size(s_upsampled, 2) / new_sr
     eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_channel_n(eeg_new))
-
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
-
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_upsample(EEG, new_sr=$new_sr)")
 
     return eeg_new
 end
@@ -483,82 +463,9 @@ function eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg)
     eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg) / new_sr
     eeg.eeg_header[:sampling_rate] = repeat([new_sr], eeg.eeg_header[:channel_n])
+    eeg_reset_components!(eeg)
 
-    # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_upsample!(EEG, new_sr=$new_sr)")
-
-    eeg_reset_components!(eeg)
-
-    return
-end
-
-"""
-    eeg_tconv(eeg; kernel)
-
-Perform convolution in the time domain.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    s_convoluted = signal_tconv(eeg.eeg_signals, kernel=kernel)
-
-    ## EEG signal can only store Float64
-    typeof(kernel) == Vector{ComplexF64} && (s_convoluted = abs.(s_convoluted))
-
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted, deepcopy(eeg.eeg_components))
-    eeg_new.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
-    eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg_new)
-    eeg_new.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
-    eeg_new.eeg_header[:epoch_duration_seconds] = size(s_convoluted, 2) / eeg_sr(eeg_new)
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_tconv(EEG, kernel=$kernel)")
-
-    eeg_reset_components!(eeg_new)
-
-    return eeg_new
-end
-
-"""
-    eeg_tconv!(eeg; kernel)
-
-Perform convolution in the time domain.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
-"""
-function eeg_tconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    # EEG signal can only store Float64
-    if typeof(kernel) == Vector{ComplexF64}
-        eeg.eeg_signals = abs.(signal_tconv(eeg.eeg_signals, kernel=kernel))
-    else
-        eeg.eeg_signals = signal_tconv(eeg.eeg_signals, kernel=kernel)
-    end
-
-    # create new dataset
-    eeg.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
-    eeg.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg)
-    eeg.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
-    eeg.eeg_header[:epoch_duration_seconds] = size(s_convoluted, 2) / eeg_sr(eeg)
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_tconv!(EEG, kernel=$kernel)")
-
-    eeg_reset_components!(eeg)
 
     return
 end
@@ -586,19 +493,19 @@ Filter `eeg` channels.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64=8`: filter order
+- `order::Int64=2`: filter order
 - `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+- `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
 - `d::Int64=1`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `t::Union{Int64, Float64}`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=2, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     s_filtered = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
@@ -613,12 +520,11 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
                                     t=t,
                                     window=window)
 
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_filtered, deepcopy(eeg.eeg_components))
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
-
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_filtered
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
 
     return eeg_new
 end
@@ -645,16 +551,16 @@ Filter `eeg`.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Int64, Float64, Tuple}=0`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`=0: filter order
-- `rp::Union{Int64, Float64}=-1`: dB ripple in the passband
-- `rs::Union{Int64, Float64}=-1`: dB attentuation in the stopband
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass)
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64=2`: filter order
+- `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+- `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
 - `d::Int64=1`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}=0`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing}=nothing`: window, required for FIR filter
+- `t::Union{Int64, Float64}`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=0, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=2, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     eeg.eeg_signals = signal_filter(eeg.eeg_signals,
                                     fprototype=fprototype,
@@ -669,11 +575,9 @@ function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, N
                                     t=t,
                                     window=window)
 
-    # create new dataset
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
 
     return
 end
@@ -701,7 +605,6 @@ function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
-    # create new dataset
     eeg_time = collect(t_downsampled)
     eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_downsampled, deepcopy(eeg.eeg_components))
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
@@ -709,11 +612,9 @@ function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_downsampled, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = size(s_downsampled, 2) / new_sr
     eeg_new.eeg_header[:sampling_rate] = repeat([new_sr], eeg_channel_n(eeg_new))
-
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_downsample(EEG, new_sr=$new_sr)")
-
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_downsample(EEG, new_sr=$new_sr)")
 
     return eeg_new
 end
@@ -733,18 +634,15 @@ function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     eeg.eeg_signals, t_downsampled = signal_downsample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
-    # create new dataset
     eeg.eeg_time = collect(t_downsampled)
     eeg.eeg_header[:eeg_duration_samples] = eeg_signal_len(eeg) * eeg_epoch_n(eeg)
     eeg.eeg_header[:eeg_duration_seconds] = (eeg_signal_len(eeg) * eeg_epoch_n(eeg)) / new_sr
     eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
     eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg) / new_sr
     eeg.eeg_header[:sampling_rate] = repeat([new_sr], eeg.eeg_header[:channel_n])
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_downsample!(EEG, new_sr=$new_sr)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_downsample!(EEG, new_sr=$new_sr)")
 
     return
 end
@@ -752,7 +650,7 @@ end
 """
     eeg_pca(eeg; n)
 
-Calculates `n` first PCs for `eeg`.
+Calculate `n` first PCs for `eeg`.
 
 # Arguments
 
@@ -762,116 +660,22 @@ Calculates `n` first PCs for `eeg`.
 # Returns
 
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
-- `pc_var::Matrix{Float64}`: PC_VAR(1)..PC_VAR(n) × epoch
+- `pc_var::Matrix{Float64}`: PCVAR(1)..PCVAR(n) × epoch
+- `pc_m::Matrix{Float64}`: PC mean
 """
 function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    pc, pc_var, m = signal_pca(eeg.eeg_signals, n=n)
+    pc, pc_var, pc_m = signal_pca(eeg.eeg_signals, n=n)
 
-    return pc, pc_var, m
-end
-
-"""
-    eeg_pca!(eeg; n)
-
-Calculates `n` first PCs for `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `n::Int64`: number of PCs
-"""
-function eeg_pca!(eeg::NeuroJ.EEG; n::Int64)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :pca in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca)
-    :pca_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_var)
-    :pca_m in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:pca_m)
-    pc, pc_var, m = eeg_pca(eeg, n=n)
-    push!(eeg.eeg_components, pc)
-    push!(eeg.eeg_components, pc_var)
-    push!(eeg.eeg_components, m)
-    push!(eeg.eeg_header[:components], :pca)
-    push!(eeg.eeg_header[:components], :pca_var)
-    push!(eeg.eeg_header[:components], :pca_m)
-    push!(eeg.eeg_header[:history], "eeg_pca!(EEG, n=$n)")
-
-    return
-end
-
-"""
-    eeg_fconv(eeg, kernel)
-
-Performs convolution in the time domain.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    s_convoluted = signal_fconv(eeg.eeg_signals, kernel=kernel)
-
-    ## EEG signal can only store Float64
-    s_convoluted = abs.(s_convoluted)
-
-    # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), s_convoluted, deepcopy(eeg.eeg_components))
-    eeg_new.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
-    eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg_new)
-    eeg_new.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
-    eeg_new.eeg_header[:epoch_duration_seconds] = size(s_convoluted, 2) / eeg_sr(eeg_new)
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_fconv(EEG, kernel=$kernel)")
-
-    eeg_reset_components!(eeg_new)
-
-    return eeg_new
-end
-
-"""
-    eeg_fconv!(eeg, kernel)
-
-Performs convolution in the time domain.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
-"""
-function eeg_fconv!(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    # EEG signal can only store Float64
-    eeg.eeg_signals = abs.(signal_fconv(eeg.eeg_signals, kernel=kernel))
-
-    eeg.eeg_header[:eeg_duration_samples] = size(s_convoluted, 2) * size(s_convoluted, 3)
-    eeg.eeg_header[:eeg_duration_seconds] = (size(s_convoluted, 2) * size(s_convoluted, 3)) / eeg_sr(eeg)
-    eeg.eeg_header[:epoch_duration_samples] = size(s_convoluted, 2)
-    eeg.eeg_header[:epoch_duration_seconds] = size(s_convoluted, 2) / eeg_sr(eeg)
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_fconv!(EEG, kernel=$kernel)")
-
-    eeg_reset_components!(eeg)
-
-    return
+    return pc, pc_var, pc_m
 end
 
 """
     eeg_ica(eeg; <keyword arguments>)
 
-Calculates `n` first ICs for `eeg`.
+Calculate `n` first ICs for `eeg`.
 
 # Arguments
 
@@ -896,38 +700,9 @@ function eeg_ica(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100
 end
 
 """
-    eeg_ica!(eeg; <keyword arguments>)
-
-Calculates `n` first ICs for `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `n::Int64`: number of ICs
-- `tol::Float64=1.0e-6`: tolerance for ICA
-- `iter::Int64=100`: maximum number of iterations
-- `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
-"""
-function eeg_ica!(eeg::NeuroJ.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :ica in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica)
-    :ica_mw in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ica_mw)
-    ic, ic_mw = signal_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
-    push!(eeg.eeg_components, ic)
-    push!(eeg.eeg_components, ic_mw)
-    push!(eeg.eeg_header[:components], :ica)
-    push!(eeg.eeg_header[:components], :ica_mw)
-    push!(eeg.eeg_header[:history], "eeg_ica!(EEG, n=$n, tol=$tol, iter=$iter, f=$f))")
-
-    return
-end
-
-"""
     eeg_average(eeg)
 
-Returns the average signal of all `eeg` channels.
+Return the average signal of all `eeg` channels.
 
 # Arguments
 
@@ -941,15 +716,12 @@ function eeg_average(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_keep_channel!(eeg_new, channel=1)
     eeg_new.eeg_signals = signal_average(eeg.eeg_signals)
-
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_average(EEG)")
-
     eeg_reset_components!(eeg_new)
+
+    push!(eeg_new.eeg_header[:history], "eeg_average(EEG)")
 
     return eeg_new
 end
@@ -957,7 +729,7 @@ end
 """
     eeg_average!(eeg)
 
-Returns the average signal of all `eeg` channels.
+Return the average signal of all `eeg` channels.
 
 # Arguments
 
@@ -970,11 +742,9 @@ function eeg_average!(eeg::NeuroJ.EEG)
     s_avg = signal_average(eeg.eeg_signals)
     eeg_delete_channel!(eeg, channel=2:eeg_channel_n(eeg))
     eeg.eeg_signals = s_avg
-
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_average!(EEG)")
-
     eeg_reset_components!(eeg)
+
+    push!(eeg.eeg_header[:history], "eeg_average!(EEG)")
 
     return
 end
@@ -997,14 +767,15 @@ function eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, A
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
-    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
 
     eeg_new = deepcopy(eeg)
     ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
     ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
     eeg_new.eeg_signals = signal_ica_reconstruct(eeg_new.eeg_signals, ic_activations=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
-    
+    eeg_reset_components!(eeg_new)
+
     push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica")
 
     return eeg_new
@@ -1024,13 +795,14 @@ function eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, 
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
-    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica!(EEG) first."))
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
 
     ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
     ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
     eeg.eeg_signals = signal_ica_reconstruct(eeg.eeg_signals, ic_activations=eeg.eeg_components[ica_a_idx], ic_mw=eeg.eeg_components[ica_mw_idx], ic_v=ica)
-
+    eeg_reset_components!(eeg)
+    
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
 
     return

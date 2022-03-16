@@ -23,29 +23,6 @@ function eeg_total_power(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_total_power!(eeg)
-
-Calculate total power of the `eeg` and store into :total_power component.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_total_power!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :total_power in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:total_power)
-    fs = eeg_sr(eeg)
-    stp = signal_total_power(eeg.eeg_signals, fs=fs)
-    push!(eeg.eeg_components, stp)
-    push!(eeg.eeg_header[:components], :total_power)
-    push!(eeg.eeg_header[:history], "eeg_total_power!(EEG)")
-
-    return
-end
-
-"""
     eeg_band_power(eeg; f)
 
 Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
@@ -94,29 +71,6 @@ function eeg_cov(eeg::NeuroJ.EEG; norm=true)
 end
 
 """
-    eeg_cov!(eeg; norm)
-
-Calculate covariance between all channels of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `norm::Bool=true`: normalize covariance
-"""
-function eeg_cov!(eeg::NeuroJ.EEG; norm=true)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :cov_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cov_mat)
-    cov_mat = eeg_cov(eeg, norm=norm)
-    push!(eeg.eeg_components, cov_mat)
-    push!(eeg.eeg_header[:components], :cov_mat)
-    push!(eeg.eeg_header[:history], "eeg_cov!(EEG)")
-
-    return
-end
-
-"""
     eeg_cor(eeg)
 
 Calculate correlation coefficients between all channels of `eeg`.
@@ -136,28 +90,6 @@ function eeg_cor(eeg::NeuroJ.EEG)
     cor_mat = signal_cor(eeg.eeg_signals)
 
     return cor_mat
-end
-
-"""
-    eeg_cor!(eeg)
-
-Calculate correlation coefficients between all channels of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_cor!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :cor_mat in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:cor_mat)
-    cor_mat = eeg_cor(eeg)
-    push!(eeg.eeg_components, cor_mat)
-    push!(eeg.eeg_header[:components], :cor_mat)
-    push!(eeg.eeg_header[:history], "eeg_cor!(EEG)")
-
-    return
 end
 
 """
@@ -189,34 +121,6 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
 end
 
 """
-    eeg_autocov!(eeg; lag, demean, norm)
-
-Calculate autocovariance of each the `eeg` channels.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
-- `norm::Bool=false`: normalize autocovariance
-"""
-function eeg_autocov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :acov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov)
-    :acov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:acov_lags)
-    acov, lags = eeg_autocov(eeg, lag=lag, demean=demean, norm=norm)
-    push!(eeg.eeg_components, acov)
-    push!(eeg.eeg_components, lags)
-    push!(eeg.eeg_header[:components], :acov)
-    push!(eeg.eeg_header[:components], :acov_lags)
-    push!(eeg.eeg_header[:history], "eeg_autocov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
-
-    return
-end
-
-"""
     eeg_crosscov(eeg; lag, demean, norm)
 
 Calculate cross-covariance of each the `eeg` channels.
@@ -242,34 +146,6 @@ function eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return ccov, lags
-end
-
-"""
-    eeg_crosscov!(eeg; lag, demean, norm)
-
-Calculate cross-covariance of each the `eeg` channels.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
-- `norm::Bool=false`: normalize cross-covariance
-"""
-function eeg_crosscov!(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :ccov in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov)
-    :ccov_lags in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:ccov_lags)
-    ccov, lags = eeg_crosscov(eeg, lag=lag, demean=demean, norm=norm)
-    push!(eeg.eeg_components, ccov)
-    push!(eeg.eeg_components, lags)
-    push!(eeg.eeg_header[:components], :ccov)
-    push!(eeg.eeg_header[:components], :ccov_lags)
-    push!(eeg.eeg_header[:history], "eeg_crosscov!(EEG, lag=$lag, demean=$demean, norm=$norm)")
-
-    return
 end
 
 """
@@ -329,32 +205,6 @@ function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
 end
 
 """
-    eeg_psd!(eeg; norm)
-
-Calculate total power for each the `eeg` channels.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `norm::Bool=false`: normalize do dB
-"""
-function eeg_psd!(eeg::NeuroJ.EEG; norm::Bool=false)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :psd_p in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_p)
-    :psd_f in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:psd_f)
-    s_psd_powers, s_psd_frequencies = eeg_psd(eeg, norm=norm)
-    push!(eeg.eeg_components, s_psd_powers)
-    push!(eeg.eeg_components, s_psd_frequencies)
-    push!(eeg.eeg_header[:components], :psd_p)
-    push!(eeg.eeg_header[:components], :psd_f)
-    push!(eeg.eeg_header[:history], "eeg_psd!(EEG, norm=$norm)")
-
-    return
-end
-
-"""
     eeg_stationarity(eeg; window, method)
 
 Calculate stationarity.
@@ -379,30 +229,6 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
 end
 
 """
-    eeg_stationarity!(eeg; window, method)
-
-Calculate stationarity.
-
-# Arguments
-
-- `eeg:EEG`
-- `window::Int64=10`: time window in samples
-- `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
-"""
-function eeg_stationarity!(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :stationarity in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:stationarity)
-    s_stationarity = eeg_stationarity(eeg, window=window, method=method)
-    push!(eeg.eeg_components, s_stationarity)
-    push!(eeg.eeg_header[:components], :stationarity)
-    push!(eeg.eeg_header[:history], "eeg_stationarity!(EEG, window=$window, method=$method)")
-
-    return
-end
-
-"""
     eeg_mi(eeg)
 
 Calculate mutual information between all channels of `eeg`.
@@ -423,29 +249,6 @@ function eeg_mi(eeg::NeuroJ.EEG)
     size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
 
     return mi
-end
-
-"""
-    eeg_mi!(eeg)
-
-Calculate mutual information between all channels of `eeg` and store into :mi component.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_mi!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :mi in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:mi)
-    mi = signal_mi(eeg.eeg_signals)
-    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
-    push!(eeg.eeg_components, mi)
-    push!(eeg.eeg_header[:components], :mi)
-    push!(eeg.eeg_header[:history], "eeg_mi!(EEG)")
-
-    return
 end
 
 """
@@ -494,28 +297,6 @@ function eeg_entropy(eeg::NeuroJ.EEG)
     size(ent, 3) == 1 && (ent = reshape(ent, size(ent, 1), size(ent, 2)))
 
     return ent
-end
-
-"""
-    eeg_entropy!(eeg)
-
-Calculate entropy of all channels of `eeg` and store into :entropy component.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_entropy!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :entropy in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:entropy)
-    ent = eeg_entropy(eeg)
-    push!(eeg.eeg_components, ent)
-    push!(eeg.eeg_header[:components], :entropy)
-    push!(eeg.eeg_header[:history], "eeg_entropy!(EEG)")
-
-    return
 end
 
 """
@@ -630,29 +411,6 @@ function eeg_freqs(eeg::NeuroJ.EEG)
     hz, nyq = freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
 
     return hz, nyq
-end
-
-"""
-    eeg_freqs!(eeg)
-
-Return vector of frequencies and Nyquist frequency for `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_freqs!(eeg::NeuroJ.EEG)
-
-    :hz in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:hz)
-    :nyq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:nyq)
-    hz, nyq = eeg_freqs(eeg)
-    push!(eeg.eeg_components, hz)
-    push!(eeg.eeg_components, nyq)
-    push!(eeg.eeg_header[:components], :hz)
-    push!(eeg.eeg_header[:components], :nyq)
-    push!(eeg.eeg_header[:history], "eeg_freqs!(EEG)")
-
-    return
 end
 
 """
@@ -814,65 +572,9 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_channels_stats(eeg.eeg_signals)
+    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_epochs_stats(eeg.eeg_signals)
 
     return e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif
-end
-
-"""
-    eeg_epochs_stats!(eeg)
-
-Calculate `eeg` epochs statistics and store in `eeg` components:
-- `epochs_mean::Matrix(Float64)`: mean
-- `epochs_median::Matrix(Float64)`: median
-- `epochs_std::Matrix(Float64)`: standard deviation
-- `epochs_var::Matrix(Float64)`: variance
-- `epochs_kurt::Matrix(Float64)`: kurtosis
-- `epochs_mean_diff::Matrix(Float64)`: mean diff value
-- `epochs_median_diff::Matrix(Float64)`: median diff value
-- `epochs_max_dif::Matrix(Float64)`: max difference
-- `epochs_dev_mean::Matrix(Float64)`: deviation from channel mean
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_epochs_stats!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :epochs_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean)
-    :epochs_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median)
-    :epochs_std in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_std)
-    :epochs_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_var)
-    :epochs_kurt in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_kurt)
-    :epochs_mean_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_mean_diff)
-    :epochs_median_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_median_diff)
-    :epochs_max_dif in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_max_dif)
-    :epochs_dev_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:epochs_dev_mean)
-
-    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_epochs_stats(eeg.eeg_signals)
-    push!(eeg.eeg_components, e_mean)
-    push!(eeg.eeg_components, e_median)
-    push!(eeg.eeg_components, e_std)
-    push!(eeg.eeg_components, e_var)
-    push!(eeg.eeg_components, e_kurt)
-    push!(eeg.eeg_components, e_mean_diff)
-    push!(eeg.eeg_components, e_median_diff)
-    push!(eeg.eeg_components, e_dev_mean)
-    push!(eeg.eeg_components, e_max_dif)
-
-    push!(eeg.eeg_header[:components], :epochs_mean)
-    push!(eeg.eeg_header[:components], :epochs_median)
-    push!(eeg.eeg_header[:components], :epochs_std)
-    push!(eeg.eeg_header[:components], :epochs_var)
-    push!(eeg.eeg_header[:components], :epochs_kurt)
-    push!(eeg.eeg_header[:components], :epochs_mean_diff)
-    push!(eeg.eeg_header[:components], :epochs_median_diff)
-    push!(eeg.eeg_header[:components], :epochs_dev_mean)
-    push!(eeg.eeg_header[:components], :epochs_max_dif)
-
-    return
 end
 
 """
@@ -902,36 +604,6 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
 end
 
 """
-    eeg_spectrogram!(eeg, norm, demean)
-
-Calculate spectrogram of `eeg`. and sore in `eeg` components: `:spectrogram_pow`, `:spectrogram_frq`, `:spectrogram_t`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `norm::Bool=true`: normalize powers to dB
-- `demean::Bool=true`: demean signal prior to analysis
-"""
-function eeg_spectrogram!(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :spectrogram_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_pow)
-    :spectrogram_frq in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_frq)
-    :spectrogram_t in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spec_t)
-    s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
-    push!(eeg.eeg_components, s_pow)
-    push!(eeg.eeg_components, s_frq)
-    push!(eeg.eeg_components, s_t)
-    push!(eeg.eeg_header[:components], :spec_pow)
-    push!(eeg.eeg_header[:components], :spec_frq)
-    push!(eeg.eeg_header[:components], :spec_t)
-    push!(eeg.eeg_header[:history], "eeg_spectrogram!(EEG, norm=$norm, demean=$demean)")
-
-    return
-end
-
-"""
     eeg_spectrum(eeg; pad)
 
 Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
@@ -955,38 +627,6 @@ function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
     s_fft, s_amp, s_pow, s_pha = signal_spectrum(eeg.eeg_signals, pad=pad)
 
     return s_fft, s_amp, s_pow, s_pha
-end
-
-"""
-    eeg_spectrum!(eeg; pad)
-
-Calculate FFT, amplitudes, powers and phases for each channel of the `eeg` and store in `eeg` components: `:spectrum_fft`, `:spectrum_amp`, `:spectrum_pow`, `:spectrum_phase`. For `pad` > 0 channels are padded with 0s.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`: the signal
-- `pad::Int64`: pad channels `pad` zeros
-"""
-function eeg_spectrum!(eeg::NeuroJ.EEG; pad::Int64=0)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :spectrum_fft in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_fft)
-    :spectrum_amp in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_amp)
-    :spectrum_pow in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_pow)
-    :spectrum_phase in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:spectrum_phase)
-    s_fft, s_amplitudes, s_powers, s_phases = signal_spectrum(eeg.eeg_signals)
-    push!(eeg.eeg_components, s_fft)
-    push!(eeg.eeg_components, s_amplitudes)
-    push!(eeg.eeg_components, s_powers)
-    push!(eeg.eeg_components, s_phases)
-    push!(eeg.eeg_header[:components], :spectrum_fft)
-    push!(eeg.eeg_header[:components], :spectrum_amp)
-    push!(eeg.eeg_header[:components], :spectrum_pow)
-    push!(eeg.eeg_header[:components], :spectrum_phase)
-    push!(eeg.eeg_header[:history], "eeg_spectrum!(EEG, pad=$pad)")
-
-    return
 end
 
 """
@@ -1060,64 +700,6 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_channels_stats!(eeg)
-
-Calculate `eeg` channels statistics and store in `eeg` components:
-- `channels_mean::Matrix(Float64)`: mean
-- `channels_median::Matrix(Float64)`: median
-- `channels_std::Matrix(Float64)`: standard deviation
-- `channels_var::Matrix(Float64)`: variance
-- `channels_kurt::Matrix(Float64)`: kurtosis
-- `channels_mean_diff::Matrix(Float64)`: mean diff value
-- `channels_median_diff::Matrix(Float64)`: median diff value
-- `channels_max_dif::Matrix(Float64)`: max difference
-- `channels_dev_mean::Matrix(Float64)`: deviation from channel mean
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_channels_stats!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    :channels_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_mean)
-    :channels_median in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_median)
-    :channels_std in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_std)
-    :channels_var in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_var)
-    :channels_kurt in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_kurt)
-    :channels_mean_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_mean_diff)
-    :channels_median_diff in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_median_diff)
-    :channels_max_dif in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_max_dif)
-    :channels_dev_mean in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:channels_dev_mean)
-
-    c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif = signal_channels_stats(eeg.eeg_signals)
-    push!(eeg.eeg_components, c_mean)
-    push!(eeg.eeg_components, c_median)
-    push!(eeg.eeg_components, c_std)
-    push!(eeg.eeg_components, c_var)
-    push!(eeg.eeg_components, c_kurt)
-    push!(eeg.eeg_components, c_mean_diff)
-    push!(eeg.eeg_components, c_median_diff)
-    push!(eeg.eeg_components, c_dev_mean)
-    push!(eeg.eeg_components, c_max_dif)
-
-    push!(eeg.eeg_header[:components], :channels_mean)
-    push!(eeg.eeg_header[:components], :channels_median)
-    push!(eeg.eeg_header[:components], :channels_std)
-    push!(eeg.eeg_header[:components], :channels_var)
-    push!(eeg.eeg_header[:components], :channels_kurt)
-    push!(eeg.eeg_header[:components], :channels_mean_diff)
-    push!(eeg.eeg_header[:components], :channels_median_diff)
-    push!(eeg.eeg_header[:components], :channels_dev_mean)
-    push!(eeg.eeg_header[:components], :channels_max_dif)
-
-    push!(eeg.eeg_header[:history], "eeg_channels_stats!(EEG)")
-
-    return
-end
-
-"""
     eeg_snr(eeg)
 
 Calculate SNR of `eeg` channels.
@@ -1135,28 +717,6 @@ function eeg_snr(eeg::NeuroJ.EEG)
     snr = signal_snr(eeg.eeg_signals)
 
     return snr
-end
-
-"""
-    eeg_snr!(eeg)
-
-Calculate SNR of `eeg` channels and store in `eeg` :snr component.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_snr!(eeg::NeuroJ.EEG)
-
-    :snr in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:snr)
-
-    snr = signal_snr(eeg.eeg_signals, eeg_sr(eeg))
-    push!(eeg.eeg_components, snr)
-    push!(eeg.eeg_header[:components], :snr)
-
-    push!(eeg.eeg_header[:history], "eeg_snr!(EEG)")
-
-    return
 end
 
 """
@@ -1184,23 +744,47 @@ function eeg_standardize(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_standardize!(eeg)
+    eeg_fconv(eeg, kernel)
 
-Standardize `eeg` channels for ML; store scaler in the :scaler component.
+Perform convolution in the time domain.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
+
+# Returns
+
+- `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_standardize!(eeg::NeuroJ.EEG)
+function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 
-    :scaler in eeg.eeg_header[:components] && eeg_delete_component!(eeg, c=:scaler)
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    ss, scaler = signal_standardize(eeg.eeg_signals)
-    eeg.eeg_signals = ss
-    push!(eeg.eeg_header[:components], :scaler)
+    s_convoluted = signal_fconv(eeg.eeg_signals, kernel=kernel)
 
-    push!(eeg.eeg_header[:history], "eeg_standardize!(EEG)")
+    return s_convoluted
+end
 
-    return
+"""
+    eeg_tconv(eeg; kernel)
+
+Perform convolution in the time domain.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
+
+# Returns
+
+- `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+"""
+function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    s_convoluted = signal_tconv(eeg.eeg_signals, kernel=kernel)
+
+    return s_convoluted
 end

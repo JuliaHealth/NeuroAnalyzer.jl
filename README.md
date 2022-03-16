@@ -48,7 +48,7 @@ NeuroJ.jl will be 100% Julia based.
 
 ## General remarks
 
-NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel/multi-trial). The latter have no metadata header, therefore some functions will be limited.
+NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel). The latter have no metadata header, therefore some functions will be limited.
 
 The following conventions are used:
 
@@ -111,13 +111,24 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- complex kernel convolution: plot magnitude and phase of the convoluted signal
+- multi-trial data
+- split signal into frequency bands
+- continuous wavelet transform (using ContinuousWavelets.jl)
+- spectrogram of averaged signals
+- spectrogram: mean temporal and spectral envelope
+- conectomes graph
+- coherence spectrum (y: relative amplitude, x: frequencies)
+- spectrogram: extract area of specific frequencies
+- spectral envelope: peak frequencies
+- CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
+- EEG bands: medial vs left vs right channels within each band
 - MEG data (fT instead of μV)
 - merge EEG objects
 - reports in .md format
 - brain topography
 - events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)
 - eeg_keep_eeg_channels → keep_channels(type)
-- remove embedded components that are not useful
 - rewrite plotting functions to be more modular
 - plot by time (continuous) or by epoch - separate functions
 - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
@@ -129,7 +140,7 @@ EEG:
 - modify channel data
 - virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots
-- small amplitude plots at electrode locations
+- small plots (amplitude, PSD, spectrogram) at electrode locations
 - phase-amplitude cross-frequency coupling (PAC)
 - more re-referencing methods: Laplacian, REST
 - io: import from CSV

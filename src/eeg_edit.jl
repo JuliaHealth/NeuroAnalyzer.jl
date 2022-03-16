@@ -1,7 +1,154 @@
+
+"""
+    eeg_add_component(eeg; c, v)
+
+Add component name `c` of value `v` to `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+- `v::Any`: component value
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
+    eeg_new = deepcopy(eeg)
+    c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
+    push!(eeg_new.eeg_header[:components], c)
+    push!(eeg_new.eeg_components, v)
+    push!(eeg_new.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
+
+    return eeg_new
+end
+
+"""
+    eeg_add_component!(eeg; c, v)
+
+Add component name `c` of value `v` to `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+- `v::Any`: component value
+"""
+function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+
+    c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component!() to remove it prior the operation."))
+    push!(eeg.eeg_header[:components], c)
+    push!(eeg.eeg_components, v)
+    push!(eeg.eeg_header[:history], "eeg_add_component!(EEG, c=$c, v=$v)")
+
+    return
+end
+
+
+"""
+    eeg_list_components(eeg)
+
+List `eeg` components.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `components::Vector{Symbol}`
+"""
+function eeg_list_components(eeg::NeuroJ.EEG)
+
+    return eeg.eeg_header[:components]
+end
+
+"""
+    eeg_extract_component(eeg, c)
+
+Extract component `c` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+
+# Returns
+
+- `component::Any`
+"""
+function eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
+
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    
+    for idx in 1:length(eeg.eeg_header[:components])
+        if c == eeg.eeg_header[:components][idx]
+            return eeg.eeg_components[idx]
+        end
+    end
+
+    return
+end
+
+"""
+    eeg_delete_component(eeg; c)
+
+Delete component `c` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
+
+    eeg_new = deepcopy(eeg)
+    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    for idx in 1:length(eeg.eeg_header[:components])
+        if c == eeg_new.eeg_header[:components][idx]
+            deleteat!(eeg_new.eeg_components, idx)
+            deleteat!(eeg_new.eeg_header[:components], idx)
+            push!(eeg_new.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
+            return eeg_new
+        end
+    end
+end
+
+"""
+    eeg_delete_component!(eeg; c)
+
+Delete component `c` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `c::Symbol`: component name
+"""
+function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
+
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    
+    for idx in length(eeg.eeg_header[:components]):-1:1
+        if c == eeg.eeg_header[:components][idx]
+            deleteat!(eeg.eeg_components, idx)
+            deleteat!(eeg.eeg_header[:components], idx)
+            push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
+        end
+    end
+
+    return
+end
+
 """
     eeg_reset_components(eeg)
 
-Reset `eeg` components.
+Remove all `eeg` components.
 
 # Arguments
 
@@ -23,7 +170,7 @@ end
 """
     eeg_reset_components!(eeg)
 
-Reset `eeg` components.
+Remove all `eeg` components.
 
 # Arguments
 
@@ -33,6 +180,104 @@ function eeg_reset_components!(eeg::NeuroJ.EEG)
 
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
+
+    return
+end
+
+"""
+    eeg_component_idx(eeg, c)
+
+Return index of `eeg` component.
+
+# Arguments
+
+- `eeg:EEG`
+- `c::Symbol`: component name
+
+# Return
+
+- `c_idx::Int64`
+"""
+function eeg_component_idx(eeg::NeuroJ.EEG; c::Symbol)
+
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    c_idx = findfirst(isequal(c), eeg.eeg_header[:components])
+
+    return c_idx
+end
+
+"""
+    eeg_component_type(eeg, c)
+
+Return type of `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+- `c::Symbol`: component name
+
+# Return
+
+- `c_type::DataType`
+"""
+function eeg_component_type(eeg::NeuroJ.EEG; c::Symbol)
+
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    c_idx = eeg_component_idx(eeg; c=c)
+    c_type = typeof(eeg.eeg_components[c_idx])
+
+    return c_type
+end
+
+"""
+    eeg_rename_component(eeg, c_old, c_new)
+
+Return type of `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+- `c_old::Symbol`: old component name
+- `c_new::Symbol`: new component name
+
+# Return
+
+- `eeg_new:EEG`
+"""
+function eeg_rename_component(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
+
+    c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
+    c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
+
+    eeg_new = deepcopy(eeg)
+    c_idx = eeg_component_idx(eeg, c=c_old)
+    eeg_new.eeg_header[:components][c_idx] = c_new
+
+    push!(eeg_new.eeg_header[:history], "eeg_rename_component(EEG, c_old=$c_old, c_new=$c_new)")
+
+    return eeg_new
+end
+
+"""
+    eeg_rename_component(eeg, c_old, c_new)
+
+Return type of `eeg` components.
+
+# Arguments
+
+- `eeg:EEG`
+- `c_old::Symbol`: old component name
+- `c_new::Symbol`: new component name
+"""
+function eeg_rename_component!(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
+
+    c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
+    c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
+
+    c_idx = eeg_component_idx(eeg, c=c_old)
+    eeg.eeg_header[:components][c_idx] = c_new
+
+    push!(eeg.eeg_header[:history], "eeg_rename_component!(EEG, c_old=$c_old, c_new=$c_new)")
 
     return
 end
@@ -1186,104 +1431,6 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
 end
 
 """
-    eeg_list_components(eeg)
-
-List `eeg` components.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-
-# Returns
-
-- `components::Vector{Symbol}`
-"""
-function eeg_list_components(eeg::NeuroJ.EEG)
-
-    return eeg.eeg_header[:components]
-end
-
-"""
-    eeg_extract_component(eeg, c)
-
-Extract component `c` of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `c::Symbol`: component name
-
-# Returns
-
-- `component::Any`
-"""
-function eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
-    
-    for idx in 1:length(eeg.eeg_header[:components])
-        if c == eeg.eeg_header[:components][idx]
-            return eeg.eeg_components[idx]
-        end
-    end
-
-    return
-end
-
-"""
-    eeg_delete_component(eeg; c)
-
-Delete component `c` of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `c::Symbol`: component name
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
-
-    eeg_new = deepcopy(eeg)
-    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
-    for idx in 1:length(eeg.eeg_header[:components])
-        if c == eeg_new.eeg_header[:components][idx]
-            deleteat!(eeg_new.eeg_components, idx)
-            deleteat!(eeg_new.eeg_header[:components], idx)
-            push!(eeg_new.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
-            return eeg_new
-        end
-    end
-end
-
-"""
-    eeg_delete_component!(eeg; c)
-
-Delete component `c` of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `c::Symbol`: component name
-"""
-function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view available components."))
-    
-    for idx in length(eeg.eeg_header[:components]):-1:1
-        if c == eeg.eeg_header[:components][idx]
-            deleteat!(eeg.eeg_components, idx)
-            deleteat!(eeg.eeg_header[:components], idx)
-            push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
-        end
-    end
-
-    return
-end
-
-"""
     eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
 
 Detect bad `eeg` epochs based on:
@@ -1565,53 +1712,6 @@ function eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
         eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
-
-    return
-end
-
-"""
-    eeg_add_component(eeg; c, v)
-
-Add component name `c` of value `v` to `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `c::Symbol`: component name
-- `v::Any`: component value
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
-
-    eeg_new = deepcopy(eeg)
-    c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
-    push!(eeg_new.eeg_header[:components], c)
-    push!(eeg_new.eeg_components, v)
-    push!(eeg_new.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
-
-    return eeg_new
-end
-
-"""
-    eeg_add_component!(eeg; c, v)
-
-Add component name `c` of value `v` to `eeg`.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `c::Symbol`: component name
-- `v::Any`: component value
-"""
-function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
-
-    c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
-    push!(eeg.eeg_header[:components], c)
-    push!(eeg.eeg_components, v)
-    push!(eeg.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
 
     return
 end

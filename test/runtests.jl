@@ -14,6 +14,6 @@ using Test
     println("\tRunning eeg.jl tests.. ")
     @test include("eeg.jl")
 
-    println("\tRunning plots.jl tests.. ")
-    @test include("plots.jl")
+    println("\tRunning eeg_plots.jl tests.. ")
+    @test include("eeg_plots.jl")
 end

@@ -80,7 +80,10 @@ p = eeg_plot_channels(edf, snr, epoch=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 e10 = eeg_epochs(edf, epoch_n=10)
-eeg_epochs_stats!(e10)
+e = eeg_epochs_stats(e10)
+eeg_add_component!(e10, c=:epochs_var, v=e[4])
+p = eeg_plot_epochs(e10, e[4])
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_epochs(e10, :epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
