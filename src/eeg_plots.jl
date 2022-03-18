@@ -1,6 +1,9 @@
-"""
-Some low-level plotting functions
-"""
+################################
+#                              #
+# Low-level internal functions #
+#                              #
+################################
+
 _xlims(t::Vector{Float64}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
 _xticks(t::Vector{Float64}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
 _pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
@@ -19,7 +22,7 @@ function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, 
     return channel
 end
 function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange}, def_ep::Int64)
-    # select epochs, default is all
+    # select epochs, default is all or def_ep
     def_ep > eeg_epoch_n(eeg) && (def_ep = eeg_epoch_n(eeg))
     def_ep == 0 && (def_ep = eeg_epoch_n(eeg))
     epoch == 0 && (epoch = 1:def_ep)
@@ -31,6 +34,8 @@ function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, Abst
 
     return epoch
 end
+
+################################
 
 """
     signal_plot(t, signal; <keyword arguments>)
@@ -294,7 +299,7 @@ function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRa
         frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
         s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
         ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
-        _, _, _, s_phase = signal_spectrum(signal)
+        _, _, _, s_phase = spectrum(signal)
         ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
         if head == true
             hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name")
@@ -547,12 +552,12 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     if norm == true
-        s_normalized = signal_normalize_zscore(signal)
+        s_normalized = normalize_zscore(signal)
     else
         s_normalized = signal
     end
     
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = signal_ci95(s_normalized)
+    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
 
     ylim == (0, 0) && (ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0)))
     abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
@@ -703,11 +708,11 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
 
     # add epochs markers
     if norm == true
-        s_normalized = signal_normalize_zscore(signal)
+        s_normalized = normalize_zscore(signal)
     else
         s_normalized = signal
     end
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = signal_ci95(s_normalized)
+    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
     ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
     abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
     abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
@@ -729,7 +734,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, norm=true, frq_lim=frq_lim, title="PSD averaged with 95%CI [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
-    _, _, _, s_phase = signal_spectrum(s_normalized_m)
+    _, _, _, s_phase = spectrum(s_normalized_m)
     ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         if collect(channel[1]:channel[end]) == channel
@@ -783,7 +788,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
     channel_n = size(signal, 1)
 
     if norm == true
-        s_normalized = signal_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
+        s_normalized = normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
     else
         s_normalized = signal
     end
@@ -936,7 +941,7 @@ function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, 
 
     # add epochs markers
     if norm == true
-        s_normalized = signal_normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
+        s_normalized = normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
     else
         s_normalized = signal
     end
@@ -1031,7 +1036,7 @@ function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, f
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
 
-    s_freqs, s_powers = signal_psd(signal, fs=fs, norm=norm)
+    s_freqs, s_powers = s_psd(signal, fs=fs, norm=norm)
     norm == true && (ylabel::String="Power [dB]")
 
     p = signal_plot_psd(s_powers,
@@ -1079,13 +1084,13 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    s_powers, s_freqs = signal_psd(signal, fs=fs, norm=norm)
+    s_powers, s_freqs = s_psd(signal, fs=fs, norm=norm)
     s_powers = s_powers[:, :, 1]
     s_freqs = s_freqs[:, :, 1]
     frq_lim == (0, 0) && (frq_lim = (0, s_freqs[1, end]))
 
     if average == true
-        s_powers_m, s_powers_s, s_powers_u, s_powers_l = signal_ci95(s_powers)
+        s_powers_m, s_powers_s, s_powers_u, s_powers_l = s_msci95(s_powers)
         s_freqs = s_freqs[1, :]
         channel_n = 1
         labels == [""]
@@ -1471,7 +1476,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     frq_lim = tuple_order(frq_lim)
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
 
-    demean == true && (signal = signal_demean(signal))
+    demean == true && (signal = demean(signal))
 
     nfft = length(signal)
     interval = fs
@@ -1621,7 +1626,7 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
     else
         ylabel = "Channels"
         xlabel = "Frequency [Hz]"
-        s_powers, s_freqs = signal_psd(signal, fs=fs, norm=norm)
+        s_powers, s_freqs = s_psd(signal, fs=fs, norm=norm)
         colorbar_title="Power/frequency [μV^2/Hz]"
         norm == true && (colorbar_title = "Power/frequency [dB/Hz]")
         p = heatmap(s_freqs[1, :],
@@ -2219,7 +2224,7 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
             s = eeg.eeg_signals[:, 1 + 1 + offset:(offset + len), epoch]
             s_non_interpolated = zeros(size(s, 1))
             for idx in 1:size(s_non_interpolated, 1)
-                s_non_interpolated[idx] = signal_band_power(s[idx, :], fs=eeg_sr(eeg), f=c_idx)
+                s_non_interpolated[idx] = band_power(s[idx, :], fs=eeg_sr(eeg), f=c_idx)
             end
             norm == true && s_non_interpolated[s_non_interpolated .<= 0] .= eps()
             norm == true && (s_non_interpolated = pow2db.(s_non_interpolated))
@@ -2227,7 +2232,7 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
         elseif typeof(c_idx) == Int64 || typeof(c_idx) == Float64
             s = eeg.eeg_signals[:, 1 + offset:(offset + len), epoch]
             s = reshape(s, size(s, 1), size(s, 2), 1)
-            s_psd, s_frq = signal_psd(s, fs=eeg_sr(eeg), norm=norm)
+            s_psd, s_frq = s_psd(s, fs=eeg_sr(eeg), norm=norm)
             # _, _, s_p, _ = signal_spectrum(s)
             # norm == true && (s_p = pow2db.(s_p[:, :, 1]))
             # s_f = freqs(s, eeg_sr(eeg))
@@ -2273,7 +2278,7 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
         end
     end
 
-    s_interpolated = signal_normalize_minmax(s_interpolated)
+    s_interpolated = normalize_minmax(s_interpolated)
 
     p = plot(grid=false,
              framestyle=:none,
@@ -2347,6 +2352,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling rate
 - `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha] (see `eeg_band()`)
+- `band_frq::Vector{Tuple{Float64, Float64}}`: vector of band frequencies
 - `type::Symbol`: plots absolute (:abs) or relative power (:rel)
 - `norm::Bool=true`: convert power to dB if true
 - `xlabel::String=""`: x-axis label
@@ -2358,16 +2364,13 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Float64, Float64}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
     band_frq = Array{Tuple{Float64, Float64}}(undef, length(band))
     for idx in 1:length(band)
         band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
-        band_frq[idx] = signal_band(fs, band[idx])
-    end
-    for idx in 1:length(band_frq)
         band_frq[idx][1] > fs / 2 && (band_frq[idx] = (fs / 2, band_frq[idx][2]))
         band_frq[idx][2] > fs / 2 && (band_frq[idx] = (band_frq[idx][1], fs / 2))
     end
@@ -2421,102 +2424,6 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Vector{Symb
                  rel_band_pow,
                  seriestype=:bar,
                  label="",
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 palette=:darktest,
-                 titlefontsize=10,
-                 xlabelfontsize=8,
-                 ylabelfontsize=8,
-                 xtickfontsize=8,
-                 ytickfontsize=8;
-                 kwargs...)
-    end
-
-    return p
-end
-
-"""
-    signal_plot_band(signal; <keyword arguments>)
-
-Plot absolute/relative band power of `signal` channels.
-
-# Arguments
-
-- `signal::Matrix{Float64}`
-- `fs::Int64`: sampling rate
-- `band:Symbols=:total`: band name, e.g. :delta (see `eeg_band()`)
-- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-- `norm::Bool=true`: convert power to dB if true
-- `labels::Vector{String}=[""]`: x-axis labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function signal_plot_bands(signal::Matrix{Float64}; fs::Int64, band::Symbol, type::Symbol, norm::Bool=true, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
-
-    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
-    (band === :total && type === :rel) && throw(ArgumentError("for band :total, type must be :abs."))
-    type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
-    band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
-    
-    band_frq = signal_band(fs, band)
-    channel_n = size(signal, 1)
-
-    total_pow = zeros(channel_n)
-    for idx in 1:channel_n
-        total_pow[idx] = round(signal_total_power(signal[idx, :], fs=fs), digits=2)
-    end
-
-    if band !== :total
-        abs_band_pow = zeros(channel_n)
-        for idx in 1:channel_n
-            abs_band_pow[idx] = round(signal_band_power(signal[idx, :], fs=fs, f=band_frq), digits=2)
-        end
-    else
-        abs_band_pow = total_pow
-    end
-
-    norm == true && (total_pow = pow2db.(total_pow))
-    norm == true && (abs_band_pow = pow2db.(abs_band_pow))
-    type === :rel && (rel_band_pow = abs_band_pow ./ total_pow)
-    if labels == [""]
-        labels = Vector{String}(undef, channel_n)
-        for idx in 1:channel_n
-            labels[idx] = "ch " * string(idx)
-        end
-    end
-    if type === :abs
-        ylabel == "" && (ylabel = "Absolute power")
-        norm == true && (ylabel *= " [dB]")
-        norm == false && (ylabel *= " [μV^2/Hz]")
-        p = plot(labels,
-                 abs_band_pow,
-                 seriestype=:bar,
-                 label="",
-                 xticks=(0.5:(length(labels) - 0.5), labels),
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 palette=:darktest,
-                 titlefontsize=10,
-                 xlabelfontsize=8,
-                 ylabelfontsize=8,
-                 xtickfontsize=8,
-                 ytickfontsize=8;
-                 kwargs...)
-    else
-        ylabel == "" && (ylabel = "Relative power")
-        p = plot(labels,
-                 rel_band_pow,
-                 seriestype=:bar,
-                 label="",
-                 xticks=(0.5:(length(labels) - 0.5), labels),
                  xlabel=xlabel,
                  ylabel=ylabel,
                  title=title,
@@ -2604,6 +2511,11 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
+    band_frq = Vector{Tuple{Float64, Float64}}{undef, length(band)}
+    for idx in 1:length(band)
+        band_frq[idx] = eeg_band(eeg, band[idx])
+    end
+
     if typeof(band) == Symbol
         typeof(channel) <: AbstractRange && (channel = collect(channel))
         if collect(channel[1]:channel[end]) == channel
@@ -2626,6 +2538,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
         typeof(labels) == String && (labels = [labels])
         p = signal_plot_bands(signal,
                              band=band,
+                             band_frq=band_frq,
                              fs=eeg_sr(eeg),
                              type=type,
                              labels=labels,
@@ -2642,6 +2555,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
 
         p = signal_plot_bands(signal,
                              band=band,
+                             band_frq=band_frq,
                              fs=eeg_sr(eeg),
                              type=type,
                              norm=norm,

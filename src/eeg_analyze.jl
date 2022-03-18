@@ -1,14 +1,10 @@
-function _signal_total_power(signal::AbstractArray; fs::Int64)
+################################
+#                              #
+# Low-level internal functions #
+#                              #
+################################
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-
-    psd = welch_pgram(signal, 4*fs, fs=fs)
-    # dx: frequency resolution
-    dx = psd.freq[2] - psd.freq[1]
-    stp = simpson(psd.power, dx=dx)
-
-    return stp
-end
+################################
 
 """
     eeg_total_power(eeg)
@@ -33,29 +29,13 @@ function eeg_total_power(eeg::NeuroJ.EEG)
     stp = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            stp[idx, epoch] = _signal_total_power(s, fs=fs)
+        Threads.@threads for channel in 1:channel_n
+            s = @view eeg.eeg_signals[channel, :, epoch]
+            stp[channel, epoch] = s_total_power(s, fs=fs)
         end
     end
 
     return stp
-end
-
-function _signal_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
-
-    psd = welch_pgram(signal, 4*fs, fs=fs)
-    psd_freq = Vector(psd.freq)
-    
-    f1_idx = vsearch(f[1], psd_freq)
-    f2_idx = vsearch(f[2], psd_freq)
-    frq_idx = [f1_idx, f2_idx]
-
-    # dx: frequency resolution
-    dx = psd_freq[2] - psd_freq[1]
-    sbp = simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
-
-    return sbp
 end
 
 """
@@ -87,9 +67,9 @@ function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple)
     sbp = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            sbp[idx, epoch] = _signal_band_power(s, fs=fs, f=f)
+        Threads.@threads for channel in 1:channel_n
+            s = @view eeg.eeg_signals[channel, :, epoch]
+            sbp[channel, epoch] = s_band_power(s, fs=fs, f=f)
         end
     end
 
@@ -99,7 +79,7 @@ end
 """
     eeg_cov(eeg; norm=true)
 
-Calculate covariance between all channels of `eeg`.
+Calculate covariance matrix for all channels of `eeg`.
 
 # Arguments
 
@@ -108,13 +88,23 @@ Calculate covariance between all channels of `eeg`.
 
 # Returns
 
-- `cov_mat::Array{Float64, 3}`
+- `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function eeg_cov(eeg::NeuroJ.EEG; norm=true)
+function eeg_cov(eeg::NeuroJ.EEG; norm::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    cov_mat = signal_cov(eeg.eeg_signals, norm=norm)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    cov_mat = zeros(channel_n, channel_n, epoch_n)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s = @view eeg.eeg_signals[:, :, epoch]
+        cov_mat[:, :, epoch] = cov(s')
+    end
+
+    # normalize covariance matrix
+    norm == true && (cov_mat = mat_norm(cov_mat))
 
     return cov_mat
 end
@@ -130,43 +120,22 @@ Calculate correlation coefficients between all channels of `eeg`.
 
 # Returns
 
-- `cov_mat::Array{Float64, 3}`
+- `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
 """
 function eeg_cor(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    cor_mat = signal_cor(eeg.eeg_signals)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    cor_mat = zeros(channel_n, channel_n, epoch_n)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s = @view eeg.eeg_signals[:, :, epoch]
+        cor_mat[:, :, epoch] = cor(s')
+    end
 
     return cor_mat
-end
-
-"""
-    eeg_autocov(eeg; lag, demean, norm)
-
-Calculate autocovariance of each the `eeg` channels.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
-- `norm::Bool=false`: normalize autocovariance
-
-# Returns
-
-Named tuple containing:
-- `acov::Matrix{Float64}`
-- `lags::Vector{Float64}
-"""
-function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    acov, lags = signal_autocov(eeg.eeg_signals, lag=lag, demean=demean, norm=norm)
-    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
-
-    return (acov=acov, acov_lags=lags)
 end
 
 """
@@ -191,7 +160,27 @@ function eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::B
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    ccov, lags = signal_crosscov(eeg.eeg_signals, lag=lag, demean=demean, norm=norm)
+    epoch_n = eeg_epoch_n(eeg)
+    ccov = zeros(channel_n^2, length(lags), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        ccov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
+        Threads.@threads for idx1 in 1:channel_n
+            for idx2 in 1:channel_n
+                s1 = @view eeg.eeg_signals[idx1, :, epoch]
+                s2 = @view eeg.eeg_signals[idx2, :, epoch]
+                ccov_packed[idx1, idx2], lags = s_xcov(s1,
+                                                       s2,
+                                                       lag=lag,
+                                                       demean=demean,
+                                                       norm=norm)
+            end
+        end
+        for idx in 1:channel_n^2
+            ccov[idx, :, epoch] = ccov_packed[idx]
+        end
+    end
+
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return (ccov=ccov, ccov_lags=lags)
@@ -221,7 +210,18 @@ function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    ccov, lags = signal_crosscov(eeg1.eeg_signals, eeg2.eeg_signals, lag=lag, demean=demean, norm=norm)
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s1 = @view eeg1.eeg_signals[idx, :, epoch]
+            s2 = @view eeg2.eeg_signals[idx, :, epoch]
+            ccov[idx, :, epoch], lags = s_xcov(s1,
+                                               s2,
+                                               lag=lag,
+                                               demean=demean,
+                                               norm=norm)
+        end
+    end
+
     lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
 
     return (ccov=ccov, ccov_lags=lags)
@@ -240,14 +240,28 @@ Calculate total power for each the `eeg` channels.
 # Returns
 
 Named tuple containing:
-- `powers::Array{Float64, 3}`
-- `frequencies::Array{Float64, 3}`
+- `psd_pow::Array{Float64, 3}`:powers
+- `psd_frq::Array{Float64, 3}`: frequencies
 """
 function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    psd_pow, psd_frq = signal_psd(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm)
+    fs = eeg_sr(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    psd_len, _ = psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm)
+    psd_pow = zeros(channel_n, length(psd_len), epoch_n)
+    psd_frq = zeros(channel_n, length(psd_len), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = eeg.eeg_signals[idx, :, epoch]
+            psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = s_psd(s,
+                                                                   fs=fs,
+                                                                   norm=norm)
+        end
+    end
 
     return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
@@ -270,8 +284,65 @@ Calculate stationarity.
 function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    method in [:mean, :var, :euclid, :hilbert] || throw(ArgumentError("Method must be must be :mean, :var, :euclid or :hilbert."))
+    (typeof(window) == Int64 && window < 1) && throw(ArgumentError("window must be ≥ 1."))
+    (typeof(window) == Int64 && window > size(eeg.eeg_signals, 2)) && throw(ArgumentError("window must be ≤ $(size(eeg.eeg_signals, 2))."))
 
-    s_stationarity = signal_stationarity(eeg.eeg_signals, window=window, method=method)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    if method === :mean
+        s_stationarity = zeros(channel_n, window, epoch_n)
+        @inbounds @simd for epoch in 1:epoch_n
+            Threads.@threads for idx in 1:channel_n
+                s = @view eeg.eeg_signals[idx, :, epoch]
+                s_stationarity[idx, :, epoch] = s_stationarity_mean(s, window=window)
+            end
+        end
+    end
+
+    if method === :var
+        s_stationarity = zeros(channel_n, window, epoch_n)
+        @inbounds @simd for epoch in 1:epoch_n
+            Threads.@threads for idx in 1:channel_n
+                s = @view eeg.eeg_signals[idx, :, epoch]
+                s_stationarity[idx, :, epoch] = s_stationarity_var(s, window=window)
+            end
+        end
+    end
+
+    if method === :hilbert
+        s_stationarity = zeros(channel_n, size(signal, 2) - 1, epoch_n)
+        @inbounds @simd for epoch in 1:epoch_n
+            Threads.@threads for idx in 1:channel_n
+                s = @view eeg.eeg_signals[idx, :, epoch]
+                s_stationarity[idx, :, epoch] = s_stationarity_hilbert(s)
+            end
+        end
+    end
+
+    if method === :euclid
+        # number of time windows per epoch
+        window_n = size(signal, 2)
+        cov_mat = zeros(channel_n, channel_n, window_n, epoch_n)
+        s_stationarity = zeros(1 + length(2:window:window_n), epoch_n)
+
+        @inbounds @simd for epoch in 1:epoch_n
+            Threads.@threads for idx = 1:window_n
+                s = @view eeg.eeg_signals[:, idx, epoch]
+                cov_mat[:, :, idx, epoch] = cov(s, s)
+            end
+        end
+
+        @inbounds @simd for epoch in 1:epoch_n
+            phase_idx = 1
+            Threads.@threads for idx = 2:window:window_n
+                s_stationarity[phase_idx, epoch] = euclidean(cov_mat[:, :, idx - 1, epoch],
+                                                             cov_mat[:, :, idx, epoch])
+                phase_idx += 1
+            end
+        end
+    end
 
     return s_stationarity
 end
@@ -293,9 +364,18 @@ function eeg_mi(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    mi = signal_mi(eeg.eeg_signals)
-    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    mi = zeros(channel_n, channel_n, epoch_n)
 
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx1 in 1:channel_n
+            for idx2 in 1:channel_n
+                s = @view eeg.eeg_signals[idx2, :, epoch]
+                mi[idx1, idx2, epoch] = s2_mi(s, s)
+            end
+        end
+    end
     return mi
 end
 
@@ -317,9 +397,22 @@ function eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg1) == eeg_channel_n(eeg2) || throw(ArgumentError("Both signals must have the same number of channels."))
+    eeg_epoch_n(eeg1) == eeg_epoch_n(eeg2) || throw(ArgumentError("Both signals must have the same number of epochs."))
 
-    mi = signal_mi(eeg1.eeg_signals, eeg2.eeg_signals)
-    size(mi, 3) == 1 && (mi = reshape(mi, size(mi, 1), size(mi, 2)))
+    channel_n = eeg_channel_n(eeg1)
+    epoch_n = eeg_epoch_n(eeg1)
+    mi = zeros(channel_n, channel_n, epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx1 in 1:channel_n
+            for idx2 in 1:channel_n
+                s1 = eeg1.eeg_signals[idx2, :, epoch]
+                s2 = eeg2.eeg_signals[idx2, :, epoch]
+                mi[idx1, idx2, epoch] = s2_mi(s1, s2)
+            end
+        end
+    end
 
     return mi
 end
@@ -341,10 +434,19 @@ function eeg_entropy(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    ent = signal_entropy(eeg.eeg_signals)
-    size(ent, 3) == 1 && (ent = reshape(ent, size(ent, 1), size(ent, 2)))
+    ent = entropy(eeg.eeg_signals)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_entropy = zeros(channel_n, epoch_n)
 
-    return ent
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            s_entropy[idx, epoch] = s_entropy(s)
+        end
+    end
+
+    return s_entropy
 end
 
 """
@@ -401,11 +503,21 @@ function eeg_coherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both signals must have the same size."))
 
-    coherence = signal_coherence(eeg1.eeg_signals, eeg2.eeg_signals)
-    size(coherence, 3) == 1 && (coherence = reshape(coherence, size(coherence, 1), size(coherence, 2)))
+    channel_n = eeg_channel_n(eeg1)
+    epoch_n = eeg_epoch_n(eeg)
+    coh = zeros(ComplexF64, size(eeg1.eeg_signals))
 
-    return coherence
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s1 = @view eeg1.eeg_signals[idx, :, epoch]
+            s2 = @view eeg2.eeg_signals[idx, :, epoch]
+            coh[idx, :, epoch] = s2_coherence(s1, s2)            
+        end
+    end
+
+    return coh
 end
 
 """
@@ -423,21 +535,23 @@ Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `e
 
 # Returns
 
-- `coherence::Vector{ComplexF64}`
+- `coh::Vector{ComplexF64}`
 """
 function eeg_coherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
-    channel_n = eeg.eeg_header[:channel_n]
+    channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     (channel1 > channel_n || channel2 > channel_n) && throw(ArgumentError("channel1/channel2 must be ≤ $(channel_n)."))
     (epoch1 > epoch_n || epoch2 > epoch_n) && throw(ArgumentError("epoch1/epoch2 must be ≤ $(epoch_n)."))
 
-    coherence = signal_coherence(eeg.eeg_signals[channel1, :, epoch1], eeg.eeg_signals[channel2, :, epoch2])
+    s1 = @view eeg.eeg_signals[channel1, :, epoch1]
+    s2 = @view eeg.eeg_signals[channel2, :, epoch2]
+    coh = s2_coherence(s1, s2)
 
-    return coherence
+    return coh
 end
 
 """
@@ -457,7 +571,7 @@ Named tuple containing:
 """
 function eeg_freqs(eeg::NeuroJ.EEG)
 
-    hz, nyq = freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
+    hz, nyq = s_freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
 
     return (hz=hz, nyquist=nyq)
 end
@@ -494,7 +608,7 @@ function eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::
     p = zeros(epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
-        signals_statistic[epoch, :], signals_statistic_single[epoch], p[epoch] = signal_difference(eeg1.eeg_signals[:, :, epoch], eeg2.eeg_signals[:, :, epoch], n=n, method=method)
+        signals_statistic[epoch, :], signals_statistic_single[epoch], p[epoch] = s2_difference(eeg1.eeg_signals[:, :, epoch], eeg2.eeg_signals[:, :, epoch], n=n, method=method)
     end
 
     return (s_stat=signals_statistic, s_stat_single=signals_statistic_single, p=p)
@@ -623,7 +737,29 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    e_mean, e_median, e_std, e_var, e_kurt, e_mean_diff, e_median_diff, e_dev_mean, e_max_dif = signal_epochs_stats(eeg.eeg_signals)
+    epoch_n = eeg_epoch_n(eeg)
+    e_mean = zeros(epoch_n)
+    e_median = zeros(epoch_n)
+    e_sd = zeros(epoch_n)
+    e_var = zeros(epoch_n)
+    e_kurt = zeros(epoch_n)
+    e_mean_diff = zeros(epoch_n)
+    e_median_diff = zeros(epoch_n)
+    e_max_dif = zeros(epoch_n)
+    e_dev_mean = zeros(epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        s = @view signal[:, :, epoch]
+        e_mean[epoch] = mean(s)
+        e_median[epoch] = median(s)
+        e_sd[epoch] = std(s)
+        e_var[epoch] = var(s)
+        e_kurt[epoch] = kurtosis(s)
+        e_mean_diff = mean(diff(signal, dims=2))
+        e_median_diff = median(diff(signal, dims=2))
+        e_max_dif = maximum(signal) - minimum(signal)
+        e_dev_mean = abs(mean(signal)) - mean(signal)
+    end
 
     return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_dev_mean=e_dev_mean, e_max_dif=e_max_dif)
 end
@@ -650,7 +786,19 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_pow, s_frq, s_t = signal_spectrogram(eeg.eeg_signals, fs=eeg_sr(eeg), norm=norm, demean=demean)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    p_tmp, f_tmp, t_tmp = spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, demean=demean)
+    s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
+    s_frq = zeros(length(f_tmp), epoch_n)
+    s_t = zeros(length(t_tmp), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_pow[:, :, idx, epoch], s_frq[:, epoch], s_t[:, epoch] = s_spectrogram(s, fs=fs, norm=norm, demean=demean)
+        end
+    end
 
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
@@ -663,22 +811,36 @@ Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `pad::Int64=0`: number of 0s to pad
+- `pad::Int64=0`: pad with `pad` zeros
 
 # Returns
 
+Named tuple containing:
 - `fft::Array{ComplexF64, 3}`
-- `amplitudes::Array{Float64, 3}`
-- `powers::Array{Float64, 3}`
-- `phases::Array{Float64, 3}
+- `amp::Array{Float64, 3}`
+- `pow::Array{Float64, 3}`
+- `phase::Array{Float64, 3}
 """
 function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_fft, s_amp, s_pow, s_pha = signal_spectrum(eeg.eeg_signals, pad=pad)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
 
-    return s_fft, s_amp, s_pow, s_pha
+    s_fft = zeros(ComplexF64, channel_n, size(signal, 2) + pad, epoch_n)
+    s_amplitudes = zeros(channel_n, size(signal, 2) + pad, epoch_n)
+    s_powers = zeros(channel_n, size(signal, 2) + pad, epoch_n)
+    s_phases = zeros(channel_n, size(signal, 2) + pad, epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_fft[idx, :, epoch], s_amplitudes[idx, :, epoch], s_powers[idx, :, epoch], s_phases[idx, :, epoch] = s_spectrum(s, pad=pad)
+        end
+    end
+
+    return (fft=s_fft, amp=s_amplitudes, pow=s_powers, phase=s_phases)
 end
 
 """
@@ -721,20 +883,6 @@ function eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
     return t_s
 end
 
-function _signal_channels_stats(signal::AbstractArray)
-    c_mean = mean(signal)
-    c_median = median(signal)
-    c_std = std(signal)
-    c_var = var(signal)
-    c_kurt = kurtosis(signal)
-    c_mean_diff = mean(diff(signal))
-    c_median_diff = median(diff(signal))
-    c_max_dif = maximum(signal) - minimum(signal)
-    c_dev_mean = abs(mean(signal)) - mean(signal)
-    
-    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_max_dif, c_dev_mean
-end
-
 """
     eeg_channels_stats(eeg)
 
@@ -746,6 +894,7 @@ Calculate `eeg` channels statistics.
 
 # Returns
 
+Named tuple containing:
 - `c_mean::Matrix(Float64)`: mean
 - `c_median::Matrix(Float64)`: median
 - `c_std::Matrix(Float64)`: standard deviation
@@ -776,21 +925,11 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
-            c_mean[idx, epoch], c_median[idx, epoch], c_std[idx, epoch], c_var[idx, epoch], c_kurt[idx, epoch], c_mean_diff[idx, epoch], c_median_diff[idx, epoch], c_dev_mean[idx, epoch], c_max_dif[idx, epoch] = signal_channels_stats(s)
+            c_mean[idx, epoch], c_median[idx, epoch], c_std[idx, epoch], c_var[idx, epoch], c_kurt[idx, epoch], c_mean_diff[idx, epoch], c_median_diff[idx, epoch], c_dev_mean[idx, epoch], c_max_dif[idx, epoch] = s_channels_stats(s)
         end
     end
 
-    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_dev_mean, c_max_dif
-end
-
-function _signal_snr(signal::AbstractArray)
-
-    # make signal positive
-    signal .+= abs(minimum(signal))
-
-    snr = mean(signal) / std(signal)
-
-    return snr
+    return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_dev_mean=c_dev_mean, c_max_dif=c_max_dif)
 end
 
 """
@@ -819,26 +958,11 @@ function eeg_snr(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
-            snr[idx, epoch] = _signal_snr(s)
+            snr[idx, epoch] = s_snr(s)
         end
     end
 
     return snr
-end
-
-function _signal_standardize(signal::Array{Float64, 3})
-
-    epoch_n = eeg_epoch_n(eeg)    
-    ss = similar(eeg.eeg_signals)
-    scaler = Vector{Any}()
-
-    @inbounds @simd for epoch in 1:epoch_n
-        s = @view signal[:, :, epoch]
-        push!(scaler, StatsBase.fit(ZScoreTransform, s, dims=2)) 
-        ss[:,:, epoch] = StatsBase.transform(scaler[epoch], s)
-    end
-
-    return ss, scaler
 end
 
 """
@@ -856,19 +980,41 @@ Standardize `eeg` channels for ML.
 - `scaler::Matrix{Float64}`: standardized EEG
 """
 function eeg_standardize(eeg::NeuroJ.EEG)
-    ss, scaler = signal_standardize(eeg.eeg_signals)
+    ss, scaler = s_standardize(eeg.eeg_signals)
     eeg_new = deepcopy(eeg)
-    eeg.eeg_signals = ss
-
-    push!(eeg_new.eeg_header[:history], "eeg_standardize!(EEG)")
+    eeg_new.eeg_signals = ss
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_standardize(EEG)")
 
     return eeg_new, scaler
 end
 
 """
+    eeg_standardize!(eeg)
+
+Standardize `eeg` channels for ML.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `scaler::Matrix{Float64}`: standardized EEG
+"""
+function eeg_standardize!(eeg::NeuroJ.EEG)
+    ss, scaler = s_standardize(eeg.eeg_signals)
+    eeg.eeg_signals = ss
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_standardize!(EEG)")
+
+    return scaler
+end
+
+"""
     eeg_fconv(eeg, kernel)
 
-Perform convolution in the time domain.
+Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
 
 # Arguments
 
@@ -883,7 +1029,16 @@ function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_convoluted = signal_fconv(eeg.eeg_signals, kernel=kernel)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s_convoluted = zeros(ComplexF64, size(eeg.eeg_signals))
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_convoluted[idx, :, epoch] = s_fconv(s, kernel=kernel)
+        end
+    end
 
     return s_convoluted
 end
@@ -906,7 +1061,219 @@ function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    s_convoluted = signal_tconv(eeg.eeg_signals, kernel=kernel)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    if typeof(kernel) == Vector{ComplexF64}
+        s_convoluted = zeros(ComplexF64, size(eeg.eeg_signals))
+    else
+        s_convoluted = zeros(size(eeg.eeg_signals))
+    end
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_convoluted[idx, :, epoch] = s_tconv(s, kernel=kernel)
+        end
+    end
 
     return s_convoluted
+end
+
+"""
+    eeg_make_spectrum(eeg)
+
+Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+Named tuple containing:
+- `fft::Array{ComplexF64, 3}`: FFT
+- `sf::Array{Float64, 3}`: sample frequencies
+"""
+function eeg_dft(eeg::NeuroJ.EEG)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
+    s_fft = zeros(ComplexF64, size(eeg.eeg_signals))
+    s_sf = zeros(size(eeg.eeg_signals))
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            s_fft[idx, :, epoch], s_sf[idx, :, epoch] = s_dft(s, fs=fs)
+        end
+    end
+
+    return (fft=fft, sf=sf)
+end
+
+"""
+    eeg_msci95(eeg; n::=3, method=:normal)
+
+Calculates mean, std and 95% confidence interval for each the `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `n::Int64`: number of bootstraps
+- `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+
+# Returns
+
+Named tuple containing:
+- `s_m::Matrix{Float64}`: mean
+- `s_s::Matrix{Float64}`: standard deviation
+- `s_u::Matrix{Float64}`: upper 95% CI
+- `s_l::Matrix{Float64}`: lower 95% CI
+"""
+function eeg_msci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
+
+    method in [:normal, :boot] || throw(ArgumentError("method must be :normal or :boot."))
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+
+    epoch_n = eeg_epoch_n(eeg)
+    epoch_len = eeg_epoch_len(eeg)
+    s_m = zeros(epoch_n, epoch_len)
+    s_s = zeros(epoch_n, epoch_len)
+    s_u = zeros(epoch_n, epoch_len)
+    s_l = zeros(epoch_n, epoch_len)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s = @view eeg.eeg_signals[:, :, epoch]
+        s_m[idx, :], s_s[idx, :], s_u[idx, :], s_l[idx, :] = s_msci95(s, n=n, method=method)
+    end
+
+    return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)
+end
+
+"""
+    eeg_mean(eeg1, eeg2)
+
+Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`
+- `eeg2:NeuroJ.EEG`
+
+# Returns
+
+Named tuple containing:
+- `s_m::Matrix{Float64}`: mean by epochs
+- `s_s::Matrix{Float64}`: std by epochs
+- `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
+- `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
+"""
+function eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both signals must be of the same as size."))
+
+    epoch_n = eeg_epoch_n(eeg1)
+    e_len = eeg_epoch_len(eeg1)
+    s_m = zeros(epoch_n, epoch_len)
+    s_s = zeros(epoch_n, epoch_len)
+    s_u = zeros(epoch_n, epoch_len)
+    s_l = zeros(epoch_n, epoch_len)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s1 = @view signal1[:, :, epoch]
+        s2 = @view signal2[:, :, epoch]
+        s1_mean = mean(s1, dims=1)
+        s2_mean = mean(s2, dims=1)
+        s_m[epoch, :] = s1_mean - s2_mean
+        s1_sd = std(s1, dims=1) / sqrt(size(s1, 2))
+        s2_sd = std(s2, dims=1) / sqrt(size(s2, 2))
+        s_s[epoch, :] = sqrt.(s1_sd.^2 .+ s2_sd.^2)
+        s_u[epoch, :] = @. s_m[epoch, :] + 1.96 * s_s[epoch, :]
+        s_l[epoch, :] = @. s_m[epoch, :] - 1.96 * s_s[epoch, :]
+    end
+
+    return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)
+end
+
+"""
+    eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
+
+Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::Array{Float64, 3}`
+- `eeg2:Array{Float64, 3}`
+- `n::Int64`: number of bootstraps
+- `method::Symbol[:absdiff, :diff2int]`
+    - `:absdiff`: maximum difference
+    - `:diff2int`: integrated area of the squared difference
+
+# Returns
+
+Named tuple containing:
+- `statistic::Matrix{Float64}`
+- `statistic_single::Vector{Float64}`
+- `p::Vector{Float64}`
+"""
+function eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
+
+    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both signals must be of the same size."))
+    method in [:absdiff, :diff2int] || throw(ArgumentError("method must be :absdiff or :diff2int."))
+
+    epoch_n = eeg_epoch_n(eeg1)
+    s_statistic = zeros(epoch_n, size(signal1, 1) * n)
+    s_statistic_single = zeros(epoch_n)
+    p = zeros(epoch_n)
+
+    Threads.@threads for epoch in 1:epoch_n
+        s1 = @view signal1[:, :, epoch]
+        s2 = @view signal2[:, :, epoch]
+        s_statistic[epoch, :], s_statistic_single[epoch], p[epoch] = s2_difference(s1, s2)
+    end
+
+    return (statistic=s_statistic, statsitic_single=s_statistic_single, p=p)
+end
+
+"""
+   eeg_autocov(eeg; lag=1, demean=false, norm=false)
+
+Calculate autocovariance of each the `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `lag::Int64`: lags range is `-lag:lag`
+- `demean::Bool`: demean eeg prior to analysis
+- `norm::Bool`: normalize autocovariance
+
+# Returns
+
+Named tuple containing:
+- `acov::Matrix{Float64}`
+- `lags::Vector{Float64}`
+"""
+function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+
+    lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
+
+    lags = collect(-lag:lag)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    acov = zeros(channel_n, length(lags), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            acov[idx, :, epoch], lags = s_acov(s,
+                                               lag=lag,
+                                               demean=demean,
+                                               norm=norm)
+        end
+    end
+
+    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
+
+    return (acov=acov, acov_lags=lags)
 end

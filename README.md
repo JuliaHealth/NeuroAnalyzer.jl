@@ -48,24 +48,17 @@ NeuroJ.jl will be 100% Julia based.
 
 ## General remarks
 
-NeuroJ.jl will process both NeuroJ.EEG objects (EEG metadata header + time + epoched signals + components) and signals (single-channel or multi-channel). The latter have no metadata header, therefore some functions will be limited.
+NeuroJ.jl functions operate on NeuroJ objects (NeuroJ.EEG: EEG metadata header + time + epoched signals + components).
 
-The following conventions are used:
-
-- single-channel signals and time `Vector{Float64}`
-- multi-channel signals `Array{Float64, 3}` (channels × signals × epochs)
-
-If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
+EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
 Functions name prefix:
-
-- `signal_` functions taking single-/multi-channel signals as an argument
 - `eeg_` functions taking EEG object as an argument
 - `eeg_plot_` plotting functions
 
 The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array)
 
-`eeg_` and `signal_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
+`eeg_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
 EEG object (headers + time + components + EEG signal) is stored in the EEG structure:
 ```julia
@@ -111,7 +104,6 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- remove intermediate signal functions, move signal functions to eeg_*.jl
 - new plotting architecture:
 ```
 eeg_plot → single channel / component
