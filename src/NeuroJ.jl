@@ -255,6 +255,7 @@ include("eeg_plots.jl")
 export eeg_plot_electrodes
 export eeg_plot_filter_response
 export eeg_plot_signal
+export eeg_plot_component
 export eeg_plot_avg
 export eeg_plot_butterfly
 export eeg_plot_covmatrix

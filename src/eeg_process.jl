@@ -638,18 +638,18 @@ Filter `eeg`.
 """
 function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, order::Int64=2, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
-    eeg.eeg_signals = eeg_filter(eeg.eeg_signals,
-                                 fprototype=fprototype,
-                                 ftype=ftype,
-                                 cutoff=cutoff,
-                                 fs=eeg_sr(eeg),
-                                 order=order,
-                                 rp=rp,
-                                 rs=rs,
-                                 dir=dir,
-                                 d=d,
-                                 t=t,
-                                 window=window).eeg_signals
+    s_filtered = eeg_filter(eeg,
+                            fprototype=fprototype,
+                            ftype=ftype,
+                            cutoff=cutoff,
+                            order=order,
+                            rp=rp,
+                            rs=rs,
+                            dir=dir,
+                            d=d,
+                            t=t,
+                            window=window).eeg_signals
+    eeg.eeg_signals = s_filtered
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
 

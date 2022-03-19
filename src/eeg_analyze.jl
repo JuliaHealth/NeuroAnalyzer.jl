@@ -724,15 +724,15 @@ Calculate `eeg` epochs statistics.
 # Returns
 
 Named tuple containing:
-- `e_mean::Matrix(Float64)`: mean
-- `e_median::Matrix(Float64)`: median
-- `e_std::Matrix(Float64)`: standard deviation
-- `e_var::Matrix(Float64)`: variance
-- `e_kurt::Matrix(Float64)`: kurtosis
-- `e_mean_diff::Matrix(Float64)`: mean diff value
-- `e_median_diff::Matrix(Float64)`: median diff value
-- `e_max_dif::Matrix(Float64)`: max difference
-- `e_dev_mean::Matrix(Float64)`: deviation from channel mean
+- `e_mean::Vector(Float64)`: mean
+- `e_median::Vector(Float64)`: median
+- `e_std::Vector(Float64)`: standard deviation
+- `e_var::Vector(Float64)`: variance
+- `e_kurt::Vector(Float64)`: kurtosis
+- `e_mean_diff::Vector(Float64)`: mean diff value
+- `e_median_diff::Vector(Float64)`: median diff value
+- `e_max_dif::Vector(Float64)`: max difference
+- `e_dev_mean::Vector(Float64)`: deviation from channel mean
 """
 function eeg_epochs_stats(eeg::NeuroJ.EEG)
 

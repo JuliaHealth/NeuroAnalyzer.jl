@@ -108,6 +108,8 @@ EEG:
     - plot by epoch: use time of epochs
     - plot by time: use whole signal time
 
+    - ICA weights topo
+
     - eeg_plot_signal → single-channel / multi-channel vs time
     - eeg_plot_component → single (e.g. one ICA) / multiple (e.g. set of ICAs) vs time
 

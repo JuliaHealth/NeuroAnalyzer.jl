@@ -106,16 +106,16 @@ function _get_t(eeg, offset, len)
     return t
 end
 function _check_offset_len(eeg, offset, len)
-    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
-    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset < 0 || offset > eeg_epoch_len(eeg)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg))."))
+    (offset + len > eeg_epoch_len(eeg)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg))."))
 end
 function _convert_t(t)
     t_1 = floor(t[1], digits=2)
     t_2 = ceil(t[end], digits=2)
-    t_1 < 1.0 && (t_s1 = string(floor(t_1 * 1000, digits=2)) * " ms")
-    t_1 >= 1.0 && (t_s1 = string(floor(t_1, digits=2)) * " s")
-    t_2 < 1.0 && (t_s2 = string(ceil(t_2 * 1000, digits=2)) * " ms")
-    t_2 >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
+    abs(t_1) < 1.0 && (t_s1 = string(floor(t_1 * 1000, digits=2)) * " ms")
+    abs(t_1) >= 1.0 && (t_s1 = string(floor(t_1, digits=2)) * " s")
+    abs(t_2) < 1.0 && (t_s2 = string(ceil(t_2 * 1000, digits=2)) * " ms")
+    abs(t_2) >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
     return t_1, t_s1, t_2, t_s2
 end
 
@@ -164,6 +164,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
               yguidefontrotation=0,
               yticks=[ylim[1], 0, ylim[2]],
               palette=:darktest,
+              linewidth=0.5,
               grid=false,
               titlefontsize=10,
               xlabelfontsize=8,
@@ -242,6 +243,191 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     return p
 end
 
+"""
+    eeg_plot_signal(eeg; <keyword arguments>)
+
+Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `epoch::Union{Int64, AbstractRange}=0`: epochs to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function; <keyword arguments>
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
+        epoch = epoch[1]
+    else
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+    end
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+
+    # set epoch markers if len > epoch_len
+    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    if length(epoch) == 1 && len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[1:len, epoch]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
+    else
+        t = _get_t(eeg_tmp, offset, len)
+    end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    if length(channel) == 1
+        title = ""
+        ylabel = "Amplitude [μV]"
+        channel_name = labels
+        labels = [""]
+        signal = vec(signal)
+    end
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    if length(epoch) > 1
+        epoch_tmp = epoch[1]:epoch[end]
+    else
+        epoch_tmp = epoch
+    end
+    if (1 + offset) > eeg_epoch_len(eeg)
+        if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))
+        else
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1))
+        end
+    end
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    title == "" && (title = "Signal\n[epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+
+    p = signal_plot(t,
+                    signal,
+                    labels=labels,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    title=title;
+                    kwargs...)
+
+    # add epochs markers
+    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+        p = vline!(epoch_markers,
+                   linestyle=:dash,
+                   linewidth=0.2,
+                   linecolor=:black,
+                   label="")
+        if typeof(signal) == Vector{Float64}
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:left, valign=:top)))
+            end
+        else
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=6, halign=:left, valign=:top)))
+            end
+        end
+    end
+
+    plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component(eeg; <keyword arguments>)
+
+Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function; <keyword arguments>
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+
+    if typeof(v) == Symbol
+        v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
+        component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        v = eeg.eeg_components
+        typeof(v) == Array{Float64, 3} || throw(ArgumentError("For this type of v ($(typeof(v))), use eeg_plot_channels() or eeg_plot_epochs()."))
+    end
+
+    size(v) == size(eeg.eeg_signals) || throw(ArgumentError("Size of v ($(size(v))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
+
+    _check_epochs(eeg, epoch)
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    t = eeg.eeg_epochs_time[:, epoch]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+    if length(channel) == 1
+        channel_name = labels
+        labels = [""]
+        signal = vec(v)
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component\n[epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+    end
+
+
+
+    v = v[channel, :, epoch]
+
+    p = signal_plot(t,
+                    v,
+                    labels=labels,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    title=title;
+                    kwargs...)
+
+    plot(p)
+
+    return p
+end
 
 """
     signal_plot_avg(t, signal; <keyword arguments>)
@@ -1556,9 +1742,10 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    if ylim === nothing
-        ylim = maximum(ica) * 1.5
-        ylim = ceil(Int64, ylim)
+    if ylim == (0, 0)
+        ylim = (floor(Int64, minimum(ica) * 1.5), ceil(Int64, maximum(ica) * 1.5))
+        abs(ylim[1]) > abs(ylim[2]) && (ylim = (ylim[1], abs(ylim[1])))
+        abs(ylim[1]) < abs(ylim[2]) && (ylim = (-ylim[2], abs(ylim[2])))
     end
 
     p = plot(t,
@@ -1568,7 +1755,7 @@ function signal_plot_ica(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
              label="",
              xlims=_xlims(t),
              xticks=_xticks(t),
-             ylims=(-ylim, ylim),
+             ylims=ylim,
              title=title,
              titlefontsize=10,
              xlabelfontsize=8,
@@ -1666,7 +1853,7 @@ Plots embedded ICs components.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `epoch::Int64=1`: epoch number to display
+- `epoch::Int64=0`: epoch number to display
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
 - `ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing`: which IC to plot, default all
@@ -1680,11 +1867,12 @@ Plots embedded ICs components.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=0, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange, Nothing}=nothing, norm::Bool=true, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
 
@@ -1769,7 +1957,7 @@ function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int
                         label=labels,
                         xlabel=xlabel,
                         ylabel=ylabel,
-                        title=(title * "\nIC #$(ic)"),
+                        title=title * "\nIC #$(ic)",
                         kwargs...)
     # add epochs markers
     if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -2337,12 +2525,12 @@ function eeg_plot_epochs(eeg::NeuroJ.EEG; v::Union{Vector{Int64}, Vector{Float64
     epoch = _select_epochs(eeg, epoch, 0)
 
     if typeof(v) != Symbol
-        length(v) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of EEG epochs ($(length(epoch))) do not match."))
+        length(v) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of values vector ($(length(v))) and number of epochs ($(length(epoch))) do not match."))
         var = v[epoch]
     else
         v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
         component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
-        length(eeg.eeg_components[component_idx]) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of component vector ($(length(eeg.eeg_components[component_idx]))) and number of EEG epochs ($(length(epoch))) do not match."))
+        length(eeg.eeg_components[component_idx]) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of component vector ($(length(eeg.eeg_components[component_idx]))) and number of epochs ($(length(epoch))) do not match."))
         var = eeg.eeg_components[component_idx][epoch]
     end
 
