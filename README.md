@@ -104,6 +104,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- split large functions (e.g. filter) or functions with many methods into smaller ones
 - new plotting architecture:
 ```
 eeg_plot → single channel / component
