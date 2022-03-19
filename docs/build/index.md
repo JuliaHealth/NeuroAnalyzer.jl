@@ -1172,6 +1172,46 @@ Return `eeg` comment.
 
   * `eeg::NeuroJ.EEG`
 
+<a id='NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_time`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_time(eeg; ts)
+```
+
+Edit `eeg` epochs time start.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ts::Union{Int64, Float64}`: time start in seconds
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_time!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_time!(eeg; ts)
+```
+
+Edit `eeg` epochs time start.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ts::Union{Int64, Float64}`: time start in seconds
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-process'></a>
 
@@ -2674,7 +2714,7 @@ Plot multi-channel `signal`.
   * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: labels vector
   * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: other arguments for plot() function
 
@@ -2682,13 +2722,13 @@ Plot multi-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot(eeg; <keyword arguments>)
+eeg_plot_signal(eeg; <keyword arguments>)
 ```
 
 Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
@@ -5067,6 +5107,29 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+
+<a id='NeuroJ.s_snr-Tuple{AbstractArray}' href='#NeuroJ.s_snr-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_snr`** &mdash; *Method*.
+
+
+
+```julia
+s_snr(signal)
+```
+
+Calculate SNR of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `snr::Float64`: SNR
+
+**Source**
+
+D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 
 
 <a id='NSTIM'></a>

@@ -75,15 +75,15 @@ p = eeg_plot_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 snr = eeg_snr(edf)
-p = eeg_plot_channels(edf, snr, epoch=1)
+p = eeg_plot_channels(edf, v=snr, epoch=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 e10 = eeg_epochs(edf, epoch_n=10)
 e = eeg_epochs_stats(e10)
 eeg_add_component!(e10, c=:epochs_var, v=e[4])
-p = eeg_plot_epochs(e10, e[4])
+p = eeg_plot_epochs(e10, v=e[4])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_epochs(e10, :epochs_var)
+p = eeg_plot_epochs(e10, v=:epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 true

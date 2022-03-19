@@ -996,10 +996,8 @@ function eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
 
-    # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch=$epoch)")
-
     eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch=$epoch)")
 
     return eeg_new
 end

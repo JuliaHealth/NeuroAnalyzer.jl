@@ -252,7 +252,6 @@ export eeg_difference
 export eeg_autocov
 
 include("eeg_plots.jl")
-export eeg_draw_head
 export eeg_plot_electrodes
 export eeg_plot_filter_response
 export eeg_plot_signal

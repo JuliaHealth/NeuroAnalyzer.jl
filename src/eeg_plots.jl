@@ -34,6 +34,90 @@ function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, Abst
 
     return epoch
 end
+function _len(eeg::NeuroJ.EEG, len::Int64, def_l::Int64)
+    # return default length: one epoch (if epoch_len_seconds < def_l) or def_l seconds
+    if len == 0
+        if eeg_epoch_len(eeg) > def_l * eeg_sr(eeg)
+            len = def_l * eeg_sr(eeg)
+        else
+            len = eeg_epoch_len(eeg)
+        end
+    end
+
+    return len
+end
+function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
+    # Draw head over a topographical plot `p`.
+    # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
+    # - `loc_x::Vector{Float64}`: vector of x electrode position
+    # - `loc_y::Vector{Float64}`: vector of y electrode position
+    # - `head_labels::Bool=true`: add text labels to the plot
+    # - `kwargs`: other arguments for plot() function
+    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
+    x, y = Plots.unzip(pts)
+    x = x .* 4
+    y = y .* 4
+    head = Shape(x, y)
+    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+    p = plot!(p, head, fill=nothing, label="")
+    p = plot!(nose, fill=nothing, label="")
+    p = plot!(ear_l, fill=nothing, label="")
+    p = plot!(ear_r, fill=nothing, label="")
+    if head_labels == true
+        p = plot!(annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
+        p = plot!(annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
+        p = plot!(annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
+        p = plot!(annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
+    end
+    p = plot!(; kwargs...)
+    return p
+end
+function _check_epochs(eeg, epoch)
+    epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    for idx in 1:length(epoch)
+        (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    end
+    return
+end
+function _get_epoch_markers(eeg, offset, len)
+    # get epochs markers for len > epoch_len
+    epoch_markers = Vector{Int64}[]
+    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
+        epoch_len = eeg_epoch_len(eeg)
+        epoch_n = eeg_epoch_n(eeg)
+        epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
+        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
+        epoch_markers = epoch_markers[epoch_markers .> floor(Int64, offset / eeg_sr(eeg))]
+        epoch_markers = epoch_markers[epoch_markers .<= ceil(Int64, (offset + len) / eeg_sr(eeg))]
+    else
+        eeg_tmp = eeg
+    end
+    return eeg_tmp, epoch_markers
+end
+function _get_t(eeg, offset, len)
+    t = collect(0:(1 / eeg_sr(eeg)):(len / eeg_sr(eeg)))
+    t = t .+ (offset / eeg_sr(eeg))
+    t = t[1:(end - 1)]
+    t[1] = floor(t[1], digits=2)
+    t[end] = ceil(t[end], digits=2)
+    return t
+end
+function _check_offset_len(eeg, offset, len)
+    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
+    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
+end
+function _convert_t(t)
+    t_1 = floor(t[1], digits=2)
+    t_2 = ceil(t[end], digits=2)
+    t_1 < 1.0 && (t_s1 = string(floor(t_1 * 1000, digits=2)) * " ms")
+    t_1 >= 1.0 && (t_s1 = string(floor(t_1, digits=2)) * " s")
+    t_2 < 1.0 && (t_s2 = string(ceil(t_2 * 1000, digits=2)) * " ms")
+    t_2 >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
+    return t_1, t_s1, t_2, t_s2
+end
 
 ################################
 
@@ -158,374 +242,6 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     return p
 end
 
-"""
-    eeg_plot_signal(eeg; <keyword arguments>)
-
-Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `labels::Vector{String}=[""]`: channel labels vector
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `head::Bool=true`: add head with electrodes
-- `hist::Symbol[:hist, :kd]=:hist`: histogram type
-- `norm::Bool=true`: convert power to dB
-- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
-- `kwargs`: other arguments for plot() function; <keyword arguments>
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
-
-    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    len < 0 && throw(ArgumentError("len must be > 0."))
-
-    (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
-    (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
-    frq_lim == (0, 0) && (frq_lim = (0, eeg_sr(eeg) / 2))
-    frq_lim = tuple_order(frq_lim)
-
-    (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
-    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    if length(epoch) > 1
-        sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch = 1
-    end
-
-    # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
-    
-    # select channels, default is 20 channels
-    channel = _select_channels(eeg, channel, 20)
-
-    # get epochs markers for len > epoch_len
-    epoch_markers = Vector{Int64}[]
-    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = eeg_epoch_len(eeg)
-        epoch_n = eeg_epoch_n(eeg)
-        epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
-        epoch_markers = epoch_markers[epoch_markers .> floor(Int64, offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= ceil(Int64, (offset + len) / eeg_sr(eeg))]
-    else
-        eeg_tmp = eeg
-    end
-
-    labels = eeg_labels(eeg_tmp)
-
-    t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
-    t = t .+ (offset / eeg_sr(eeg_tmp))
-    t = t[1:(end - 1)]
-    t[1] = floor(t[1], digits=2)
-    t[end] = ceil(t[end], digits=2)
-
-    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
-    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
-
-    if length(channel) == 1
-        title = ""
-        ylabel = "Amplitude [μV]"
-        channel_name = labels[1]
-        labels = [""]
-        signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-        signal = vec(signal)
-    else
-        signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-    end
-
-    t_1 = floor(t[1], digits=2)
-    t_2 = ceil(t[end], digits=2)
-    t_1 < 1.0 && (t_s1 = string(floor(t_1 * 1000, digits=2)) * " ms")
-    t_1 >= 1.0 && (t_s1 = string(floor(t_1, digits=2)) * " s")
-    t_2 < 1.0 && (t_s2 = string(ceil(t_2 * 1000, digits=2)) * " ms")
-    t_2 >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
-
-    epoch_tmp = epoch
-    offset > eeg_epoch_len(eeg) && (epoch_tmp = floor(Int64, offset / eeg_epoch_len(eeg)) + 1)
-    title == "" && (title = "Signal\n[epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
-
-    p = signal_plot(t,
-                    signal,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title;
-                    kwargs...)
-
-    # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        if typeof(signal) == Vector{Float64}
-            for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:left, valign=:top)))
-            end
-        else
-            for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=6, halign=:left, valign=:top)))
-            end
-        end
-    end
-
-    if typeof(signal) == Vector{Float64}
-        # cannot plot electrodes without locations
-        eeg.eeg_header[:channel_locations] == false && (head = false)
-        psd = eeg_plot_psd(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false)
-        frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
-        s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
-        ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
-        _, _, _, s_phase = spectrum(signal)
-        ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
-        if head == true
-            hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name")
-            l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
-            p = plot(p, ht_a, psd, ht_p, s, hd, layout=l)
-        else
-            l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
-            p = plot(p, ht_a, psd, ht_p, s, layout=l)
-        end
-    end
-
-    plot(p)
-
-    return p
-end
-
-"""
-    eeg_draw_head(p, loc_x, loc_y; head_labels, kwargs)
-
-Draw head over a topographical plot `p`.
-
-# Arguments
-
-- `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
-- `loc_x::Vector{Float64}`: vector of x electrode position
-- `loc_y::Vector{Float64}`: vector of y electrode position
-- `head_labels::Bool=true`: add text labels to the plot
-- `kwargs`: other arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
-
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-    x, y = Plots.unzip(pts)
-    x = x .* 4
-    y = y .* 4
-    head = Shape(x, y)
-    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
-    p = plot!(p, head, fill=nothing, label="")
-    p = plot!(nose, fill=nothing, label="")
-    p = plot!(ear_l, fill=nothing, label="")
-    p = plot!(ear_r, fill=nothing, label="")
-    if head_labels == true
-        p = plot!(annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
-        p = plot!(annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
-    end
-    p = plot!(; kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_filter_response(eeg; <keyword arguments>)
-
-Plot filter response.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-- `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
-- `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
-- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attenuation in the stopband
-- `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
-- `kwargs`: other arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
-
-    fs = eeg_sr(eeg)
-
-    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs."))
-    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
-
-    if ftype === :lp
-        length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
-        responsetype = Lowpass(cutoff; fs=fs)
-    elseif ftype === :hp
-        length(cutoff) != 1 && throw(ArgumentError("For :hp filter one frequency must be given."))
-        responsetype = Highpass(cutoff; fs=fs)
-    elseif ftype === :bp
-        length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
-        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-    elseif ftype === :bs
-        length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
-        cutoff = tuple_order(cutoff)
-        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
-    end
-
-    fprototype === :butterworth && (prototype = Butterworth(order))
-    if fprototype === :chebyshev1
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Chebyshev1(order, rs)
-    end
-    if fprototype === :chebyshev2
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Chebyshev2(order, rp)
-    end
-    if fprototype === :elliptic
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Elliptic(order, rp, rs)
-    end
-
-    ffilter = digitalfilter(responsetype, prototype)
-
-    H, w = freqresp(ffilter)
-    # convert to dB
-    H = 20 * log10.(abs.(H))
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p1 = plot(w,
-              H,
-              title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
-              xlims=(0, x_max),
-              ylabel="Magnitude\n[dB]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p1 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p1 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p1 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
-
-    phi, w = phaseresp(ffilter)
-    phi = rad2deg.(angle.(phi))
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p2 = plot(w,
-              phi,
-              title="Phase response",
-              ylims=(-180, 180),
-              xlims=(0, x_max),
-              ylabel="Phase\n[°]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p2 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p2 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p2 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
-
-    tau, w = grpdelay(ffilter)
-    tau = abs.(tau)
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p3 = plot(w,
-              tau,
-              title="Group delay",
-              xlims=(0, x_max),
-              ylabel="Group delay\n[samples]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p3 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p3 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p3 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
-
-    p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
-
-    return p
-end
 
 """
     signal_plot_avg(t, signal; <keyword arguments>)
@@ -648,13 +364,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     end
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
@@ -876,13 +586,7 @@ function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, 
     end
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
@@ -1194,14 +898,7 @@ function eeg_plot_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     end
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
-
+    len = _len(eeg, len, 20)
     # select channels, default is 1:20 or all channels
     channel = _select_channels(eeg, channel, 20)
 
@@ -1362,7 +1059,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
             loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
                                               eeg_tmp.eeg_header[:loc_radius][idx])
         end
-        hd = eeg_draw_head(p, loc_x, loc_x, head_labels=head_labels)
+        hd = _draw_head(p, loc_x, loc_x, head_labels=head_labels)
         plot!(hd)
     end
 
@@ -1574,13 +1271,7 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
     end
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # get epochs markers for len > epoch_len
     epoch_markers = Vector{Int64}[]
@@ -1813,13 +1504,7 @@ function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1,
     (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # get epochs markers for len > epoch_len
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -2007,13 +1692,7 @@ function eeg_plot_ica(eeg::NeuroJ.EEG; epoch::Int64=1, offset::Int64=0, len::Int
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # select ICs, default is all
     ica_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
@@ -2483,13 +2162,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
     end
 
     # default length is one epoch or 20 seconds
-    if len == 0
-        if eeg_epoch_len(eeg) > 20 * eeg_sr(eeg)
-            len = 20 * eeg_sr(eeg)
-        else
-            len = eeg_epoch_len(eeg)
-        end
-    end
+    len = _len(eeg, len, 20)
 
     # get epochs markers for len > epoch_len
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -2608,7 +2281,7 @@ Plot values of `v` for selected channels of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_channels(eeg::NeuroJ.EEG, v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_channels(eeg::NeuroJ.EEG; v::Union{Matrix{Int64}, Matrix{Float64}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     channel = _select_channels(eeg, channel, 0)
@@ -2659,7 +2332,7 @@ Plot values of `v` for selected epoch of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_epochs(eeg::NeuroJ.EEG, v::Union{Vector{Int64}, Vector{Float64}, Symbol}; epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_epochs(eeg::NeuroJ.EEG; v::Union{Vector{Int64}, Vector{Float64}, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", kwargs...)
 
     epoch = _select_epochs(eeg, epoch, 0)
 
@@ -2669,6 +2342,7 @@ function eeg_plot_epochs(eeg::NeuroJ.EEG, v::Union{Vector{Int64}, Vector{Float64
     else
         v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
         component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        length(eeg.eeg_components[component_idx]) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of component vector ($(length(eeg.eeg_components[component_idx]))) and number of EEG epochs ($(length(epoch))) do not match."))
         var = eeg.eeg_components[component_idx][epoch]
     end
 
@@ -2679,12 +2353,182 @@ function eeg_plot_epochs(eeg::NeuroJ.EEG, v::Union{Vector{Int64}, Vector{Float64
              ylabel=ylabel,
              title=title,
              palette=:darktest,
+             linewidth=0.5,
              titlefontsize=10,
              xlabelfontsize=8,
              ylabelfontsize=8,
              xtickfontsize=8,
              ytickfontsize=8;
              kwargs...)
+
+    return p
+end
+
+"""
+    eeg_plot_filter_response(eeg; <keyword arguments>)
+
+Plot filter response.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
+- `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
+- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64`: filter order
+- `rp::Union{Int64, Float64}`: dB ripple in the passband
+- `rs::Union{Int64, Float64}`: dB attenuation in the stopband
+- `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
+- `kwargs`: other arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
+
+    fs = eeg_sr(eeg)
+
+    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs."))
+    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
+
+    if ftype === :lp
+        length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
+        responsetype = Lowpass(cutoff; fs=fs)
+    elseif ftype === :hp
+        length(cutoff) != 1 && throw(ArgumentError("For :hp filter one frequency must be given."))
+        responsetype = Highpass(cutoff; fs=fs)
+    elseif ftype === :bp
+        length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
+        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
+    elseif ftype === :bs
+        length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
+        cutoff = tuple_order(cutoff)
+        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+    end
+
+    fprototype === :butterworth && (prototype = Butterworth(order))
+    if fprototype === :chebyshev1
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        prototype = Chebyshev1(order, rs)
+    end
+    if fprototype === :chebyshev2
+        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        prototype = Chebyshev2(order, rp)
+    end
+    if fprototype === :elliptic
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        prototype = Elliptic(order, rp, rs)
+    end
+
+    ffilter = digitalfilter(responsetype, prototype)
+
+    H, w = freqresp(ffilter)
+    # convert to dB
+    H = 20 * log10.(abs.(H))
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    x_max = w[end]
+    ftype === :hp && (x_max = cutoff * 10)
+    p1 = plot(w,
+              H,
+              title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
+              xlims=(0, x_max),
+              ylabel="Magnitude\n[dB]",
+              xlabel="Frequency [Hz]",
+              label="",
+              titlefontsize=10,
+              xlabelfontsize=8,
+              ylabelfontsize=8,
+              xtickfontsize=4,
+              ytickfontsize=4)
+    if length(cutoff) == 1
+        p1 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    else
+        p1 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p1 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    end
+
+    phi, w = phaseresp(ffilter)
+    phi = rad2deg.(angle.(phi))
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    x_max = w[end]
+    ftype === :hp && (x_max = cutoff * 10)
+    p2 = plot(w,
+              phi,
+              title="Phase response",
+              ylims=(-180, 180),
+              xlims=(0, x_max),
+              ylabel="Phase\n[°]",
+              xlabel="Frequency [Hz]",
+              label="",
+              titlefontsize=10,
+              xlabelfontsize=8,
+              ylabelfontsize=8,
+              xtickfontsize=4,
+              ytickfontsize=4)
+    if length(cutoff) == 1
+        p2 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    else
+        p2 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p2 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    end
+
+    tau, w = grpdelay(ffilter)
+    tau = abs.(tau)
+    # convert rad/sample to Hz
+    w = w .* fs / 2 / pi
+    x_max = w[end]
+    ftype === :hp && (x_max = cutoff * 10)
+    p3 = plot(w,
+              tau,
+              title="Group delay",
+              xlims=(0, x_max),
+              ylabel="Group delay\n[samples]",
+              xlabel="Frequency [Hz]",
+              label="",
+              titlefontsize=10,
+              xlabelfontsize=8,
+              ylabelfontsize=8,
+              xtickfontsize=4,
+              ytickfontsize=4)
+    if length(cutoff) == 1
+        p3 = plot!((0, cutoff),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    else
+        p3 = plot!((0, cutoff[1]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+        p3 = plot!((0, cutoff[2]),
+                   seriestype=:vline,
+                   linestyle=:dash,
+                   label="")
+    end
+
+    p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
 
     return p
 end

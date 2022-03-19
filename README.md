@@ -104,38 +104,42 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- time per epoch
-- allowing negative time e.g. -100:0:200 ms
 - new plotting architecture:
-- plot by epoch - time of epochs
-- plot by time - whole signal time
-```
-eeg_plot_signal → single-channel / multi-channel
-eeg_plot_component → single (e.g. one ICA) / multiple (e.g. set of ICAs)
+    - plot by epoch: use time of epochs
+    - plot by time: use whole signal time
 
-eeg_plot_signal_avg → multi-channel
-eeg_plot_component_avg → multiple (e.g. phase per channel)
+    - eeg_plot_signal → single-channel / multi-channel vs time
+    - eeg_plot_component → single (e.g. one ICA) / multiple (e.g. set of ICAs) vs time
 
-eeg_plot_signal_butterfly → multi-channel / multi-component (e.g. phase per channel)
-eeg_plot_component_butterfly → multiple (e.g. phase per channel)
+    - eeg_plot_signal_avg → multi-channel
+    - eeg_plot_component_avg → multiple (e.g. phase per channel)
 
-eeg_plot_signal_psd → single-channel
-eeg_plot_signal_psd_avg → multi-channel
-eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
-eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)
+    - eeg_plot_signal_butterfly → multi-channel / multi-component (e.g. phase per channel)
+    - eeg_plot_component_butterfly → multiple (e.g. phase per channel)
 
-eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
-eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
-eeg_plot_signal_spectrogram_avg → multi-channel
-eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
+    - eeg_plot_signal_psd → single-channel
+    - eeg_plot_signal_psd_avg → multi-channel
 
-eeg_plot_signal_topo → single component
-eeg_plot_component_topo → multi-component (e.g. ICAs)
-eeg_plot_signal_topo_avg → multi-channel
-eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
+    - eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
+    - eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)
 
-eeg_plot_complex - templates based
-```
+    - eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
+    - eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
+
+    - eeg_plot_signal_spectrogram_avg → multi-channel
+    - eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
+
+    - eeg_plot_signal_topo → single component
+    - eeg_plot_component_topo → multi-component (e.g. ICAs)
+
+    - eeg_plot_signal_topo_avg → multi-channel
+    - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
+
+    - eeg_plot_channels - component or vector of values vs channels
+    - eeg_plot_epochs - component or vector of values vs epochs
+
+    - eeg_plot_complex - templates based
+
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
 - split signal into frequency bands
