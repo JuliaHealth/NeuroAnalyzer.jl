@@ -221,8 +221,9 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :comment => "")
 
     eeg_components = Vector{Any}()
+    eeg_epochs_time = hcat(eeg_time)
 
-    eeg = EEG(eeg_header, eeg_time, eeg_signals, eeg_components)
+    eeg = EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components)
 
     return eeg
 end
@@ -390,7 +391,7 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
     end
     
     # create new dataset
-    eeg_new = EEG(deepcopy(eeg.eeg_header), deepcopy(eeg.eeg_time), deepcopy(eeg.eeg_signals), deepcopy(eeg.eeg_components))
+    eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:channel_locations] = true
     length(loc_theta) > 0 && (eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx])
     length(loc_radius) > 0 && (eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx])

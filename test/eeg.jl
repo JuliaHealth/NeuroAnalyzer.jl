@@ -71,6 +71,7 @@ edf1 = eeg_upsample(edf, new_sr=512)
 edf1 = eeg_epochs(edf, epoch_len=10, average=true)
 @test size(edf1.eeg_signals) == (19, 10, 1)
 
+edf10 = eeg_epochs(edf, epoch_n=10)
 edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 156672, 1)
 
@@ -217,5 +218,8 @@ s, _ = eeg_standardize(edf)
 
 snr = eeg_snr(edf)
 @test length(snr) == 19
+
+edf1 = eeg_epochs_time(edf, ts=-10.0)
+edf1.eeg_epochs_time[1, 1] == -10.0
 
 true

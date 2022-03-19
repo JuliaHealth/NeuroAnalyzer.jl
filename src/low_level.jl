@@ -4,6 +4,8 @@
 #                              #
 ################################
 
+################################
+
 """
     linspace(start, stop, length)
 
@@ -2472,4 +2474,30 @@ function s_detect_epoch_p2p(signal::Array{Float64, 3})
     bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
 
     return bad_epochs_score
+end
+
+"""
+    s_snr(signal)
+
+Calculate SNR of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `snr::Float64`: SNR
+
+# Source
+
+D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
+"""
+function s_snr(signal::AbstractArray)
+
+    # make signal positive
+    signal .+= abs(minimum(signal))
+    snr = mean(signal) / std(signal)
+
+    return snr
 end

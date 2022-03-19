@@ -104,25 +104,35 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- split large functions (e.g. filter) or functions with many methods into smaller ones
+- time per epoch
+- allowing negative time e.g. -100:0:200 ms
 - new plotting architecture:
+- plot by epoch - time of epochs
+- plot by time - whole signal time
 ```
-eeg_plot → single channel / component
-           multi-channel / multi-component (e.g. ICAs)
+eeg_plot_signal → single-channel / multi-channel
+eeg_plot_component → single (e.g. one ICA) / multiple (e.g. set of ICAs)
 
-eeg_plot_avg → multi-channel / multi-component (e.g. phase per channel)
-eeg_plot_butterfly → multi-channel / multi-component (e.g. phase per channel)
+eeg_plot_signal_avg → multi-channel
+eeg_plot_component_avg → multiple (e.g. phase per channel)
 
-eeg_plot_psd
-eeg_plot_psd_avg
-eeg_plot_psd_butterfly
+eeg_plot_signal_butterfly → multi-channel / multi-component (e.g. phase per channel)
+eeg_plot_component_butterfly → multiple (e.g. phase per channel)
 
-eeg_plot_spectrogram → single channel / component
-eeg_plot_spectrogram_avg → multi-channel / multi-component (e.g. convoluted channels)
+eeg_plot_signal_psd → single-channel
+eeg_plot_signal_psd_avg → multi-channel
+eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
+eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)
 
-eeg_plot_topo → single component
-eeg_plot_topo → multi-component (e.g. ICAs)
-eeg_plot_topo_avg → multi-channel / multi-component (e.g. delta power per channel)
+eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
+eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
+eeg_plot_signal_spectrogram_avg → multi-channel
+eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
+
+eeg_plot_signal_topo → single component
+eeg_plot_component_topo → multi-component (e.g. ICAs)
+eeg_plot_signal_topo_avg → multi-channel
+eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
 
 eeg_plot_complex - templates based
 ```
@@ -141,7 +151,7 @@ eeg_plot_complex - templates based
 - merge EEG objects
 - reports in .md format
 - brain topography
-- events markers; epoch by event markers; rewrite epoching (time per epoch, allowing negative time e.g. -100:0:200 ms)
+- events markers; epoch by event markers; rewrite epoching
 - eeg_keep_eeg_channels → keep_channels(type)
 - rewrite plotting functions to be more modular
 - plot by time (continuous) or by epoch - separate functions

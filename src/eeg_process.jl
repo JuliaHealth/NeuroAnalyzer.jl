@@ -951,8 +951,10 @@ function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
-    eeg_time = collect(t_upsampled)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_upsampled, deepcopy(eeg.eeg_components))
+    t_upsampled = collect(t_upsampled)
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_upsampled
+    eeg_new.eeg_time = t_upsampled
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_upsampled, 2) * size(s_upsampled, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_upsampled, 2) * size(s_upsampled, 3)) / new_sr
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_upsampled, 2)
@@ -1021,8 +1023,10 @@ function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
-    eeg_time = collect(t_downsampled)
-    eeg_new = EEG(deepcopy(eeg.eeg_header), eeg_time, s_downsampled, deepcopy(eeg.eeg_components))
+    t_downsampled = collect(t_downsampled)
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_time = t_downsampled
+    eeg_new.eeg_signals = s_downsampled
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
     eeg_new.eeg_header[:eeg_duration_seconds] = (size(s_downsampled, 2) * size(s_downsampled, 3)) / new_sr
     eeg_new.eeg_header[:epoch_duration_samples] = size(s_downsampled, 2)

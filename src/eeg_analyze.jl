@@ -4,30 +4,6 @@
 #                              #
 ################################
 
-function _channels_stats(signal::AbstractArray)
-
-    c_mean = mean(signal)
-    c_median = median(signal)
-    c_std = std(signal)
-    c_var = var(signal)
-    c_kurt = kurtosis(signal)
-    c_mean_diff = mean(diff(signal))
-    c_median_diff = median(diff(signal))
-    c_max_dif = maximum(signal) - minimum(signal)
-    c_dev_mean = abs(mean(signal)) - mean(signal)
-    
-    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_max_dif, c_dev_mean
-end
-
-function _snr(signal::AbstractArray)
-
-    # make signal positive
-    signal .+= abs(minimum(signal))
-    snr = mean(signal) / std(signal)
-
-    return snr
-end
-
 ################################
 
 """
@@ -786,7 +762,7 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
         e_dev_mean = abs(mean(s)) - mean(s)
     end
 
-    return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_dev_mean=e_dev_mean, e_max_dif=e_max_dif)
+    return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
 end
 
 """
@@ -945,17 +921,25 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
     c_kurt = zeros(channel_n, epoch_n)
     c_mean_diff = zeros(channel_n, epoch_n)
     c_median_diff = zeros(channel_n, epoch_n)
-    c_dev_mean = zeros(channel_n, epoch_n)
     c_max_dif = zeros(channel_n, epoch_n)
+    c_dev_mean = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
-            c_mean[idx, epoch], c_median[idx, epoch], c_std[idx, epoch], c_var[idx, epoch], c_kurt[idx, epoch], c_mean_diff[idx, epoch], c_median_diff[idx, epoch], c_dev_mean[idx, epoch], c_max_dif[idx, epoch] = _channels_stats(s)
+            c_mean[idx, epoch] = mean(s)
+            c_median[idx, epoch] = median(s)
+            c_std[idx, epoch] = std(s)
+            c_var[idx, epoch] = var(s)
+            c_kurt[idx, epoch] = kurtosis(s)
+            c_mean_diff[idx, epoch] = mean(diff(s))
+            c_median_diff[idx, epoch] = median(diff(s))
+            c_max_dif[idx, epoch] = maximum(s) - minimum(s)
+            c_dev_mean[idx, epoch] = abs(mean(s)) - mean(s)
         end
     end
 
-    return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_dev_mean=c_dev_mean, c_max_dif=c_max_dif)
+    return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_max_dif=c_max_dif, c_dev_mean=c_dev_mean)
 end
 
 """
@@ -984,7 +968,7 @@ function eeg_snr(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
-            snr[idx, epoch] = _snr(s)
+            snr[idx, epoch] = s_snr(s)
         end
     end
 

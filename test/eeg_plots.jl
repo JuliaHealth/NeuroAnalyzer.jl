@@ -13,7 +13,7 @@ p = signal_plot(t, signal_v)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = signal_plot(t, signal_m)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot(edf)
+p = eeg_plot_signal(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 eeg_plot_save(p, file_name="test.png")
 @test isfile("test.png") == true

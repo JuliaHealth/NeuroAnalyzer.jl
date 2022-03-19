@@ -40,6 +40,62 @@ end
 """
     signal_plot(t, signal; <keyword arguments>)
 
+Plot single-channel `signal`.
+
+# Arguments
+
+- `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
+- `signal::Vector{Float64}`
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: other arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
+
+    typeof(t) <: AbstractRange && (t = float(collect(t)))
+
+    ylim == (0, 0) && (ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0)))
+    ylim = tuple_order(ylim)
+    abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
+    abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
+
+    hl = plot((size(signal, 2), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+    p = plot!(t,
+              signal[1:length(t)],
+              color=1,
+              label="",
+              legend=false,
+              title=title,
+              xlabel=xlabel,
+              xlims=_xlims(t),
+              xticks=_xticks(t),
+              ylabel=ylabel,
+              ylims=ylim,
+              yguidefontrotation=0,
+              yticks=[ylim[1], 0, ylim[2]],
+              palette=:darktest,
+              grid=false,
+              titlefontsize=10,
+              xlabelfontsize=8,
+              ylabelfontsize=8,
+              xtickfontsize=4,
+              ytickfontsize=4;
+              kwargs...)
+
+    plot(p)
+
+    return p
+end
+
+"""
+    signal_plot(t, signal; <keyword arguments>)
+
 Plot multi-channel `signal`.
 
 # Arguments
@@ -48,7 +104,7 @@ Plot multi-channel `signal`.
 - `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: labels vector
 - `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Channels"`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: other arguments for plot() function
 
@@ -92,6 +148,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
     for idx in 1:channel_n
         p = plot!(t,
                   s_normalized[idx, 1:length(t)],
+                  linewidth=0.5,
                   label="",
                   color=channel_color[idx])
     end
@@ -102,64 +159,7 @@ function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, si
 end
 
 """
-    signal_plot(t, signal; <keyword arguments>)
-
-Plot single-channel `signal`.
-
-# Arguments
-
-- `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}`
-- `signal::Vector{Float64}`
-- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function signal_plot(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}, signal::Vector{Float64}; ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
-
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
-
-    ylim == (0, 0) && (ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0)))
-    abs(ylim[1]) > abs(ylim[2]) && (ylim = (-abs(ylim[1]), abs(ylim[1])))
-    abs(ylim[1]) < abs(ylim[2]) && (ylim = (-abs(ylim[2]), abs(ylim[2])))
-    ylim = tuple_order(ylim)
-
-    hl = plot((size(signal, 2), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
-    p = plot!(t,
-              signal[1:length(t)],
-              color=1,
-              label="",
-              legend=false,
-              title=title,
-              xlabel=xlabel,                  
-              xlims=_xlims(t),
-              xticks=_xticks(t),
-              ylabel=ylabel,
-              ylims=ylim,
-              yguidefontrotation=0,
-              yticks=[ylim[1], 0, ylim[2]],
-              palette=:darktest,
-              grid=false,
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4,
-              margins=10Plots.px;                  
-              kwargs...)
-
-    plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot(eeg; <keyword arguments>)
+    eeg_plot_signal(eeg; <keyword arguments>)
 
 Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
@@ -184,7 +184,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
+function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))

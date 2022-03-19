@@ -24,6 +24,7 @@ using StatsPlots
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
+    eeg_epochs_time::Matrix{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
 end
@@ -112,6 +113,7 @@ export s_detect_epoch_rmse
 export s_detect_epoch_rmsd
 export s_detect_epoch_euclid
 export s_detect_epoch_p2p
+export s_snr
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -174,6 +176,8 @@ export eeg_edit_channel!
 export eeg_keep_eeg_channels
 export eeg_keep_eeg_channels!
 export eeg_comment
+export eeg_epochs_time
+export eeg_epochs_time!
 
 include("eeg_process.jl")
 export eeg_reference_channel
@@ -251,7 +255,7 @@ include("eeg_plots.jl")
 export eeg_draw_head
 export eeg_plot_electrodes
 export eeg_plot_filter_response
-export eeg_plot
+export eeg_plot_signal
 export eeg_plot_avg
 export eeg_plot_butterfly
 export eeg_plot_covmatrix

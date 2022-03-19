@@ -79,5 +79,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_detect_epoch_rmsd(ones(2, 10, 2)) == zeros(2)
 @test s_detect_epoch_euclid(ones(2, 10, 2)) == zeros(2)
 @test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
+@test s_snr(ones(10)) == Inf
 
 true
