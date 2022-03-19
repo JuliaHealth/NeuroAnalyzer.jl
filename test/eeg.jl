@@ -90,10 +90,10 @@ edf1 = eeg_downsample(edf, new_sr=128)
 @test size(edf1.eeg_signals) == (19, 78336, 1)
 
 acov_m, _ = eeg_autocov(edf)
-@test size(acov_m) == (19, 3)
+@test size(acov_m) == (19, 3, 1)
 
 ccov_m, _ = eeg_crosscov(edf)
-@test size(ccov_m) == (361, 3)
+@test size(ccov_m) == (361, 3, 1)
 
 p, f = eeg_psd(edf1)
 @test size(p, 1) == 19
@@ -111,9 +111,9 @@ e = eeg_trim(edf, len=(10 * eeg_sr(edf)), offset=(20 * eeg_sr(edf)), from=:start
 @test size(e.eeg_signals) == (19, 154112, 1)
 
 m = eeg_mi(edf)
-@test size(m) == (19, 19)
+@test size(m) == (19, 19, 1)
 m = eeg_mi(edf, edf)
-@test size(m) == (19, 19)
+@test size(m) == (19, 19, 1)
 
 e = eeg_entropy(edf)
 @test size(e) == (19, 1)
@@ -122,10 +122,10 @@ a = eeg_band(edf, band=:alpha)
 @test a == (8, 13)
 
 m = eeg_coherence(edf, edf)
-@test size(m) == (19, 156672)
+@test size(m) == (19, 156672, 1)
 
-hz, _ = eeg_freqs(edf)
-@test typeof(hz) == Vector{Float64}
+hz, nyq = eeg_freqs(edf)
+@test nyq == 128.0
 
 s_conv = eeg_fconv(edf, kernel=[1, 2, 3, 4])
 @test size(s_conv) == (19, 156672, 1)
@@ -154,7 +154,7 @@ e = eeg_epochs(edf, epoch_len=20, average=true)
 i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
-e = edf
+e = eeg_copy(edf)
 e_stats = eeg_epochs_stats(e)
 @test length(e_stats) == (9)
 eeg_add_component!(e, c=:epochs_mean, v=e_stats[1])
@@ -178,7 +178,7 @@ p, f, t = eeg_spectrogram(e)
 f, a, p, ph = eeg_spectrum(e)
 @test size(p) == (19, 2560, 1)
 
-e = edf
+e = eeg_copy(edf)
 i, iw = eeg_ica(e, tol=1.0, n=10)
 eeg_add_component!(e, c=:ica, v=i)
 eeg_add_component!(e, c=:ica_mw, v=iw)

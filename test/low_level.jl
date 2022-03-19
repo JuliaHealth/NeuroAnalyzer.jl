@@ -32,13 +32,13 @@ using Test
 @test length(generate_gaussian(10, 10)) == 201
 @test tuple_order((2, 1)) == (1, 2)
 @test s2_rmse(ones(10), ones(10)) == 0.0
-@test size(m_norm(ones(4, 4))) == (4, 4)
+@test size(m_norm(ones(4, 4, 1))) == (4, 4, 1)
 @test size(s_cov(zeros(2))) == (2, 2)
 @test s2_cov(ones(2), zeros(2)) == zeros(2, 2)
 @test s_dft(ones(4), fs=10) == (ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], [0.0, 0.025, -0.05, -0.025])
 @test s_msci95(ones(4)) == (1.0, 0.0, 1.0, 1.0)
 @test s2_mean(ones(4), zeros(4)) == (1.0, 0.0, 1.0, 1.0)
-@test s2_difference(ones(4), zeros(4)) == ([0.0, 0.75, 0.25, 0.25, 0.25, 0.25, 0.5, 0.25, 0.0, 0.25, 0.25, 0.25], 1.0, 0.0)
+@test length(s2_difference(ones(4), zeros(4))) == 3
 @test s_acov(ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
 @test s_xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
 @test s_spectrum(ones(4)) == (ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], [2.0, 0.0, 0.0, 0.0], [4.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0])
@@ -70,7 +70,7 @@ p, w = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
 @test s_fconv(ones(10), kernel=[1.0, 2.0]) == [1.0000000000000004 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
-@test i == [-0.7071067811865475 0.7071067811865475;;;]
+@test size(i) == (1, 2, 1)
 @test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ic=i, ic_mw=m, ic_v=[1]) == zeros(2, 2, 1)
 p, f, t = s_spectrogram(ones(100), fs=10)
 @test size(p) == (51, 46)
@@ -79,9 +79,5 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_detect_epoch_rmsd(ones(2, 10, 2)) == zeros(2)
 @test s_detect_epoch_euclid(ones(2, 10, 2)) == zeros(2)
 @test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
-@test s_snr(ones(10)) == Inf
-@test length(s_channels_stats(ones(10))) == 9
-s, sc = s_standardize([1.0 2.0; 3.0 4.0;;;])
-@test s == [-0.7071067811865475 0.7071067811865475; -0.7071067811865475 0.7071067811865475;;;]
 
 true

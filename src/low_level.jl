@@ -812,7 +812,7 @@ Normalize matrix `m`.
 
 - `m_norm::Matrix{Float64}`
 """
-function m_norm(m::Matrix{Float64})
+function m_norm(m::Array{Float64, 3})
     m_norm = m ./ (size(m, 2) - 1)
     
     return m_norm
@@ -1228,18 +1228,14 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 function s_spectrum(signal::AbstractArray; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-
     s_fft = fft0(signal, pad)
 
     # normalize
     s_fft ./= length(signal)
-
     # amplitudes
     s_amplitudes = @. 2 * abs(s_fft)
-
     # power
     s_powers = s_amplitudes.^2
-
     # phases
     s_phases = angle.(s_fft)
 
@@ -1545,14 +1541,14 @@ function s_resample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
 
     channel_n, _, epoch_n = size(signal)
 
-    s_resampled_len = length(resample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
+    s_resampled_len = length(s_resample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
     s_resampled = zeros(channel_n, s_resampled_len, epoch_n) 
 
     t_resampled = nothing
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch]
-            s_resampled[idx, :, epoch], t_resampled = resample(s, t=t, new_sr=new_sr)
+            s_resampled[idx, :, epoch], t_resampled = s_resample(s, t=t, new_sr=new_sr)
         end
     end
 
@@ -1821,6 +1817,73 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false)
 end
 
 """
+    s_psd(signal; fs, norm=false)
+
+Calculate power spectrum density of the `signal`.
+
+# Arguments
+- `signal::Matrix{Float64}`
+- `fs::Int64`: sampling rate
+- `norm::Bool`: normalize do dB
+
+# Returns
+
+- `psd_pow::Matrix{Float64}`
+- `psd_frq::Matrix{Float64}`
+"""
+function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false)
+
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+
+    channel_n = size(signal, 1)
+    psd_tmp, frq_tmp = s_psd(signal[1, :], fs=fs, norm=norm)
+    psd_pow = zeros(channel_n, length(psd_tmp))
+    psd_frq = zeros(channel_n, length(frq_tmp))
+
+    @inbounds @simd for idx in 1:channel_n
+        s = @view signal[idx, :]
+        psd_pow[idx, :], psd_frq[idx, :] = s_psd(s, fs=fs, norm=norm)
+    end
+    
+    return psd_pow, psd_frq
+end
+
+"""
+    s_psd(signal; fs, norm=false)
+
+Calculate power spectrum density of the `signal`.
+
+# Arguments
+- `signal::Array{Float64, 3}`
+- `fs::Int64`: sampling rate
+- `norm::Bool`: normalize do dB
+
+# Returns
+
+- `psd_pow::Array{Float64, 3}`
+- `psd_frq::Array{Float64, 3}`
+"""
+function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
+
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    psd_tmp, frq_tmp = s_psd(signal[1, :, 1], fs=fs, norm=norm)
+    psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
+    psd_frq = zeros(channel_n, length(frq_tmp), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view signal[idx, :, epoch]
+            psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = s_psd(s, fs=fs, norm=norm)
+        end
+    end
+    
+    return psd_pow, psd_frq
+end
+
+"""
     s_stationarity_hilbert(signal::Vector{Float64})
 
 Calculate phase stationarity using Hilbert transformation.
@@ -1893,7 +1956,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 # Arguments
 
-- `signal::Vector{Float64}`
+- `signal::AbstractArray`
 - `len::Int64`: trimming length in samples
 - `offset::Int64`: offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]
@@ -1902,7 +1965,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 - `s_trimmed::Vector{Float64}`
 """
-function s_trim(signal::Vector{Float64}; len::Int64, offset::Int64=1, from::Symbol=:start)
+function s_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol=:start)
 
     from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
     len < 1 && throw(ArgumentError("len must be ≥ 1."))
@@ -2409,58 +2472,4 @@ function s_detect_epoch_p2p(signal::Array{Float64, 3})
     bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
 
     return bad_epochs_score
-end
-
-"""
-    s_snr(signal)
-
-Return SNR.
-"""
-function s_snr(signal::AbstractArray)
-
-    # make signal positive
-    signal .+= abs(minimum(signal))
-    snr = mean(signal) / std(signal)
-
-    return snr
-end
-
-"""
-    s_channels_stats(signal)
-
-Return channel statistics.
-"""
-function s_channels_stats(signal::AbstractArray)
-
-    c_mean = mean(signal)
-    c_median = median(signal)
-    c_std = std(signal)
-    c_var = var(signal)
-    c_kurt = kurtosis(signal)
-    c_mean_diff = mean(diff(signal))
-    c_median_diff = median(diff(signal))
-    c_max_dif = maximum(signal) - minimum(signal)
-    c_dev_mean = abs(mean(signal)) - mean(signal)
-    
-    return c_mean, c_median, c_std, c_var, c_kurt, c_mean_diff, c_median_diff, c_max_dif, c_dev_mean
-end
-
-"""
-    s_standardize(signal)
-
-Standardize `signal` for ML.
-"""
-function s_standardize(signal::Array{Float64, 3})
-
-    epoch_n = size(signal, 3)
-    ss = similar(signal)
-    scaler = Vector{Any}()
-
-    @inbounds @simd for epoch in 1:epoch_n
-        s = @view signal[:, :, epoch]
-        push!(scaler, StatsBase.fit(ZScoreTransform, s, dims=2)) 
-        ss[:,:, epoch] = StatsBase.transform(scaler[epoch], s)
-    end
-
-    return ss, scaler
 end

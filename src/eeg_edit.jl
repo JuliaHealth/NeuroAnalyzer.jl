@@ -1041,7 +1041,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
             end
         end
         eeg_time = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
-        eeg_trimmed = EEG(eeg_tmp.eeg_header, eeg_time, eeg_signals, eeg_tmp.eeg_components)
+        eeg_trimmed = EEG(eeg_tmp.eeg_header, eeg_time, s_trimmed, eeg_tmp.eeg_components)
         eeg_trimmed.eeg_header[:eeg_duration_samples] -= len
         eeg_trimmed.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
         eeg_trimmed.eeg_header[:epoch_duration_samples] -= len
@@ -1634,16 +1634,20 @@ function eeg_comment(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_delete(eeg)
+    eeg_copy(eeg::NeuroJ.EEG)
 
-Remove `eeg` from memory.
+Make copy of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+
 """
-function eeg_delete(eeg::NeuroJ.EEG)
-    eeg = nothing
+function eeg_copy(eeg::NeuroJ.EEG)
     
-    return
+    return deepcopy(eeg)
 end

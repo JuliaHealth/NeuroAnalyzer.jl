@@ -26,6 +26,7 @@ eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, component
 ## EEG edit
 
 ```@docs
+eeg_copy(eeg::NeuroJ.EEG)
 eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
 eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
 eeg_list_components(eeg::NeuroJ.EEG)
@@ -74,7 +75,6 @@ eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
 eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
 eeg_comment(eeg::NeuroJ.EEG)
-eeg_delete(eeg::NeuroJ.EEG)
 ```
 
 ## EEG process
@@ -227,7 +227,7 @@ generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64};
 generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64}=1, pt::Union{Int64, Float64}=0, pa::Union{Int64, Float64}=1.0)
 tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
 s2_rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
-m_norm(m::Matrix{Float64})
+m_norm(m::Array{Float64, 3})
 s_cov(signal::AbstractArray; norm::Bool=false)
 s2_cov(signal1::AbstractArray, signal2::AbstractArray; norm::Bool=false)$
 s_dft(signal::AbstractArray; fs::Int64)
@@ -252,10 +252,11 @@ s_derivative(signal::AbstractArray)
 s_tconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
 s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
 s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false)
+s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
 s_stationarity_hilbert(signal::AbstractArray)
 s_stationarity_mean(signal::AbstractArray; window::Int64)
 s_stationarity_var(signal::AbstractArray; window::Int64)
-s_trim(signal::Vector{Float64}; len::Int64, offset::Int64=1, from::Symbol=:start)
+s_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol=:start)
 s2_mi(signal1::AbstractArray, signal2::AbstractArray)
 s_entropy(signal::AbstractArray)
 s_average(signal::Array{Float64, 3})
@@ -271,9 +272,6 @@ s_detect_epoch_rmse(signal::Array{Float64, 3})
 s_detect_epoch_rmsd(signal::Array{Float64, 3})
 s_detect_epoch_euclid(signal::Array{Float64, 3})
 s_detect_epoch_p2p(signal::Array{Float64, 3})
-s_snr(signal::AbstractArray)
-s_channels_stats(signal::AbstractArray)
-s_standardize(signal::Array{Float64, 3})
 ```
 
 ## NSTIM

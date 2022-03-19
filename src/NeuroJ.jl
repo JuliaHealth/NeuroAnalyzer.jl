@@ -112,9 +112,6 @@ export s_detect_epoch_rmse
 export s_detect_epoch_rmsd
 export s_detect_epoch_euclid
 export s_detect_epoch_p2p
-export s_snr
-export s_channels_stats
-export s_standardize
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -128,6 +125,7 @@ export eeg_load_electrodes!
 export eeg_save
 
 include("eeg_edit.jl")
+export eeg_copy
 export eeg_add_component
 export eeg_add_component!
 export eeg_list_components
@@ -176,7 +174,6 @@ export eeg_edit_channel!
 export eeg_keep_eeg_channels
 export eeg_keep_eeg_channels!
 export eeg_comment
-export eeg_delete
 
 include("eeg_process.jl")
 export eeg_reference_channel

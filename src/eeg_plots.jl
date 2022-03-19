@@ -610,7 +610,7 @@ Plot averaged `eeg` channels.
 
 - `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `channel::Unieon{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize the `signal` prior to calculations
@@ -734,7 +734,7 @@ function eeg_plot_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstra
     psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, norm=true, frq_lim=frq_lim, title="PSD averaged with 95%CI [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
-    _, _, _, s_phase = spectrum(s_normalized_m)
+    _, _, _, s_phase = s_spectrum(s_normalized_m)
     ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         if collect(channel[1]:channel[end]) == channel
@@ -963,14 +963,14 @@ function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, 
 end
 
 """
-    signal_plot_psd(s_powers, s_freqs; <keyword arguments>)
+    signal_plot_psd(s_pow, s_frq; <keyword arguments>)
 
 Plot power spectrum density.
 
 # Arguments
 
-- `s_powers::Vector{Float64}`: signal powers
-- `s_freqs::Vector{Float64}`: signal frequencies
+- `s_pow::Vector{Float64}`: signal powers
+- `s_frq::Vector{Float64}`: signal frequencies
 - `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Power [μV^2/Hz]"`: y-axis label
@@ -981,14 +981,14 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_psd(s_powers::Vector{Float64}, s_freqs::Vector{Float64}; frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function signal_plot_psd(s_pow::Vector{Float64}, s_frq::Vector{Float64}; frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
     (frq_lim[1] < 0 || frq_lim[2] < 0) && throw(ArgumentError("frq_lim must be ≥ 0."))
-    frq_lim == (0, 0) && (frq_lim = (0, s_freqs[end]))
+    frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
 
-    p = plot(s_freqs,
-             s_powers,
+    p = plot(s_frq,
+             s_pow,
              xlabel=xlabel,
              ylabel=ylabel,
              xlims=frq_lim,
@@ -1036,11 +1036,11 @@ function signal_plot_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, f
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim[1] > frq_lim[2] && (frq_lim = (frq_lim[2], frq_lim[1]))
 
-    s_freqs, s_powers = s_psd(signal, fs=fs, norm=norm)
+    s_frq, s_pow = s_psd(signal, fs=fs, norm=norm)
     norm == true && (ylabel::String="Power [dB]")
 
-    p = signal_plot_psd(s_powers,
-                        s_freqs,
+    p = signal_plot_psd(s_pow,
+                        s_frq,
                         title=title,
                         xlabel=xlabel,
                         ylabel=ylabel,
@@ -1084,14 +1084,14 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    s_powers, s_freqs = s_psd(signal, fs=fs, norm=norm)
-    s_powers = s_powers[:, :, 1]
-    s_freqs = s_freqs[:, :, 1]
-    frq_lim == (0, 0) && (frq_lim = (0, s_freqs[1, end]))
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow = s_pow[:, :, 1]
+    s_frq = s_frq[:, :, 1]
+    frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
 
     if average == true
-        s_powers_m, s_powers_s, s_powers_u, s_powers_l = s_msci95(s_powers)
-        s_freqs = s_freqs[1, :]
+        s_pow_m, s_pow_s, s_pow_u, s_pow_l = s_msci95(s_pow)
+        s_frq = s_frq[1, :]
         channel_n = 1
         labels == [""]
     end
@@ -1116,29 +1116,29 @@ function signal_plot_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, a
              ytickfontsize=4;
              kwargs...)
     if average == true
-        p = plot!(s_freqs,
-                  s_powers_u,
-                  fillrange=s_powers_l,
+        p = plot!(s_frq,
+                  s_pow_u,
+                  fillrange=s_pow_l,
                   fillalpha=0.35,
                   label=false,
                   t=:line,
                   c=:grey,
                   lw=0.5)
-        p = plot!(s_freqs,
-                  s_powers_l,
+        p = plot!(s_frq,
+                  s_pow_l,
                   label=false,
                   t=:line,
                   c=:grey,
                   lw=0.5)
-        p = plot!(s_freqs,
-                  s_powers_m,
+        p = plot!(s_frq,
+                  s_pow_m,
                   label=false,
                   t=:line,
                   c=:black)
     else
         for idx in 1:channel_n
-            p = plot!(s_freqs[idx, :],
-                      s_powers[idx, :],
+            p = plot!(s_frq[idx, :],
+                      s_pow[idx, :],
                       label=labels[idx],
                       t=:line)
         end
@@ -1476,7 +1476,7 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
     frq_lim = tuple_order(frq_lim)
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = s_demean(signal))
 
     nfft = length(signal)
     interval = fs
@@ -1503,7 +1503,6 @@ function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int
                     ytickfontsize=4;
                     kwargs...)
     else
-        # in dB
         p = heatmap(t,
                     spec.freq,
                     pow2db.(spec.power),
@@ -1626,12 +1625,12 @@ function eeg_plot_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}
     else
         ylabel = "Channels"
         xlabel = "Frequency [Hz]"
-        s_powers, s_freqs = s_psd(signal, fs=fs, norm=norm)
+        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
         colorbar_title="Power/frequency [μV^2/Hz]"
         norm == true && (colorbar_title = "Power/frequency [dB/Hz]")
-        p = heatmap(s_freqs[1, :],
+        p = heatmap(s_frq[1, :],
                     channel,
-                    s_powers,
+                    s_pow,
                     xlabel=xlabel,
                     ylabel=ylabel,
                     xlims=frq_lim,
@@ -2278,7 +2277,7 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abstr
         end
     end
 
-    s_interpolated = normalize_minmax(s_interpolated)
+    s_interpolated = s_normalize_minmax(s_interpolated)
 
     p = plot(grid=false,
              framestyle=:none,
@@ -2368,20 +2367,19 @@ function signal_plot_bands(signal::Vector{Float64}; fs::Int64, band::Vector{Symb
 
     fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
-    band_frq = Array{Tuple{Float64, Float64}}(undef, length(band))
     for idx in 1:length(band)
         band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
         band_frq[idx][1] > fs / 2 && (band_frq[idx] = (fs / 2, band_frq[idx][2]))
         band_frq[idx][2] > fs / 2 && (band_frq[idx] = (band_frq[idx][1], fs / 2))
     end
 
-    total_pow = round(signal_total_power(signal, fs=fs), digits=2)
+    total_pow = round(s_total_power(signal, fs=fs), digits=2)
     abs_band_pow = zeros(length(band))
     for idx in 1:length(band)
-        abs_band_pow[idx] = round(signal_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
+        abs_band_pow[idx] = round(s_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
     end
     for idx in 1:length(band)
-        abs_band_pow[idx] = round(signal_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
+        abs_band_pow[idx] = round(s_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
     end
     prepend!(abs_band_pow, total_pow)
     norm == true && (abs_band_pow = pow2db.(abs_band_pow))
@@ -2511,9 +2509,9 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
-    band_frq = Vector{Tuple{Float64, Float64}}{undef, length(band)}
+    band_frq = Vector{Tuple{Float64, Float64}}()
     for idx in 1:length(band)
-        band_frq[idx] = eeg_band(eeg, band[idx])
+        push!(band_frq, eeg_band(eeg, band=band[idx]))
     end
 
     if typeof(band) == Symbol

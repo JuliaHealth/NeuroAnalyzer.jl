@@ -246,6 +246,25 @@ Export EEG data as CSV.
 
 ## EEG edit
 
+<a id='NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_copy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_copy(eeg::NeuroJ.EEG)
+```
+
+Make copy of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
 <a id='NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_add_component`** &mdash; *Method*.
 
@@ -1148,21 +1167,6 @@ eeg_comment(eeg)
 ```
 
 Return `eeg` comment.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete(eeg)
-```
-
-Remove `eeg` from memory.
 
 **Arguments**
 
@@ -2751,7 +2755,7 @@ Plot averaged `eeg` channels.
 
   * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `channel::Unieon{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize the `signal` prior to calculations
@@ -2834,15 +2838,15 @@ Butterfly plot of `eeg` channels.
 
 
 ```julia
-signal_plot_psd(s_powers, s_freqs; <keyword arguments>)
+signal_plot_psd(s_pow, s_frq; <keyword arguments>)
 ```
 
 Plot power spectrum density.
 
 **Arguments**
 
-  * `s_powers::Vector{Float64}`: signal powers
-  * `s_freqs::Vector{Float64}`: signal frequencies
+  * `s_pow::Vector{Float64}`: signal powers
+  * `s_frq::Vector{Float64}`: signal frequencies
   * `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
@@ -4128,7 +4132,7 @@ Calculate RMSE between `signal1` and `signal2`.
 
   * `r::Float64`
 
-<a id='NeuroJ.m_norm-Tuple{Matrix{Float64}}' href='#NeuroJ.m_norm-Tuple{Matrix{Float64}}'>#</a>
+<a id='NeuroJ.m_norm-Tuple{Array{Float64, 3}}' href='#NeuroJ.m_norm-Tuple{Array{Float64, 3}}'>#</a>
 **`NeuroJ.m_norm`** &mdash; *Method*.
 
 
@@ -4657,6 +4661,28 @@ Calculate power spectrum density of the `signal`.
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
 
+<a id='NeuroJ.s_psd-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_psd-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.s_psd`** &mdash; *Method*.
+
+
+
+```julia
+s_psd(signal; fs, norm=false)
+```
+
+Calculate power spectrum density of the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool`: normalize do dB
+
+**Returns**
+
+  * `psd_pow::Array{Float64, 3}`
+  * `psd_frq::Array{Float64, 3}`
+
 <a id='NeuroJ.s_stationarity_hilbert-Tuple{AbstractArray}' href='#NeuroJ.s_stationarity_hilbert-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_stationarity_hilbert`** &mdash; *Method*.
 
@@ -4716,7 +4742,7 @@ Calculate variance stationarity.
 
   * `var_stationarity::Vector{Float64}`
 
-<a id='NeuroJ.s_trim-Tuple{Vector{Float64}}' href='#NeuroJ.s_trim-Tuple{Vector{Float64}}'>#</a>
+<a id='NeuroJ.s_trim-Tuple{AbstractArray}' href='#NeuroJ.s_trim-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_trim`** &mdash; *Method*.
 
 
@@ -4729,7 +4755,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 **Arguments**
 
-  * `signal::Vector{Float64}`
+  * `signal::AbstractArray`
   * `len::Int64`: trimming length in samples
   * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
   * `from::Symbol[:start, :end]
@@ -5041,39 +5067,6 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-
-<a id='NeuroJ.s_snr-Tuple{AbstractArray}' href='#NeuroJ.s_snr-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_snr`** &mdash; *Method*.
-
-
-
-```julia
-s_snr(signal)
-```
-
-Return SNR.
-
-<a id='NeuroJ.s_channels_stats-Tuple{AbstractArray}' href='#NeuroJ.s_channels_stats-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_channels_stats`** &mdash; *Method*.
-
-
-
-```julia
-s_channels_stats(signal)
-```
-
-Return channel statistics.
-
-<a id='NeuroJ.s_standardize-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_standardize-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_standardize`** &mdash; *Method*.
-
-
-
-```julia
-s_standardize(signal)
-```
-
-Standardize `signal` for ML.
 
 
 <a id='NSTIM'></a>

@@ -68,8 +68,14 @@ eeg_export_csv(edf, file_name="edf.csv", header=true, components=true)
 
 Remove EEG from memory:
 ```julia
-eeg_delete(edf)
+edf = nothing
 ```
+
+Copy EEG:
+```julia
+edf_tmp = eeg_copy(edf)
+```
+Do not use `edf_tmp = edf` as all operations on `edf_tmp` will also affect `edf`.
 
 All operations on EEG are stored within the object. Show processing history:
 ```julia

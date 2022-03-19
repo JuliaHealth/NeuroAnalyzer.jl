@@ -32,7 +32,7 @@ p = signal_plot_butterfly(t, signal_m)
 p = eeg_plot_butterfly(edf, head=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-signal_pow, signal_frq = signal_psd(signal_v, fs=100, norm=true)
+signal_pow, signal_frq = s_psd(signal_v, fs=100, norm=true)
 p = signal_plot_psd(signal_pow, signal_frq)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = signal_plot_psd(signal_v, fs=100)
@@ -68,9 +68,8 @@ p = signal_plot_histogram(signal_m, type=:kd)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_histogram(edf, channel=1)
 
-p = signal_plot_bands(signal_v, fs=100, type=:abs)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_bands(edf, channel=1, type=:abs)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}

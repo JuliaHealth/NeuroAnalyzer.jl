@@ -452,7 +452,7 @@ function eeg_normalize_minmax(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
-            s_norm[idx, :, epoch] = s_normalize_minmax(s)
+            s_normalized[idx, :, epoch] = s_normalize_minmax(s)
         end
     end
 
@@ -577,7 +577,8 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     s_filtered = zeros(size(eeg.eeg_signals))
-
+    fs = eeg_sr(eeg)
+    
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch]
@@ -676,7 +677,7 @@ function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    pc, pc_var, pc_m = pca(eeg.eeg_signals, n=n)
+    pc, pc_var, pc_m = s_pca(eeg.eeg_signals, n=n)
 
     return (pc=pc, pc_var=pc_var, pc_m=pc_m)
 end
