@@ -115,10 +115,6 @@ EEG:
 
     - ICA weights topo
 
-    - eeg_plot_signal_psd → single-channel
-    - eeg_plot_signal_psd_avg → multi-channel
-    - eeg_plot_signal_psd_butterfly → multi-channel
-
     - eeg_plot_component_psd → single-channel
     - eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
     - eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)

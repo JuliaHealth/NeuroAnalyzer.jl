@@ -4,45 +4,41 @@ using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
-signal_v = rand(1000)
-signal_m = rand(10, 1000)
-t = linspace(0, 10, 1000)
 isfile("test.png") && rm("test.png")
 
-p = signal_plot(t, signal_v)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = signal_plot(t, signal_m)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_signal(edf)
+p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 eeg_plot_save(p, file_name="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
+p = eeg_plot_electrodes(edf, head=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = signal_plot_avg(t, signal_m)
+p = eeg_plot_signal(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_signal_avg(edf)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p = signal_plot_butterfly(t, signal_m)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_signal_butterfly(edf, head=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-signal_pow, signal_frq = s_psd(signal_v, fs=100, norm=true)
-p = signal_plot_psd(signal_pow, signal_frq)
+p = eeg_plot_signal_details(edf, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = signal_plot_psd(signal_v, fs=100)
+p = eeg_plot_signal_avg_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = signal_plot_psd(signal_m, fs=100)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_psd(edf, norm=true, average=true, head=true)
+p = eeg_plot_signal_butterfly_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_electrodes(edf, head=true)
+p = eeg_plot_signal_psd(edf, norm=true, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_signal_psd_avg(edf, norm=true)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_signal_psd_butterfly(edf, norm=true)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_spectrogram(edf, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_spectrogram(edf, channel=1:10, len=1024)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 edf_cor = eeg_cor(edf)
@@ -57,21 +53,20 @@ cc, lags = eeg_crosscov(edf, lag=5, norm=false)
 p = eeg_plot_covmatrix(edf, cc, lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_spectrogram(edf, channel=1)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_spectrogram(edf, channel=1:10, len=1024)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p = signal_plot_histogram(signal_v)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = signal_plot_histogram(signal_m, type=:kd)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_histogram(edf, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_bands(edf, channel=1, type=:abs)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_topo(edf, offset=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p1 = eeg_plot_signal(e10, epoch=1)
+p2 = eeg_plot_signal(e10, epoch=2)
+pp = [p1, p2]
+l = (2, 1)
+p = eeg_plot_compose(pp, layout=l)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 snr = eeg_snr(edf)
@@ -84,22 +79,6 @@ p = eeg_plot_epochs(e10, v=e[4])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_epochs(e10, v=:epochs_var)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p1 = eeg_plot_signal(e10, epoch=1)
-p2 = eeg_plot_signal(e10, epoch=2)
-pp = [p1, p2]
-l = (2, 1)
-p = eeg_plot_compose(pp, layout=l)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p = eeg_plot_signal_details(edf, channel=1)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p = eeg_plot_signal_avg_details(edf)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
-
-p = eeg_plot_signal_butterfly_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 e10 = eeg_epochs(edf, epoch_len=10*256)

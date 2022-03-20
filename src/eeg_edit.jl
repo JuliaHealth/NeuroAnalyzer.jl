@@ -10,8 +10,8 @@ function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=no
 
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
     (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
-    (epoch_len != nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
-    (epoch_n != nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
+    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
+    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
 
     channel_n, _ = size(signal)
 
