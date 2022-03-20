@@ -29,7 +29,7 @@ p = eeg_plot_signal_avg(edf)
 
 p = signal_plot_butterfly(t, signal_m)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_butterfly(edf, head=true)
+p = eeg_plot_signal_butterfly(edf, head=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 signal_pow, signal_frq = s_psd(signal_v, fs=100, norm=true)
@@ -97,6 +97,9 @@ p = eeg_plot_signal_details(edf, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_signal_avg_details(edf)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_signal_butterfly_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 true

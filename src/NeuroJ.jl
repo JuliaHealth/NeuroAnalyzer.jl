@@ -257,7 +257,7 @@ export eeg_plot_filter_response
 export eeg_plot_signal
 export eeg_plot_component
 export eeg_plot_signal_avg
-export eeg_plot_butterfly
+export eeg_plot_signal_butterfly
 export eeg_plot_covmatrix
 export eeg_plot_ica
 export eeg_plot_matrix
@@ -280,6 +280,7 @@ export eeg_plot_save
 export eeg_plot_compose
 export eeg_plot_signal_details
 export eeg_plot_signal_avg_details
+export eeg_plot_signal_butterfly_details
 
 include("nstim.jl")
 export tes_dose

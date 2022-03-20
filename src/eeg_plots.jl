@@ -381,7 +381,7 @@ end
 """
     eeg_plot_signal_details(eeg; <keyword arguments>)
 
-Plot `eeg` channel amplitude, histogram, power density, phase histogram and spectrogram.
+Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
 
 # Arguments
 
@@ -784,11 +784,10 @@ function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
     return p
 end
 
-
 """
     eeg_plot_avg_details(eeg; <keyword arguments>)
 
-Plot detailes of averaged `eeg` channels.
+Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
 
 # Arguments
 
@@ -921,7 +920,6 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
 
     # cannot plot electrodes without locations
     eeg.eeg_header[:channel_locations] == false && (head = false)
-    frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
     eeg_avg = eeg_average(eeg)
     psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, norm=true, frq_lim=frq_lim, title="PSD averaged with 95%CI [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     s = eeg_plot_spectrogram(eeg_avg, epoch=epoch, channel=1, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
@@ -987,7 +985,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 
     ylim == (0, 0) && (ylim = (floor(minimum(s_normalized), digits=0), ceil(maximum(s_normalized), digits=0)))
     ylim = _tuple_max(ylim)
-    ylim[1] > ylim[2] && (ylim = (ylim[2], ylim[1]))
+    ylim = tuple_order(ylim)
 
     if labels == [""]
         labels = Vector{String}(undef, channel_n)
@@ -1022,9 +1020,11 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
 end
 
 """
-    eeg_plot_butterfly(eeg; <keyword arguments>)
+    eeg_plot_signal_butterfly(eeg; <keyword arguments>)
 
 Butterfly plot of `eeg` channels.
+
+# Arguments
 
 # Arguments
 
@@ -1033,104 +1033,110 @@ Butterfly plot of `eeg` channels.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `labels::Vector{String}=[""]`: channel labels vector
-- `norm::Bool=false`: normalize the `signal` prior to calculations
+- `norm::Bool=true`: normalize the `signal` prior to calculations
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
 - `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-- `head::Bool=true`: add head with electrodes
-- `hist::Bool=true`: add histograms
-- `average::Bool=true`: plot averaged signal
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), head::Bool=true, hist::Bool=true, average::Bool=false, kwargs...)
+function eeg_plot_signal_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    len < 0 && throw(ArgumentError("len must be > 0."))
+    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly() channel must contain ≥ 2 channels."))
+
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
-    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    if length(epoch) > 1
-        sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    ylim = _tuple_max(ylim)
+    ylim = tuple_order(ylim)
+
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch = 1
-    end
-
-    # default length is one epoch or 20 seconds
-    len = _len(eeg, len, 20)
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-
-    # get epochs markers for len > epoch_len
-    epoch_markers = Vector{Int64}[]
-    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = eeg_epoch_len(eeg)
-        epoch_n = eeg_epoch_n(eeg)
-        epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
-        epoch_markers = epoch_markers[epoch_markers .> floor(Int64, offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= ceil(Int64, (offset + len) / eeg_sr(eeg))]
+        epoch = epoch[1]
     else
-        eeg_tmp = eeg
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
     end
 
-    labels = eeg_labels(eeg_tmp)
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
 
-    t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
-    t = t .+ (offset / eeg_sr(eeg_tmp))
-    t = t[1:(end - 1)]
-    t[1] = floor(t[1], digits=2)
-    t[end] = ceil(t[end], digits=2)
+    # set epoch markers if len > epoch_len
+    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
 
-    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
-   (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
+    labels = eeg_labels(eeg)[channel]
 
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-    ndims(signal) == 1 && (signal = vec(signal))
-
-    if average == false
-        p = signal_plot_butterfly(t,
-                                  signal,
-                                  offset=offset,
-                                  labels=labels,
-                                  norm=norm,
-                                  xlabel=xlabel,
-                                  ylabel=ylabel,
-                                  title=title,
-                                  ylim=ylim;
-                                  kwargs...)
+    # get time vector
+    if length(epoch) == 1 && len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[1:len, epoch]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
     else
-        p = signal_plot_avg(t,
-                          signal,
-                          offset=offset,
-                          labels=labels,
-                          norm=norm,
-                          xlabel=xlabel,
-                          ylabel=ylabel,
-                          title=title,
-                          ylim=ylim;
-                          kwargs...)
+        t = _get_t(eeg_tmp, offset, len)
     end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    if collect(channel[1]:channel[end]) == channel
+        channel_name = string(channel[1]) * ":" * string(channel[end])
+    else
+        channel_name = "" 
+        for idx in 1:(length(channel) - 1)
+            channel_name *= string(channel[idx])
+            channel_name *= ", "
+        end
+        channel_name *= string(channel[end])
+    end
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    if length(epoch) > 1
+        epoch_tmp = epoch[1]:epoch[end]
+    else
+        epoch_tmp = epoch
+    end
+    if (1 + offset) > eeg_epoch_len(eeg)
+        if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))
+        else
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1))
+        end
+    end
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+
+    p = signal_plot_butterfly(t,
+                              signal,
+                              offset=offset,
+                              labels=labels,
+                              norm=norm,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              ylim=ylim;
+                              kwargs...)
 
     # add epochs markers
     if norm == true
-        s_normalized = normalize_zscore(reshape(signal, eeg_channel_n(eeg), size(signal, 2), 1))
+        s_normalized = normalize_zscore(signal)
     else
         s_normalized = signal
     end
-    ylim == (0, 0) && (ylim = (floor(minimum(s_normalized), digits=0), ceil(maximum(s_normalized), digits=0)))
+    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
+    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
     ylim = _tuple_max(ylim)
     if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
         p = vline!(epoch_markers,
@@ -1139,9 +1145,178 @@ function eeg_plot_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), maximum(ceil.(abs.(signal))), text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=6, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
+
+    plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
+
+Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `epoch::Int64=1`: epoch number to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+- `hist::Symbol=:hist`: histogram type: :hist, :kd
+- `head::Bool=true`: add head plot
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
+
+    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly_details() channel must contain ≥ 2 channels."))
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+
+    (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
+    (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
+    frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
+    frq_lim = tuple_order(frq_lim)
+    ylim = _tuple_max(ylim)
+    ylim = tuple_order(ylim)
+
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
+        epoch = epoch[1]
+    else
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+    end
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
+
+    # set epoch markers if len > epoch_len
+    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    if length(epoch) == 1 && len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[1:len, epoch]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
+    else
+        t = _get_t(eeg_tmp, offset, len)
+    end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    if collect(channel[1]:channel[end]) == channel
+        channel_name = string(channel[1]) * ":" * string(channel[end])
+    else
+        channel_name = "" 
+        for idx in 1:(length(channel) - 1)
+            channel_name *= string(channel[idx])
+            channel_name *= ", "
+        end
+        channel_name *= string(channel[end])
+    end
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    if length(epoch) > 1
+        epoch_tmp = epoch[1]:epoch[end]
+    else
+        epoch_tmp = epoch
+    end
+    if (1 + offset) > eeg_epoch_len(eeg)
+        if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))
+        else
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1))
+        end
+    end
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+
+    p = signal_plot_butterfly(t,
+                              signal,
+                              offset=offset,
+                              labels=[""],
+                              norm=norm,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              ylim=ylim;
+                              kwargs...)
+
+    # add epochs markers
+    if norm == true
+        s_normalized = normalize_zscore(signal)
+    else
+        s_normalized = signal
+    end
+    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
+    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
+    ylim = _tuple_max(ylim)
+    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+        p = vline!(epoch_markers,
+                   linestyle=:dash,
+                   linewidth=0.2,
+                   linecolor=:black,
+                   label="")
+        for idx in 1:length(epoch_markers)
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
+        end
+    end
+
+    # cannot plot electrodes without locations
+    eeg.eeg_header[:channel_locations] == false && (head = false)
+    psd = eeg_plot_psd(eeg_tmp, epoch=epoch, channel=channel, len=len, offset=offset, average=true, norm=true, frq_lim=frq_lim, title="PSD averaged with 95%CI [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
+    _, _, _, s_phase = s_spectrum(s_normalized_m)
+    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
+    if head == true
+        if collect(channel[1]:channel[end]) == channel
+            channel_list = string(channel[1]) * ":" * string(channel[end])
+        else
+            channel_list = "" 
+            for idx in 1:(length(channel) - 1)
+                channel_list *= string(channel[idx])
+                channel_list *= ", "
+            end
+            channel_list *= string(channel[end])
+        end
+        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels\n$channel_list")
+        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
+        p = plot(p, ht_a, psd, ht_p, s, hd, layout=l)
+    else
+        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
+        p = plot(p, ht_a, psd, ht_p, s, layout=l)
+    end
+
+    plot(p)
 
     return p
 end
@@ -2486,8 +2661,8 @@ function eeg_plot_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, of
     if c !== :ica
         offset += (epoch - 1) * eeg_epoch_len(eeg) + 1
         frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
-        average == true && (s = eeg_plot_butterfly(eeg, channel=0, len=len, offset=offset, title="Averaged signal\n[epoch: $epoch, time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
-        average == false && (s = eeg_plot_butterfly(eeg, channel=0, len=len, offset=offset, title="Butterfly plot\n[epoch: $epoch, time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
+        average == true && (s = eeg_plot_signal_butterfly(eeg, channel=0, len=len, offset=offset, title="Averaged signal\n[epoch: $epoch, time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
+        average == false && (s = eeg_plot_signal_butterfly(eeg, channel=0, len=len, offset=offset, title="Butterfly plot\n[epoch: $epoch, time window: $t_s1:$t_s2]", hist=false, head=false, legend=false, average=average))
         average == true && (ps = eeg_plot_psd(eeg, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="Averaged PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
         average == false && (ps = eeg_plot_psd(eeg, channel=0, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, average=average))
         average == false && (h = eeg_plot_electrodes(eeg, channel=0, selected=1:eeg_channel_n(eeg), labels=true, head_labels=false, title="Channels\n[1:$(length(eeg_labels(eeg)))]", marksersize=1))

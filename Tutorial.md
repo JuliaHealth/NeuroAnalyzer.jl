@@ -476,15 +476,6 @@ eeg_plot_save(p, file_name="images/edf_channel_1.png")
 
 ![edf_channel1](images/edf_channel_1.png)
 
-```julia
-eeg_plot(edf, len=5*256)
-eeg_plot(edf, channel=1:4)
-eeg_plot(edf, offset=20*eeg_sr(edf), len=20*eeg_sr(edf))
-eeg_plot(edf, norm=false)
-p = eeg_plot(e9, head=true)
-eeg_save_plot(p, file_name="/tmp/e9.png")
-```
-
 Plot averaged signal:
 ```juia
 p = eeg_plot_signal_avg(edf, channel=1:4)
@@ -498,28 +489,16 @@ eeg_plot_save(p, file_name="images/edf_avg.png")
 ![edf_avg](images/edf_avg.png)
 
 ```julia
-eeg_plot_avg(edf, channel=1:4)
-eeg_plot_avg(edf)
-eeg_plot_avg(e9)
-eeg_plot_avg(e10, len=125*eeg_sr(edf))
-eeg_plot_avg(e10, epoch=1:5)
-eeg_plot_avg(e9, len=5*eeg_sr(edf), offset=6*eeg_sr(e9))
-
-eeg_plot_butterfly(edf)
-eeg_plot_butterfly(edf, offset=20*256, len=120*eeg_sr(edf), channel=1:4, norm=true)
-eeg_plot_butterfly(edf, channel=1:4, norm=true)
-eeg_plot_butterfly(e10, epoch=1:5, channel=1:4, norm=true)
-p = eeg_plot(edf)
-eeg_save_plot(p, file_name="/tmp/edf.pdf")
-
-e9 = eeg_load_electrodes(e9, file_name="locs/standard-10-20-cap19-elmiko.ced")
-eeg_plot_butterfly(e9, len=9*eeg_sr(edf))
-eeg_plot_butterfly(e9, len=55*eeg_sr(edf))
-eeg_plot_butterfly(e9, len=55*eeg_sr(edf), head=true)
-eeg_plot_butterfly(e10, len=55*eeg_sr(edf), head=true)
-eeg_plot_butterfly(e10)
-eeg_plot_butterfly(e10, len=11*eeg_sr(edf), head=true)
+p = eeg_plot_signal_butterfly(edf)
+eeg_save_plot(p, file_name="images/edf_butterfly_simple.pdf")
+p = eeg_plot_signal_butterfly_details(edf)
+eeg_save_plot(p, file_name="images/edf_butterfly.pdf")
 ```
+
+![edf_avg](images/edf_butterfy_simple.png)
+
+![edf_avg](images/edf_butterfly.png)
+
 
 Use kwargs:
 ```julia
