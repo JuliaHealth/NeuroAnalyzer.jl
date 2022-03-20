@@ -487,9 +487,13 @@ eeg_save_plot(p, file_name="/tmp/e9.png")
 
 Plot averaged signal:
 ```juia
-p = eeg_plot_avg(edf, frq_lim=(0, 20), channel=1:4)
+p = eeg_plot_signal_avg(edf, channel=1:4)
+eeg_plot_save(p, file_name="images/edf_avg_simple.png")
+p = eeg_plot_signal_avg_details(edf, frq_lim=(0, 20), channel=1:4)
 eeg_plot_save(p, file_name="images/edf_avg.png")
 ```
+
+![edf_avg](images/edf_avg_simple.png)
 
 ![edf_avg](images/edf_avg.png)
 

@@ -24,7 +24,7 @@ p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:hp, cutoff=10,
 
 p = signal_plot_avg(t, signal_m)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_avg(edf)
+p = eeg_plot_signal_avg(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = signal_plot_butterfly(t, signal_m)
@@ -94,6 +94,9 @@ p = eeg_plot_compose(pp, layout=l)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_signal_details(edf, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_signal_avg_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 true
