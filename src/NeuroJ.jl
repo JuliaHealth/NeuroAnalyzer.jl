@@ -278,6 +278,7 @@ export eeg_plot_channels
 export eeg_plot_epochs
 export eeg_plot_save
 export eeg_plot_compose
+export eeg_plot_signal_details
 
 include("nstim.jl")
 export tes_dose

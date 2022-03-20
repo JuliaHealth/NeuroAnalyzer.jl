@@ -457,7 +457,7 @@ bar(v)
 
 Plot multi-channel:
 ```julia
-p = eeg_plot(edf)
+p = eeg_plot_signal(edf)
 eeg_plot_save(p, file_name="images/edf_channels.png")
 ```
 
@@ -466,9 +466,13 @@ eeg_plot_save(p, file_name="images/edf_channels.png")
 
 Plot single-channel:
 ```julia
-p = eeg_plot(edf, channel=1, frq_lim=(0, 20))
+p = eeg_plot_signal(edf, channel=1)
+eeg_plot_save(p, file_name="images/edf_channel_1_simple.png")
+p = eeg_plot_signal_details(edf, channel=1, frq_lim=(0, 20))
 eeg_plot_save(p, file_name="images/edf_channel_1.png")
 ```
+
+![edf_channel1](images/edf_channel_1_simple.png)
 
 ![edf_channel1](images/edf_channel_1.png)
 

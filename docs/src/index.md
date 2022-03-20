@@ -191,7 +191,8 @@ eeg_plot_epochs(eeg::NeuroJ.EEG; v::Union{Vector{Int64}, Vector{Float64}, Symbol
 eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, kwargs...)
 eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
-eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; l::Matrix{Any}, kwargs...)
+eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Matrix{Any}, kwargs...)
+eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 ```
 
 ## Low level functions

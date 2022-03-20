@@ -118,6 +118,11 @@ function _convert_t(t)
     abs(t_2) >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
     return t_1, t_s1, t_2, t_s2
 end
+function _check_channels(eeg, channel)
+    for idx in 1:length(channel)
+        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    end
+end
 
 ################################
 
@@ -246,7 +251,7 @@ end
 """
     eeg_plot_signal(eeg; <keyword arguments>)
 
-Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted.
+Plot `eeg` channel or channels.
 
 # Arguments
 
@@ -304,11 +309,21 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
     if length(channel) == 1
-        title = ""
         ylabel = "Amplitude [μV]"
         channel_name = labels
         labels = [""]
         signal = vec(signal)
+    else
+        if collect(channel[1]:channel[end]) == channel
+            channel_name = string(channel[1]) * ":" * string(channel[end])
+        else
+            channel_name = "" 
+            for idx in 1:(length(channel) - 1)
+                channel_name *= string(channel[idx])
+                channel_name *= ", "
+            end
+            channel_name *= string(channel[end])
+        end
     end
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
@@ -326,7 +341,7 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
         end
     end
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signal\n[epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
 
     p = signal_plot(t,
                     signal,
@@ -357,6 +372,144 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
     plot(p)
 
     return p
+end
+
+"""
+    eeg_plot_signal_details(eeg; <keyword arguments>)
+
+Plot `eeg` channel amplitude, histogram, power density, phase histogram and spectrogram.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch number to display
+- `channel::Int64`: channel to display
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `title::String=""`: plot title
+- `head::Bool=true`: add head plot
+- `hist::Symbol=:hist`: histogram type: :hist, :kd
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `pc::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
+
+    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+    _check_channels(eeg, channel)
+
+    (frq_lim[1] < 0 || frq_lim[1] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
+    (frq_lim[2] < 0 || frq_lim[2] > eeg_sr(eeg) / 2) && throw(ArgumentError("frq_lim must be > 0 Hz and ≤ $(eeg_sr(eeg))."))
+    frq_lim == (0, 0) && (frq_lim = (0, div(eeg_sr(eeg), 2)))
+    frq_lim = tuple_order(frq_lim)
+
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
+        epoch = epoch[1]
+    else
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+    end
+
+    # set epoch markers if len > epoch_len
+    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    if length(epoch) == 1 && len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[1:len, epoch]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
+    else
+        t = _get_t(eeg_tmp, offset, len)
+    end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    ylabel = "Amplitude [μV]"
+    channel_name = labels
+    labels = [""]
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
+    signal = vec(signal)
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    if length(epoch) > 1
+        epoch_tmp = epoch[1]:epoch[end]
+    else
+        epoch_tmp = epoch
+    end
+    if (1 + offset) > eeg_epoch_len(eeg)
+        if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))
+        else
+            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1))
+        end
+    end
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+
+    p = signal_plot(t,
+                    signal,
+                    labels=labels,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    title=title;
+                    kwargs...)
+
+    # add epochs markers
+    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+        p = vline!(epoch_markers,
+                   linestyle=:dash,
+                   linewidth=0.2,
+                   linecolor=:black,
+                   label="")
+        if typeof(signal) == Vector{Float64}
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:left, valign=:top)))
+            end
+        else
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=6, halign=:left, valign=:top)))
+            end
+        end
+    end
+
+    # cannot plot electrodes without locations
+    eeg.eeg_header[:channel_locations] == false && (head = false)
+    psd = eeg_plot_psd(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false)
+    s = eeg_plot_spectrogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram [dB]\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    ht_a = eeg_plot_histogram(eeg, epoch=epoch, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
+    _, _, _, s_phase = s_spectrum(signal)
+    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
+    if head == true
+        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name")
+        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
+        pc = eeg_plot_compose([p, ht_a, psd, ht_p, s, hd], layout=l)
+    else
+        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
+        pc = eeg_plot_compose([p, ht_a, psd, ht_p, s], layout=l)
+    end
+
+    plot(pc)
+
+    return pc
 end
 
 """
@@ -411,8 +564,6 @@ function eeg_plot_component(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}
     else
         title == "" && (title = "Component\n[epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
     end
-
-
 
     v = v[channel, :, epoch]
 
@@ -2724,27 +2875,27 @@ end
 """
     eeg_plot_compose(p, l; <keyword arguments>)
 
-Compose a complex plot of various plots contained in vector `p` using layout `l`. Layout scheme is e.g.:
+Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
 - `(2, 2)`: 2 × 2 plots, regular layout
 - `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
 
 # Arguments
 
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-- `l::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
+- `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
 - `kwargs`: optional arguments for `p` vector plots
 
 # Returns
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; l::Union{Matrix{Any}, Tuple{Int64, Int64}}, kwargs...)
+function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, kwargs...)
 
     pc = plot(grid=false,
               framestyle=:none,
               border=:none,
               margins=0Plots.px)
-    pc = plot!(p..., layout=l; kwargs...)
+    pc = plot!(p..., layout=layout; kwargs...)
     plot(pc)
 
     return pc

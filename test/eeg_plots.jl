@@ -86,4 +86,14 @@ p = eeg_plot_epochs(e10, v=e[4])
 p = eeg_plot_epochs(e10, v=:epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+p1 = eeg_plot_signal(e10, epoch=1)
+p2 = eeg_plot_signal(e10, epoch=2)
+pp = [p1, p2]
+l = (2, 1)
+p = eeg_plot_compose(pp, layout=l)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_signal_details(edf, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true
