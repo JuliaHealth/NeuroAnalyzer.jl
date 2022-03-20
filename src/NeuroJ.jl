@@ -257,7 +257,9 @@ export eeg_plot_filter_response
 export eeg_plot_signal
 export eeg_plot_component
 export eeg_plot_signal_avg
+export eeg_plot_component_avg
 export eeg_plot_signal_butterfly
+export eeg_plot_component_butterfly
 export eeg_plot_covmatrix
 export eeg_plot_ica
 export eeg_plot_matrix

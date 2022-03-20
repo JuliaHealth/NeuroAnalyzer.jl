@@ -80,9 +80,9 @@ p = eeg_plot_channels(edf, v=snr, epoch=1)
 
 e10 = eeg_epochs(edf, epoch_n=10)
 e = eeg_epochs_stats(e10)
-eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_epochs(e10, v=e[4])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_epochs(e10, v=:epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
@@ -100,6 +100,15 @@ p = eeg_plot_signal_avg_details(edf)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_signal_butterfly_details(edf)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+e10 = eeg_epochs(edf, epoch_len=10*256)
+_, a, pow, ph = eeg_spectrum(e10)
+p = eeg_plot_component(e10, v=pow, epoch=10, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_component_avg(e10, v=pow, epoch=10, channel=1:4)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_component_butterfly(e10, v=pow, epoch=10, channel=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 true

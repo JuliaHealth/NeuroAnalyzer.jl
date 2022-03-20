@@ -2758,7 +2758,7 @@ Plot `eeg` channel or channels.
 eeg_plot_component(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted.
+Plot `eeg` external or embedded component.
 
 **Arguments**
 
@@ -2766,8 +2766,6 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
   * `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -2832,43 +2830,44 @@ Plot averaged `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.signal_plot_butterfly-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}, Matrix{Float64}}' href='#NeuroJ.signal_plot_butterfly-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}, Matrix{Float64}}'>#</a>
-**`NeuroJ.signal_plot_butterfly`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_avg`** &mdash; *Method*.
 
 
 
 ```julia
-signal_plot_butterfly(t, signal; <keyword arguments>)
+eeg_plot_component_avg(eeg; <keyword arguments>)
 ```
 
-Butterfly plot of `signal` channels.
+Plot averaged `eeg` external or embedded component.
 
 **Arguments**
 
-  * `t::Union{Vector{Float64}, Vector{Int64}, AbstractRange`
-  * `signal::Matrix{Float64}`
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
-  * `ylim::Tuple`: y-axis limits, default (0, 0)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_butterfly`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_butterfly`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_butterfly(eeg; <keyword arguments>)
+eeg_plot_signal_butterfly(eeg; <keyword arguments>)
 ```
 
 Butterfly plot of `eeg` channels.
+
+**Arguments**
 
 **Arguments**
 
@@ -2877,15 +2876,38 @@ Butterfly plot of `eeg` channels.
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `norm::Bool=true`: normalize the `signal` prior to calculations
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-  * `head::Bool=true`: add head with electrodes
-  * `hist::Bool=true`: add histograms
-  * `average::Bool=true`: plot averaged signal
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot of `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3510,7 +3532,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 eeg_plot_signal_details(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` channel amplitude, histogram, power density, phase histogram and spectrogram.
+Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
 
 **Arguments**
 
@@ -3541,7 +3563,39 @@ Plot `eeg` channel amplitude, histogram, power density, phase histogram and spec
 eeg_plot_avg_details(eeg; <keyword arguments>)
 ```
 
-Plot detailes of averaged `eeg` channels.
+Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Int64=1`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+  * `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `hist::Symbol=:hist`: histogram type: :hist, :kd
+  * `head::Bool=true`: add head plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
+```
+
+Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
 
 **Arguments**
 

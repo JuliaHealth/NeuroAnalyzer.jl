@@ -115,18 +115,11 @@ EEG:
 
     - ICA weights topo
 
-    - eeg_plot_signal → single-channel / multi-channel vs time
-    - eeg_plot_component → single (e.g. one ICA) / multiple (e.g. set of ICAs) vs time
-
-    - eeg_plot_signal_avg → multi-channel
-    - eeg_plot_component_avg → multiple (e.g. phase per channel)
-
-    - eeg_plot_signal_butterfly → multi-channel / multi-component (e.g. phase per channel)
-    - eeg_plot_component_butterfly → multiple (e.g. phase per channel)
-
     - eeg_plot_signal_psd → single-channel
     - eeg_plot_signal_psd_avg → multi-channel
+    - eeg_plot_signal_psd_butterfly → multi-channel
 
+    - eeg_plot_component_psd → single-channel
     - eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
     - eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)
 
@@ -142,10 +135,6 @@ EEG:
     - eeg_plot_signal_topo_avg → multi-channel
     - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
 
-    - eeg_plot_channels - component or vector of values vs channels
-    - eeg_plot_epochs - component or vector of values vs epochs
-
-    - eeg_plot_signal_details - predefined composed plot
     - eeg_plot_compose - layout based
 
 - complex kernel convolution: plot magnitude and phase of the convoluted signal

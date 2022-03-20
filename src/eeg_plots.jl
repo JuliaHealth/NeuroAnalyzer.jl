@@ -128,6 +128,19 @@ function _tuple_max(t::Union{Tuple{Int64, Int64}, Tuple{Float64, Float64}})
     abs(t[1]) < abs(t[2]) && (t = (-abs(t[2]), abs(t[2])))
     return t
 end
+function _channel2channel_name(channel)
+    if collect(channel[1]:channel[end]) == channel
+        channel_name = string(channel[1]) * ":" * string(channel[end])
+    else
+        channel_name = "" 
+        for idx in 1:(length(channel) - 1)
+            channel_name *= string(channel[idx])
+            channel_name *= ", "
+        end
+        channel_name *= string(channel[end])
+    end
+    return channel_name
+end
 
 ################################
 
@@ -318,16 +331,7 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
         labels = [""]
         signal = vec(signal)
     else
-        if collect(channel[1]:channel[end]) == channel
-            channel_name = string(channel[1]) * ":" * string(channel[end])
-        else
-            channel_name = "" 
-            for idx in 1:(length(channel) - 1)
-                channel_name *= string(channel[idx])
-                channel_name *= ", "
-            end
-            channel_name *= string(channel[end])
-        end
+        channel_name = _channel2channel_name(channel)
     end
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
@@ -519,7 +523,7 @@ end
 """
     eeg_plot_component(eeg; <keyword arguments>)
 
-Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted.
+Plot `eeg` external or embedded component.
 
 # Arguments
 
@@ -527,8 +531,6 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 - `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -543,7 +545,7 @@ function eeg_plot_component(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}
     if typeof(v) == Symbol
         v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
         component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
-        v = eeg.eeg_components
+        v = eeg.eeg_components[component_idx]
         typeof(v) == Array{Float64, 3} || throw(ArgumentError("For this type of v ($(typeof(v))), use eeg_plot_channels() or eeg_plot_epochs()."))
     end
 
@@ -564,10 +566,10 @@ function eeg_plot_component(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}
         channel_name = labels
         labels = [""]
         signal = vec(v)
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
     else
-        title == "" && (title = "Component\n[epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+        channel_name = _channel2channel_name(channel)
     end
+    title == "" && (title = "Component\n[channel: $channel_name, epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
 
     v = v[channel, :, epoch]
 
@@ -616,7 +618,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
     ylim = _tuple_max(ylim)
     ylim = tuple_order(ylim)
 
-    # plot channels
+    # plot channel
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=_xlims(t),
@@ -637,7 +639,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
               label=false,
               t=:line,
               c=:grey,
-              lw=0.5)
+              linewidth=0.5)
     p = plot!(t,
               s_l[1:length(t)],
               label=false,
@@ -646,6 +648,7 @@ function signal_plot_avg(t::Union{Vector{Float64}, Vector{Int64}, AbstractRange}
               lw=0.5)
     p = plot!(t,
               s_m[1:length(t)],
+              linewidth=0.5,
               label=false,
               t=:line, 
               c=:black)
@@ -722,16 +725,7 @@ function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
-    if collect(channel[1]:channel[end]) == channel
-        channel_name = string(channel[1]) * ":" * string(channel[end])
-    else
-        channel_name = "" 
-        for idx in 1:(length(channel) - 1)
-            channel_name *= string(channel[idx])
-            channel_name *= ", "
-        end
-        channel_name *= string(channel[end])
-    end
+    channel_name = _channel2channel_name(channel)
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
 
@@ -861,16 +855,7 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
-    if collect(channel[1]:channel[end]) == channel
-        channel_name = string(channel[1]) * ":" * string(channel[end])
-    else
-        channel_name = "" 
-        for idx in 1:(length(channel) - 1)
-            channel_name *= string(channel[idx])
-            channel_name *= ", "
-        end
-        channel_name *= string(channel[end])
-    end
+    channel_name = _channel2channel_name(channel)
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
 
@@ -951,6 +936,72 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
 end
 
 """
+    eeg_plot_component_avg(eeg; <keyword arguments>)
+
+Plot averaged `eeg` external or embedded component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_avg(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+
+    if typeof(v) == Symbol
+        v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
+        component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        v = eeg.eeg_components[component_idx]
+        typeof(v) == Array{Float64, 3} || throw(ArgumentError("For this type of v ($(typeof(v))), use eeg_plot_channels() or eeg_plot_epochs()."))
+    end
+
+    size(v) == size(eeg.eeg_signals) || throw(ArgumentError("Size of v ($(size(v))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
+
+    _check_epochs(eeg, epoch)
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    t = eeg.eeg_epochs_time[:, epoch]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+    if length(channel) == 1
+        channel_name = labels
+        labels = [""]
+        signal = vec(v)
+    else
+        channel_name = _channel2channel_name(channel)
+    end
+    title == "" && (title = "Component\n[channel: $channel_name, epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+
+    v = v[channel, :, epoch]
+
+    p = signal_plot_avg(t,
+                        v,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title;
+                        kwargs...)
+
+    plot(p)
+
+    return p
+end
+
+"""
     signal_plot_butterfly(t, signal; <keyword arguments>)
 
 Butterfly plot of `signal` channels.
@@ -1013,6 +1064,7 @@ function signal_plot_butterfly(t::Union{Vector{Float64}, Vector{Int64}, Abstract
                   s_normalized[idx, 1:length(t)],
                   t=:line,
                   color=idx,
+                  linewidth=0.1,
                   label=labels[idx])
     end
 
@@ -1090,16 +1142,7 @@ function eeg_plot_signal_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstract
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
-    if collect(channel[1]:channel[end]) == channel
-        channel_name = string(channel[1]) * ":" * string(channel[end])
-    else
-        channel_name = "" 
-        for idx in 1:(length(channel) - 1)
-            channel_name *= string(channel[idx])
-            channel_name *= ", "
-        end
-        channel_name *= string(channel[end])
-    end
+    channel_name = _channel2channel_name(channel)
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
 
@@ -1231,16 +1274,7 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
-    if collect(channel[1]:channel[end]) == channel
-        channel_name = string(channel[1]) * ":" * string(channel[end])
-    else
-        channel_name = "" 
-        for idx in 1:(length(channel) - 1)
-            channel_name *= string(channel[idx])
-            channel_name *= ", "
-        end
-        channel_name *= string(channel[end])
-    end
+    channel_name = _channel2channel_name(channel)
 
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
 
@@ -1315,6 +1349,74 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
         p = plot(p, ht_a, psd, ht_p, s, layout=l)
     end
+
+    plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component_butterfly(eeg; <keyword arguments>)
+
+Butterfly plot of `eeg` external or embedded component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `v::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component `v`
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `norm::Bool=true`: normalize the `signal` prior to calculations
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_butterfly(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+
+    if typeof(v) == Symbol
+        v in eeg.eeg_header[:components] || throw(ArgumentError("Component $v not found."))
+        component_idx = findfirst(isequal(v), eeg.eeg_header[:components])
+        v = eeg.eeg_components[component_idx]
+        typeof(v) == Array{Float64, 3} || throw(ArgumentError("For this type of v ($(typeof(v))), use eeg_plot_channels() or eeg_plot_epochs()."))
+    end
+
+    size(v) == size(eeg.eeg_signals) || throw(ArgumentError("Size of v ($(size(v))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
+
+    _check_epochs(eeg, epoch)
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    t = eeg.eeg_epochs_time[:, epoch]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+    if length(channel) == 1
+        channel_name = labels
+        labels = [""]
+        signal = vec(v)
+    else
+        channel_name = _channel2channel_name(channel)
+    end
+    title == "" && (title = "Component\n[channel: $channel_name, epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+
+    v = v[channel, :, epoch]
+
+    p = signal_plot_butterfly(t,
+                              v,
+                              norm=norm,
+                              labels=labels,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title;
+                              kwargs...)
 
     plot(p)
 
