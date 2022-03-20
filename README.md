@@ -105,6 +105,11 @@ General:
 
 EEG:
 - new plotting architecture:
+    - eeg_plot() meta function
+    - rewrite plotting functions to be more modular
+    - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
+    - plot spectrogram/psd: use embedded spectrogram/psd (if plot by epoch)
+
     - plot by epoch: use time of epochs
     - plot by time: use whole signal time
 
@@ -140,7 +145,8 @@ EEG:
     - eeg_plot_channels - component or vector of values vs channels
     - eeg_plot_epochs - component or vector of values vs epochs
 
-    - eeg_plot_complex - templates based
+    - eeg_plot_signal_details - predefined composed plot
+    - eeg_plot_compose - layout based
 
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
@@ -159,10 +165,6 @@ EEG:
 - brain topography
 - events markers; epoch by event markers; rewrite epoching
 - eeg_keep_eeg_channels → keep_channels(type)
-- rewrite plotting functions to be more modular
-- plot by time (continuous) or by epoch - separate functions
-- use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
-- plot spectrogram/psd: use embedded spectrogram/psd (if plot by epoch)
 - export channel locs to .CED
 - preview 2d/3d channel locs
 - swap channel locs axes

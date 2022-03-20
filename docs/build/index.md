@@ -2803,13 +2803,13 @@ Plot averaged `signal` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_avg`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_avg`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_avg(eeg; <keyword arguments>)
+eeg_plot_signal_avg(eeg; <keyword arguments>)
 ```
 
 Plot averaged `eeg` channels.
@@ -2817,8 +2817,8 @@ Plot averaged `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
-  * `channel::Unieon{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize the `signal` prior to calculations
@@ -2826,9 +2826,6 @@ Plot averaged `eeg` channels.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-  * `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `head::Bool=true`: add head plot
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -2876,7 +2873,7 @@ Butterfly plot of `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
@@ -2988,7 +2985,7 @@ Plot `eeg` channels power spectrum density.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch number to display
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
@@ -3048,7 +3045,7 @@ Plots spectrogram of `eeg` channel(s).
 **Arguments**
 
   * `eeg:EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epoch to plot
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
@@ -3283,7 +3280,7 @@ Plot topographical view of `eeg` component.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
+  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
   * `offset::Int64=1`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 second
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
@@ -3344,7 +3341,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 **Arguments**
 
   * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
+  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
@@ -3518,7 +3515,7 @@ Plot `eeg` channel amplitude, histogram, power density, phase histogram and spec
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch number to display
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Int64`: channel to display
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
@@ -3534,6 +3531,38 @@ Plot `eeg` channel amplitude, histogram, power density, phase histogram and spec
 **Returns**
 
   * `pc::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_avg_details`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_avg_details(eeg; <keyword arguments>)
+```
+
+Plot detailes of averaged `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Int64=1`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+  * `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `hist::Symbol=:hist`: histogram type: :hist, :kd
+  * `head::Bool=true`: add head plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
 
 
 <a id='Low-level-functions'></a>
