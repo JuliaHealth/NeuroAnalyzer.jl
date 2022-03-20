@@ -1,30 +1,19 @@
 """
-    eeg_plot_signal(eeg; <keyword arguments>)
+    eeg_complexplot(p, l; <keyword arguments>)
 
 Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=1`: epochs to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `labels::Vector{String}=[""]`: channel labels vector
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `head::Bool=true`: add head with electrodes
-- `hist::Symbol[:hist, :kd]=:hist`: histogram type
-- `norm::Bool=true`: convert power to dB
-- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
+- `p::Tuple{Plots.Plot{Plots.GRBackend}}`: tuple of plots
+- `l::Matrix{Any}`: layout
 - `kwargs`: other arguments for plot() function; <keyword arguments>
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
+function eeg_complexplot(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))

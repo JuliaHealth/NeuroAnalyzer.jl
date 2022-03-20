@@ -52,7 +52,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_
     # - `loc_x::Vector{Float64}`: vector of x electrode position
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
-    # - `kwargs`: other arguments for plot() function
+    # - `kwargs`: optional arguments for plot() function
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 4
@@ -134,7 +134,7 @@ Plot single-channel `signal`.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -191,7 +191,7 @@ Plot multi-channel `signal`.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Channels"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -258,7 +258,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function; <keyword arguments>
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -375,7 +375,7 @@ Plot `eeg` channels. If signal is multi-channel, only channel amplitudes are plo
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function; <keyword arguments>
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -443,7 +443,7 @@ Plot averaged `signal` channels.
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
 - `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -523,7 +523,7 @@ Plot averaged `eeg` channels.
 - `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: frequency limit for PSD and spectrogram
 - `hist::Symbol=:hist`: histogram type: :hist, :kd
 - `head::Bool=true`: add head plot
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -671,7 +671,7 @@ Butterfly plot of `signal` channels.
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
 - `ylim::Tuple`: y-axis limits, default (0, 0)
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -747,7 +747,7 @@ Butterfly plot of `eeg` channels.
 - `head::Bool=true`: add head with electrodes
 - `hist::Bool=true`: add histograms
 - `average::Bool=true`: plot averaged signal
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -865,7 +865,7 @@ Plot power spectrum density.
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Power [μV^2/Hz]"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -913,7 +913,7 @@ Plot `signal` channel power spectrum density.
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Power [μV^2/Hz]"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -958,7 +958,7 @@ Plot `signal` channels power spectrum density.
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String="Power [μV^2/Hz]"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1057,7 +1057,7 @@ Plot `eeg` channels power spectrum density.
 - `ylabel::String="Power [μV^2/Hz]"`: y-axis label
 - `title::String=""`: plot title
 - `head::Bool=false`: add head with electrodes
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1132,7 +1132,7 @@ Plot `eeg` electrodes.
 - `head::Bool`=true: plot head
 - `head_labels::Bool=false`: plot head labels
 - `small::Bool=false`: draws small plot
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1264,7 +1264,7 @@ Plot matrix `m` of `eeg` channels.
 - `eeg:EEG`
 - `m::Union{Matrix{Float64}, Array{Float64, 3}}`: channels by channels matrix
 - `epoch::Int64=1`: epoch number to display
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1304,7 +1304,7 @@ Plot covariance matrix `m` of `eeg` channels.
 - `lags::Union{Vector{Int64}, Vector{Float64}}`: covariance lags
 - `channel::Union{Int64, Vector{Int64}, UnitRange{Int64}, Nothing}`: channel to display
 - `epoch::Int64=1`: epoch number to display
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1345,7 +1345,7 @@ Plot spectrogram of `signal`.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1423,7 +1423,7 @@ Plots spectrogram of `eeg` channel(s).
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
 - `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1540,7 +1540,7 @@ Plot histogram of `signal`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1590,7 +1590,7 @@ Plot histogram of `signal`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1676,7 +1676,7 @@ Plot `eeg` channel histograms.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1732,7 +1732,7 @@ Plot `ica` components against time vector `t`.
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
 - `ylim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits (-ylim:ylim)
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1784,7 +1784,7 @@ Plots `ica` components.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -1861,7 +1861,7 @@ Plots embedded ICs components.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2007,7 +2007,7 @@ Plot topographical view of `eeg` component.
 - `cb_label::String=""`: color bar label
 - `average::Bool=true`: plot averaged signal and PSD
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2224,7 +2224,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2322,7 +2322,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2463,7 +2463,7 @@ Plot values of `v` for selected channels of `eeg`.
 - `xlabel::String="Channels"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2514,7 +2514,7 @@ Plot values of `v` for selected epoch of `eeg`.
 - `xlabel::String="Epochs"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2567,7 +2567,7 @@ Plot filter response.
 - `rp::Union{Int64, Float64}`: dB ripple in the passband
 - `rs::Union{Int64, Float64}`: dB attenuation in the stopband
 - `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
-- `kwargs`: other arguments for plot() function
+- `kwargs`: optional arguments for plot() function
 
 # Returns
 
@@ -2719,4 +2719,33 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
     p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
 
     return p
+end
+
+"""
+    eeg_plot_compose(p, l; <keyword arguments>)
+
+Compose a complex plot of various plots contained in vector `p` using layout `l`. Layout scheme is e.g.:
+- `(2, 2)`: 2 × 2 plots, regular layout
+- `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
+
+# Arguments
+
+- `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
+- `l::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
+- `kwargs`: optional arguments for `p` vector plots
+
+# Returns
+
+- `pc::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; l::Union{Matrix{Any}, Tuple{Int64, Int64}}, kwargs...)
+
+    pc = plot(grid=false,
+              framestyle=:none,
+              border=:none,
+              margins=0Plots.px)
+    pc = plot!(p..., layout=l; kwargs...)
+    plot(pc)
+
+    return pc
 end
