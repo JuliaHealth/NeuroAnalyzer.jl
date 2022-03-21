@@ -109,9 +109,9 @@ EEG:
     - rewrite plotting functions to be more modular
     - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
     - update tutorial.md
-    - ICA weights topo
 
-    - eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
+        - ICA weights topo
+
     - eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
 
     - eeg_plot_signal_spectrogram_avg → multi-channel
