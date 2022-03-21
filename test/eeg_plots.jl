@@ -36,9 +36,9 @@ p = eeg_plot_signal_psd_avg(edf, norm=true)
 p = eeg_plot_signal_psd_butterfly(edf, norm=true)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_spectrogram(edf, channel=1)
+p = eeg_plot_signal_spectrogram(edf, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_spectrogram(edf, channel=1:10, len=1024)
+p = eeg_plot_signal_spectrogram(edf, channel=1:10, len=1024)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 edf_cor = eeg_cor(edf)
@@ -93,10 +93,8 @@ p = eeg_plot_component_butterfly(e10, v=pow, epoch=10, channel=1:4)
 s = eeg_tconv(e10, kernel=generate_window(:hann, 128))
 p = eeg_plot_component_psd(e10, v=s, epoch=1, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-
 p = eeg_plot_component_psd_avg(e10, v=s, epoch=1, channel=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-
 p = eeg_plot_component_psd_butterfly(e10, v=s, epoch=1, channel=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 

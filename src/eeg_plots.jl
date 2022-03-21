@@ -1403,7 +1403,7 @@ Plot `signal` channel power spectrum density.
 """
 function plot_signal_psd(signal::Vector{Real}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", kwargs...)
 
-    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
@@ -1453,7 +1453,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 """
 function plot_signal_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
-    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
@@ -1531,7 +1531,7 @@ Butterfly plot of `signal` channels power spectrum density.
 """
 function plot_signal_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
-    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
@@ -2604,6 +2604,214 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
 end
 
 """
+    signal_plot_spectrogram(signal; <keyword arguments>)
+
+Plot spectrogram of `signal`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+- `fs::Int64`: sampling frequency
+- `offset::Int64=0`: displayed segment offset in samples
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    nfft = length(signal)
+    interval = fs
+    overlap = round(Int64, fs * 0.85)
+
+    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    t = collect(spec.time) .+ (offset / fs)
+
+    if norm == false
+        p = heatmap(t,
+                    spec.freq,
+                    spec.power,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    ylims=frq_lim,
+                    xticks=_xticks(t),
+                    title=title,
+                    colorbar_title="[μV^2/Hz]",
+                    titlefontsize=10,
+                    xlabelfontsize=8,
+                    ylabelfontsize=8,
+                    xtickfontsize=4,
+                    ytickfontsize=4;
+                    kwargs...)
+    else
+        p = heatmap(t,
+                    spec.freq,
+                    pow2db.(spec.power),
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    ylims=frq_lim,
+                    xticks=_xticks(t),
+                    title=title,
+                    colorbar_title="[dB/Hz]",
+                    titlefontsize=10,
+                    xlabelfontsize=8,
+                    ylabelfontsize=8,
+                    xtickfontsize=4,
+                    ytickfontsize=4;
+                    kwargs...)
+    end
+
+    return p
+end
+
+"""
+    eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
+
+Plots spectrogram of `eeg` channel(s).
+
+# Arguments
+
+- `eeg:EEG`
+- `epoch::Union{Int64, AbstractRange}=0`: epoch to plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize powers to dB
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0)`: y-axis limits
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+
+    epoch_tmp = epoch
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
+        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch = epoch[1]
+    else
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+    end
+
+    length(channel) > 1 && len < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel spectrogram, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+
+    # set epoch markers if len > epoch_len
+    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get time vector
+    if length(epoch) == 1 && len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[1:len, epoch]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
+    else
+        t = _get_t(eeg_tmp, offset, len)
+    end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    if length(channel) == 1
+        ylabel == "" && (ylabel = "Frequency [Hz]")
+        channel_name = labels
+        labels = [""]
+        signal = vec(signal)
+    else
+        channel_name = _channel2channel_name(channel)
+    end
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    title == "" && (title = "Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $(string(epoch_tmp)), time window: $t_s1:$t_s2]")
+
+    if length(channel) == 1
+        p = signal_plot_spectrogram(signal,
+                                    fs=fs,
+                                    offset=offset,
+                                    norm=norm,
+                                    xlabel=xlabel,
+                                    ylabel=ylabel,
+                                    frq_lim=frq_lim,
+                                    title=title;
+                                    kwargs...)
+
+        # add epochs markers
+        if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+            p = vline!(epoch_markers,
+                       linestyle=:dash,
+                       linewidth=0.2,
+                       linecolor=:black,
+                       label="")
+            for idx in 1:length(epoch_markers)
+                p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
+            end
+        end
+    else
+        ylabel = "Channels"
+        xlabel = "Frequency [Hz]"
+        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+        colorbar_title = "[μV^2/Hz]"
+        norm == true && (colorbar_title = "[dB/Hz]")
+        p = heatmap(s_frq[1, :],
+                    channel,
+                    s_pow,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    xlims=frq_lim,
+                    yticks=channel,
+                    title=title,
+                    colorbar_title=colorbar_title,
+                    titlefontsize=10,
+                    xlabelfontsize=8,
+                    ylabelfontsize=8,
+                    xtickfontsize=4,
+                    ytickfontsize=4;
+                    kwargs...)
+    end
+
+    plot(p)
+
+    return p
+end
+
+"""
     signal_plot_histogram(signal; <keyword arguments>)
 
 Plot histogram of `signal`.
@@ -3289,7 +3497,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 """
 function signal_plot_bands(signal::Vector{Real}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Float64, Float64}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
-    fs < 0 && throw(ArgumentError("fs must be ≥ 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
     for idx in 1:length(band)
         band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
