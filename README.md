@@ -108,16 +108,8 @@ EEG:
     - eeg_plot() meta function
     - rewrite plotting functions to be more modular
     - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
-    - plot spectrogram/psd: use embedded spectrogram/psd (if plot by epoch)
-
-    - plot by epoch: use time of epochs
-    - plot by time: use whole signal time
-
+    - update tutorial.md
     - ICA weights topo
-
-    - eeg_plot_component_psd → single-channel
-    - eeg_plot_component_psd_avg → multiple (e.g. phase per channel)
-    - eeg_plot_component_psd_butterfly → multiple (e.g. phase per channel)
 
     - eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
     - eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
@@ -126,7 +118,7 @@ EEG:
     - eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
 
     - eeg_plot_signal_topo → single component
-    - eeg_plot_component_topo → multi-component (e.g. ICAs)
+    - eeg_plot_component_topo → single
 
     - eeg_plot_signal_topo_avg → multi-channel
     - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)

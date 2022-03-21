@@ -90,4 +90,14 @@ p = eeg_plot_component_avg(e10, v=pow, epoch=10, channel=1:4)
 p = eeg_plot_component_butterfly(e10, v=pow, epoch=10, channel=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+s = eeg_tconv(e10, kernel=generate_window(:hann, 128))
+p = eeg_plot_component_psd(e10, v=s, epoch=1, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_component_psd_avg(e10, v=s, epoch=1, channel=1:10)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+p = eeg_plot_component_psd_butterfly(e10, v=s, epoch=1, channel=1:10)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true

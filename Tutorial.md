@@ -491,14 +491,13 @@ eeg_plot_save(p, file_name="images/edf_avg.png")
 ```julia
 p = eeg_plot_signal_butterfly(edf)
 eeg_save_plot(p, file_name="images/edf_butterfly_simple.pdf")
-p = eeg_plot_signal_butterfly_details(edf)
+p = eeg_plot_signal_ butterfly_details(edf)
 eeg_save_plot(p, file_name="images/edf_butterfly.pdf")
 ```
 
 ![edf_avg](images/edf_butterfy_simple.png)
 
 ![edf_avg](images/edf_butterfly.png)
-
 
 Use kwargs:
 ```julia
