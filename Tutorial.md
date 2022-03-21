@@ -670,6 +670,8 @@ function eeg_benchmark(n::Int64)
         mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
     end
 end
+
+@time eeg_benchmark(10)
 @time eeg_benchmark(10)
 
 # workstation: 14.271216 seconds (51.62 M allocations: 106.612 GiB, 38.88% gc time)

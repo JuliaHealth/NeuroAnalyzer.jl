@@ -46,13 +46,13 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `f::Tuple(Union(Int64, Float64}, Union(Int64, Float64}}`: lower and upper frequency bounds
+- `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
 # Returns
 
 - `sbp::Matrix{Float64}`: band power for each channel per epoch
 """
-function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple)
+function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -873,13 +873,13 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `t::Union{Int64, Float64}`: time in seconds
+- `t::Real`: time in seconds
 
 # Returns
 
-- `t_s::Float64`: time in samples
+- `t_s::Int64`: time in samples
 """
-function eeg_t2s(eeg::NeuroJ.EEG; t::Union{Int64, Float64})
+function eeg_t2s(eeg::NeuroJ.EEG; t::Real)
     t_s = floor(Int64, t * eeg_sr(eeg)) + 1
     
     return t_s
@@ -1039,13 +1039,13 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel for convolution
+- `kernel::Union{Vector{Real}, Vector{ComplexF64}}`: kernel for convolution
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1071,13 +1071,13 @@ Perform convolution in the time domain.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`: kernel used for convolution
+- `kernel::Union{Vector{Real}, Vector{ComplexF64}}`: kernel used for convolution
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 

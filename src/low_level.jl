@@ -764,14 +764,14 @@ Order tuple elements in ascending or descending (rev=true) order.
 
 # Arguments
 
-- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
+- `t::Tuple{Real, Real}`
 - `rev::Bool=false`
 
 # Returns
 
-- `t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}`
+- `t::Tuple{Real, Real}`
 """
-function tuple_order(t::Tuple{Union{Int64, Float64}, Union{Int64, Float64}}, rev::Bool=false)
+function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
     
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
@@ -1285,7 +1285,7 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
 - `stp::Float64`: signal total power
 """
-function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple)
+function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real})
 
     psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_freq = Vector(psd.freq)

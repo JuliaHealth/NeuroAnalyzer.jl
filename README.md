@@ -111,9 +111,6 @@ EEG:
     - update tutorial.md
     - ICA weights topo
 
-    - eeg_plot_signal_spectrogram → single-channel (frq vs time), multi-channel (channels vs frq)
-    - eeg_plot_component_spectrogram → single (e.g. one ICA), multiple (e.g. convoluted channels; components vs frq)
-
     - eeg_plot_signal_spectrogram_avg → multi-channel
     - eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
 
@@ -122,8 +119,6 @@ EEG:
 
     - eeg_plot_signal_topo_avg → multi-channel
     - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
-
-    - eeg_plot_compose - layout based
 
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data

@@ -269,13 +269,13 @@ Taper `eeg` with `taper`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}``
+- `taper::Union{Vector{Real, Vector{ComplexF64}}``
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_taper(eeg::NeuroJ.EEG; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_taper(eeg::NeuroJ.EEG; taper::Union{Vector{Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -307,9 +307,9 @@ Taper `eeg` with `taper`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}``
+- `taper::Union{Vector{Real}, Vector{ComplexF64}}``
 """
-function eeg_taper!(eeg::NeuroJ.EEG; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function eeg_taper!(eeg::NeuroJ.EEG; taper::Union{Vector{Real}, Vector{ComplexF64}})
 
     eeg.eeg_signals = eeg_taper(eeg, taper=taper).eeg_signals
     eeg_reset_components!(eeg)

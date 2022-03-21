@@ -900,7 +900,7 @@ Splits `eeg` into epochs.
 - `eeg::NeuroJ.EEG`
 - `epoch_n::Union{Int64, Nothing}`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-- `average::Bool`: average all epochs, returnone averaged epoch; if false than returnarray of epochs, each row is one epoch
+- `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
 
 # Returns
 
