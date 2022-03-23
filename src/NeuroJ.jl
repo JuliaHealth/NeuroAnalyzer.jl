@@ -286,10 +286,14 @@ export eeg_plot_component_psd_butterfly
 
 export signal_plot_spectrogram
 export eeg_plot_signal_spectrogram
+export eeg_plot_signal_spectrogram_avg
 export eeg_plot_component_spectrogram
+export eeg_plot_component_spectrogram_avg
+
+export eeg_plot_signal_topo
+export eeg_plot_component_topo
 
 export eeg_plot_ica
-export eeg_plot_topo
 export signal_plot_ica
 
 export eeg_plot_covmatrix

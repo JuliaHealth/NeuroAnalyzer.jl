@@ -1039,13 +1039,13 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Real}, Vector{ComplexF64}}`: kernel for convolution
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Real}, Vector{ComplexF64}})
+function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1071,13 +1071,13 @@ Perform convolution in the time domain.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `kernel::Union{Vector{Real}, Vector{ComplexF64}}`: kernel used for convolution
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{Real}, Vector{ComplexF64}})
+function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 

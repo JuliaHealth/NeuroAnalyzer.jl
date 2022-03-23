@@ -110,11 +110,9 @@ EEG:
     - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
     - update tutorial.md
     - ICA weights topo
+    - wrong epoch number if epoch=0
 
-    - eeg_plot_signal_spectrogram_avg → multi-channel
-    - eeg_plot_component_spectrogram_avg → multiple (e.g. convoluted channels)
-
-    - eeg_plot_signal_topo → single component
+    - eeg_plot_signal_topo → amplitude
     - eeg_plot_component_topo → single
 
     - eeg_plot_signal_topo_avg → multi-channel
