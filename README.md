@@ -112,9 +112,7 @@ EEG:
     - ICA weights topo
     - wrong epoch number if epoch=0
 
-    - eeg_plot_signal_topo → amplitude
     - eeg_plot_component_topo → single
-
     - eeg_plot_signal_topo_avg → multi-channel
     - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
 
