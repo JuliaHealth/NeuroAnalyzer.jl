@@ -298,6 +298,7 @@ export eeg_plot_component_idx_spectrogram_avg
 export signal_plot_spectrogram
 export eeg_plot_signal_spectrogram
 export eeg_plot_signal_spectrogram_avg
+
 export eeg_plot_component_spectrogram
 export eeg_plot_component_spectrogram_avg
 
