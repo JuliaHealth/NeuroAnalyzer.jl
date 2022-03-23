@@ -2534,7 +2534,6 @@ Plot spectrogram of `signal`.
 - `fs::Int64`: sampling frequency
 - `offset::Int64=0`: displayed segment offset in samples
 - `norm::Bool=true`: normalize powers to dB
-- `demean::Bool=true`: demean signal prior to analysis
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -2545,14 +2544,12 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, norm::Bool=true, demean::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
+function signal_plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    demean == true && (signal = s_demean(signal))
 
     nfft = length(signal)
     interval = fs
@@ -2911,7 +2908,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                                     title=title;
                                     kwargs...)
     else
-        ylabel = "Channels"
+        ylabel = "Components"
         xlabel = "Frequency [Hz]"
         s_pow, s_frq = s_psd(c, fs=fs, norm=norm)
         colorbar_title="[μV^2/Hz]"
@@ -3043,6 +3040,184 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
             p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(string(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg)))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
+
+    plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component_idx_spectrogram(eeg; <keyword arguments>)
+
+Plot spectrogram of indexed `eeg` external or embedded component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `epoch::Int64`: epoch to display
+- `c_idx::Int64`: component index to display, default is all components
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    typeof(c) == Symbol && (c = _get_component(eeg, c)[:c])
+
+    _check_epochs(eeg, epoch)
+
+    # select components, default is all
+    if typeof(c) == Symbol
+        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 0))
+        _check_cidx(eeg, c, c_idx)
+    else
+        c_idx == 0 && (c_idx = 1:size(c, 1))
+        for idx in 1:length(c_idx)
+            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+        end
+    end
+
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    labels = Vector{String}()
+    for idx in 1:length(c_idx)
+        push!(labels, string(c_idx[idx]))
+    end
+
+    # get time vector
+    t = eeg.eeg_epochs_time[:, epoch]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+    if length(c_idx) == 1
+        labels = [""]
+        signal = vec(c)
+    end
+    title == "" && (title = "Component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[id: $(string(c_idx)), epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+
+    c = c[c_idx, :, epoch]
+
+    if length(c_idx) == 1
+        p = signal_plot_spectrogram(c,
+                                    fs=fs,
+                                    offset=0,
+                                    norm=norm,
+                                    xlabel=xlabel,
+                                    ylabel=ylabel,
+                                    frq_lim=frq_lim,
+                                    title=title;
+                                    kwargs...)
+    else
+        ylabel = "Components"
+        xlabel = "Frequency [Hz]"
+        s_pow, s_frq = s_psd(c, fs=fs, norm=norm)
+        colorbar_title="[μV^2/Hz]"
+        norm == true && (colorbar_title = "[dB/Hz]")
+        p = heatmap(s_frq[1, :],
+                    c_idx,
+                    s_pow,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    xlims=frq_lim,
+                    yticks=c_idx,
+                    title=title,
+                    colorbar_title=colorbar_title,
+                    titlefontsize=10,
+                    xlabelfontsize=8,
+                    ylabelfontsize=8,
+                    xtickfontsize=4,
+                    ytickfontsize=4;
+                    kwargs...)
+    end
+
+    plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component_idx_spectrogram_avg(eeg; <keyword arguments>)
+
+Plot spectrogram of averaged indexed `eeg` external or embedded component.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `epoch::Int64`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]`: x-axis label
+- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    typeof(c) == Symbol && (c = _get_component(eeg, c)[:c])
+
+    _check_epochs(eeg, epoch)
+
+    # select components, default is all up to 20
+    if typeof(c) == Symbol
+        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 20))
+        _check_cidx(eeg, c, c_idx)
+    else
+        if c_idx == 0
+            size(c, 1) > 20 && (c_idx = 1:20)
+            size(c, 1) <= 20 && (c_idx = 1:size(c, 1))
+        end
+        for idx in 1:length(c_idx)
+            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+        end
+    end
+    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
+
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    labels = Vector{String}()
+    for idx in 1:length(c_idx)
+        push!(labels, string(c_idx[idx]))
+    end
+
+    # get time vector
+    t = eeg.eeg_epochs_time[:, epoch]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+    if length(c_idx) == 1
+        labels = [""]
+        signal = vec(c)
+    end
+    title == "" && (title = "Averaged component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[id: $(string(c_idx)), epoch: $(string(epoch)), time window: $t_s1:$t_s2]")
+
+    c = vec(mean(c[c_idx, :, epoch], dims=1))
+
+    p = signal_plot_spectrogram(c,
+                                fs=fs,
+                                norm=norm,
+                                frq_lim=frq_lim,
+                                xlabel=xlabel,
+                                ylabel=ylabel,
+                                title=title;
+                                kwargs...)
 
     plot(p)
 
@@ -3260,78 +3435,6 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
         push!(p, plot(lags, cov_m[idx, :], title="ch: $(labels[idx])", label="", titlefontsize=6, xlabelfontsize=8, ylabelfontsize=8, xtickfontsize=4, ytickfontsize=4, lw=0.5))
     end
     p = plot(p...; kwargs...)
-
-    return p
-end
-
-"""
-    signal_plot_spectrogram(signal; <keyword arguments>)
-
-Plot spectrogram of `signal`.
-
-# Arguments
-
-- `signal::Vector{Float64}`
-- `fs::Int64`: sampling frequency
-- `offset::Int64=0`: displayed segment offset in samples
-- `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function signal_plot_spectrogram(signal::Vector{Float64}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    nfft = length(signal)
-    interval = fs
-    overlap = round(Int64, fs * 0.85)
-
-    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-    t = collect(spec.time) .+ (offset / fs)
-
-    if norm == false
-        p = heatmap(t,
-                    spec.freq,
-                    spec.power,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    ylims=frq_lim,
-                    xticks=_xticks(t),
-                    title=title,
-                    colorbar_title="[μV^2/Hz]",
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
-    else
-        p = heatmap(t,
-                    spec.freq,
-                    pow2db.(spec.power),
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    ylims=frq_lim,
-                    xticks=_xticks(t),
-                    title=title,
-                    colorbar_title="[dB/Hz]",
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
-    end
 
     return p
 end

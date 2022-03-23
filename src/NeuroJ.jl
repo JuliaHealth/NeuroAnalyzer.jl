@@ -292,6 +292,9 @@ export eeg_plot_component_idx_psd
 export eeg_plot_component_idx_psd_avg
 export eeg_plot_component_idx_psd_butterfly
 
+export eeg_plot_component_idx_spectrogram
+export eeg_plot_component_idx_spectrogram_avg
+
 export signal_plot_spectrogram
 export eeg_plot_signal_spectrogram
 export eeg_plot_signal_spectrogram_avg
@@ -311,7 +314,6 @@ export eeg_plot_channels
 export eeg_plot_epochs
 export eeg_plot_save
 export eeg_plot_compose
-
 
 include("nstim.jl")
 export tes_dose
