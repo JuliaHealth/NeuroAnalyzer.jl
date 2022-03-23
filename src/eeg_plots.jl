@@ -308,16 +308,18 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -427,12 +429,13 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # set epoch markers if len > epoch_len
@@ -547,6 +550,7 @@ function eeg_plot_component(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Symbol}
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -690,16 +694,18 @@ function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -811,12 +817,13 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
@@ -945,6 +952,7 @@ function eeg_plot_component_avg(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3}, Sym
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -1090,16 +1098,18 @@ function eeg_plot_signal_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstract
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -1213,12 +1223,13 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
@@ -1349,6 +1360,7 @@ function eeg_plot_component_butterfly(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -1618,12 +1630,13 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # set epoch markers if len > epoch_len
@@ -1715,16 +1728,18 @@ function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -1813,16 +1828,18 @@ function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abst
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -1971,9 +1988,9 @@ function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; v::Union{Array{Float64, 3},
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
+    _check_channels(eeg, channel)
 
     _check_epochs(eeg, epoch)
-    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -2042,9 +2059,9 @@ function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; v::Union{Array{Float6
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
+    _check_channels(eeg, channel)
 
     _check_epochs(eeg, epoch)
-    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -2189,16 +2206,18 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
     eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
@@ -2316,7 +2335,7 @@ Plots spectrogram of `eeg` channel(s).
 function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
-
+    _check_channels(eeg, channel)
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
     epoch_tmp = epoch
@@ -2327,12 +2346,13 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # set epoch markers if len > epoch_len
@@ -2432,6 +2452,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; v::Union{Array{Float64,
 
     # select channels, default is all up to 20 channels
     channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
 
@@ -2542,12 +2563,13 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; v::Union{Array{Floa
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # set epoch markers if len > epoch_len
@@ -2637,6 +2659,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
+    _check_channels(eeg, channel)
 
     # selected channels, default is all channels
     if selected != 0
@@ -2811,6 +2834,7 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
+    _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)
     ndims(cov_m) == 3 && (cov_m = cov_m[:, :, epoch])
@@ -3373,12 +3397,13 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
         length(epoch) > 1 && sort!(epoch)
         len = eeg_epoch_len(eeg) * length(epoch)
         offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        length(epoch) > 1 && (epoch_tmp = epoch[1]:epoch[end])
+        epoch_tmp = epoch[1]:epoch[end]
         epoch = epoch[1]
     else
         # default length is one epoch or 20 seconds
         len == 0 && (len = _len(eeg, len, 20))
         epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
     # select all channels
