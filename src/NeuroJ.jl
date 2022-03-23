@@ -288,6 +288,10 @@ export eeg_plot_component_psd
 export eeg_plot_component_psd_avg
 export eeg_plot_component_psd_butterfly
 
+export eeg_plot_component_idx_psd
+export eeg_plot_component_idx_psd_avg
+export eeg_plot_component_idx_psd_butterfly
+
 export signal_plot_spectrogram
 export eeg_plot_signal_spectrogram
 export eeg_plot_signal_spectrogram_avg

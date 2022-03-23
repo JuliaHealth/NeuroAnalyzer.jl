@@ -107,14 +107,16 @@ EEG:
 - new plotting architecture:
     - eeg_plot() meta function
     - rewrite plotting functions to be more modular
-    - use any calculations (e.g. median delta power) stored as a component for topo plots (if plot by epochs)
     - update tutorial.md
     - ICA weights topo
     - wrong epoch number if epoch=0
 
-    - eeg_plot_component_topo → single
-    - eeg_plot_signal_topo_avg → multi-channel
-    - eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
+    export eeg_plot_component_idx_spectrogram
+    export eeg_plot_component_idx_spectrogram_avg
+
+    eeg_plot_component_topo → single
+    eeg_plot_signal_topo_avg → multi-channel
+    eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
 
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
