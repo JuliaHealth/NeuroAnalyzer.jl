@@ -105,15 +105,15 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- new plotting architecture:
-    - eeg_plot() meta function
-    - update tutorial.md
+- temporal and spectral envelope
+- mean envelope
+- spectral envelope: peak frequencies
+- eeg_plot() meta function
+- update tutorial.md
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
 - split signal into frequency bands
 - continuous wavelet transform (using ContinuousWavelets.jl)
-- spectrogram: mean temporal and spectral envelope
-- spectral envelope: peak frequencies
 - conectomes graph
 - coherence spectrum (y: relative amplitude, x: frequencies)
 - spectrogram: extract area of specific frequencies

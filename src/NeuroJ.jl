@@ -300,6 +300,7 @@ export eeg_plot_tile
 export eeg_plot_weights_topo
 export plot_bands
 export plot_histogram
+export plot_ica
 export plot_psd
 export plot_psd_avg
 export plot_psd_butterfly

@@ -2523,7 +2523,7 @@ end
 
 
 """
-    signal_plot_signal_spectrogram(signal; <keyword arguments>)
+    plot_spectrogram(signal; <keyword arguments>)
 
 Plot spectrogram of `signal`.
 
@@ -3605,7 +3605,7 @@ function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1,
 end
 
 """
-    signal_plot_ica(t, ica; <keyword arguments>)
+    plot_ica(t, ica; <keyword arguments>)
 
 Plot `ica` components against time vector `t`.
 
@@ -3625,7 +3625,7 @@ Plot `ica` components against time vector `t`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_ica(t::Union{Vector{<:Real}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot_ica(t::Union{Vector{<:Real}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -4424,7 +4424,7 @@ function eeg_plot_tile(p::Vector{Any}, w::Int64=800, h::Int64=800, rows::Int64=2
 end
 
 """
-    signal_plot_bands(signal; <keyword arguments>)
+    plot_bands(signal; <keyword arguments>)
 
 Plot absolute/relative bands powers of a single-channel `signal`.
 
@@ -4433,7 +4433,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 - `signal::Vector{<:Real}`
 - `fs::Int64`: sampling rate
 - `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha] (see `eeg_band()`)
-- `band_frq::Vector{Tuple{Float64, Float64}}`: vector of band frequencies
+- `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
 - `type::Symbol`: plots absolute (:abs) or relative power (:rel)
 - `norm::Bool=true`: normalize powers to dB
 - `xlabel::String=""`: x-axis label
@@ -4445,7 +4445,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Float64, Float64}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Real, Real}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
@@ -4610,7 +4610,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, c
         title == "" && (title = "$(titlecase(string(band))) power\n[epoch: $epoch_tmp, channel(s): $channel_list]\n[offset: $offset samples, length: $len samples]")
         labels = eeg_labels(eeg)[channel]
         typeof(labels) == String && (labels = [labels])
-        p = signal_plot_bands(signal,
+        p = plot_bands(signal,
                              band=band,
                              band_frq=band_frq,
                              fs=eeg_sr(eeg),
@@ -4627,7 +4627,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, c
         offset > eeg_epoch_len(eeg) && (epoch_tmp = floor(Int64, offset / eeg_epoch_len(eeg)) + 1)
         title == "" && (title = "Band powers\n[epoch: $epoch_tmp, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
 
-        p = signal_plot_bands(signal,
+        p = plot_bands(signal,
                              band=band,
                              band_frq=band_frq,
                              fs=eeg_sr(eeg),
