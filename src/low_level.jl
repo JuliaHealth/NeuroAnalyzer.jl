@@ -2118,11 +2118,22 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     n > size(signal, 1) && throw(ArgumentError("Number of PCs must be ≤ $(size(signal, 1))."))
 
     channel_n, _, epoch_n = size(signal)
+    pc_m = []
+
+    # check maximum n
+    n_tmp = n
+    Threads.@threads for epoch in 1:epoch_n
+        s = @view signal[:, :, epoch]
+        pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
+        size(pc_m, 2) < n_tmp && (n_tmp = size(pc_m, 2))
+    end
+    n_tmp < n && @warn "Only $n_tmp PC components were generated."
+    n = n_tmp
+    
     pc = zeros(n, size(signal, 2), epoch_n)
     pc_var = zeros(n, epoch_n)
     pc_reconstructed = zeros(size(signal))
-    pc_m = []
-    
+
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
         # m_cov = s_cov(s)
