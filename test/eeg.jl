@@ -134,6 +134,10 @@ s_conv = eeg_fconv(edf, kernel=[1, 2, 3, 4])
 p, v, m = eeg_pca(edf, n=2)
 @test size(p) == (2, 156672, 1)
 @test size(v) == (2, 1)
+e1 = eeg_add_component(edf, c=:pc, v=p)
+eeg_add_component!(e1, c=:pc_m, v=m)
+e2 = eeg_pca_reconstruct(e1)
+@test size(e2.eeg_signals) == (19, 156672, 1)
 
 e = eeg_edit_header(edf, field=:patient, value="unknown")
 @test e.eeg_header[:patient] == "unknown"

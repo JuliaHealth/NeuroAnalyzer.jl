@@ -670,8 +670,8 @@ Calculate `n` first PCs for `eeg`.
 
 Named tuple containing:
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
-- `pc_var::Matrix{Float64}`: PCVAR(1)..PCVAR(n) × epoch
-- `pc_m::Matrix{Float64}`: PC mean
+- `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
+- `pc_m::PCA{Float64}`: PC mean
 """
 function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
 
@@ -680,6 +680,54 @@ function eeg_pca(eeg::NeuroJ.EEG; n::Int64)
     pc, pc_var, pc_m = s_pca(eeg.eeg_signals, n=n)
 
     return (pc=pc, pc_var=pc_var, pc_m=pc_m)
+end
+
+"""
+    eeg_pca_reconstruct(eeg)
+
+Reconstruct `eeg` signals using PCA components.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_pca_reconstruct(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    :pc in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc component. Perform eeg_pca(EEG) first."))
+    :pc_m in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc_m component. Perform eeg_pca(EEG) first."))
+
+    eeg_new = deepcopy(eeg)
+    pc_idx = findfirst(isequal(:pc), eeg.eeg_header[:components])
+    pc_m_idx = findfirst(isequal(:pc_m), eeg.eeg_header[:components])
+    eeg_new.eeg_signals = s_pca_reconstruct(eeg_new.eeg_signals, pc=eeg_new.eeg_components[pc_idx], pc_m=eeg_new.eeg_components[pc_m_idx])
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_pca_reconstruct(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_pca_reconstruct!(eeg)
+
+Reconstruct `eeg` signals using PCA components.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_pca_reconstruct!(eeg::NeuroJ.EEG)
+
+    eeg.eeg_signals = eeg_pca_reconstruct(eeg).eeg_signals
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_pca_reconstruct!(EEG)")
+
+    return
 end
 
 """
@@ -809,15 +857,15 @@ function eeg_ica_reconstruct(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, A
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
-    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain ICA. Perform eeg_ica(EEG) first."))
+    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
+    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
 
     eeg_new = deepcopy(eeg)
     ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
     ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
     eeg_new.eeg_signals = s_ica_reconstruct(eeg_new.eeg_signals, ic=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica")
+    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica)")
 
     return eeg_new
 end
@@ -836,7 +884,7 @@ function eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, 
 
     eeg.eeg_signals = eeg_ica_reconstruct(eeg, ica=ica).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica")
+    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica)")
 
     return
 end

@@ -2109,7 +2109,8 @@ Calculates `n` first PCs for `signal`.
 # Returns
 
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
-- `pc_var::Matrix{Float64}`: PC_VAR(1)..PC_VAR(n) × epoch
+- `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
+- `pc_m::PCA{Float64}`: PC mean
 """
 function s_pca(signal::Array{Float64, 3}; n::Int64)
 
@@ -2120,7 +2121,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     pc = zeros(n, size(signal, 2), epoch_n)
     pc_var = zeros(n, epoch_n)
     pc_reconstructed = zeros(size(signal))
-    M = []
+    pc_m = []
     
     Threads.@threads for epoch in 1:epoch_n
         s = @view signal[:, :, epoch]
@@ -2131,17 +2132,46 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
         # eig_vec = m_sort(eig_vec, eig_val_idx)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        M = MultivariateStats.fit(PCA, s, maxoutdim=n)
-        v = principalvars(M) ./ var(M) * 100
+        pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
+        v = principalvars(pc_m) ./ var(pc_m) * 100
 
         for idx in 1:n
             pc_var[idx, epoch] = v[idx]
             # pc[idx, :, epoch] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
+            pc[idx, :, epoch] = MultivariateStats.predict(pc_m, s)[idx, :]
         end
     end
 
-    return pc, pc_var, M
+    return pc, pc_var, pc_m
+end
+
+
+"""
+    s_pca_reconstruct(signal, pc, pcm)
+
+Reconstructs `signal` using PCA components.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `pc::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
+
+# Returns
+
+- `s_reconstructed::Array{Float64, 3}`
+"""
+function s_pca_reconstruct(signal::Array{Float64, 3}; pc::Array{Float64, 3}, pc_m::PCA{Float64})
+
+    s_reconstructed = zeros(size(signal))
+
+    _, _, epoch_n = size(signal)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        s_reconstructed[:, :, epoch] = reconstruct(pc_m, pc[:, :, epoch])
+    end
+
+    return s_reconstructed
 end
 
 """

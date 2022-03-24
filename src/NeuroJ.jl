@@ -104,6 +104,7 @@ export s_average
 export s2_average
 export s2_coherence
 export s_pca
+export s_pca_reconstruct
 export s_fconv
 export s_ica
 export s_ica_reconstruct
@@ -201,12 +202,14 @@ export eeg_add_noise!
 export eeg_filter
 export eeg_filter!
 export eeg_pca
+export eeg_pca_reconstruct
+export eeg_pca_reconstruct!
 export eeg_ica
+export eeg_ica_reconstruct
+export eeg_ica_reconstruct!
 export eeg_average
 export eeg_average!
 export eeg_average
-export eeg_ica_reconstruct
-export eeg_ica_reconstruct!
 export eeg_invert_polarity
 export eeg_invert_polarity!
 export eeg_resample
