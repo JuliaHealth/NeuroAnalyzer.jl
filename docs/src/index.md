@@ -157,6 +157,7 @@ eeg_msci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
 eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
 eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
 ```
 
 ## EEG plots
@@ -303,6 +304,7 @@ s_detect_epoch_rmsd(signal::Array{Float64, 3})
 s_detect_epoch_euclid(signal::Array{Float64, 3})
 s_detect_epoch_p2p(signal::Array{Float64, 3})
 s_snr(signal::AbstractArray)
+s_findpeaks(signal::AbstractArray; d::Int64=32)
 ```
 
 ## NSTIM

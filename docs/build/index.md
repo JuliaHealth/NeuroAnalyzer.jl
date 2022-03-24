@@ -2699,6 +2699,26 @@ Named tuple containing:
   * `acov::Matrix{Float64}`
   * `lags::Vector{Float64}`
 
+<a id='NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv(eeg; d)
+```
+
+Calculate temporal envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=32`: distance between peeks in samples
+
+**Returns**
+
+  * `tenv::Array{Float64, 3}`
+
 
 <a id='EEG-plots'></a>
 
@@ -5903,6 +5923,26 @@ Calculate SNR of `signal`.
 **Source**
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
+
+<a id='NeuroJ.s_findpeaks-Tuple{AbstractArray}' href='#NeuroJ.s_findpeaks-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_findpeaks`** &mdash; *Method*.
+
+
+
+```julia
+s_findpeaks(signal; d)
+```
+
+Find peaks in `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `d::Int64=32`: distance between peeks in samples
+
+**Returns**
+
+  * `p_idx::Vector{Int64}`
 
 
 <a id='NSTIM'></a>

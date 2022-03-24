@@ -8,10 +8,12 @@ function neuroj_version()
     println("NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
     println("Imported packages:")
     required_packages = ["CSV",
+                         "CubicSplines",
                          "DataFrames",
                          "Distances",
                          "DSP",
                          "FFTW",
+                         "FindPeaks1D",
                          "HypothesisTests",
                          "InformationMeasures",
                          "Interpolations",

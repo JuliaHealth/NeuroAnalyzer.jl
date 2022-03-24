@@ -462,13 +462,13 @@ Return frequency limits for a `band` range.
 
 # Returns
 
-- `band_frequency::Tuple{Float64, Float64}`
+- `band_frequency::Tuple{Real, Real}`
 """
 function eeg_band(eeg; band::Symbol)
 
     band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
-    band === :total && (band_frequency = (0, (eeg_sr(eeg) / 2)))
+    band === :total && (band_frequency = (0.0, round(eeg_sr(eeg) / 2, digits=1)))
     band === :delta && (band_frequency = (0.5, 4.0))
     band === :theta && (band_frequency = (4.0, 8.0))
     band === :alpha && (band_frequency = (8.0, 13.0))
@@ -1296,4 +1296,39 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return (acov=acov, acov_lags=lags)
+end
+
+"""
+    eeg_tenv(eeg; d)
+
+Calculate temporal envelope of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `d::Int64=32`: distance between peeks in samples
+
+# Returns
+
+- `tenv::Array{Float64, 3}`
+"""
+function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
+    
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    tenv = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            p_idx = s_findpeaks(s, d=d)
+            pushfirst!(p_idx, 1)
+            push!(p_idx, length(s))
+            t = eeg.eeg_epochs_time[:, epoch]
+            model = CubicSpline(t[p_idx], s[p_idx])
+            tenv[idx, :, epoch] = model(t)
+        end
+    end
+    
+    return tenv
 end

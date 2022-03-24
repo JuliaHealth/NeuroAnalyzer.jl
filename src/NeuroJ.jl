@@ -1,10 +1,12 @@
 module NeuroJ
 
 using CSV
+using CubicSplines
 using DataFrames
 using Distances
 using DSP
 using FFTW
+using FindPeaks1D
 using HypothesisTests
 using InformationMeasures
 using Interpolations
@@ -115,6 +117,7 @@ export s_detect_epoch_rmsd
 export s_detect_epoch_euclid
 export s_detect_epoch_p2p
 export s_snr
+export s_findpeaks
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -253,6 +256,7 @@ export eeg_msci95
 export eeg_mean
 export eeg_difference
 export eeg_autocov
+export eeg_tenv
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

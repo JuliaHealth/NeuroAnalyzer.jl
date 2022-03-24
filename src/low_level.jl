@@ -1279,7 +1279,7 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
 - `signal::AbstractArray`
 - `fs::Int64`: sampling rate
-- `f::Tuple`: lower and upper frequency bounds
+- `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
 # Returns
 
@@ -2541,4 +2541,25 @@ function s_snr(signal::AbstractArray)
     snr = mean(signal) / std(signal)
 
     return snr
+end
+
+"""
+    s_findpeaks(signal; d)
+
+Find peaks in `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `d::Int64=32`: distance between peeks in samples
+
+# Returns
+
+- `p_idx::Vector{Int64}`
+
+"""
+function s_findpeaks(signal::AbstractArray; d::Int64=32)
+    p_idx, = findpeaks1d(signal, distance=d)
+    
+    return p_idx
 end

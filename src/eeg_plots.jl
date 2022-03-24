@@ -147,7 +147,7 @@ function _check_cidx(eeg::NeuroJ.EEG, c::Symbol, c_idx)
         (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
 end
-function _tuple_max(t::Union{Tuple{Int64, Int64}, Tuple{Float64, Float64}})
+function _tuple_max(t::Tuple{Real, Real})
     abs(t[1]) > abs(t[2]) && (t = (-abs(t[1]), abs(t[1])))
     abs(t[1]) < abs(t[2]) && (t = (-abs(t[2]), abs(t[2])))
     return t
@@ -4585,7 +4585,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, c
 
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
 
-    band_frq = Vector{Tuple{Float64, Float64}}()
+    band_frq = Vector{Tuple{Real, Real}}()
     for idx in 1:length(band)
         push!(band_frq, eeg_band(eeg, band=band[idx]))
     end

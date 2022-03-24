@@ -25,10 +25,12 @@ Julia version ≥ 1.0 is required. Julia [current stable version](https://julial
 
 The following packages are required:
 - CSV
+- CubicSplines
 - DataFrames
 - Distances
 - DSP
 - FFTW
+- FindPeaks1D
 - HypothesisTests
 - InformationMeasures
 - Interpolations
@@ -105,9 +107,8 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- temporal and spectral envelope
-- mean envelope
 - spectral envelope: peak frequencies
+- mean temporal and spectral envelope
 - eeg_plot() meta function
 - update tutorial.md
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
