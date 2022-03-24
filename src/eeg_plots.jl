@@ -3669,7 +3669,7 @@ Plot topographical view of `eeg` signal.
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 second
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `cb::Bool=false`: add color bars to plots
+- `cb::Bool=true`: draw color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
@@ -3678,7 +3678,7 @@ Plot topographical view of `eeg` signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", kwargs...)
+function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -3785,6 +3785,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
               s_interpolated,
               fill=:darktest,
               seriestype=:heatmap,
+              colorbar=cb,
               colorbar_title=cb_label,
               clims=(-1, 1),
               levels=10,
@@ -3794,6 +3795,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
               s_interpolated,
               fill=:darktest,
               seriestype=:contour,
+              colorbar=cb,
               colorbar_title=cb_label,
               clims=(-1, 1),
               levels=5,
@@ -4093,6 +4095,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 - `epoch::Int64`: epoch to display
 - `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+- `cb::Bool=false`: draw color bar
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
@@ -4101,7 +4104,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix{<:Real}, Symbol}, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", kwargs...)
+function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix{<:Real}, Symbol}, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4170,6 +4173,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
               s_interpolated,
               fill=:darktest,
               seriestype=:heatmap,
+              colorbar=cb,
               colorbar_title=cb_label,
               clims=(-1, 1),
               levels=10,
@@ -4179,6 +4183,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
               s_interpolated,
               fill=:darktest,
               seriestype=:contour,
+              colorbar=cb,
               colorbar_title=cb_label,
               clims=(-1, 1),
               levels=5,
@@ -4232,7 +4237,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 - `ic::Union{Vector{Int64}, AbstractRange}=0`: list of ICAs plot, default is all ICAs
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
 - `cb::Bool=false`: draw color bar
-- `cb_label::String=""`: color bar label
+- `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -4240,7 +4245,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="", title::String="", kwargs...)
+function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 

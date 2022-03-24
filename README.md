@@ -109,8 +109,7 @@ EEG:
     - update tutorial.md
     - check for wrong epoch number
     - raw component vs reconstructed signal (ica)
-    - plot ICAs/PCAs
-
+    - tile plot
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
 - split signal into frequency bands
