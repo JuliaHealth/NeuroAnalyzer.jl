@@ -92,6 +92,7 @@ neuroj_plugin_demo()
 ## Known bugs
 
 - ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
+- check for wrong epoch number in plots
 
 ## To do
 
@@ -107,18 +108,15 @@ EEG:
 - new plotting architecture:
     - eeg_plot() meta function
     - update tutorial.md
-    - check for wrong epoch number
-    - raw component vs reconstructed signal (ica)
-    - tile plot
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data
 - split signal into frequency bands
 - continuous wavelet transform (using ContinuousWavelets.jl)
 - spectrogram: mean temporal and spectral envelope
+- spectral envelope: peak frequencies
 - conectomes graph
 - coherence spectrum (y: relative amplitude, x: frequencies)
 - spectrogram: extract area of specific frequencies
-- spectral envelope: peak frequencies
 - CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
 - EEG bands: medial vs left vs right channels within each band
 - MEG data (fT instead of μV)
@@ -145,7 +143,7 @@ EEG:
 - automated cleaning of artifacts
 - bad channel marking / rejection
 - bad epoch marking / rejection
-- time-frequency analysis
+- time-frequency analysis, DPSS
 - signals/spectra comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats

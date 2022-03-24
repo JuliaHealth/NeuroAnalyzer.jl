@@ -524,7 +524,7 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]")
     ht_a = eeg_plot_histogram(eeg, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(signal)
-    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
+    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name")
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
@@ -859,7 +859,7 @@ function eeg_plot_component_idx_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3},
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal_psd(c,
+    p = plot_psd(c,
                         fs=fs,
                         labels=labels,
                         norm=norm,
@@ -939,7 +939,7 @@ function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64,
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal_psd_avg(c,
+    p = plot_psd_avg(c,
                             fs=fs,
                             labels=labels,
                             norm=norm,
@@ -1018,7 +1018,7 @@ function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Fl
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal_psd_butterfly(c,
+    p = plot_psd_butterfly(c,
                                   fs=fs,
                                   labels=labels,
                                   norm=norm,
@@ -1343,7 +1343,7 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg_avg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(s_normalized_m)
-    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
+    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         if collect(channel[1]:channel[end]) == channel
             channel_list = string(channel[1]) * ":" * string(channel[end])
@@ -1745,7 +1745,7 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(s_normalized_m)
-    ht_p = signal_plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
+    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
     if head == true
         if collect(channel[1]:channel[end]) == channel
             channel_list = string(channel[1]) * ":" * string(channel[end])
@@ -1835,7 +1835,7 @@ function eeg_plot_component_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3
 end
 
 """
-    plot_signal_psd(signal; <keyword arguments>)
+    plot_psd(signal; <keyword arguments>)
 
 Plot `signal` channel power spectrum density.
 
@@ -1854,7 +1854,7 @@ Plot `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", kwargs...)
+function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
@@ -1884,7 +1884,7 @@ function plot_signal_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, frq
 end
 
 """
-    plot_signal_psd_avg(signal; <keyword arguments>)
+    plot_psd_avg(signal; <keyword arguments>)
 
 Plot `signal` channels power spectrum density: mean and ±95% CI.
 
@@ -1904,7 +1904,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
@@ -1962,7 +1962,7 @@ function plot_signal_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true
 end
 
 """
-    plot_signal_psd_butterfly(signal; <keyword arguments>)
+    plot_psd_butterfly(signal; <keyword arguments>)
 
 Butterfly plot of `signal` channels power spectrum density.
 
@@ -1982,7 +1982,7 @@ Butterfly plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
@@ -2109,7 +2109,7 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = plot_signal_psd(signal,
+    p = plot_psd(signal,
                         fs=fs,
                         labels=labels,
                         norm=norm,
@@ -2209,7 +2209,7 @@ function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "PSD averaged with 95%CI\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = plot_signal_psd_avg(signal,
+    p = plot_psd_avg(signal,
                             fs=fs,
                             labels=labels,
                             norm=norm,
@@ -2307,7 +2307,7 @@ function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abst
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = plot_signal_psd_butterfly(signal,
+    p = plot_psd_butterfly(signal,
                                   fs=fs,
                                   labels=labels,
                                   norm=norm,
@@ -2374,7 +2374,7 @@ function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Sym
 
     c = c[channel, :, epoch]
 
-    p = plot_signal_psd(c,
+    p = plot_psd(c,
                         fs=fs,
                         labels=labels,
                         norm=norm,
@@ -2440,7 +2440,7 @@ function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3},
     fs = eeg_sr(eeg)
     c = c[channel, :, epoch]
 
-    p = plot_signal_psd_avg(c,
+    p = plot_psd_avg(c,
                             fs=fs,
                             labels=labels,
                             norm=norm,
@@ -2506,7 +2506,7 @@ function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float6
     fs = eeg_sr(eeg)
     c = c[channel, :, epoch]
 
-    p = plot_signal_psd_butterfly(c,
+    p = plot_psd_butterfly(c,
                                   fs=fs,
                                   labels=labels,
                                   norm=norm,
@@ -2543,7 +2543,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
+function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2683,7 +2683,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     title == "" && (title = "Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
     if length(channel) == 1
-        p = signal_plot_spectrogram(signal,
+        p = plot_spectrogram(signal,
                                     fs=fs,
                                     offset=offset,
                                     norm=norm,
@@ -2811,7 +2811,7 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "Averaged spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = signal_plot_spectrogram(signal,
+    p = plot_spectrogram(signal,
                                 fs=fs,
                                 offset=offset,
                                 norm=norm,
@@ -2897,7 +2897,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
     c = c[channel, :, epoch]
 
     if length(channel) == 1
-        p = signal_plot_spectrogram(c,
+        p = plot_spectrogram(c,
                                     fs=fs,
                                     offset=0,
                                     norm=norm,
@@ -3018,7 +3018,7 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "Averaged component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = signal_plot_spectrogram(c,
+    p = plot_spectrogram(c,
                                 fs=fs,
                                 offset=offset,
                                 norm=norm,
@@ -3107,7 +3107,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
     c = c[c_idx, :, epoch]
 
     if length(c_idx) == 1
-        p = signal_plot_spectrogram(c,
+        p = plot_spectrogram(c,
                                     fs=fs,
                                     offset=0,
                                     norm=norm,
@@ -3209,7 +3209,7 @@ function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{
 
     c = vec(mean(c[c_idx, :, epoch], dims=1))
 
-    p = signal_plot_spectrogram(c,
+    p = plot_spectrogram(c,
                                 fs=fs,
                                 norm=norm,
                                 frq_lim=frq_lim,
@@ -3437,7 +3437,7 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
 end
 
 """
-    signal_plot_histogram(signal; <keyword arguments>)
+    plot_histogram(signal; <keyword arguments>)
 
 Plot histogram of `signal`.
 
@@ -3455,7 +3455,7 @@ Plot histogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     type === :kd && (type = :density)
 
@@ -3486,7 +3486,7 @@ function signal_plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label
 end
 
 """
-    signal_plot_histogram(signal; <keyword arguments>)
+    plot_histogram(signal; <keyword arguments>)
 
 Plot histogram of `signal`.
 
@@ -3504,7 +3504,7 @@ Plot histogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function signal_plot_histogram(signal::Matrix{Float64}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
+function plot_histogram(signal::Matrix{Float64}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", kwargs...)
 
     channel_n = size(signal, 1)
 
@@ -3516,7 +3516,7 @@ function signal_plot_histogram(signal::Matrix{Float64}; type::Symbol=:hist, labe
     # plot channels
     p = []
     for idx in 1:channel_n
-        push!(p, signal_plot_histogram(signal[idx, :],
+        push!(p, plot_histogram(signal[idx, :],
                                        type=type,
                                        label="",
                                        xlabel=xlabel,
@@ -3593,7 +3593,7 @@ function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1,
 
     signal = vec(eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch])
 
-    p = signal_plot_histogram(signal,
+    p = plot_histogram(signal,
                               type=type,
                               labels=label,
                               xlabel=xlabel,
@@ -4248,7 +4248,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
 
@@ -4274,13 +4274,9 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
 
     p_ica = []
-    length(ic) <= 10 && (l_row = 2)
-    length(ic) > 10 && (l_row = 4)
-
     title_tmp = title
 
     for idx in 1:length(ic)
-
         ic_v = setdiff(1:size(ica_mw, 2), idx)
         s_reconstructed = s_ica_reconstruct(eeg.eeg_signals, ic=ica, ic_mw=ica_mw, ic_v=ic_v)
         s_non_interpolated = s_reconstructed[:, (1 + offset):(offset + len), epoch]
@@ -4389,18 +4385,42 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         push!(p_ica, p)
     end
 
-    l = (l_row, ceil(Int64, length(ic) / l_row))
-
-    # fill remaining tiles with empty plots
-    for idx in (length(ic) + 1):l[1]*l[2]
-        push!(p_ica, plot(border=:none, title=""))
-    end
-
-    p = plot!(p_ica..., layout=l, size=(l[2] * 800, l[1] * 800))
+    p = eeg_plot_tile(p_ica)
 
     plot(p)
 
     return p
+end
+
+"""
+    eeg_plot_tile(p)
+
+Plot vector of plots `p` as tiles.
+
+# Arguments
+
+- `p::Vector{Any}`: vector of plots
+- `w::Int64=800`: single plot width (px)
+- `h::Int64=800`: single plot height (px)
+- `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
+# Returns
+
+- `p_tiled::Plots.Plot{Plots.GRBackend}`
+
+"""
+function eeg_plot_tile(p::Vector{Any}, w::Int64=800, h::Int64=800, rows::Int64=2)
+    length(p) > 10 && (rows *= 2)
+
+    l = (rows, ceil(Int64, length(p) / rows))
+
+    # fill remaining tiles with empty plots
+    for idx in (length(p) + 1):l[1]*l[2]
+        push!(p, plot(border=:none, title=""))
+    end
+
+    p_tiled = plot!(p..., layout=l, size=(l[2] * w, l[1] * h))
+
+    return p_tiled
 end
 
 """
