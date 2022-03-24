@@ -490,12 +490,12 @@ eeg_plot_save(p, file_name="images/edf_avg.png")
 
 ```julia
 p = eeg_plot_signal_butterfly(edf)
-eeg_save_plot(p, file_name="images/edf_butterfly_simple.pdf")
-p = eeg_plot_signal_ butterfly_details(edf)
-eeg_save_plot(p, file_name="images/edf_butterfly.pdf")
+eeg_plot_save(p, file_name="images/edf_butterfly_simple.png")
+p = eeg_plot_signal_butterfly_details(edf)
+eeg_plot_save(p, file_name="images/edf_butterfly.png")
 ```
 
-![edf_avg](images/edf_butterfy_simple.png)
+![edf_avg](images/edf_butterfly_simple.png)
 
 ![edf_avg](images/edf_butterfly.png)
 
@@ -518,7 +518,7 @@ eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
 
 Plot band power:
 ```julia
-p = eeg_plot_band(edf, channel=1, type=:abs)
+p = eeg_plot_bands(edf, channel=1, type=:abs)
 eeg_plot_save(p, file_name="images/edf_bands.png")
 ```
 
@@ -526,7 +526,7 @@ eeg_plot_save(p, file_name="images/edf_bands.png")
 
 Plot spectrogram:
 ```julia
-p = eeg_plot_spectrogram(edf, channel=9, norm=true)
+p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true)
 eeg_plot_save(p, file_name="images/edf_spec1.png")
 ```
 
@@ -534,7 +534,7 @@ eeg_plot_save(p, file_name="images/edf_spec1.png")
 
 Plot multi-channel spectrogram:
 ```julia
-p = eeg_plot_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=(0, 50))
+p = eeg_plot_signal_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=(0, 50))
 eeg_plot_save(p, file_name="images/edf_spec2.png")
 ```
 
@@ -542,7 +542,7 @@ eeg_plot_save(p, file_name="images/edf_spec2.png")
 
 Plot PSD:
 ```julia
-p = eeg_plot_psd(edf, average=true, norm=true)
+p = eeg_plot_signal_psd(edf, average=true, norm=true, channel=1)
 eeg_plot_save(p, file_name="images/edf_psd.png")
 ```
 
@@ -550,7 +550,7 @@ eeg_plot_save(p, file_name="images/edf_psd.png")
 
 Topographical plots:
 ```julia
-p = eeg_plot_topo(edf, offset=1, len=2560, frq_lim=(0, 20))
+p = eeg_plot_signal_topo(edf, offset=1, len=2560, frq_lim=(0, 20))
 eeg_plot_save(p, file_name="images/edf_amp.png")
 ```
 
@@ -558,7 +558,10 @@ eeg_plot_save(p, file_name="images/edf_amp.png")
 
 Plot ICA components:
 ```julia
-p = eeg_plot_topo(edf, offset=2560, c=:ica, c_idx=1:8)
+ic, icm = eeg_ica(edf, n=16, tol=0.99)
+eeg_add_component!(edf, c=:ica, v=ic)
+eeg_add_component!(edf, c=:ica_mw, v=icm)
+p = eeg_plot_ica_topo(edf, epoch=1, len=256, ic=1:8)
 eeg_plot_save(p, file_name="images/edf_ica_1_8.png")
 ```
 
@@ -566,16 +569,12 @@ eeg_plot_save(p, file_name="images/edf_ica_1_8.png")
 
 Plot alpha band power:
 ```julia
-p = eeg_plot_topo(edf, offset=2560, len=2560, c=:power, c_idx=eeg_band(edf, band=:alpha))
+alpha_power = eeg_band_power(edf, f=eeg_band(edf, band=:alpha))
+p = eeg_plot_mcomponent_topo(edf, epoch=1, c=alpha_power)
 eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 ```
 
 ![edf_topo :power](images/edf_alpha_topo.png)
-
-Plot PCA components:
-```julia
-eeg_plot_topo(edf, offset=2560, len=2560, c=:pca)
-```
 
 Plot covariance matrix:
 ```julia
@@ -597,14 +596,14 @@ eeg_plot_save(p, file_name="images/edf_autocov.png")
 
 Plot channels stats:
 ```julia
-e10 = eeg_epochs(edf, epoch_n=10)
+e10 = eeg_epochs(edf, epoch_n=10);
 c = eeg_channels_stats(e10)
 e = eeg_epochs_stats(e10)
 eeg_add_component!(e10, c=:channels_var, v=c[4])
 eeg_add_component!(e10, c=:epochs_var, v=e[4])
-p = eeg_plot_channels(e10, :channels_var, epoch=1, title="Channels variance\n[epoch: 1]")
+p = eeg_plot_channels(e10, c=:channels_var, epoch=1, title="Channels variance\n[epoch: 1]")
 eeg_plot_save(p, file_name="images/e10_channels.png")
-p = eeg_plot_epochs(e10, :epochs_var, title="Epochs variance")
+p = eeg_plot_epochs(e10, c=:epochs_var, title="Epochs variance")
 eeg_plot_save(p, file_name="images/e10_epochs.png")
 ```
 
