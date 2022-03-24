@@ -136,4 +136,10 @@ p = eeg_plot_component_spectrogram(e10, c=s, epoch=1, channel=1:10)
 p = eeg_plot_component_spectrogram_avg(e10, c=s, epoch=1, channel=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+e10=eeg_epochs(edf, epoch_len=10*256)
+ic, icm = eeg_ica(e10, n=16, tol=0.99)
+eeg_add_component!(e10, c=:ica, v=ic)
+eeg_add_component!(e10, c=:ica_mw, v=icm)
+p = eeg_plot_ica_topo(e10, epoch=1, offset=0, len=10, ic=1:10)
+
 true
