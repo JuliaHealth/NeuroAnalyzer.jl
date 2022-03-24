@@ -106,14 +106,10 @@ General:
 EEG:
 - new plotting architecture:
     - eeg_plot() meta function
-    - rewrite plotting functions to be more modular
     - update tutorial.md
-    - ICA weights topo
-    - wrong epoch number if epoch=0
-
-    eeg_plot_component_topo → single
-    eeg_plot_signal_topo_avg → multi-channel
-    eeg_plot_component_topo_avg → multiple (e.g. delta power per channel)
+    - check for wrong epoch number
+    - raw component vs reconstructed signal (ica)
+    - plot ICAs/PCAs
 
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
 - multi-trial data

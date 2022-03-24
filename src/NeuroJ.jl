@@ -306,7 +306,9 @@ export eeg_plot_component_spectrogram
 export eeg_plot_component_spectrogram_avg
 
 export eeg_plot_signal_topo
-export eeg_plot_component_topo
+export eeg_plot_acomponent_topo
+export eeg_plot_weights_topo
+export eeg_plot_mcomponent_topo
 
 export eeg_plot_covmatrix
 export eeg_plot_matrix
