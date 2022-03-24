@@ -310,6 +310,8 @@ export eeg_plot_acomponent_topo
 export eeg_plot_weights_topo
 export eeg_plot_mcomponent_topo
 
+export eeg_plot_ica_topo
+
 export eeg_plot_covmatrix
 export eeg_plot_matrix
 export signal_plot_histogram
