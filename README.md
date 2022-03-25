@@ -17,6 +17,7 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 ```
 using Pkg
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
+Pkg.instantiate()
 ```
 
 ## Requirements

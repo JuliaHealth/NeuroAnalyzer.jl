@@ -2668,7 +2668,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
 
     if length(channel) == 1
-        ylabel = "Amplitude [μV]"
+        ylabel = "Frequency [Hz]"
         channel_name = labels
         labels = [""]
         signal = vec(signal)

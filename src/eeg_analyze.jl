@@ -1310,13 +1310,16 @@ Calculate temporal envelope of `eeg`.
 
 # Returns
 
-- `tenv::Array{Float64, 3}`
+Named tuple containing:
+- `t_env::Array{Float64, 3}`: temporal envelope
+- `s_t::Vector{Float64}`: signal time
 """
 function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    tenv = similar(eeg.eeg_signals)
+    t_env = similar(eeg.eeg_signals)
+    s_t = eeg.eeg_epochs_time[:, 1]
 
     @inbounds @simd for epoch in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
@@ -1324,11 +1327,117 @@ function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
             p_idx = s_findpeaks(s, d=d)
             pushfirst!(p_idx, 1)
             push!(p_idx, length(s))
-            t = eeg.eeg_epochs_time[:, epoch]
-            model = CubicSpline(t[p_idx], s[p_idx])
-            tenv[idx, :, epoch] = model(t)
+            model = CubicSpline(s_t[p_idx], s[p_idx])
+            t_env[idx, :, epoch] = model(s_t)
+            t_env[idx, 1, epoch] = t_env[idx, 2, epoch]
         end
     end
     
-    return tenv
+    return (t_env=t_env, s_t=s_t)
+end
+
+"""
+    eeg_penv(eeg; d)
+
+Calculate power (in dB) envelope of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `d::Int64=32`: distance between peeks in samples
+
+# Returns
+
+Named tuple containing:
+- `psd_env::Array{Float64, 3}`: power spectrum envelope
+- `psd_env_frq::Vector{Float64}`: frequencies for each envelope
+"""
+function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
+    
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    psd_env = similar(eeg.eeg_signals)
+    fs = eeg_sr(eeg)
+
+    s_tmp = @view eeg.eeg_signals[1, :, 1]
+    psd_tmp = welch_pgram(s_tmp, 4*fs, fs=fs)
+    psd_env = zeros(channel_n, length(psd_tmp.freq), epoch_n)
+    frq = psd_tmp.freq
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+            psd = welch_pgram(s, 4*fs, fs=fs)
+            psd_pow = pow2db.(psd.power)
+            p_idx = s_findpeaks(psd_pow, d=d)
+            pushfirst!(p_idx, 1)
+            push!(p_idx, length(psd_pow))
+            model = CubicSpline(psd.freq[p_idx], psd_pow[p_idx])
+            psd_env[idx, :, epoch] = model(psd.freq)
+            psd_env[idx, 1, epoch] = psd_env[idx, 2, epoch]
+        end
+    end
+    
+    return (psd_env=psd_env, psd_env_frq=frq)
+end
+
+"""
+    eeg_senv(eeg; d)
+
+Calculate spectral envelope of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `d::Int64=32`: distance between peeks in samples
+
+# Returns
+
+Named tuple containing:
+- `senv_sp::Array{Float64, 3}`: spectral envelope
+- `sp_t::Vector{FLoat64}`: spectrogram time
+"""
+function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
+    
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
+    senv_s = similar(eeg.eeg_signals)
+    
+    s_tmp = @view eeg.eeg_signals[1, :, 1]
+    nfft = length(s_tmp)
+    interval = fs
+    overlap = round(Int64, fs * 0.85)
+    spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    sp_t = spec_tmp.time
+    senv_sp = zeros(channel_n, length(sp_t), epoch_n)
+
+    @inbounds @simd for epoch in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch]
+
+            spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+            s_p = pow2db.(spec.power)
+            s_frq = Vector(spec.freq)
+
+            f_idx = zeros(length(spec.time))
+            m = maximum(s_p, dims=1)
+
+            # at 95% CI
+
+            for idx2 in 1:length(m)
+                f_idx[idx2] = s_frq[vsearch(m[idx2], s_p[:, idx2])]
+            end
+            p_idx = s_findpeaks(f_idx, d=d)
+            pushfirst!(p_idx, 1)
+            push!(p_idx, length(spec.time))
+            
+            println(length(p_idx))
+
+            model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
+            senv_sp[idx, :, epoch] = model(sp_t)
+            senv_sp[idx, 1, epoch] = senv_sp[idx, 2, epoch]
+        end
+    end
+    
+    return (senv_sp=senv_sp, sp_t=sp_t)
 end

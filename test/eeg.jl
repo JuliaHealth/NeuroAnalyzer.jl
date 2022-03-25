@@ -226,6 +226,9 @@ snr = eeg_snr(edf)
 edf1 = eeg_epochs_time(edf, ts=-10.0)
 edf1.eeg_epochs_time[1, 1] == -10.0
 
-@test size(eeg_tenv(edf)) == (19, 156672, 1)
+e10 = eeg_epochs(edf, epoch_len=10*256)
+@test size(eeg_tenv(e10)[1]) == (19, 2560, 61)
+@test size(eeg_penv(e10)[1]) == (19, 513, 61)
+@test size(eeg_senv(e10)[1]) == (19, 156672, 61)
 
 true

@@ -13,15 +13,15 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 
 # Arguments
 
-- `start::Union{Int64, Float64}`
-- `stop::Union{Int64, Float64}`
+- `start::Real`
+- `stop::Real`
 - `length::Int64`
 
 # Returns
 
 - `range::Number`
 """
-function linspace(start::Union{Int64, Float64}, stop::Union{Int64, Float64}, length::Int64)
+function linspace(start::Real, stop::Real, length::Int64)
 
     return collect(range(start, stop, length))
 end
@@ -33,15 +33,15 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 
 # Arguments
 
-- `start::Union{Int64, Float64}`
-- `stop::Union{Int64, Float64}`
+- `start::Real`
+- `stop::Real`
 - `length::Int64`
 
 # Returns
 
 - `range::Number`
 """
-function logspace(start::Union{Int64, Float64}, stop::Union{Int64, Float64}, length::Int64)
+function logspace(start::Real, stop::Real, length::Int64)
 
     return collect(exp10.(range(start, stop, length)))
 end
@@ -83,16 +83,16 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 # Arguments
 
-- `y::Union{Int64, Float64}`
-- `x::Union{Vector{Int64}, Vector{Float64}}
+- `y::Real`
+- `x::Vector{<:Real}
 - `return_distance::Bool`
 
 # Returns
 
 - `y_idx::Int64`
--` y_dist::Union{Int64, Float64}`
+-` y_dist::Real`
 """
-function vsearch(y::Union{Int64, Float64}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance::Bool=false)
+function vsearch(y::Real, x::Vector{<:Real}; return_distance::Bool=false)
 
     y_dist, y_idx = findmin(abs.(x .- y))
 
@@ -107,16 +107,16 @@ Return the positions of the `y` vector in the vector `x`.
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}}`
-- `y::Union{Vector{Int64}, Vector{Float64}}
+- `x::Vector{<:Real}`
+- `y::Vector{<:Real}
 - `return_distance::Bool`
 
 # Returns
 
 - `y_idx::Int64`
-- `y_dist::Union{Int64, Float64}`
+- `y_dist::Real`
 """
-function vsearch(y::Union{Vector{Int64}, Vector{Float64}}, x::Union{Vector{Int64}, Vector{Float64}}; return_distance=false)
+function vsearch(y::Vector{<:Real}, x::Vector{<:Real}; return_distance=false)
 
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
@@ -138,15 +138,15 @@ Convert cartographic coordinates `x` and `y` to polar.
 
 # Arguments
 
-- `x::Union{Int64, Float64}`
-- `y::Union{Int64, Float64}`
+- `x::Real`
+- `y::Real`
 
 # Returns
 
 - `phi::Float64`
 - `theta::Float64`
 """
-function cart2pol(x::Union{Int64, Float64}, y::Union{Int64, Float64})
+function cart2pol(x::Real, y::Real)
 
     return hypot(x, y), atan(y, x)
 end
@@ -244,13 +244,13 @@ If H < 0.2 then the vector `x` is symmetrical.
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}}`
+- `x::Vector{<:Real}`
 
 # Returns
 
 - `h::Float64`
 """
-function hildebrand_rule(x::Union{Vector{Int64}, Vector{Float64}})
+function hildebrand_rule(x::Vector{<:Real})
 
     return (mean(x) - median(x)) ./ std(x)
 end
@@ -268,7 +268,7 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 
 - `j::Float64`
 """
-function jaccard_similarity(x::Union{Vector{Int64}, Vector{Float64}}, y::Union{Vector{Int64}, Vector{Float64}})
+function jaccard_similarity(x::Vector{<:Real}, y::Vector{<:Real})
 
     i = length(intersect(x, y))
     u = length(x) + length(y) - i
@@ -352,14 +352,14 @@ Splits the vector `x` into `n`-long pieces.
 
 # Argument
 
-- `x::Union{Vector{Int64}, Vector{Float64}}`
+- `x::Vector{<:Real}`
  - `n::Int64`
 
 # Returns
 
-- `x::Vector{Union{Vector{Int64}, Vector{Float64}}}`
+- `x::Vector{Vector{<:Real}}`
 """
-function vsplit(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64=1)
+function vsplit(x::Vector{<:Real}, n::Int64=1)
 
     n < 0 && throw(ArgumentError("n must be positive."))
     length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
@@ -380,13 +380,13 @@ Calculate Root Mean Square of `signal`.
 
 # Arguments
 
-- `signal::Union{Vector{Int64}, Vector{Float64}}`
+- `signal::Vector{<:Real}`
 
 # Returns
 
 - rms::Float64`
 """
-function s_rms(signal::Union{Vector{Int64}, Vector{Float64}})
+function s_rms(signal::Vector{<:Real})
 
     return norm(signal) / sqrt(length(signal))
 end
@@ -398,16 +398,16 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 # Arguments
 
-- `f::Union{Int64, Float64}`
-- `t::Union{Vector{Int64}, Vector{Float64}}`
-- `a::Union{Int64, Float64}`
-- `p::Union{Int64, Float64}`
+- `f::Real`
+- `t::Vector{<:Real}`
+- `a::Real`
+- `p::Real`
 
 # Returns
 
 - sine::Vector{Float64}`
 """
-function generate_sine(f::Union{Int64, Float64}, t::Union{Vector{Int64}, Vector{Float64}}, a::Union{Int64, Float64}=1, p::Union{Int64, Float64}=0)
+function generate_sine(f::Real, t::Vector{<:Real}, a::Real=1, p::Real=0)
 
     return @. a * sin(2 * pi * f * t + p)
 end
@@ -419,14 +419,14 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 # Arguments
 
-- `t::Union{Vector{Int64}, Vector{Float64}, AbstractRange}`
+- `t::Vector{<:Real}, AbstractRange}`
 
 # Returns
 
 - `hz::Vector{Float64}
 - `nyquist_freq::Float64`
 """
-function s_freqs(t::Union{Vector{Int64}, Vector{Float64}, AbstractRange})
+function s_freqs(t::Union{Vector{<:Real}, AbstractRange})
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
@@ -452,14 +452,14 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 # Arguments
 
 - `signal::Vector{Float64}`
-- `fs::Union{Int64, Float64}`
+- `fs::Real`
 
 # Returns
 
 - `hz::Vector{Float64}
 - `nyquist_freq::Float64`
 """
-function s_freqs(signal::Vector{Float64}, fs::Union{Int64, Float64})
+function s_freqs(signal::Vector{Float64}, fs::Real)
 
     fs < 0 && throw(ArgumentError("Sampling rate must be >0 Hz."))
 
@@ -553,15 +553,15 @@ Pad the vector `x` with `n` zeros.
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}}`
+- `x::Vector{<:Real}`
 - `n::Int64`
 - `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 # Returns
 
-- `v_pad::Union{Vector{Int64}, Vector{Float64}}`
+- `v_pad::Vector{<:Real}`
 """
-function pad0(x::Union{Vector{Int64}, Vector{Float64}}, n::Int64, sym::Bool=false)
+function pad0(x::Vector{<:Real}, n::Int64, sym::Bool=false)
 
     n < 1 && throw(ArgumentError("n must be positive."))
 
@@ -577,13 +577,13 @@ Convert frequency `f` in Hz to rad/s.
 
 # Arguments
 
-- `f::Union{Int64, Float64}`
+- `f::Real`
 
 # Returns
 
 - `f_rads::Float64`
 """
-function hz2rads(f::Union{Int64, Float64})
+function hz2rads(f::Real)
 
     return 2 * pi * f
 end
@@ -595,13 +595,13 @@ Convert frequency `f` in rad/s to Hz.
 
 # Arguments
 
-- `f::Union{Int64, Float64}`
+- `f::Real`
 
 # Returns
 
 - `f_rads::Float64`
 """
-function rads2hz(f::Union{Int64, Float64})
+function rads2hz(f::Real)
 
     return f / 2 * pi
 end
@@ -613,13 +613,13 @@ Calculate Z-scores for each value of the vector `x`.
 
 # Arguments
 
-- `x::Union{Vector{Int64}, Vector{Float64}}`
+- `x::Vector{<:Real}`
 
 # Returns
 
 - `z_score::Vector{Float64}`
 """
-function z_score(x::Union{Vector{Int64}, Vector{Float64}})
+function z_score(x::Vector{<:Real})
 
     return (x .- mean(x)) ./ std(x)
 end
@@ -686,14 +686,14 @@ Generate normalized or unnormalized sinc function.
 # Arguments
 
 - `t::AbstractRange=-2:0.01:2`: time
-- `f::Union{Int64, Float64}=10.0`: frequency
-- `peak::Union{Int64, Float64}=0`: sinc peak time
+- `f::Real=10.0`: frequency
+- `peak::Real=0`: sinc peak time
 - `norm::Bool=true`: generate normalzied function
 # Returns
 
 - `sinc::Vector{Float64}
 """
-function generate_sinc(t::AbstractRange=-2:0.01:2; f::Union{Int64, Float64}=1, peak::Union{Int64, Float64}=0, norm::Bool=true)
+function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
     norm == true && (y_sinc = @. sin(2 * pi * f * (t - peak)) / (pi * (t - peak)))
     norm == false && (y_sinc = @. sin(2 * f * (t - peak)) / (t - peak))
@@ -711,8 +711,8 @@ Generate Morlet wavelet.
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `wt::Union{Int64, Float64}`: length = -wt:1/fs:wt
-- `wf::Union{Int64, Float64}`: frequency
+- `wt::Real`: length = -wt:1/fs:wt
+- `wf::Real`: frequency
 - `ncyc::Int64=5`: number of cycles
 - `complex::Bool=false`: generate complex Morlet
 
@@ -720,7 +720,7 @@ Generate Morlet wavelet.
 
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function generate_morlet(fs::Int64, wt::Union{Int64, Float64}, wf::Union{Int64, Float64}; ncyc::Int64=5, complex::Bool=false)
+function generate_morlet(fs::Int64, wt::Real, wf::Real; ncyc::Int64=5, complex::Bool=false)
 
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
@@ -740,16 +740,16 @@ Generate Gaussian wave.
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `gt::Union{Int64, Float64}`: length = 0:1/fs:gt
-- `gw::Union{Int64, Float64}=1`: width
-- `pt::Union{Int64, Float64}=0`: peak time
-- `pa::Union{Int64, Float64}=1`: peak amp
+- `gt::Real`: length = 0:1/fs:gt
+- `gw::Real=1`: width
+- `pt::Real=0`: peak time
+- `pa::Real=1`: peak amp
 - 
 # Returns
 
 - `gaussian::Vector{Float64}`
 """
-function generate_gaussian(fs::Int64, gt::Union{Int64, Float64}, gw::Union{Int64, Float64}=1, pt::Union{Int64, Float64}=0, pa::Union{Int64, Float64}=1.0)
+function generate_gaussian(fs::Int64, gt::Real, gw::Real=1, pt::Real=0, pa::Real=1.0)
 
     t = -gt:1/fs:gt
     g = @. pa * exp(-(t - pt)^2 / gw)
@@ -1309,13 +1309,13 @@ Taper the `signal` with `taper`.
 # Arguments
 
 - `signal::AbstractArray`
-- `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
-function s_taper(signal::AbstractArray; taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function s_taper(signal::AbstractArray; taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     length(taper) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
     s_tapered = signal .* taper
@@ -1336,14 +1336,14 @@ Perform piecewise detrending of `eeg`.
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
     - `:poly`: polynomial of `order` is subtracted
     - `:loess`: fit and subtract loess approximation
-- `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+- `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64=0.5`: smoothing of loess
 
 # Returns
 - `s_det::Vector{Float64}`
 """
-function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)
+function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
 
     type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
 
@@ -1578,13 +1578,13 @@ Performs convolution in the time domain between `signal` and `kernel`.
 # Arguments
 
 - `signal::AbstractArray`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function s_tconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     signal = Vector(signal)
     s_conv = conv(signal, kernel)
@@ -1624,18 +1624,18 @@ Filter `signal`.
     - `:bs`: band stop
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `order::Int64=8`: filter order
-- `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-- `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `d::Int64=1`: window length for mean average and median average filter
-- `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+- `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, dir::Symbol=:twopass, d::Int64=1, t::Union{Int64, Float64}=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{Float64}, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
@@ -2193,13 +2193,13 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 # Arguments
 
 - `signal::AbstractArray`
-- `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractArray; kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}})
+function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     n_signal = length(signal)
     n_kernel = length(kernel)
