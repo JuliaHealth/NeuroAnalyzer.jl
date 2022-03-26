@@ -257,8 +257,14 @@ export eeg_mean
 export eeg_difference
 export eeg_autocov
 export eeg_tenv
+export eeg_tenv_mean
+export eeg_tenv_median
 export eeg_penv
+export eeg_penv_mean
+export eeg_penv_median
 export eeg_senv
+export eeg_senv_mean
+export eeg_senv_median
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

@@ -108,8 +108,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- spectral envelope: peak frequencies
-- mean temporal and spectral envelope
+- eeg_plot_env() function
 - eeg_plot() meta function
 - update tutorial.md
 - complex kernel convolution: plot magnitude and phase of the convoluted signal

@@ -228,7 +228,15 @@ edf1.eeg_epochs_time[1, 1] == -10.0
 
 e10 = eeg_epochs(edf, epoch_len=10*256)
 @test size(eeg_tenv(e10)[1]) == (19, 2560, 61)
+@test size(eeg_tenv_mean(e10, dims=1)[1]) == (2560, 61)
+@test size(eeg_tenv_median(e10, dims=1)[1]) == (2560, 61)
+
 @test size(eeg_penv(e10)[1]) == (19, 513, 61)
-@test size(eeg_senv(e10)[1]) == (19, 156672, 61)
+@test size(eeg_penv_mean(e10, dims=1)[1]) == (513, 61)
+@test size(eeg_penv_median(e10, dims=1)[1]) == (513, 61)
+
+@test size(eeg_senv(e10)[1]) == (19, 61, 61)
+@test size(eeg_senv_mean(e10, dims=1)[1]) == (61, 61)
+@test size(eeg_senv_median(e10, dims=1)[1]) == (61, 61)
 
 true

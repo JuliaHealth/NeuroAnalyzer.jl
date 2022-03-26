@@ -821,7 +821,7 @@ Plot PSD of indexed `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -830,6 +830,8 @@ Plot PSD of indexed `eeg` external or embedded component.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_idx_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -888,7 +890,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -897,6 +899,8 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -968,7 +972,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -977,6 +981,8 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -1846,7 +1852,7 @@ Plot `signal` channel power spectrum density.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -1896,7 +1902,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -1904,7 +1910,9 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
@@ -1974,7 +1982,7 @@ Butterfly plot of `signal` channels power spectrum density.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -1982,7 +1990,9 @@ Butterfly plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
@@ -2044,7 +2054,7 @@ Plot `eeg` channels power spectrum density.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2052,7 +2062,9 @@ Plot `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2140,7 +2152,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2148,7 +2160,9 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
@@ -2240,7 +2254,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2248,7 +2262,9 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [μV^2/Hz]", title::String="", kwargs...)
+function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
@@ -2336,7 +2352,7 @@ Plot PSD of `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2345,6 +2361,8 @@ Plot PSD of `eeg` external or embedded component.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2403,7 +2421,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2412,6 +2430,8 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2469,7 +2489,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2478,6 +2498,8 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2852,7 +2874,7 @@ Plots spectrogram of `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -2861,6 +2883,8 @@ Plots spectrogram of `eeg` external or embedded component.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3058,8 +3082,8 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 - `c_idx::Int64`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `xlabel::String="Times [s]`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -3067,7 +3091,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3157,8 +3181,8 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
 - `kwargs`: optional arguments for plot() function
 
@@ -3166,7 +3190,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 

@@ -2209,7 +2209,7 @@ Return frequency limits for a `band` range.
 
 **Returns**
 
-  * `band_frequency::Tuple{Float64, Float64}`
+  * `band_frequency::Tuple{Real, Real}`
 
 <a id='NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_coherence`** &mdash; *Method*.
@@ -2713,11 +2713,216 @@ Calculate temporal envelope of `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `d::Int64=32`: distance between peeks in samples
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
-  * `tenv::Array{Float64, 3}`
+Named tuple containing:
+
+  * `t_env::Array{Float64, 3}`: temporal envelope
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv_mean(eeg; d)
+```
+
+Calculate temporal envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `t_env_m::Matrix{Float64}`: temporal envelope: mean
+  * `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv_median(eeg; d)
+```
+
+Calculate temporal envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `t_env_m::Matrix{Float64}`: temporal envelope: median
+  * `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv(eeg; d)
+```
+
+Calculate power (in dB) envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env::Array{Float64, 3}`: power spectrum envelope
+  * `p_env_frq::Vector{Float64}`: frequencies for each envelope
+
+<a id='NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv_mean(eeg; d)
+```
+
+Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: mean
+  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
+  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
+  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
+
+<a id='NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv_median(eeg; d)
+```
+
+Calculate power (in dB) envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: median
+  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
+  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
+  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
+
+<a id='NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv(eeg; d)
+```
+
+Calculate spectral (in dB) envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env::Array{Float64, 3}`: spectral envelope
+  * `s_env_t::Vector{Float64}`: spectrogram time
+
+<a id='NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv_mean(eeg; d)
+```
+
+Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `span::Float64=0.5`: smoothing of loess
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env_m::Array{Float64, 3}`: spectral envelope: mean
+  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
+  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
+  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
+
+<a id='NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv_median(eeg; d)
+```
+
+Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: average channels (dims = 1) or epochs (dims = 2)
+  * `span::Float64=0.5`: smoothing of loess
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env_m::Array{Float64, 3}`: spectral envelope: median
+  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
+  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
+  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 
 
 <a id='EEG-plots'></a>
@@ -2958,7 +3163,7 @@ Plot PSD of indexed `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -2986,7 +3191,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3014,7 +3219,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3270,7 +3475,7 @@ Plot `signal` channel power spectrum density.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3297,7 +3502,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3324,7 +3529,7 @@ Butterfly plot of `signal` channels power spectrum density.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3353,7 +3558,7 @@ Plot `eeg` channels power spectrum density.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3383,7 +3588,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3413,7 +3618,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3441,7 +3646,7 @@ Plot PSD of `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3469,7 +3674,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3497,7 +3702,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3610,7 +3815,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3667,8 +3872,8 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `c_idx::Int64`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `xlabel::String="Times [s]`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -3695,8 +3900,8 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [μV^2/Hz]"`: y-axis label
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -4233,8 +4438,8 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 
 **Arguments**
 
-  * `start::Union{Int64, Float64}`
-  * `stop::Union{Int64, Float64}`
+  * `start::Real`
+  * `stop::Real`
   * `length::Int64`
 
 **Returns**
@@ -4254,8 +4459,8 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 
 **Arguments**
 
-  * `start::Union{Int64, Float64}`
-  * `stop::Union{Int64, Float64}`
+  * `start::Real`
+  * `stop::Real`
   * `length::Int64`
 
 **Returns**
@@ -4294,15 +4499,15 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 **Arguments**
 
-  * `y::Union{Int64, Float64}`
-  * `x::Union{Vector{Int64}, Vector{Float64}}
+  * `y::Real`
+  * `x::Vector{<:Real}
   * `return_distance::Bool`
 
 **Returns**
 
   * `y_idx::Int64`
 
--`y_dist::Union{Int64, Float64}`
+-`y_dist::Real`
 
 <a id='NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
 **`NeuroJ.vsearch`** &mdash; *Method*.
@@ -4317,14 +4522,14 @@ Return the positions of the `y` vector in the vector `x`.
 
 **Arguments**
 
-  * `x::Union{Vector{Int64}, Vector{Float64}}`
-  * `y::Union{Vector{Int64}, Vector{Float64}}
+  * `x::Vector{<:Real}`
+  * `y::Vector{<:Real}
   * `return_distance::Bool`
 
 **Returns**
 
   * `y_idx::Int64`
-  * `y_dist::Union{Int64, Float64}`
+  * `y_dist::Real`
 
 <a id='NeuroJ.cart2pol-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.cart2pol-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
 **`NeuroJ.cart2pol`** &mdash; *Method*.
@@ -4339,8 +4544,8 @@ Convert cartographic coordinates `x` and `y` to polar.
 
 **Arguments**
 
-  * `x::Union{Int64, Float64}`
-  * `y::Union{Int64, Float64}`
+  * `x::Real`
+  * `y::Real`
 
 **Returns**
 
@@ -4432,7 +4637,7 @@ Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symm
 
 **Arguments**
 
-  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `x::Vector{<:Real}`
 
 **Returns**
 
@@ -4529,12 +4734,12 @@ Splits the vector `x` into `n`-long pieces.
 
 **Argument**
 
-  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `x::Vector{<:Real}`
   * `n::Int64`
 
 **Returns**
 
-  * `x::Vector{Union{Vector{Int64}, Vector{Float64}}}`
+  * `x::Vector{Vector{<:Real}}`
 
 <a id='NeuroJ.s_rms-Tuple{Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.s_rms-Tuple{Union{Vector{Float64}, Vector{Int64}}}'>#</a>
 **`NeuroJ.s_rms`** &mdash; *Method*.
@@ -4549,7 +4754,7 @@ Calculate Root Mean Square of `signal`.
 
 **Arguments**
 
-  * `signal::Union{Vector{Int64}, Vector{Float64}}`
+  * `signal::Vector{<:Real}`
 
 **Returns**
 
@@ -4568,10 +4773,10 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 **Arguments**
 
-  * `f::Union{Int64, Float64}`
-  * `t::Union{Vector{Int64}, Vector{Float64}}`
-  * `a::Union{Int64, Float64}`
-  * `p::Union{Int64, Float64}`
+  * `f::Real`
+  * `t::Vector{<:Real}`
+  * `a::Real`
+  * `p::Real`
 
 **Returns**
 
@@ -4590,7 +4795,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 **Arguments**
 
-  * `t::Union{Vector{Int64}, Vector{Float64}, AbstractRange}`
+  * `t::Vector{<:Real}, AbstractRange}`
 
 **Returns**
 
@@ -4611,7 +4816,7 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 **Arguments**
 
   * `signal::Vector{Float64}`
-  * `fs::Union{Int64, Float64}`
+  * `fs::Real`
 
 **Returns**
 
@@ -4674,13 +4879,13 @@ Pad the vector `x` with `n` zeros.
 
 **Arguments**
 
-  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `x::Vector{<:Real}`
   * `n::Int64`
   * `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 **Returns**
 
-  * `v_pad::Union{Vector{Int64}, Vector{Float64}}`
+  * `v_pad::Vector{<:Real}`
 
 <a id='NeuroJ.hz2rads-Tuple{Union{Float64, Int64}}' href='#NeuroJ.hz2rads-Tuple{Union{Float64, Int64}}'>#</a>
 **`NeuroJ.hz2rads`** &mdash; *Method*.
@@ -4695,7 +4900,7 @@ Convert frequency `f` in Hz to rad/s.
 
 **Arguments**
 
-  * `f::Union{Int64, Float64}`
+  * `f::Real`
 
 **Returns**
 
@@ -4714,7 +4919,7 @@ Convert frequency `f` in rad/s to Hz.
 
 **Arguments**
 
-  * `f::Union{Int64, Float64}`
+  * `f::Real`
 
 **Returns**
 
@@ -4733,7 +4938,7 @@ Calculate Z-scores for each value of the vector `x`.
 
 **Arguments**
 
-  * `x::Union{Vector{Int64}, Vector{Float64}}`
+  * `x::Vector{<:Real}`
 
 **Returns**
 
@@ -4810,8 +5015,8 @@ Generate normalized or unnormalized sinc function.
 **Arguments**
 
   * `t::AbstractRange=-2:0.01:2`: time
-  * `f::Union{Int64, Float64}=10.0`: frequency
-  * `peak::Union{Int64, Float64}=0`: sinc peak time
+  * `f::Real=10.0`: frequency
+  * `peak::Real=0`: sinc peak time
   * `norm::Bool=true`: generate normalzied function
 
 **Returns**
@@ -4832,8 +5037,8 @@ Generate Morlet wavelet.
 **Arguments**
 
   * `fs::Int64`: sampling rate
-  * `wt::Union{Int64, Float64}`: length = -wt:1/fs:wt
-  * `wf::Union{Int64, Float64}`: frequency
+  * `wt::Real`: length = -wt:1/fs:wt
+  * `wf::Real`: frequency
   * `ncyc::Int64=5`: number of cycles
   * `complex::Bool=false`: generate complex Morlet
 
@@ -4855,10 +5060,10 @@ Generate Gaussian wave.
 **Arguments**
 
   * `fs::Int64`: sampling rate
-  * `gt::Union{Int64, Float64}`: length = 0:1/fs:gt
-  * `gw::Union{Int64, Float64}=1`: width
-  * `pt::Union{Int64, Float64}=0`: peak time
-  * `pa::Union{Int64, Float64}=1`: peak amp
+  * `gt::Real`: length = 0:1/fs:gt
+  * `gw::Real=1`: width
+  * `pt::Real=0`: peak time
+  * `pa::Real=1`: peak amp
   * 
 
 **Returns**
@@ -5179,7 +5384,7 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
   * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
-  * `f::Tuple`: lower and upper frequency bounds
+  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
 **Returns**
 
@@ -5199,7 +5404,7 @@ Taper the `signal` with `taper`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `taper::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -5226,7 +5431,7 @@ Perform piecewise detrending of `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` is subtracted
       * `:loess`: fit and subtract loess approximation
-  * `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+  * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64=0.5`: smoothing of loess
 
@@ -5379,7 +5584,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -5417,11 +5622,11 @@ Filter `signal`.
       * `:bs`: band stop
   * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
   * `order::Int64=8`: filter order
-  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Union{Int64, Float64}`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 **Returns**
@@ -5730,7 +5935,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `kernel::Union{Vector{Int64}, Vector{Float64}, Vector{ComplexF64}}`
+  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -5797,8 +6002,8 @@ Calculate spectrogram of `signal`.
 
   * `signal::AbstractArray`
   * `fs::Int64`: sampling frequency
-  * `norm::Bool`: normalize powers to dB
-  * `demean::Bool`: demean signal prior to analysis
+  * `norm::Bool=true`: normalize powers to dB
+  * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
 

@@ -2314,8 +2314,8 @@ Calculate spectrogram of `signal`.
 
 - `signal::AbstractArray`
 - `fs::Int64`: sampling frequency
-- `norm::Bool`: normalize powers to dB
-- `demean::Bool`: demean signal prior to analysis
+- `norm::Bool=true`: normalize powers to dB
+- `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
 
