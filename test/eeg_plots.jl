@@ -143,4 +143,13 @@ eeg_add_component!(e10, c=:ica_mw, v=icm)
 p = eeg_plot_ica_topo(e10, epoch=1, offset=0, len=10, ic=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+p = eeg_plot_env(e10, type=:amp, epoch=1, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_env(e10, type=:amp, average=:mean, dims=3, epoch=1, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_env(e10, type=:power, average=:median, dims=2, epoch=1, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_env(e10, type=:spec, average=:mean, dims=1, epoch=1, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true

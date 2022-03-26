@@ -936,7 +936,6 @@ function eeg_invert_polarity!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int6
     return
 end
 
-
 """
     eeg_resample(eeg; new_sr)
 

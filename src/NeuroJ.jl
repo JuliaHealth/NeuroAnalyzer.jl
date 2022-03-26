@@ -310,6 +310,7 @@ export eeg_plot_signal_spectrogram_avg
 export eeg_plot_signal_topo
 export eeg_plot_tile
 export eeg_plot_weights_topo
+export eeg_plot_env
 export plot_bands
 export plot_histogram
 export plot_ica

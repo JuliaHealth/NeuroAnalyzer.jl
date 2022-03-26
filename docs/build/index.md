@@ -2736,16 +2736,16 @@ Calculate temporal envelope of `eeg`: mean and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
 Named tuple containing:
 
-  * `t_env_m::Matrix{Float64}`: temporal envelope: mean
-  * `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
-  * `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: mean
+  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
   * `s_t::Vector{Float64}`: signal time
 
 <a id='NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}'>#</a>
@@ -2762,16 +2762,16 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
 Named tuple containing:
 
-  * `t_env_m::Matrix{Float64}`: temporal envelope: median
-  * `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
-  * `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: median
+  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
   * `s_t::Vector{Float64}`: signal time
 
 <a id='NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}'>#</a>
@@ -2811,7 +2811,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
@@ -2886,7 +2886,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `span::Float64=0.5`: smoothing of loess
 
 **Returns**
@@ -2912,7 +2912,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: average channels (dims = 1) or epochs (dims = 2)
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `span::Float64=0.5`: smoothing of loess
 
 **Returns**
@@ -3725,7 +3725,7 @@ Plot spectrogram of `signal`.
 
   * `signal::Vector{<:Real}`
   * `fs::Int64`: sampling frequency
-  * `offset::Int64=0`: displayed segment offset in samples
+  * `offset::Float64`: displayed segment offset in seconds
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4400,7 +4400,7 @@ Plot filter response.
 
 
 ```julia
-eeg_plot_compose(p, l; <keyword arguments>)
+eeg_plot_compose(p; <keyword arguments>)
 ```
 
 Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
@@ -4417,6 +4417,36 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 **Returns**
 
   * `pc::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_env`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_env(eeg; <keyword arguments>)
+```
+
+Plot envelope of `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol`: envelope type: :amp (amplitude over time), :power (power over frequencies), :spec (frequencies over time)
+  * `average::Symbol`: averaging method: :no, :mean or :median
+  * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `epoch::Int64`: epoch number to display
+  * `channel::Int64`: channel to display
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
 
 
 <a id='Low-level-functions'></a>

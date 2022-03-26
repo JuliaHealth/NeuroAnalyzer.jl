@@ -802,6 +802,8 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
         end
     end
 
+    s_t .+= eeg.eeg_epochs_time[1]
+
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
 
@@ -1344,15 +1346,15 @@ Calculate temporal envelope of `eeg`: mean and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
 Named tuple containing:
-- `t_env_m::Matrix{Float64}`: temporal envelope: mean
-- `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
-- `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+- `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: mean
+- `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+- `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
 function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
@@ -1372,7 +1374,7 @@ function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_m = reshape(t_env_m, size(t_env_m, 2), size(t_env_m, 3))
         t_env_u = reshape(t_env_u, size(t_env_u, 2), size(t_env_u, 3))
         t_env_l = reshape(t_env_l, size(t_env_l, 2), size(t_env_l, 3))
-    else
+    elseif dims == 2
         t_env_m = mean(s_a, dims=3)
         s = std(s_a, dims=3) / sqrt(size(s_a, 2))
         t_env_u = t_env_m + 1.96 * s
@@ -1380,8 +1382,16 @@ function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_m = reshape(t_env_m, size(t_env_m, 1), size(t_env_m, 2))
         t_env_u = reshape(t_env_u, size(t_env_u, 1), size(t_env_u, 2))
         t_env_l = reshape(t_env_l, size(t_env_l, 1), size(t_env_l, 2))
+    else
+        t_env_m, t_env_u, t_env_l, _ = eeg_tenv_mean(eeg, dims=1, d=d)
+        t_env_m = mean(t_env_m, dims=2)
+        t_env_u = mean(t_env_u, dims=2)
+        t_env_l = mean(t_env_l, dims=2)
+        t_env_m = reshape(t_env_m, size(t_env_m, 1))
+        t_env_u = reshape(t_env_u, size(t_env_u, 1))
+        t_env_l = reshape(t_env_l, size(t_env_l, 1))
     end
-    
+
     return (t_env_m=t_env_m, t_env_u=t_env_u, t_env_l=t_env_l, s_t=s_t)
 end
 
@@ -1393,15 +1403,15 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
 Named tuple containing:
-- `t_env_m::Matrix{Float64}`: temporal envelope: median
-- `t_env_u::Matrix{Float64}`: temporal envelope: 95% CI upper bound
-- `t_env_l::Matrix{Float64}`: temporal envelope: 95% CI lower bound
+- `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: median
+- `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+- `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
 function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
@@ -1421,7 +1431,7 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_m = reshape(t_env_m, size(t_env_m, 2), size(t_env_m, 3))
         t_env_u = reshape(t_env_u, size(t_env_u, 2), size(t_env_u, 3))
         t_env_l = reshape(t_env_l, size(t_env_l, 2), size(t_env_l, 3))
-    else
+    elseif dims == 2
         t_env_m = median(s_a, dims=3)
         s = std(s_a, dims=3) / sqrt(size(s_a, 2))
         t_env_u = t_env_m + 1.57 * s
@@ -1429,8 +1439,16 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_m = reshape(t_env_m, size(t_env_m, 1), size(t_env_m, 2))
         t_env_u = reshape(t_env_u, size(t_env_u, 1), size(t_env_u, 2))
         t_env_l = reshape(t_env_l, size(t_env_l, 1), size(t_env_l, 2))
+    else
+        t_env_m, t_env_u, t_env_l, _ = eeg_tenv_median(eeg, dims=1, d=d)
+        t_env_m = median(t_env_m, dims=2)
+        t_env_u = median(t_env_u, dims=2)
+        t_env_l = median(t_env_l, dims=2)
+        t_env_m = reshape(t_env_m, size(t_env_m, 1))
+        t_env_u = reshape(t_env_u, size(t_env_u, 1))
+        t_env_l = reshape(t_env_l, size(t_env_l, 1))
     end
-    
+
     return (t_env_m=t_env_m, t_env_u=t_env_u, t_env_l=t_env_l, s_t=s_t)
 end
 
@@ -1491,7 +1509,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -1532,7 +1550,7 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
             p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
         end
-    else
+    elseif dims == 2
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
@@ -1551,6 +1569,14 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
             p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
         end
+    else
+        p_env_m, p_env_u, p_env_l, _ = eeg_penv_mean(eeg, dims=1, d=d)
+        p_env_m = mean(p_env_m, dims=2)
+        p_env_u = mean(p_env_u, dims=2)
+        p_env_l = mean(p_env_l, dims=2)
+        p_env_m = reshape(p_env_m, size(p_env_m, 1))
+        p_env_u = reshape(p_env_u, size(p_env_u, 1))
+        p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
     
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=s_f)
@@ -1605,7 +1631,7 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.57 * s
             p_env_l[:, idx] = @. p_env_m[:, idx] - 1.57 * s
         end
-    else
+    elseif dims == 2
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
@@ -1624,6 +1650,14 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.57 * s
             p_env_l[:, idx] = @. p_env_m[:, idx] - 1.57 * s
         end
+    else
+        p_env_m, p_env_u, p_env_l, _ = eeg_penv_median(eeg, dims=1, d=d)
+        p_env_m = median(p_env_m, dims=2)
+        p_env_u = median(p_env_u, dims=2)
+        p_env_l = median(p_env_l, dims=2)
+        p_env_m = reshape(p_env_m, size(p_env_m, 1))
+        p_env_u = reshape(p_env_u, size(p_env_u, 1))
+        p_env_l = reshape(p_env_l, size(p_env_l, 1))
     end
     
     return (p_env_m=p_env_m, p_env_u=p_env_u, p_env_l=p_env_l, p_env_frq=s_f)
@@ -1657,7 +1691,9 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
     interval = fs
     overlap = round(Int64, fs * 0.85)
     spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-    sp_t = spec_tmp.time
+    sp_t = collect(spec_tmp.time)
+    sp_t .+= eeg.eeg_epochs_time[1]
+
     s_env = zeros(channel_n, length(sp_t), epoch_n)
 
     @inbounds @simd for epoch in 1:epoch_n
@@ -1697,7 +1733,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: mean over channels (dims = 1) or epochs (dims = 2)
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `span::Float64=0.5`: smoothing of loess
 
 # Returns
@@ -1744,7 +1780,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
             s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.96 * s
             s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.96 * s
         end
-    else
+    elseif dims == 2
         m_sp = mean(s_p, dims=4)
         m = mean(m_sp, dims=1)
         s_env_m = zeros(length(s_t), channel_n)
@@ -1768,6 +1804,14 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
             s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.96 * s
             s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.96 * s
         end
+    else
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, span=span)
+        s_env_m = mean(s_env_m, dims=2)
+        s_env_u = mean(s_env_u, dims=2)
+        s_env_l = mean(s_env_l, dims=2)
+        s_env_m = reshape(s_env_m, size(s_env_m, 1))
+        s_env_u = reshape(s_env_u, size(s_env_u, 1))
+        s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
@@ -1781,7 +1825,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: average channels (dims = 1) or epochs (dims = 2)
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `span::Float64=0.5`: smoothing of loess
 
 # Returns
@@ -1828,7 +1872,7 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
             s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.57 * s
             s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.57 * s
         end
-    else
+    elseif dims == 2
         m_sp = mean(s_p, dims=4)
         m = mean(m_sp, dims=1)
         s_env_m = zeros(length(s_t), channel_n)
@@ -1852,6 +1896,14 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
             s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.57 * i
             s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.57 * i
         end
+    else
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, span=span)
+        s_env_m = median(s_env_m, dims=2)
+        s_env_u = median(s_env_u, dims=2)
+        s_env_l = median(s_env_l, dims=2)
+        s_env_m = reshape(s_env_m, size(s_env_m, 1))
+        s_env_u = reshape(s_env_u, size(s_env_u, 1))
+        s_env_l = reshape(s_env_l, size(s_env_l, 1))
     end
     
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)

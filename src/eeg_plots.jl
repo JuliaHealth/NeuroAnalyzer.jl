@@ -4,8 +4,8 @@
 #                              #
 ################################
 
-_xlims(t::Vector{Float64}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
-_xticks(t::Vector{Float64}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+_xlims(t::Vector{<:Real}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
+_xticks(t::Vector{<:Real}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
 _pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
 function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64)
     # select channels, default is all or def_chn
@@ -2543,7 +2543,6 @@ function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float6
     return p
 end
 
-
 """
     plot_spectrogram(signal; <keyword arguments>)
 
@@ -2553,7 +2552,7 @@ Plot spectrogram of `signal`.
 
 - `signal::Vector{<:Real}`
 - `fs::Int64`: sampling frequency
-- `offset::Int64=0`: displayed segment offset in samples
+- `offset::Real`: displayed segment offset in seconds
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="Time [s]"`: x-axis label
@@ -2565,7 +2564,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
+function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2577,7 +2576,7 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Int64=0, no
     overlap = round(Int64, fs * 0.85)
 
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-    t = collect(spec.time) .+ (offset / fs)
+    t = collect(spec.time) .+ offset
 
     if norm == false
         p = heatmap(t,
@@ -2704,16 +2703,18 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
+    offset = eeg.eeg_epochs_time[1]
+
     if length(channel) == 1
         p = plot_spectrogram(signal,
-                                    fs=fs,
-                                    offset=offset,
-                                    norm=norm,
-                                    xlabel=xlabel,
-                                    ylabel=ylabel,
-                                    frq_lim=frq_lim,
-                                    title=title;
-                                    kwargs...)
+                             fs=fs,
+                             offset=offset,
+                             norm=norm,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             frq_lim=frq_lim,
+                             title=title;
+                             kwargs...)
 
         # add epochs markers
         if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -2833,15 +2834,17 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "Averaged spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
+    offset = eeg.eeg_epochs_time[1]
+
     p = plot_spectrogram(signal,
-                                fs=fs,
-                                offset=offset,
-                                norm=norm,
-                                xlabel=xlabel,
-                                ylabel=ylabel,
-                                frq_lim=frq_lim,
-                                title=title;
-                                kwargs...)
+                         fs=fs,
+                         offset=offset,
+                         norm=norm,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         frq_lim=frq_lim,
+                         title=title;
+                         kwargs...)
 
     # add epochs markers
     if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -2919,17 +2922,18 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
     title == "" && (title = "Component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch, time window: $t_s1:$t_s2]")
 
     c = c[channel, :, epoch]
+    offset = eeg.eeg_epochs_time[1]
 
     if length(channel) == 1
         p = plot_spectrogram(c,
-                                    fs=fs,
-                                    offset=0,
-                                    norm=norm,
-                                    xlabel=xlabel,
-                                    ylabel=ylabel,
-                                    frq_lim=frq_lim,
-                                    title=title;
-                                    kwargs...)
+                             fs=fs,
+                             offset=0,
+                             norm=norm,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             frq_lim=frq_lim,
+                             title=title;
+                             kwargs...)
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
@@ -3042,15 +3046,17 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "Averaged component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
+    offset = eeg.eeg_epochs_time[1]
+
     p = plot_spectrogram(c,
-                                fs=fs,
-                                offset=offset,
-                                norm=norm,
-                                xlabel=xlabel,
-                                ylabel=ylabel,
-                                frq_lim=frq_lim,
-                                title=title;
-                                kwargs...)
+                         fs=fs,
+                         offset=offset,
+                         norm=norm,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         frq_lim=frq_lim,
+                         title=title;
+                         kwargs...)
 
     # add epochs markers
     if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -3130,16 +3136,18 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
 
     c = c[c_idx, :, epoch]
 
+    offset = eeg.eeg_epochs_time[1]
+
     if length(c_idx) == 1
         p = plot_spectrogram(c,
-                                    fs=fs,
-                                    offset=0,
-                                    norm=norm,
-                                    xlabel=xlabel,
-                                    ylabel=ylabel,
-                                    frq_lim=frq_lim,
-                                    title=title;
-                                    kwargs...)
+                             fs=fs,
+                             offset=offset,
+                             norm=norm,
+                             xlabel=xlabel,
+                             ylabel=ylabel,
+                             frq_lim=frq_lim,
+                             title=title;
+                             kwargs...)
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
@@ -3233,14 +3241,16 @@ function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{
 
     c = vec(mean(c[c_idx, :, epoch], dims=1))
 
+    offset = eeg.eeg_epochs_time[1]
+
     p = plot_spectrogram(c,
-                                fs=fs,
-                                norm=norm,
-                                frq_lim=frq_lim,
-                                xlabel=xlabel,
-                                ylabel=ylabel,
-                                title=title;
-                                kwargs...)
+                         fs=fs,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title;
+                         kwargs...)
 
     plot(p)
 
@@ -4961,7 +4971,7 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
 end
 
 """
-    eeg_plot_compose(p, l; <keyword arguments>)
+    eeg_plot_compose(p; <keyword arguments>)
 
 Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
 - `(2, 2)`: 2 × 2 plots, regular layout
@@ -4987,4 +4997,138 @@ function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{
     plot(pc)
 
     return pc
+end
+
+"""
+    eeg_plot_env(eeg; <keyword arguments>)
+
+Plot envelope of `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `type::Symbol`: envelope type: :amp (amplitude over time), :power (power over frequencies), :spec (frequencies over time)
+- `average::Symbol`: averaging method: :no, :mean or :median
+- `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `epoch::Int64`: epoch number to display
+- `channel::Int64`: channel to display
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+
+    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    (channel < 1 || epoch > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    average === :no && (dims = nothing)
+    (average !== :no && dims == nothing) && throw(ArgumentError("dims must be ≥ 1 and ≤ 3."))
+    (average !== :no && (dims < 1 || dims > 3)) && throw(ArgumentError("dims must be ≥ 1 and ≤ 3."))
+
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    t = eeg.eeg_epochs_time[:, epoch]
+    t[1] = floor(t[1], digits=2)
+    t[end] = ceil(t[end], digits=2)
+
+    if average === :no
+        type === :amp && ((e, t) = eeg_tenv(eeg))
+        type === :power && ((e, t) = eeg_penv(eeg))
+        type === :spec && ((e, t) = eeg_senv(eeg))
+    elseif average === :mean
+        type === :amp && ((e, e_u, e_l, t) = eeg_tenv_mean(eeg, dims=dims))
+        type === :power && ((e, e_u, e_l, t) = eeg_penv_mean(eeg, dims=dims))
+        type === :spec && ((e, e_u, e_l, t) = eeg_senv_mean(eeg, dims=dims))
+    elseif average === :median
+        type === :amp && ((e, e_u, e_l, t) = eeg_tenv_median(eeg, dims=dims))
+        type === :power && ((e, e_u, e_l, t) = eeg_penv_median(eeg, dims=dims))
+        type === :spec && ((e, e_u, e_l, t) = eeg_senv_median(eeg, dims=dims))
+    end
+
+    type === :amp && (xlabel == "" && (xlabel = "Time [s]"))
+    type === :amp && (ylabel == "" && (ylabel = "Amplitude [μV]"))
+    (type === :amp && y_lim == (0,0)) && (y_lim = (-200, 200))
+    type === :amp && (x_lim = _xlims(t))
+    type === :amp && (x_ticks = _xticks(t))
+
+    type === :power && (xlabel == "" && (xlabel = "Frequency [Hz]"))
+    type === :power && (t = linspace(t[1], t[end], length(t)))
+    type === :power && (ylabel == "" && (ylabel = "Power [dB/Hz]"))
+    type === :power && (x_lim = (frq_lim[1], frq_lim[end]))
+    type === :power && (x_ticks = round.(linspace(frq_lim[1], frq_lim[end], 10), digits=1))
+    (type === :power && y_lim == (0,0)) && (y_lim = (-50, 50))
+
+    type === :spec && (xlabel == "" && (xlabel = "Time [s]"))
+    type === :spec && (ylabel == "" && (ylabel = "Frequency [Hz]"))
+    type === :spec && (x_lim = _xlims(t))
+    (type === :spec && y_lim == (0,0)) && (y_lim = frq_lim)
+    type === :spec && (x_ticks = _xticks(t))
+
+    channel_name = eeg_labels(eeg)[channel]
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    if dims == 1
+        e = e[:, epoch]
+        average !== :no && (e_u = e_u[:, epoch]; e_l = e_l[:, epoch])
+        title == "" && (title = "Envelope: $type\n[averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
+    elseif dims == 2
+        type === :amp && (e = e[channel, :]; e_u = e_u[channel, :]; e_l = e_l[channel, :])
+        (type === :power || type === :spec) && (e = e[:, channel]; e_u = e_u[:, channel]; e_l = e_l[:, channel])
+        title == "" && (title = "Envelope: $type\n[$average averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
+    elseif dims == 3
+        title == "" && (title = "Envelope: $type\n[$average averaged channels and epochs, time window: $t_s1:$t_s2]")
+    else
+        e = e[channel, :, epoch]
+        title == "" && (title = "Envelope: $type\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+    end
+    p = plot(t,
+             e,
+             label="",
+             legend=false,
+             title=title,
+             xlabel=xlabel,
+             xlims=x_lim,
+             xticks=x_ticks,
+             ylabel=ylabel,
+             ylims=y_lim,
+             yguidefontrotation=0,
+             palette=:darktest,
+             linewidth=0.5,
+             color=:black,
+             grid=true,
+             titlefontsize=10,
+             xlabelfontsize=8,
+             ylabelfontsize=8,
+             xtickfontsize=4,
+             ytickfontsize=4;
+             kwargs...)
+    if average !== :no
+        p = plot!(t,
+                  e_u,
+                  fillrange=e_l,
+                  fillalpha=0.35, 
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  linewidth=0.5)
+        p = plot!(t,
+                  e_l,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+    end
+
+    plot(p)
+
+    return p
 end

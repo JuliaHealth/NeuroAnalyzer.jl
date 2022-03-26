@@ -96,6 +96,7 @@ neuroj_plugin_demo()
 
 - ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
 - check for wrong epoch number in plots
+- for multi epochs plots time should repeat epoch_time
 
 ## To do
 
@@ -108,7 +109,6 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
-- eeg_plot_env() function
 - eeg_plot() meta function
 - update tutorial.md
 - complex kernel convolution: plot magnitude and phase of the convoluted signal

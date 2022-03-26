@@ -226,6 +226,7 @@ eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{Float64}, Symb
 eeg_plot_epochs(eeg::NeuroJ.EEG; c::Union{Vector{<:Real}, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", kwargs...)
 eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, kwargs...)
+eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 ```
 
 ## Low level functions
