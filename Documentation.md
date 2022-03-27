@@ -2728,7 +2728,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_tenv_mean(eeg; d)
+eeg_tenv_mean(eeg; dims, d)
 ```
 
 Calculate temporal envelope of `eeg`: mean and 95% CI.
@@ -2754,7 +2754,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_tenv_median(eeg; d)
+eeg_tenv_median(eeg; dims, d)
 ```
 
 Calculate temporal envelope of `eeg`: median and 95% CI.
@@ -2788,7 +2788,7 @@ Calculate power (in dB) envelope of `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -2803,7 +2803,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_penv_mean(eeg; d)
+eeg_penv_mean(eeg; dims, d)
 ```
 
 Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
@@ -2812,7 +2812,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -2829,7 +2829,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_penv_median(eeg; d)
+eeg_penv_median(eeg; dims, d)
 ```
 
 Calculate power (in dB) envelope of `eeg`: median and 95% CI.
@@ -2838,7 +2838,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -2863,7 +2863,7 @@ Calculate spectral (in dB) envelope of `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -2878,7 +2878,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_mean(eeg; d)
+eeg_senv_mean(eeg; dims, d)
 ```
 
 Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
@@ -2887,7 +2887,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `span::Float64=0.5`: smoothing of loess
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -2904,7 +2904,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_median(eeg; d)
+eeg_senv_median(eeg; dims, d)
 ```
 
 Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
@@ -2913,7 +2913,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `span::Float64=0.5`: smoothing of loess
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
 
@@ -3725,7 +3725,7 @@ Plot spectrogram of `signal`.
 
   * `signal::Vector{<:Real}`
   * `fs::Int64`: sampling frequency
-  * `offset::Float64`: displayed segment offset in seconds
+  * `offset::Real`: displayed segment offset in seconds
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4432,7 +4432,7 @@ Plot envelope of `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `type::Symbol`: envelope type: :amp (amplitude over time), :power (power over frequencies), :spec (frequencies over time)
+  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
   * `average::Symbol`: averaging method: :no, :mean or :median
   * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `epoch::Int64`: epoch number to display

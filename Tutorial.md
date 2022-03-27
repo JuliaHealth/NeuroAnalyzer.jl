@@ -42,12 +42,11 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 Load electrode positions (CED, LOCS and ELC formats are supported):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-p = eeg_plot_electrodes(edf, labels=true, head=true, size=(300, 300))
+p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
 ![edf electrodes](images/edf_electrodes.png)
-
 
 Save EEG object as HDF5-based file:
 ```julia
@@ -459,10 +458,14 @@ Plot multi-channel:
 ```julia
 p = eeg_plot_signal(edf)
 eeg_plot_save(p, file_name="images/edf_channels.png")
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+p = eeg_plot_electrodes(edf, selected=1:19, labels=true)
+eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
-![edf_channels](images/edf_channels.png)
+![edf channels](images/edf_channels.png)
 
+![edf electrodes](images/edf_electrodes.png)
 
 Plot single-channel:
 ```julia
@@ -472,9 +475,9 @@ p = eeg_plot_signal_details(edf, channel=1, frq_lim=(0, 20))
 eeg_plot_save(p, file_name="images/edf_channel_1.png")
 ```
 
-![edf_channel1](images/edf_channel_1_simple.png)
+![edf channel1](images/edf_channel_1_simple.png)
 
-![edf_channel1](images/edf_channel_1.png)
+![edf channel1](images/edf_channel_1.png)
 
 Plot averaged signal:
 ```juia
@@ -484,9 +487,9 @@ p = eeg_plot_signal_avg_details(edf, frq_lim=(0, 20), channel=1:4)
 eeg_plot_save(p, file_name="images/edf_avg.png")
 ```
 
-![edf_avg](images/edf_avg_simple.png)
+![edf avg](images/edf_avg_simple.png)
 
-![edf_avg](images/edf_avg.png)
+![edf avg](images/edf_avg.png)
 
 ```julia
 p = eeg_plot_signal_butterfly(edf)
@@ -495,9 +498,9 @@ p = eeg_plot_signal_butterfly_details(edf)
 eeg_plot_save(p, file_name="images/edf_butterfly.png")
 ```
 
-![edf_avg](images/edf_butterfly_simple.png)
+![edf avg](images/edf_butterfly_simple.png)
 
-![edf_avg](images/edf_butterfly.png)
+![edf avg](images/edf_butterfly.png)
 
 Use kwargs:
 ```julia
@@ -530,7 +533,7 @@ p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true)
 eeg_plot_save(p, file_name="images/edf_spec1.png")
 ```
 
-![edf_topo :amp](images/edf_spec1.png)
+![edf topo :amp](images/edf_spec1.png)
 
 Plot multi-channel spectrogram:
 ```julia
@@ -538,7 +541,7 @@ p = eeg_plot_signal_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=
 eeg_plot_save(p, file_name="images/edf_spec2.png")
 ```
 
-![edf_topo :amp](images/edf_spec2.png)
+![edf topo :amp](images/edf_spec2.png)
 
 Plot PSD:
 ```julia
@@ -546,7 +549,7 @@ p = eeg_plot_signal_psd(edf, average=true, norm=true, channel=1)
 eeg_plot_save(p, file_name="images/edf_psd.png")
 ```
 
-![edf_topo :amp](images/edf_psd.png)
+![edf topo :amp](images/edf_psd.png)
 
 Topographical plots:
 ```julia
@@ -554,7 +557,7 @@ p = eeg_plot_signal_topo(edf, offset=1, len=2560, frq_lim=(0, 20))
 eeg_plot_save(p, file_name="images/edf_amp.png")
 ```
 
-![edf_topo :amp](images/edf_amp.png)
+![edf topo :amp](images/edf_amp.png)
 
 Plot ICA components:
 ```julia
@@ -565,7 +568,7 @@ p = eeg_plot_ica_topo(edf, epoch=1, len=256, ic=1:8)
 eeg_plot_save(p, file_name="images/edf_ica_1_8.png")
 ```
 
-![edf_topo :ica](images/edf_ica_1_8.png)
+![edf topo :ica](images/edf_ica_1_8.png)
 
 Plot alpha band power:
 ```julia
@@ -574,7 +577,7 @@ p = eeg_plot_mcomponent_topo(edf, epoch=1, c=alpha_power)
 eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 ```
 
-![edf_topo :power](images/edf_alpha_topo.png)
+![edf topo :power](images/edf_alpha_topo.png)
 
 Plot covariance matrix:
 ```julia
@@ -610,6 +613,29 @@ eeg_plot_save(p, file_name="images/e10_epochs.png")
 ![e10 channels](images/e10_channels.png)
 
 ![e10 epochs](images/e10_epochs.png)
+
+Envelopes:
+```julia
+p = eeg_plot_signal_psd(e10, epoch=1, channel=1)
+eeg_plot_save(p, file_name="images/e10_psd.png")
+
+p = eeg_plot_env(e10, type=:pow, average=:mean, dims=1, epoch=1, channel=1)
+eeg_plot_save(p, file_name="images/e10_penv.png")
+
+p = eeg_plot_signal_spectrogram(e10, epoch=1, channel=1, frq_lim=(0,10))
+eeg_plot_save(p, file_name="images/e10_spec.png")
+
+p = eeg_plot_env(e10, type=:spec, average=:median, epoch=1, channel=1, dims=3, frq_lim=(0,10))
+eeg_plot_save(p, file_name="images/e10_senv.png")
+```
+
+![e10 power](images/e10_psd.png)
+
+![e10 power envelope mean](images/e10_penv.png)
+
+![e10 spectrogram](images/e10_spec.png)
+
+![e10 spectrogram envelope mean](images/e10_senv.png)
 
 ### EEG Misc
 

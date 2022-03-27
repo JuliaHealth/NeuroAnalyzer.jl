@@ -5007,7 +5007,7 @@ Plot envelope of `eeg` channels.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Symbol`: envelope type: :amp (amplitude over time), :power (power over frequencies), :spec (frequencies over time)
+- `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
 - `average::Symbol`: averaging method: :no, :mean or :median
 - `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `epoch::Int64`: epoch number to display
@@ -5023,8 +5023,19 @@ Plot envelope of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, d::Int64=32, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
+    type in [:amp, :pow, :spec] || throw(ArgumentError("type must be :amp, :pow or :spec."))
+
+    type === :amp && (d = 32)
+    type === :pow && (d = 8)
+    type === :spec && (d = 8)
+
+    type === :amp && (type = :amplitude)
+    type === :pow && (type = :power)
+    type === :spec && (type = :spectrogram)
+
+    average in [:no, :mean, :median] || throw(ArgumentError("average must be :no, :mean or :median."))
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     (channel < 1 || epoch > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     average === :no && (dims = nothing)
@@ -5041,24 +5052,24 @@ function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::
     t[end] = ceil(t[end], digits=2)
 
     if average === :no
-        type === :amp && ((e, t) = eeg_tenv(eeg))
-        type === :power && ((e, t) = eeg_penv(eeg))
-        type === :spec && ((e, t) = eeg_senv(eeg))
+        type === :amplitude && ((e, t) = eeg_tenv(eeg, d=d))
+        type === :power && ((e, t) = eeg_penv(eeg, d=d))
+        type === :spectrogram && ((e, t) = eeg_senv(eeg, d=d))
     elseif average === :mean
-        type === :amp && ((e, e_u, e_l, t) = eeg_tenv_mean(eeg, dims=dims))
-        type === :power && ((e, e_u, e_l, t) = eeg_penv_mean(eeg, dims=dims))
-        type === :spec && ((e, e_u, e_l, t) = eeg_senv_mean(eeg, dims=dims))
+        type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_mean(eeg, dims=dims, d=d))
+        type === :power && ((e, e_u, e_l, t) = eeg_penv_mean(eeg, dims=dims, d=d))
+        type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_mean(eeg, dims=dims, d=d))
     elseif average === :median
-        type === :amp && ((e, e_u, e_l, t) = eeg_tenv_median(eeg, dims=dims))
-        type === :power && ((e, e_u, e_l, t) = eeg_penv_median(eeg, dims=dims))
-        type === :spec && ((e, e_u, e_l, t) = eeg_senv_median(eeg, dims=dims))
+        type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_median(eeg, dims=dims, d=d))
+        type === :power && ((e, e_u, e_l, t) = eeg_penv_median(eeg, dims=dims, d=d))
+        type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_median(eeg, dims=dims, d=d))
     end
 
-    type === :amp && (xlabel == "" && (xlabel = "Time [s]"))
-    type === :amp && (ylabel == "" && (ylabel = "Amplitude [μV]"))
-    (type === :amp && y_lim == (0,0)) && (y_lim = (-200, 200))
-    type === :amp && (x_lim = _xlims(t))
-    type === :amp && (x_ticks = _xticks(t))
+    type === :amplitude && (xlabel == "" && (xlabel = "Time [s]"))
+    type === :amplitude && (ylabel == "" && (ylabel = "Amplitude [μV]"))
+    (type === :amplitude && y_lim == (0,0)) && (y_lim = (-200, 200))
+    type === :amplitude && (x_lim = _xlims(t))
+    type === :amplitude && (x_ticks = _xticks(t))
 
     type === :power && (xlabel == "" && (xlabel = "Frequency [Hz]"))
     type === :power && (t = linspace(t[1], t[end], length(t)))
@@ -5067,11 +5078,11 @@ function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::
     type === :power && (x_ticks = round.(linspace(frq_lim[1], frq_lim[end], 10), digits=1))
     (type === :power && y_lim == (0,0)) && (y_lim = (-50, 50))
 
-    type === :spec && (xlabel == "" && (xlabel = "Time [s]"))
-    type === :spec && (ylabel == "" && (ylabel = "Frequency [Hz]"))
-    type === :spec && (x_lim = _xlims(t))
-    (type === :spec && y_lim == (0,0)) && (y_lim = frq_lim)
-    type === :spec && (x_ticks = _xticks(t))
+    type === :spectrogram && (xlabel == "" && (xlabel = "Time [s]"))
+    type === :spectrogram && (ylabel == "" && (ylabel = "Frequency [Hz]"))
+    type === :spectrogram && (x_lim = _xlims(t))
+    (type === :spectrogram && y_lim == (0,0)) && (y_lim = frq_lim)
+    type === :spectrogram && (x_ticks = _xticks(t))
 
     channel_name = eeg_labels(eeg)[channel]
     t_1, t_s1, t_2, t_s2 = _convert_t(t)
@@ -5081,8 +5092,9 @@ function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::
         average !== :no && (e_u = e_u[:, epoch]; e_l = e_l[:, epoch])
         title == "" && (title = "Envelope: $type\n[averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
     elseif dims == 2
-        type === :amp && (e = e[channel, :]; e_u = e_u[channel, :]; e_l = e_l[channel, :])
-        (type === :power || type === :spec) && (e = e[:, channel]; e_u = e_u[:, channel]; e_l = e_l[:, channel])
+        e = e[:, channel]
+        e_u = e_u[:, channel]
+        e_l = e_l[:, channel]
         title == "" && (title = "Envelope: $type\n[$average averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
     elseif dims == 3
         title == "" && (title = "Envelope: $type\n[$average averaged channels and epochs, time window: $t_s1:$t_s2]")
@@ -5090,6 +5102,7 @@ function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::
         e = e[channel, :, epoch]
         title == "" && (title = "Envelope: $type\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
     end
+
     p = plot(t,
              e,
              label="",

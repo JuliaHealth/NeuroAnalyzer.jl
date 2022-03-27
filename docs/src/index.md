@@ -163,9 +163,9 @@ eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
 eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
 eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
 eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
-eeg_senv(eeg::NeuroJ.EEG; d::Int64=4)
-eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
-eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
+eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
+eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
+eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
 ```
 
 ## EEG plots

@@ -1329,8 +1329,18 @@ function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
             p_idx = s_findpeaks(s, d=d)
             pushfirst!(p_idx, 1)
             push!(p_idx, length(s))
-            model = CubicSpline(s_t[p_idx], s[p_idx])
-            t_env[idx, :, epoch] = model(s_t)
+            if length(p_idx) > 4
+                model = CubicSpline(s_t[p_idx], s[p_idx])
+                try
+                    t_env[idx, :, epoch] = model(s_t)
+                catch
+                    @error "CubicSpline error."
+                end
+            else
+                @warn "Less than 5 peaks detected, using Loess."
+                model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                t_env[idx, :, epoch] = Loess.predict(model, s_t)
+            end
             t_env[idx, 1, epoch] = t_env[idx, 2, epoch]
         end
     end
@@ -1339,7 +1349,7 @@ function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
 end
 
 """
-    eeg_tenv_mean(eeg; d)
+    eeg_tenv_mean(eeg; dims, d)
 
 Calculate temporal envelope of `eeg`: mean and 95% CI.
 
@@ -1367,21 +1377,27 @@ function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
     s_a, s_t = eeg_tenv(eeg, d=d)
 
     if dims == 1
-        t_env_m = mean(s_a, dims=1)
-        s = std(s_a, dims=1) / sqrt(size(s_a, 2))
-        t_env_u = t_env_m + 1.96 * s
-        t_env_l = t_env_m - 1.96 * s
-        t_env_m = reshape(t_env_m, size(t_env_m, 2), size(t_env_m, 3))
-        t_env_u = reshape(t_env_u, size(t_env_u, 2), size(t_env_u, 3))
-        t_env_l = reshape(t_env_l, size(t_env_l, 2), size(t_env_l, 3))
+        t_env_m = zeros(length(s_t), epoch_n)
+        t_env_u = zeros(length(s_t), epoch_n)
+        t_env_l = zeros(length(s_t), epoch_n)
+
+        @inbounds @simd for idx in 1:epoch_n
+            t_env_m[:, idx] = mean(s_a[:, :, idx], dims=1)
+            s = std(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
+            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
+            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        end
     elseif dims == 2
-        t_env_m = mean(s_a, dims=3)
-        s = std(s_a, dims=3) / sqrt(size(s_a, 2))
-        t_env_u = t_env_m + 1.96 * s
-        t_env_l = t_env_m - 1.96 * s
-        t_env_m = reshape(t_env_m, size(t_env_m, 1), size(t_env_m, 2))
-        t_env_u = reshape(t_env_u, size(t_env_u, 1), size(t_env_u, 2))
-        t_env_l = reshape(t_env_l, size(t_env_l, 1), size(t_env_l, 2))
+        t_env_m = zeros(length(s_t), channel_n)
+        t_env_u = zeros(length(s_t), channel_n)
+        t_env_l = zeros(length(s_t), channel_n)
+
+        @inbounds @simd for idx in 1:channel_n
+            t_env_m[:, idx] = mean(s_a[idx, :, :], dims=2)
+            s = std(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
+            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
+            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        end
     else
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_mean(eeg, dims=1, d=d)
         t_env_m = mean(t_env_m, dims=2)
@@ -1396,7 +1412,7 @@ function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
 end
 
 """
-    eeg_tenv_median(eeg; d)
+    eeg_tenv_median(eeg; dims, d)
 
 Calculate temporal envelope of `eeg`: median and 95% CI.
 
@@ -1424,21 +1440,49 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
     s_a, s_t = eeg_tenv(eeg, d=d)
 
     if dims == 1
-        t_env_m = median(s_a, dims=1)
-        s = std(s_a, dims=1) / sqrt(size(s_a, 2))
-        t_env_u = t_env_m + 1.57 * s
-        t_env_l = t_env_m - 1.57 * s
-        t_env_m = reshape(t_env_m, size(t_env_m, 2), size(t_env_m, 3))
-        t_env_u = reshape(t_env_u, size(t_env_u, 2), size(t_env_u, 3))
-        t_env_l = reshape(t_env_l, size(t_env_l, 2), size(t_env_l, 3))
+        t_env_m = zeros(length(s_t), epoch_n)
+        t_env_u = zeros(length(s_t), epoch_n)
+        t_env_l = zeros(length(s_t), epoch_n)
+
+        @inbounds @simd for idx in 1:epoch_n
+            t_env_m[:, idx] = median(s_a[:, :, idx], dims=1)
+            t_idx = s_findpeaks(t_env_m[:, idx], d=d)
+            pushfirst!(t_idx, 1)
+            push!(t_idx, length(t_env_m[:, idx]))
+            if length(t_idx) > 4
+                model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
+                try
+                    t_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
+            end
+            s = iqr(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
+            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
+            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        end
     elseif dims == 2
-        t_env_m = median(s_a, dims=3)
-        s = std(s_a, dims=3) / sqrt(size(s_a, 2))
-        t_env_u = t_env_m + 1.57 * s
-        t_env_l = t_env_m - 1.57 * s
-        t_env_m = reshape(t_env_m, size(t_env_m, 1), size(t_env_m, 2))
-        t_env_u = reshape(t_env_u, size(t_env_u, 1), size(t_env_u, 2))
-        t_env_l = reshape(t_env_l, size(t_env_l, 1), size(t_env_l, 2))
+        t_env_m = zeros(length(s_t), channel_n)
+        t_env_u = zeros(length(s_t), channel_n)
+        t_env_l = zeros(length(s_t), channel_n)
+
+        @inbounds @simd for idx in 1:channel_n
+            t_env_m[:, idx] = median(s_a[idx, :, :], dims=2)
+            t_idx = s_findpeaks(t_env_m[:, idx], d=d)
+            pushfirst!(t_idx, 1)
+            push!(t_idx, length(t_env_m[:, idx]))
+            if length(t_idx) > 4
+                model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
+                try
+                    t_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
+            end
+            s = iqr(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
+            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
+            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        end
     else
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_median(eeg, dims=1, d=d)
         t_env_m = median(t_env_m, dims=2)
@@ -1460,7 +1504,7 @@ Calculate power (in dB) envelope of `eeg`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+- `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1490,7 +1534,11 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
             push!(p_idx, length(psd_pow))
             if length(p_idx) > 4
                 model = CubicSpline(psd.freq[p_idx], psd_pow[p_idx])
-                p_env[idx, :, epoch] = model(psd.freq)
+                try
+                    p_env[idx, :, epoch] = model(psd.freq)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             else
                 p_env[idx, :, epoch] = psd_pow
             end
@@ -1502,7 +1550,7 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
 end
 
 """
-    eeg_penv_mean(eeg; d)
+    eeg_penv_mean(eeg; dims, d)
 
 Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 
@@ -1510,7 +1558,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+- `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1544,7 +1592,11 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             push!(p_idx, length(p_env_m[:, idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
-                p_env_m[:, idx] = model(s_f)
+                try
+                    p_env_m[:, idx] = model(s_f)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
             s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
@@ -1563,7 +1615,11 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             push!(p_idx, length(p_env_m[:, idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
-                p_env_m[:, idx] = model(s_f)
+                try
+                    p_env_m[:, idx] = model(s_f)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
             s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
             p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
@@ -1583,7 +1639,7 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
 end
 
 """
-    eeg_penv_median(eeg; d)
+    eeg_penv_median(eeg; dims, d)
 
 Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 
@@ -1591,7 +1647,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
-- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+- `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1625,11 +1681,15 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             push!(p_idx, length(p_env_m[:, idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
-                p_env_m[:, idx] = model(s_f)
+                try
+                    p_env_m[:, idx] = model(s_f)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.57 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.57 * s
+            s = iqr(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
+            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
+            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
         end
     elseif dims == 2
         p_env_m = zeros(length(s_f), channel_n)
@@ -1644,11 +1704,15 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
             push!(p_idx, length(p_env_m[:, idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
-                p_env_m[:, idx] = model(s_f)
+                try
+                    p_env_m[:, idx] = model(s_f)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.57 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.57 * s
+            s = iqr(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
+            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
+            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
         end
     else
         p_env_m, p_env_u, p_env_l, _ = eeg_penv_median(eeg, dims=1, d=d)
@@ -1671,7 +1735,7 @@ Calculate spectral (in dB) envelope of `eeg`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+- `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1714,7 +1778,11 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
             push!(p_idx, length(spec.time))
             if length(p_idx) > 4
                 model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
-                s_env[idx, :, epoch] = model(sp_t)
+                try
+                    s_env[idx, :, epoch] = model(sp_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             else
                 s_env[idx, :, epoch] = f_idx
             end
@@ -1726,7 +1794,7 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
 end
 
 """
-    eeg_senv_mean(eeg; d)
+    eeg_senv_mean(eeg; dims, d)
 
 Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 
@@ -1734,7 +1802,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-- `span::Float64=0.5`: smoothing of loess
+- `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1744,68 +1812,63 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
-    
+function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
+
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_f, s_t = eeg_spectrogram(eeg)
-
-    s_t = s_t[:, 1]
-    s_f = s_f[:, 1]
+    s_p, s_t = eeg_senv(eeg, d=d)
 
     if dims == 1
-        m_sp = mean(s_p, dims=3)
-        m = mean(m_sp, dims=1)
         s_env_m = zeros(length(s_t), epoch_n)
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx1 in 1:epoch_n
-            # calculate mean
-            m_tmp = @view m[:, :, :, idx1]
-            m_idx = zeros(length(s_t))
-            for idx2 in 1:length(m_tmp)
-                m_idx[idx2] = s_f[vsearch(m_tmp[idx2], vec(m_sp[:, idx2, :, idx1]))]
+        @inbounds @simd for idx in 1:epoch_n
+            s_env_m[:, idx] = mean(s_p[:, :, idx], dims=1)
+
+            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            pushfirst!(s_idx, 1)
+            push!(s_idx, length(s_env_m[:, idx]))
+            if length(s_idx) > 4
+                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                try
+                    s_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            model = loess(s_t, m_idx, span=span)
-            s_env_m[:, idx1] = Loess.predict(model, s_t)
-
-            # calculate standard deviation
-            s = std(s_env_m[:, idx1]) / sqrt(length(s_env_m[:, idx1]))
-
-            # calculate upper and lower bounds
-            s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.96 * s
-            s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.96 * s
+            s = std(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
+            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
+            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     elseif dims == 2
-        m_sp = mean(s_p, dims=4)
-        m = mean(m_sp, dims=1)
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx1 in 1:channel_n
-            # calculate mean
-            m_tmp = @view m[:, :, idx1, :]
-            m_idx = zeros(length(s_t))
-            for idx2 in 1:length(m_tmp)
-                m_idx[idx2] = s_f[vsearch(m_tmp[idx2], vec(m_sp[:, idx2, idx1, :]))]
+        @inbounds @simd for idx in 1:channel_n
+            s_env_m[:, idx] = mean(s_p[idx, :, :], dims=2)
+
+            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            pushfirst!(s_idx, 1)
+            push!(s_idx, length(s_env_m[:, idx]))
+            if length(s_idx) > 4
+                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                try
+                    s_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            model = loess(s_t, m_idx, span=span)
-            s_env_m[:, idx1] = Loess.predict(model, s_t)
-
-            # calculate standard deviation
-            s = std(s_env_m[:, idx1]) / sqrt(length(s_env_m[:, idx1]))
-
-            # calculate upper and lower bounds
-            s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.96 * s
-            s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.96 * s
+            s = std(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
+            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
+            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     else
-        s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, span=span)
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, d=d)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
         s_env_l = mean(s_env_l, dims=2)
@@ -1818,7 +1881,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
 end
 
 """
-    eeg_senv_median(eeg; d)
+    eeg_senv_median(eeg; dims, d)
 
 Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 
@@ -1826,7 +1889,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-- `span::Float64=0.5`: smoothing of loess
+- `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
 
@@ -1836,68 +1899,63 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, span::Float64=0.5)
+function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_f, s_t = eeg_spectrogram(eeg)
-
-    s_t = s_t[:, 1]
-    s_f = s_f[:, 1]
+    s_p, s_t = eeg_senv(eeg, d=d)
 
     if dims == 1
-        m_sp = mean(s_p, dims=3)
-        m = median(m_sp, dims=1)
         s_env_m = zeros(length(s_t), epoch_n)
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx1 in 1:epoch_n
-            # calculate median
-            m_tmp = @view m[:, :, :, idx1]
-            m_idx = zeros(length(s_t))
-            for idx2 in 1:length(m_tmp)
-                m_idx[idx2] = s_f[vsearch(m_tmp[idx2], vec(m_sp[:, idx2, :, idx1]))]
+        @inbounds @simd for idx in 1:epoch_n
+            s_env_m[:, idx] = median(s_p[:, :, idx], dims=1)
+
+            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            pushfirst!(s_idx, 1)
+            push!(s_idx, length(s_env_m[:, idx]))
+            if length(s_idx) > 4
+                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                try
+                    s_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            model = loess(s_t, m_idx, span=span)
-            s_env_m[:, idx1] = Loess.predict(model, s_t)
-
-            # calculate standard deviation
-            s = std(s_env_m[:, idx1]) / sqrt(length(s_env_m[:, idx1]))
-
-            # calculate upper and lower bounds
-            s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.57 * s
-            s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.57 * s
+            s = iqr(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
+            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
+            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     elseif dims == 2
-        m_sp = mean(s_p, dims=4)
-        m = mean(m_sp, dims=1)
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx1 in 1:channel_n
-            # calculate mean
-            m_tmp = @view m[:, :, idx1, :]
-            m_idx = zeros(length(s_t))
-            for idx2 in 1:length(m_tmp)
-                m_idx[idx2] = s_f[vsearch(m_tmp[idx2], vec(m_sp[:, idx2, idx1, :]))]
+        @inbounds @simd for idx in 1:channel_n
+            s_env_m[:, idx] = median(s_p[idx, :, :], dims=2)
+
+            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            pushfirst!(s_idx, 1)
+            push!(s_idx, length(s_env_m[:, idx]))
+            if length(s_idx) > 4
+                model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
+                try
+                    s_env_m[:, idx] = model(s_t)
+                catch
+                    @warn "CubicSpline error, non-smoothed variant used."
+                end
             end
-            model = loess(s_t, m_idx, span=span)
-            s_env_m[:, idx1] = Loess.predict(model, s_t)
-
-            # calculate IQR
-            i = iqr(s_env_m[:, idx1]) / sqrt(length(s_env_m[:, idx1]))
-
-            # calculate upper and lower bounds
-            s_env_u[:, idx1] = @. s_env_m[:, idx1] + 1.57 * i
-            s_env_l[:, idx1] = @. s_env_m[:, idx1] - 1.57 * i
+            s = iqr(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
+            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
+            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     else
-        s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, span=span)
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, d=d)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
         s_env_l = median(s_env_l, dims=2)

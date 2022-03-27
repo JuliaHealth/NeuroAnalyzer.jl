@@ -109,6 +109,8 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- PSD of short epochs
+- eeg_senv threshold
 - eeg_plot() meta function
 - update tutorial.md
 - complex kernel convolution: plot magnitude and phase of the convoluted signal
