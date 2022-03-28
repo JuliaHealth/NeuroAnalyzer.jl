@@ -109,6 +109,12 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
+- plot two EEG one over another for comparison
+- PSD lin-log (x-y), log-lin or log-log axes
+- normalized/relative PSD (to total power or arbitrary freq range)
+- cross-frequency phase-amplitude coupling
+- wPLI
 - PSD of short epochs
 - eeg_senv threshold
 - eeg_plot() meta function
