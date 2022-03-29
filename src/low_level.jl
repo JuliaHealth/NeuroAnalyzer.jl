@@ -1,11 +1,3 @@
-################################
-#                              #
-# Low-level external functions #
-#                              #
-################################
-
-################################
-
 """
     linspace(start, stop, length)
 
@@ -491,7 +483,6 @@ function m_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
     (dims < 1 || dims > 2) && throw(ArgumentError("dims must be 1 or 2."))
     
     m_idx = zeros(Int, size(m))
-    idx=1
     if dims == 1
         for idx = 1:size(m, 2)
             # sort by columns
@@ -1547,10 +1538,10 @@ function s_resample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
     s_resampled = zeros(channel_n, s_resampled_len, epoch_n) 
 
     t_resampled = nothing
-    @inbounds @simd for epoch in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
-            s = @view signal[idx, :, epoch]
-            s_resampled[idx, :, epoch], t_resampled = s_resample(s, t=t, new_sr=new_sr)
+            s = @view signal[idx, :, epoch_idx]
+            s_resampled[idx, :, epoch_idx], t_resampled = s_resample(s, t=t, new_sr=new_sr)
         end
     end
 
@@ -1875,10 +1866,10 @@ function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
     psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
     psd_frq = zeros(channel_n, length(frq_tmp), epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
-            s = @view signal[idx, :, epoch]
-            psd_pow[idx, :, epoch], psd_frq[idx, :, epoch] = s_psd(s, fs=fs, norm=norm)
+            s = @view signal[idx, :, epoch_idx]
+            psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm)
         end
     end
     
@@ -2122,8 +2113,8 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
 
     # check maximum n
     n_tmp = n
-    Threads.@threads for epoch in 1:epoch_n
-        s = @view signal[:, :, epoch]
+    Threads.@threads for epoch_idx in 1:epoch_n
+        s = @view signal[:, :, epoch_idx]
         pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
         size(pc_m, 2) < n_tmp && (n_tmp = size(pc_m, 2))
     end
@@ -2134,8 +2125,8 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     pc_var = zeros(n, epoch_n)
     pc_reconstructed = zeros(size(signal))
 
-    Threads.@threads for epoch in 1:epoch_n
-        s = @view signal[:, :, epoch]
+    Threads.@threads for epoch_idx in 1:epoch_n
+        s = @view signal[:, :, epoch_idx]
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
         # eig_val_idx = sortperm(eig_val, rev=true)
@@ -2147,9 +2138,9 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
         v = principalvars(pc_m) ./ var(pc_m) * 100
 
         for idx in 1:n
-            pc_var[idx, epoch] = v[idx]
-            # pc[idx, :, epoch] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, epoch] = MultivariateStats.predict(pc_m, s)[idx, :]
+            pc_var[idx, epoch_idx] = v[idx]
+            # pc[idx, :, epoch_idx] = (eig_vec[:, idx] .* s)[idx, :]
+            pc[idx, :, epoch_idx] = MultivariateStats.predict(pc_m, s)[idx, :]
         end
     end
 
@@ -2178,8 +2169,8 @@ function s_pca_reconstruct(signal::Array{Float64, 3}; pc::Array{Float64, 3}, pc_
 
     _, _, epoch_n = size(signal)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        s_reconstructed[:, :, epoch] = reconstruct(pc_m, pc[:, :, epoch])
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        s_reconstructed[:, :, epoch_idx] = reconstruct(pc_m, pc[:, :, epoch_idx])
     end
 
     return s_reconstructed
@@ -2246,8 +2237,8 @@ function s_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::I
     ic = zeros(n, size(signal, 2), epoch_n)
     ic_mw = zeros(channel_n, n, epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        s = @view signal[:, :, epoch]
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        s = @view signal[:, :, epoch_idx]
 
         f === :tanh && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
         f === :gaus && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
@@ -2256,10 +2247,10 @@ function s_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::I
         n < size(signal, 1) && (mw = pinv(M.W)')
 
         for idx in 1:n
-            ic[idx, :, epoch] = MultivariateStats.predict(M, s)[idx, :]
+            ic[idx, :, epoch_idx] = MultivariateStats.predict(M, s)[idx, :]
         end
 
-        ic_mw[:, :, epoch] = mw
+        ic_mw[:, :, epoch_idx] = mw
     end
 
     return ic, ic_mw
@@ -2298,8 +2289,8 @@ function s_ica_reconstruct(signal::Array{Float64, 3}; ic::Array{Float64, 3}, ic_
 
     _, _, epoch_n = size(signal)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        s_reconstructed[:, :, epoch] = ic_mw[:, ic_removal, epoch] * ic[ic_removal, :, epoch]
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        s_reconstructed[:, :, epoch_idx] = ic_mw[:, ic_removal, epoch_idx] * ic[ic_removal, :, epoch_idx]
     end
 
     return s_reconstructed
@@ -2364,13 +2355,11 @@ function s_detect_epoch_flat(signal::Array{Float64, 3})
 
     bad_epochs_score = zeros(epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
-            idx=1
-            epoch=1
-            c_tmp_diff = abs.(diff(signal[idx, :, epoch]))
+            c_tmp_diff = abs.(diff(signal[idx, :, epoch_idx]))
             # add tolerance around zero μV
-            sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch] += 1)
+            sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2398,14 +2387,14 @@ function s_detect_epoch_rmse(signal::Array{Float64, 3})
 
     bad_epochs_score = zeros(epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        ch_m = vec(median(signal[:, :, epoch], dims=1))
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        ch_m = vec(median(signal[:, :, epoch_idx], dims=1))
         rmse_ch = zeros(channel_n)
         Threads.@threads for idx in 1:channel_n
-            rmse_ch[idx] = s2_rmse(signal[idx, :, epoch], ch_m)
+            rmse_ch[idx] = s2_rmse(signal[idx, :, epoch_idx], ch_m)
         end
         Threads.@threads for idx in 1:channel_n
-            rmse_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch] += 1)
+            rmse_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2432,14 +2421,14 @@ function s_detect_epoch_rmsd(signal::Array{Float64, 3})
 
     bad_epochs_score = zeros(epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        ch_m = median(signal[:, :, epoch], dims=1)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        ch_m = median(signal[:, :, epoch_idx], dims=1)
         rmsd_ch = zeros(channel_n)
         Threads.@threads for idx in 1:channel_n
-            rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch], ch_m)
+            rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch_idx], ch_m)
         end
         Threads.@threads for idx in 1:channel_n
-            rmsd_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch] += 1)
+            rmsd_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2467,14 +2456,14 @@ function s_detect_epoch_euclid(signal::Array{Float64, 3})
 
     bad_epochs_score = zeros(epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
-        ch_m = median(signal[:, :, epoch], dims=1)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        ch_m = median(signal[:, :, epoch_idx], dims=1)
         ed_ch = zeros(channel_n)
         Threads.@threads for idx in 1:channel_n
-            ed_ch[idx] = euclidean(signal[idx, :, epoch], ch_m)
+            ed_ch[idx] = euclidean(signal[idx, :, epoch_idx], ch_m)
         end
         Threads.@threads for idx in 1:channel_n
-            ed_ch[idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch] += 1)
+            ed_ch[idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2502,13 +2491,13 @@ function s_detect_epoch_p2p(signal::Array{Float64, 3})
 
     bad_epochs_score = zeros(epoch_n)
 
-    @inbounds @simd for epoch in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         p2p = zeros(channel_n)
         Threads.@threads for idx in 1:channel_n
-            p2p[idx] = maximum(signal[idx, :, epoch]) + abs(minimum(signal[idx, :, epoch]))
+            p2p[idx] = maximum(signal[idx, :, epoch_idx]) + abs(minimum(signal[idx, :, epoch_idx]))
         end
         Threads.@threads for idx in 1:channel_n
-            p2p[idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch] += 1)
+            p2p[idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 

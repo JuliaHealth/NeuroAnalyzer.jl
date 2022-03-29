@@ -1031,10 +1031,10 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
         channel_n = eeg_channel_n(eeg_new)
         epoch_n = eeg_epoch_n(eeg_new)
         s_trimmed = zeros(channel_n, (size(eeg_new.eeg_signals, 2) - len), epoch_n)
-        @inbounds @simd for epoch in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
-                s = @view eeg_new.eeg_signals[idx, :, epoch]
-                s_trimmed[idx, :, epoch] = s_trim(s, len=len, offset=offset, from=from)
+                s = @view eeg_new.eeg_signals[idx, :, epoch_idx]
+                s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
             end
         end
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
@@ -1093,10 +1093,10 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
         channel_n = eeg_channel_n(eeg)
         epoch_n = eeg_epoch_n(eeg)
         s_trimmed = zeros(channel_n, (size(eeg.eeg_signals, 2) - len), epoch_n)
-        @inbounds @simd for epoch in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
-                s = @view eeg.eeg_signals[idx, :, epoch]
-                s_trimmed[idx, :, epoch] = s_trim(s, len=len, offset=offset, from=from)
+                s = @view eeg.eeg_signals[idx, :, epoch_idx]
+                s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
             end
         end
         eeg.eeg_signals = s_trimmed

@@ -29,24 +29,24 @@ function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
     s_ref = zeros(size(eeg.eeg_signals))
 
     channel_list = collect(1:channel_n)
-    for idx in 1:length(channel)
-        if (channel[idx] in channel_list) == false
+    for channel_idx in 1:length(channel)
+        if (channel[channel_idx] in channel_list) == false
             throw(ArgumentError("channel does not match signal channels."))
         end
     end
 
-    @inbounds @simd for epoch in 1:epoch_n
-        s = @view eeg.eeg_signals[channel, :, epoch]
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        s = @view eeg.eeg_signals[channel, :, epoch_idx]
         if length(channel) == 1
             reference_channel = mean(s, dims=2)
         else
             reference_channel = vec(mean(s, dims=1))
         end
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_ref[idx, :, epoch] = s .- reference_channel
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
         end
-        length(channel) == 1 && (s_ref[channel, :, epoch] = reference_channel)
+        length(channel) == 1 && (s_ref[channel, :, epoch_idx] = reference_channel)
     end
 
     eeg_new = deepcopy(eeg)
@@ -98,11 +98,11 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg)
     s_ref = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        reference_channel = vec(mean(eeg.eeg_signals[:, :, epoch], dims=1))
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_ref[idx, :, epoch] = s .- reference_channel
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        reference_channel = vec(mean(eeg.eeg_signals[:, :, epoch_idx], dims=1))
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
         end
     end
 
@@ -154,10 +154,10 @@ function eeg_derivative(eeg::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg)
     s_der = zeros(size(eeg.eeg_signals))
     
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_der[idx, :, epoch] = s_derivative(s)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_der[channel_idx, :, epoch_idx] = s_derivative(s)
         end
     end
 
@@ -219,10 +219,10 @@ function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Union{Int64,
     epoch_n = eeg_epoch_n(eeg)
     s_det = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_det[idx, :, epoch] = s_detrend(s, type=type, offset=offset, order=order, span=span)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_det[channel_idx, :, epoch_idx] = s_detrend(s, type=type, offset=offset, order=order, span=span)
         end
     end
 
@@ -284,10 +284,10 @@ function eeg_taper(eeg::NeuroJ.EEG; taper::Union{Vector{<:Real}, Vector{ComplexF
 
     s_tap = zeros(eltype(taper), size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_tap[idx, :, epoch] = s_taper(s, taper=taper)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_tap[channel_idx, :, epoch_idx] = s_taper(s, taper=taper)
         end
     end
 
@@ -339,10 +339,10 @@ function eeg_demean(eeg::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg)
     s_demeaned = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_demeaned[idx, :, epoch] = s_demean(s)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_demeaned[channel_idx, :, epoch_idx] = s_demean(s)
         end
     end
 
@@ -393,10 +393,10 @@ function eeg_normalize_zscore(eeg::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg)
     s_normalized = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_normalized[idx, :, epoch] = s_normalize_zscore(s)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_normalized[channel_idx, :, epoch_idx] = s_normalize_zscore(s)
         end
     end
 
@@ -449,10 +449,10 @@ function eeg_normalize_minmax(eeg::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg)
     s_normalized = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_normalized[idx, :, epoch] = s_normalize_minmax(s)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_normalized[channel_idx, :, epoch_idx] = s_normalize_minmax(s)
         end
     end
 
@@ -504,10 +504,10 @@ function eeg_add_noise(eeg::NeuroJ.EEG)
 
     s_noise = zeros(size(eeg.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_noise[idx, :, epoch] = s_add_noise(s)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_noise[channel_idx, :, epoch_idx] = s_add_noise(s)
         end
     end
 
@@ -579,10 +579,10 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
     s_filtered = zeros(size(eeg.eeg_signals))
     fs = eeg_sr(eeg)
     
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch]
-            s_filtered[idx, :, epoch] = s_filter(s,
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_filtered[channel_idx, :, epoch_idx] = s_filter(s,
                                                  fprototype=fprototype,
                                                  ftype=ftype,
                                                  cutoff=cutoff,
@@ -823,11 +823,11 @@ function eeg_average(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     epoch_n = eeg_epoch_n(eeg1)
     s_averaged = zeros(size(eeg1.eeg_signals))
 
-    @inbounds @simd for epoch in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s1 = @view signal1[idx, :, epoch]
-            s2 = @view signal2[idx, :, epoch]
-            s_averaged[idx, :, epoch] = s2_average(s1, s2)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s1 = @view signal1[channel_idx, :, epoch_idx]
+            s2 = @view signal2[channel_idx, :, epoch_idx]
+            s_averaged[channel_idx, :, epoch_idx] = s2_average(s1, s2)
         end
     end
 

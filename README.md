@@ -115,6 +115,9 @@ EEG:
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - wPLI
+- remove baseline
+- sync epoch starts at phase = 0
+- topo plots: asymmetric color bars to highlight increase/decrease in activity
 - PSD of short epochs
 - eeg_senv threshold
 - eeg_plot() meta function
