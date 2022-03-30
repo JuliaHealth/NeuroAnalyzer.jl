@@ -2578,39 +2578,25 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
     t = collect(spec.time) .+ offset
 
-    if norm == false
-        p = heatmap(t,
-                    spec.freq,
-                    spec.power,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    ylims=frq_lim,
-                    xticks=_xticks(t),
-                    title=title,
-                    colorbar_title="[μV^2/Hz]",
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
-    else
-        p = heatmap(t,
-                    spec.freq,
-                    pow2db.(spec.power),
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    ylims=frq_lim,
-                    xticks=_xticks(t),
-                    title=title,
-                    colorbar_title="[dB/Hz]",
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
-    end
+    cb_title = "[μV^2/Hz]"
+    norm == true && cb_title = "[dB/Hz]"
+    spec_power = pow2db.(spec.power)
+
+    p = heatmap(t,
+                spec.freq,
+                spec_power,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                ylims=frq_lim,
+                xticks=_xticks(t),
+                title=title,
+                colorbar_title=cb_title,
+                titlefontsize=10,
+                xlabelfontsize=8,
+                ylabelfontsize=8,
+                xtickfontsize=4,
+                ytickfontsize=4;
+                kwargs...)
 
     return p
 end
