@@ -109,6 +109,9 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- mean alpha frequency / amplitude
+- signal scale in eeg_plot_signal() 50 or 100 μV
+- custom montage (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
 - PSD lin-log (x-y), log-lin or log-log axes

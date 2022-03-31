@@ -2579,7 +2579,7 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     t = collect(spec.time) .+ offset
 
     cb_title = "[μV^2/Hz]"
-    norm == true && cb_title = "[dB/Hz]"
+    norm == true && (cb_title = "[dB/Hz]")
     spec_power = pow2db.(spec.power)
 
     p = heatmap(t,
