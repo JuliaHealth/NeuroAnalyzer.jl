@@ -63,11 +63,12 @@ The majority of `eeg_` functions will process all channels and epochs of the inp
 
 `eeg_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
-EEG object (headers + time + components + EEG signal) is stored in the EEG structure:
+EEG object (headers + time + epochs time + EEG signal + (optional) components) is stored in the EEG structure:
 ```julia
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
+    eeg_epochs_time::Matrix{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
 end
@@ -77,7 +78,7 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 ## Documentation
 
-NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
+Complete NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
 
 Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
 
