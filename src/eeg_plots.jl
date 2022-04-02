@@ -259,20 +259,26 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
 
     channel_n = size(signal, 1)
 
+    ylim = extrema(signal[:, 1:length(t)])
+    (abs(ylim[1]) >= 1 || abs(ylim[2]) >= 1) && (ylim = (floor(ylim[1]), ceil(ylim[2])))
+    (abs(ylim[1]) >=10 || abs(ylim[2]) >= 10) && (ylim = (floor(ylim[1], digits=-1), ceil(ylim[2], digits=-1)))
+    (abs(ylim[1]) >=100 || abs(ylim[2]) >= 100) && (ylim = (floor(ylim[1], digits=-2), ceil(ylim[2], digits=-2)))
+
     # reverse so 1st channel is on top
-    channel_color = channel_n:-1:1
-    signal = reverse(signal[:, :], dims = 1)
-    s_normalized = zeros(size(signal))
+    # channel_color = channel_n:-1:1
+    # signal = reverse(signal[:, :], dims = 1)
+    # s_normalized = zeros(size(signal))
 
     # normalize and shift so all channels are visible
-    variances = var(signal, dims=2)
-    mean_variance = mean(variances)
-    for idx in 1:channel_n
-        s = @view signal[idx, :]
-        s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
-    end
+    # variances = var(signal, dims=2)
+    # mean_variance = mean(variances)
+    # for idx in 1:channel_n
+    #     s = @view signal[idx, :]
+    #     s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
+    # end
 
     # plot channels
+    #=
     p = plot(xlabel=xlabel,
              ylabel=ylabel,
              xlims=_xlims(t),
@@ -286,15 +292,78 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
              xtickfontsize=8,
              ytickfontsize=8;
              kwargs...)
-    for idx in 1:channel_n
-        p = plot!(t,
-                  s_normalized[idx, 1:length(t)],
-                  linewidth=0.5,
-                  label="",
-                  color=channel_color[idx])
-    end
+    =#
 
-    p = plot!(yticks=((channel_n - 1):-1:0, labels))
+    p = []
+    pp = plot(t,
+              signal[1, 1:length(t)],
+              linewidth=0.5,
+              label="",
+              color=1,
+              title=title,
+              xaxis=false,
+              xticks=false,
+              xlabel="",
+              xlims=_xlims(t),
+              ylims=ylim,
+              yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[1], "\n\n"*string(ylim[2])]),
+              bottom_margin=-10Plots.px,
+              size=(2400, 300))
+    pp = plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+    push!(p, pp)
+    if channel_n > 2
+        for idx in 2:(channel_n - 1)
+            pp = plot(t,
+                      signal[idx, 1:length(t)],
+                      linewidth=0.5,
+                      label="",
+                      color=idx,
+                      title="",
+                      xaxis=false,
+                      xticks=false,
+                      xlabel="",
+                      xlims=_xlims(t),
+                      ylims=ylim,
+                      yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[idx], "\n\n"*string(ylim[2])]),
+                      top_margin=-10Plots.px,
+                      bottom_margin=-10Plots.px,
+                      size=(2400, 300))
+            pp = plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+            push!(p, pp)
+        end
+    end
+    pp = plot(t,
+              signal[channel_n, 1:length(t)],
+              linewidth=0.5,
+              label="",
+              color=channel_n,
+              title="",
+              xaxis=true,
+              xticks=_xticks(t),
+              xlabel=xlabel,
+              xlims=_xlims(t),
+              ylims=ylim,
+              yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[channel_n], "\n\n"*string(ylim[2])]),
+              top_margin=-10Plots.px,
+              bottom_margin=50Plots.px,
+              size=(2400, 200))
+    pp = plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+    push!(p, pp)
+
+    p = plot(p...,
+              layout=(size(p, 1), 1),
+              size=(2400, size(p, 1) * 200),
+              left_margin=60Plots.px,
+              right_margin=30Plots.px,
+              grid=false,
+              palette=:darktest,
+              titlefontsize=20,
+              xlabelfontsize=16,
+              ylabelfontsize=16,
+              xtickfontsize=16,
+              ytickfontsize=16;
+              kwargs...)
+    # p = plot!(yticks=((channel_n - 1):-1:0, labels))
 
     return p
 end
@@ -376,7 +445,8 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
 
     epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signal$(_pl(channel))\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+    length(channel) == 1 && (title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
+    length(channel) != 1 && (title == "" && (title = "Signals amplitude [μV]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
 
     p = plot_signal(t,
                     signal,
@@ -387,19 +457,21 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
                     kwargs...)
 
     # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        if typeof(signal) == Vector{Float64}
-            for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
-            end
-        else
-            for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
+    if length(channel) == 1
+        if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
+            p = vline!(epoch_markers,
+                       linestyle=:dash,
+                       linewidth=0.2,
+                       linecolor=:black,
+                       label="")
+            if typeof(signal) == Vector{Float64}
+                for idx in 1:length(epoch_markers)
+                    p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
+                end
+            else
+                for idx in 1:length(epoch_markers)
+                    p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
+                end
             end
         end
     end
@@ -640,6 +712,7 @@ function eeg_plot_component_idx(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Sym
             (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
         end
     end
+    length(c_idx) == 1 && (c_idx = c_idx[1])
 
     labels = Vector{String}()
     for idx in 1:length(c_idx)
@@ -1001,6 +1074,7 @@ function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Fl
             (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
         end
     end
+    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
 
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))

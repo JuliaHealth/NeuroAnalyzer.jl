@@ -96,7 +96,6 @@ neuroj_plugin_demo()
 
 - ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
 - check for wrong epoch number in plots
-- for multi epochs plots time should repeat epoch_time
 
 ## To do
 
@@ -109,8 +108,8 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- IEEG/ECoG
 - mean alpha frequency / amplitude
-- signal scale in eeg_plot_signal() 50 or 100 μV
 - custom montage (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
@@ -118,7 +117,7 @@ EEG:
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - wPLI
-- remove baseline
+- set baseline
 - sync epoch starts at phase = 0
 - topo plots: asymmetric color bars to highlight increase/decrease in activity
 - PSD of short epochs

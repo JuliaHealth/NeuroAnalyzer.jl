@@ -383,32 +383,14 @@ m = eeg_coherence(edf_alpha, channel1=1, channel2=2, epoch1=1, epoch2=2)
 plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
 ```
 
-PCA:
+Generate PCA:
 ```julia
-edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
-edf1 = eeg_epochs(edf1, epoch_len=10*eeg_sr(edf1), average=true)
-edf1 = eeg_keep_channel(edf1, 3)
-edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:beta), order=8)
-edf2 = eeg_epochs(edf2, epoch_len=10*eeg_sr(edf2), average=true)
-edf2 = eeg_keep_channel(edf2, 4)
-pc, pc_var = eeg_pca(edf1, n=4)
-plot(pc[1, :, 1, 1])
-bar(vec(pc_var))
-
-pc, pc_var = eeg_pca(edf, n=4)
-plot(pc[1, :, 1, 1])
-bar(vec(pc_var))
+pc, pc_m, pc_var = eeg_pca(edf, n=4)
 ```
 
 Generate ICAs:
 ```julia
-i, i_w, i_m = eeg_ica(edf, n=15, tol=1.0)
-```
-
-Plot ICAs:
-```julia
-eeg_plot_ica(edf, ic=1:5)
-eeg_plot_ica(edf, ic=1)
+i, i_mw = eeg_ica(edf, n=15, tol=1.0)
 ```
 
 Remove ICA #001 component from the signal:
@@ -458,12 +440,15 @@ Plot multi-channel:
 ```julia
 p = eeg_plot_signal(edf)
 eeg_plot_save(p, file_name="images/edf_channels.png")
+eeg_plot_save(p, file_name="images/edf_channels-2.png")
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 p = eeg_plot_electrodes(edf, selected=1:19, labels=true)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
 ![edf channels](images/edf_channels.png)
+
+![edf channels](images/edf_channels-2.png)
 
 ![edf electrodes](images/edf_electrodes.png)
 
@@ -559,14 +544,28 @@ eeg_plot_save(p, file_name="images/edf_amp.png")
 
 ![edf topo :amp](images/edf_amp.png)
 
+Plot PCA components:
+```julia
+pc, pc_m, pc_var = eeg_pca(edf, n=10)
+p = eeg_plot_component_idx(edf, c=pc, c_idx=1:5, epoch=1)
+eeg_plot_save(p, file_name="images/edf_pca_1_5.png")
+ bar(vec(pc_var))
+```
+
+![pca](images/edf_pca_1_5.png)
+
 Plot ICA components:
 ```julia
 ic, icm = eeg_ica(edf, n=16, tol=0.99)
+p = eeg_plot_component_idx(edf, c=ic, c_idx=1:10, epoch=1)
+eeg_plot_save(p, file_name="images/edf_ica_1_10.png")
 eeg_add_component!(edf, c=:ica, v=ic)
 eeg_add_component!(edf, c=:ica_mw, v=icm)
 p = eeg_plot_ica_topo(edf, epoch=1, len=256, ic=1:8)
 eeg_plot_save(p, file_name="images/edf_ica_1_8.png")
 ```
+
+![edf amplitude :ica](images/edf_ica_1_10.png)
 
 ![edf topo :ica](images/edf_ica_1_8.png)
 
