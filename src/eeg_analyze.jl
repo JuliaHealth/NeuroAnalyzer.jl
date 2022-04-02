@@ -451,6 +451,37 @@ function eeg_entropy(eeg::NeuroJ.EEG)
 end
 
 """
+    eeg_negentropy(eeg)
+
+Calculate negentropy of all channels of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `ne::Matrix{Float64}`
+"""
+function eeg_negentropy(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    ne = zeros(channel_n, epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for idx in 1:channel_n
+            s = @view eeg.eeg_signals[idx, :, epoch_idx]
+            ne[idx, epoch_idx] = s_negentropy(s)
+        end
+    end
+
+    return ne
+end
+
+"""
     eeg_band(eeg, band)
 
 Return frequency limits for a `band` range.
@@ -729,6 +760,7 @@ Named tuple containing:
 - `e_std::Vector(Float64)`: standard deviation
 - `e_var::Vector(Float64)`: variance
 - `e_kurt::Vector(Float64)`: kurtosis
+- `e_skew::Vector(Float64)`: skewness
 - `e_mean_diff::Vector(Float64)`: mean diff value
 - `e_median_diff::Vector(Float64)`: median diff value
 - `e_max_dif::Vector(Float64)`: max difference
@@ -744,6 +776,7 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
     e_std = zeros(epoch_n)
     e_var = zeros(epoch_n)
     e_kurt = zeros(epoch_n)
+    e_skew = zeros(epoch_n)
     e_mean_diff = zeros(epoch_n)
     e_median_diff = zeros(epoch_n)
     e_max_dif = zeros(epoch_n)
@@ -756,13 +789,14 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
         e_std[epoch_idx] = std(s)
         e_var[epoch_idx] = var(s)
         e_kurt[epoch_idx] = kurtosis(s)
+        e_skew[epoch_idx] = skewness(s)
         e_mean_diff = mean(diff(s, dims=2))
         e_median_diff = median(diff(s, dims=2))
         e_max_dif = maximum(s) - minimum(s)
         e_dev_mean = abs(mean(s)) - mean(s)
     end
 
-    return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
+    return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_skew=e_skew, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
 end
 
 """
@@ -904,6 +938,7 @@ Named tuple containing:
 - `c_std::Matrix(Float64)`: standard deviation
 - `c_var::Matrix(Float64)`: variance
 - `c_kurt::Matrix(Float64)`: kurtosis
+- `c_skew::Matrix(Float64)`: skewness
 - `c_mean_diff::Matrix(Float64)`: mean diff value
 - `c_median_diff::Matrix(Float64)`: median diff value
 - `c_max_dif::Matrix(Float64)`: max difference
@@ -921,6 +956,7 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
     c_std = zeros(channel_n, epoch_n)
     c_var = zeros(channel_n, epoch_n)
     c_kurt = zeros(channel_n, epoch_n)
+    c_skew = zeros(channel_n, epoch_n)
     c_mean_diff = zeros(channel_n, epoch_n)
     c_median_diff = zeros(channel_n, epoch_n)
     c_max_dif = zeros(channel_n, epoch_n)
@@ -934,6 +970,7 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
             c_std[idx, epoch_idx] = std(s)
             c_var[idx, epoch_idx] = var(s)
             c_kurt[idx, epoch_idx] = kurtosis(s)
+            c_skew[idx, epoch_idx] = skewness(s)
             c_mean_diff[idx, epoch_idx] = mean(diff(s))
             c_median_diff[idx, epoch_idx] = median(diff(s))
             c_max_dif[idx, epoch_idx] = maximum(s) - minimum(s)
@@ -941,7 +978,7 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
         end
     end
 
-    return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_max_dif=c_max_dif, c_dev_mean=c_dev_mean)
+    return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_skew=c_skew, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_max_dif=c_max_dif, c_dev_mean=c_dev_mean)
 end
 
 """

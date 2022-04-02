@@ -102,6 +102,7 @@ export s_stationarity_var
 export s_trim
 export s2_mi
 export s_entropy
+export s_negentropy
 export s_average
 export s2_average
 export s2_coherence
@@ -234,6 +235,7 @@ export eeg_stationarity
 export eeg_mi
 export eeg_mi
 export eeg_entropy
+export eeg_negentropy
 export eeg_band
 export eeg_coherence
 export eeg_coherence
@@ -318,6 +320,7 @@ export plot_psd
 export plot_psd_avg
 export plot_psd_butterfly
 export plot_signal
+export plot_signal_scaled
 export plot_signal_avg
 export plot_signal_butterfly
 export plot_spectrogram

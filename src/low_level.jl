@@ -2025,6 +2025,27 @@ function s_entropy(signal::AbstractArray)
 end
 
 """
+    s_negentropy(signal)
+
+Calculate negentropy of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `ent::Float64`
+"""
+function s_negentropy(signal::AbstractArray)
+
+    s = s_demean(signal)
+    ne = 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)
+
+    return ne
+end
+
+"""
     s_average(signal)
 
 Average all channels of `signal`.

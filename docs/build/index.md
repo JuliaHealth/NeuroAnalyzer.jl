@@ -2191,6 +2191,25 @@ Calculate entropy of all channels of `eeg`.
 
   * `entropy::Matrix{Float64}`
 
+<a id='NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_negentropy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_negentropy(eeg)
+```
+
+Calculate negentropy of all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `ne::Matrix{Float64}`
+
 <a id='NeuroJ.eeg_band-Tuple{Any}' href='#NeuroJ.eeg_band-Tuple{Any}'>#</a>
 **`NeuroJ.eeg_band`** &mdash; *Method*.
 
@@ -2348,6 +2367,7 @@ Named tuple containing:
   * `e_std::Vector(Float64)`: standard deviation
   * `e_var::Vector(Float64)`: variance
   * `e_kurt::Vector(Float64)`: kurtosis
+  * `e_skew::Vector(Float64)`: skewness
   * `e_mean_diff::Vector(Float64)`: mean diff value
   * `e_median_diff::Vector(Float64)`: median diff value
   * `e_max_dif::Vector(Float64)`: max difference
@@ -2467,6 +2487,7 @@ Named tuple containing:
   * `c_std::Matrix(Float64)`: standard deviation
   * `c_var::Matrix(Float64)`: variance
   * `c_kurt::Matrix(Float64)`: kurtosis
+  * `c_skew::Matrix(Float64)`: skewness
   * `c_mean_diff::Matrix(Float64)`: mean diff value
   * `c_median_diff::Matrix(Float64)`: median diff value
   * `c_max_dif::Matrix(Float64)`: max difference
@@ -2949,6 +2970,31 @@ Plot single-channel `signal`.
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal_scaled(t, signal; <keyword arguments>)
+```
+
+Plot scaled multi-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::AbstractArray`
+  * `labels::Vector{String}=[""]`: labels vector
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
   * `kwargs`: optional arguments for plot() function
 
@@ -5840,6 +5886,25 @@ s_entropy(signal)
 ```
 
 Calculate entropy of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `ent::Float64`
+
+<a id='NeuroJ.s_negentropy-Tuple{AbstractArray}' href='#NeuroJ.s_negentropy-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_negentropy`** &mdash; *Method*.
+
+
+
+```julia
+s_negentropy(signal)
+```
+
+Calculate negentropy of `signal`.
 
 **Arguments**
 

@@ -179,6 +179,71 @@ end
 ################################
 
 """
+    plot_signal_scaled(t, signal; <keyword arguments>)
+
+Plot scaled multi-channel `signal`.
+
+# Arguments
+
+- `t::Union{Vector{<:Real}, AbstractRange}`
+- `signal::AbstractArray`
+- `labels::Vector{String}=[""]`: labels vector
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Channels"`: y-axis label
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+
+    typeof(t) <: AbstractRange && (t = float(collect(t)))
+
+    channel_n = size(signal, 1)
+
+    # reverse so 1st channel is on top
+    channel_color = channel_n:-1:1
+    signal = reverse(signal[:, :], dims = 1)
+    s_normalized = zeros(size(signal))
+
+    # normalize and shift so all channels are visible
+    variances = var(signal, dims=2)
+    mean_variance = mean(variances)
+    for idx in 1:channel_n
+        s = @view signal[idx, :]
+        s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
+    end
+
+    # plot channels
+    p = plot(xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=_xlims(t),
+             xticks=_xticks(t),
+             ylims=(-0.5, channel_n-0.5),
+             title=title,
+             palette=:darktest,
+             titlefontsize=10,
+             xlabelfontsize=8,
+             ylabelfontsize=8,
+             xtickfontsize=8,
+             ytickfontsize=8;
+             kwargs...)
+    for idx in 1:channel_n
+        p = plot!(t,
+                  s_normalized[idx, 1:length(t)],
+                  linewidth=0.5,
+                  label="",
+                  color=channel_color[idx])
+    end
+
+    p = plot!(yticks=((channel_n - 1):-1:0, labels))
+
+    return p
+end
+
+"""
     plot_signal(t, signal; <keyword arguments>)
 
 Plot single-channel `signal`.

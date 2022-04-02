@@ -63,6 +63,7 @@ p, f = s_psd(ones(10), fs=10)
 @test s_trim(ones(10), offset=1, len=5) == ones(5)
 @test s2_mi(ones(10), ones(10)) == 0.0
 @test s_entropy([1, 2, 3]) == 1.5849625007211552
+@test s_negentropy([1, 2, 3]) == -0.16602396751648252
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
 @test s2_coherence([1, 2], [3, 4]) == [5.25 - 0.0im; 0.25 + 0.0im]

@@ -118,6 +118,8 @@ m = eeg_mi(edf, edf)
 
 e = eeg_entropy(edf)
 @test size(e) == (19, 1)
+e = eeg_negentropy(edf)
+@test size(e) == (19, 1)
 
 a = eeg_band(edf, band=:alpha)
 @test a == (8, 13)
@@ -153,7 +155,7 @@ e = eeg_pick(edf, pick=:left)
 
 e = eeg_epochs(edf, epoch_len=20*256)
 v = eeg_epochs_stats(e)
-@test length(v) == 9
+@test length(v) == 10
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
 i, _ = eeg_ica(e, n=5, tol=1.0)
@@ -161,7 +163,7 @@ i, _ = eeg_ica(e, n=5, tol=1.0)
 
 e = eeg_copy(edf)
 e_stats = eeg_epochs_stats(e)
-@test length(e_stats) == (9)
+@test length(e_stats) == (10)
 eeg_add_component!(e, c=:epochs_mean, v=e_stats[1])
 v = eeg_extract_component(e, c=:epochs_mean)
 @test size(v) == (1, )
@@ -211,7 +213,7 @@ c = eeg_comment(edf)
 @test c == ""
 
 v = eeg_channels_stats(edf)
-@test length(v) == 9
+@test length(v) == 10
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 v = eeg_snr(edf)
