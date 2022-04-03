@@ -114,7 +114,8 @@ EEG:
 - custom montage (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
-- PSD lin-log (x-y), log-lin or log-log axes
+- PSD/spectrogram lin-log (x-y), log-lin or log-log axes
+- wavelets
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - wPLI
