@@ -329,36 +329,6 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
     (abs(ylim[1]) >=10 || abs(ylim[2]) >= 10) && (ylim = (floor(ylim[1], digits=-1), ceil(ylim[2], digits=-1)))
     (abs(ylim[1]) >=100 || abs(ylim[2]) >= 100) && (ylim = (floor(ylim[1], digits=-2), ceil(ylim[2], digits=-2)))
 
-    # reverse so 1st channel is on top
-    # channel_color = channel_n:-1:1
-    # signal = reverse(signal[:, :], dims = 1)
-    # s_normalized = zeros(size(signal))
-
-    # normalize and shift so all channels are visible
-    # variances = var(signal, dims=2)
-    # mean_variance = mean(variances)
-    # for idx in 1:channel_n
-    #     s = @view signal[idx, :]
-    #     s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
-    # end
-
-    # plot channels
-    #=
-    p = plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=_xlims(t),
-             xticks=_xticks(t),
-             ylims=(-0.5, channel_n-0.5),
-             title=title,
-             palette=:darktest,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
-             xtickfontsize=8,
-             ytickfontsize=8;
-             kwargs...)
-    =#
-
     p = []
     pp = plot(t,
               signal[1, 1:length(t)],
@@ -428,7 +398,6 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
               xtickfontsize=16,
               ytickfontsize=16;
               kwargs...)
-    # p = plot!(yticks=((channel_n - 1):-1:0, labels))
 
     return p
 end
@@ -443,6 +412,7 @@ Plot `eeg` channel or channels.
 - `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `scaled::Bool=false` if true than scale signals before plotting so all signals will fit the plot
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
@@ -454,7 +424,7 @@ Plot `eeg` channel or channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -513,16 +483,22 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
     length(channel) == 1 && (title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
     length(channel) != 1 && (title == "" && (title = "Signals amplitude [μV]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
 
-    p = plot_signal(t,
-                    signal,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title;
-                    kwargs...)
-
+    scaled == false && (p = plot_signal(t,
+                                        signal,
+                                        labels=labels,
+                                        xlabel=xlabel,
+                                        ylabel=ylabel,
+                                        title=title;
+                                        kwargs...))
+    scaled == true && (p = plot_signal_scaled(t,
+                                              signal,
+                                              labels=labels,
+                                              xlabel=xlabel,
+                                              ylabel=ylabel,
+                                              title=title;
+                                              kwargs...))
     # add epochs markers
-    if length(channel) == 1
+    if length(channel) == 1 && scaled == true
         if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
             p = vline!(epoch_markers,
                        linestyle=:dash,

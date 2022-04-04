@@ -438,8 +438,9 @@ bar(v)
 
 Plot multi-channel:
 ```julia
-p = eeg_plot_signal(edf)
+p = eeg_plot_signal(edf, scaled=false)
 eeg_plot_save(p, file_name="images/edf_channels.png")
+p = eeg_plot_signal(edf, scaled=true)
 eeg_plot_save(p, file_name="images/edf_channels-2.png")
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 p = eeg_plot_electrodes(edf, selected=1:19, labels=true)
