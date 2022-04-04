@@ -1960,13 +1960,13 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 ## EEG analyze
 
-<a id='NeuroJ.eeg_total_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_total_power-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_total_power`** &mdash; *Method*.
+<a id='NeuroJ.eeg_total_power' href='#NeuroJ.eeg_total_power'>#</a>
+**`NeuroJ.eeg_total_power`** &mdash; *Function*.
 
 
 
 ```julia
-eeg_total_power(eeg)
+eeg_total_power(eeg, mt)
 ```
 
 Calculate total power of the `eeg`.
@@ -1974,6 +1974,7 @@ Calculate total power of the `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -1985,7 +1986,7 @@ Calculate total power of the `eeg`.
 
 
 ```julia
-eeg_band_power(eeg; f)
+eeg_band_power(eeg; f, mt)
 ```
 
 Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
@@ -1994,6 +1995,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
   * `eeg::NeuroJ.EEG`
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -2104,6 +2106,7 @@ Calculate total power for each the `eeg` channels.
 
   * `eeg::NeuroJ.EEG`
   * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -2379,7 +2382,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_spectrogram(eeg; norm, demean)
+eeg_spectrogram(eeg; norm, mt, demean)
 ```
 
 Return spectrogram of `eeg`.
@@ -2388,6 +2391,7 @@ Return spectrogram of `eeg`.
 
   * `eeg::NeuroJ.EEG`
   * `norm::Bool`=true: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `demean::Bool`=true: demean signal prior to analysis
 
 **Returns**
@@ -2810,6 +2814,7 @@ Calculate power (in dB) envelope of `eeg`.
 
   * `eeg::NeuroJ.EEG`
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -2834,6 +2839,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -2860,6 +2866,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -2876,7 +2883,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv(eeg; d)
+eeg_senv(eeg; d, mt)
 ```
 
 Calculate spectral (in dB) envelope of `eeg`.
@@ -2885,6 +2892,7 @@ Calculate spectral (in dB) envelope of `eeg`.
 
   * `eeg::NeuroJ.EEG`
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
 
 **Returns**
 
@@ -2899,7 +2907,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_mean(eeg; dims, d)
+eeg_senv_mean(eeg; dims, d, mt)
 ```
 
 Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
@@ -2909,6 +2917,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
 
 **Returns**
 
@@ -2925,7 +2934,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_median(eeg; dims, d)
+eeg_senv_median(eeg; dims, d, mt)
 ```
 
 Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
@@ -2935,6 +2944,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
   * `eeg::NeuroJ.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
 
 **Returns**
 
@@ -3073,6 +3083,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
@@ -3347,6 +3358,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
@@ -3463,6 +3475,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
@@ -3519,6 +3532,7 @@ Plot `signal` channel power spectrum density.
   * `signal::Vector{<:Real}`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -3545,6 +3559,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `signal::Matrix{Float64}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -3572,6 +3587,7 @@ Butterfly plot of `signal` channels power spectrum density.
   * `signal::Matrix{Float64}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -3773,6 +3789,7 @@ Plot spectrogram of `signal`.
   * `fs::Int64`: sampling frequency
   * `offset::Real`: displayed segment offset in seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3802,6 +3819,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -3831,6 +3849,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -3859,6 +3878,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `channel::Int64`: channel to display
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -3889,6 +3909,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -3917,6 +3938,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `c_idx::Int64`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Times [s]`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3945,6 +3967,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -5440,6 +5463,7 @@ Calculates `signal` total power.
 
   * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -5725,6 +5749,7 @@ Calculate power spectrum density of the `signal`.
   * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -5747,6 +5772,7 @@ Calculate power spectrum density of the `signal`.
   * `signal::Matrix{Float64}`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -5769,6 +5795,7 @@ Calculate power spectrum density of the `signal`.
   * `signal::Array{Float64, 3}`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -6098,6 +6125,7 @@ Calculate spectrogram of `signal`.
   * `signal::AbstractArray`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**

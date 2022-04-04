@@ -559,6 +559,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize the `signal` prior to calculations
+- `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
@@ -571,7 +572,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
@@ -657,8 +658,8 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
 
     # cannot plot electrodes without locations
     eeg.eeg_header[:channel_locations] == false && (head = false)
-    psd = eeg_plot_signal_psd(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]")
+    psd = eeg_plot_signal_psd(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
+    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]")
     ht_a = eeg_plot_histogram(eeg, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(signal)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
@@ -1376,6 +1377,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=false`: normalize the `signal` prior to calculations
+- `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
@@ -1389,7 +1391,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
+function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mt::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg_details() channel must contain ≥ 2 channels."))
 
@@ -1484,8 +1486,8 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     # cannot plot electrodes without locations
     eeg.eeg_header[:channel_locations] == false && (head = false)
     eeg_avg = eeg_average(eeg)
-    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
+    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg_avg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(s_normalized_m)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
@@ -1777,6 +1779,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=false`: normalize the `signal` prior to calculations
+- `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
 - `title::String=""`: plot title
@@ -1790,7 +1793,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
+function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mt::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly_details() channel must contain ≥ 2 channels."))
 
@@ -1886,8 +1889,8 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
 
     # cannot plot electrodes without locations
     eeg.eeg_header[:channel_locations] == false && (head = false)
-    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
+    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, mt=mt, legend=false, ylabel="Power [dB]")
+    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false)
     ht_a = eeg_plot_histogram(eeg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram")
     _, _, _, s_phase = s_spectrum(s_normalized_m)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black)
@@ -1989,6 +1992,7 @@ Plot `signal` channel power spectrum density.
 - `signal::Vector{<:Real}`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]"`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -1999,10 +2003,10 @@ Plot `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", kwargs...)
+function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
     frq_lim = tuple_order(frq_lim)
@@ -2038,6 +2042,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 - `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -2049,12 +2054,12 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > s_frq[end]) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(s_frq[end])."))
@@ -2063,7 +2068,7 @@ function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_l
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     s_pow = s_pow[:, :, 1]
     s_frq = s_frq[:, :, 1]
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
@@ -2118,6 +2123,7 @@ Butterfly plot of `signal` channels power spectrum density.
 - `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -2129,12 +2135,12 @@ Butterfly plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > s_frq[end]) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(s_frq[end])."))
@@ -2143,7 +2149,7 @@ function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true,
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     s_pow = s_pow[:, :, 1]
     s_frq = s_frq[:, :, 1]
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
@@ -2693,6 +2699,7 @@ Plot spectrogram of `signal`.
 - `fs::Int64`: sampling frequency
 - `offset::Real`: displayed segment offset in seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -2703,7 +2710,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
+function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2714,7 +2721,8 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     interval = fs
     overlap = round(Int64, fs * 0.85)
 
-    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    mt == false && (spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+    mt == true && (spec = mt_spectrogram(signal, fs=fs))
     t = collect(spec.time) .+ offset
 
     cb_title = "[μV^2/Hz]"
@@ -2740,6 +2748,7 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     return p
 end
 
+
 """
     eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
 
@@ -2753,6 +2762,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -2763,7 +2773,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -2835,6 +2845,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                              fs=fs,
                              offset=offset,
                              norm=norm,
+                             mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -2855,7 +2866,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     else
         ylabel = "Channels"
         xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm)
+        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
         colorbar_title="[μV^2/Hz]"
         norm == true && (colorbar_title = "[dB/Hz]")
         p = heatmap(s_frq[1, :],
@@ -2893,6 +2904,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -2903,7 +2915,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
     _check_channels(eeg, channel)
@@ -2965,6 +2977,7 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
                          fs=fs,
                          offset=offset,
                          norm=norm,
+                         mt=mt,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          frq_lim=frq_lim,
@@ -3000,6 +3013,7 @@ Plots spectrogram of `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `channel::Int64`: channel to display
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -3010,7 +3024,7 @@ Plots spectrogram of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -3054,6 +3068,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                              fs=fs,
                              offset=0,
                              norm=norm,
+                             mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -3062,7 +3077,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(c, fs=fs, norm=norm)
+        s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
         colorbar_title="[μV^2/Hz]"
         norm == true && (colorbar_title = "[dB/Hz]")
         p = heatmap(s_frq[1, :],
@@ -3101,6 +3116,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -3111,7 +3127,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3177,6 +3193,7 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
                          fs=fs,
                          offset=offset,
                          norm=norm,
+                         mt=mt,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          frq_lim=frq_lim,
@@ -3212,6 +3229,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Int64`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Times [s]`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3222,7 +3240,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3268,6 +3286,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
                              fs=fs,
                              offset=offset,
                              norm=norm,
+                             mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -3276,7 +3295,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(c, fs=fs, norm=norm)
+        s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
         colorbar_title="[μV^2/Hz]"
         norm == true && (colorbar_title = "[dB/Hz]")
         p = heatmap(s_frq[1, :],
@@ -3313,6 +3332,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3323,7 +3343,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3371,6 +3391,7 @@ function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{
     p = plot_spectrogram(c,
                          fs=fs,
                          norm=norm,
+                         mt=mt,
                          frq_lim=frq_lim,
                          xlabel=xlabel,
                          ylabel=ylabel,

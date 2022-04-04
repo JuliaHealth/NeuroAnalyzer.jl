@@ -1244,16 +1244,18 @@ Calculates `signal` total power.
 
 - `signal::AbstractArray`
 - `fs::Int64`: sampling rate
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `stp::Float64`: signal total power
 """
-function s_total_power(signal::AbstractArray; fs::Int64)
+function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    psd = welch_pgram(signal, 4*fs, fs=fs)
+    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
+    mt == true && (psd = mt_pgram(signal, fs=fs))
     # dx: frequency resolution
     dx = psd.freq[2] - psd.freq[1]
     stp = simpson(psd.power, dx=dx)
@@ -1276,9 +1278,11 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
 - `stp::Float64`: signal total power
 """
-function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real})
+function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
-    psd = welch_pgram(signal, 4*fs, fs=fs)
+    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
+    mt == true && (psd = mt_pgram(signal, fs=fs))
+
     psd_freq = Vector(psd.freq)
     
     f1_idx = vsearch(f[1], psd_freq)
@@ -1791,17 +1795,19 @@ Calculate power spectrum density of the `signal`.
 - `signal::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
-function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false)
+function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     
-    psd = welch_pgram(signal, 4*fs, fs=fs)
+    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
+    mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
     psd_frq = freq(psd)
     norm == true && (psd_pow = pow2db.(psd_pow))
@@ -1818,24 +1824,25 @@ Calculate power spectrum density of the `signal`.
 - `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `psd_pow::Matrix{Float64}`
 - `psd_frq::Matrix{Float64}`
 """
-function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false)
+function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
     channel_n = size(signal, 1)
-    psd_tmp, frq_tmp = s_psd(signal[1, :], fs=fs, norm=norm)
+    psd_tmp, frq_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_tmp))
     psd_frq = zeros(channel_n, length(frq_tmp))
 
     @inbounds @simd for idx in 1:channel_n
         s = @view signal[idx, :]
-        psd_pow[idx, :], psd_frq[idx, :] = s_psd(s, fs=fs, norm=norm)
+        psd_pow[idx, :], psd_frq[idx, :] = s_psd(s, fs=fs, norm=norm, mt=mt)
     end
     
     return psd_pow, psd_frq
@@ -1850,26 +1857,27 @@ Calculate power spectrum density of the `signal`.
 - `signal::Array{Float64, 3}`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `psd_pow::Array{Float64, 3}`
 - `psd_frq::Array{Float64, 3}`
 """
-function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false)
+function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
-    psd_tmp, frq_tmp = s_psd(signal[1, :, 1], fs=fs, norm=norm)
+    psd_tmp, frq_tmp = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
     psd_frq = zeros(channel_n, length(frq_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view signal[idx, :, epoch_idx]
-            psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm)
+            psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm, mt=mt)
         end
     end
     
@@ -2327,6 +2335,7 @@ Calculate spectrogram of `signal`.
 - `signal::AbstractArray`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
@@ -2335,7 +2344,7 @@ Calculate spectrogram of `signal`.
 - `s_frq::Vector{Float64}`: frequencies
 - `s_t::Vector{Float64}`: time
 """
-function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean::Bool=true)
+function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bool=false, demean::Bool=true)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
 
@@ -2345,7 +2354,8 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, demean
     interval = fs
     overlap = round(Int64, fs * 0.85)
 
-    spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    mt == false && (spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+    mt == true && (spec = mt_spectrogram(signal, fs=fs))
     s_t = collect(spec.time)
     s_frq = Vector(spec.freq)
     if norm == true

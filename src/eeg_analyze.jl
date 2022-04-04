@@ -7,19 +7,20 @@
 ################################
 
 """
-    eeg_total_power(eeg)
+    eeg_total_power(eeg, mt)
 
 Calculate total power of the `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `stp::Matrix{Float64}`: total power for each channel per epoch
 """
-function eeg_total_power(eeg::NeuroJ.EEG)
+function eeg_total_power(eeg::NeuroJ.EEG, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -31,7 +32,7 @@ function eeg_total_power(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            stp[channel_idx, epoch_idx] = s_total_power(s, fs=fs)
+            stp[channel_idx, epoch_idx] = s_total_power(s, fs=fs, mt=mt)
         end
     end
 
@@ -39,7 +40,7 @@ function eeg_total_power(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_band_power(eeg; f)
+    eeg_band_power(eeg; f, mt)
 
 Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
 
@@ -47,12 +48,13 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
 - `eeg::NeuroJ.EEG`
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
 - `sbp::Matrix{Float64}`: band power for each channel per epoch
 """
-function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real})
+function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -69,7 +71,7 @@ function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real})
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            sbp[channel_idx, epoch_idx] = s_band_power(s, fs=fs, f=f)
+            sbp[channel_idx, epoch_idx] = s_band_power(s, fs=fs, f=f, mt=mt)
         end
     end
 
@@ -238,6 +240,7 @@ Calculate total power for each the `eeg` channels.
 
 - `eeg::NeuroJ.EEG`
 - `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
@@ -245,14 +248,14 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`:powers
 - `psd_frq::Array{Float64, 3}`: frequencies
 """
-function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
+function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     fs = eeg_sr(eeg)
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    psd_len, _ = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm)
+    psd_len, _ = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_len), epoch_n)
     psd_frq = zeros(channel_n, length(psd_len), epoch_n)
 
@@ -260,8 +263,9 @@ function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false)
         Threads.@threads for idx in 1:channel_n
             s = eeg.eeg_signals[idx, :, epoch_idx]
             psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s,
-                                                                   fs=fs,
-                                                                   norm=norm)
+                                                                           fs=fs,
+                                                                           norm=norm,
+                                                                           mt=mt)
         end
     end
 
@@ -800,7 +804,7 @@ function eeg_epochs_stats(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_spectrogram(eeg; norm, demean)
+    eeg_spectrogram(eeg; norm, mt, demean)
 
 Return spectrogram of `eeg`.
 
@@ -808,6 +812,7 @@ Return spectrogram of `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `norm::Bool`=true: normalize powers to dB
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 - `demean::Bool`=true: demean signal prior to analysis
 
 # Returns
@@ -817,14 +822,14 @@ Named tuple containing:
 - `s_frq::Matrix{Float64}`
 - `s_t::Matrix{Float64}`
 """
-function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
+function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    p_tmp, f_tmp, t_tmp = s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, demean=demean)
+    p_tmp, f_tmp, t_tmp = s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, demean=demean)
     s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
     s_frq = zeros(length(f_tmp), epoch_n)
     s_t = zeros(length(t_tmp), epoch_n)
@@ -832,7 +837,7 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, demean::Bool=true)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_pow[:, :, idx, epoch_idx], s_frq[:, epoch_idx], s_t[:, epoch_idx] = s_spectrogram(s, fs=fs, norm=norm, demean=demean)
+            s_pow[:, :, idx, epoch_idx], s_frq[:, epoch_idx], s_t[:, epoch_idx] = s_spectrogram(s, fs=fs, norm=norm, mt=mt, demean=demean)
         end
     end
 
@@ -1542,6 +1547,7 @@ Calculate power (in dB) envelope of `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
@@ -1549,7 +1555,7 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
+function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1557,14 +1563,16 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8)
     fs = eeg_sr(eeg)
 
     s_tmp = @view eeg.eeg_signals[1, :, 1]
-    psd_tmp = welch_pgram(s_tmp, 4*fs, fs=fs)
+    mt == false && (psd_tmp = welch_pgram(s_tmp, 4*fs, fs=fs))
+    mt == true && (psd_tmp = mt_pgram(s_tmp, fs=fs))
     p_env = zeros(channel_n, length(psd_tmp.freq), epoch_n)
     frq = psd_tmp.freq
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            psd = welch_pgram(s, 4*fs, fs=fs)
+            mt == false && (psd = welch_pgram(s, 4*fs, fs=fs))
+            mt == true && (psd = mt_pgram(s, fs=fs))
             psd_pow = pow2db.(psd.power)
             p_idx = s_findpeaks(psd_pow, d=d)
             pushfirst!(p_idx, 1)
@@ -1596,6 +1604,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
@@ -1605,14 +1614,14 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
+function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_f = eeg_psd(eeg, norm=true)
+    s_p, s_f = eeg_psd(eeg, norm=true, mt=mt)
 
     s_f = s_f[1, :, 1]
 
@@ -1685,6 +1694,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
@@ -1694,14 +1704,14 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
+function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_f = eeg_psd(eeg, norm=true)
+    s_p, s_f = eeg_psd(eeg, norm=true, mt=mt)
 
     s_f = s_f[1, :, 1]
 
@@ -1765,7 +1775,7 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8)
 end
 
 """
-    eeg_senv(eeg; d)
+    eeg_senv(eeg; d, mt)
 
 Calculate spectral (in dB) envelope of `eeg`.
 
@@ -1773,6 +1783,7 @@ Calculate spectral (in dB) envelope of `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 
 # Returns
 
@@ -1780,7 +1791,7 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
+function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1791,7 +1802,8 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
     nfft = length(s_tmp)
     interval = fs
     overlap = round(Int64, fs * 0.85)
-    spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    mt == false && (spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+    mt == true && (spec_tmp = mt_spectrogram(s_tmp, fs=fs))
     sp_t = collect(spec_tmp.time)
     sp_t .+= eeg.eeg_epochs_time[1]
 
@@ -1801,7 +1813,9 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch_idx]
 
-            spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+            mt == false && (spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+            mt == true && (spec = mt_spectrogram(s, fs=fs))
+
             s_p = pow2db.(spec.power)
             s_frq = Vector(spec.freq)
 
@@ -1831,7 +1845,7 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2)
 end
 
 """
-    eeg_senv_mean(eeg; dims, d)
+    eeg_senv_mean(eeg; dims, d, mt)
 
 Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 
@@ -1840,6 +1854,7 @@ Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 
 # Returns
 
@@ -1849,14 +1864,14 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
+function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_t = eeg_senv(eeg, d=d)
+    s_p, s_t = eeg_senv(eeg, d=d, mt=mt)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
@@ -1905,7 +1920,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
             s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     else
-        s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, d=d)
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, d=d, mt=mt)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
         s_env_l = mean(s_env_l, dims=2)
@@ -1918,7 +1933,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
 end
 
 """
-    eeg_senv_median(eeg; dims, d)
+    eeg_senv_median(eeg; dims, d, mt)
 
 Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 
@@ -1927,6 +1942,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 - `eeg::NeuroJ.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+- `mt::Bool=false`: if true use multi-tapered spectrogram
 
 # Returns
 
@@ -1936,14 +1952,14 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
+function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_t = eeg_senv(eeg, d=d)
+    s_p, s_t = eeg_senv(eeg, d=d, mt=mt)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
@@ -1992,7 +2008,7 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2)
             s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
         end
     else
-        s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, d=d)
+        s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, d=d, mt=mt)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
         s_env_l = median(s_env_l, dims=2)

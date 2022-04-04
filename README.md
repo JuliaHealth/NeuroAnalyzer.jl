@@ -109,9 +109,11 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- power envelope connectivity
 - IEEG/ECoG
 - mean alpha frequency / amplitude
 - custom montage (e.g. bipolar longitudinal/horizontal)
+- mastoid montage (averaged, ipsilateral, contralateral)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
 - PSD/spectrogram lin-log (x-y), log-lin or log-log axes
@@ -159,7 +161,6 @@ EEG:
 - automated cleaning of artifacts
 - bad channel marking / rejection
 - bad epoch marking / rejection
-- time-frequency analysis, DPSS
 - signals/spectra comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats
