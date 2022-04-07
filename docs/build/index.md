@@ -3053,6 +3053,7 @@ Plot `eeg` channel or channels.
   * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `scaled::Bool=false` if true than scale signals before plotting so all signals will fit the plot
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4450,7 +4451,7 @@ Plot filter response.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
+  * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
   * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
   * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
   * `order::Int64`: filter order
