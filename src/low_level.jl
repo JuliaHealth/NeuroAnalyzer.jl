@@ -1379,7 +1379,7 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         A[:,1] .= range(T(0),T(1),length=N)
         # create linear trend matrix
         R = transpose(A) * A
-        # do the matrix inverse for 2x2 matrix
+        # do the matrix inverse for 2×2 matrix
         Rinv = inv(Array(R)) |> typeof(R)
         factor = Rinv * transpose(A)
         s_det = signal .- A * (factor * signal)

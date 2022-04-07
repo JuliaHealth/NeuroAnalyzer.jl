@@ -175,6 +175,20 @@ function _t2epoch(eeg::NeuroJ.EEG, offset, len, epoch_tmp)
     end
     return epoch_tmp
 end
+function _fir_response(f::Vector{Float64}, w=range(0, stop=π, length=1024))
+    # code based on Matti Pastell "FIR filter design with Julia"
+    n = length(w)
+    h = Array{ComplexF32}(undef, n)
+    sw = 0
+    for i = 1:n
+        for j = 1:length(f)
+            sw += f[j] * exp(-im * w[i])^-j
+        end
+        h[i] = sw
+        sw = 0
+    end
+    return h
+end
 
 ################################
 
@@ -4931,7 +4945,7 @@ Plot filter response.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `fprototype::Symbol`: filter class: :butterworth, :chebyshev1, :chebyshev2, :elliptic
+- `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
 - `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
 - `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `order::Int64`: filter order
@@ -4944,12 +4958,12 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
+function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64=-1, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 
     fs = eeg_sr(eeg)
-
+    fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :fir, :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
+    fprototype !== :fir && order < 1 && throw(ArgumentError("order must be > 0."))
     ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs."))
-    fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
 
     if ftype === :lp
         length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
@@ -4967,6 +4981,16 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
     end
 
     fprototype === :butterworth && (prototype = Butterworth(order))
+    if fprototype === :fir
+        if window === nothing
+            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            window = hanning(3 * floor(Int64, fs / cutoff[1]))
+        end
+        if ftype === :hp || ftype === :bp || ftype === :bs
+            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+        end
+        prototype = FIRWindow(window)
+    end
     if fprototype === :chebyshev1
         (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Chebyshev1(order, rs)
@@ -4983,111 +5007,187 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
 
     ffilter = digitalfilter(responsetype, prototype)
 
-    H, w = freqresp(ffilter)
-    # convert to dB
-    H = 20 * log10.(abs.(H))
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p1 = plot(w,
-              H,
-              title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
-              xlims=(0, x_max),
-              ylabel="Magnitude\n[dB]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p1 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p1 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p1 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
+    if fprototype !== :fir
+        H, w = freqresp(ffilter)
+        # convert to dB
+        H = 20 * log10.(abs.(H))
+        # convert rad/sample to Hz
+        w = w .* fs / 2 / pi
+        x_max = w[end]
+        ftype === :hp && (x_max = cutoff * 10)
+        p1 = plot(w,
+                  H,
+                  title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
+                  xlims=(0, x_max),
+                  ylims=(-100, 0),
+                  ylabel="Magnitude\n[dB]",
+                  xlabel="Frequency [Hz]",
+                  label="",
+                  titlefontsize=10,
+                  xlabelfontsize=8,
+                  ylabelfontsize=8,
+                  xtickfontsize=4,
+                  ytickfontsize=4)
+        if length(cutoff) == 1
+            p1 = plot!((0, cutoff),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        else
+            p1 = plot!((0, cutoff[1]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+            p1 = plot!((0, cutoff[2]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        end
 
-    phi, w = phaseresp(ffilter)
-    phi = rad2deg.(angle.(phi))
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p2 = plot(w,
-              phi,
-              title="Phase response",
-              ylims=(-180, 180),
-              xlims=(0, x_max),
-              ylabel="Phase\n[°]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p2 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p2 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p2 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
+        phi, w = phaseresp(ffilter)
+        phi = rad2deg.(angle.(phi))
+        # convert rad/sample to Hz
+        w = w .* fs / 2 / pi
+        x_max = w[end]
+        ftype === :hp && (x_max = cutoff * 10)
+        p2 = plot(w,
+                  phi,
+                  title="Phase response",
+                  ylims=(-180, 180),
+                  xlims=(0, x_max),
+                  ylabel="Phase\n[°]",
+                  xlabel="Frequency [Hz]",
+                  label="",
+                  titlefontsize=10,
+                  xlabelfontsize=8,
+                  ylabelfontsize=8,
+                  xtickfontsize=4,
+                  ytickfontsize=4)
+        if length(cutoff) == 1
+            p2 = plot!((0, cutoff),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        else
+            p2 = plot!((0, cutoff[1]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+            p2 = plot!((0, cutoff[2]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        end
 
-    tau, w = grpdelay(ffilter)
-    tau = abs.(tau)
-    # convert rad/sample to Hz
-    w = w .* fs / 2 / pi
-    x_max = w[end]
-    ftype === :hp && (x_max = cutoff * 10)
-    p3 = plot(w,
-              tau,
-              title="Group delay",
-              xlims=(0, x_max),
-              ylabel="Group delay\n[samples]",
-              xlabel="Frequency [Hz]",
-              label="",
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=4,
-              ytickfontsize=4)
-    if length(cutoff) == 1
-        p3 = plot!((0, cutoff),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    else
-        p3 = plot!((0, cutoff[1]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-        p3 = plot!((0, cutoff[2]),
-                   seriestype=:vline,
-                   linestyle=:dash,
-                   label="")
-    end
+        tau, w = grpdelay(ffilter)
+        tau = abs.(tau)
+        # convert rad/sample to Hz
+        w = w .* fs / 2 / pi
+        x_max = w[end]
+        ftype === :hp && (x_max = cutoff * 10)
+        p3 = plot(w,
+                  tau,
+                  title="Group delay",
+                  xlims=(0, x_max),
+                  ylabel="Group delay\n[samples]",
+                  xlabel="Frequency [Hz]",
+                  label="",
+                  titlefontsize=10,
+                  xlabelfontsize=8,
+                  ylabelfontsize=8,
+                  xtickfontsize=4,
+                  ytickfontsize=4)
+        if length(cutoff) == 1
+            p3 = plot!((0, cutoff),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        else
+            p3 = plot!((0, cutoff[1]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+            p3 = plot!((0, cutoff[2]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        end
 
-    p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
+        p = plot(p1, p2, p3, layout=(3, 1), palette=:darktest; kwargs...)
+    else
+        w = range(0, stop=pi, length=1024)
+        H = _fir_response(ffilter, w)
+        # convert to dB
+        H = 20 * log10.(abs.(H))
+        # convert rad/sample to Hz
+        w = w .* fs / 2 / pi
+        x_max = w[end]
+        ftype === :hp && (x_max = cutoff * 10)
+        p1 = plot(w,
+                  H,
+                  title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz\nFrequency response",
+                  xlims=(0, x_max),
+                  ylims=(-100, 0),
+                  ylabel="Magnitude\n[dB]",
+                  xlabel="Frequency [Hz]",
+                  label="",
+                  titlefontsize=10,
+                  xlabelfontsize=8,
+                  ylabelfontsize=8,
+                  xtickfontsize=4,
+                  ytickfontsize=4)
+        if length(cutoff) == 1
+            p1 = plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="")
+        else
+            p1 = plot!((0, cutoff[1]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+            p1 = plot!((0, cutoff[2]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        end
+        w = range(0, stop=pi, length=1024)
+        phi = _fir_response(ffilter, w)
+        phi = DSP.unwrap(-atan.(imag(phi), real(phi)))
+        # convert rad/sample to Hz
+        w = w .* fs / 2 / pi
+        x_max = w[end]
+        ftype === :hp && (x_max = cutoff * 10)
+        p2 = plot(w,
+                  phi,
+                  title="Phase response",
+                  xlims=(0, x_max),
+                  ylabel="Phase\n[rad]",
+                  xlabel="Frequency [Hz]",
+                  label="",
+                  titlefontsize=10,
+                  xlabelfontsize=8,
+                  ylabelfontsize=8,
+                  xtickfontsize=4,
+                  ytickfontsize=4)
+        if length(cutoff) == 1
+            p2 = plot!((0, cutoff),
+                        seriestype=:vline,
+                        linestyle=:dash,
+                        label="")
+        else
+            p2 = plot!((0, cutoff[1]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+            p2 = plot!((0, cutoff[2]),
+                       seriestype=:vline,
+                       linestyle=:dash,
+                       label="")
+        end
+
+        p = plot(p1, p2, layout=(2, 1), palette=:darktest; kwargs...)
+    end
 
     return p
 end
