@@ -119,6 +119,8 @@ eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
 eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
 eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
+eeg_wt_denoise(eeg::NeuroJ.EEG; wt::Symbol=:db4)
+eeg_wt_denoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 ```
 
 ## EEG analyze
@@ -317,6 +319,7 @@ s_detect_epoch_euclid(signal::Array{Float64, 3})
 s_detect_epoch_p2p(signal::Array{Float64, 3})
 s_snr(signal::AbstractArray)
 s_findpeaks(signal::AbstractArray; d::Int64=32)
+s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
 ```
 
 ## NSTIM

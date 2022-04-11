@@ -84,5 +84,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
+@test size(s_wt_denoise(rand(10, 100, 1))) == (10, 100, 1)
 
 true

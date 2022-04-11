@@ -46,6 +46,7 @@ The following packages are required:
 - [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsKit
 - StatsPlots
+- Wavelets
 
 NeuroJ.jl will be 100% Julia based.
 

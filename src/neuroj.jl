@@ -26,7 +26,8 @@ function neuroj_version()
                          "ScatteredInterpolation",
                          "Simpson",
                          "StatsKit",
-                         "StatsPlots"]
+                         "StatsPlots",
+                         "Wavelets"]
     for idx in 1:length(required_packages)
         pkg = lpad(required_packages[idx], 25 - length(idx), " ")
         pkg_ver = m[findfirst(v->v.name==required_packages[idx], m)].version

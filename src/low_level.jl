@@ -1543,9 +1543,9 @@ function s_resample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
 
     t_resampled = nothing
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view signal[idx, :, epoch_idx]
-            s_resampled[idx, :, epoch_idx], t_resampled = s_resample(s, t=t, new_sr=new_sr)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view signal[channel_idx, :, epoch_idx]
+            s_resampled[channel_idx, :, epoch_idx], t_resampled = s_resample(s, t=t, new_sr=new_sr)
         end
     end
 
@@ -1840,9 +1840,9 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
     psd_pow = zeros(channel_n, length(psd_tmp))
     psd_frq = zeros(channel_n, length(frq_tmp))
 
-    @inbounds @simd for idx in 1:channel_n
-        s = @view signal[idx, :]
-        psd_pow[idx, :], psd_frq[idx, :] = s_psd(s, fs=fs, norm=norm, mt=mt)
+    @inbounds @simd for channel_idx in 1:channel_n
+        s = @view signal[channel_idx, :]
+        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = s_psd(s, fs=fs, norm=norm, mt=mt)
     end
     
     return psd_pow, psd_frq
@@ -1875,9 +1875,9 @@ function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=
     psd_frq = zeros(channel_n, length(frq_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view signal[idx, :, epoch_idx]
-            psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm, mt=mt)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view signal[channel_idx, :, epoch_idx]
+            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm, mt=mt)
         end
     end
     
@@ -2368,7 +2368,7 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bo
 end
 
 """
-    s_detect_epoch_flat(signal::Array{Float64, 3}, threshold=0.1)
+    s_detect_epoch_flat(signal, threshold=0.1)
 
 Detect bad `signal` epochs based on: flat channel(s)
 
@@ -2387,8 +2387,8 @@ function s_detect_epoch_flat(signal::Array{Float64, 3})
     bad_epochs_score = zeros(epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            c_tmp_diff = abs.(diff(signal[idx, :, epoch_idx]))
+        Threads.@threads for channel_idx in 1:channel_n
+            c_tmp_diff = abs.(diff(signal[channel_idx, :, epoch_idx]))
             # add tolerance around zero μV
             sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch_idx] += 1)
         end
@@ -2400,7 +2400,7 @@ function s_detect_epoch_flat(signal::Array{Float64, 3})
 end
 
 """
-    s_detect_epoch_rmse(signal::Array{Float64, 3})
+    s_detect_epoch_rmse(signal)
 
 Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
@@ -2421,11 +2421,11 @@ function s_detect_epoch_rmse(signal::Array{Float64, 3})
     @inbounds @simd for epoch_idx in 1:epoch_n
         ch_m = vec(median(signal[:, :, epoch_idx], dims=1))
         rmse_ch = zeros(channel_n)
-        Threads.@threads for idx in 1:channel_n
-            rmse_ch[idx] = s2_rmse(signal[idx, :, epoch_idx], ch_m)
+        Threads.@threads for channel_idx in 1:channel_n
+            rmse_ch[channel_idx] = s2_rmse(signal[channel_idx, :, epoch_idx], ch_m)
         end
-        Threads.@threads for idx in 1:channel_n
-            rmse_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
+        Threads.@threads for channel_idx in 1:channel_n
+            rmse_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2435,7 +2435,7 @@ function s_detect_epoch_rmse(signal::Array{Float64, 3})
 end
 
 """
-    detect_epoch_rmsd(signal::Array{Float64, 3})
+    detect_epoch_rmsd(signal)
 
 Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 # Arguments
@@ -2455,11 +2455,11 @@ function s_detect_epoch_rmsd(signal::Array{Float64, 3})
     @inbounds @simd for epoch_idx in 1:epoch_n
         ch_m = median(signal[:, :, epoch_idx], dims=1)
         rmsd_ch = zeros(channel_n)
-        Threads.@threads for idx in 1:channel_n
-            rmsd_ch[idx] = Distances.rmsd(signal[idx, :, epoch_idx], ch_m)
+        Threads.@threads for channel_idx in 1:channel_n
+            rmsd_ch[channel_idx] = Distances.rmsd(signal[channel_idx, :, epoch_idx], ch_m)
         end
-        Threads.@threads for idx in 1:channel_n
-            rmsd_ch[idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
+        Threads.@threads for channel_idx in 1:channel_n
+            rmsd_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2469,7 +2469,7 @@ function s_detect_epoch_rmsd(signal::Array{Float64, 3})
 end
 
 """
-    s_detect_epoch_euclid(signal::Array{Float64, 3})
+    s_detect_epoch_euclid(signal)
 
 Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
 
@@ -2490,11 +2490,11 @@ function s_detect_epoch_euclid(signal::Array{Float64, 3})
     @inbounds @simd for epoch_idx in 1:epoch_n
         ch_m = median(signal[:, :, epoch_idx], dims=1)
         ed_ch = zeros(channel_n)
-        Threads.@threads for idx in 1:channel_n
-            ed_ch[idx] = euclidean(signal[idx, :, epoch_idx], ch_m)
+        Threads.@threads for channel_idx in 1:channel_n
+            ed_ch[channel_idx] = euclidean(signal[channel_idx, :, epoch_idx], ch_m)
         end
-        Threads.@threads for idx in 1:channel_n
-            ed_ch[idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
+        Threads.@threads for channel_idx in 1:channel_n
+            ed_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2504,7 +2504,7 @@ function s_detect_epoch_euclid(signal::Array{Float64, 3})
 end
 
 """
-    s_detect_epoch_p2p(signal::Array{Float64, 3})
+    s_detect_epoch_p2p(signal)
 
 Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
@@ -2524,11 +2524,11 @@ function s_detect_epoch_p2p(signal::Array{Float64, 3})
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         p2p = zeros(channel_n)
-        Threads.@threads for idx in 1:channel_n
-            p2p[idx] = maximum(signal[idx, :, epoch_idx]) + abs(minimum(signal[idx, :, epoch_idx]))
+        Threads.@threads for channel_idx in 1:channel_n
+            p2p[channel_idx] = maximum(signal[channel_idx, :, epoch_idx]) + abs(minimum(signal[channel_idx, :, epoch_idx]))
         end
-        Threads.@threads for idx in 1:channel_n
-            p2p[idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch_idx] += 1)
+        Threads.@threads for channel_idx in 1:channel_n
+            p2p[channel_idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
@@ -2582,4 +2582,41 @@ function s_findpeaks(signal::AbstractArray; d::Int64=32)
     p_idx, = findpeaks1d(signal, distance=d)
     
     return p_idx
+end
+
+"""
+    s_wt_denoise(signal, wt)
+
+Perform wavelet denoising.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+- `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
+# Returns
+
+- `signal_denoised::Array{Float64, 3}`
+"""
+function s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
+    
+    wt in [:db2, :db4, :db8, :db10, :haar] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar"))
+
+    channel_n, _, epoch_n = size(signal)
+    signal_denoised = zeros(size(signal))
+    
+    wt === :db2 && (wt = wavelet(WT.db2))
+    wt === :db4 && (wt = wavelet(WT.db4))
+    wt === :db8 && (wt = wavelet(WT.db8))
+    wt === :db10 && (wt = wavelet(WT.db10))
+    wt === :haar && (wt = wavelet(WT.haar))
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view signal[channel_idx, :, epoch_idx]
+            # denoise
+            signal_denoised[channel_idx, :, epoch_idx] = denoise(s, wt)
+        end
+    end
+    return signal_denoised
 end

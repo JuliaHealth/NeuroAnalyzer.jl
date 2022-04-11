@@ -22,6 +22,7 @@ using ScatteredInterpolation
 using Simpson
 using StatsKit
 using StatsPlots
+using Wavelets
 
 mutable struct EEG
     eeg_header::Dict
@@ -119,6 +120,7 @@ export s_detect_epoch_euclid
 export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
+export s_wt_denoise
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -222,6 +224,8 @@ export eeg_upsample
 export eeg_upsample!
 export eeg_downsample
 export eeg_downsample!
+export eeg_wt_denoise
+export eeg_wt_denoise!
 
 include("eeg_analyze.jl")
 export eeg_total_power
