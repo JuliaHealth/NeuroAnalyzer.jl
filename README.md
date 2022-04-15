@@ -110,6 +110,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- add/edit/save/load annotations
 - power envelope connectivity
 - IEEG/ECoG
 - mean alpha frequency / amplitude
