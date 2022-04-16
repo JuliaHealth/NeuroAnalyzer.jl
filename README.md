@@ -110,6 +110,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- waterfall 3d spectrogram (combined PSD plots)
 - power envelope connectivity
 - IEEG/ECoG
 - mean alpha frequency / amplitude
