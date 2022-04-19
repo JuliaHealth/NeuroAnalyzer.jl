@@ -119,11 +119,19 @@ EEG:
 - mastoid montage (averaged, ipsilateral, contralateral)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
+- PSD plot line slope over frequencies (adjusted power)
 - PSD/spectrogram lin-log (x-y), log-lin or log-log axes
 - wavelets
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
-- wPLI
+- phase synchrony: weighted phase lag index (wPLI), phase locking value
+- ISPC (intersite phase clustering)
+- PLI (phase lock index)
+- coherence
+- beamforming, leakage correction
+- Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
+- FOOOF
+- topo plot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
 - set baseline
 - sync epoch starts at phase = 0
 - topo plots: asymmetric color bars to highlight increase/decrease in activity
