@@ -106,6 +106,7 @@ neuroj_plugin_demo()
 The lists below are not in any particular order.
 
 General:
+- stable branch to be released monthly
 - performance optimization
 - CUDA/AMD ROCm acceleration
 
