@@ -702,8 +702,8 @@ Generate Morlet wavelet.
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `wt::Real`: length = -wt:1/fs:wt
 - `wf::Real`: frequency
+- `wt::Real=1`: length = -wt:1/fs:wt
 - `ncyc::Int64=5`: number of cycles
 - `complex::Bool=false`: generate complex Morlet
 
@@ -711,13 +711,14 @@ Generate Morlet wavelet.
 
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function generate_morlet(fs::Int64, wt::Real, wf::Real; ncyc::Int64=5, complex::Bool=false)
+function generate_morlet(fs::Int64, wf::Real, wt::Real=1; ncyc::Int64=5, complex::Bool=false)
 
     wt = -wt:1/fs:wt
     complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
-    w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
-    g = generate_gaussian(fs, wt[end], w)
+    # w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
+    gw = ncyc / (2 * pi * wf)                                            # ncyc: time-frequency precision
+    g = generate_gaussian(fs, wt[end], gw)
     m = sin_wave .* g
 
     return m
@@ -731,7 +732,7 @@ Generate Gaussian wave.
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `gt::Real`: length = 0:1/fs:gt
+- `gt::Real=1`: length = -gt:1/fs:gt
 - `gw::Real=1`: width
 - `pt::Real=0`: peak time
 - `pa::Real=1`: peak amp
@@ -740,10 +741,10 @@ Generate Gaussian wave.
 
 - `gaussian::Vector{Float64}`
 """
-function generate_gaussian(fs::Int64, gt::Real, gw::Real=1, pt::Real=0, pa::Real=1.0)
+function generate_gaussian(fs::Int64, gt::Real=1, gw::Real=1, pt::Real=0, pa::Real=1.0)
 
     t = -gt:1/fs:gt
-    g = @. pa * exp(-(t - pt)^2 / gw)
+    g = @. pa * exp(-((t - pt) / gw)^2)
 
     return g
 end

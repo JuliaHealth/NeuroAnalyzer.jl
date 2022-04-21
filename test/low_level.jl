@@ -28,7 +28,7 @@ using Test
 @test cmax([1.0im, 2.0im]) == 0.0 + 2.0im
 @test cmin([1.0im, 2.0im]) == 0.0 + 1.0im
 @test length(generate_sinc(-2:2)) == 5
-@test length(generate_morlet(10, 10, 2)) == 201
+@test length(generate_morlet(10, 10, 2)) == 41
 @test length(generate_gaussian(10, 10)) == 201
 @test tuple_order((2, 1)) == (1, 2)
 @test s2_rmse(ones(10), ones(10)) == 0.0
