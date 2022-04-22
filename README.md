@@ -111,6 +111,7 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- use eyetracker data to detect ocular artifacts
 - add/edit/save/load annotations
 - waterfall 3d spectrogram (combined PSD plots)
 - power envelope connectivity
