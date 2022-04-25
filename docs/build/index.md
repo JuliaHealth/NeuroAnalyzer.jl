@@ -1953,6 +1953,42 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
   * `eeg::NeuroJ.EEG`
   * `new_sr::Int64`: new sampling rate
 
+<a id='NeuroJ.eeg_wt_denoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wt_denoise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wt_denoise`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wt_denoise(eeg; wt)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_wt_denoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wt_denoise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wt_denoise!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wt_denoise!(eeg; wt)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
 
 <a id='EEG-analyze'></a>
 
@@ -5123,13 +5159,13 @@ Generate normalized or unnormalized sinc function.
 
   * `sinc::Vector{Float64}
 
-<a id='NeuroJ.generate_morlet-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.generate_morlet-Tuple{Int64, Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
-**`NeuroJ.generate_morlet`** &mdash; *Method*.
+<a id='NeuroJ.generate_morlet' href='#NeuroJ.generate_morlet'>#</a>
+**`NeuroJ.generate_morlet`** &mdash; *Function*.
 
 
 
 ```julia
-generate_morlet(fs, wt, wf)
+generate_morlet(fs, f, t; ncyc, complex)
 ```
 
 Generate Morlet wavelet.
@@ -5137,8 +5173,8 @@ Generate Morlet wavelet.
 **Arguments**
 
   * `fs::Int64`: sampling rate
-  * `wt::Real`: length = -wt:1/fs:wt
-  * `wf::Real`: frequency
+  * `f::Real`: frequency
+  * `t::Real=1`: length = -t:1/fs:t
   * `ncyc::Int64=5`: number of cycles
   * `complex::Bool=false`: generate complex Morlet
 
@@ -5152,7 +5188,7 @@ Generate Morlet wavelet.
 
 
 ```julia
-generate_gaussian(fs, gt, gw, pt, pa)
+generate_gaussian(fs, f, t; ncyc, a)
 ```
 
 Generate Gaussian wave.
@@ -5160,10 +5196,10 @@ Generate Gaussian wave.
 **Arguments**
 
   * `fs::Int64`: sampling rate
-  * `gt::Real`: length = 0:1/fs:gt
-  * `gw::Real=1`: width
-  * `pt::Real=0`: peak time
-  * `pa::Real=1`: peak amp
+  * `f::Real`: frequency
+  * `t::Real=1`: length = -t:1/fs:t
+  * `ncyc::Int64`: : number of cycles
+  * `a::Real=1`: peak amp
   * 
 
 **Returns**
@@ -6141,7 +6177,7 @@ Calculate spectrogram of `signal`.
 
 
 ```julia
-s_detect_epoch_flat(signal::Array{Float64, 3}, threshold=0.1)
+s_detect_epoch_flat(signal, threshold=0.1)
 ```
 
 Detect bad `signal` epochs based on: flat channel(s)
@@ -6160,7 +6196,7 @@ Detect bad `signal` epochs based on: flat channel(s)
 
 
 ```julia
-s_detect_epoch_rmse(signal::Array{Float64, 3})
+s_detect_epoch_rmse(signal)
 ```
 
 Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
@@ -6179,7 +6215,7 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
 
 ```julia
-detect_epoch_rmsd(signal::Array{Float64, 3})
+detect_epoch_rmsd(signal)
 ```
 
 Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
@@ -6198,7 +6234,7 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 
 
 ```julia
-s_detect_epoch_euclid(signal::Array{Float64, 3})
+s_detect_epoch_euclid(signal)
 ```
 
 Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
@@ -6217,7 +6253,7 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 
 
 ```julia
-s_detect_epoch_p2p(signal::Array{Float64, 3})
+s_detect_epoch_p2p(signal)
 ```
 
 Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
@@ -6272,6 +6308,26 @@ Find peaks in `signal`.
 **Returns**
 
   * `p_idx::Vector{Int64}`
+
+<a id='NeuroJ.s_wt_denoise' href='#NeuroJ.s_wt_denoise'>#</a>
+**`NeuroJ.s_wt_denoise`** &mdash; *Function*.
+
+
+
+```julia
+s_wt_denoise(signal, wt)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
+**Returns**
+
+  * `signal_denoised::Array{Float64, 3}`
 
 
 <a id='NSTIM'></a>

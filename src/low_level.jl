@@ -688,22 +688,22 @@ function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm
 
     norm == true && (y_sinc = @. sin(2 * pi * f * (t - peak)) / (pi * (t - peak)))
     norm == false && (y_sinc = @. sin(2 * f * (t - peak)) / (t - peak))
-    nan_idx = y_sinc[y_sinc .== NaN]
-    length(nan_idx) !=0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
+    nan_idx = isnan.(y_sinc)
+    sum(nan_idx) != 0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
     
     return y_sinc
 end
 
 """
-    generate_morlet(fs, wt, wf)
+    generate_morlet(fs, f, t; ncyc, complex)
 
 Generate Morlet wavelet.
 
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `wf::Real`: frequency
-- `wt::Real=1`: length = -wt:1/fs:wt
+- `f::Real`: frequency
+- `t::Real=1`: length = -t:1/fs:t
 - `ncyc::Int64=5`: number of cycles
 - `complex::Bool=false`: generate complex Morlet
 
@@ -711,40 +711,38 @@ Generate Morlet wavelet.
 
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function generate_morlet(fs::Int64, wf::Real, wt::Real=1; ncyc::Int64=5, complex::Bool=false)
+function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
 
-    wt = -wt:1/fs:wt
-    complex == false && (sin_wave = @. cos(2 * pi * wf * wt))           # for symmetry at x = 0
-    complex == true && (sin_wave = @. exp(im * 2 * pi * wf * wt))       # for symmetry at x = 0
-    # w = 2 * (ncyc / (2 * pi * wf))^2                                    # ncyc: time-frequency precision
-    gw = ncyc / (2 * pi * wf)                                            # ncyc: time-frequency precision
-    g = generate_gaussian(fs, wt[end], gw)
+    t = -t:1/fs:t
+    complex == false && (sin_wave = @. cos(2 * pi * f * t))           # for symmetry at x = 0
+    complex == true && (sin_wave = @. exp(im * 2 * pi * f * t))       # for symmetry at x = 0
+    g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
     m = sin_wave .* g
 
     return m
 end
 
 """
-    generate_gaussian(fs, gt, gw, pt, pa)
+    generate_gaussian(fs, f, t; ncyc, a)
 
 Generate Gaussian wave.
 
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `gt::Real=1`: length = -gt:1/fs:gt
-- `gw::Real=1`: width
-- `pt::Real=0`: peak time
-- `pa::Real=1`: peak amp
+- `f::Real`: frequency
+- `t::Real=1`: length = -t:1/fs:t
+- `ncyc::Int64`: : number of cycles
+- `a::Real=1`: peak amp
 - 
 # Returns
 
 - `gaussian::Vector{Float64}`
 """
-function generate_gaussian(fs::Int64, gt::Real=1, gw::Real=1, pt::Real=0, pa::Real=1.0)
+function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
 
-    t = -gt:1/fs:gt
-    g = @. pa * exp(-((t - pt) / gw)^2)
+    t = -t:1/fs:t
+    g = @. a * exp(-(t^2 / (2 * ((ncyc / (2 * pi * f))^2))))
 
     return g
 end
