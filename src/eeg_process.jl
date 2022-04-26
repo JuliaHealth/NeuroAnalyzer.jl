@@ -74,7 +74,7 @@ function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{In
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
 
-    return
+    nothing
 end
 
 """
@@ -130,7 +130,7 @@ function eeg_reference_car!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -184,7 +184,7 @@ function eeg_derivative!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_derivative(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -258,7 +258,7 @@ function eeg_detrend!(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Union{Int64
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_detrend(EEG, type=$type, offset=$offset, order=$order, span=$span)")
 
-    return
+    nothing
 end
 
 """
@@ -315,7 +315,7 @@ function eeg_taper!(eeg::NeuroJ.EEG; taper::Union{Vector{<:Real}, Vector{Complex
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
 
-    return
+    nothing
 end
 
 """
@@ -369,7 +369,7 @@ function eeg_demean!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_demean(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -425,7 +425,7 @@ function eeg_normalize_zscore!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_normalize_zscore!(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -481,7 +481,7 @@ function eeg_normalize_minmax!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_normalize_minmax!(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -534,7 +534,7 @@ function eeg_add_noise!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_add_noise(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -653,7 +653,7 @@ function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, N
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
 
-    return
+    nothing
 end
 
 """
@@ -727,7 +727,7 @@ function eeg_pca_reconstruct!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_pca_reconstruct!(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -799,7 +799,7 @@ function eeg_average!(eeg::NeuroJ.EEG)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_average!(EEG)")
 
-    return
+    nothing
 end
 
 """
@@ -886,7 +886,7 @@ function eeg_ica_reconstruct!(eeg::NeuroJ.EEG; ica::Union{Int64, Vector{Int64}, 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica)")
 
-    return
+    nothing
 end
 
 """
@@ -933,7 +933,7 @@ function eeg_invert_polarity!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int6
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_invert_polarity!(EEG, channel=$channel)")
 
-    return
+    nothing
 end
 
 """
@@ -974,7 +974,7 @@ function eeg_resample!(eeg::NeuroJ.EEG; new_sr::Int64)
     new_sr > eeg_sr(eeg) && eeg_upsample!(eeg, new_sr=new_sr)
     new_sr < eeg_sr(eeg) && eeg_downsample!(eeg, new_sr=new_sr)
 
-    return
+    nothing
 end
 
 """
@@ -1043,7 +1043,7 @@ function eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_upsample!(EEG, new_sr=$new_sr)")
 
-    return
+    nothing
 end
 
 """
@@ -1112,7 +1112,7 @@ function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_downsample!(EEG, new_sr=$new_sr)")
 
-    return
+    nothing
 end
 
 """
@@ -1155,5 +1155,5 @@ function eeg_wt_denoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wt_denoise!(EEG, wt=$wt)")
 
-    return
+    nothing
 end

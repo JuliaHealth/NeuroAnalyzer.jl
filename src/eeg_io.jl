@@ -491,7 +491,7 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
 
-    return
+    nothing
 end
 
 """

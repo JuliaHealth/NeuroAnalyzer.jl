@@ -82,7 +82,7 @@ function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
     push!(eeg.eeg_components, v)
     push!(eeg.eeg_header[:history], "eeg_add_component!(EEG, c=$c, v=$v)")
 
-    return
+    nothing
 end
 
 """
@@ -127,7 +127,7 @@ function eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
         end
     end
 
-    return
+    nothing
 end
 
 """
@@ -180,7 +180,7 @@ function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
         end
     end
 
-    return
+    nothing
 end
 
 """
@@ -219,7 +219,7 @@ function eeg_reset_components!(eeg::NeuroJ.EEG)
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
 
-    return
+    nothing
 end
 
 """
@@ -317,7 +317,7 @@ function eeg_rename_component!(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
 
     push!(eeg.eeg_header[:history], "eeg_rename_component!(EEG, c_old=$c_old, c_new=$c_new)")
 
-    return
+    nothing
 end
 
 """
@@ -400,7 +400,7 @@ function eeg_delete_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
 
     eeg = eeg_delete_channel(eeg, channel=channel)
 
-    return
+    nothing
 end
 
 """
@@ -533,7 +533,7 @@ function eeg_keep_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64},
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_keep_channel!(EEG, channel=$channel)")
 
-    return
+    nothing
 end
 
 """
@@ -571,7 +571,7 @@ function eeg_get_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
         return labels[channel]
     end
 
-    return
+    nothing
 end
 
 """
@@ -659,7 +659,7 @@ function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, new_name=$new_name)")
 
-    return
+    nothing
 end
 
 """
@@ -887,7 +887,7 @@ function eeg_info(eeg::NeuroJ.EEG)
         print("             Components: no")
     end
 
-    return
+    nothing
 end
 
 """
@@ -965,7 +965,7 @@ function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, ep
 
     eeg = eeg_epochs(eeg, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
 
-    return
+    nothing
 end
 
 """
@@ -1119,7 +1119,7 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_trim!(EEG, len=$len, offset=$offset, from=$from, keep_epochs=$keep_epochs)")
 
-    return
+    nothing
 end
 
 """
@@ -1179,7 +1179,7 @@ function eeg_edit_header!(eeg::NeuroJ.EEG; field::Symbol, value::Any)
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
 
-    return
+    nothing
 end
 
 """
@@ -1288,7 +1288,7 @@ function eeg_delete_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, A
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_epoch!(EEG, $epoch)")
 
-    return
+    nothing
 end
 
 """
@@ -1388,7 +1388,7 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
     
     eeg_reset_components!(eeg)
 
-    return
+    nothing
 end
 
 """
@@ -1491,7 +1491,7 @@ function eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
     
     eeg.eeg_header[:labels] = labels
 
-    push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+    pnothing!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
     return
 end
 
@@ -1553,7 +1553,7 @@ function eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::A
 
     push!(eeg.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")
 
-    return
+    nothing
 end
 
 """
@@ -1601,7 +1601,7 @@ function eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
 
-    return
+    nothing
 end
 
 """
@@ -1687,5 +1687,5 @@ function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Union{Int64, Float64})
     eeg.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
     push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
 
-    return
+    nothing
 end

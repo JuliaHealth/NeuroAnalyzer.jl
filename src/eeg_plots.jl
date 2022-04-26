@@ -97,7 +97,7 @@ function _check_epochs(eeg::NeuroJ.EEG, epoch)
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
-    return
+    nothing
 end
 function _get_epoch_markers(eeg::NeuroJ.EEG, offset, len)
     # get epochs markers for len > epoch_len
@@ -4831,7 +4831,7 @@ function eeg_plot_save(p::Plots.Plot{Plots.GRBackend}; file_name::String)
     isfile(file_name) && @warn "File $file_name will be overwritten."
     savefig(p, file_name)
 
-    return
+    nothing
 end
 
 """
