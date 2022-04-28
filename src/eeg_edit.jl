@@ -398,7 +398,50 @@ Remove `channel` from the `eeg`.
 """
 function eeg_delete_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg = eeg_delete_channel(eeg, channel=channel)
+    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    channel_n = eeg_channel_n(eeg)
+    length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
+
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
+
+    if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
+        throw(ArgumentError("channel does not match signal channels."))
+    end
+
+    # update headers
+    eeg.eeg_header[:channel_n] = channel_n - length(channel)
+    for idx1 in 1:length(channel)
+        for idx2 in 1:channel_n
+            if idx2 == channel[idx1]
+                deleteat!(eeg.eeg_header[:labels], idx2)
+                deleteat!(eeg.eeg_header[:channel_type], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_theta], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius]) > 0) && deleteat!(eeg.eeg_header[:loc_radius], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x]) > 0) && deleteat!(eeg.eeg_header[:loc_x], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y]) > 0) && deleteat!(eeg.eeg_header[:loc_y], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_z]) > 0) && deleteat!(eeg.eeg_header[:loc_z], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_radius_sph], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_theta_sph], idx2)
+                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_phi_sph], idx2)
+                deleteat!(eeg.eeg_header[:transducers], idx2)
+                deleteat!(eeg.eeg_header[:physical_dimension], idx2)
+                deleteat!(eeg.eeg_header[:physical_minimum], idx2)
+                deleteat!(eeg.eeg_header[:physical_maximum], idx2)
+                deleteat!(eeg.eeg_header[:digital_minimum], idx2)
+                deleteat!(eeg.eeg_header[:digital_maximum], idx2)
+                deleteat!(eeg.eeg_header[:prefiltering], idx2)
+                deleteat!(eeg.eeg_header[:samples_per_datarecord], idx2)
+                deleteat!(eeg.eeg_header[:sampling_rate], idx2)
+                deleteat!(eeg.eeg_header[:gain], idx2)
+            end
+        end 
+    end
+
+    # remove channel
+    eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel)), :, :]
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_delete_channel!(EEG, $channel)")
 
     nothing
 end
@@ -656,7 +699,6 @@ function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new
     end
     eeg.eeg_header[:labels] = labels
     
-    # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, new_name=$new_name)")
 
     nothing
@@ -695,7 +737,7 @@ function eeg_extract_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
         end
         channel_idx = channel
     end    
-    eeg_channel = vec(eeg.eeg_signals[channel_idx, :, :])
+    eeg_channel = reshape(eeg.eeg_signals[channel_idx, :, :], 1, eeg_epoch_len(eeg), eeg_epoch_n(eeg))
 
     return eeg_channel
 end
@@ -963,7 +1005,42 @@ Splits `eeg` into epochs.
 """
 function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
-    eeg = eeg_epochs(eeg, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
+    # unsplit epochs
+    s_merged = reshape(eeg.eeg_signals,
+                       eeg_channel_n(eeg),
+                       eeg_epoch_len(eeg) * eeg_epoch_n(eeg))
+    
+    # split into epochs
+    s_split = _make_epochs(s_merged, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
+
+    # convert into Array{Float64, 3}
+    s_split = reshape(s_split, size(s_split, 1), size(s_split, 2), size(s_split, 3))
+
+    # create new dataset
+    epoch_n = size(s_split, 3)
+    epoch_duration_samples = size(s_split, 2)
+    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate][1]
+    eeg_duration_samples = size(s_split, 2) * size(s_split, 3)
+    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
+    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
+    eeg_time = eeg_time[1:(end - 1)]
+    eeg.eeg_signals = s_split
+    eeg.eeg_time = eeg_time
+
+    # update epochs time
+    fs = eeg_sr(eeg)
+    ts = eeg.eeg_epochs_time[1, 1]
+    new_epochs_time = linspace(ts, ts + (epoch_duration_samples / fs), epoch_duration_samples)
+    eeg.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
+
+    eeg.eeg_header[:eeg_duration_samples] = eeg_duration_samples
+    eeg.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg.eeg_header[:epoch_n] = epoch_n
+    eeg.eeg_header[:epoch_duration_samples] = epoch_duration_samples
+    eeg.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_epochs!(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
 
     nothing
 end
@@ -1176,7 +1253,6 @@ function eeg_edit_header!(eeg::NeuroJ.EEG; field::Symbol, value::Any)
     field in fields || throw(ArgumentError("field does not exist."))
     typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
     eeg.eeg_header[field] = value
-    # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
 
     nothing
@@ -1383,10 +1459,8 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
     eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
     eeg.eeg_header[:epoch_duration_seconds] = round(eeg_signal_len(eeg) / eeg_sr(eeg), digits=2)
 
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
-    
     eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
 
     nothing
 end
@@ -1488,11 +1562,10 @@ Add `labels` to `eeg` channels.
 function eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
 
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
-    
     eeg.eeg_header[:labels] = labels
-
-    pnothing!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
-    return
+    push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+    
+    nothing
 end
 
 """

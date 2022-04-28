@@ -187,10 +187,14 @@ export eeg_epochs_time
 export eeg_epochs_time!
 
 include("eeg_process.jl")
-export eeg_reference_channel
-export eeg_reference_channel!
+export eeg_reference_ch
+export eeg_reference_ch!
 export eeg_reference_car
 export eeg_reference_car!
+export eeg_reference_a
+export eeg_reference_a!
+export eeg_reference_m
+export eeg_reference_m!
 export eeg_derivative
 export eeg_derivative!
 export eeg_detrend

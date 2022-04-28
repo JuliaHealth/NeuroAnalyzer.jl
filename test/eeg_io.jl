@@ -2,6 +2,17 @@ using NeuroJ
 using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
+ecg = eeg_extract_channel(edf, channel=24)
+eeg_delete_channel!(edf, channel=24)
+eog2 = eeg_extract_channel(edf, channel=23)
+eeg_delete_channel!(edf, channel=23)
+eog1 = eeg_extract_channel(edf, channel=22)
+eeg_delete_channel!(edf, channel=22)
+a2 = eeg_extract_channel(edf, channel=18)
+eeg_delete_channel!(edf, channel=18)
+a1 = eeg_extract_channel(edf, channel=17)
+eeg_delete_channel!(edf, channel=17)
+
 @test edf.eeg_header[:version] == 0
 @test edf.eeg_header[:channel_n] == 19
 @test edf.eeg_header[:channel_locations] == false

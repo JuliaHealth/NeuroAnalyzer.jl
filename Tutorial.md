@@ -225,15 +225,25 @@ edf_128 = eeg_rewnsample(edf, new_sr=128)
 
 Re-reference to channel(s) - if more than one channel is used as reference, the average of these channels is used:
 ```julia
-edf = eeg_reference_channel(edf, channel=[1, 2])
-edf = eeg_reference_channel(edf, channel=2:4)
-edf = eeg_reference_channel(edf, channel=18)
+edf = eeg_reference_ch(edf, channel=[1, 2])
+edf = eeg_reference_ch(edf, channel=2:4)
+edf = eeg_reference_ch(edf, channel=18)
 edf = eeg_reference_car(edf)
 ```
 
 Re-reference to common average:
 ```julia
 eeg_reference_car!(edf)
+```
+
+Re-reference to ipsilateral auricular electrodes:
+```julia
+eeg_reference_a!(edf, type=:i)
+```
+
+Re-reference to contralateral mastoid electrodes:
+```julia
+eeg_reference_m!(edf, type=:c)
 ```
 
 FIR filtering:
@@ -682,6 +692,16 @@ eeg_info(edf)
 
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf");
+ecg = eeg_extract_channel(edf, channel=24);
+eeg_delete_channel!(edf, channel=24);
+eog2 = eeg_extract_channel(edf, channel=23);
+eeg_delete_channel!(edf, channel=23);
+eog1 = eeg_extract_channel(edf, channel=22);
+eeg_delete_channel!(edf, channel=22);
+a2 = eeg_extract_channel(edf, channel=18);
+eeg_delete_channel!(edf, channel=18);
+a1 = eeg_extract_channel(edf, channel=17);
+eeg_delete_channel!(edf, channel=17);
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)

@@ -3,6 +3,16 @@ using Plots
 using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
+ecg = eeg_extract_channel(edf, channel=24)
+eeg_delete_channel!(edf, channel=24)
+eog2 = eeg_extract_channel(edf, channel=23)
+eeg_delete_channel!(edf, channel=23)
+eog1 = eeg_extract_channel(edf, channel=22)
+eeg_delete_channel!(edf, channel=22)
+a2 = eeg_extract_channel(edf, channel=18)
+eeg_delete_channel!(edf, channel=18)
+a1 = eeg_extract_channel(edf, channel=17)
+eeg_delete_channel!(edf, channel=17)
 eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 isfile("test.png") && rm("test.png")
 e10 = eeg_epochs(edf, epoch_n=10)

@@ -1219,13 +1219,13 @@ Edit `eeg` epochs time start.
 
 ## EEG process
 
-<a id='NeuroJ.eeg_reference_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_channel`** &mdash; *Method*.
+<a id='NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_ch`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_reference_channel(eeg; channel)
+eeg_reference_ch(eeg; channel)
 ```
 
 Reference the `eeg` to specific `channel`.
@@ -1239,13 +1239,13 @@ Reference the `eeg` to specific `channel`.
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_reference_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_channel!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_ch!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_reference_channel!(eeg; channel)
+eeg_reference_ch!(eeg; channel)
 ```
 
 Reference the `eeg` to specific channel `channel`.
@@ -1288,6 +1288,78 @@ Reference the `eeg` to common average reference.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_a`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_a(eeg; type)
+```
+
+Reference the `eeg` to auricular channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_a!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_a!(eeg; type)
+```
+
+Reference the `eeg` to auricular channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+
+<a id='NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_m`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_m(eeg; type)
+```
+
+Reference the `eeg` to mastoid channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_m!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_m!(eeg; type)
+```
+
+Reference the `eeg` to mastoid channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
 
 <a id='NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_derivative`** &mdash; *Method*.

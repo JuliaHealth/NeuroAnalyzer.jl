@@ -82,10 +82,14 @@ eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Union{Int64, Float64})
 ## EEG process
 
 ```@docs
-eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
-eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+eeg_reference_ch(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+eeg_reference_ch!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 eeg_reference_car(eeg::NeuroJ.EEG)
 eeg_reference_car!(eeg::NeuroJ.EEG)
+eeg_reference_a(eeg::NeuroJ.EEG; type::Symbol=:l)
+eeg_reference_a!(eeg::NeuroJ.EEG; type::Symbol=:l)
+eeg_reference_m(eeg::NeuroJ.EEG; type::Symbol=:l)
+eeg_reference_m!(eeg::NeuroJ.EEG; type::Symbol=:l)
 eeg_derivative(eeg::NeuroJ.EEG)
 eeg_derivative!(eeg::NeuroJ.EEG)
 eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Union{Int64, Float64}=0, order::Int64=1, span::Float64=0.5)

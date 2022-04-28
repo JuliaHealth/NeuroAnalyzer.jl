@@ -1331,9 +1331,9 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
         Threads.@threads for idx in 1:channel_n
             s = @view eeg.eeg_signals[idx, :, epoch_idx]
             acov[idx, :, epoch_idx], lags = s_acov(s,
-                                               lag=lag,
-                                               demean=demean,
-                                               norm=norm)
+                                                   lag=lag,
+                                                   demean=demean,
+                                                   norm=norm)
         end
     end
 

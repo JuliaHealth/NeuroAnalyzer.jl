@@ -7,7 +7,7 @@
 ################################
 
 """
-    eeg_reference_channel(eeg; channel)
+    eeg_reference_ch(eeg; channel)
 
 Reference the `eeg` to specific `channel`.
 
@@ -20,7 +20,7 @@ Reference the `eeg` to specific `channel`.
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_ch(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -53,13 +53,13 @@ function eeg_reference_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
     eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "channel: $channel"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_channel(EEG, channel=$channel)")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_ch(EEG, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_reference_channel!(eeg; channel)
+    eeg_reference_ch!(eeg; channel)
 
 Reference the `eeg` to specific channel `channel`.
 
@@ -68,11 +68,11 @@ Reference the `eeg` to specific channel `channel`.
 - `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 """
-function eeg_reference_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_ch!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg.eeg_signals = eeg_reference_channel(eeg, channel=channel).eeg_signals
+    eeg.eeg_signals = eeg_reference_ch(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_channel!(EEG, channel=$channel)")
+    push!(eeg.eeg_header[:history], "eeg_reference_ch!(EEG, channel=$channel)")
 
     nothing
 end
@@ -1154,6 +1154,342 @@ function eeg_wt_denoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
     eeg.eeg_signals = s_wt_denoise(eeg.eeg_signals)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wt_denoise!(EEG, wt=$wt)")
+
+    nothing
+end
+
+"""
+    eeg_reference_a(eeg; type)
+
+Reference the `eeg` to auricular channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_reference_a(eeg::NeuroJ.EEG; type::Symbol=:l)
+
+    type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
+    all(iszero, occursin.("a1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A1 channel."))
+    all(iszero, occursin.("a2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A2 channel."))
+
+    eeg_tmp = deepcopy(eeg)
+    channel_labels = eeg_labels(eeg)
+    a1_idx = findfirst(isequal("A1"), eeg_tmp.eeg_header[:labels])
+    a2_idx = findfirst(isequal("A2"), eeg_tmp.eeg_header[:labels])
+    a1 = eeg_extract_channel(eeg, channel=a1_idx)
+    a2 = eeg_extract_channel(eeg, channel=a2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=a2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=a1_idx)
+    eeg_channel_n(eeg_tmp, type=:eeg) < eeg_channel_n(eeg_tmp, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg_tmp)
+    epoch_n = eeg_epoch_n(eeg_tmp)
+    s_ref = zeros(size(eeg_tmp.eeg_signals))
+
+    if type === :l
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :i
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :c
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    end
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = vcat(s_ref, a1, a2)
+    eeg_new.eeg_header[:labels] = eeg_labels(eeg_tmp)
+    push!(eeg_new.eeg_header[:labels], "A1")
+    push!(eeg_new.eeg_header[:labels], "A2")
+    eeg_new.eeg_header[:reference] = "A ($type)"
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_reference_a(EEG, type=$type)")
+
+    return eeg_new
+end
+
+"""
+    eeg_reference_a!(eeg; type)
+
+Reference the `eeg` to auricular channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+"""
+function eeg_reference_a!(eeg::NeuroJ.EEG; type::Symbol=:l)
+
+    type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
+    all(iszero, occursin.("a1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A1 channel."))
+    all(iszero, occursin.("a2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A2 channel."))
+
+    eeg_tmp = deepcopy(eeg)
+    channel_labels = eeg_labels(eeg)
+    a1_idx = findfirst(isequal("A1"), eeg_tmp.eeg_header[:labels])
+    a2_idx = findfirst(isequal("A2"), eeg_tmp.eeg_header[:labels])
+    a1 = eeg_extract_channel(eeg, channel=a1_idx)
+    a2 = eeg_extract_channel(eeg, channel=a2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=a2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=a1_idx)
+    eeg_channel_n(eeg_tmp, type=:eeg) < eeg_channel_n(eeg_tmp, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg_tmp)
+    epoch_n = eeg_epoch_n(eeg_tmp)
+    s_ref = zeros(size(eeg_tmp.eeg_signals))
+
+    if type === :l
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :i
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :c
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    end
+
+    eeg.eeg_signals = vcat(s_ref, a1, a2)
+    eeg.eeg_header[:labels] = eeg_labels(eeg_tmp)
+    push!(eeg.eeg_header[:labels], "A1")
+    push!(eeg.eeg_header[:labels], "A2")
+
+    eeg.eeg_header[:reference] = "A ($type)"
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_reference_a!(EEG, type=$type)")
+
+    nothing
+end
+
+"""
+    eeg_reference_m(eeg; type)
+
+Reference the `eeg` to mastoid channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_reference_m(eeg::NeuroJ.EEG; type::Symbol=:l)
+
+    type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
+    all(iszero, occursin.("m1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M1 channel."))
+    all(iszero, occursin.("m2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M2 channel."))
+
+    eeg_tmp = deepcopy(eeg)
+    channel_labels = eeg_labels(eeg)
+    m1_idx = findfirst(isequal("M1"), eeg_tmp.eeg_header[:labels])
+    m2_idx = findfirst(isequal("M2"), eeg_tmp.eeg_header[:labels])
+    m1 = eeg_extract_channel(eeg, channel=m1_idx)
+    m2 = eeg_extract_channel(eeg, channel=m2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=m2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=m1_idx)
+    eeg_channel_n(eeg_tmp, type=:eeg) < eeg_channel_n(eeg_tmp, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg_tmp)
+    epoch_n = eeg_epoch_n(eeg_tmp)
+    s_ref = zeros(size(eeg_tmp.eeg_signals))
+
+    if type === :l
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :i
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :c
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    end
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = vcat(s_ref, m1, m2)
+    eeg_new.eeg_header[:labels] = eeg_labels(eeg_tmp)
+    push!(eeg_new.eeg_header[:labels], "M1")
+    push!(eeg_new.eeg_header[:labels], "M2")
+    eeg_new.eeg_header[:reference] = "M ($type)"
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_reference_m(EEG, type=$type)")
+
+    return eeg_new
+end
+
+"""
+    eeg_reference_m!(eeg; type)
+
+Reference the `eeg` to mastoid channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+"""
+function eeg_reference_m!(eeg::NeuroJ.EEG; type::Symbol=:l)
+
+    type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
+    all(iszero, occursin.("m1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M1 channel."))
+    all(iszero, occursin.("m2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M2 channel."))
+
+    eeg_tmp = deepcopy(eeg)
+    channel_labels = eeg_labels(eeg)
+    m1_idx = findfirst(isequal("M1"), eeg_tmp.eeg_header[:labels])
+    m2_idx = findfirst(isequal("M2"), eeg_tmp.eeg_header[:labels])
+    m1 = eeg_extract_channel(eeg, channel=m1_idx)
+    m2 = eeg_extract_channel(eeg, channel=m2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=m2_idx)
+    eeg_delete_channel!(eeg_tmp, channel=m1_idx)
+    eeg_channel_n(eeg_tmp, type=:eeg) < eeg_channel_n(eeg_tmp, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg_tmp)
+    epoch_n = eeg_epoch_n(eeg_tmp)
+    s_ref = zeros(size(eeg_tmp.eeg_signals))
+
+    if type === :l
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :i
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    elseif type === :c
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 2:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m2[:, :, epoch_idx])
+            Threads.@threads for channel_idx in 1:2:channel_n
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+    end
+
+    eeg.eeg_signals = vcat(s_ref, m1, m2)
+    eeg.eeg_header[:labels] = eeg_labels(eeg_tmp)
+    push!(eeg.eeg_header[:labels], "M1")
+    push!(eeg.eeg_header[:labels], "M2")
+
+    eeg.eeg_header[:reference] = "M ($type)"
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_reference_m!(EEG, type=$type)")
 
     nothing
 end

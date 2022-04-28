@@ -117,8 +117,7 @@ EEG:
 - power envelope connectivity
 - IEEG/ECoG
 - mean alpha frequency / amplitude
-- custom montage (e.g. bipolar longitudinal/horizontal)
-- mastoid montage (averaged, ipsilateral, contralateral)
+- custom reference (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
 - PSD plot line slope over frequencies (adjusted power)

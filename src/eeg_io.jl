@@ -154,6 +154,8 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
 
     clean_labels == true && (labels = replace.(labels, "EEG " => ""))
     clean_labels == true && (labels = replace.(labels, "MEG " => ""))
+    clean_labels == true && (labels = replace.(labels, "EOG " => ""))
+    clean_labels == true && (labels = replace.(labels, "ECG " => ""))
 
     fid = open(file_name)
     header = zeros(UInt8, data_offset)
