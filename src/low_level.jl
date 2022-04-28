@@ -1275,7 +1275,7 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
 # Returns
 
-- `stp::Float64`: signal total power
+- `sbp::Float64`: signal band power
 """
 function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
