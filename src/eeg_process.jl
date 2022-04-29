@@ -1201,31 +1201,51 @@ function eeg_reference_a(eeg::NeuroJ.EEG; type::Symbol=:l)
             end
         end
     elseif type === :i
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
     elseif type === :c
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
@@ -1283,31 +1303,51 @@ function eeg_reference_a!(eeg::NeuroJ.EEG; type::Symbol=:l)
             end
         end
     elseif type === :i
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
     elseif type === :c
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(a1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
@@ -1369,31 +1409,51 @@ function eeg_reference_m(eeg::NeuroJ.EEG; type::Symbol=:l)
             end
         end
     elseif type === :i
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
     elseif type === :c
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
@@ -1451,31 +1511,51 @@ function eeg_reference_m!(eeg::NeuroJ.EEG; type::Symbol=:l)
             end
         end
     elseif type === :i
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
     elseif type === :c
+        central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 2:2:channel_n
+            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            Threads.@threads for channel_idx in central_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
         end
+        left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in 1:2:channel_n
+            Threads.@threads for channel_idx in left_picks
+                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
+                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            end
+        end
+        right_picks = eeg_pick(eeg_tmp, pick=:right)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            reference_channel = vec(m1[:, :, epoch_idx])
+            Threads.@threads for channel_idx in right_picks
                 s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
                 s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
             end
