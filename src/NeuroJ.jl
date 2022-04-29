@@ -121,6 +121,7 @@ export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
 export s_wt_denoise
+export effsize
 
 include("eeg_io.jl")
 export eeg_export_csv

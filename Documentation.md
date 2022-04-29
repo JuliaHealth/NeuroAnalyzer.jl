@@ -5597,7 +5597,7 @@ Calculates `signal` power between `f[1]` and `f[2]`.
 
 **Returns**
 
-  * `stp::Float64`: signal total power
+  * `sbp::Float64`: signal band power
 
 <a id='NeuroJ.s_taper-Tuple{AbstractArray}' href='#NeuroJ.s_taper-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_taper`** &mdash; *Method*.
@@ -6400,6 +6400,29 @@ Perform wavelet denoising.
 **Returns**
 
   * `signal_denoised::Array{Float64, 3}`
+
+<a id='NeuroJ.effsize-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.effsize-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.effsize`** &mdash; *Method*.
+
+
+
+```julia
+effsize(x1, x2)
+```
+
+Calculate Cohen's d and Hedges g effect sizes.
+
+**Arguments**
+
+  * `x1::Vector{Float64}`
+  * `x2::Vector{Float64}`
+
+**Returns**
+
+Named tuple containing:
+
+  * `d::Float64`: Cohen's d
+  * `g::Float64`: Hedges g
 
 
 <a id='NSTIM'></a>

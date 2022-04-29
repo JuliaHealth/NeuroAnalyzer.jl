@@ -85,5 +85,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test size(s_wt_denoise(rand(10, 100, 1))) == (10, 100, 1)
+@test effsize([1,2,3], [2,3,4]) == (cohen = 1.0, hedges = 1.0)
 
 true

@@ -324,6 +324,7 @@ s_detect_epoch_p2p(signal::Array{Float64, 3})
 s_snr(signal::AbstractArray)
 s_findpeaks(signal::AbstractArray; d::Int64=32)
 s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
+effsize(x1::Vector{Float64}, x2::Vector{Float64})
 ```
 
 ## NSTIM
