@@ -111,6 +111,8 @@ General:
 - CUDA/AMD ROCm acceleration
 
 EEG:
+- exclude Fp1, Fp2, O1, O2 from CAR
+- exclude current electrode from CAR mean calculation
 - amplitude turbulence
 - use eyetracker data to detect ocular artifacts
 - add/edit/save/load annotations
