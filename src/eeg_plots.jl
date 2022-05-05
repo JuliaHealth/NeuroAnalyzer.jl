@@ -211,14 +211,22 @@ Plot scaled multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
-    channel_color = channel_n:-1:1
+    color == true && (channel_color = 1:channel_n)
+    if color == false
+        channel_color = Vector{Symbol}()
+        for idx in 1:channel_n
+            push!(channel_color, :blue)
+        end
+    else
+        channel_color = channel_n:-1:1
+    end
     signal = reverse(signal[:, :], dims = 1)
     s_normalized = zeros(size(signal))
 
@@ -287,7 +295,7 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:R
     hl = plot((size(signal, 2), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
     p = plot!(t,
               signal[1:length(t)],
-              color=1,
+              color=:blue,
               label="",
               legend=false,
               title=title,
@@ -326,13 +334,14 @@ Plot multi-channel `signal`.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Channels"`: y-axis label
 - `title::String=""`: plot title
+- `color::Bool=true`: each channel is drawn with a different color
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -344,11 +353,21 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
     (abs(ylim[1]) >=100 || abs(ylim[2]) >= 100) && (ylim = (floor(ylim[1], digits=-2), ceil(ylim[2], digits=-2)))
 
     p = []
+    color == true && (channel_color = 1:channel_n)
+    if color == false
+        channel_color = Vector{Symbol}()
+        for idx in 1:channel_n
+            push!(channel_color, :darklue)
+        end
+    else
+        channel_color = 1:channel_n
+    end
+
     pp = plot(t,
               signal[1, 1:length(t)],
               linewidth=0.5,
               label="",
-              color=1,
+              color=channel_color[1],
               title=title,
               xaxis=false,
               xticks=false,
@@ -366,7 +385,7 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
                       signal[idx, 1:length(t)],
                       linewidth=0.5,
                       label="",
-                      color=idx,
+                      color=channel_color[idx],
                       title="",
                       xaxis=false,
                       xticks=false,
@@ -385,7 +404,7 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
               signal[channel_n, 1:length(t)],
               linewidth=0.5,
               label="",
-              color=channel_n,
+              color=channel_color[end],
               title="",
               xaxis=true,
               xticks=_xticks(t),
@@ -426,7 +445,8 @@ Plot `eeg` channel or channels.
 - `eeg::NeuroJ.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `scaled::Bool=false` if true than scale signals before plotting so all signals will fit the plot
+- `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
+- `color::Bool=true`: each channel is drawn with a different color
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
@@ -438,7 +458,7 @@ Plot `eeg` channel or channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, color::Bool=true, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -459,8 +479,8 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
         epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
     end
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    # select channels, default is all up to 10 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 10))
     _check_channels(eeg, channel)
 
     # set epoch markers if len > epoch_len
@@ -502,14 +522,16 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
                                         labels=labels,
                                         xlabel=xlabel,
                                         ylabel=ylabel,
-                                        title=title;
+                                        title=title,
+                                        color=color;
                                         kwargs...))
     scaled == true && (p = plot_signal_scaled(t,
                                               signal,
                                               labels=labels,
                                               xlabel=xlabel,
                                               ylabel=ylabel,
-                                              title=title;
+                                              title=title,
+                                              color=color;
                                               kwargs...))
     # add epochs markers
     if length(channel) == 1 && scaled == true

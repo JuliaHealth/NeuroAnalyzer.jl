@@ -3095,7 +3095,7 @@ Plot single-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
 **`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
 
 
@@ -3139,6 +3139,7 @@ Plot multi-channel `signal`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
+  * `color::Bool=true`: each channel is drawn with a different color
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3161,7 +3162,8 @@ Plot `eeg` channel or channels.
   * `eeg::NeuroJ.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `scaled::Bool=false` if true than scale signals before plotting so all signals will fit the plot
+  * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
+  * `color::Bool=true`: each channel is drawn with a different color
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `xlabel::String="Time [s]"`: x-axis label

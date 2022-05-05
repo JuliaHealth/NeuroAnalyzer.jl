@@ -179,9 +179,9 @@ eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 
 ```@docs
 plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:Real}; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
-plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:Real}; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", kwargs...)
-plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
-eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
+plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
+eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, color::Bool=true, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 eeg_plot_component(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 eeg_plot_component_idx(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
