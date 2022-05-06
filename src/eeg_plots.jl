@@ -5411,7 +5411,9 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 """
 function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, kwargs...)
 
-    ispc, signal_diff, phase_diff, s1_phase, s2_phase = eeg_ispc(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
+    ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = eeg_ispc(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
+
+    ispc = round(ispc, digits=2)
 
     signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
     signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
@@ -5437,10 +5439,11 @@ function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chan
         p5 = plot!([0, s2_phase[idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
     end
 
-    p6 = plot([0, phase_diff[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference")
+    p6 = plot([0, phase_diff[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and ISPC = $ispc")
     for idx in 2:length(phase_diff)
         p6 = plot!([0, phase_diff[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
+    p6 = plot!([0, ispc_angle], [0, ispc], lw=1, color=:red)
     
     p = plot(p1, p2, p3, p4, p5, p6,
              layout=(3, 2),
@@ -5455,39 +5458,50 @@ function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chan
 end
 
 """
-    eeg_plot_ispc(eeg; <keyword arguments>)
+    eeg_plot_itpc(eeg; <keyword arguments>)
 
-Plot ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
 
 # Arguments
 
 - `eeg:NeuroJ.EEG`
-- `channel1::Int64`: epoch to plot
-- `channel2::Int64`: epoch to plot
+- `channel::Int64`: channel to plot
+- `t::Int64`: time point to plot
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, kwargs...)
+function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, kwargs...)
 
-    ispc, phase_diff = eeg_ispc(eeg, channel1=channel1, channel2=channel2)
-    t = eeg.eeg_epochs_time[:, 1]
+    itpc, itpc_angle, itpc_phases = eeg_itpc(eeg, channel=channel, t=t)
+    itpc = round(itpc, digits=2)
+    t = eeg_s2t(eeg, t=t)
 
-    p = plot(t,
-             ispc,
-             color=:black,
-             lw=0.2,
-             title="ISPC values over epochs\n[channel $channel1 vs. channel $channel2]",
+    p1 = plot(itpc_phases,
+              seriestype=:histogram,
+              bins=(length(itpc_phases) ÷ 10),
+              xticks=[-3.14, 0, 3.14],
+              fill=:lightgrey,
+              title="Phase angles across trials",
+              xlabel="Phase angle [rad]",
+              ylabel="Count/bin")
+
+    p2 = plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc")
+    for idx in 2:length(itpc_phases)
+        p2 = plot!([0, itpc_phases[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    end
+    p2 = plot!([0, itpc_angle], [0, itpc], lw=1, color=:red)
+
+    p = plot(p1, p2,
              legend=false,
-             xlabel="Time [s]",
-             ylabel="ICPS",
              titlefontsize=10,
              xlabelfontsize=6,
              ylabelfontsize=6,
              xtickfontsize=4,
-             ytickfontsize=4;
+             ytickfontsize=4,
+             margins=10Plots.px;
              kwargs...)
 
     return p

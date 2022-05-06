@@ -2058,38 +2058,37 @@ function eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2:
 
     s1 = @view eeg1.eeg_signals[channel1, :, epoch1]
     s2 = @view eeg2.eeg_signals[channel2, :, epoch2]
-    ispc, signal_diff, phase_diff, s1_phase, s2_phase = s_ispc(s1, s2)
+    ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = s_ispc(s1, s2)
 
-    return ispc, signal_diff, phase_diff, s1_phase, s2_phase
+    return ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase
 end
 
 """
-    eeg_ispc(eeg; channel1, channel2)
+    eeg_itpc(eeg; channel)
 
-Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `channel1::Int64`
-- `channel2::Int64`
+- `channel::Int64`
 
 # Returns
 
-- `ispc::Vector(Float64)`: ISPC value
+- `itpc::Vector(Float64)`: ISPC value
 - `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 """
-function eeg_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64)
+function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    (channel1 < 0 || channel2 < 0) && throw(ArgumentError("channel1/channel2 must be > 0."))
+    channel < 0 && throw(ArgumentError("channel must be > 0."))
     channel_n = eeg_channel_n(eeg)
-    (channel1 > channel_n) && throw(ArgumentError("channel1 must be ≤ $(channel_n)."))
-    (channel2 > channel_n) && throw(ArgumentError("channel2 must be ≤ $(channel_n)."))
+    (channel > channel_n) && throw(ArgumentError("channel must be ≤ $(channel_n)."))
     
-    s = @view eeg.eeg_signals[[channel1, channel2], :, :]
-    ispc, phase_diff = s_ispc(s)
+    s = @view eeg.eeg_signals[channel, :, :]
+    s = reshape(s, 1, size(s, 1), size(s, 2))
+    itpc, itpc_angle, itpc_phases = s_itpc(s, t=t)
 
-    return vec(ispc), phase_diff
+    return itpc, itpc_angle, itpc_phases
 end

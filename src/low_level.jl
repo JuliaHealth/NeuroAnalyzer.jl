@@ -2655,6 +2655,7 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 # Returns
 
 - `ispc::Float64`: ISPC value
+- `ispc_angle::Float64`: ISPC angle
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
 - `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
 - `s1_phase::Vector{Float64}`: signal 1 phase
@@ -2671,38 +2672,42 @@ function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
     phase_diff = s2_phase - s1_phase
 
     ispc = abs(mean(exp.(1im .* phase_diff)))
+    ispc_angle = angle(mean(exp.(1im .* phase_diff)))
 
-    return ispc, signal_diff, phase_diff, s1_phase, s2_phase
+    return ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase
 end
 
 """
-    s_ispc(signal)
+    s_itpc(signal; t)
 
-Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between two channels of `signal`.
+Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of `signal`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal::AbstractArray`
+- `t::Int64`: time point
 
 # Returns
 
-- `ispc::Float64`: ISPC value
-- `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+- `itpc::Float64`: ITPC value
+- `itpc_angle::Float64`: ITPC angle
+- `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function s_ispc(signal::AbstractArray)
+function s_itpc(signal::AbstractArray; t::Int64)
 
-    size(signal, 1) == 2 || throw(ArgumentError("signals must have 2 channels."))
+    t < 1 && throw(ArgumentError("t must be ≥ 1."))
+    size(signal, 1) == 1 || throw(ArgumentError("signals must have 1 channel."))
+    t > size(signal, 2) && throw(ArgumentError("t must be ≤ $(size(signal, 2))."))
     epoch_n = size(signal, 3)
 
-    s_phase = zeros(2, size(signal, 2), epoch_n)
+    s_phase = zeros(size(signal, 2), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        _, _, _, s_phase[1, :, epoch_idx] = s_spectrum(signal[1, :, epoch_idx])
-        _, _, _, s_phase[2, :, epoch_idx] = s_spectrum(signal[2, :, epoch_idx])
+        _, _, _, s_phase[:, epoch_idx] = s_spectrum(signal[1, :, epoch_idx])
     end
 
-    phase_diff = diff(s_phase, dims=1)
-    ispc = abs.(mean(exp.(1im .* phase_diff), dims=3))
+    itpc_phases = s_phase[t, :]
+    itpc = abs.(mean(exp.(1im .* itpc_phases)))
+    itpc_angle = angle.(mean(exp.(1im .* itpc_phases)))
 
-    return ispc, phase_diff
+    return itpc, itpc_angle, itpc_phases
 end

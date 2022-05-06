@@ -130,6 +130,7 @@ EEG:
 - cross-frequency phase-amplitude coupling
 - phase synchrony: weighted phase lag index (wPLI), phase locking value
 - PLI (phase lock index)
+- ISPC/ITPC spectrogram: Wavelet filtering into individual frequencies + ISPC/ITPC per each frequency
 - coherence
 - beamforming, leakage correction
 - Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map

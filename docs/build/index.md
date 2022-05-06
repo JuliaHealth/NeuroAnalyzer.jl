@@ -3090,26 +3090,25 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+<a id='NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_itpc`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_ispc(eeg; channel1, channel2)
+eeg_itpc(eeg; channel)
 ```
 
-Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
+  * `channel::Int64`
 
 **Returns**
 
-  * `ispc::Vector(Float64)`: ISPC value
+  * `itpc::Vector(Float64)`: ISPC value
   * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 
 
@@ -4702,22 +4701,22 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_ispc(eeg; <keyword arguments>)
+eeg_plot_itpc(eeg; <keyword arguments>)
 ```
 
-Plot ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
 
 **Arguments**
 
   * `eeg:NeuroJ.EEG`
-  * `channel1::Int64`: epoch to plot
-  * `channel2::Int64`: epoch to plot
+  * `channel::Int64`: channel to plot
+  * `t::Int64`: time point to plot
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -6541,31 +6540,33 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 **Returns**
 
   * `ispc::Float64`: ISPC value
+  * `ispc_angle::Float64`: ISPC angle
   * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
   * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroJ.s_ispc-Tuple{AbstractArray}' href='#NeuroJ.s_ispc-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_ispc`** &mdash; *Method*.
+<a id='NeuroJ.s_itpc-Tuple{AbstractArray}' href='#NeuroJ.s_itpc-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_itpc`** &mdash; *Method*.
 
 
 
 ```julia
-s_ispc(signal)
+s_itpc(signal; t)
 ```
 
-Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between two channels of `signal`.
+Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of `signal`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal::AbstractArray`
+  * `t::Int64`: time point
 
 **Returns**
 
-  * `ispc::Float64`: ISPC value
-  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+  * `itpc::Float64`: ITPC value
+  * `itpc_angle::Float64`: ITPC angle
+  * `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
 
 <a id='NSTIM'></a>
