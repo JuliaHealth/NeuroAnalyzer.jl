@@ -5453,3 +5453,42 @@ function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chan
 
     return p
 end
+
+"""
+    eeg_plot_ispc(eeg; <keyword arguments>)
+
+Plot ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+
+# Arguments
+
+- `eeg:NeuroJ.EEG`
+- `channel1::Int64`: epoch to plot
+- `channel2::Int64`: epoch to plot
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, kwargs...)
+
+    ispc, phase_diff = eeg_ispc(eeg, channel1=channel1, channel2=channel2)
+    t = eeg.eeg_epochs_time[:, 1]
+
+    p = plot(t,
+             ispc,
+             color=:black,
+             lw=0.2,
+             title="ISPC values over epochs\n[channel $channel1 vs. channel $channel2]",
+             legend=false,
+             xlabel="Time [s]",
+             ylabel="ICPS",
+             titlefontsize=10,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
+             xtickfontsize=4,
+             ytickfontsize=4;
+             kwargs...)
+
+    return p
+end

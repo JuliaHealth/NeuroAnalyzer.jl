@@ -2674,3 +2674,35 @@ function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
 
     return ispc, signal_diff, phase_diff, s1_phase, s2_phase
 end
+
+"""
+    s_ispc(signal)
+
+Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between two channels of `signal`.
+
+# Arguments
+
+- `signal1::AbstractArray`
+- `signal2::AbstractArray`
+
+# Returns
+
+- `ispc::Float64`: ISPC value
+- `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+"""
+function s_ispc(signal::AbstractArray)
+
+    size(signal, 1) == 2 || throw(ArgumentError("signals must have 2 channels."))
+    epoch_n = size(signal, 3)
+
+    s_phase = zeros(2, size(signal, 2), epoch_n)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        _, _, _, s_phase[1, :, epoch_idx] = s_spectrum(signal[1, :, epoch_idx])
+        _, _, _, s_phase[2, :, epoch_idx] = s_spectrum(signal[2, :, epoch_idx])
+    end
+
+    phase_diff = diff(s_phase, dims=1)
+    ispc = abs.(mean(exp.(1im .* phase_diff), dims=3))
+
+    return ispc, phase_diff
+end

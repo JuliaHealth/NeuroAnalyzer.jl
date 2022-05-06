@@ -2062,3 +2062,34 @@ function eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2:
 
     return ispc, signal_diff, phase_diff, s1_phase, s2_phase
 end
+
+"""
+    eeg_ispc(eeg; channel1, channel2)
+
+Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+
+# Returns
+
+- `ispc::Vector(Float64)`: ISPC value
+- `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+"""
+function eeg_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    (channel1 < 0 || channel2 < 0) && throw(ArgumentError("channel1/channel2 must be > 0."))
+    channel_n = eeg_channel_n(eeg)
+    (channel1 > channel_n) && throw(ArgumentError("channel1 must be ≤ $(channel_n)."))
+    (channel2 > channel_n) && throw(ArgumentError("channel2 must be ≤ $(channel_n)."))
+    
+    s = @view eeg.eeg_signals[[channel1, channel2], :, :]
+    ispc, phase_diff = s_ispc(s)
+
+    return vec(ispc), phase_diff
+end

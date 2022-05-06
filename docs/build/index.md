@@ -3072,7 +3072,7 @@ Named tuple containing:
 eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate ISPC (Inter-Site-Phase Clustering) between between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 **Arguments**
 
@@ -3089,6 +3089,28 @@ Calculate ISPC (Inter-Site-Phase Clustering) between between `channel1`/`epoch1`
   * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
+
+<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ispc(eeg; channel1, channel2)
+```
+
+Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+
+**Returns**
+
+  * `ispc::Vector(Float64)`: ISPC value
+  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 
 
 <a id='EEG-plots'></a>
@@ -4649,6 +4671,53 @@ Plot envelope of `eeg` channels.
   * `title::String=""`: plot title
   * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_ispc(eeg1, eeg2; <keyword arguments>)
+```
+
+Plot ISPC `eeg1` and `eeg2` channels/epochs.
+
+**Arguments**
+
+  * `eeg1:NeuroJ.EEG`
+  * `eeg2:NeuroJ.EEG`
+  * `channel1::Int64`: epoch to plot
+  * `channel2::Int64`: epoch to plot
+  * `epoch1::Int64`: epoch to plot
+  * `epoch2::Int64`: epoch to plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_ispc(eeg; <keyword arguments>)
+```
+
+Plot ISPC (Inter-Site-Phase Clustering) over epochs/trials between `channel1` and `channel2` of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `channel1::Int64`: epoch to plot
+  * `channel2::Int64`: epoch to plot
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -6476,6 +6545,27 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
   * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
+
+<a id='NeuroJ.s_ispc-Tuple{AbstractArray}' href='#NeuroJ.s_ispc-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_ispc`** &mdash; *Method*.
+
+
+
+```julia
+s_ispc(signal)
+```
+
+Calculate ISPC (Inter-Site-Phase Clustering) over epochs/trials between two channels of `signal`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `ispc::Float64`: ISPC value
+  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 
 
 <a id='NSTIM'></a>

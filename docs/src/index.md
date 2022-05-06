@@ -174,6 +174,7 @@ eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
 eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+eeg_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64)
 ```
 
 ## EEG plots
@@ -236,6 +237,8 @@ eeg_plot_epochs(eeg::NeuroJ.EEG; c::Union{Vector{<:Real}, Symbol}, epoch::Union{
 eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64=-1, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, kwargs...)
 eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, kwargs...)
 eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, kwargs...)
+eeg_plot_ispc(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, kwargs...)
 ```
 
 ## Low level functions
@@ -327,6 +330,7 @@ s_findpeaks(signal::AbstractArray; d::Int64=32)
 s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
 effsize(x1::Vector{Float64}, x2::Vector{Float64})
 s_ispc(signal1::AbstractArray, signal2::AbstractArray)
+s_ispc(signal::AbstractArray)
 ```
 
 ## NSTIM
