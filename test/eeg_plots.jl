@@ -162,4 +162,7 @@ p = eeg_plot_env(e10, type=:pow, average=:median, dims=2, epoch=1, channel=1)
 p = eeg_plot_env(e10, type=:spec, average=:mean, dims=1, epoch=1, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true

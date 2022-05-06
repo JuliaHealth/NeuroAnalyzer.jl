@@ -2019,3 +2019,46 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=fals
     
     return (s_env_m=s_env_m, s_env_u=s_env_u, s_env_l=s_env_l, s_env_t=s_t)
 end
+
+"""
+    eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+
+Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+- `epoch1::Int64`
+- `epoch2::Int64`
+
+# Returns
+
+- `ispc::Float64`: ISPC value
+- `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+- `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+- `s1_phase::Vector{Float64}`: signal 1 phase
+- `s2_phase::Vector{Float64}`: signal 2 phase
+"""
+function eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+    eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
+    channel_n1 = eeg_channel_n(eeg1)
+    epoch_n1 = eeg_epoch_n(eeg1)
+    (channel1 > channel_n1) && throw(ArgumentError("channel1 must be ≤ $(channel_n1)."))
+    (epoch1 > epoch_n1) && throw(ArgumentError("epoch1 must be ≤ $(epoch_n1)."))
+    channel_n2 = eeg_channel_n(eeg2)
+    epoch_n2 = eeg_epoch_n(eeg2)
+    (channel2 > channel_n2) && throw(ArgumentError("channel2 must be ≤ $(channel_n2)."))
+    (epoch2 > epoch_n2) && throw(ArgumentError("epoch2 must be ≤ $(epoch_n2)."))
+
+    s1 = @view eeg1.eeg_signals[channel1, :, epoch1]
+    s2 = @view eeg2.eeg_signals[channel2, :, epoch2]
+    ispc, signal_diff, phase_diff, s1_phase, s2_phase = s_ispc(s1, s2)
+
+    return ispc, signal_diff, phase_diff, s1_phase, s2_phase
+end

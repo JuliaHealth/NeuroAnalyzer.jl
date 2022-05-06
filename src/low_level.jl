@@ -2641,3 +2641,36 @@ function effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
     g = (mean(x2) - mean(x1)) / sqrt((((length(x1) - 1) * (std(x1)^2)) + ((length(x2) - 1) * (std(x2)^2))) / (length(x1) + length(x2) - 2))
     return (cohen=d, hedges=g)
 end
+
+"""
+    s_ispc(signal1, signal2)
+
+Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::AbstractArray`
+- `signal2::AbstractArray`
+
+# Returns
+
+- `ispc::Float64`: ISPC value
+- `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+- `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+- `s1_phase::Vector{Float64}`: signal 1 phase
+- `s2_phase::Vector{Float64}`: signal 2 phase
+"""
+function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
+
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+
+    _, _, _, s1_phase = s_spectrum(signal1)
+    _, _, _, s2_phase = s_spectrum(signal2)
+
+    signal_diff = signal2 - signal1
+    phase_diff = s2_phase - s1_phase
+
+    ispc = abs(mean(exp.(1im .* phase_diff)))
+
+    return ispc, signal_diff, phase_diff, s1_phase, s2_phase
+end

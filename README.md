@@ -129,7 +129,7 @@ EEG:
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - phase synchrony: weighted phase lag index (wPLI), phase locking value
-- ISPC (intersite phase clustering)
+- ISPC along trials/epochs
 - PLI (phase lock index)
 - coherence
 - beamforming, leakage correction

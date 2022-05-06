@@ -3063,6 +3063,33 @@ Named tuple containing:
   * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
   * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 
+<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate ISPC (Inter-Site-Phase Clustering) between between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+
+**Returns**
+
+  * `ispc::Float64`: ISPC value
+  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+  * `s1_phase::Vector{Float64}`: signal 1 phase
+  * `s2_phase::Vector{Float64}`: signal 2 phase
+
 
 <a id='EEG-plots'></a>
 
@@ -6425,6 +6452,30 @@ Named tuple containing:
 
   * `d::Float64`: Cohen's d
   * `g::Float64`: Hedges g
+
+<a id='NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.s_ispc`** &mdash; *Method*.
+
+
+
+```julia
+s_ispc(signal1, signal2)
+```
+
+Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `ispc::Float64`: ISPC value
+  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+  * `s1_phase::Vector{Float64}`: signal 1 phase
+  * `s2_phase::Vector{Float64}`: signal 2 phase
 
 
 <a id='NSTIM'></a>

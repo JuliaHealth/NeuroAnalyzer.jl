@@ -173,6 +173,7 @@ eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
 eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
 eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
+eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 ```
 
 ## EEG plots
@@ -325,6 +326,7 @@ s_snr(signal::AbstractArray)
 s_findpeaks(signal::AbstractArray; d::Int64=32)
 s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
 effsize(x1::Vector{Float64}, x2::Vector{Float64})
+s_ispc(signal1::AbstractArray, signal2::AbstractArray)
 ```
 
 ## NSTIM

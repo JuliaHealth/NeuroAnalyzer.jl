@@ -122,6 +122,7 @@ export s_snr
 export s_findpeaks
 export s_wt_denoise
 export effsize
+export s_ispc
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -276,6 +277,7 @@ export eeg_penv_median
 export eeg_senv
 export eeg_senv_mean
 export eeg_senv_median
+export eeg_ispc
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo
@@ -333,6 +335,7 @@ export plot_signal_scaled
 export plot_signal_avg
 export plot_signal_butterfly
 export plot_spectrogram
+export eeg_plot_ispc
 
 include("nstim.jl")
 export tes_dose

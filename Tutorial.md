@@ -444,7 +444,13 @@ m, s, v = eeg_epochs_stats(edf)
 bar(v)
 ```
 
-### EEG Plots
+ISPC:
+```julia
+e10 = eeg_epochs(edf, epoch_len=10*256)
+i, _, _, _, _ = eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+```
+
+### EEG Plotss
 
 Plot multi-channel:
 ```julia
@@ -646,6 +652,14 @@ eeg_plot_save(p, file_name="images/e10_senv.png")
 ![e10 spectrogram](images/e10_spec.png)
 
 ![e10 spectrogram envelope mean](images/e10_senv.png)
+
+ISPC:
+```julia
+p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+eeg_plot_save(p, file_name="images/e10_ispc.png")
+```
+
+![e10 ISPC](images/e10_ispc.png)
 
 ### EEG Misc
 
