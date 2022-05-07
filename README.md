@@ -129,7 +129,7 @@ EEG:
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - weighted PLI
-- coherence/PLI/ISPC/ITPC spectrogram: Wavelet filtering into individual frequencies + coherence/PLI/ISPC/ITPC per each frequency
+- ITPC topoplot
 - coherence/PLI/ISPC spatial distribution of the strongest correlation pairs
 - coherence
 - beamforming, leakage correction

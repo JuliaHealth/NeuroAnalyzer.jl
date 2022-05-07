@@ -201,6 +201,7 @@ Return the `n`-point long symmetric window `type`.
     - `:nutall`: Nuttall
 - `n::Int64`: window length
 - `even::Bool=false`: if true, make the window of even length (+1 for odd n)
+
 # Returns
 
 - `w::Vector{Float64}`:: generated window

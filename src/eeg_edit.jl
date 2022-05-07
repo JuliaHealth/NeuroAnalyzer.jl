@@ -1392,7 +1392,7 @@ function eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
     end
 
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-    if epoch[end] < 1 || epoch[1] > eeg_channel_n(eeg)
+    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
         throw(ArgumentError("epoch does not match signal epochs."))
     end
 
@@ -1410,10 +1410,10 @@ function eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
     # update headers
     eeg_new.eeg_header[:epoch_n] = eeg_new.eeg_header[:epoch_n] - length(epoch_to_remove)
     epoch_n = eeg_new.eeg_header[:epoch_n]
-    eeg_new.eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
-    eeg_new.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
-    eeg_new.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg_new.eeg_header[:epoch_duration_seconds] = round(eeg_signal_len(eeg) / eeg_sr(eeg), digits=2)
+    eeg_new.eeg_header[:eeg_duration_samples] = epoch_n * eeg_epoch_len(eeg)
+    eeg_new.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_epoch_len(eeg) / eeg_sr(eeg)), digits=2)
+    eeg_new.eeg_header[:epoch_duration_samples] = eeg_epoch_len(eeg)
+    eeg_new.eeg_header[:epoch_duration_seconds] = round(eeg_epoch_len(eeg) / eeg_sr(eeg), digits=2)
 
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")    
@@ -1440,7 +1440,7 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
     end
 
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-    if epoch[end] < 1 || epoch[1] > eeg_channel_n(eeg)
+    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
         throw(ArgumentError("epoch does not match signal epochs."))
     end
 
@@ -1456,10 +1456,10 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
     # update headers
     eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch_to_remove)
     epoch_n = eeg_epoch_n(eeg)
-    eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_signal_len(eeg)
-    eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_signal_len(eeg) / eeg_sr(eeg)), digits=2)
-    eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg.eeg_header[:epoch_duration_seconds] = round(eeg_signal_len(eeg) / eeg_sr(eeg), digits=2)
+    eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_epoch_len(eeg)
+    eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_epoch_len(eeg) / eeg_sr(eeg)), digits=2)
+    eeg.eeg_header[:epoch_duration_samples] = eeg_epoch_len(eeg)
+    eeg.eeg_header[:epoch_duration_seconds] = round(eeg_epoch_len(eeg) / eeg_sr(eeg), digits=2)
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")

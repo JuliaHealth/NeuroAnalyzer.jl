@@ -211,15 +211,14 @@ Plot scaled multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
+function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
-    color == true && (channel_color = 1:channel_n)
-    if color == false
+    if mono == true
         channel_color = Vector{Symbol}()
         for idx in 1:channel_n
             push!(channel_color, :blue)
@@ -228,9 +227,9 @@ function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::Abs
         channel_color = channel_n:-1:1
     end
     signal = reverse(signal[:, :], dims = 1)
-    s_normalized = zeros(size(signal))
 
     # normalize and shift so all channels are visible
+    s_normalized = zeros(size(signal))
     variances = var(signal, dims=2)
     mean_variance = mean(variances)
     for idx in 1:channel_n
@@ -334,14 +333,14 @@ Plot multi-channel `signal`.
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Channels"`: y-axis label
 - `title::String=""`: plot title
-- `color::Bool=true`: each channel is drawn with a different color
+- `mono::Bool=false`: each channel is drawn with a different color
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", color::Bool=true, kwargs...)
+function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -353,11 +352,10 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractAr
     (abs(ylim[1]) >=100 || abs(ylim[2]) >= 100) && (ylim = (floor(ylim[1], digits=-2), ceil(ylim[2], digits=-2)))
 
     p = []
-    color == true && (channel_color = 1:channel_n)
-    if color == false
+    if mono == true
         channel_color = Vector{Symbol}()
         for idx in 1:channel_n
-            push!(channel_color, :darklue)
+            push!(channel_color, :blue)
         end
     else
         channel_color = 1:channel_n
@@ -446,7 +444,7 @@ Plot `eeg` channel or channels.
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
 - `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-- `color::Bool=true`: each channel is drawn with a different color
+- `mono::Bool=false`: each channel is drawn with a different color
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
@@ -458,7 +456,7 @@ Plot `eeg` channel or channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, color::Bool=true, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
+function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, mono::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -523,7 +521,7 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
                                         xlabel=xlabel,
                                         ylabel=ylabel,
                                         title=title,
-                                        color=color;
+                                        mono=mono;
                                         kwargs...))
     scaled == true && (p = plot_signal_scaled(t,
                                               signal,
@@ -531,7 +529,7 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
                                               xlabel=xlabel,
                                               ylabel=ylabel,
                                               title=title,
-                                              color=color;
+                                              mono=mono;
                                               kwargs...))
     # add epochs markers
     if length(channel) == 1 && scaled == true
@@ -1651,7 +1649,7 @@ function plot_signal_butterfly(t::Union{Vector{<:Real}, AbstractRange}, signal::
         p = plot!(t,
                   s_normalized[idx, 1:length(t)],
                   t=:line,
-                  color=idx,
+                  linecolor=idx,
                   linewidth=0.1,
                   label=labels[idx])
     end
@@ -5484,7 +5482,7 @@ function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, kwargs...)
               bins=(length(itpc_phases) ÷ 10),
               xticks=[-3.14, 0, 3.14],
               fill=:lightgrey,
-              title="Phase angles across trials",
+              title="Phase angles across trials\nchannel: $channel",
               xlabel="Phase angle [rad]",
               ylabel="Count/bin")
 
@@ -5570,6 +5568,77 @@ function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chann
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
+
+    return p
+end
+
+"""
+    eeg_plot_spectrogram_itpc(eeg; <keyword arguments>)
+
+Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String="ITPC spectrogram"`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="ITPC spectrogram\nchannel: $channel", kwargs...)
+
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be > 0."))
+    frq_lim[2] > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(eeg_sr(eeg) ÷ 2)."))
+    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel < 0 && throw(ArgumentError("channel must be > 0."))
+    channel_n = eeg_channel_n(eeg)
+    (channel > channel_n) && throw(ArgumentError("channel must be ≤ $(channel_n)."))
+    epoch_n = eeg_epoch_n(eeg)
+    epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
+
+    s = @view eeg.eeg_signals[channel, :, :]
+    s = reshape(s, 1, size(s, 1), size(s, 2))
+    itpc_s = zeros(length(frq_list), size(s, 2))
+    size(s, 3) > 100 && @warn "This will take a while, please be patient.."
+    @inbounds @simd for idx1 in 1:frq_n
+        kernel = generate_morlet(256, frq_list[idx1], 1, ncyc=10)
+        half_kernel = floor(Int64, length(kernel) / 2) + 1
+        s_conv = zeros(1, size(s, 2), epoch_n)
+        @inbounds @simd for idx2 in 1:epoch_n
+            s_conv_tmp = conv(vec(s[:, :, idx2]), kernel)
+            s_conv[1, :, idx2] = s_conv_tmp[(half_kernel - 1):(end - half_kernel)]
+        end
+        Threads.@threads for idx2 in 1:size(s, 2)
+            itpc, _, _ = s_itpc(s_conv, t=idx2)
+            itpc_s[idx1, idx2] = itpc
+        end
+    end
+
+    p = heatmap(eeg.eeg_epochs_time[:, 1],
+                frq_list,
+                itpc_s,
+                title=title,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                xticks=_xticks(eeg.eeg_epochs_time[:, 1]),
+                titlefontsize=10,
+                xlabelfontsize=6,
+                ylabelfontsize=6,
+                xtickfontsize=4,
+                ytickfontsize=4;
+                kwargs...)
 
     return p
 end

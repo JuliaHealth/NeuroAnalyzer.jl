@@ -3256,7 +3256,7 @@ Plot multi-channel `signal`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
-  * `color::Bool=true`: each channel is drawn with a different color
+  * `mono::Bool=false`: each channel is drawn with a different color
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3280,7 +3280,7 @@ Plot `eeg` channel or channels.
   * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-  * `color::Bool=true`: each channel is drawn with a different color
+  * `mono::Bool=false`: each channel is drawn with a different color
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4811,6 +4811,32 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
   * `channel2::Int64`: epoch to plot
   * `epoch1::Int64`: epoch to plot
   * `epoch2::Int64`: epoch to plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_spectrogram_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_spectrogram_itpc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_spectrogram_itpc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_spectrogram_itpc(eeg; <keyword arguments>)
+```
+
+Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String="ITPC spectrogram"`: plot title
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
