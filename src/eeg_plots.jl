@@ -5613,7 +5613,7 @@ function eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tup
     itpc_s = zeros(length(frq_list), size(s, 2))
     size(s, 3) > 100 && @warn "This will take a while, please be patient.."
     @inbounds @simd for idx1 in 1:frq_n
-        kernel = generate_morlet(256, frq_list[idx1], 1, ncyc=10)
+        kernel = generate_morlet(eeg_sr(eeg), frq_list[idx1], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(1, size(s, 2), epoch_n)
         @inbounds @simd for idx2 in 1:epoch_n

@@ -447,7 +447,18 @@ bar(v)
 ISPC:
 ```julia
 e10 = eeg_epochs(edf, epoch_len=10*256)
-i, _, _, _, _ = eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+i, _, _, _, _, _ = eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+```
+
+PLI:
+```julia
+e10 = eeg_epochs(edf, epoch_len=10*256)
+p, _, _, _, _ = eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+```
+
+Amplitude Envelope Correlation:
+```julia
+aec, aec_p = eeg_aec(e10, e10, channel1=3, channel2=4, epoch1=10, epoch2=10)
 ```
 
 ### EEG Plotss

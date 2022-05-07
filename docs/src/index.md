@@ -178,6 +178,7 @@ eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
 eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_pli_m(eeg::NeuroJ.EEG; epoch::Int64)
 eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
+eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 ```
 
 ## EEG plots

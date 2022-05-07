@@ -3076,13 +3076,16 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
   * `epoch1::Int64`
   * `epoch2::Int64`
 
 **Returns**
+
+Named tuple containing:
 
   * `ispc::Float64`: ISPC value
   * `ispc_angle::Float64`: ISPC angle
@@ -3109,6 +3112,8 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 **Returns**
 
+Named tuple containing:
+
   * `itpc::Float64`: ITPC value
   * `itpc_angle::Float64`: ITPC angle
   * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
@@ -3133,6 +3138,8 @@ Calculate PLI (Phase Lag Index) between `channel1`/`epoch1` and `channel2` of `e
   * `epoch2::Int64`
 
 **Returns**
+
+Named tuple containing:
 
   * `pli::Float64`: PLI value
   * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
@@ -3179,6 +3186,33 @@ Calculate matrix of ISPCs (Inter-Site-Phase Clustering) between all channels of 
 **Returns**
 
   * `ispc_m::Matrix{Float64}`: ISPC values matrix
+
+<a id='NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_aec`** &mdash; *Method*.
+
+
+
+```julia
+eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+
+**Returns**
+
+Named tuple containing:
+
+  * `aec::Float64`: power correlation value
+  * `aec_p::Float64`: power correlation p-value
 
 
 <a id='EEG-plots'></a>

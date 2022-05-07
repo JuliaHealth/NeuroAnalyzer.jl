@@ -2027,7 +2027,8 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg1::NeuroJ.EEG`
+- `eeg2::NeuroJ.EEG`
 - `channel1::Int64`
 - `channel2::Int64`
 - `epoch1::Int64`
@@ -2035,6 +2036,7 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
 # Returns
 
+Named tuple containing:
 - `ispc::Float64`: ISPC value
 - `ispc_angle::Float64`: ISPC angle
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
@@ -2061,7 +2063,7 @@ function eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2:
     s2 = @view eeg2.eeg_signals[channel2, :, epoch2]
     ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = s_ispc(s1, s2)
 
-    return ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase
+    return (ispc=ispc, ispc_angle=ispc_angle, signal_diff=signal_diff, phase_diff=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 end
 
 """
@@ -2076,6 +2078,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 # Returns
 
+Named tuple containing:
 - `itpc::Float64`: ITPC value
 - `itpc_angle::Float64`: ITPC angle
 - `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
@@ -2092,7 +2095,7 @@ function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
     s = reshape(s, 1, size(s, 1), size(s, 2))
     itpc, itpc_angle, itpc_phases = s_itpc(s, t=t)
 
-    return itpc, itpc_angle, itpc_phases
+    return (itpc=itpc, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
 
 """
@@ -2110,6 +2113,7 @@ Calculate PLI (Phase Lag Index) between `channel1`/`epoch1` and `channel2` of `e
 
 # Returns
 
+Named tuple containing:
 - `pli::Float64`: PLI value
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
 - `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
@@ -2135,7 +2139,7 @@ function eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::
     s2 = @view eeg2.eeg_signals[channel2, :, epoch2]
     pli, signal_diff, phase_diff, s1_phase, s2_phase = s_pli(s1, s2)
 
-    return pli, signal_diff, phase_diff, s1_phase, s2_phase
+    return (pli=pli, signal_diff=signal_diff, phase_dif=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 end
 
 """
@@ -2209,4 +2213,54 @@ function eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
     end
 
     return ispc_m
+end
+
+"""
+    eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+
+Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`
+- `eeg2::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+- `epoch1::Int64`
+- `epoch2::Int64`
+
+# Returns
+
+Named tuple containing:
+- `aec::Float64`: power correlation value
+- `aec_p::Float64`: power correlation p-value
+"""
+function eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+    eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 must have the same epoch length."))
+
+    eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
+    channel_n1 = eeg_channel_n(eeg1)
+    epoch_n1 = eeg_epoch_n(eeg1)
+    (channel1 > channel_n1) && throw(ArgumentError("channel1 must be ≤ $(channel_n1)."))
+    (epoch1 > epoch_n1) && throw(ArgumentError("epoch1 must be ≤ $(epoch_n1)."))
+    channel_n2 = eeg_channel_n(eeg2)
+    epoch_n2 = eeg_epoch_n(eeg2)
+    (channel2 > channel_n2) && throw(ArgumentError("channel2 must be ≤ $(channel_n2)."))
+    (epoch2 > epoch_n2) && throw(ArgumentError("epoch2 must be ≤ $(epoch_n2)."))
+
+    e1 = eeg_keep_epoch(eeg1, epoch=epoch1)
+    eeg_keep_channel!(e1, channel=channel1)
+    e2 = eeg_keep_epoch(eeg2, epoch=epoch2)
+    eeg_keep_channel!(e2, channel=channel2)
+    s1, _ = eeg_tenv(e1)
+    s2, _ = eeg_tenv(e2)
+    aec = CorrelationTest(vec(s1), vec(s2))
+    aec_r = aec.r
+    aec_p = pvalue(aec)
+
+    return (aec=aec_r, aec_p=aec_p)
 end

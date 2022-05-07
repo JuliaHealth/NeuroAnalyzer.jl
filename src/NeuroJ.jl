@@ -284,6 +284,7 @@ export eeg_itpc
 export eeg_pli
 export eeg_pli_m
 export eeg_ispc_m
+export eeg_aec
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo
