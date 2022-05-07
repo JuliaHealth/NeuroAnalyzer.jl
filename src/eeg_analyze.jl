@@ -2207,7 +2207,7 @@ function eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
             s1 = @view eeg.eeg_signals[idx1, :, epoch]
             s2 = @view eeg.eeg_signals[idx2, :, epoch]
             ispc, _, _, _, _, _ = s_ispc(s1, s2)
-            idx1 == idx2 && (ispc = 0)
+            # idx1 == idx2 && (ispc = 0)
             ispc_m[idx1, idx2] = round(ispc, digits=4)
         end
     end

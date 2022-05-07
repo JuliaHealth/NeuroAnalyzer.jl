@@ -129,8 +129,8 @@ EEG:
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - weighted PLI
+- add edge padding for filters
 - ITPC topoplot
-- coherence/PLI/ISPC spatial distribution of the strongest correlation pairs
 - coherence
 - beamforming, leakage correction
 - Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map

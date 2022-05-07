@@ -77,17 +77,17 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_
     y = y .* 4
     head = Shape(x, y)
     nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
     p = plot!(p, head, fill=nothing, label="")
     p = plot!(nose, fill=nothing, label="")
     p = plot!(ear_l, fill=nothing, label="")
     p = plot!(ear_r, fill=nothing, label="")
     if head_labels == true
-        p = plot!(annotation=(0, 1 - maximum(y) / 5, text("Inion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(0, -1 - minimum(y) / 5, text("Nasion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(-1 - minimum(x) / 5, 0, text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
-        p = plot!(annotation=(1 - maximum(x) / 5, 0, text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
+        p = plot!(annotation=(0, 1 - maximum(y) / 5, Plots.text("Inion", pointsize=12, halign=:center, valign=:center)))
+        p = plot!(annotation=(0, -1 - minimum(y) / 5, Plots.text("Nasion", pointsize=12, halign=:center, valign=:center)))
+        p = plot!(annotation=(-1 - minimum(x) / 5, 0, Plots.text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
+        p = plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
     p = plot!(; kwargs...)
     return p
@@ -541,11 +541,11 @@ function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, 
                        label="")
             if typeof(signal) == Vector{Float64}
                 for idx in 1:length(epoch_markers)
-                    p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
+                    p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
                 end
             else
                 for idx in 1:length(epoch_markers)
-                    p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
+                    p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
                 end
             end
         end
@@ -657,11 +657,11 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
                    label="")
         if typeof(signal) == Vector{Float64}
             for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
+                p = plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
             end
         else
             for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
+                p = plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
             end
         end
     end
@@ -1365,7 +1365,7 @@ function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -1489,7 +1489,7 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -1767,7 +1767,7 @@ function eeg_plot_signal_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstract
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -1893,7 +1893,7 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -2870,7 +2870,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                        linecolor=:black,
                        label="")
             for idx in 1:length(epoch_markers)
-                p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+                p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
             end
         end
     else
@@ -3002,7 +3002,7 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -3218,7 +3218,7 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
                    linecolor=:black,
                    label="")
         for idx in 1:length(epoch_markers)
-            p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+            p = plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
         end
     end
 
@@ -4008,8 +4008,8 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     y = y .* 1.2
     head = Shape(x, y)
     nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
     for idx = 0:0.001:1
         peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
         p = plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
@@ -4158,8 +4158,8 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     y = y .* 1.2
     head = Shape(x, y)
     nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
     for idx = 0:0.001:1
         peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
         p = plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
@@ -4396,8 +4396,8 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     y = y .* 1.2
     head = Shape(x, y)
     nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
     for idx = 0:0.001:1
         peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
         p = plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
@@ -4560,8 +4560,8 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         y = y .* 1.2
         head = Shape(x, y)
         nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-        ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.1 * minimum(x), -0.08), (minimum(x) + 0.1 * minimum(x), 0.08), (minimum(x), 0.1)])
-        ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.1 * maximum(x), -0.08), (maximum(x) + 0.1 * maximum(x), 0.08), (maximum(x), 0.1)])
+        ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+        ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
         for idx = 0:0.001:1
             peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
             p = plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
@@ -5639,6 +5639,119 @@ function eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tup
                 xtickfontsize=4,
                 ytickfontsize=4;
                 kwargs...)
+
+    return p
+end
+
+"""
+    eeg_plot_connections(eeg; <keyword arguments>)
+
+Plot connections between `eeg` electrodes.
+
+# Arguments
+
+- `eeg:EEG`
+- `m::Matrix{Float64}`: matrix of connections weights
+- `threshold::Float64`: plot all connection above threshold
+- `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
+- `labels::Bool=false`: plot electrode labels
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, kwargs...)
+
+    threshold_type in [:eq, :geq, :leq, :g, :l] || throw(ArgumentError("threshold_type must be :eq, :geq, :leq, :g, :l."))
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+
+    # select channels, default is all channels
+    channel = length(eeg_labels(eeg))
+
+    # look for location data
+    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg, type=:eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
+    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+
+    p = plot(grid=true,
+             framestyle=:none,
+             palette=:darktest,
+             markerstrokewidth=0,
+             border=:none,
+             aspect_ratio=1,
+             margins=-20Plots.px,
+             titlefontsize=10;
+             kwargs...)
+    p = plot!(loc_x,
+              loc_y,
+              seriestype=:scatter,
+              color=:black,
+              alpha=0.2,
+              xlims=x_lim,
+              ylims=y_lim,
+              grid=true,
+              label="",
+              markersize=4,
+              markerstrokewidth=0,
+              markerstrokealpha=0;
+              kwargs...)
+    if labels == true
+        for idx in 1:length(eeg_labels(eeg))
+            plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=4)))
+        end
+        p = plot!()
+    end
+    # for some reason head is enlarged for channel > 1
+    eeg_tmp = eeg_keep_channel(eeg, channel=1)
+    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_y[1], loc_x[1] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][1],
+                                      eeg_tmp.eeg_header[:loc_radius][1])
+    hd = _draw_head(p, loc_x, loc_x, head_labels=false)
+    plot!(hd)
+
+    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg, type=:eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+
+    for idx1 in 1:size(m, 1)
+        for idx2 in 1:size(m, 1)
+            if threshold_type === :g
+                if m[idx1, idx2] > threshold
+                    plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                end
+            elseif threshold_type === :l
+                if m[idx1, idx2] < threshold
+                    plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                end
+            elseif threshold_type === :eq
+                if m[idx1, idx2] == threshold
+                    plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                end
+            elseif threshold_type === :leq
+                if m[idx1, idx2] <= threshold
+                    plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                end
+            elseif threshold_type === :geq
+                if m[idx1, idx2] >= threshold
+                    plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                end
+            end
+        end
+    end
+
+    plot(p)
 
     return p
 end

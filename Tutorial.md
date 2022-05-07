@@ -671,11 +671,15 @@ eeg_plot_save(p, file_name="images/e10_ispc.png")
 m = eeg_ispc_m(e10, epoch=1)
 p = eeg_plot_matrix(e10, m)
 eeg_plot_save(p, file_name="images/e10_ispc_m.png")
+p = eeg_plot_connections(edf, m=m, threshold=0.8, threshold_type=:geq)
+eeg_plot_save(p, file_name="images/e10_ispc_connections.png")
 ```
 
 ![e10 ISPC](images/e10_ispc.png)
 
 ![e10 ISPC matrix](images/e10_ispc_m.png)
+
+![e10 ISPC matrix](images/e10_ispc_connections.png)
 
 ITPC:
 ```julia

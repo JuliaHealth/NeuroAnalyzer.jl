@@ -245,6 +245,7 @@ eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int
 eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, kwargs...)
 eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, kwargs...)
 eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="ITPC spectrogram\nchannel: $channel", kwargs...)
+eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, labels::Bool=true, kwargs...)
 ```
 
 ## Low level functions

@@ -346,6 +346,7 @@ export eeg_plot_ispc
 export eeg_plot_itpc
 export eeg_plot_pli
 export eeg_plot_spectrogram_itpc
+export eeg_plot_connections
 
 include("nstim.jl")
 export tes_dose
