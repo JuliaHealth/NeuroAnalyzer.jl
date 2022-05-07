@@ -657,9 +657,35 @@ ISPC:
 ```julia
 p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 eeg_plot_save(p, file_name="images/e10_ispc.png")
+m = eeg_ispc_m(e10, epoch=1)
+p = eeg_plot_matrix(e10, m)
+eeg_plot_save(p, file_name="images/e10_ispc_m.png")
 ```
 
 ![e10 ISPC](images/e10_ispc.png)
+
+![e10 ISPC matrix](images/e10_ispc_m.png)
+
+ITPC:
+```julia
+p = eeg_plot_itpc(e10, channel=1, t=256)
+eeg_plot_save(p, file_name="images/e10_itpc.png")
+```
+
+![e10 ITPC](images/e10_itpc.png)
+
+PLI:
+```julia
+p = eeg_plot_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+eeg_plot_save(p, file_name="images/e10_pli.png")
+m = eeg_pli_m(e10, epoch=1)
+p = eeg_plot_matrix(e10, m)
+eeg_plot_save(p, file_name="images/e10_pli_m.png")
+```
+
+![e10 PLI](images/e10_pli.png)
+
+![e10 PLI matrix](images/e10_pli_m.png)
 
 ### EEG Misc
 

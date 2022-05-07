@@ -128,9 +128,9 @@ EEG:
 - wavelets
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
-- phase synchrony: weighted phase lag index (wPLI), phase locking value
-- PLI (phase lock index)
-- ISPC/ITPC spectrogram: Wavelet filtering into individual frequencies + ISPC/ITPC per each frequency
+- weighted PLI
+- coherence/PLI/ISPC/ITPC spectrogram: Wavelet filtering into individual frequencies + coherence/PLI/ISPC/ITPC per each frequency
+- coherence/PLI/ISPC spatial distribution of the strongest correlation pairs
 - coherence
 - beamforming, leakage correction
 - Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map

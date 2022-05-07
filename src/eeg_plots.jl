@@ -5506,3 +5506,70 @@ function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, kwargs...)
 
     return p
 end
+
+
+"""
+    eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
+
+Plot pli `eeg1` and `eeg2` channels/epochs.
+
+# Arguments
+
+- `eeg1:NeuroJ.EEG`
+- `eeg2:NeuroJ.EEG`
+- `channel1::Int64`: epoch to plot
+- `channel2::Int64`: epoch to plot
+- `epoch1::Int64`: epoch to plot
+- `epoch2::Int64`: epoch to plot
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, kwargs...)
+
+    pli, signal_diff, phase_diff, s1_phase, s2_phase = eeg_pli(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
+
+    pli = round(pli, digits=2)
+
+    signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
+    signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
+    t = eeg1.eeg_epochs_time[:, epoch1]
+
+    p1 = plot(t, signal1, color=:black, lw=0.2)
+    p1 = plot!(t, signal2, color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+
+    p2 = plot(t, signal_diff, color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+
+    p3 = plot(t, s1_phase, color=:black, lw=0.2)
+    p3 = plot!(t, s2_phase, color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+
+    p4 = plot(t, phase_diff, color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+
+    p5 = plot([0, s1_phase[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
+    for idx in 2:length(phase_diff)
+        p5 = plot!([0, s1_phase[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    end
+
+    p5 = plot!([0, s2_phase[1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
+    for idx in 2:length(phase_diff)
+        p5 = plot!([0, s2_phase[idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
+    end
+
+    p6 = plot([0, phase_diff[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and PLI = $pli")
+    for idx in 2:length(phase_diff)
+        p6 = plot!([0, phase_diff[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    end
+    
+    p = plot(p1, p2, p3, p4, p5, p6,
+             layout=(3, 2),
+             titlefontsize=10,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
+             xtickfontsize=4,
+             ytickfontsize=4;
+             kwargs...)
+
+    return p
+end

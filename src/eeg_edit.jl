@@ -1114,7 +1114,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
                 s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
             end
         end
-        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
+        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_signals = s_trimmed
         eeg_new.eeg_time = t_trimmed
         eeg_new.eeg_epochs_time = hcat(t_trimmed)
@@ -1176,8 +1176,10 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
                 s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
             end
         end
+        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg.eeg_signals = s_trimmed
-        eeg.eeg_time = collect(0:(1 / eeg_sr(eeg)):(eeg_signal_len(eeg) / eeg_sr(eeg)))[1:(end - 1)]
+        eeg.eeg_time = t_trimmed
+        eeg.eeg_epochs_time = hcat(t_trimmed)
         eeg.eeg_header[:eeg_duration_samples] -= len
         eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
         eeg.eeg_header[:epoch_duration_samples] -= len

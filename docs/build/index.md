@@ -3050,7 +3050,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
 
@@ -3085,6 +3085,7 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 **Returns**
 
   * `ispc::Float64`: ISPC value
+  * `ispc_angle::Float64`: ISPC angle
   * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
   * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
   * `s1_phase::Vector{Float64}`: signal 1 phase
@@ -3108,8 +3109,76 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 **Returns**
 
-  * `itpc::Vector(Float64)`: ISPC value
+  * `itpc::Float64`: ITPC value
+  * `itpc_angle::Float64`: ITPC angle
   * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+
+<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pli`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pli(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate PLI (Phase Lag Index) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+
+**Returns**
+
+  * `pli::Float64`: PLI value
+  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+  * `s1_phase::Vector{Float64}`: signal 1 phase
+  * `s2_phase::Vector{Float64}`: signal 2 phase
+
+<a id='NeuroJ.eeg_pli_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli_m-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pli_m`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pli_m(eeg; epoch)
+```
+
+Calculate matrix of PLIs (Phase Lag Index) between all channels of `eeg` at `epoch`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch1::Int64`
+
+**Returns**
+
+  * `pli_m::Matrix{Float64}`: PLI values matrix
+
+<a id='NeuroJ.eeg_ispc_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc_m-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc_m`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ispc_m(eeg; epoch)
+```
+
+Calculate matrix of ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg` at `epoch`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch1::Int64`
+
+**Returns**
+
+  * `ispc_m::Matrix{Float64}`: ISPC values matrix
 
 
 <a id='EEG-plots'></a>
@@ -4717,6 +4786,31 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
   * `eeg:NeuroJ.EEG`
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_pli`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
+```
+
+Plot pli `eeg1` and `eeg2` channels/epochs.
+
+**Arguments**
+
+  * `eeg1:NeuroJ.EEG`
+  * `eeg2:NeuroJ.EEG`
+  * `channel1::Int64`: epoch to plot
+  * `channel2::Int64`: epoch to plot
+  * `epoch1::Int64`: epoch to plot
+  * `epoch2::Int64`: epoch to plot
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -6567,6 +6661,30 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
   * `itpc::Float64`: ITPC value
   * `itpc_angle::Float64`: ITPC angle
   * `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
+
+<a id='NeuroJ.s_pli-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_pli-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.s_pli`** &mdash; *Method*.
+
+
+
+```julia
+s_pli(signal1, signal2)
+```
+
+Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+
+**Returns**
+
+  * `pli::Float64`: PLI value
+  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+  * `s1_phase::Vector{Float64}`: signal 1 phase
+  * `s2_phase::Vector{Float64}`: signal 2 phase
 
 
 <a id='NSTIM'></a>

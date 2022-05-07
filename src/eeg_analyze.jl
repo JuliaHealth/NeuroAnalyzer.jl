@@ -1940,7 +1940,7 @@ Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 
@@ -2036,6 +2036,7 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 # Returns
 
 - `ispc::Float64`: ISPC value
+- `ispc_angle::Float64`: ISPC angle
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
 - `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
 - `s1_phase::Vector{Float64}`: signal 1 phase
@@ -2075,7 +2076,8 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 # Returns
 
-- `itpc::Vector(Float64)`: ISPC value
+- `itpc::Float64`: ITPC value
+- `itpc_angle::Float64`: ITPC angle
 - `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 """
 function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
@@ -2091,4 +2093,120 @@ function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
     itpc, itpc_angle, itpc_phases = s_itpc(s, t=t)
 
     return itpc, itpc_angle, itpc_phases
+end
+
+"""
+    eeg_pli(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+
+Calculate PLI (Phase Lag Index) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+- `epoch1::Int64`
+- `epoch2::Int64`
+
+# Returns
+
+- `pli::Float64`: PLI value
+- `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+- `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+- `s1_phase::Vector{Float64}`: signal 1 phase
+- `s2_phase::Vector{Float64}`: signal 2 phase
+"""
+function eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+    eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
+    channel_n1 = eeg_channel_n(eeg1)
+    epoch_n1 = eeg_epoch_n(eeg1)
+    (channel1 > channel_n1) && throw(ArgumentError("channel1 must be ≤ $(channel_n1)."))
+    (epoch1 > epoch_n1) && throw(ArgumentError("epoch1 must be ≤ $(epoch_n1)."))
+    channel_n2 = eeg_channel_n(eeg2)
+    epoch_n2 = eeg_epoch_n(eeg2)
+    (channel2 > channel_n2) && throw(ArgumentError("channel2 must be ≤ $(channel_n2)."))
+    (epoch2 > epoch_n2) && throw(ArgumentError("epoch2 must be ≤ $(epoch_n2)."))
+
+    s1 = @view eeg1.eeg_signals[channel1, :, epoch1]
+    s2 = @view eeg2.eeg_signals[channel2, :, epoch2]
+    pli, signal_diff, phase_diff, s1_phase, s2_phase = s_pli(s1, s2)
+
+    return pli, signal_diff, phase_diff, s1_phase, s2_phase
+end
+
+"""
+    eeg_pli_m(eeg; epoch)
+
+Calculate matrix of PLIs (Phase Lag Index) between all channels of `eeg` at `epoch`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `epoch1::Int64`
+
+# Returns
+
+- `pli_m::Matrix{Float64}`: PLI values matrix
+"""
+function eeg_pli_m(eeg::NeuroJ.EEG; epoch::Int64)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    epoch < 0  && throw(ArgumentError("epoch must be > 0."))
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    epoch > epoch_n && throw(ArgumentError("epoch must be ≤ $(epoch_n)."))
+
+    pli_m = zeros(channel_n, channel_n)
+
+    @inbounds @simd for idx1 in 1:channel_n
+        Threads.@threads for idx2 in 1:channel_n
+            s1 = @view eeg.eeg_signals[idx1, :, epoch]
+            s2 = @view eeg.eeg_signals[idx2, :, epoch]
+            pli, _, _, _, _ = s_pli(s1, s2)
+            pli_m[idx1, idx2] = round(pli, digits=4)
+        end
+    end
+
+    return pli_m
+end
+
+"""
+    eeg_ispc_m(eeg; epoch)
+
+Calculate matrix of ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg` at `epoch`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `epoch1::Int64`
+
+# Returns
+
+- `ispc_m::Matrix{Float64}`: ISPC values matrix
+"""
+function eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    epoch < 0  && throw(ArgumentError("epoch must be > 0."))
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    epoch > epoch_n && throw(ArgumentError("epoch must be ≤ $(epoch_n)."))
+
+    ispc_m = zeros(channel_n, channel_n)
+
+    @inbounds @simd for idx1 in 1:channel_n
+        Threads.@threads for idx2 in 1:channel_n
+            s1 = @view eeg.eeg_signals[idx1, :, epoch]
+            s2 = @view eeg.eeg_signals[idx2, :, epoch]
+            ispc, _, _, _, _, _ = s_ispc(s1, s2)
+            idx1 == idx2 && (ispc = 0)
+            ispc_m[idx1, idx2] = round(ispc, digits=4)
+        end
+    end
+
+    return ispc_m
 end

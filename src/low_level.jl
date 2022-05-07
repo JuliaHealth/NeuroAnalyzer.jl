@@ -2711,3 +2711,36 @@ function s_itpc(signal::AbstractArray; t::Int64)
 
     return itpc, itpc_angle, itpc_phases
 end
+
+"""
+    s_pli(signal1, signal2)
+
+Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::AbstractArray`
+- `signal2::AbstractArray`
+
+# Returns
+
+- `pli::Float64`: PLI value
+- `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
+- `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
+- `s1_phase::Vector{Float64}`: signal 1 phase
+- `s2_phase::Vector{Float64}`: signal 2 phase
+"""
+function s_pli(signal1::AbstractArray, signal2::AbstractArray)
+
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+
+    _, _, _, s1_phase = s_spectrum(signal1)
+    _, _, _, s2_phase = s_spectrum(signal2)
+
+    signal_diff = signal2 - signal1
+    phase_diff = s2_phase - s1_phase
+
+    pli = abs(mean(sign.(imag.(exp.(1im .* phase_diff)))))
+
+    return pli, signal_diff, phase_diff, s1_phase, s2_phase
+end
