@@ -264,6 +264,10 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test size(eeg_pli_m(e10, epoch=1)) == (19, 19)
 @test size(eeg_ispc_m(e10, epoch=1)) == (19, 19)
 
-@test size(eeg_pcor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == (pcor = 1.0, pcor_p = 0.0)
+@test eeg_aec(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1) == (aec = 0.9018562363285513, aec_p = 0.0)
+
+@test length(eeg_ged(edf, edf)) == 3
+@test size(eeg_frqinst(edf)) == size(edf.eeg_signals)
+
 
 true

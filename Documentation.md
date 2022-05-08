@@ -3214,6 +3214,47 @@ Named tuple containing:
   * `aec::Float64`: power correlation value
   * `aec_p::Float64`: power correlation p-value
 
+<a id='NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ged`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ged(eeg1, eeg2)
+```
+
+Perform generalized eigendecomposition between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`: signal data to be analyzed
+  * `eeg2::NeuroJ.EEG`: original signal data
+
+**Returns**
+
+  * `sged::Array{Float64, 3}`
+  * `ress::Matrix{Float64}`
+  * `ress_normalized::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_frqinst`** &mdash; *Method*.
+
+
+
+```julia
+eeg_frqinst(eeg)
+```
+
+Calculate instantaneous frequency of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `frqinst::Array{Float64, 3}`
+
 
 <a id='EEG-plots'></a>
 
@@ -4877,6 +4918,30 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_connections`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_connections(eeg; <keyword arguments>)
+```
+
+Plot connections between `eeg` electrodes.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `m::Matrix{Float64}`: matrix of connections weights
+  * `threshold::Float64`: plot all connection above threshold
+  * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
+  * `labels::Bool=false`: plot electrode labels
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
 
 <a id='Low-level-functions'></a>
 
@@ -4884,7 +4949,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 ## Low level functions
 
-<a id='NeuroJ.linspace-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}' href='#NeuroJ.linspace-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}'>#</a>
+<a id='NeuroJ.linspace-Tuple{Real, Real, Int64}' href='#NeuroJ.linspace-Tuple{Real, Real, Int64}'>#</a>
 **`NeuroJ.linspace`** &mdash; *Method*.
 
 
@@ -4905,7 +4970,7 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 
   * `range::Number`
 
-<a id='NeuroJ.logspace-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}' href='#NeuroJ.logspace-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}'>#</a>
+<a id='NeuroJ.logspace-Tuple{Real, Real, Int64}' href='#NeuroJ.logspace-Tuple{Real, Real, Int64}'>#</a>
 **`NeuroJ.logspace`** &mdash; *Method*.
 
 
@@ -4926,7 +4991,7 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 
   * `range::Number`
 
-<a id='NeuroJ.m_pad0-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}' href='#NeuroJ.m_pad0-Tuple{Union{Matrix{ComplexF64}, Matrix{Float64}, Matrix{Int64}}}'>#</a>
+<a id='NeuroJ.m_pad0-Tuple{Matrix{<:Number}}' href='#NeuroJ.m_pad0-Tuple{Matrix{<:Number}}'>#</a>
 **`NeuroJ.m_pad0`** &mdash; *Method*.
 
 
@@ -4939,13 +5004,13 @@ Pad the matrix `m` with zeros to make it square.
 
 **Arguments**
 
-  * `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+  * `m::Matrix{<:Number}`
 
 **Returns**
 
-  * `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+  * `m::Matrix{Number}`
 
-<a id='NeuroJ.vsearch-Tuple{Union{Float64, Int64}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.vsearch-Tuple{Union{Float64, Int64}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.vsearch-Tuple{Real, Vector{<:Real}}' href='#NeuroJ.vsearch-Tuple{Real, Vector{<:Real}}'>#</a>
 **`NeuroJ.vsearch`** &mdash; *Method*.
 
 
@@ -4968,7 +5033,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 -`y_dist::Real`
 
-<a id='NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.vsearch-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.vsearch-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.vsearch-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
 **`NeuroJ.vsearch`** &mdash; *Method*.
 
 
@@ -4990,7 +5055,7 @@ Return the positions of the `y` vector in the vector `x`.
   * `y_idx::Int64`
   * `y_dist::Real`
 
-<a id='NeuroJ.cart2pol-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.cart2pol-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
+<a id='NeuroJ.cart2pol-Tuple{Real, Real}' href='#NeuroJ.cart2pol-Tuple{Real, Real}'>#</a>
 **`NeuroJ.cart2pol`** &mdash; *Method*.
 
 
@@ -5011,7 +5076,7 @@ Convert cartographic coordinates `x` and `y` to polar.
   * `phi::Float64`
   * `theta::Float64`
 
-<a id='NeuroJ.pol2cart-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}' href='#NeuroJ.pol2cart-Tuple{Union{Float64, Int64}, Union{Float64, Int64}}'>#</a>
+<a id='NeuroJ.pol2cart-Tuple{Real, Real}' href='#NeuroJ.pol2cart-Tuple{Real, Real}'>#</a>
 **`NeuroJ.pol2cart`** &mdash; *Method*.
 
 
@@ -5024,8 +5089,8 @@ Convert polar coordinates `theta` and `phi` to cartographic.
 
 **Arguments**
 
-  * `phi::Union{Float64, Int64}`
-  * `theta::Union{Float64, Int64}`
+  * `phi::Real`
+  * `theta::Real`
 
 **Returns**
 
@@ -5045,9 +5110,9 @@ Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 
 **Arguments**
 
-  * `phi::Union{Float64, Int64}`: the angle with respect to the z-axis (elevation)
-  * `theta::Union{Float64, Int64}`: the angle in the xy plane with respect to the x-axis (azimuth)
-  * `rho::Union{Float64, Int64}`: the distance from the origin to the point
+  * `phi::Real`: the angle with respect to the z-axis (elevation)
+  * `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
+  * `rho::Real`: the distance from the origin to the point
 
 **Returns**
 
@@ -5083,7 +5148,7 @@ Return the `n`-point long symmetric window `type`.
 
   * `w::Vector{Float64}`:: generated window
 
-<a id='NeuroJ.hildebrand_rule-Tuple{Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.hildebrand_rule-Tuple{Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
 **`NeuroJ.hildebrand_rule`** &mdash; *Method*.
 
 
@@ -5102,7 +5167,7 @@ Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symm
 
   * `h::Float64`
 
-<a id='NeuroJ.jaccard_similarity-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.jaccard_similarity-Tuple{Union{Vector{Float64}, Vector{Int64}}, Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
 **`NeuroJ.jaccard_similarity`** &mdash; *Method*.
 
 
@@ -5200,7 +5265,7 @@ Splits the vector `x` into `n`-long pieces.
 
   * `x::Vector{Vector{<:Real}}`
 
-<a id='NeuroJ.s_rms-Tuple{Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.s_rms-Tuple{Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.s_rms-Tuple{Vector{<:Real}}' href='#NeuroJ.s_rms-Tuple{Vector{<:Real}}'>#</a>
 **`NeuroJ.s_rms`** &mdash; *Method*.
 
 
@@ -5232,16 +5297,16 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 **Arguments**
 
-  * `f::Real`
-  * `t::Vector{<:Real}`
-  * `a::Real`
-  * `p::Real`
+  * `f::Real`: frequency
+  * `t::Union{Vector{<:Real}, AbstractRange}`: time vector
+  * `a::Real`: amplitude
+  * `p::Real`: initial phase
 
 **Returns**
 
   * sine::Vector{Float64}`
 
-<a id='NeuroJ.s_freqs-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}}' href='#NeuroJ.s_freqs-Tuple{Union{Vector{Float64}, Vector{Int64}, AbstractRange}}'>#</a>
+<a id='NeuroJ.s_freqs-Tuple{Union{AbstractRange, Vector{<:Real}}}' href='#NeuroJ.s_freqs-Tuple{Union{AbstractRange, Vector{<:Real}}}'>#</a>
 **`NeuroJ.s_freqs`** &mdash; *Method*.
 
 
@@ -5261,7 +5326,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
   * `hz::Vector{Float64}
   * `nyquist_freq::Float64`
 
-<a id='NeuroJ.s_freqs-Tuple{Vector{Float64}, Union{Float64, Int64}}' href='#NeuroJ.s_freqs-Tuple{Vector{Float64}, Union{Float64, Int64}}'>#</a>
+<a id='NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}' href='#NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}'>#</a>
 **`NeuroJ.s_freqs`** &mdash; *Method*.
 
 
@@ -5346,7 +5411,7 @@ Pad the vector `x` with `n` zeros.
 
   * `v_pad::Vector{<:Real}`
 
-<a id='NeuroJ.hz2rads-Tuple{Union{Float64, Int64}}' href='#NeuroJ.hz2rads-Tuple{Union{Float64, Int64}}'>#</a>
+<a id='NeuroJ.hz2rads-Tuple{Real}' href='#NeuroJ.hz2rads-Tuple{Real}'>#</a>
 **`NeuroJ.hz2rads`** &mdash; *Method*.
 
 
@@ -5365,7 +5430,7 @@ Convert frequency `f` in Hz to rad/s.
 
   * `f_rads::Float64`
 
-<a id='NeuroJ.rads2hz-Tuple{Union{Float64, Int64}}' href='#NeuroJ.rads2hz-Tuple{Union{Float64, Int64}}'>#</a>
+<a id='NeuroJ.rads2hz-Tuple{Real}' href='#NeuroJ.rads2hz-Tuple{Real}'>#</a>
 **`NeuroJ.rads2hz`** &mdash; *Method*.
 
 
@@ -5384,7 +5449,7 @@ Convert frequency `f` in rad/s to Hz.
 
   * `f_rads::Float64`
 
-<a id='NeuroJ.z_score-Tuple{Union{Vector{Float64}, Vector{Int64}}}' href='#NeuroJ.z_score-Tuple{Union{Vector{Float64}, Vector{Int64}}}'>#</a>
+<a id='NeuroJ.z_score-Tuple{Vector{<:Real}}' href='#NeuroJ.z_score-Tuple{Vector{<:Real}}'>#</a>
 **`NeuroJ.z_score`** &mdash; *Method*.
 
 
@@ -5476,7 +5541,7 @@ Generate normalized or unnormalized sinc function.
   * `t::AbstractRange=-2:0.01:2`: time
   * `f::Real=10.0`: frequency
   * `peak::Real=0`: sinc peak time
-  * `norm::Bool=true`: generate normalzied function
+  * `norm::Bool=true`: generate normalized function
 
 **Returns**
 
@@ -5521,7 +5586,7 @@ Generate Gaussian wave.
   * `fs::Int64`: sampling rate
   * `f::Real`: frequency
   * `t::Real=1`: length = -t:1/fs:t
-  * `ncyc::Int64`: : number of cycles
+  * `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
   * `a::Real=1`: peak amp
   * 
 
@@ -6652,7 +6717,7 @@ Perform wavelet denoising.
 
   * `signal_denoised::Array{Float64, 3}`
 
-<a id='NeuroJ.effsize-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.effsize-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+<a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
 **`NeuroJ.effsize`** &mdash; *Method*.
 
 
@@ -6745,6 +6810,48 @@ Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
   * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
+
+<a id='NeuroJ.s_ged-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_ged-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.s_ged`** &mdash; *Method*.
+
+
+
+```julia
+s_ged(signal1, signal2)
+```
+
+Perform generalized eigendecomposition between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`: signal to be analyzed
+  * `signal2::AbstractArray`: original signal
+
+**Returns**
+
+  * `sged::AbstractArray`
+  * `ress::AbstractArray`
+  * `ress_normalized::AbstractArray`: RESS normalized to -1..1
+
+<a id='NeuroJ.s_frqinst-Tuple{AbstractArray}' href='#NeuroJ.s_frqinst-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_frqinst`** &mdash; *Method*.
+
+
+
+```julia
+s_frqinst(signal; fs)
+```
+
+Calculate instantaneous frequency `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`
+
+**Returns**
+
+  * `frqinst::Vector{Float64}`
 
 
 <a id='NSTIM'></a>

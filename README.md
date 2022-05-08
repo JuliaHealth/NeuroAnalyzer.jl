@@ -109,8 +109,10 @@ General:
 - stable branch to be released monthly
 - performance optimization
 - CUDA/AMD ROCm acceleration
+- Pluto interface
 
 EEG:
+- visual / auditory stimuli presentation module
 - exclude Fp1, Fp2, O1, O2 from CAR
 - exclude current electrode from CAR mean calculation
 - amplitude turbulence
@@ -132,6 +134,7 @@ EEG:
 - add edge padding for filters
 - ITPC topoplot
 - coherence
+- simple convolution bandpass filter for data analysis
 - beamforming, leakage correction
 - Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
 - FOOOF

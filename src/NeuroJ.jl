@@ -125,6 +125,8 @@ export effsize
 export s_ispc
 export s_itpc
 export s_pli
+export s_ged
+export s_frqinst
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -285,6 +287,8 @@ export eeg_pli
 export eeg_pli_m
 export eeg_ispc_m
 export eeg_aec
+export eeg_ged
+export eeg_frqinst
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

@@ -2252,9 +2252,18 @@ function eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::
     (channel2 > channel_n2) && throw(ArgumentError("channel2 must be ≤ $(channel_n2)."))
     (epoch2 > epoch_n2) && throw(ArgumentError("epoch2 must be ≤ $(epoch_n2)."))
 
-    e1 = eeg_keep_epoch(eeg1, epoch=epoch1)
+    if epoch_n1 > 1
+        e1 = eeg_keep_epoch(eeg1, epoch=epoch1)
+    else
+        e1 = deepcopy(eeg1)
+    end
+    if epoch_n2 > 1
+        e2 = eeg_keep_epoch(eeg2, epoch=epoch1)
+    else
+        e2 = deepcopy(eeg2)
+    end
+
     eeg_keep_channel!(e1, channel=channel1)
-    e2 = eeg_keep_epoch(eeg2, epoch=epoch2)
     eeg_keep_channel!(e2, channel=channel2)
     s1, _ = eeg_tenv(e1)
     s2, _ = eeg_tenv(e2)
@@ -2263,4 +2272,75 @@ function eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::
     aec_p = pvalue(aec)
 
     return (aec=aec_r, aec_p=aec_p)
+end
+
+"""
+    eeg_ged(eeg1, eeg2)
+
+Perform generalized eigendecomposition between `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`: signal data to be analyzed
+- `eeg2::NeuroJ.EEG`: original signal data
+
+# Returns
+
+- `sged::Array{Float64, 3}`
+- `ress::Matrix{Float64}`
+- `ress_normalized::Matrix{Float64}`
+"""
+function eeg_ged(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("eeg1 and eeg2 signal data must have the same size."))
+    eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg1)
+    epoch_n = eeg_epoch_n(eeg1)
+
+    sged = similar(eeg1.eeg_signals)
+    ress = zeros(channel_n, epoch_n)
+    ress_normalized = zeros(channel_n, epoch_n)
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+        s1 = @view eeg1.eeg_signals[:, :, epoch_idx]
+        s2 = @view eeg2.eeg_signals[:, :, epoch_idx]
+        sged[:, :, epoch_idx], ress[:, epoch_idx], ress_normalized[:, epoch_idx] = s_ged(s1, s2)
+    end
+
+    return (sged=sged, ress=ress, ress_normalized=ress_normalized)
+end
+
+"""
+    eeg_frqinst(eeg)
+
+Calculate instantaneous frequency of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `frqinst::Array{Float64, 3}`
+"""
+function eeg_frqinst(eeg::NeuroJ.EEG)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    frqinst = similar(eeg.eeg_signals)
+    fs = eeg_sr(eeg)
+
+    @warn "eeg_frqinst() uses Hilbert transform, the signal should be narrowband for best results."
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+       @inbounds @simd  for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            frqinst[channel_idx, :, epoch_idx] = s_frqinst(s, fs=fs)
+        end
+    end
+
+    return frqinst
 end

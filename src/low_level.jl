@@ -45,13 +45,13 @@ Pad the matrix `m` with zeros to make it square.
 
 # Arguments
 
-- `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+- `m::Matrix{<:Number}`
 
 # Returns
 
-- `m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}}`
+- `m::Matrix{Number}`
 """
-function m_pad0(m::Union{Matrix{Int64}, Matrix{Float64}, Matrix{ComplexF64}})
+function m_pad0(m::Matrix{<:Number})
 
     nr, nc = size(m)
 
@@ -150,15 +150,15 @@ Convert polar coordinates `theta` and `phi` to cartographic.
 
 # Arguments
 
-- `phi::Union{Float64, Int64}`
-- `theta::Union{Float64, Int64}`
+- `phi::Real`
+- `theta::Real`
 
 # Returns
 
 - `x::Float64`
 - `y::Float64`
 """
-function pol2cart(theta::Union{Float64, Int64}, phi::Union{Float64, Int64})
+function pol2cart(theta::Real, phi::Real)
 
     return phi * cos(theta), phi * sin(theta)
 end
@@ -170,9 +170,9 @@ Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 
 # Arguments
 
-- `phi::Union{Float64, Int64}`: the angle with respect to the z-axis (elevation)
-- `theta::Union{Float64, Int64}`: the angle in the xy plane with respect to the x-axis (azimuth)
-- `rho::Union{Float64, Int64}`: the distance from the origin to the point
+- `phi::Real`: the angle with respect to the z-axis (elevation)
+- `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
+- `rho::Real`: the distance from the origin to the point
 
 # Returns
 
@@ -180,7 +180,7 @@ Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 - `y::Float64`
 - `z::Float64`
 """
-function sph2cart(rho::Union{Float64, Int64}, theta::Union{Float64, Int64}, phi::Union{Float64, Int64}=0)
+function sph2cart(rho::Real, theta::Real, phi::Real=0)
 
     return rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta), rho * sin(phi)
 end
@@ -391,16 +391,16 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 # Arguments
 
-- `f::Real`
-- `t::Vector{<:Real}`
-- `a::Real`
-- `p::Real`
+- `f::Real`: frequency
+- `t::Union{Vector{<:Real}, AbstractRange}`: time vector
+- `a::Real`: amplitude
+- `p::Real`: initial phase
 
 # Returns
 
 - sine::Vector{Float64}`
 """
-function generate_sine(f::Real, t::Vector{<:Real}, a::Real=1, p::Real=0)
+function generate_sine(f::Real, t::Union{Vector{<:Real}, AbstractRange}, a::Real=1, p::Real=0)
 
     return @. a * sin(2 * pi * f * t + p)
 end
@@ -680,7 +680,7 @@ Generate normalized or unnormalized sinc function.
 - `t::AbstractRange=-2:0.01:2`: time
 - `f::Real=10.0`: frequency
 - `peak::Real=0`: sinc peak time
-- `norm::Bool=true`: generate normalzied function
+- `norm::Bool=true`: generate normalized function
 # Returns
 
 - `sinc::Vector{Float64}
@@ -715,11 +715,11 @@ Generate Morlet wavelet.
 function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
 
     t = -t:1/fs:t
-    complex == false && (sin_wave = @. cos(2 * pi * f * t))           # for symmetry at x = 0
     complex == true && (sin_wave = @. exp(im * 2 * pi * f * t))       # for symmetry at x = 0
+    complex == false && (sin_wave = @. sin(2 * pi * f * t))           # for symmetry at x = 0
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
     m = sin_wave .* g
-
+    
     return m
 end
 
@@ -733,7 +733,7 @@ Generate Gaussian wave.
 - `fs::Int64`: sampling rate
 - `f::Real`: frequency
 - `t::Real=1`: length = -t:1/fs:t
-- `ncyc::Int64`: : number of cycles
+- `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
 - `a::Real=1`: peak amp
 - 
 # Returns
@@ -2744,4 +2744,65 @@ function s_pli(signal1::AbstractArray, signal2::AbstractArray)
     pli = abs(mean(sign.(imag.(exp.(1im .* phase_diff)))))
 
     return pli, signal_diff, phase_diff, s1_phase, s2_phase
+end
+
+"""
+    s_ged(signal1, signal2)
+
+Perform generalized eigendecomposition between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::AbstractArray`: signal to be analyzed
+- `signal2::AbstractArray`: original signal
+
+# Returns
+
+- `sged::AbstractArray`
+- `ress::AbstractArray`
+- `ress_normalized::AbstractArray`: RESS normalized to -1..1
+"""
+function s_ged(signal1::AbstractArray, signal2::AbstractArray)
+
+    size(signal1) == size(signal2) || throw(ArgumentError("signal1 and signal2 must have the same size."))
+
+    channel_n = size(signal1, 1)
+
+    s1cov = cov(signal1')
+    s2cov = cov(signal2')
+    eig_val, eig_vec = eigen(s1cov, s2cov)
+    eig_val_idx = sortperm(eig_val, rev=true)
+    eig_val = eig_val[eig_val_idx]
+    eig_vec = m_sort(eig_vec, eig_val_idx, dims=2)
+    sged = signal2 .* eig_vec[:, 1]
+    ress = pinv(eig_vec[:, 1]')
+    ress_normalized = ress ./ maximum(abs.(ress))
+
+    return (sged=sged, ress=ress, ress_normalized=ress_normalized)
+end
+
+"""
+    s_frqinst(signal; fs)
+
+Calculate instantaneous frequency `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64`
+
+# Returns
+
+- `frqinst::Vector{Float64}`
+"""
+function s_frqinst(signal::AbstractArray; fs::Int64)
+
+    fs < 0 && throw(ArgumentError("fs must be > 0."))
+
+    h = hilbert(signal)
+    a = angle.(h)
+    ph = DSP.unwrap(a)
+    frqinst = 256 * s_derivative(ph) / (2*pi)
+
+    return frqinst
 end
