@@ -1,5 +1,6 @@
 module NeuroJ
 
+using ColorSchemes
 using CSV
 using CubicSplines
 using DataFrames

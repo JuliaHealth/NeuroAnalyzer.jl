@@ -7,7 +7,8 @@ function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
     println("NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
     println("Imported packages:")
-    required_packages = ["CSV",
+    required_packages = ["ColorSchemes",
+                         "CSV",
                          "CubicSplines",
                          "DataFrames",
                          "Distances",

@@ -134,6 +134,7 @@ EEG:
 - add edge padding for filters
 - ITPC topoplot
 - coherence
+- multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
 - simple convolution bandpass filter for data analysis
 - beamforming, leakage correction
 - Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map

@@ -6,6 +6,7 @@ version = "0.0.24"
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 CubicSplines = "9c784101-8907-5a6d-9be6-98f00873c89b"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
