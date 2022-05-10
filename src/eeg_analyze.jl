@@ -847,7 +847,7 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demea
 end
 
 """
-    eeg_spectrum(eeg; pad)
+    eeg_spectrum(eeg; pad, h)
 
 Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
 
@@ -855,16 +855,17 @@ Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For 
 
 - `eeg::NeuroJ.EEG`
 - `pad::Int64=0`: pad with `pad` zeros
+- `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 
 # Returns
 
 Named tuple containing:
-- `fft::Array{ComplexF64, 3}`
-- `amp::Array{Float64, 3}`
-- `pow::Array{Float64, 3}`
-- `phase::Array{Float64, 3}
+- `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
+- `amp::Array{Float64, 3}`: amplitudes
+- `pow::Array{Float64, 3}`: powers
+- `phase::Array{Float64, 3}: phase angles
 """
-function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
+function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0, h::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -877,9 +878,13 @@ function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
     s_phases = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_fft[idx, :, epoch_idx], s_amplitudes[idx, :, epoch_idx], s_powers[idx, :, epoch_idx], s_phases[idx, :, epoch_idx] = s_spectrum(s, pad=pad)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            if h == false
+                s_fft[channel_idx, :, epoch_idx], s_amplitudes[channel_idx, :, epoch_idx], s_powers[channel_idx, :, epoch_idx], s_phases[channel_idx, :, epoch_idx] = s_spectrum(s, pad=pad)
+            else
+                s_fft[channel_idx, :, epoch_idx], s_amplitudes[channel_idx, :, epoch_idx], s_powers[channel_idx, :, epoch_idx], s_phases[channel_idx, :, epoch_idx] = s_hspectrum(s, pad=pad)
+            end
         end
     end
 

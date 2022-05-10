@@ -2516,7 +2516,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_spectrum(eeg; pad)
+eeg_spectrum(eeg; pad, h)
 ```
 
 Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
@@ -2525,15 +2525,16 @@ Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For 
 
   * `eeg::NeuroJ.EEG`
   * `pad::Int64=0`: pad with `pad` zeros
+  * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 
 **Returns**
 
 Named tuple containing:
 
-  * `fft::Array{ComplexF64, 3}`
-  * `amp::Array{Float64, 3}`
-  * `pow::Array{Float64, 3}`
-  * `phase::Array{Float64, 3}
+  * `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
+  * `amp::Array{Float64, 3}`: amplitudes
+  * `pow::Array{Float64, 3}`: powers
+  * `phase::Array{Float64, 3}: phase angles
 
 <a id='NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_s2t`** &mdash; *Method*.
@@ -3262,31 +3263,6 @@ Calculate instantaneous frequency of `eeg`.
 
 ## EEG plots
 
-<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal(t, signal; <keyword arguments>)
-```
-
-Plot single-channel `signal`.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Vector{<:Real}`
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
 <a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
 **`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
 
@@ -3306,6 +3282,33 @@ Plot scaled multi-channel `signal`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_signal`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal(t, signal; <keyword arguments>)
+```
+
+Plot single-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Vector{<:Real}`
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3331,7 +3334,7 @@ Plot multi-channel `signal`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Channels"`: y-axis label
   * `title::String=""`: plot title
-  * `mono::Bool=false`: each channel is drawn with a different color
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3361,6 +3364,7 @@ Plot `eeg` channel or channels.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3393,6 +3397,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
   * `head::Bool=true`: add head plot
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3419,6 +3424,7 @@ Plot `eeg` external or embedded component.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3445,6 +3451,7 @@ Plot indexed `eeg` external or embedded component.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3471,6 +3478,7 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3497,6 +3505,7 @@ Butterfly plot of indexed `eeg` external or embedded component.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3525,6 +3534,7 @@ Plot PSD of indexed `eeg` external or embedded component.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3553,6 +3563,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3581,6 +3592,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3607,6 +3619,7 @@ Plot `signal` channels: mean and ±95% CI.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3636,6 +3649,7 @@ Plot `eeg` channels: mean and ±95% CI.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3669,6 +3683,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `head::Bool=true`: add head plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3695,6 +3710,7 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3722,6 +3738,7 @@ Butterfly plot of `signal` channels.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple`: y-axis limits, default (0, 0)
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3753,6 +3770,7 @@ Butterfly plot of `eeg` channels.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3786,6 +3804,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `head::Bool=true`: add head plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3813,6 +3832,7 @@ Butterfly plot of `eeg` external or embedded component.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3840,6 +3860,7 @@ Plot `signal` channel power spectrum density.
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3868,6 +3889,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3896,6 +3918,7 @@ Butterfly plot of `signal` channels power spectrum density.
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3925,6 +3948,7 @@ Plot `eeg` channels power spectrum density.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3955,6 +3979,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -3985,6 +4010,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4013,6 +4039,7 @@ Plot PSD of `eeg` external or embedded component.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4041,6 +4068,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4069,6 +4097,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4097,6 +4126,7 @@ Plot spectrogram of `signal`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4127,6 +4157,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4157,6 +4188,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4186,6 +4218,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4217,6 +4250,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4246,6 +4280,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `xlabel::String="Times [s]`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4275,6 +4310,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4301,6 +4337,7 @@ Plot `eeg` electrodes.
   * `head::Bool`=true: plot head
   * `head_labels::Bool=false`: plot head labels
   * `small::Bool=false`: draws small plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4323,6 +4360,7 @@ Plot matrix `m` of `eeg` channels.
   * `eeg:EEG`
   * `m::Union{Matrix{Float64}, Array{Float64, 3}}`: channels by channels matrix
   * `epoch::Int64=1`: epoch number to display
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4347,6 +4385,7 @@ Plot covariance matrix `m` of `eeg` channels.
   * `lags::Vector{<:Real}`: covariance lags
   * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
   * `epoch::Int64=1`: epoch number to display
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4372,6 +4411,7 @@ Plot histogram of `signal`.
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4397,6 +4437,7 @@ Plot histogram of `signal`.
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4426,6 +4467,7 @@ Plot `eeg` channel histograms.
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4453,6 +4495,7 @@ Plot `ica` components against time vector `t`.
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits (-ylim:ylim)
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4480,6 +4523,7 @@ Plot topographical view of `eeg` signal.
   * `cb::Bool=true`: draw color bar
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4507,6 +4551,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4532,6 +4577,7 @@ Topographical plot `eeg` of weights values at electrodes locations.
   * `weights=Matrix{<:Real}`: weights to plot
   * `head::Bool`=true: plot head
   * `small::Bool=false`: draws small plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4558,6 +4604,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
   * `cb::Bool=false`: draw color bar
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4586,6 +4633,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
   * `cb::Bool=false`: draw color bar
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4609,6 +4657,7 @@ Plot vector of plots `p` as tiles.
   * `w::Int64=800`: single plot width (px)
   * `h::Int64=800`: single plot height (px)
   * `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
+  * `mono::Bool=false`: use color or grey palette
 
 **Returns**
 
@@ -4636,6 +4685,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4666,6 +4716,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4708,6 +4759,7 @@ Plot values of `c` for selected channels of `eeg`.
   * `xlabel::String="Channels"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4733,6 +4785,7 @@ Plot values of `c` for selected epoch of `eeg`.
   * `xlabel::String="Epochs"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4760,6 +4813,7 @@ Plot filter response.
   * `rp::Union{Int64, Float64}`: dB ripple in the passband
   * `rs::Union{Int64, Float64}`: dB attenuation in the stopband
   * `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4784,6 +4838,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
   * `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
   * `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for `p` vector plots
 
 **Returns**
@@ -4814,6 +4869,7 @@ Plot envelope of `eeg` channels.
   * `title::String=""`: plot title
   * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4839,6 +4895,7 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
   * `channel2::Int64`: epoch to plot
   * `epoch1::Int64`: epoch to plot
   * `epoch2::Int64`: epoch to plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4861,6 +4918,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
   * `eeg:NeuroJ.EEG`
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4886,6 +4944,7 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
   * `channel2::Int64`: epoch to plot
   * `epoch1::Int64`: epoch to plot
   * `epoch2::Int64`: epoch to plot
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4912,6 +4971,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String="ITPC spectrogram"`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4936,6 +4996,7 @@ Plot connections between `eeg` electrodes.
   * `threshold::Float64`: plot all connection above threshold
   * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
   * `labels::Bool=false`: plot electrode labels
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -6852,6 +6913,29 @@ Calculate instantaneous frequency `signal`.
 **Returns**
 
   * `frqinst::Vector{Float64}`
+
+<a id='NeuroJ.s_hspectrum-Tuple{AbstractArray}' href='#NeuroJ.s_hspectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_hspectrum`** &mdash; *Method*.
+
+
+
+```julia
+s_hspectrum(signal; pad=0)
+```
+
+Calculates amplitudes, powers and phases of the `signal` using Hilbert transform.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+
+**Returns**
+
+  * `h::Vector(ComplexF64}`: Hilbert components
+  * `h_amplitudes::Vector{Float64}`
+  * `h_powers::Vector{Float64}`
+  * `h_phases::Vector{Float64}
 
 
 <a id='NSTIM'></a>

@@ -553,9 +553,9 @@ Pad the vector `x` with `n` zeros.
 
 - `v_pad::Vector{<:Real}`
 """
-function pad0(x::Vector{<:Real}, n::Int64, sym::Bool=false)
+function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
 
-    n < 1 && throw(ArgumentError("n must be positive."))
+    n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
     sym == false && (v_pad = vcat(x, zeros(eltype(x), n)))
     sym == true && (v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)))
@@ -2666,8 +2666,8 @@ function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    _, _, _, s1_phase = s_spectrum(signal1)
-    _, _, _, s2_phase = s_spectrum(signal2)
+    _, _, _, s1_phase = s_hspectrum(signal1)
+    _, _, _, s2_phase = s_hspectrum(signal2)
 
     signal_diff = signal2 - signal1
     phase_diff = s2_phase - s1_phase
@@ -2703,7 +2703,7 @@ function s_itpc(signal::AbstractArray; t::Int64)
 
     s_phase = zeros(size(signal, 2), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        _, _, _, s_phase[:, epoch_idx] = s_spectrum(signal[1, :, epoch_idx])
+        _, _, _, s_phase[:, epoch_idx] = s_hspectrum(signal[1, :, epoch_idx])
     end
 
     itpc_phases = s_phase[t, :]
@@ -2735,8 +2735,8 @@ function s_pli(signal1::AbstractArray, signal2::AbstractArray)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    _, _, _, s1_phase = s_spectrum(signal1)
-    _, _, _, s2_phase = s_spectrum(signal2)
+    _, _, _, s1_phase = s_hspectrum(signal1)
+    _, _, _, s2_phase = s_hspectrum(signal2)
 
     signal_diff = signal2 - signal1
     phase_diff = s2_phase - s1_phase
@@ -2799,10 +2799,40 @@ function s_frqinst(signal::AbstractArray; fs::Int64)
 
     fs < 0 && throw(ArgumentError("fs must be > 0."))
 
-    h = hilbert(signal)
-    a = angle.(h)
-    ph = DSP.unwrap(a)
-    frqinst = 256 * s_derivative(ph) / (2*pi)
+    _, _, _, h_phases = s_hspectrum(signal)
+    frqinst = 256 * s_derivative(h_phases) / (2*pi)
 
     return frqinst
+end
+
+"""
+    s_hspectrum(signal; pad=0)
+
+Calculates amplitudes, powers and phases of the `signal` using Hilbert transform.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+
+# Returns
+
+- `h::Vector(ComplexF64}`: Hilbert components
+- `h_amplitudes::Vector{Float64}`
+- `h_powers::Vector{Float64}`
+- `h_phases::Vector{Float64}
+"""
+function s_hspectrum(signal::AbstractArray; pad::Int64=0)
+
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    h = hilbert(pad0(signal, pad))
+
+    # amplitudes
+    h_amplitudes = @. abs(h)
+    # power
+    h_powers = h_amplitudes.^2
+    # phases
+    h_phases = angle.(h)
+
+    return h, h_amplitudes, h_powers, h_phases
 end
