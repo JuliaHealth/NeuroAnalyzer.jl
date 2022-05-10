@@ -3256,6 +3256,32 @@ Calculate instantaneous frequency of `eeg`.
 
   * `frqinst::Array{Float64, 3}`
 
+<a id='NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_itpc_s`** &mdash; *Method*.
+
+
+
+```julia
+eeg_itpc_s(eeg; <keyword arguments>)
+```
+
+Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+
+**Returns**
+
+Named tuple containing:
+
+  * `itpc_s::Array{Float64, 3}`: spectrogram
+  * `itpc_frq::Vector{Float64}`: frequencies list
+
 
 <a id='EEG-plots'></a>
 
@@ -4951,13 +4977,13 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_spectrogram_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_spectrogram_itpc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_spectrogram_itpc`** &mdash; *Method*.
+<a id='NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc_s`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_spectrogram_itpc(eeg; <keyword arguments>)
+eeg_plot_itpc_s(eeg; <keyword arguments>)
 ```
 
 Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
@@ -4968,6 +4994,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
   * `channel::Int64`
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String="ITPC spectrogram"`: plot title
@@ -4996,6 +5023,35 @@ Plot connections between `eeg` electrodes.
   * `threshold::Float64`: plot all connection above threshold
   * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
   * `labels::Bool=false`: plot electrode labels
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc_f`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_itpc_f(eeg; <keyword arguments>)
+```
+
+Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `f::Int64`: frequency to plot
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 

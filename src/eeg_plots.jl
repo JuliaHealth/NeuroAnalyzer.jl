@@ -5808,7 +5808,7 @@ function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chann
 end
 
 """
-    eeg_plot_spectrogram_itpc(eeg; <keyword arguments>)
+    eeg_plot_itpc_s(eeg; <keyword arguments>)
 
 Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
@@ -5818,6 +5818,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 - `channel::Int64`
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String="ITPC spectrogram"`: plot title
@@ -5828,42 +5829,13 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="ITPC spectrogram\nchannel: $channel", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     palette = :darktest
     mono == true && (palette = :grays)
-
-    frq_lim = tuple_order(frq_lim)
-    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be > 0."))
-    frq_lim[2] > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(eeg_sr(eeg) ÷ 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
-    frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    channel < 0 && throw(ArgumentError("channel must be > 0."))
-    channel_n = eeg_channel_n(eeg)
-    (channel > channel_n) && throw(ArgumentError("channel must be ≤ $(channel_n)."))
-    epoch_n = eeg_epoch_n(eeg)
-    epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
-
-    s = @view eeg.eeg_signals[channel, :, :]
-    s = reshape(s, 1, size(s, 1), size(s, 2))
-    itpc_s = zeros(length(frq_list), size(s, 2))
-    size(s, 3) > 100 && @warn "This will take a while, please be patient.."
-    @inbounds @simd for idx1 in 1:frq_n
-        kernel = generate_morlet(eeg_sr(eeg), frq_list[idx1], 1, ncyc=10)
-        half_kernel = floor(Int64, length(kernel) / 2) + 1
-        s_conv = zeros(1, size(s, 2), epoch_n)
-        @inbounds @simd for idx2 in 1:epoch_n
-            s_conv_tmp = conv(vec(s[:, :, idx2]), kernel)
-            s_conv[1, :, idx2] = s_conv_tmp[(half_kernel - 1):(end - half_kernel)]
-        end
-        Threads.@threads for idx2 in 1:size(s, 2)
-            itpc, _, _ = s_itpc(s_conv, t=idx2)
-            itpc_s[idx1, idx2] = itpc
-        end
-    end
+    title == "" && (title = "ITPC spectrogram\nchannel: $channel")
+    
+    itpc_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
 
     p = heatmap(eeg.eeg_epochs_time[:, 1],
                 frq_list,
@@ -5879,6 +5851,58 @@ function eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tup
                 ytickfontsize=4,
                 seriescolor=palette;
                 kwargs...)
+
+    return p
+end
+
+
+"""
+    eeg_plot_itpc_f(eeg; <keyword arguments>)
+
+Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`
+- `f::Int64`: frequency to plot
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `xlabel::String="Time [s]"`: x-axis label
+- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
+
+    palette = :darktest
+    mono == true && (palette = :grays)
+    f < 0 && throw(ArgumentError("f must be > 0."))
+    f > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("f must be ≤ $(eeg_sr(eeg) ÷ 2)."))
+
+    itpc_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
+    title == "" && (title = "ITPC at frequency $(vsearch(f, frq_list)) Hz\nchannel: $channel")
+
+    p = plot(eeg.eeg_epochs_time[:, 1],
+             itpc_s[vsearch(f, frq_list), :],
+             title=title,
+             xlabel=xlabel,
+             ylabel=ylabel,
+             xticks=_xticks(eeg.eeg_epochs_time[:, 1]),
+             titlefontsize=10,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
+             xtickfontsize=4,
+             ytickfontsize=4,
+             seriescolor=palette,
+             label=false;
+             kwargs...)
 
     return p
 end

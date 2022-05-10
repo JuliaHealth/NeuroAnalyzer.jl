@@ -685,8 +685,11 @@ ITPC:
 ```julia
 p = eeg_plot_itpc(e10, channel=1, t=256)
 eeg_plot_save(p, file_name="images/e10_itpc.png")
-p = eeg_plot_spectrogram_itpc(e10, channel=1, frq_lim=(1, 20), frq_n=20)
+p = eeg_plot_itpc_s(e10, channel=1, frq_lim=(1, 20), frq_n=20)
 eeg_plot_save(p, file_name="images/e10_itpc_s.png")
+i, f = eeg_itpc_s(e10, channel=1, frq_lim=(1, 20), frq_n=20)
+# plot ITCP at 4 Hz frequency over epoch time
+eeg_plot_itpc_f(e10, channel=1, frq_lim=(0, 10), frq_n=10, f=4, frq=:lin)
 ```
 
 ![e10 ITPC](images/e10_itpc.png)

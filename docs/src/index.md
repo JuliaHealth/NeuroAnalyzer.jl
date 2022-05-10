@@ -181,6 +181,7 @@ eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
 eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_ged(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_frqinst(eeg::NeuroJ.EEG)
+eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64)
 ```
 
 ## EEG plots
@@ -246,8 +247,9 @@ eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int
 eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, mono::Bool=false, kwargs...)
 eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
-eeg_plot_spectrogram_itpc(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="ITPC spectrogram\nchannel: $channel", mono::Bool=false, kwargs...)
+eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
+eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 ```
 
 ## Low level functions

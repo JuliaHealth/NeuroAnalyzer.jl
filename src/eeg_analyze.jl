@@ -2349,3 +2349,64 @@ function eeg_frqinst(eeg::NeuroJ.EEG)
 
     return frqinst
 end
+
+"""
+    eeg_itpc_s(eeg; <keyword arguments>)
+
+Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+
+# Returns
+
+Named tuple containing:
+- `itpc_s::Array{Float64, 3}`: spectrogram
+- `itpc_frq::Vector{Float64}`: frequencies list
+"""
+function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    frq_lim[2] > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(eeg_sr(eeg) ÷ 2)."))
+    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    if frq === :log
+        frq_lim = (frq_lim[1] + eps(), frq_lim[2])
+        frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
+    else
+        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+    end
+    channel < 0 && throw(ArgumentError("channel must be > 0."))
+    channel_n = eeg_channel_n(eeg)
+    (channel > channel_n) && throw(ArgumentError("channel must be ≤ $(channel_n)."))
+    epoch_n = eeg_epoch_n(eeg)
+    epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
+    epoch_len = eeg_epoch_len(eeg)
+
+    itpc_s = zeros(length(frq_list), epoch_len)
+    epoch_n > 100 && @warn "This will take a while.."
+    Threads.@threads for frq_idx in 1:frq_n
+        kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
+        half_kernel = floor(Int64, length(kernel) / 2) + 1
+        s_conv = zeros(1, epoch_len, epoch_n)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            s = @view eeg.eeg_signals[channel, :, epoch_idx]
+            s_conv_tmp = conv(vec(s), kernel)
+            s_conv[1, :, epoch_idx] = s_conv_tmp[(half_kernel - 1):(end - half_kernel)]
+        end
+        @inbounds @simd for t_idx in 1:epoch_len
+            itpc, _, _ = s_itpc(s_conv, t=t_idx)
+            itpc_s[frq_idx, t_idx] = itpc
+        end
+    end
+
+    return (itpc_s=itpc_s, itpc_f=frq_list)
+end

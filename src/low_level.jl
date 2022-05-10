@@ -2705,7 +2705,7 @@ function s_itpc(signal::AbstractArray; t::Int64)
     @inbounds @simd for epoch_idx in 1:epoch_n
         _, _, _, s_phase[:, epoch_idx] = s_hspectrum(signal[1, :, epoch_idx])
     end
-
+ 
     itpc_phases = s_phase[t, :]
     itpc = abs.(mean(exp.(1im .* itpc_phases)))
     itpc_angle = angle.(mean(exp.(1im .* itpc_phases)))
