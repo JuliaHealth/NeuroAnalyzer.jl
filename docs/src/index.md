@@ -346,6 +346,8 @@ s_pli(signal1::AbstractArray, signal2::AbstractArray)
 s_ged(signal1::AbstractArray, signal2::AbstractArray)
 s_frqinst(signal::AbstractArray; fs::Int64)
 s_hspectrum(signal::AbstractArray; pad::Int64=0)
+t2f(t::Real)
+f2t(f::Real)
 ```
 
 ## NSTIM

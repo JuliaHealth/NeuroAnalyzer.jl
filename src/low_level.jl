@@ -2808,7 +2808,7 @@ end
 """
     s_hspectrum(signal; pad=0)
 
-Calculates amplitudes, powers and phases of the `signal` using Hilbert transform.
+Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 # Arguments
 
@@ -2835,4 +2835,46 @@ function s_hspectrum(signal::AbstractArray; pad::Int64=0)
     h_phases = angle.(h)
 
     return h, h_amplitudes, h_powers, h_phases
+end
+
+"""
+    t2f(t)
+
+Convert cycle length in ms `t` to frequency.
+
+# Arguments
+
+- `t::Real`: cycle length in ms
+
+# Returns
+
+- `f::Float64`: frequency in Hz
+"""
+function t2f(t::Real)
+
+    t < 0 && throw(ArgumentError("t must be > 0."))
+    f = round(1000 / t, digits=2)
+
+    return f
+end
+
+"""
+    f2t(f)
+
+Convert frequency `f` to cycle length in ms.
+
+# Arguments
+
+- `f::Real`: frequency in Hz
+
+# Returns
+
+- `f::Float64`: cycle length in ms
+"""
+function f2t(f::Real)
+
+    f < 0 && throw(ArgumentError("t must be > 0."))
+    f = round(1000 / f, digits=2)
+    
+    return f
 end

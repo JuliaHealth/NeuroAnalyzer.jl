@@ -6979,7 +6979,7 @@ Calculate instantaneous frequency `signal`.
 s_hspectrum(signal; pad=0)
 ```
 
-Calculates amplitudes, powers and phases of the `signal` using Hilbert transform.
+Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 **Arguments**
 
@@ -6992,6 +6992,44 @@ Calculates amplitudes, powers and phases of the `signal` using Hilbert transform
   * `h_amplitudes::Vector{Float64}`
   * `h_powers::Vector{Float64}`
   * `h_phases::Vector{Float64}
+
+<a id='NeuroJ.t2f-Tuple{Real}' href='#NeuroJ.t2f-Tuple{Real}'>#</a>
+**`NeuroJ.t2f`** &mdash; *Method*.
+
+
+
+```julia
+t2f(t)
+```
+
+Convert cycle length in ms `t` to frequency.
+
+**Arguments**
+
+  * `t::Real`: cycle length in ms
+
+**Returns**
+
+  * `f::Float64`: frequency in Hz
+
+<a id='NeuroJ.f2t-Tuple{Real}' href='#NeuroJ.f2t-Tuple{Real}'>#</a>
+**`NeuroJ.f2t`** &mdash; *Method*.
+
+
+
+```julia
+f2t(f)
+```
+
+Convert frequency `f` to cycle length in ms.
+
+**Arguments**
+
+  * `f::Real`: frequency in Hz
+
+**Returns**
+
+  * `f::Float64`: cycle length in ms
 
 
 <a id='NSTIM'></a>
