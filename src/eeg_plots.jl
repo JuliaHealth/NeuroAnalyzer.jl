@@ -683,7 +683,7 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
     psd = eeg_plot_signal_psd(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", mono=mono)
     ht_a = eeg_plot_histogram(eeg, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_spectrum(signal)
+    _, _, _, s_phase = s_hspectrum(signal)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
     if head == true
         hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name", mono=mono)
@@ -1533,7 +1533,7 @@ function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false, mono=mono)
     ht_a = eeg_plot_histogram(eeg_avg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_spectrum(s_normalized_m)
+    _, _, _, s_phase = s_hspectrum(s_normalized_m)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
     if head == true
         if collect(channel[1]:channel[end]) == channel
@@ -1946,7 +1946,7 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, 
     psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, mt=mt, legend=false, ylabel="Power [dB]")
     s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mt=mt, frq_lim=frq_lim, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false, mono=mono)
     ht_a = eeg_plot_histogram(eeg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_spectrum(s_normalized_m)
+    _, _, _, s_phase = s_hspectrum(s_normalized_m)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
     if head == true
         if collect(channel[1]:channel[end]) == channel
@@ -5710,6 +5710,7 @@ function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, mono::Bool=fal
               seriestype=:histogram,
               bins=(length(itpc_phases) ÷ 10),
               xticks=[-3.14, 0, 3.14],
+              xlims=(-pi, pi),
               fill=:lightgrey,
               title="Phase angles across trials\nchannel: $channel",
               xlabel="Phase angle [rad]",

@@ -150,7 +150,7 @@ eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::Symbol=:a
 eeg_pick(eeg::NeuroJ.EEG; pick::Union{Symbol, Vector{Symbol}})
 eeg_epochs_stats(eeg::NeuroJ.EEG)
 eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
-eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0)
+eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0, h::Bool=false)
 eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
 eeg_t2s(eeg::NeuroJ.EEG; t::Real)
 eeg_channels_stats(eeg::NeuroJ.EEG)
@@ -343,6 +343,7 @@ s_itpc(signal::AbstractArray; t::Int64)
 s_pli(signal1::AbstractArray, signal2::AbstractArray)
 s_ged(signal1::AbstractArray, signal2::AbstractArray)
 s_frqinst(signal::AbstractArray; fs::Int64)
+s_hspectrum(signal::AbstractArray; pad::Int64=0)
 ```
 
 ## NSTIM

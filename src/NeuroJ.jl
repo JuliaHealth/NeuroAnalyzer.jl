@@ -128,6 +128,7 @@ export s_itpc
 export s_pli
 export s_ged
 export s_frqinst
+export s_hspectrum
 
 include("eeg_io.jl")
 export eeg_export_csv

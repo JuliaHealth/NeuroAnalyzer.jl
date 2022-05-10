@@ -685,7 +685,7 @@ ITPC:
 ```julia
 p = eeg_plot_itpc(e10, channel=1, t=256)
 eeg_plot_save(p, file_name="images/e10_itpc.png")
-p = eeg_plot_itpc_spectrogram(e10, channel=1, frq_lim=(1, 20), frq_n=20)
+p = eeg_plot_spectrogram_itpc(e10, channel=1, frq_lim=(1, 20), frq_n=20)
 eeg_plot_save(p, file_name="images/e10_itpc_s.png")
 ```
 
