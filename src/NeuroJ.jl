@@ -131,6 +131,7 @@ export s_frqinst
 export s_hspectrum
 export t2f
 export f2t
+export s_wspectrogram
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -294,6 +295,7 @@ export eeg_aec
 export eeg_ged
 export eeg_frqinst
 export eeg_itpc_s
+export eeg_wspectrogram
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

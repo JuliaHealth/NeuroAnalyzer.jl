@@ -1081,7 +1081,7 @@ function eeg_standardize!(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_fconv(eeg, kernel)
+    eeg_fconv(eeg, kernel, norm)
 
 Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
 
@@ -1089,12 +1089,13 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
 - `eeg::NeuroJ.EEG`
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
+- `norm::Bool=false`: normalize kernel
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
+function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1103,9 +1104,9 @@ function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{Complex
     s_convoluted = zeros(ComplexF64, size(eeg.eeg_signals))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_convoluted[idx, :, epoch_idx] = s_fconv(s, kernel=kernel)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_convoluted[channel_idx, :, epoch_idx] = s_fconv(s, kernel=kernel, norm=norm)
         end
     end
 
@@ -2384,7 +2385,8 @@ function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real},
     frq_lim[2] > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(eeg_sr(eeg) ÷ 2)."))
     frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
     if frq === :log
-        frq_lim = (frq_lim[1] + eps(), frq_lim[2])
+        frq_lim[1] == 0 && (frq_lim = (0.01, frq_lim[2]))
+        frq_lim = (frq_lim[1], frq_lim[2])
         frq_list = logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n)
     else
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
@@ -2416,4 +2418,51 @@ function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real},
     end
 
     return (itpc_s=itpc_s, itpc_z_s=itpc_z_s, itpc_f=frq_list)
+end
+
+"""
+    eeg_wspectrogram(eeg; norm, mt, demean)
+
+Return spectrogram of `eeg` using Morlet wavelet convolution.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool`=true: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool`=true: demean signal prior to analysis
+
+# Returns
+
+Named tuple containing:
+- `w_pow::Array{Float64, 4}`
+- `w_frq::Matrix{Float64}`
+- `w_t::Matrix{Float64}`
+"""
+function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6, demean::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
+    _, p_tmp, f_tmp = s_wspectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+    w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
+    w_frq = zeros(length(f_tmp), epoch_n)
+    w_t = zeros(length(eeg.eeg_epochs_time[:, 1]), epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            _, w_pow[:, :, channel_idx, epoch_idx], w_frq[:, epoch_idx] = s_wspectrogram(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+            w_t[:, epoch_idx] = eeg.eeg_epochs_time[:, 1]
+        end
+    end
+
+    return (w_pow=w_pow, w_frq=w_frq, w_t=w_t)
 end

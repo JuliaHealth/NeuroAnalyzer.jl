@@ -1202,14 +1202,14 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
 end
 
 """
-    s_spectrum(signal; pad=0)
+    s_spectrum(signal; pad)
 
 Calculates FFT, amplitudes, powers and phases of the `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 # Returns
 
@@ -1589,7 +1589,7 @@ function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
     if mod(length(kernel), 2) == 0 
         s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
     end
 
     return s_conv
@@ -2206,7 +2206,7 @@ function s_pca_reconstruct(signal::Array{Float64, 3}; pc::Array{Float64, 3}, pc_
 end
 
 """
-    s_fconv(signal; kernel)
+    s_fconv(signal; kernel, norm)
 
 Perform convolution in the frequency domain between `signal` and `kernel`.
 
@@ -2214,12 +2214,13 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 - `signal::AbstractArray`
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+- `norm::Bool=false`: normalize kernel
 
 # Returns
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
+function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
@@ -2227,13 +2228,14 @@ function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
     half_kernel = floor(Int64, n_kernel / 2)
     s_fft = fft0(signal, n_conv)
     kernel_fft = fft0(kernel, n_conv)
+    norm == true && (kernel_fft ./= cmax(kernel_fft))
     s_conv = ifft(s_fft .* kernel_fft)
     
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
         s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
     end
 
     return s_conv
@@ -2885,4 +2887,58 @@ function f2t(f::Real)
     f = round(1000 / f, digits=2)
     
     return f
+end
+
+"""
+    s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+
+Calculate spectrogram of the `signal` using wavelet convolution.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool`=true: demean signal prior to analysis
+
+# Returns
+
+named tuple containing:
+- `w_conv::Matrix(ComplexF64}`: convoluted signal
+- `w_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}
+"""
+function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6, demean::Bool=true)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
+    if frq === :log
+        frq_lim = (frq_lim[1], frq_lim[2])
+        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+    else
+        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+    end
+
+    demean == true && (signal = s_demean(signal))
+    w_conv = zeros(ComplexF64, length(frq_list), length(signal))
+    w_power = zeros(length(frq_list), length(signal))
+    @inbounds @simd for frq_idx in 1:frq_n
+        kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
+        w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
+        w_power[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
+        norm == true && (w_power[frq_idx, :] = pow2db.(w_power[frq_idx, :]))
+    end
+
+    return (w_conv=w_conv, w_power=w_power, frq_list=frq_list)
 end

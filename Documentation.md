@@ -2674,7 +2674,7 @@ Standardize `eeg` channels for ML.
 
 
 ```julia
-eeg_fconv(eeg, kernel)
+eeg_fconv(eeg, kernel, norm)
 ```
 
 Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
@@ -2683,6 +2683,7 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
   * `eeg::NeuroJ.EEG`
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
+  * `norm::Bool=false`: normalize kernel
 
 **Returns**
 
@@ -3286,6 +3287,37 @@ Named tuple containing:
   * `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
   * `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
   * `itpc_frq::Vector{Float64}`: frequencies list
+
+<a id='NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wspectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wspectrogram(eeg; norm, mt, demean)
+```
+
+Return spectrogram of `eeg` using Morlet wavelet convolution.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool`=true: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_pow::Array{Float64, 4}`
+  * `w_frq::Matrix{Float64}`
+  * `w_t::Matrix{Float64}`
 
 
 <a id='EEG-plots'></a>
@@ -4152,6 +4184,7 @@ Plot spectrogram of `signal`.
   * `fs::Int64`: sampling frequency
   * `offset::Real`: displayed segment offset in seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4183,6 +4216,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -4214,6 +4248,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -4244,6 +4279,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `channel::Int64`: channel to display
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
@@ -4276,6 +4312,7 @@ Plots spectrogram of `eeg` channel(s).
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -4306,6 +4343,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `c_idx::Int64`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Times [s]`: x-axis label
@@ -4336,6 +4374,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Time [s]"`: x-axis label
@@ -5983,7 +6022,7 @@ Calculates cross-covariance between `signal1` and `signal2`.
 
 
 ```julia
-s_spectrum(signal; pad=0)
+s_spectrum(signal; pad)
 ```
 
 Calculates FFT, amplitudes, powers and phases of the `signal`.
@@ -5991,7 +6030,7 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 **Returns**
 
@@ -6601,7 +6640,7 @@ Reconstructs `signal` using PCA components.
 
 
 ```julia
-s_fconv(signal; kernel)
+s_fconv(signal; kernel, norm)
 ```
 
 Perform convolution in the frequency domain between `signal` and `kernel`.
@@ -6610,6 +6649,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
   * `signal::AbstractArray`
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+  * `norm::Bool=false`: normalize kernel
 
 **Returns**
 
@@ -7042,6 +7082,37 @@ Convert frequency `f` to cycle length in ms.
 **Returns**
 
   * `f::Float64`: cycle length in ms
+
+<a id='NeuroJ.s_wspectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_wspectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_wspectrogram`** &mdash; *Method*.
+
+
+
+```julia
+s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+```
+
+Calculate spectrogram of the `signal` using wavelet convolution.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+named tuple containing:
+
+  * `w_conv::Matrix(ComplexF64}`: convoluted signal
+  * `w_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}
 
 
 <a id='NSTIM'></a>
