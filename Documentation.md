@@ -3110,12 +3110,15 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
   * `eeg::NeuroJ.EEG`
   * `channel::Int64`
+  * `t::Int64`: time point (sample number) at which ITPC is calculated
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 **Returns**
 
 Named tuple containing:
 
-  * `itpc::Float64`: ITPC value
+  * `itpc::Float64`: ITPC or wITPC value
+  * `itpcz::Float64`: Rayleigh's ITPC Z value
   * `itpc_angle::Float64`: ITPC angle
   * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 
@@ -3274,12 +3277,14 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `e
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 **Returns**
 
 Named tuple containing:
 
-  * `itpc_s::Array{Float64, 3}`: spectrogram
+  * `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
+  * `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
   * `itpc_frq::Vector{Float64}`: frequencies list
 
 
@@ -4944,6 +4949,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
   * `eeg:NeuroJ.EEG`
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
+  * `z::Bool=false`: plot ITPCz instead of ITPC
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -4995,6 +5001,8 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String="ITPC spectrogram"`: plot title
@@ -5049,6 +5057,8 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -6896,11 +6906,13 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `t::Int64`: time point
+  * `t::Int64`: time point (sample number) at which ITPC is calculated
+  * `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 **Returns**
 
   * `itpc::Float64`: ITPC value
+  * `itpcz::Float64`: Rayleigh's ITPC Z value
   * `itpc_angle::Float64`: ITPC angle
   * `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
