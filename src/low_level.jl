@@ -2686,31 +2686,39 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 # Arguments
 
 - `signal::AbstractArray`
-- `t::Int64`: time point
+- `t::Int64`: time point (sample number) at which ITPC is calculated
+- `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 - `itpc::Float64`: ITPC value
+- `itpcz::Float64`: Rayleigh's ITPC Z value
 - `itpc_angle::Float64`: ITPC angle
 - `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function s_itpc(signal::AbstractArray; t::Int64)
+function s_itpc(signal::AbstractArray; t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
     size(signal, 1) == 1 || throw(ArgumentError("signals must have 1 channel."))
     t > size(signal, 2) && throw(ArgumentError("t must be ≤ $(size(signal, 2))."))
     epoch_n = size(signal, 3)
 
+    w === nothing && (w = ones(epoch_n))
+    # scale w if w contains negative values
+    any(i -> i < 0, w) && (w .+= abs(minimum(w)))
+    length(w) == epoch_n || throw(ArgumentError("Length of w should be equal to number of epochs ($epoch_n)."))
+    
     s_phase = zeros(size(signal, 2), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         _, _, _, s_phase[:, epoch_idx] = s_hspectrum(signal[1, :, epoch_idx])
     end
  
     itpc_phases = s_phase[t, :]
-    itpc = abs.(mean(exp.(1im .* itpc_phases)))
-    itpc_angle = angle.(mean(exp.(1im .* itpc_phases)))
+    itpc = abs.(mean(exp.(1im .* itpc_phases .* w)))
+    itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
+    itpcz = epoch_n * itpc^2
 
-    return itpc, itpc_angle, itpc_phases
+    return itpc, itpcz, itpc_angle, itpc_phases
 end
 
 """

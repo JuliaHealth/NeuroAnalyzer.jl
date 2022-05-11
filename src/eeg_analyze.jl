@@ -2080,27 +2080,30 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 - `eeg::NeuroJ.EEG`
 - `channel::Int64`
+- `t::Int64`: time point (sample number) at which ITPC is calculated
+- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc::Float64`: ITPC value
+- `itpc::Float64`: ITPC or wITPC value
+- `itpcz::Float64`: Rayleigh's ITPC Z value
 - `itpc_angle::Float64`: ITPC angle
 - `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 """
-function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
+function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
     channel < 0 && throw(ArgumentError("channel must be > 0."))
     channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
     (channel > channel_n) && throw(ArgumentError("channel must be ≤ $(channel_n)."))
     
     s = @view eeg.eeg_signals[channel, :, :]
     s = reshape(s, 1, size(s, 1), size(s, 2))
-    itpc, itpc_angle, itpc_phases = s_itpc(s, t=t)
+    itpc, itpcz, itpc_angle, itpc_phases = s_itpc(s, t=t, w=w)
 
-    return (itpc=itpc, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
+    return (itpc=itpc, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
 
 """
@@ -2362,14 +2365,16 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `e
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
 Named tuple containing:
-- `itpc_s::Array{Float64, 3}`: spectrogram
+- `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
+- `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
 - `itpc_frq::Vector{Float64}`: frequencies list
 """
-function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log)
+function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2392,6 +2397,7 @@ function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real},
     epoch_len = eeg_epoch_len(eeg)
 
     itpc_s = zeros(length(frq_list), epoch_len)
+    itpc_z_s = zeros(length(frq_list), epoch_len)
     epoch_n > 100 && @warn "This will take a while.."
     Threads.@threads for frq_idx in 1:frq_n
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
@@ -2403,10 +2409,11 @@ function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real},
             s_conv[1, :, epoch_idx] = s_conv_tmp[(half_kernel - 1):(end - half_kernel)]
         end
         @inbounds @simd for t_idx in 1:epoch_len
-            itpc, _, _ = s_itpc(s_conv, t=t_idx)
+            itpc, itpc_z, _, _ = s_itpc(s_conv, t=t_idx, w=w)
             itpc_s[frq_idx, t_idx] = itpc
+            itpc_z_s[frq_idx, t_idx] = itpc_z
         end
     end
 
-    return (itpc_s=itpc_s, itpc_f=frq_list)
+    return (itpc_s=itpc_s, itpc_z_s=itpc_z_s, itpc_f=frq_list)
 end

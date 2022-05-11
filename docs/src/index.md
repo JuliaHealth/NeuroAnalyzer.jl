@@ -174,14 +174,14 @@ eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
 eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
 eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
-eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64)
+eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_pli_m(eeg::NeuroJ.EEG; epoch::Int64)
 eeg_ispc_m(eeg::NeuroJ.EEG; epoch::Int64)
 eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_ged(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_frqinst(eeg::NeuroJ.EEG)
-eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64)
+eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 ```
 
 ## EEG plots
@@ -247,9 +247,9 @@ eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int
 eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, mono::Bool=false, kwargs...)
 eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
-eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
-eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 ```
 
 ## Low level functions
@@ -341,7 +341,7 @@ s_findpeaks(signal::AbstractArray; d::Int64=32)
 s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
 effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
 s_ispc(signal1::AbstractArray, signal2::AbstractArray)
-s_itpc(signal::AbstractArray; t::Int64)
+s_itpc(signal::AbstractArray; t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 s_pli(signal1::AbstractArray, signal2::AbstractArray)
 s_ged(signal1::AbstractArray, signal2::AbstractArray)
 s_frqinst(signal::AbstractArray; fs::Int64)

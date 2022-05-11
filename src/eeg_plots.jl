@@ -5690,6 +5690,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 - `eeg:NeuroJ.EEG`
 - `channel::Int64`: channel to plot
 - `t::Int64`: time point to plot
+- `z::Bool=false`: plot ITPCz instead of ITPC
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -5697,13 +5698,14 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, mono::Bool=false, kwargs...)
+function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, z::Bool=false, mono::Bool=false, kwargs...)
 
     palette = :darktest
     mono == true && (palette = :grays)
 
-    itpc, itpc_angle, itpc_phases = eeg_itpc(eeg, channel=channel, t=t)
+    itpc, itpcz, itpc_angle, itpc_phases = eeg_itpc(eeg, channel=channel, t=t)
     itpc = round(itpc, digits=2)
+    itpcz = round(itpcz, digits=2)
     t = eeg_s2t(eeg, t=t)
 
     p1 = plot(itpc_phases,
@@ -5716,11 +5718,14 @@ function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, mono::Bool=fal
               xlabel="Phase angle [rad]",
               ylabel="Count/bin")
 
-    p2 = plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc")
+    z == false && (p2 = plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc"))
+    z == true && (p2 = plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPCz at $t s = $itpcz (scaled to ≤ 1)"))
     for idx in 2:length(itpc_phases)
         p2 = plot!([0, itpc_phases[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
-    p2 = plot!([0, itpc_angle], [0, itpc], lw=1, color=:red)
+    itpcz > 1 && (itpcz = 1)
+    z == false && (p2 = plot!([0, itpc_angle], [0, itpc], lw=1, color=:red))
+    z == true && (p2 = plot!([0, itpc_angle], [0, itpcz], lw=1, color=:red))
 
     p = plot(p1, p2,
              legend=false,
@@ -5819,6 +5824,8 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `z::Bool=false`: plot ITPCz instead of ITPC
+- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String="ITPC spectrogram"`: plot title
@@ -5829,17 +5836,20 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     palette = :darktest
     mono == true && (palette = :grays)
     title == "" && (title = "ITPC spectrogram\nchannel: $channel")
     
-    itpc_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
+    itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
+
+    z == false && (s = itpc_s)
+    z == true && (s = itpc_z_s)
 
     p = heatmap(eeg.eeg_epochs_time[:, 1],
                 frq_list,
-                itpc_s,
+                s,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
@@ -5869,6 +5879,8 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `z::Bool=false`: plot ITPCz instead of ITPC
+- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -5879,18 +5891,21 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 
     palette = :darktest
     mono == true && (palette = :grays)
     f < 0 && throw(ArgumentError("f must be > 0."))
     f > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("f must be ≤ $(eeg_sr(eeg) ÷ 2)."))
 
-    itpc_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
+    itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq, w=w)
     title == "" && (title = "ITPC at frequency $(vsearch(f, frq_list)) Hz\nchannel: $channel")
 
+    z == false && (s = @view itpc_s[vsearch(f, frq_list), :])
+    z == true && (s = @view itpc_z_s[vsearch(f, frq_list), :])
+
     p = plot(eeg.eeg_epochs_time[:, 1],
-             itpc_s[vsearch(f, frq_list), :],
+             s,
              title=title,
              xlabel=xlabel,
              ylabel=ylabel,
