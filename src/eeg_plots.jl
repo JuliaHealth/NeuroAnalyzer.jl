@@ -2779,6 +2779,7 @@ Plot spectrogram of `signal`.
 - `fs::Int64`: sampling frequency
 - `offset::Real`: displayed segment offset in seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="Time [s]"`: x-axis label
@@ -2791,7 +2792,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
+function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2805,16 +2806,25 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     palette = :darktest
     mono == true && (palette = :grays)
 
-    mt == false && (spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-    mt == true && (spec = mt_spectrogram(signal, fs=fs))
-    t = collect(spec.time) .+ offset
+    if mw == false
+        if mt == false
+            spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+        else
+            spec = mt_spectrogram(signal, fs=fs)
+        end
+        norm == true && (spec_power = pow2db.(spec.power))
+        spec_frq = spec.freq
+        t = collect(spec.time) .+ offset
+    else
+        _, spec_power, spec_frq = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), norm=norm)
+        t = linspace(0, size(spec_power, 2)/fs, size(spec_power, 2)) .+ offset
+    end
 
     cb_title = "[μV^2/Hz]"
     norm == true && (cb_title = "[dB/Hz]")
-    spec_power = pow2db.(spec.power)
 
     p = heatmap(t,
-                spec.freq,
+                spec_frq,
                 spec_power,
                 xlabel=xlabel,
                 ylabel=ylabel,
@@ -2847,6 +2857,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -2859,7 +2870,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -2931,6 +2942,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                              fs=fs,
                              offset=offset,
                              norm=norm,
+                             mw=mw,
                              mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
@@ -2994,6 +3006,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3006,7 +3019,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
     _check_channels(eeg, channel)
@@ -3068,6 +3081,7 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, Ab
                          fs=fs,
                          offset=offset,
                          norm=norm,
+                         mw=mw,
                          mt=mt,
                          xlabel=xlabel,
                          ylabel=ylabel,
@@ -3105,6 +3119,7 @@ Plots spectrogram of `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `channel::Int64`: channel to display
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
@@ -3117,7 +3132,7 @@ Plots spectrogram of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -3161,6 +3176,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                              fs=fs,
                              offset=0,
                              norm=norm,
+                             mw=mw,
                              mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
@@ -3213,6 +3229,7 @@ Plots spectrogram of `eeg` channel(s).
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
@@ -3225,7 +3242,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3291,6 +3308,7 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Floa
                          fs=fs,
                          offset=offset,
                          norm=norm,
+                         mw=mw,
                          mt=mt,
                          xlabel=xlabel,
                          ylabel=ylabel,
@@ -3328,6 +3346,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Int64`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Times [s]`: x-axis label
@@ -3340,7 +3359,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3386,6 +3405,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
                              fs=fs,
                              offset=offset,
                              norm=norm,
+                             mw=mw,
                              mt=mt,
                              xlabel=xlabel,
                              ylabel=ylabel,
@@ -3436,6 +3456,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Time [s]"`: x-axis label
@@ -3448,7 +3469,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3496,6 +3517,7 @@ function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{
     p = plot_spectrogram(c,
                          fs=fs,
                          norm=norm,
+                         mw=mw,
                          mt=mt,
                          frq_lim=frq_lim,
                          xlabel=xlabel,
