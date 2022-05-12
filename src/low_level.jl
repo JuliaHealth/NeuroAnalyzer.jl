@@ -2587,39 +2587,31 @@ function s_findpeaks(signal::AbstractArray; d::Int64=32)
 end
 
 """
-    s_wdenoise(signal, wt)
+    s_wdenoise(signal; wt)
 
 Perform wavelet denoising.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
 
 # Returns
 
-- `signal_denoised::Array{Float64, 3}`
+- `signal_denoised::Vector{Float64}`
 """
-function s_wdenoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
+function s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
     
     wt in [:db2, :db4, :db8, :db10, :haar] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar"))
 
-    channel_n, _, epoch_n = size(signal)
-    signal_denoised = zeros(size(signal))
-    
     wt === :db2 && (wt = wavelet(WT.db2))
     wt === :db4 && (wt = wavelet(WT.db4))
     wt === :db8 && (wt = wavelet(WT.db8))
     wt === :db10 && (wt = wavelet(WT.db10))
     wt === :haar && (wt = wavelet(WT.haar))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            s = @view signal[channel_idx, :, epoch_idx]
-            # denoise
-            signal_denoised[channel_idx, :, epoch_idx] = denoise(s, wt)
-        end
-    end
+    signal_denoised = denoise(signal, wt)
+
     return signal_denoised
 end
 
@@ -2941,4 +2933,34 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
     end
 
     return (w_conv=w_conv, w_power=w_power, frq_list=frq_list)
+end
+
+"""
+   s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100) 
+
+Perform FFT denoising.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64=0`: pad the `signal` with `pad` zeros
+- `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+# Returns
+
+- `signal_denoised::Vector{Float64}`
+"""
+function s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
+
+    signal_fft = fft0(signal, pad)
+    signal_psd = real.(signal_fft .* conj.(signal_fft)) / length(signal)
+    # signal_psd = abs2.(signal_fft) / length(signal)
+
+    # zero frequencies
+    signal_idx = signal_psd .> threshold
+    signal_psd .*= signal_idx
+    signal_fft .*= signal_idx
+    signal_denoised = real.(ifft(signal_fft))
+
+    return signal_denoised
 end

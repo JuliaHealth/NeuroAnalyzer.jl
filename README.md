@@ -196,6 +196,7 @@ MRI
 
 NSTIM
 - TES modelling
+- removal of TES artifacts from EEG
 
 ## Contributors
 

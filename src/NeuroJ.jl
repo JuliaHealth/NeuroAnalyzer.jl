@@ -132,6 +132,7 @@ export s_hspectrum
 export t2f
 export f2t
 export s_wspectrogram
+export s_fftdenoise
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -241,6 +242,8 @@ export eeg_downsample
 export eeg_downsample!
 export eeg_wdenoise
 export eeg_wdenoise!
+export eeg_fftdenoise
+export eeg_fftdenoise!
 
 include("eeg_analyze.jl")
 export eeg_total_power

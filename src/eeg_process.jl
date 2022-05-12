@@ -1132,7 +1132,19 @@ Perform wavelet denoising.
 function eeg_wdenoise(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_wdenoise(eeg.eeg_signals)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    s_denoised = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_denoised[channel_idx, :, epoch_idx] = s_wdenoise(s, wt=wt)
+        end
+    end
+
+    eeg_new.eeg_signals = s_denoised
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_wdenoise(EEG, wt=$wt)")
 
@@ -1151,7 +1163,19 @@ Perform wavelet denoising.
 """
 function eeg_wdenoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 
-    eeg.eeg_signals = s_wdenoise(eeg.eeg_signals)
+    channel_n = eeg_channel_(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    s_denoised = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_denoised[channel_idx, :, epoch_idx] = s_wdenoise(s, wt=wt)
+        end
+    end
+
+    eeg.eeg_signals = s_denoised
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wdenoise!(EEG, wt=$wt)")
 
@@ -1570,6 +1594,75 @@ function eeg_reference_m!(eeg::NeuroJ.EEG; type::Symbol=:l)
     eeg.eeg_header[:reference] = "M ($type)"
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_m!(EEG, type=$type)")
+
+    nothing
+end
+
+"""
+    eeg_fftdenoise(eeg; pad, threshold)
+
+Perform wavelet denoising.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64=0`: pad signal with `pad` zeros
+- `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_fftdenoise(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
+
+    eeg_new = deepcopy(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    s_denoised = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_denoised[channel_idx, :, epoch_idx] = s_fftdenoise(s, pad=pad, threshold=threshold)
+        end
+    end
+
+    eeg_new.eeg_signals = s_denoised
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_fftdenoise(EEG, pad=$pad, threshold=$threshold)")
+
+    return eeg_new
+end
+
+"""
+    eeg_fftdenoise!(eeg; pad, threshold)
+
+Perform wavelet denoising.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64=0`: pad signal with `pad` zeros
+- `threshold::Int64=100`: PSD threshold for keeping frequency components
+"""
+function eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    s_denoised = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_denoised[channel_idx, :, epoch_idx] = s_fftdenoise(s, pad=pad, threshold=threshold)
+        end
+    end
+
+    eeg.eeg_signals = s_denoised
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_fftdenoise!(EEG, pad=$pad, threshold=$threshold)")
 
     nothing
 end

@@ -125,6 +125,8 @@ eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
 eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 eeg_wdenoise(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 eeg_wdenoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
+eeg_fftdenoise(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
+eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 ```
 
 ## EEG analyze
@@ -339,7 +341,7 @@ s_detect_epoch_euclid(signal::Array{Float64, 3})
 s_detect_epoch_p2p(signal::Array{Float64, 3})
 s_snr(signal::AbstractArray)
 s_findpeaks(signal::AbstractArray; d::Int64=32)
-s_wdenoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
+s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
 effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
 s_ispc(signal1::AbstractArray, signal2::AbstractArray)
 s_itpc(signal::AbstractArray; t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
@@ -350,6 +352,7 @@ s_hspectrum(signal::AbstractArray; pad::Int64=0)
 t2f(t::Real)
 f2t(f::Real)
 s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6, demean::Bool=true)
+s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
 ```
 
 ## NSTIM

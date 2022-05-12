@@ -2025,13 +2025,13 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
   * `eeg::NeuroJ.EEG`
   * `new_sr::Int64`: new sampling rate
 
-<a id='NeuroJ.eeg_wt_denoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wt_denoise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wt_denoise`** &mdash; *Method*.
+<a id='NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wdenoise`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_wt_denoise(eeg; wt)
+eeg_wdenoise(eeg; wt)
 ```
 
 Perform wavelet denoising.
@@ -2045,13 +2045,13 @@ Perform wavelet denoising.
 
   * `eeg_new::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_wt_denoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wt_denoise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wt_denoise!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wdenoise!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_wt_denoise!(eeg; wt)
+eeg_wdenoise!(eeg; wt)
 ```
 
 Perform wavelet denoising.
@@ -2060,6 +2060,44 @@ Perform wavelet denoising.
 
   * `eeg::NeuroJ.EEG`
   * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
+<a id='NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fftdenoise`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fftdenoise(eeg; pad, threshold)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: pad signal with `pad` zeros
+  * `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fftdenoise!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fftdenoise!(eeg; pad, threshold)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: pad signal with `pad` zeros
+  * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
 
 <a id='EEG-analyze'></a>
@@ -4989,6 +5027,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
   * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -5039,7 +5078,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
   * `channel::Int64`
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
   * `z::Bool=false`: plot ITPCz instead of ITPC
   * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
@@ -5095,7 +5134,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
   * `f::Int64`: frequency to plot
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
   * `z::Bool=false`: plot ITPCz instead of ITPC
   * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
@@ -6864,25 +6903,25 @@ Find peaks in `signal`.
 
   * `p_idx::Vector{Int64}`
 
-<a id='NeuroJ.s_wt_denoise' href='#NeuroJ.s_wt_denoise'>#</a>
-**`NeuroJ.s_wt_denoise`** &mdash; *Function*.
+<a id='NeuroJ.s_wdenoise-Tuple{AbstractArray}' href='#NeuroJ.s_wdenoise-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_wdenoise`** &mdash; *Method*.
 
 
 
 ```julia
-s_wt_denoise(signal, wt)
+s_wdenoise(signal; wt)
 ```
 
 Perform wavelet denoising.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
   * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
 
 **Returns**
 
-  * `signal_denoised::Array{Float64, 3}`
+  * `signal_denoised::Vector{Float64}`
 
 <a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
 **`NeuroJ.effsize`** &mdash; *Method*.
@@ -7113,6 +7152,25 @@ named tuple containing:
   * `w_conv::Matrix(ComplexF64}`: convoluted signal
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}
+
+<a id='NeuroJ.s_fftdenoise-Tuple{AbstractArray}' href='#NeuroJ.s_fftdenoise-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_fftdenoise`** &mdash; *Method*.
+
+
+
+s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100) 
+
+Perform FFT denoising.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64=0`: pad the `signal` with `pad` zeros
+  * `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+**Returns**
+
+  * `signal_denoised::Vector{Float64}`
 
 
 <a id='NSTIM'></a>

@@ -269,5 +269,6 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test length(eeg_ged(edf, edf)) == 3
 @test size(eeg_frqinst(edf)) == size(edf.eeg_signals)
 
+@test size(eeg_fftdenoise(edf).eeg_signals) == (19, 309760, 1)
 
 true
