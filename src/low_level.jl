@@ -1589,7 +1589,7 @@ function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
     if mod(length(kernel), 2) == 0 
         s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
     end
 
     return s_conv
@@ -2233,7 +2233,7 @@ function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
     if mod(n_kernel, 2) == 0 
         s_conv = s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[half_kernel:(end - half_kernel - 1)]
+        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
     end
 
     return s_conv
@@ -2585,7 +2585,7 @@ function s_findpeaks(signal::AbstractArray; d::Int64=32)
 end
 
 """
-    s_wt_denoise(signal, wt)
+    s_wdenoise(signal, wt)
 
 Perform wavelet denoising.
 
@@ -2598,7 +2598,7 @@ Perform wavelet denoising.
 
 - `signal_denoised::Array{Float64, 3}`
 """
-function s_wt_denoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
+function s_wdenoise(signal::Array{Float64, 3}, wt::Symbol=:db4)
     
     wt in [:db2, :db4, :db8, :db10, :haar] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar"))
 

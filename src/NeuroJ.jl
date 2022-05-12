@@ -121,7 +121,7 @@ export s_detect_epoch_euclid
 export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
-export s_wt_denoise
+export s_wdenoise
 export effsize
 export s_ispc
 export s_itpc
@@ -238,8 +238,8 @@ export eeg_upsample
 export eeg_upsample!
 export eeg_downsample
 export eeg_downsample!
-export eeg_wt_denoise
-export eeg_wt_denoise!
+export eeg_wdenoise
+export eeg_wdenoise!
 
 include("eeg_analyze.jl")
 export eeg_total_power

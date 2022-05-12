@@ -84,7 +84,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
-@test size(s_wt_denoise(rand(10, 100, 1))) == (10, 100, 1)
+@test size(s_wdenoise(rand(10, 100, 1))) == (10, 100, 1)
 @test effsize([1,2,3], [2,3,4]) == (cohen = 1.0, hedges = 1.0)
 @test s_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (1.0, 0.0, [-1.0, -1.0, -1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 @test s_itpc(ones(1, 10, 10), t=1) == (1.0, 10.0, 0.0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])

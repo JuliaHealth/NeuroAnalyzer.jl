@@ -256,7 +256,7 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test size(eeg_senv_mean(e10, dims=1)[1]) == (61, 121)
 @test size(eeg_senv_median(e10, dims=1)[1]) == (61, 121)
 
-@test size(eeg_wt_denoise(edf).eeg_signals) == (19, 309760, 1)
+@test size(eeg_wdenoise(edf).eeg_signals) == (19, 309760, 1)
 
 @test length(eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
 @test length(eeg_itpc(e10, channel=1, t=12)) == 4

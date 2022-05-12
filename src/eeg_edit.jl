@@ -1101,7 +1101,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
     eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
 
     if keep_epochs == false
-        @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
+        @warn "This operation will remove epoching, to keep epochs use keep_epochs=true."
 
         eeg_new = deepcopy(eeg)
         eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg_new, epoch_n=1))
@@ -1165,7 +1165,7 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
     eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
     
     if keep_epochs == false
-        @warn "This operation will remove epoching. To keep epochs use keep_epochs=true."
+        @warn "This operation will remove epoching, to keep epochs use keep_epochs=true."
         eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg, epoch_n=1))
         channel_n = eeg_channel_n(eeg)
         epoch_n = eeg_epoch_n(eeg)
@@ -1223,10 +1223,9 @@ function eeg_edit_header(eeg::NeuroJ.EEG; field::Symbol, value::Any)
 
     eeg_new = deepcopy(eeg)
     fields = keys(eeg_new.eeg_header)
-    field in fields || throw(ArgumentError("field does not exist."))
+    field in fields || throw(ArgumentError("$field does not exist."))
     typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
     eeg_new.eeg_header[field] = value
-    # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
 
     return eeg_new

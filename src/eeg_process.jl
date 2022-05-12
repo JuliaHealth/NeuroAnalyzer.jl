@@ -1116,7 +1116,7 @@ function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 end
 
 """
-    eeg_wt_denoise(eeg; wt)
+    eeg_wdenoise(eeg; wt)
 
 Perform wavelet denoising.
 
@@ -1129,18 +1129,18 @@ Perform wavelet denoising.
 
 - `eeg_new::NeuroJ.EEG`
 """
-function eeg_wt_denoise(eeg::NeuroJ.EEG; wt::Symbol=:db4)
+function eeg_wdenoise(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_wt_denoise(eeg.eeg_signals)
+    eeg_new.eeg_signals = s_wdenoise(eeg.eeg_signals)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_wt_denoise(EEG, wt=$wt)")
+    push!(eeg_new.eeg_header[:history], "eeg_wdenoise(EEG, wt=$wt)")
 
     return eeg_new
 end
 
 """
-    eeg_wt_denoise!(eeg; wt)
+    eeg_wdenoise!(eeg; wt)
 
 Perform wavelet denoising.
 
@@ -1149,11 +1149,11 @@ Perform wavelet denoising.
 - `eeg::NeuroJ.EEG`
 - `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
 """
-function eeg_wt_denoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
+function eeg_wdenoise!(eeg::NeuroJ.EEG; wt::Symbol=:db4)
 
-    eeg.eeg_signals = s_wt_denoise(eeg.eeg_signals)
+    eeg.eeg_signals = s_wdenoise(eeg.eeg_signals)
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_wt_denoise!(EEG, wt=$wt)")
+    push!(eeg.eeg_header[:history], "eeg_wdenoise!(EEG, wt=$wt)")
 
     nothing
 end
