@@ -92,5 +92,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test length(s_ged(ones(10, 10), zeros(10, 10))) == 3
 @test s_frqinst(ones(10), fs=10) == zeros(10)
 @test length(s_fftdenoise(rand(10))) == 10
+@test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
 
 true

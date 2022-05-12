@@ -2882,7 +2882,7 @@ function f2t(f::Real)
 end
 
 """
-    s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
 
 Calculate spectrogram of the `signal` using wavelet convolution.
 
@@ -2900,7 +2900,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
 
 # Returns
 
-named tuple containing:
+Named tuple containing:
 - `w_conv::Matrix(ComplexF64}`: convoluted signal
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}
@@ -2963,4 +2963,87 @@ function s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
     signal_denoised = real.(ifft(signal_fft))
 
     return signal_denoised
+end
+
+"""
+    s_gfilter(signal, fs, f, gw)
+
+Filter `signal` using Gaussian in the frequency domain.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64`: sampling rate
+- `f::Real`: filter frequency
+- `gw::Real=5`: Gaussian width in Hz
+
+# Returns
+
+Named tuple containing:
+- `h_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}
+"""
+function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
+
+    # create Gaussian in frequency domain
+    gf = linspace(1, fs ÷ 2, length(signal))
+    gs = gw * (2 * pi - 1) / (4 * pi)       # normalized width
+    gf .-= f                                # shifted frequencies
+    g = @. exp(-0.5 * (gf / gs)^2)          # Gaussian
+    g ./= abs(maximum(g))                   # gain-normalized
+
+    # filter
+    s_f = 2 .* real.(ifft(fft(signal).*g))
+    
+    return s_f
+end
+
+"""
+    s_ghspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, gw, demean)
+
+Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64`: sampling rate
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `demean::Bool`=true: demean signal prior to analysis
+
+# Returns
+
+Named tuple containing:
+- `h_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}
+"""
+function s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
+    if frq === :log
+        frq_lim = (frq_lim[1], frq_lim[2])
+        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+    else
+        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+    end
+
+    demean == true && (signal = s_demean(signal))
+
+    h_power = zeros(length(frq_list), length(signal))
+    @inbounds @simd for frq_idx in 1:length(frq_list)
+        s = s_gfilter(signal, fs=fs, f=frq_list[frq_idx], gw=gw)
+        h_power[frq_idx, :] = abs.(hilbert(s)).^2
+        norm == true && (h_power[frq_idx, :] = pow2db.(h_power[frq_idx, :]))
+    end
+
+    return (h_power=h_power, frq_list=frq_list)
 end

@@ -133,6 +133,8 @@ export t2f
 export f2t
 export s_wspectrogram
 export s_fftdenoise
+export s_gfilter
+export s_ghspectrogram
 
 include("eeg_io.jl")
 export eeg_export_csv
