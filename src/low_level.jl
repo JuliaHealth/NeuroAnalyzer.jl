@@ -1,3 +1,14 @@
+################################
+#                              #
+# Low-level internal functions #
+#                              #
+################################
+
+_reflect(signal::Vector{<:Real}) = vcat(signal[end:-1:1], signal, signal[end:-1:1])
+_chop(signal::Vector{<:Real}) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
+
+################################
+
 """
     linspace(start, stop, length)
 
@@ -2929,8 +2940,8 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
         w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
         w_power[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
-        norm == true && (w_power[frq_idx, :] = pow2db.(w_power[frq_idx, :]))
     end
+    norm == true && (w_power = pow2db.(w_power))
 
     return (w_conv=w_conv, w_power=w_power, frq_list=frq_list)
 end
@@ -2985,16 +2996,23 @@ Named tuple containing:
 """
 function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
 
+    # add reflected signals to reduce edge artifacts
+    s_r = _reflect(signal)
+    
     # create Gaussian in frequency domain
-    gf = linspace(1, fs ÷ 2, length(signal))
-    gs = gw * (2 * pi - 1) / (4 * pi)       # normalized width
+    gf = linspace(0, fs, length(s_r))
+    gs = (gw * (2 * pi - 1)) / (4 * pi)     # normalized width
     gf .-= f                                # shifted frequencies
-    g = @. exp(-0.5 * (gf / gs)^2)          # Gaussian
+    # g = @. exp(-0.5 * (gf / gs)^2)          # Gaussian
+    g = @. exp((-gf^2 ) / 2 * gs^2)         # Gaussian
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_f = 2 .* real.(ifft(fft(signal).*g))
+    s_f = 2 .* real.(ifft(fft(s_r).*g))
     
+    # remove reflected signals
+    s_f = _chop(s_f)
+
     return s_f
 end
 
@@ -3037,13 +3055,12 @@ function s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_
     end
 
     demean == true && (signal = s_demean(signal))
-
     h_power = zeros(length(frq_list), length(signal))
     @inbounds @simd for frq_idx in 1:length(frq_list)
         s = s_gfilter(signal, fs=fs, f=frq_list[frq_idx], gw=gw)
         h_power[frq_idx, :] = abs.(hilbert(s)).^2
-        norm == true && (h_power[frq_idx, :] = pow2db.(h_power[frq_idx, :]))
     end
+    norm == true && (h_power = pow2db.(h_power))
 
     return (h_power=h_power, frq_list=frq_list)
 end
