@@ -13,8 +13,8 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 
 # Arguments
 
-- `current::Union{Int64, Float64}`: stimulation current [mA]
-- `pad_area::Union{Int64, Float64}`: electrode pad area [cm^2]
+- `current::Real`: stimulation current [mA]
+- `pad_area::Real`: electrode pad area [cm^2]
 - `duration::Int64`: stimulation duration [s]
 
 # Returns
@@ -27,7 +27,7 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
 """
-function tes_dose(current::Union{Int64, Float64}, pad_area::Union{Int64, Float64}, duration::Int64)
+function tes_dose(current::Real, pad_area::Real, duration::Int64)
     
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)

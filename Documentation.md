@@ -1186,7 +1186,7 @@ Edit `eeg` epochs time start.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `ts::Union{Int64, Float64}`: time start in seconds
+  * `ts::Real`: time start in seconds
 
 **Returns**
 
@@ -1206,7 +1206,7 @@ Edit `eeg` epochs time start.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `ts::Union{Int64, Float64}`: time start in seconds
+  * `ts::Real`: time start in seconds
 
 **Returns**
 
@@ -1416,7 +1416,7 @@ Perform piecewise detrending of `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` is subtracted
       * `:loess`: fit and subtract loess approximation
-  * `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+  * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64=0.5`: smoothing of loess
 
@@ -1445,7 +1445,7 @@ Remove linear trend from the `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` order is subtracted
       * `:loess`: fit and subtract loess approximation
-  * `offset::Union{Int64, Float64}=0`: constant for :constant detrending
+  * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64`: smoothing of loess
 
@@ -1642,6 +1642,8 @@ Filter `eeg` channels.
       * `:chebyshev2`
       * `:elliptic`
       * `:fir`
+      * `:iirnotch`
+      * `:remez`
       * `:mavg`: moving average (with threshold and/or weight window)
       * `:mmed`: moving median (with threshold and/or weight window)
       * `:poly`: polynomial of `order` order
@@ -1651,13 +1653,13 @@ Filter `eeg` channels.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=2`: filter order
-  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
+  * `order::Int64=8`: filter order or number of taps for :remez filter
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Union{Int64, Float64}`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
   * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
 
 **Returns**
@@ -1685,6 +1687,8 @@ Filter `eeg`.
       * `:chebyshev2`
       * `:elliptic`
       * `:fir`
+      * `:iirnotch`
+      * `:remez`
       * `:mavg`: moving average (with threshold and/or weight window)
       * `:mmed`: moving median (with threshold and/or weight window)
       * `:poly`: polynomial of `order` order
@@ -1694,14 +1698,14 @@ Filter `eeg`.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=2`: filter order
-  * `rp::Union{Int64, Float64}=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Union{Int64, Float64}=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64=8`: filter order or number of taps for :remez filter
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Union{Int64, Float64}`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+  * `window::Union{Vector{Real}, Nothing} - window, required for FIR filter
 
 <a id='NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_pca`** &mdash; *Method*.
@@ -4916,10 +4920,10 @@ Plot filter response.
   * `eeg::NeuroJ.EEG`
   * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
   * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
-  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
   * `order::Int64`: filter order
-  * `rp::Union{Int64, Float64}`: dB ripple in the passband
-  * `rs::Union{Int64, Float64}`: dB attenuation in the stopband
+  * `rp::Real`: dB ripple in the passband
+  * `rs::Real`: dB attenuation in the stopband
   * `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -6341,6 +6345,8 @@ Filter `signal`.
       * `:chebyshev2`
       * `:elliptic`
       * `:fir`
+      * `:iirnotch`
+      * `:remez`
       * `:mavg`: moving average (with threshold and/or weight window)
       * `:mmed`: moving median (with threshold and/or weight window)
       * `:poly`: polynomial of `order` order
@@ -6350,14 +6356,14 @@ Filter `signal`.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
+  * `order::Int64=8`: filter order or bandwidth for :remez filter
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+  * `window::Union{Vector{Real}, Nothing} - window, required for FIR filter
 
 **Returns**
 
@@ -7128,7 +7134,7 @@ Convert frequency `f` to cycle length in ms.
 
 
 ```julia
-s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
 ```
 
 Calculate spectrogram of the `signal` using wavelet convolution.
@@ -7147,7 +7153,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
 
 **Returns**
 
-named tuple containing:
+Named tuple containing:
 
   * `w_conv::Matrix(ComplexF64}`: convoluted signal
   * `w_powers::Matrix{Float64}`
@@ -7172,6 +7178,60 @@ Perform FFT denoising.
 
   * `signal_denoised::Vector{Float64}`
 
+<a id='NeuroJ.s_gfilter-Tuple{Vector{Float64}}' href='#NeuroJ.s_gfilter-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.s_gfilter`** &mdash; *Method*.
+
+
+
+```julia
+s_gfilter(signal, fs, f, gw)
+```
+
+Filter `signal` using Gaussian in the frequency domain.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `f::Real`: filter frequency
+  * `gw::Real=5`: Gaussian width in Hz
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}
+
+<a id='NeuroJ.s_ghspectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_ghspectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_ghspectrogram`** &mdash; *Method*.
+
+
+
+```julia
+s_ghspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, gw, demean)
+```
+
+Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `gw::Real=5`: Gaussian width in Hz
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}
+
 
 <a id='NSTIM'></a>
 
@@ -7179,7 +7239,7 @@ Perform FFT denoising.
 
 ## NSTIM
 
-<a id='NeuroJ.tes_dose-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}' href='#NeuroJ.tes_dose-Tuple{Union{Float64, Int64}, Union{Float64, Int64}, Int64}'>#</a>
+<a id='NeuroJ.tes_dose-Tuple{Real, Real, Int64}' href='#NeuroJ.tes_dose-Tuple{Real, Real, Int64}'>#</a>
 **`NeuroJ.tes_dose`** &mdash; *Method*.
 
 
@@ -7192,8 +7252,8 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 
 **Arguments**
 
-  * `current::Union{Int64, Float64}`: stimulation current [mA]
-  * `pad_area::Union{Int64, Float64}`: electrode pad area [cm^2]
+  * `current::Real`: stimulation current [mA]
+  * `pad_area::Real`: electrode pad area [cm^2]
   * `duration::Int64`: stimulation duration [s]
 
 **Returns**

@@ -1620,6 +1620,8 @@ Filter `signal`.
     - `:chebyshev2`
     - `:elliptic`
     - `:fir`
+    - `:iirnotch`
+    - `:remez`
     - `:mavg`: moving average (with threshold and/or weight window)
     - `:mmed`: moving median (with threshold and/or weight window)
     - `:poly`: polynomial of `order` order
@@ -1628,27 +1630,39 @@ Filter `signal`.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64=8`: filter order
+- `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
+- `order::Int64=8`: filter order or bandwidth for :remez filter
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `d::Int64=1`: window length for mean average and median average filter
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+- `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
 # Returns
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Int64, Float64, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{Float64}, Nothing}=nothing)
+function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
-    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic or :fir."))
+    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
+
+    if fprototype === :fir
+        if window === nothing
+            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            window = hanning(3 * floor(Int64, fs / cutoff[1]))
+        end
+        if ftype === :hp || ftype === :bp || ftype === :bs
+            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+        end
+        fprototype = FIRWindow(window)
+    end
+
     (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
-    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
     (fprototype !== :mavg && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
-    (order < 2 && fprototype !== :poly) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
+    (order < 2 && fprototype !== :poly && fprototype !== :remez) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
     (order < 1 && (fprototype !== :mavg && fprototype !== :mmed)) && throw(ArgumentError("order must be > 0."))
     d > length(signal) && throw(ArgumentError("d must be ≤ signal length."))
     
@@ -1765,13 +1779,6 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
 
     fprototype === :butterworth && (prototype = Butterworth(order))
     if fprototype === :fir
-        if window === nothing
-            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
-            window = hanning(3 * floor(Int64, fs / cutoff[1]))
-        end
-        if ftype === :hp || ftype === :bp || ftype === :bs
-            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
-        end
         prototype = FIRWindow(window)
     end
     if fprototype === :chebyshev1
@@ -1787,12 +1794,21 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(fs / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
+    if fprototype === :iirnotch
+        flt = iirnotch(cutoff[1], cutoff[2], fs=fs)
+    elseif fprototype === :remez
+        ftype === :lp && (window = [(0, cutoff[1] - order / 2) => 1, (cutoff[1] + order / 2, fs / 2) => 0])
+        ftype === :hp && (window = [(0, cutoff[1] - order / 2) => 0, (cutoff[1] + order / 2, fs / 2) => 1])
+        ftype === :bp && (window = [(0, cutoff[1] - order / 2) => 0, (cutoff[1] + order / 2, cutoff[2] - order / 2) => 1, (cutoff[2] + order / 2, fs / 2) => 0])
+        ftype === :bs && (window = [(0, cutoff[1] - order / 2) => 1, (cutoff[1] + order / 2, cutoff[2] - order / 2) => 0, (cutoff[2] + order / 2, fs/2) => 1])
+        flt = remez(fs ÷ 2, window, Hz=fs)
+    else
+        flt = digitalfilter(responsetype, prototype)
+    end
 
-    eeg_filter = digitalfilter(responsetype, prototype)
-
-    dir === :twopass && (s_filtered = filtfilt(eeg_filter, signal))
-    dir === :onepass && (s_filtered = filt(eeg_filter, signal))
-    dir === :onepass_reverse && (s_filtered = filt(eeg_filter, reverse(signal)))
+    dir === :twopass && (s_filtered = filtfilt(flt, signal))
+    dir === :onepass && (s_filtered = filt(flt, signal))
+    dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
 
     return s_filtered
 end

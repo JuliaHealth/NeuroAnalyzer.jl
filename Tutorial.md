@@ -263,6 +263,11 @@ eeg_filter!(edf, fprototype=:chebyshev1, ftype=:bs, cutoff=(45, 55), rs=1, order
 eeg_filter!(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=1, order=8)
 ```
 
+IIRNOTCH filter:
+```julia
+eeg_filter!(edf, fprototype=:iirnotch, cutoff=(50, 2))
+```
+
 Normalize:
 ```julia
 eeg_norm_zscore(edf)

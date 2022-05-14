@@ -1719,13 +1719,13 @@ Edit `eeg` epochs time start.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `ts::Union{Int64, Float64}`: time start in seconds
+- `ts::Real`: time start in seconds
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_epochs_time(eeg::NeuroJ.EEG; ts::Union{Int64, Float64})
+function eeg_epochs_time(eeg::NeuroJ.EEG; ts::Real)
 
     epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
@@ -1746,13 +1746,13 @@ Edit `eeg` epochs time start.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `ts::Union{Int64, Float64}`: time start in seconds
+- `ts::Real`: time start in seconds
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Union{Int64, Float64})
+function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Real)
 
     epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)

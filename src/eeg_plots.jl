@@ -5192,10 +5192,10 @@ Plot filter response.
 - `eeg::NeuroJ.EEG`
 - `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
 - `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
-- `cutoff::Union{Int64, Float64, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `order::Int64`: filter order
-- `rp::Union{Int64, Float64}`: dB ripple in the passband
-- `rs::Union{Int64, Float64}`: dB attenuation in the stopband
+- `rp::Real`: dB ripple in the passband
+- `rs::Real`: dB attenuation in the stopband
 - `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -5204,7 +5204,7 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Int64, Float64, Tuple}, order::Int64=-1, rp::Union{Int64, Float64}=-1, rs::Union{Int64, Float64}=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
+function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
 
     palette = :darktest
     mono == true && (palette = :grays)

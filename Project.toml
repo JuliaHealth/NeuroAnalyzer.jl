@@ -1,7 +1,7 @@
 name = "NeuroJ"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
-version = "0.0.24"
+version = "0.0.25"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -12,6 +12,7 @@ DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+FIRLSFilterDesign = "1d969ca1-ee82-491a-b198-7f2f63a25c18"
 FindPeaks1D = "d8961e24-b28b-4efb-8e50-1c680b9a7431"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 InformationMeasures = "96684042-fbdc-5399-9b8e-d34e539a126c"
