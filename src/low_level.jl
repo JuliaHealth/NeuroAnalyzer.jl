@@ -1264,7 +1264,6 @@ Calculates `signal` total power.
 function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
     # dx: frequency resolution
