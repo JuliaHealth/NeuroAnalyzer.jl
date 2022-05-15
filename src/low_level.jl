@@ -746,7 +746,7 @@ Generate Gaussian wave.
 - `t::Real=1`: length = -t:1/fs:t
 - `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
 - `a::Real=1`: peak amp
-- 
+
 # Returns
 
 - `gaussian::Vector{Float64}`
@@ -754,7 +754,8 @@ Generate Gaussian wave.
 function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
 
     t = -t:1/fs:t
-    g = @. a * exp(-(t^2 / (2 * ((ncyc / (2 * pi * f))^2))))
+    s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
+    g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
 
     return g
 end
@@ -1629,10 +1630,11 @@ Filter `signal`.
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
-- `order::Int64=8`: filter order or bandwidth for :remez filter
+- `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+- `order::Int64=8`: filter order or number of taps for :remez filter
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+- `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `d::Int64=1`: window length for mean average and median average filter
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
@@ -1642,7 +1644,7 @@ Filter `signal`.
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
 
@@ -1794,13 +1796,13 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         prototype = Elliptic(order, rp, rs)
     end
     if fprototype === :iirnotch
-        flt = iirnotch(cutoff[1], cutoff[2], fs=fs)
+        flt = iirnotch(cutoff, bw, fs=fs)
     elseif fprototype === :remez
-        ftype === :lp && (window = [(0, cutoff[1] - order / 2) => 1, (cutoff[1] + order / 2, fs / 2) => 0])
-        ftype === :hp && (window = [(0, cutoff[1] - order / 2) => 0, (cutoff[1] + order / 2, fs / 2) => 1])
-        ftype === :bp && (window = [(0, cutoff[1] - order / 2) => 0, (cutoff[1] + order / 2, cutoff[2] - order / 2) => 1, (cutoff[2] + order / 2, fs / 2) => 0])
-        ftype === :bs && (window = [(0, cutoff[1] - order / 2) => 1, (cutoff[1] + order / 2, cutoff[2] - order / 2) => 0, (cutoff[2] + order / 2, fs/2) => 1])
-        flt = remez(fs ÷ 2, window, Hz=fs)
+        ftype === :lp && (window = [(0, cutoff - bw) => 1, (cutoff + bw, fs / 2) => 0])
+        ftype === :hp && (window = [(0, cutoff - bw) => 0, (cutoff + bw, fs / 2) => 1])
+        ftype === :bp && (window = [(0, cutoff[1] - bw / 2) => 0, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 1, (cutoff[2] + bw / 2, fs / 2) => 0])
+        ftype === :bs && (window = [(0, cutoff[1] - bw / 2) => 1, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 0, (cutoff[2] + bw / 2, fs / 2) => 1])
+        flt = remez(order, window, Hz=fs)
     else
         flt = digitalfilter(responsetype, prototype)
     end

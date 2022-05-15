@@ -926,7 +926,11 @@ function eeg_info(eeg::NeuroJ.EEG)
             println(c[end])
         end
     else
-        print("             Components: no")
+        println("             Components: no")
+    end
+    println("               Channels:")
+    for idx in 1:length(eeg.eeg_header[:labels])
+        println("                channel: $idx\tlabel: $(eeg.eeg_header[:labels][idx])\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
     end
 
     nothing

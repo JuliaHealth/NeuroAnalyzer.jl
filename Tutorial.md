@@ -265,7 +265,12 @@ eeg_filter!(edf, fprototype=:chebyshev2, ftype=:bs, cutoff=(45, 55), rp=1, order
 
 IIRNOTCH filter:
 ```julia
-eeg_filter!(edf, fprototype=:iirnotch, cutoff=(50, 2))
+eeg_filter!(edf, fprototype=:iirnotch, cutoff=50, bw=2)
+```
+
+Remez filter:
+```julia
+eeg_filter!(edf, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5)
 ```
 
 Normalize:

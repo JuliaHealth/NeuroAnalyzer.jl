@@ -1653,14 +1653,15 @@ Filter `eeg` channels.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
   * `order::Int64=8`: filter order or number of taps for :remez filter
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
+  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-  * `window::Union{Vector{Float64}, Nothing} - window, required for FIR filter
+  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
 **Returns**
 
@@ -1702,10 +1703,11 @@ Filter `eeg`.
   * `order::Int64=8`: filter order or number of taps for :remez filter
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `dir:Symbol=:twopass`: filter direction (`:onepass`, `:onepass_reverse`, `:twopass`), for causal filter use `:onepass`
+  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
-  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-  * `window::Union{Vector{Real}, Nothing} - window, required for FIR filter
+  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
 <a id='NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_pca`** &mdash; *Method*.
@@ -6356,14 +6358,15 @@ Filter `signal`.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`); for :iirnotch cutoff is (frequency, bandwidth)
-  * `order::Int64=8`: filter order or bandwidth for :remez filter
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64=8`: filter order or number of taps for :remez filter
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `d::Int64=1`: window length for mean average and median average filter
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{Real}, Nothing} - window, required for FIR filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
 **Returns**
 
