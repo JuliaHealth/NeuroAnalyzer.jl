@@ -30,6 +30,7 @@ StatsKit = "2cb19f9e-ec4d-5c53-8573-a4542a68d3f0"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Wavelets = "29a6e085-ba6d-5f35-a997-948ac2efa89a"
+WaveletsExt = "8f464e1e-25db-479f-b0a5-b7680379e03f"
 
 [compat]
 julia = "1.0"

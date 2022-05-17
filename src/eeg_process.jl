@@ -1144,7 +1144,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+- `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 # Returns
 
