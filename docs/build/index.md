@@ -2215,7 +2215,7 @@ Calculate cross-covariance of each the `eeg` channels.
 Named tuple containing:
 
   * `ccov::Matrix{Float64}`
-  * `lags::Vector{Float64}
+  * `lags::Vector{Float64}`
 
 <a id='NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_crosscov`** &mdash; *Method*.
@@ -2241,7 +2241,7 @@ Calculate cross-covariance between `eeg1` and `eeg2` channels.
 Named tuple containing:
 
   * `ccov::Matrix{Float64}`
-  * `lags::Vector{Float64}
+  * `lags::Vector{Float64}`
 
 <a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_psd`** &mdash; *Method*.
@@ -3363,6 +3363,54 @@ Named tuple containing:
   * `w_frq::Matrix{Float64}`
   * `w_t::Matrix{Float64}`
 
+<a id='NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tkeo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tkeo(eeg)
+```
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `tkeo::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wspectrum`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wspectrum(eeg; norm, mt, demean)
+```
+
+Return power spectrogrum of `eeg` using Morlet wavelet convolution.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool`=true: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_pow::Array{Float64, 4}`
+  * `w_frq::Matrix{Float64}`
+
 
 <a id='EEG-plots'></a>
 
@@ -3962,6 +4010,7 @@ Plot `signal` channel power spectrum density.
   * `signal::Vector{<:Real}`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -5235,7 +5284,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 **Arguments**
 
   * `y::Real`
-  * `x::Vector{<:Real}
+  * `x::Vector{<:Real}`
   * `return_distance::Bool`
 
 **Returns**
@@ -5258,7 +5307,7 @@ Return the positions of the `y` vector in the vector `x`.
 **Arguments**
 
   * `x::Vector{<:Real}`
-  * `y::Vector{<:Real}
+  * `y::Vector{<:Real}`
   * `return_distance::Bool`
 
 **Returns**
@@ -5534,7 +5583,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 **Returns**
 
-  * `hz::Vector{Float64}
+  * `hz::Vector{Float64}`
   * `nyquist_freq::Float64`
 
 <a id='NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}' href='#NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}'>#</a>
@@ -5555,7 +5604,7 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 
 **Returns**
 
-  * `hz::Vector{Float64}
+  * `hz::Vector{Float64`
   * `nyquist_freq::Float64`
 
 <a id='NeuroJ.m_sortperm-Tuple{Matrix}' href='#NeuroJ.m_sortperm-Tuple{Matrix}'>#</a>
@@ -5756,7 +5805,7 @@ Generate normalized or unnormalized sinc function.
 
 **Returns**
 
-  * `sinc::Vector{Float64}
+  * `sinc::Vector{Float64}`
 
 <a id='NeuroJ.generate_morlet' href='#NeuroJ.generate_morlet'>#</a>
 **`NeuroJ.generate_morlet`** &mdash; *Function*.
@@ -5799,7 +5848,6 @@ Generate Gaussian wave.
   * `t::Real=1`: length = -t:1/fs:t
   * `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
   * `a::Real=1`: peak amp
-  * 
 
 **Returns**
 
@@ -5918,6 +5966,8 @@ Return FFT and DFT sample frequencies for a DFT for the `signal`.
   * `fs::Int64`: sampling rate
 
 **Returns**
+
+Named tuple containing:
 
   * `s_fft::Vector{ComplexF64}`
   * `s_sf::Vector{Float64}`
@@ -6079,10 +6129,12 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 
 **Returns**
 
-  * `fft::Vector(ComplexF64}`
-  * `amplitudes::Vector{Float64}`
-  * `powers::Vector{Float64}`
-  * `phases::Vector{Float64}
+Named tuple containing:
+
+  * `s_fft::Vector{ComplexF64}`
+  * `s_amplitudes::Vector{Float64}`
+  * `s_powers::Vector{Float64}`
+  * `s_phases::Vector{Float64}`
 
 <a id='NeuroJ.s_total_power-Tuple{AbstractArray}' href='#NeuroJ.s_total_power-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_total_power`** &mdash; *Method*.
@@ -6973,6 +7025,8 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 
 **Returns**
 
+Named tuple containing:
+
   * `ispc::Float64`: ISPC value
   * `ispc_angle::Float64`: ISPC angle
   * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
@@ -6999,6 +7053,8 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 
 **Returns**
 
+Named tuple containing:
+
   * `itpc::Float64`: ITPC value
   * `itpcz::Float64`: Rayleigh's ITPC Z value
   * `itpc_angle::Float64`: ITPC angle
@@ -7021,6 +7077,8 @@ Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
   * `signal2::AbstractArray`
 
 **Returns**
+
+Named tuple containing:
 
   * `pli::Float64`: PLI value
   * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
@@ -7045,6 +7103,8 @@ Perform generalized eigendecomposition between `signal1` and `signal2`.
   * `signal2::AbstractArray`: original signal
 
 **Returns**
+
+Named tuple containing:
 
   * `sged::AbstractArray`
   * `ress::AbstractArray`
@@ -7088,10 +7148,12 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 **Returns**
 
+Named tuple containing:
+
   * `h::Vector(ComplexF64}`: Hilbert components
   * `h_amplitudes::Vector{Float64}`
   * `h_powers::Vector{Float64}`
-  * `h_phases::Vector{Float64}
+  * `h_phases::Vector{Float64}`
 
 <a id='NeuroJ.t2f-Tuple{Real}' href='#NeuroJ.t2f-Tuple{Real}'>#</a>
 **`NeuroJ.t2f`** &mdash; *Method*.
@@ -7152,7 +7214,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
   * `fs::Int64`: sampling rate
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-  * `demean::Bool`=true: demean signal prior to analysis
+  * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
 
@@ -7160,7 +7222,8 @@ Named tuple containing:
 
   * `w_conv::Matrix(ComplexF64}`: convoluted signal
   * `w_powers::Matrix{Float64}`
-  * `frq_list::Vector{Float64}
+  * `w_phases::Matrix{Float64}`
+  * `frq_list::Vector{Float64}`
 
 <a id='NeuroJ.s_fftdenoise-Tuple{AbstractArray}' href='#NeuroJ.s_fftdenoise-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_fftdenoise`** &mdash; *Method*.
@@ -7203,8 +7266,7 @@ Filter `signal` using Gaussian in the frequency domain.
 
 Named tuple containing:
 
-  * `h_powers::Matrix{Float64}`
-  * `frq_list::Vector{Float64}
+  * `s_f::Vector{Float64}`
 
 <a id='NeuroJ.s_ghspectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_ghspectrogram-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_ghspectrogram`** &mdash; *Method*.
@@ -7233,7 +7295,55 @@ Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
 Named tuple containing:
 
   * `h_powers::Matrix{Float64}`
-  * `frq_list::Vector{Float64}
+  * `frq_list::Vector{Float64}`
+
+<a id='NeuroJ.s_tkeo-Tuple{AbstractArray}' href='#NeuroJ.s_tkeo-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_tkeo`** &mdash; *Method*.
+
+
+
+```julia
+s_tkeo(signal)
+```
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_new::Vector{Float64}`
+
+<a id='NeuroJ.s_wspectrum-Tuple{AbstractArray}' href='#NeuroJ.s_wspectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_wspectrum`** &mdash; *Method*.
+
+
+
+```julia
+s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+```
+
+Calculate power spectrum of the `signal` using wavelet convolution.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}`
 
 
 <a id='NSTIM'></a>

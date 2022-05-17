@@ -112,6 +112,9 @@ General:
 - Pluto interface
 
 EEG:
+- check where pad0 is not used
+- add s_hspectrum() and s_wspectrum() for PSD plots
+- detect artifacts using TKEO
 - visual / auditory stimuli presentation module
 - exclude Fp1, Fp2, O1, O2 from CAR
 - exclude current electrode from CAR mean calculation

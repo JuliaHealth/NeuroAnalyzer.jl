@@ -87,7 +87,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 # Arguments
 
 - `y::Real`
-- `x::Vector{<:Real}
+- `x::Vector{<:Real}`
 - `return_distance::Bool`
 
 # Returns
@@ -111,7 +111,7 @@ Return the positions of the `y` vector in the vector `x`.
 # Arguments
 
 - `x::Vector{<:Real}`
-- `y::Vector{<:Real}
+- `y::Vector{<:Real}`
 - `return_distance::Bool`
 
 # Returns
@@ -427,7 +427,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 # Returns
 
-- `hz::Vector{Float64}
+- `hz::Vector{Float64}`
 - `nyquist_freq::Float64`
 """
 function s_freqs(t::Union{Vector{<:Real}, AbstractRange})
@@ -460,7 +460,7 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 
 # Returns
 
-- `hz::Vector{Float64}
+- `hz::Vector{Float64`
 - `nyquist_freq::Float64`
 """
 function s_freqs(signal::Vector{Float64}, fs::Real)
@@ -694,7 +694,7 @@ Generate normalized or unnormalized sinc function.
 - `norm::Bool=true`: generate normalized function
 # Returns
 
-- `sinc::Vector{Float64}
+- `sinc::Vector{Float64}`
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
@@ -890,6 +890,7 @@ Return FFT and DFT sample frequencies for a DFT for the `signal`.
 
 # Returns
 
+Named tuple containing:
 - `s_fft::Vector{ComplexF64}`
 - `s_sf::Vector{Float64}`
 """
@@ -904,7 +905,7 @@ function s_dft(signal::AbstractArray; fs::Int64)
     d = 1 / fs
     s_sf = Vector(fftfreq(n, d))
 
-    return s_fft, s_sf
+    return (s_fft=s_fft, s_sf=s_sf)
 end
 
 """
@@ -1225,10 +1226,11 @@ Calculates FFT, amplitudes, powers and phases of the `signal`.
 
 # Returns
 
-- `fft::Vector(ComplexF64}`
-- `amplitudes::Vector{Float64}`
-- `powers::Vector{Float64}`
-- `phases::Vector{Float64}
+Named tuple containing:
+- `s_fft::Vector{ComplexF64}`
+- `s_amplitudes::Vector{Float64}`
+- `s_powers::Vector{Float64}`
+- `s_phases::Vector{Float64}`
 """
 function s_spectrum(signal::AbstractArray; pad::Int64=0)
 
@@ -1244,7 +1246,7 @@ function s_spectrum(signal::AbstractArray; pad::Int64=0)
     # phases
     s_phases = angle.(s_fft)
 
-    return s_fft, s_amplitudes, s_powers, s_phases
+    return (s_fft=s_fft, s_amplitudes=s_amplitudes, s_powers=s_powers, s_phases=s_phases)
 end
 
 """
@@ -2677,6 +2679,7 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 
 # Returns
 
+Named tuple containing:
 - `ispc::Float64`: ISPC value
 - `ispc_angle::Float64`: ISPC angle
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
@@ -2697,7 +2700,7 @@ function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
     ispc = abs(mean(exp.(1im .* phase_diff)))
     ispc_angle = angle(mean(exp.(1im .* phase_diff)))
 
-    return ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase
+    return (ispc=ispc, ispc_angle=ispc_angle, signal_diff=signal_diff, phase_diff=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 end
 
 """
@@ -2713,6 +2716,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 
 # Returns
 
+Named tuple containing:
 - `itpc::Float64`: ITPC value
 - `itpcz::Float64`: Rayleigh's ITPC Z value
 - `itpc_angle::Float64`: ITPC angle
@@ -2740,7 +2744,7 @@ function s_itpc(signal::AbstractArray; t::Int64, w::Union{Vector{<:Real}, Nothin
     itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
     itpcz = epoch_n * itpc^2
 
-    return itpc, itpcz, itpc_angle, itpc_phases
+    return (itpc=itpc, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
 
 """
@@ -2755,6 +2759,7 @@ Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
 
 # Returns
 
+Named tuple containing:
 - `pli::Float64`: PLI value
 - `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
 - `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
@@ -2773,7 +2778,7 @@ function s_pli(signal1::AbstractArray, signal2::AbstractArray)
 
     pli = abs(mean(sign.(imag.(exp.(1im .* phase_diff)))))
 
-    return pli, signal_diff, phase_diff, s1_phase, s2_phase
+    return (pli=pli, signal_diff=signal_diff, phase_diff=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 end
 
 """
@@ -2788,6 +2793,7 @@ Perform generalized eigendecomposition between `signal1` and `signal2`.
 
 # Returns
 
+Named tuple containing:
 - `sged::AbstractArray`
 - `ress::AbstractArray`
 - `ress_normalized::AbstractArray`: RESS normalized to -1..1
@@ -2847,10 +2853,11 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 # Returns
 
+Named tuple containing:
 - `h::Vector(ComplexF64}`: Hilbert components
 - `h_amplitudes::Vector{Float64}`
 - `h_powers::Vector{Float64}`
-- `h_phases::Vector{Float64}
+- `h_phases::Vector{Float64}`
 """
 function s_hspectrum(signal::AbstractArray; pad::Int64=0)
 
@@ -2864,7 +2871,7 @@ function s_hspectrum(signal::AbstractArray; pad::Int64=0)
     # phases
     h_phases = angle.(h)
 
-    return h, h_amplitudes, h_powers, h_phases
+    return (h=h, h_amplitudes=h_amplitudes, h_powers=h_powers, h_phases=h_phases)
 end
 
 """
@@ -2924,14 +2931,15 @@ Calculate spectrogram of the `signal` using wavelet convolution.
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
-- `demean::Bool`=true: demean signal prior to analysis
+- `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
 
 Named tuple containing:
 - `w_conv::Matrix(ComplexF64}`: convoluted signal
 - `w_powers::Matrix{Float64}`
-- `frq_list::Vector{Float64}
+- `w_phases::Matrix{Float64}`
+- `frq_list::Vector{Float64}`
 """
 function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 
@@ -2951,16 +2959,19 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
     end
 
     demean == true && (signal = s_demean(signal))
+    pad > 0 && (signal = pad0(signal, pad))
     w_conv = zeros(ComplexF64, length(frq_list), length(signal))
-    w_power = zeros(length(frq_list), length(signal))
+    w_powers = zeros(length(frq_list), length(signal))
+    w_phases = zeros(length(frq_list), length(signal))
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
         w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
-        w_power[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
+        w_powers[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
+        w_phases[frq_idx, :] = @. angle(w_conv[frq_idx, :])
     end
-    norm == true && (w_power = pow2db.(w_power))
+    norm == true && (w_powers = pow2db.(w_powers))
 
-    return (w_conv=w_conv, w_power=w_power, frq_list=frq_list)
+    return (w_conv=w_conv, w_powers=w_powers, w_phases=w_phases, frq_list=frq_list)
 end
 
 """
@@ -3008,8 +3019,7 @@ Filter `signal` using Gaussian in the frequency domain.
 # Returns
 
 Named tuple containing:
-- `h_powers::Matrix{Float64}`
-- `frq_list::Vector{Float64}
+- `s_f::Vector{Float64}`
 """
 function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
 
@@ -3053,7 +3063,7 @@ Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
 
 Named tuple containing:
 - `h_powers::Matrix{Float64}`
-- `frq_list::Vector{Float64}
+- `frq_list::Vector{Float64}`
 """
 function s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
 
@@ -3072,12 +3082,89 @@ function s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_
     end
 
     demean == true && (signal = s_demean(signal))
-    h_power = zeros(length(frq_list), length(signal))
+    h_powers = zeros(length(frq_list), length(signal))
+    h_phases = zeros(length(frq_list), length(signal))
     @inbounds @simd for frq_idx in 1:length(frq_list)
         s = s_gfilter(signal, fs=fs, f=frq_list[frq_idx], gw=gw)
-        h_power[frq_idx, :] = abs.(hilbert(s)).^2
+        h_powers[frq_idx, :] = abs.(hilbert(s)).^2
+        h_phases[frq_idx, :] = angle.(hilbert(s))
     end
-    norm == true && (h_power = pow2db.(h_power))
+    norm == true && (h_powers = pow2db.(h_powers))
 
-    return (h_power=h_power, frq_list=frq_list)
+    return (h_powers=h_powers, frq_list=frq_list)
+end
+
+"""
+    s_tkeo(signal)
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_new::Vector{Float64}`
+"""
+function s_tkeo(signal::AbstractArray)
+    tkeo = zeros(length(signal))
+    tkeo[1] = signal[1]
+    tkeo[end] = signal[end]
+    for idx in 2:(length(signal) - 1)
+        tkeo[idx] = signal[idx]^2 - (signal[idx - 1] * signal[idx + 1])
+    end
+
+    return tkeo
+end
+
+"""
+    s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+
+Calculate power spectrum of the `signal` using wavelet convolution.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+# Returns
+
+Named tuple containing:
+- `w_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}`
+"""
+function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
+    if frq === :log
+        frq_lim = (frq_lim[1], frq_lim[2])
+        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+    else
+        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+    end
+
+    pad > 0 && (signal = pad0(signal, pad))
+    w_powers = zeros(length(frq_list))
+    @inbounds @simd for frq_idx in 1:frq_n
+        kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
+        w_conv = s_fconv(signal, kernel=kernel, norm=true)
+        w_powers[frq_idx] = mean(@. abs(w_conv)^2)
+    end
+    norm == true && (w_powers = pow2db.(w_powers))
+
+    return (w_powers=w_powers, frq_list=frq_list)
 end

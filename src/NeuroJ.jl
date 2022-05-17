@@ -135,6 +135,8 @@ export s_wspectrogram
 export s_fftdenoise
 export s_gfilter
 export s_ghspectrogram
+export s_tkeo
+export s_wspectrum
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -301,6 +303,8 @@ export eeg_ged
 export eeg_frqinst
 export eeg_itpc_s
 export eeg_wspectrogram
+export eeg_tkeo
+export eeg_wspectrum
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

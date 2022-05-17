@@ -2048,6 +2048,7 @@ Plot `signal` channel power spectrum density.
 - `signal::Vector{<:Real}`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -2060,8 +2061,9 @@ Plot `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", mono::Bool=false, kwargs...)
+function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))

@@ -185,6 +185,8 @@ eeg_ged(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_frqinst(eeg::NeuroJ.EEG)
 eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, w::Union{Vector{<:Real}, Nothing}=nothing)
 eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6, demean::Bool=true)
+eeg_tkeo(eeg::NeuroJ.EEG)
+eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
 ```
 
 ## EEG plots
@@ -355,6 +357,8 @@ s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tu
 s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
 s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
 s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
+s_tkeo(signal::AbstractArray)
+s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6)
 ```
 
 ## NSTIM

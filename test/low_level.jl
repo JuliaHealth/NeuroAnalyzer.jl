@@ -35,13 +35,13 @@ using Test
 @test size(m_norm(ones(4, 4, 1))) == (4, 4, 1)
 @test size(s_cov(zeros(2))) == (2, 2)
 @test s2_cov(ones(2), zeros(2)) == zeros(2, 2)
-@test s_dft(ones(4), fs=10) == (ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], [0.0, 0.025, -0.05, -0.025])
+@test s_dft(ones(4), fs=10) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_sf = [0.0, 0.025, -0.05, -0.025])
 @test s_msci95(ones(4)) == (1.0, 0.0, 1.0, 1.0)
 @test s2_mean(ones(4), zeros(4)) == (1.0, 0.0, 1.0, 1.0)
 @test length(s2_difference(ones(4), zeros(4))) == 3
 @test s_acov(ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
 @test s_xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
-@test s_spectrum(ones(4)) == (ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], [2.0, 0.0, 0.0, 0.0], [4.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0])
+@test s_spectrum(ones(4)) == (s_fft = ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amplitudes = [2.0, 0.0, 0.0, 0.0], s_powers = [4.0, 0.0, 0.0, 0.0], s_phases = [0.0, 0.0, 0.0, 0.0])
 @test s_total_power(ones(4), fs=10) == 0.0
 @test s_band_power(ones(4), fs=10, f=(1,2)) == 0.0
 @test s_taper(ones(10), taper=zeros(10)) == zeros(10)
@@ -86,12 +86,15 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test length(s_wdenoise(rand(100))) == 100
 @test effsize([1,2,3], [2,3,4]) == (cohen = 1.0, hedges = 1.0)
-@test s_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (1.0, 0.0, [-1.0, -1.0, -1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
-@test s_itpc(ones(1, 10, 10), t=1) == (1.0, 10.0, 0.0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-@test s_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (0.0, [-1.0, -1.0, -1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+@test s_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
+@test s_itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+@test s_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test length(s_ged(ones(10, 10), zeros(10, 10))) == 3
 @test s_frqinst(ones(10), fs=10) == zeros(10)
 @test length(s_fftdenoise(rand(10))) == 10
 @test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
+@test s_tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
+@test length(s_wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
+@test length(s_wspectrum(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
 
 true

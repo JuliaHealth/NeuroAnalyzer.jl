@@ -156,7 +156,7 @@ Calculate cross-covariance of each the `eeg` channels.
 
 Named tuple containing:
 - `ccov::Matrix{Float64}`
-- `lags::Vector{Float64}
+- `lags::Vector{Float64}`
 """
 function eeg_crosscov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -207,7 +207,7 @@ Calculate cross-covariance between `eeg1` and `eeg2` channels.
 
 Named tuple containing:
 - `ccov::Matrix{Float64}`
-- `lags::Vector{Float64}
+- `lags::Vector{Float64}`
 """
 function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -2451,7 +2451,7 @@ function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_li
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    _, p_tmp, f_tmp = s_wspectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+    _, p_tmp, _, f_tmp = s_wspectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
     w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
     w_frq = zeros(length(f_tmp), epoch_n)
     w_t = zeros(length(eeg.eeg_epochs_time[:, 1]), epoch_n)
@@ -2459,10 +2459,83 @@ function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_li
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            _, w_pow[:, :, channel_idx, epoch_idx], w_frq[:, epoch_idx] = s_wspectrogram(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+            _, w_pow[:, :, channel_idx, epoch_idx], _, w_frq[:, epoch_idx] = s_wspectrogram(s, pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
             w_t[:, epoch_idx] = eeg.eeg_epochs_time[:, 1]
         end
     end
 
     return (w_pow=w_pow, w_frq=w_frq, w_t=w_t)
+end
+
+"""
+    eeg_tkeo(eeg)
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `tkeo::Array{Float64, 3}`
+"""
+function eeg_tkeo(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    tkeo = similar(eeg.eeg_signals)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            tkeo[channel_idx, :, epoch_idx] = s_tkeo(s)
+        end
+    end
+
+    return tkeo
+end
+
+"""
+    eeg_wspectrum(eeg; norm, mt, demean)
+
+Return power spectrogrum of `eeg` using Morlet wavelet convolution.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool`=true: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+# Returns
+
+Named tuple containing:
+- `w_pow::Array{Float64, 4}`
+- `w_frq::Matrix{Float64}`
+"""
+function eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
+    p_tmp, f_tmp = s_wspectrum(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    w_pow = zeros(length(p_tmp), channel_n, epoch_n)
+    w_frq = zeros(length(f_tmp), epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = s_wspectrum(s, pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+        end
+    end
+
+    return (w_pow=w_pow, w_frq=w_frq)
 end
