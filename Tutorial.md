@@ -228,12 +228,13 @@ Re-reference to channel(s) - if more than one channel is used as reference, the 
 edf = eeg_reference_ch(edf, channel=[1, 2])
 edf = eeg_reference_ch(edf, channel=2:4)
 edf = eeg_reference_ch(edf, channel=18)
-edf = eeg_reference_car(edf)
 ```
 
 Re-reference to common average:
 ```julia
 eeg_reference_car!(edf)
+# do not include current electrode and Fp1, Fp2, O1 and O2 when calculating common average
+eeg_reference_car!(edf, exclude_fpo=true, exclude_current=true)
 ```
 
 Re-reference to ipsilateral auricular electrodes:

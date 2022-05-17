@@ -2624,7 +2624,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `signal::AbstractArray`
-- `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+- `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 # Returns
 
@@ -2632,13 +2632,16 @@ Perform wavelet denoising.
 """
 function s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
     
-    wt in [:db2, :db4, :db8, :db10, :haar] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar"))
+    wt in [:db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8"))
 
     wt === :db2 && (wt = wavelet(WT.db2))
     wt === :db4 && (wt = wavelet(WT.db4))
     wt === :db8 && (wt = wavelet(WT.db8))
     wt === :db10 && (wt = wavelet(WT.db10))
     wt === :haar && (wt = wavelet(WT.haar))
+    wt === :coif2 && (wt = wavelet(WT.coif2))
+    wt === :coif4 && (wt = wavelet(WT.coif4))
+    wt === :coif8 && (wt = wavelet(WT.coif8))
 
     signal_denoised = denoise(signal, wt)
 

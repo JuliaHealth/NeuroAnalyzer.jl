@@ -1269,6 +1269,8 @@ Reference the `eeg` to common average reference.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
 
 **Returns**
 
