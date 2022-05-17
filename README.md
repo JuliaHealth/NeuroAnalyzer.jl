@@ -85,7 +85,7 @@ Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWyso
 
 ## Plugins (extensions)
 
-Rudimentary plugin architecture is already available, just put .jl plugin scripts into `~/Documents/NeuroJ/plugins`.
+Initial plugin architecture is already available, just put .jl plugin scripts into `~/Documents/NeuroJ/plugins`.
 
 Run `neuroj_reload_plugins()` to refresh plugins.
 
@@ -108,19 +108,14 @@ The lists below are not in any particular order.
 General:
 - stable branch to be released monthly
 - performance optimization
-- CUDA/AMD ROCm acceleration
 - Pluto interface
 
 EEG:
-- visual / auditory stimuli presentation module
-- exclude Fp1, Fp2, O1, O2 from CAR
-- exclude current electrode from CAR mean calculation
+- add/delete markers, view markers on plots
 - amplitude turbulence
-- use eyetracker data to detect ocular artifacts
 - add/edit/save/load annotations
 - waterfall 3d spectrogram (combined PSD plots)
 - power envelope connectivity
-- IEEG/ECoG
 - mean alpha frequency / amplitude
 - custom reference (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
@@ -156,7 +151,6 @@ EEG:
 - spectrogram: extract area of specific frequencies
 - CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
 - EEG bands: medial vs left vs right channels within each band
-- MEG data (fT instead of μV)
 - merge EEG objects
 - reports in .md format
 - brain topography
@@ -187,6 +181,11 @@ EEG:
 - source localization
 - ERPs
 - ML/DL analysis
+
+- CUDA/AMD ROCm acceleration
+- visual / auditory stimuli presentation module
+- use eyetracker data to detect ocular artifacts
+- IEEG/ECoG/MEG
 
 NIRS
 - import and process data

@@ -1269,6 +1269,8 @@ Reference the `eeg` to common average reference.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
 
 **Returns**
 
@@ -5799,7 +5801,6 @@ Generate Gaussian wave.
   * `t::Real=1`: length = -t:1/fs:t
   * `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
   * `a::Real=1`: peak amp
-  * 
 
 **Returns**
 

@@ -85,12 +85,14 @@ Reference the `eeg` to common average reference.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+- `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_reference_car(eeg::NeuroJ.EEG)
+function eeg_reference_car(eeg::NeuroJ.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -99,8 +101,19 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
     s_ref = zeros(size(eeg.eeg_signals))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        reference_channel = vec(mean(eeg.eeg_signals[:, :, epoch_idx], dims=1))
         Threads.@threads for channel_idx in 1:channel_n
+            reference_channels = @view eeg.eeg_signals[:, :, epoch_idx]
+            if exclude_current == true
+                reference_channels[setdiff(1:end, (channel_idx)), :, :]
+            end
+            if exclude_fpo == true
+                l = lowercase.(eeg_labels(eeg))
+                "fp1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp1"), l))), :, :])
+                "fp2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp2"), l))), :, :])
+                "o1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o1"), l))), :, :])
+                "o2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o2"), l))), :, :])
+            end
+            reference_channel = vec(mean(reference_channels, dims=1))
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
             s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
         end
@@ -110,7 +123,7 @@ function eeg_reference_car(eeg::NeuroJ.EEG)
     eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "CAR"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current))")
 
     return eeg_new
 end
@@ -124,11 +137,11 @@ Reference the `eeg` to common average reference.
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_reference_car!(eeg::NeuroJ.EEG)
+function eeg_reference_car!(eeg::NeuroJ.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_car(eeg).eeg_signals
+    eeg.eeg_signals = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG)")
+    push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current)")
 
     nothing
 end
