@@ -1829,6 +1829,7 @@ Calculate power spectrum density of the `signal`.
 
 # Returns
 
+Named tuple containing:
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
@@ -1842,7 +1843,7 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
     psd_frq = freq(psd)
     norm == true && (psd_pow = pow2db.(psd_pow))
 
-    return psd_pow, Vector(psd_frq)
+    return (psd_pow=psd_pow, psd_frq=Vector(psd_frq))
 end
 
 """
@@ -1858,6 +1859,7 @@ Calculate power spectrum density of the `signal`.
 
 # Returns
 
+named tuple containing:
 - `psd_pow::Matrix{Float64}`
 - `psd_frq::Matrix{Float64}`
 """
@@ -1875,7 +1877,7 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
         psd_pow[channel_idx, :], psd_frq[channel_idx, :] = s_psd(s, fs=fs, norm=norm, mt=mt)
     end
     
-    return psd_pow, psd_frq
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
 
 """
@@ -1891,6 +1893,7 @@ Calculate power spectrum density of the `signal`.
 
 # Returns
 
+Named tuple containing:
 - `psd_pow::Array{Float64, 3}`
 - `psd_frq::Array{Float64, 3}`
 """
@@ -1911,7 +1914,7 @@ function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=
         end
     end
     
-    return psd_pow, psd_frq
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
 
 """

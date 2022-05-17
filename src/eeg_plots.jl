@@ -289,8 +289,7 @@ Plot single-channel `signal`.
 """
 function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:Real}; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -453,7 +452,6 @@ Plot `eeg` channel or channels.
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
 - `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-- `mono::Bool=false`: each channel is drawn with a different color
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
@@ -1240,8 +1238,7 @@ function plot_signal_avg(t::Union{Vector{<:Real}, AbstractRange}, signal::Matrix
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     s_normalized = signal
     norm == true && (s_normalized = normalize_zscore(signal))
@@ -1649,8 +1646,7 @@ function plot_signal_butterfly(t::Union{Vector{<:Real}, AbstractRange}, signal::
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     channel_n = size(signal, 1)
 
@@ -2064,14 +2060,16 @@ Plot `signal` channel power spectrum density.
 function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="", title="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
+
+    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
     frq_lim = tuple_order(frq_lim)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    mw == false && (s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt))
+    mt == true && (s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2])))
+
+    mono == true ? palette = :grays : palette = :darktest
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2121,8 +2119,7 @@ function plot_psd_avg(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mt::B
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
@@ -2206,8 +2203,7 @@ function plot_psd_butterfly(signal::Matrix{Float64}; fs::Int64, norm::Bool=true,
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
@@ -2796,6 +2792,8 @@ Plot spectrogram of `signal`.
 """
 function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
@@ -2805,8 +2803,7 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     interval = fs
     overlap = round(Int64, fs * 0.85)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     if mw == false
         if mt == false
@@ -2873,6 +2870,8 @@ Plots spectrogram of `eeg` channel(s).
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -3023,6 +3022,8 @@ Plots spectrogram of `eeg` channel(s).
 """
 function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
     length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
     _check_channels(eeg, channel)
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
@@ -3136,6 +3137,8 @@ Plots spectrogram of `eeg` external or embedded component.
 """
 function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
@@ -3245,6 +3248,8 @@ Plots spectrogram of `eeg` channel(s).
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3363,6 +3368,8 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 """
 function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
     _check_epochs(eeg, epoch)
@@ -3473,6 +3480,8 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 """
 function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
     _check_epochs(eeg, epoch)
@@ -3559,8 +3568,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
@@ -3709,8 +3717,7 @@ function eeg_plot_matrix(eeg::NeuroJ.EEG, m::Union{Matrix{Float64}, Array{Float6
     channel_n = size(m, 1)
     ndims(m) == 3 && (m = m[:, :, epoch])
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     p = heatmap(m,
                 xticks=(1:channel_n, labels),
@@ -3751,8 +3758,7 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{Float64}, Array
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     # select channels, default is all channels
     channel = _select_channels(eeg, channel, 0)
@@ -3806,8 +3812,7 @@ function plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label::Strin
 
     type === :kd && (type = :density)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     p = plot(signal,
              seriestype=type,
@@ -3859,8 +3864,7 @@ function plot_histogram(signal::Matrix{Float64}; type::Symbol=:hist, labels::Vec
 
     channel_n = size(signal, 1)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     # reverse so 1st channel is on top
     signal = reverse(signal, dims = 1)
@@ -3986,8 +3990,7 @@ function plot_ica(t::Union{Vector{<:Real}, AbstractRange}, ica::Vector{Float64};
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     if ylim == (0, 0)
         ylim = (floor(Int64, minimum(ica) * 1.5), ceil(Int64, maximum(ica) * 1.5))
@@ -4043,8 +4046,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
@@ -4228,8 +4230,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
@@ -4384,8 +4385,7 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     # select all channels
     channel = _select_channels(eeg, 0, 0)
@@ -4486,8 +4486,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
@@ -4637,8 +4636,7 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     ica, _ = _get_component(eeg, :ica)
     ica_mw, _ = _get_component(eeg, :ica_mw)
@@ -4804,8 +4802,7 @@ Plot vector of plots `p` as tiles.
 function eeg_plot_tile(p::Vector{Any}, w::Int64=800, h::Int64=800, rows::Int64=2, mono::Bool=false)
     length(p) > 10 && (rows *= 2)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     l = (rows, ceil(Int64, length(p) / rows))
 
@@ -4855,8 +4852,7 @@ function plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:de
         band_frq[idx][2] > fs / 2 && (band_frq[idx] = (band_frq[idx][1], fs / 2))
     end
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     total_pow = round(s_total_power(signal, fs=fs), digits=2)
     abs_band_pow = zeros(length(band))
@@ -4956,8 +4952,7 @@ function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, c
     len < 0 && throw(ArgumentError("len must be > 0."))
     (typeof(channel) == Int64 && (channel < 1 || channel > eeg_channel_n(eeg))) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
@@ -5100,8 +5095,7 @@ function eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{Float
     channel = _select_channels(eeg, channel, 0)
     labels = eeg_labels(eeg)[channel]
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     if typeof(c) != Symbol
         length(c[:, epoch]) == eeg_channel_n(eeg) || throw(ArgumentError("Length of c ($(length(c))) and number of EEG channels ($(length(channel))) do not match."))
@@ -5153,8 +5147,7 @@ function eeg_plot_epochs(eeg::NeuroJ.EEG; c::Union{Vector{<:Real}, Symbol}, epoc
 
     epoch = _select_epochs(eeg, epoch, 0)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     if typeof(c) != Symbol
         length(c) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of c ($(length(c))) and number of epochs ($(length(epoch))) do not match."))
@@ -5208,8 +5201,7 @@ Plot filter response.
 """
 function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     fs = eeg_sr(eeg)
     fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :fir, :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
@@ -5468,8 +5460,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 """
 function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     pc = plot(grid=false,
               framestyle=:none,
@@ -5508,8 +5499,7 @@ Plot envelope of `eeg` channels.
 """
 function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, d::Int64=32, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     type in [:amp, :pow, :spec] || throw(ArgumentError("type must be :amp, :pow or :spec."))
 
@@ -5654,8 +5644,7 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 """
 function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = eeg_ispc(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
 
@@ -5725,8 +5714,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 """
 function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     itpc, itpcz, itpc_angle, itpc_phases = eeg_itpc(eeg, channel=channel, t=t, w=w)
     itpc = round(itpc, digits=2)
@@ -5799,8 +5787,7 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 """
 function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     pli, signal_diff, phase_diff, s1_phase, s2_phase = eeg_pli(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
 
@@ -5874,9 +5861,8 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 """
 function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
-    title == "" && (title = "ITPC spectrogram\nchannel: $channel")
+    mono == true ? palette = :grays : palette = :darktest
+        title == "" && (title = "ITPC spectrogram\nchannel: $channel")
     
     itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
 
@@ -5929,9 +5915,8 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 """
 function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
-    f < 0 && throw(ArgumentError("f must be > 0."))
+    mono == true ? palette = :grays : palette = :darktest
+        f < 0 && throw(ArgumentError("f must be > 0."))
     f > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("f must be ≤ $(eeg_sr(eeg) ÷ 2)."))
 
     itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq, w=w)
@@ -5979,8 +5964,7 @@ Plot connections between `eeg` electrodes.
 """
 function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
 
-    palette = :darktest
-    mono == true && (palette = :grays)
+    mono == true ? palette = :grays : palette = :darktest
 
     threshold_type in [:eq, :geq, :leq, :g, :l] || throw(ArgumentError("threshold_type must be :eq, :geq, :leq, :g, :l."))
 
