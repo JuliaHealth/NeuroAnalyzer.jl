@@ -2823,8 +2823,7 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
         t = linspace(0, size(spec_power, 2)/fs, size(spec_power, 2)) .+ offset
     end
 
-    cb_title = "[μV^2/Hz]"
-    norm == true && (cb_title = "[dB/Hz]")
+    norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
 
     p = heatmap(t,
                 spec_frq,
@@ -2971,8 +2970,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
         ylabel = "Channels"
         xlabel = "Frequency [Hz]"
         s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-        colorbar_title="[μV^2/Hz]"
-        norm == true && (colorbar_title = "[dB/Hz]")
+        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
         mono == true && (palette = :grays)
         p = heatmap(s_frq[1, :],
@@ -2984,7 +2982,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                     yticks=channel,
                     title=title,
                     seriescolor=palette,
-                    colorbar_title=colorbar_title,
+                    colorbar_title=cb_title,
                     titlefontsize=10,
                     xlabelfontsize=8,
                     ylabelfontsize=8,
@@ -3197,8 +3195,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
         s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
-        colorbar_title="[μV^2/Hz]"
-        norm == true && (colorbar_title = "[dB/Hz]")
+        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
         mono == true && (palette = :grays)
         p = heatmap(s_frq[1, :],
@@ -3210,7 +3207,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                     yticks=channel,
                     title=title,
                     seriescolor=palette,
-                    colorbar_title=colorbar_title,
+                    colorbar_title=cb_title,
                     titlefontsize=10,
                     xlabelfontsize=8,
                     ylabelfontsize=8,
@@ -3430,8 +3427,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
         s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
-        colorbar_title="[μV^2/Hz]"
-        norm == true && (colorbar_title = "[dB/Hz]")
+        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
         mono == true && (palette = :grays)
         p = heatmap(s_frq[1, :],
@@ -3443,7 +3439,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
                     yticks=c_idx,
                     title=title,
                     seriescolor=palette,
-                    colorbar_title=colorbar_title,
+                    colorbar_title=cb_title,
                     titlefontsize=10,
                     xlabelfontsize=8,
                     ylabelfontsize=8,
