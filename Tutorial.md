@@ -526,6 +526,14 @@ eeg_plot_save(p, file_name="images/edf_butterfly.png")
 
 ![edf avg](images/edf_butterfly.png)
 
+3D water-plot PSD:
+```julia
+p = eeg_plot_signal_psd_3d(edf, channel=1:5, offset=25600, mt=true)
+eeg_plot_save(p, file_name="images/edf_psd3d.png")
+```
+
+![edf PSD 3d](images/edf_psd3d.png)
+
 Use kwargs:
 ```julia
 p1 = eeg_plot(edf, title="edf1")

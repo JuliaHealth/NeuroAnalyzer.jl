@@ -169,4 +169,7 @@ p = eeg_plot_itpc(e10, channel=1, t=1)
 p = eeg_plot_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+p = eeg_plot_signal_psd_3d(edf, channel=1:5, offset=25600, mt=true)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 true

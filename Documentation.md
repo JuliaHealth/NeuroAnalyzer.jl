@@ -2047,7 +2047,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 **Returns**
 
@@ -3515,7 +3515,6 @@ Plot `eeg` channel or channels.
   * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-  * `mono::Bool=false`: each channel is drawn with a different color
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `xlabel::String="Time [s]"`: x-axis label
@@ -3769,8 +3768,8 @@ Plot `signal` channels: mean and ±95% CI.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange`
-  * `signal::Matrix{Float64}`
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Matrix{<:Real}`
   * `norm::Bool=false`: normalize the `signal` prior to calculations
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
@@ -3887,8 +3886,8 @@ Butterfly plot of `signal` channels.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange`
-  * `signal::Matrix{Float64}`
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Matrix{<:Real}`
   * `labels::Vector{String}=[""]`: channel labels vector
   * `norm::Bool=false`: normalize the `signal` prior to calculations
   * `xlabel::String="Time [s]"`: x-axis label
@@ -4038,7 +4037,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 **Arguments**
 
-  * `signal::Matrix{Float64}`
+  * `signal::Matrix{<:Real}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -4067,7 +4066,7 @@ Butterfly plot of `signal` channels power spectrum density.
 
 **Arguments**
 
-  * `signal::Matrix{Float64}`
+  * `signal::Matrix{<:Real}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -4523,7 +4522,7 @@ Plot matrix `m` of `eeg` channels.
 **Arguments**
 
   * `eeg:EEG`
-  * `m::Union{Matrix{Float64}, Array{Float64, 3}}`: channels by channels matrix
+  * `m::Union{Matrix{<:Real}, Array{Float64, 3}}`: channels by channels matrix
   * `epoch::Int64=1`: epoch number to display
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -4546,7 +4545,7 @@ Plot covariance matrix `m` of `eeg` channels.
 **Arguments**
 
   * `eeg:EEG`
-  * `cov_m::Union{Matrix{Float64}, Array{Float64, 3}}`: covariance matrix
+  * `cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}`: covariance matrix
   * `lags::Vector{<:Real}`: covariance lags
   * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
   * `epoch::Int64=1`: epoch number to display
@@ -4596,7 +4595,7 @@ Plot histogram of `signal`.
 
 **Arguments**
 
-  * `signal::Matrix{Float64}`
+  * `signal::Matrix{<:Real}`
   * `type::Symbol`: type of histogram: :hist or :kd
   * `labels::Vector{String}=[""]`
   * `xlabel::String=""`: x-axis label
@@ -4918,7 +4917,7 @@ Plot values of `c` for selected channels of `eeg`.
 **Arguments**
 
   * `eeg:NeuroJ.EEG`
-  * `c::Union{Matrix{Int64}, Matrix{Float64}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
   * `epoch::Int64`: number of epoch for which `c` should be plotted
   * `xlabel::String="Channels"`: x-axis label
@@ -5162,7 +5161,7 @@ Plot connections between `eeg` electrodes.
 **Arguments**
 
   * `eeg:EEG`
-  * `m::Matrix{Float64}`: matrix of connections weights
+  * `m::Matrix{<:Real}`: matrix of connections weights
   * `threshold::Float64`: plot all connection above threshold
   * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
   * `labels::Bool=false`: plot electrode labels
@@ -5196,6 +5195,69 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
   * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_3d-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3d-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.plot_psd_3d`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_3d(signal; <keyword arguments>)
+```
+
+Plot 3-d waterfall plot of `signal` channels power spectrum density.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_3d`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_3d(eeg; <keyword arguments>)
+```
+
+Plot 3-d waterfall plot of `eeg` channels power spectrum density.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Int64`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -6446,6 +6508,8 @@ Calculate power spectrum density of the `signal`.
 
 **Returns**
 
+Named tuple containing:
+
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
 
@@ -6469,6 +6533,8 @@ Calculate power spectrum density of the `signal`.
 
 **Returns**
 
+named tuple containing:
+
   * `psd_pow::Matrix{Float64}`
   * `psd_frq::Matrix{Float64}`
 
@@ -6491,6 +6557,8 @@ Calculate power spectrum density of the `signal`.
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
+
+Named tuple containing:
 
   * `psd_pow::Array{Float64, 3}`
   * `psd_frq::Array{Float64, 3}`
@@ -6980,7 +7048,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 **Returns**
 
