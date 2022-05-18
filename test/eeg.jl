@@ -94,11 +94,10 @@ s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-edf1 = eeg_filter(edf, fprototype=:mavg, d=10)
+edf1 = eeg_filter(edf, fprototype=:mavg, order=10)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-edf1 = eeg_filter(edf, fprototype=:mmed, d=10)
+edf1 = eeg_filter(edf, fprototype=:mmed, order=10)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-edf1 = eeg_filter(edf, fprototype=:mavg, window=generate_gaussian(eeg_sr(edf), 32, 0.01))
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
 edf1 = eeg_downsample(edf, new_sr=128)

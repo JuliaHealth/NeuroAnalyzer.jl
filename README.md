@@ -111,6 +111,7 @@ General:
 - Pluto interface
 
 EEG:
+- add weights to :mavg and :mmed filters
 - check where pad0 is not used
 - add s_hspectrum() and s_wspectrum() for PSD plots
 - detect artifacts using TKEO

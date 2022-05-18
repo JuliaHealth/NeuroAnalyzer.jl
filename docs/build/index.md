@@ -1646,8 +1646,8 @@ Filter `eeg` channels.
       * `:fir`
       * `:iirnotch`
       * `:remez`
-      * `:mavg`: moving average (with threshold and/or weight window)
-      * `:mmed`: moving median (with threshold and/or weight window)
+      * `:mavg`: moving average (with threshold)
+      * `:mmed`: moving median (with threshold)
       * `:poly`: polynomial of `order` order
   * `ftype::Symbol`: filter type:
 
@@ -1656,12 +1656,11 @@ Filter `eeg` channels.
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order or number of taps for :remez filter
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `d::Int64=1`: window length for mean average and median average filter
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
@@ -1692,8 +1691,8 @@ Filter `eeg`.
       * `:fir`
       * `:iirnotch`
       * `:remez`
-      * `:mavg`: moving average (with threshold and/or weight window)
-      * `:mmed`: moving median (with threshold and/or weight window)
+      * `:mavg`: moving average (with threshold)
+      * `:mmed`: moving median (with threshold)
       * `:poly`: polynomial of `order` order
   * `ftype::Symbol`: filter type:
 
@@ -1702,12 +1701,11 @@ Filter `eeg`.
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order or number of taps for :remez filter
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `d::Int64=1`: window length for mean average and median average filter
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
@@ -6465,8 +6463,8 @@ Filter `signal`.
       * `:fir`
       * `:iirnotch`
       * `:remez`
-      * `:mavg`: moving average (with threshold and/or weight window)
-      * `:mmed`: moving median (with threshold and/or weight window)
+      * `:mavg`: moving average (with threshold)
+      * `:mmed`: moving median (with threshold)
       * `:poly`: polynomial of `order` order
   * `ftype::Symbol`: filter type:
 
@@ -6475,12 +6473,11 @@ Filter `signal`.
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order or number of taps for :remez filter
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
   * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `d::Int64=1`: window length for mean average and median average filter
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 

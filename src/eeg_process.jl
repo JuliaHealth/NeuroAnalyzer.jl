@@ -566,8 +566,8 @@ Filter `eeg` channels.
     - `:fir`
     - `:iirnotch`
     - `:remez`
-    - `:mavg`: moving average (with threshold and/or weight window)
-    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:mavg`: moving average (with threshold)
+    - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order` order
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
@@ -575,12 +575,11 @@ Filter `eeg` channels.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64=8`: filter order or number of taps for :remez filter
+- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
 - `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-- `d::Int64=1`: window length for mean average and median average filter
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
@@ -608,7 +607,6 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
                                                              rs=rs,
                                                              bw=bw,
                                                              dir=dir,
-                                                             d=d,
                                                              t=t,
                                                              window=window)
         end
@@ -617,7 +615,7 @@ function eeg_filter(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, No
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_filtered
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, t=$t, window=$window)")
+    push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, t=$t, window=$window)")
 
     return eeg_new
 end
@@ -638,8 +636,8 @@ Filter `eeg`.
     - `:fir`
     - `:iirnotch`
     - `:remez`
-    - `:mavg`: moving average (with threshold and/or weight window)
-    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:mavg`: moving average (with threshold)
+    - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order` order
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
@@ -647,16 +645,15 @@ Filter `eeg`.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64=8`: filter order or number of taps for :remez filter
+- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
 - `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-- `d::Int64=1`: window length for mean average and median average filter
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     s_filtered = eeg_filter(eeg,
                             fprototype=fprototype,
@@ -667,12 +664,11 @@ function eeg_filter!(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Union{Symbol, N
                             rs=rs,
                             bw=bw,
                             dir=dir,
-                            d=d,
                             t=t,
                             window=window).eeg_signals
     eeg.eeg_signals = s_filtered
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, d=$d, window=$window)")
+    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 
     nothing
 end

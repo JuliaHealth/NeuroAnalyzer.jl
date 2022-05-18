@@ -4,8 +4,8 @@
 #                              #
 ################################
 
-_reflect(signal::Vector{<:Real}) = vcat(signal[end:-1:1], signal, signal[end:-1:1])
-_chop(signal::Vector{<:Real}) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
+_reflect(signal::AbstractArray) = vcat(signal[end:-1:1], signal, signal[end:-1:1])
+_chop(signal::AbstractArray) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
 
 ################################
 
@@ -1624,8 +1624,8 @@ Filter `signal`.
     - `:fir`
     - `:iirnotch`
     - `:remez`
-    - `:mavg`: moving average (with threshold and/or weight window)
-    - `:mmed`: moving median (with threshold and/or weight window)
+    - `:mavg`: moving average (with threshold)
+    - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order` order
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
@@ -1633,12 +1633,11 @@ Filter `signal`.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64=8`: filter order or number of taps for :remez filter
+- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
 - `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-- `d::Int64=1`: window length for mean average and median average filter
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
@@ -1646,9 +1645,9 @@ Filter `signal`.
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
-    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed,:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
+    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
 
     if fprototype === :fir
         if window === nothing
@@ -1661,13 +1660,13 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         fprototype = FIRWindow(window)
     end
 
-    (fprototype === :fir && (window === nothing || length(window) > length(signal))) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
-    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
-    (fprototype !== :mavg && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
+    window !== nothing && length(window) > length(signal) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
+    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+    (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
     (order < 2 && fprototype !== :poly && fprototype !== :remez) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
     (order < 1 && (fprototype !== :mavg && fprototype !== :mmed)) && throw(ArgumentError("order must be > 0."))
-    d > length(signal) && throw(ArgumentError("d must be ≤ signal length."))
+    order > length(signal) && throw(ArgumentError("order must be ≤ signal length."))
     
     if rp == -1
         if fprototype === :elliptic
@@ -1686,71 +1685,35 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
     end
 
     if fprototype === :mavg
-        if window === nothing
-            s_filtered = signal
-            for idx in d:-1:1
-                if t > 0
-                    if signal[idx] > t * std(signal) + mean(signal)
-                        s_filtered[idx] = mean(signal[idx:idx+1])
-                    end
-                else
-                    s_filtered[idx] = mean(signal[idx:idx+1])
+        signal = _reflect(signal)
+        s_filtered = zeros(length(signal))
+        for idx in (1 + order):(length(signal) - order)
+            if t > 0
+                if signal[idx] > t * std(signal) + mean(signal)
+                    s_filtered[idx] = mean(signal[(idx - order):(idx + order)])
                 end
+            else
+                s_filtered[idx] = mean(signal[(idx - order):(idx + order)])
             end
-            for idx in (1 + d):(length(signal) - d)
-                if t > 0
-                    if signal[idx] > t * std(signal) + mean(signal)
-                        s_filtered[idx] = mean(signal[(idx - d):(idx + d)])
-                    end
-                else
-                    s_filtered[idx] = mean(signal[(idx - d):(idx + d)])
-                end
-            end
-            for idx in (length(signal) - d + 1):length(signal)
-                if t > 0
-                    if signal[idx] > t * std(signal) + mean(signal)
-                        s_filtered[idx] = mean(signal[idx-1:idx])
-                    end
-                else
-                    s_filtered[idx] = mean(signal[idx-1:idx])
-                end
-            end
-        else
-            s_filtered = s_tconv(signal, kernel=window)
         end
+        s_filtered = _chop(s_filtered)
 
         return s_filtered
     end
 
     if fprototype === :mmed
-        s_filtered = signal
-        for idx in d:-1:1
+        signal = _reflect(signal)
+        s_filtered = zeros(length(signal))
+        for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
-                    s_filtered[idx] = median(signal[idx:idx+1])
+                    s_filtered[idx] = median(signal[(idx - order):(idx + order)])
                 end
             else
-                s_filtered[idx] = median(signal[idx:idx+1])
+                s_filtered[idx] = median(signal[(idx - order):(idx + order)])
             end
         end
-        for idx in (1 + d):(length(signal) - d)
-            if t > 0
-                if signal[idx] > t * std(signal) + median(signal)
-                    s_filtered[idx] = median(signal[(idx - d):(idx + d)])
-                end
-            else
-                s_filtered[idx] = median(signal[(idx - d):(idx + d)])
-            end
-        end
-        for idx in (length(signal) - d + 1):length(signal)
-            if t > 0
-                if signal[idx] > t * std(signal) + median(signal)
-                    s_filtered[idx] = median(signal[idx-1:idx])
-                end
-            else
-                s_filtered[idx] = median(signal[idx-1:idx])
-            end
-        end
+        s_filtered = _chop(s_filtered)
 
         return s_filtered
     end
@@ -1762,6 +1725,12 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         for idx in 1:length(signal)
             s_filtered[idx] = p(t[idx])
         end
+
+        return s_filtered
+    end
+
+    if fprototype === :conv
+        s_filtered = s_tconv(signal, window)
 
         return s_filtered
     end
@@ -1809,9 +1778,11 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         flt = digitalfilter(responsetype, prototype)
     end
 
-    dir === :twopass && (s_filtered = filtfilt(flt, signal))
-    dir === :onepass && (s_filtered = filt(flt, signal))
-    dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
+    if fprototype !== :mavg && prototype !== :mmed && prototype !== :conv
+        dir === :twopass && (s_filtered = filtfilt(flt, signal))
+        dir === :onepass && (s_filtered = filt(flt, signal))
+        dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
+    end
 
     return s_filtered
 end
