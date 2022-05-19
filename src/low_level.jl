@@ -1787,6 +1787,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(fs / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
+
     if fprototype === :iirnotch
         flt = iirnotch(cutoff, bw, fs=fs)
     elseif fprototype === :remez
@@ -1799,7 +1800,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         flt = digitalfilter(responsetype, prototype)
     end
 
-    if fprototype !== :mavg && prototype !== :mmed && prototype !== :conv
+    if fprototype !== :mavg && fprototype !== :mmed && fprototype !== :conv
         dir === :twopass && (s_filtered = filtfilt(flt, signal))
         dir === :onepass && (s_filtered = filt(flt, signal))
         dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
@@ -2367,6 +2368,7 @@ Calculate spectrogram of `signal`.
 
 # Returns
 
+Named tuple containing:
 - `s_pow::Matrix{Float64}`: powers
 - `s_frq::Vector{Float64}`: frequencies
 - `s_t::Vector{Float64}`: time
@@ -2391,7 +2393,7 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bo
         s_pow = Vector(spec.power)
     end
 
-    return s_pow, s_frq, s_t
+    return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
 
 """

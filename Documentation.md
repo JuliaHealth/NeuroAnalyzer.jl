@@ -6891,6 +6891,8 @@ Calculate spectrogram of `signal`.
 
 **Returns**
 
+Named tuple containing:
+
   * `s_pow::Matrix{Float64}`: powers
   * `s_frq::Vector{Float64}`: frequencies
   * `s_t::Vector{Float64}`: time
