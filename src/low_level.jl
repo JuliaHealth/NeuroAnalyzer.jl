@@ -210,6 +210,8 @@ Return the `n`-point long symmetric window `type`.
     - `:flat`: Flat-top window
     - `:bn`: Blackman-Nuttall
     - `:nutall`: Nuttall
+    - `:triangle`: symmetric triangle (left half ↑, right half ↓)
+    - `:exp`: symmetric exponential (left half ↑, right half ↓)
 - `n::Int64`: window length
 - `even::Bool=false`: if true, make the window of even length (+1 for odd n)
 
@@ -233,8 +235,24 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         w = @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
     elseif type === :nutall
         w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
+    elseif type === :triangle
+        mod(n, 2) == 0 && (n += 1)
+        w = zeros(n)
+        for idx in 1:((n ÷ 2) + 1)
+            w[idx] = @. (idx * (idx + 1)) / 2
+        end
+        w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
+        w .= w ./ maximum(w)
+    elseif type === :exp
+        mod(n, 2) == 0 && (n += 1)
+        w = ones(n)
+        for idx in 1:((n ÷ 2) + 1)
+            w[idx] = 1 / idx
+        end
+        w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
+        w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
     else
-        throw(ArgumentError("Window type must be :hann, :bh, :bohman, :flat, :bn, :nutall."))
+        throw(ArgumentError("Window type must be :hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp."))
     end
 
     return w
@@ -1639,7 +1657,7 @@ Filter `signal`.
 - `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+- `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed 
 
 # Returns
 
@@ -1660,13 +1678,14 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         fprototype = FIRWindow(window)
     end
 
+    order < 1 && throw(ArgumentError("order must be > 1."))
     window !== nothing && length(window) > length(signal) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
     (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
     (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
-    (order < 2 && fprototype !== :poly && fprototype !== :remez) && (mod(order, 2) != 0 && throw(ArgumentError("order must be even and ≥ 2.")))
-    (order < 1 && (fprototype !== :mavg && fprototype !== :mmed)) && throw(ArgumentError("order must be > 0."))
-    order > length(signal) && throw(ArgumentError("order must be ≤ signal length."))
+    ((order < 2 && fprototype !== :poly && fprototype !== :remez) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
+    (window !== nothing && length(window) != (2 * order + 1) && (fprototype === :mavg || fprototype === :mmed)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
+    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
     
     if rp == -1
         if fprototype === :elliptic
@@ -1687,13 +1706,14 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
     if fprototype === :mavg
         signal = _reflect(signal)
         s_filtered = zeros(length(signal))
+        window === nothing && (window = ones(2 * order + 1))
         for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + mean(signal)
-                    s_filtered[idx] = mean(signal[(idx - order):(idx + order)])
+                    s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
                 end
             else
-                s_filtered[idx] = mean(signal[(idx - order):(idx + order)])
+                s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
             end
         end
         s_filtered = _chop(s_filtered)
@@ -1704,13 +1724,14 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
     if fprototype === :mmed
         signal = _reflect(signal)
         s_filtered = zeros(length(signal))
+        window === nothing && (window = ones(2 * order + 1))
         for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
-                    s_filtered[idx] = median(signal[(idx - order):(idx + order)])
+                    s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
                 end
             else
-                s_filtered[idx] = median(signal[(idx - order):(idx + order)])
+                s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
             end
         end
         s_filtered = _chop(s_filtered)

@@ -111,13 +111,10 @@ General:
 - Pluto interface
 
 EEG:
-- add weights to :mavg and :mmed filters
 - check where pad0 is not used
 - add s_hspectrum() and s_wspectrum() for PSD plots
 - detect artifacts using TKEO
 - visual / auditory stimuli presentation module
-- exclude Fp1, Fp2, O1, O2 from CAR
-- exclude current electrode from CAR mean calculation
 - add/delete markers, view markers on plots
 - amplitude turbulence
 - add/edit/save/load annotations
@@ -131,10 +128,10 @@ EEG:
 - wavelets
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
-- weighted PLI
 - add edge padding for filters
 - ITPC topoplot
 - coherence
+- phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
 - multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
 - simple convolution bandpass filter for data analysis
 - beamforming, leakage correction
@@ -180,7 +177,7 @@ EEG:
 - automated cleaning of artifacts
 - bad channel marking / rejection
 - bad epoch marking / rejection
-- signals/spectra comparison
+- signals/PSD/spectrograms comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats
 - channel interpolation: manual, automated

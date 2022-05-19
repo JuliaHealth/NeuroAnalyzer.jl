@@ -5463,6 +5463,8 @@ Return the `n`-point long symmetric window `type`.
       * `:flat`: Flat-top window
       * `:bn`: Blackman-Nuttall
       * `:nutall`: Nuttall
+      * `:triangle`: symmetric triangle (left half ↑, right half ↓)
+      * `:exp`: symmetric exponential (left half ↑, right half ↓)
   * `n::Int64`: window length
   * `even::Bool=false`: if true, make the window of even length (+1 for odd n)
 
@@ -6479,7 +6481,7 @@ Filter `signal`.
   * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed
 
 **Returns**
 
