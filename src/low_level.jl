@@ -3168,3 +3168,69 @@ function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_l
 
     return (w_powers=w_powers, frq_list=frq_list)
 end
+
+function s_cmp
+    using StatsKit
+using StatsFuns
+# compare spectrograms channel1 vs channel2, average across trials/epochs
+using NeuroJ
+edf = eeg_import_edf("test/eeg-test-edf.edf");
+e10 = eeg_epochs(edf, epoch_len=5*256);
+eeg_keep_channel!(e10, channel=1:10)
+eeg_filter!(e10, fprototype=:iirnotch, cutoff=50, bw=2)
+e1=eeg_filter(e10, fprototype=:butterworth, ftype=:bp, cutoff=(10, 20), order=8)
+s,f,t = eeg_spectrogram(e1);
+spec1 = s[:, :, 1, :]
+e2=e10
+s,f,t = eeg_spectrogram(e2);
+spec2 = s[:, :, 1, :]
+
+spec_diff = dropdims(mean(spec2, dims=3) .- mean(spec1, dims=3), dims=3)
+x = 1:size(spec_diff, 2)
+y = 1:size(spec_diff, 1)
+t = t[:, 1]
+f = f[:, 1]
+
+pval = 0.001
+zval = abs(norminvcdf(pval))
+perm_n = 1000
+spec_all = cat(spec1, spec2, dims=3)
+perm_maps = zeros(size(spec1, 1), size(spec1, 2), perm_n)
+epoch_n = size(spec_all, 3)
+@inbounds @simd for perm_idx in 1:perm_n
+    rand_idx = sample(1:epoch_n, epoch_n, replace=false)
+    rand_spec = spec_all[:, :, rand_idx]
+    s2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
+    s1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
+    perm_maps[:, :, perm_idx] = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
+end
+mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
+std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
+
+# threshold real data
+zmap = @. (spec_diff - mean_h0) / std_h0
+
+# threshold at p-value
+zmap_b = deepcopy(zmap)
+@. zmap_b[abs(zmap) < zval] = 0
+@. zmap_b[zmap_b != 0] = 1
+zmap_b = Bool.(zmap_b)
+zmap_b = map(x -> !x, zmap_b)
+
+zmap_c = spec_diff
+zmap_c[zmap_b .== 1] .= 0
+p1 = heatmap(x, y, dropdims(mean(spec1, dims=3), dims=3), seriescolor=:darktest)
+p2 = heatmap(x, y, dropdims(mean(spec2, dims=3), dims=3), seriescolor=:darktest)
+
+heatmap(x, y, spec_diff, seriescolor=:darktest, colorbar=false)
+heatmap!(x, y, zmap_b, opacity=0.5, seriescolor=[:white, :black])
+
+plot(p1, p2, p3, cbar=false, layout=(1,3))
+plot(p1)
+p1=rand(100,100)
+zmap_b=ones(100,100)
+zmap_b[10:40, 30:60].=0
+heatmap(p1, seriescolor=:darktest)
+heatmap!(zmap_b, opacity=0.5, seriescolor=:grays)
+contour(zmap_b, lc=:black)
+end
