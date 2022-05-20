@@ -107,7 +107,7 @@ export s_entropy
 export s_negentropy
 export s_average
 export s2_average
-export s2_coherence
+export s2_tcoherence
 export s_pca
 export s_pca_reconstruct
 export s_fconv
@@ -137,6 +137,8 @@ export s_gfilter
 export s_ghspectrogram
 export s_tkeo
 export s_wspectrum
+export s_fcoherence
+export s2_fcoherence
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -263,8 +265,7 @@ export eeg_mi
 export eeg_entropy
 export eeg_negentropy
 export eeg_band
-export eeg_coherence
-export eeg_coherence
+export eeg_tcoherence
 export eeg_freqs
 export eeg_difference
 export eeg_pick
@@ -305,6 +306,7 @@ export eeg_itpc_s
 export eeg_wspectrogram
 export eeg_tkeo
 export eeg_wspectrum
+export eeg_fcoherence
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

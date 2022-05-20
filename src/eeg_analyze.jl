@@ -522,9 +522,9 @@ function eeg_band(eeg; band::Symbol)
 end
 
 """
-    eeg_coherence(eeg1, eeg2)
+    eeg_tcoherence(eeg1, eeg2)
 
-Calculate coherence between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -533,9 +533,11 @@ Calculate coherence between all channels of `eeg1` and `eeg2`.
 
 # Returns
 
-- `coherence::Union{Matrix{Float64}, Array{ComplexF64, 3}}`
+Named tuple containing:
+- `c::Array{ComplexF64, 3}`: coherence
+- `ic::Array{Float64, 3}`: imaginary part of coherence
 """
-function eeg_coherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -543,23 +545,23 @@ function eeg_coherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
-    coh = zeros(ComplexF64, size(eeg1.eeg_signals))
-
+    c = zeros(size(eeg1.eeg_signals))
+    ic = zeros(size(eeg1.eeg_signals))
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s1 = @view eeg1.eeg_signals[idx, :, epoch_idx]
             s2 = @view eeg2.eeg_signals[idx, :, epoch_idx]
-            coh[idx, :, epoch_idx] = s2_coherence(s1, s2)            
+            c[idx, :, epoch_idx], ic[idx, :, epoch_idx] = s2_tcoherence(s1, s2)            
         end
     end
 
-    return coh
+    return (c=c, ic=ic)
 end
 
 """
-    eeg_coherence(eeg; channel1, channel2, epoch1, epoch2)
+    eeg_tcoherence(eeg; channel1, channel2, epoch1, epoch2)
 
-Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 # Arguments
 
@@ -571,9 +573,11 @@ Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `e
 
 # Returns
 
-- `coh::Vector{ComplexF64}`
+Named tuple containing:
+- `c::Vector{ComplexF64}`: coherence
+- `ic::Vector{Float64}`: imaginary part of coherence
 """
-function eeg_coherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+function eeg_tcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -585,9 +589,9 @@ function eeg_coherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1
 
     s1 = @view eeg.eeg_signals[channel1, :, epoch1]
     s2 = @view eeg.eeg_signals[channel2, :, epoch2]
-    coh = s2_coherence(s1, s2)
+    c, ic = s2_tcoherence(s1, s2)
 
-    return coh
+    return (c=c, ic=ic)
 end
 
 """
@@ -2538,4 +2542,78 @@ function eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::
     end
 
     return (w_pow=w_pow, w_frq=w_frq)
+end
+
+"""
+    eeg_fcoherence(eeg1, eeg2)
+
+Calculate coherence (mean over frequencies) between all channels of `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`
+- `eeg2::NeuroJ.EEG`
+
+# Returns
+
+Named tuple containing:
+- `c::Array{ComplexF64, 4}`: coherence
+- `f::Vector{Float64}`: frequencies
+"""
+function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+    eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both signals must have the same size."))
+    eeg_sr(eeg1) == eeg_sr(eeg2) || throw(ArgumentError("Sampling rate of EEG1 and EEG2 must be the same."))
+    channel_n = eeg_channel_n(eeg1)
+    epoch_n = eeg_epoch_n(eeg1)
+    _, f_tmp = s_fcoherence(eeg1.eeg_signals[1:2, :, 1], fs=eeg_sr(eeg))
+    c = zeros(channel_n, channel_n, length(f_tmp), epoch_n)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s1 = @view eeg1.eeg_signals[channel_idx, :, epoch_idx]
+            s2 = @view eeg2.eeg_signals[channel_idx, :, epoch_idx]
+            s = hcat(s1, s2)'
+            c[:, :, :, epoch_idx], f = s_fcoherence(s, fs=eeg_sr(eeg1))
+        end
+    end
+
+    return (c=c, f=f)
+end
+
+"""
+    eeg_fcoherence(eeg; channel1, channel2, epoch1, epoch2)
+
+Calculate coherence (mean over frequencies) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+- `epoch1::Int64`
+- `epoch2::Int64`
+
+# Returns
+
+Named tuple containing:
+- `c::Array{ComplexF64, 3}`: coherence
+- `f::Vector{Float64}`: frequencies
+"""
+function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    (channel1 > channel_n || channel2 > channel_n) && throw(ArgumentError("channel1/channel2 must be ≤ $(channel_n)."))
+    (epoch1 > epoch_n || epoch2 > epoch_n) && throw(ArgumentError("epoch1/epoch2 must be ≤ $(epoch_n)."))
+
+    s1 = @view eeg.eeg_signals[channel1, :, epoch1]
+    s2 = @view eeg.eeg_signals[channel2, :, epoch2]
+    c, f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg))
+
+    return (c=c, ic=ic)
 end

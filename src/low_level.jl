@@ -2117,9 +2117,9 @@ function s2_average(signal1::AbstractArray, signal2::AbstractArray)
 end
 
 """
-    s2_coherence(signal1, signal2)
+    s2_tcoherence(signal1, signal2)
 
-Calculate coherence between `signal1` and `signal2`.
+Calculate coherence (mean over time) between `signal1` and `signal2`.
 
 # Arguments
 
@@ -2128,18 +2128,24 @@ Calculate coherence between `signal1` and `signal2`.
 
 # Returns
 
-- `coherence::Vector{ComplexF64}`
+Named tuple containing:
+- `c::Vector{Float64}`: coherence
+- `ic::Vector{Float64}`: imaginary part of coherence
 """
-function s2_coherence(signal1::AbstractArray, signal2::AbstractArray)
+function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+
+    signal1 = _reflect(signal1)
+    signal2 = _reflect(signal2)
 
     s1_fft = fft(signal1) ./ length(signal1)
     s2_fft = fft(signal2) ./ length(signal2)
 
-    coherence = (abs.((s1_fft) .* conj.(s2_fft)).^2) ./ (s1_fft .* s2_fft)
+    coh = (abs.((s1_fft) .* conj.(s2_fft)).^2) ./ (s1_fft .* s2_fft)
+    coh = _chop(coh)
 
-    return coherence
+    return (c=real.(coh), ic=imag.(coh))
 end
 
 """
@@ -3169,11 +3175,57 @@ function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_l
     return (w_powers=w_powers, frq_list=frq_list)
 end
 
-function s_cmp
-    using StatsKit
-using StatsFuns
-# compare spectrograms channel1 vs channel2, average across trials/epochs
-using NeuroJ
+"""
+    s_fcoherence(signal; fs)
+
+Calculate coherence (mean over all frequencies) between channels of `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64`
+
+# Returns
+
+- `c::Array{Float64, 3}`: coherence
+- `f::Vector{Float64}`: frequencies
+"""
+function s_fcoherence(signal::AbstractArray; fs::Int64)
+
+    fs < 0 && throw(ArgumentError("fs must be > 0."))
+    c = mt_coherence(signal, fs=fs)
+
+    return (c=c.coherence, f=Vector(c.freq))
+end
+
+"""
+    s_fcoherence(signal1; fs)
+
+Calculate coherence (mean over all frequencies) between channels of `signal`.
+
+# Arguments
+
+- `signal1::Vector{Float64}`
+- `signal2::Vector{Float64}`
+- `fs::Int64`
+
+# Returns
+
+- `c::Array{Float64, 3}`: coherence
+- `f::Vector{Float64}`: frequencies
+"""
+function s2_fcoherence(signal1::Vector{Float64}, signal2::Vector{Float64}; fs::Int64)
+
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+    fs < 0 && throw(ArgumentError("fs must be > 0."))
+
+    signal = hcat(signal1, signal2)'
+    c = mt_coherence(signal, fs=fs)
+
+    return (c=c.coherence[1, 2, :], f=Vector(c.freq))
+end
+
+function s_cmp()
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 e10 = eeg_epochs(edf, epoch_len=5*256);
 eeg_keep_channel!(e10, channel=1:10)

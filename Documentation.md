@@ -2385,16 +2385,16 @@ Return frequency limits for a `band` range.
 
   * `band_frequency::Tuple{Real, Real}`
 
-<a id='NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_coherence`** &mdash; *Method*.
+<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_coherence(eeg1, eeg2)
+eeg_tcoherence(eeg1, eeg2)
 ```
 
-Calculate coherence between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
 
 **Arguments**
 
@@ -2403,18 +2403,21 @@ Calculate coherence between all channels of `eeg1` and `eeg2`.
 
 **Returns**
 
-  * `coherence::Union{Matrix{Float64}, Array{ComplexF64, 3}}`
+Named tuple containing:
 
-<a id='NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_coherence-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_coherence`** &mdash; *Method*.
+  * `c::Array{ComplexF64, 3}`: coherence
+  * `ic::Array{Float64, 3}`: imaginary part of coherence
+
+<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_coherence(eeg; channel1, channel2, epoch1, epoch2)
+eeg_tcoherence(eeg; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 **Arguments**
 
@@ -2426,7 +2429,10 @@ Calculate coherence between `channel1`/`epoch1` and `channel2` of `epoch2` of `e
 
 **Returns**
 
-  * `coh::Vector{ComplexF64}`
+Named tuple containing:
+
+  * `c::Vector{ComplexF64}`: coherence
+  * `ic::Vector{Float64}`: imaginary part of coherence
 
 <a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_freqs`** &mdash; *Method*.
@@ -3435,7 +3441,7 @@ Plot scaled multi-channel `signal`.
   * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: labels vector
   * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channels"`: y-axis label
+  * `ylabel::String="Channel"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -3487,7 +3493,7 @@ Plot multi-channel `signal`.
   * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: labels vector
   * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channels"`: y-axis label
+  * `ylabel::String="Channel"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -4311,7 +4317,7 @@ Plots spectrogram of `eeg` channel(s).
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `mono::Bool=false`: use color or grey palette
@@ -4918,7 +4924,7 @@ Plot values of `c` for selected channels of `eeg`.
   * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
   * `epoch::Int64`: number of epoch for which `c` should be plotted
-  * `xlabel::String="Channels"`: x-axis label
+  * `xlabel::String="Channel"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -6740,16 +6746,16 @@ Averages `signal1` and `signal2`.
 
   * `s_averaged::Vector{Float64}`
 
-<a id='NeuroJ.s2_coherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_coherence-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_coherence`** &mdash; *Method*.
+<a id='NeuroJ.s2_tcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_tcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.s2_tcoherence`** &mdash; *Method*.
 
 
 
 ```julia
-s2_coherence(signal1, signal2)
+s2_tcoherence(signal1, signal2)
 ```
 
-Calculate coherence between `signal1` and `signal2`.
+Calculate coherence (mean over time) between `signal1` and `signal2`.
 
 **Arguments**
 
@@ -6758,7 +6764,10 @@ Calculate coherence between `signal1` and `signal2`.
 
 **Returns**
 
-  * `coherence::Vector{ComplexF64}`
+Named tuple containing:
+
+  * `c::Vector{Float64}`: coherence
+  * `ic::Vector{Float64}`: imaginary part of coherence
 
 <a id='NeuroJ.s_pca-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_pca-Tuple{Array{Float64, 3}}'>#</a>
 **`NeuroJ.s_pca`** &mdash; *Method*.
@@ -7415,6 +7424,49 @@ Named tuple containing:
 
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
+
+<a id='NeuroJ.s_fcoherence-Tuple{AbstractArray}' href='#NeuroJ.s_fcoherence-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_fcoherence`** &mdash; *Method*.
+
+
+
+```julia
+s_fcoherence(signal; fs)
+```
+
+Calculate coherence (mean over all frequencies) between channels of `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`
+
+**Returns**
+
+  * `c::Array{Float64, 3}`: coherence
+  * `f::Vector{Float64}`: frequencies
+
+<a id='NeuroJ.s2_fcoherence-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s2_fcoherence-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.s2_fcoherence`** &mdash; *Method*.
+
+
+
+```julia
+s_fcoherence(signal1; fs)
+```
+
+Calculate coherence (mean over all frequencies) between channels of `signal`.
+
+**Arguments**
+
+  * `signal1::Vector{Float64}`
+  * `signal2::Vector{Float64}`
+  * `fs::Int64`
+
+**Returns**
+
+  * `c::Array{Float64, 3}`: coherence
+  * `f::Vector{Float64}`: frequencies
 
 
 <a id='NSTIM'></a>

@@ -203,7 +203,7 @@ Plot scaled multi-channel `signal`.
 - `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: labels vector
 - `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Channels"`: y-axis label
+- `ylabel::String="Channel"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -212,7 +212,7 @@ Plot scaled multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -337,7 +337,7 @@ Plot multi-channel `signal`.
 - `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: labels vector
 - `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Channels"`: y-axis label
+- `ylabel::String="Channel"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -346,7 +346,7 @@ Plot multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -2862,7 +2862,7 @@ Plots spectrogram of `eeg` channel(s).
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `mono::Bool=false`: use color or grey palette
@@ -2872,7 +2872,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -2967,7 +2967,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
             end
         end
     else
-        ylabel = "Channels"
+        ylabel = "Channel"
         xlabel = "Frequency [Hz]"
         s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
         norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
@@ -5079,7 +5079,7 @@ Plot values of `c` for selected channels of `eeg`.
 - `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
 - `epoch::Int64`: number of epoch for which `c` should be plotted
-- `xlabel::String="Channels"`: x-axis label
+- `xlabel::String="Channel"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -5089,7 +5089,7 @@ Plot values of `c` for selected channels of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channels", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channel", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     channel = _select_channels(eeg, channel, 0)
