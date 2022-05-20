@@ -66,7 +66,7 @@ p, f = s_psd(ones(10), fs=10)
 @test s_negentropy([1, 2, 3]) == -0.16602396751648252
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
-@test s2_tcoherence([1, 2], [3, 4]) == [5.25 - 0.0im; 0.25 + 0.0im]
+@test s2_tcoherence([1, 2], [3, 4]) == (c = [0.04166666666666667, 0.027777777777777776], ic = [0.07216878364870322, -0.0])
 p, w, m = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
 s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pc_m=m)

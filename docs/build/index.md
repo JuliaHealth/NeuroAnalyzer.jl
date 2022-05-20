@@ -7425,13 +7425,38 @@ Named tuple containing:
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
+<a id='NeuroJ.s_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.s_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.s_cmp`** &mdash; *Method*.
+
+
+
+```julia
+s_cmp(s1, s2; p, perm_n)
+```
+
+Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
+
+**Arguments**
+
+  * `s1::Array{Float64, 3}`: first array
+  * `s2::Array{Float64, 3}`: second array
+  * `p::Float64=0.05`: p-value
+  * `perm_n::Int64=1000`: number of permutations
+
+**Returns**
+
+Named tuple containing:
+
+  * `zmap::Array{Float64, 3}`: array of Z-values
+  * `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
+
 <a id='NeuroJ.s_fcoherence-Tuple{AbstractArray}' href='#NeuroJ.s_fcoherence-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_fcoherence`** &mdash; *Method*.
 
 
 
 ```julia
-s_fcoherence(signal; fs)
+s_fcoherence(signal; fs, frq)
 ```
 
 Calculate coherence (mean over all frequencies) between channels of `signal`.
@@ -7440,6 +7465,7 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 
   * `signal::AbstractArray`
   * `fs::Int64`
+  * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 **Returns**
 
@@ -7452,16 +7478,17 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 
 
 ```julia
-s_fcoherence(signal1; fs)
+s_fcoherence(signal1; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 ```
 
 Calculate coherence (mean over all frequencies) between channels of `signal`.
 
 **Arguments**
 
-  * `signal1::Vector{Float64}`
-  * `signal2::Vector{Float64}`
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
   * `fs::Int64`
+  * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 **Returns**
 

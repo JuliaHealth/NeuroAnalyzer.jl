@@ -275,7 +275,7 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test length(eeg_wspectrum(edf, frq_lim=(0, 20), frq_n=21)) == 2
 @test length(eeg_wspectrogram(edf, frq_lim=(0, 20), frq_n=21)) == 3
 
-c, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=2)
-@test size(c) == (19, 309760, 1)
+c, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
+@test length(c) == 262145
 
 true

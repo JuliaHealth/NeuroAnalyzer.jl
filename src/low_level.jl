@@ -3214,7 +3214,7 @@ function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, pe
 
     # threshold real data
     zmap = @. (spec_diff - mean_h0) / std_h0
-    heatmap(zmap, seriescolor=:grays)
+
     # threshold at p-value
     zmap_b = deepcopy(zmap)
     @. zmap_b[abs(zmap) < zval] = 0
@@ -3226,7 +3226,7 @@ function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, pe
 end
 
 """
-    s_fcoherence(signal; fs)
+    s_fcoherence(signal; fs, frq)
 
 Calculate coherence (mean over all frequencies) between channels of `signal`.
 
@@ -3234,195 +3234,66 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 
 - `signal::AbstractArray`
 - `fs::Int64`
+- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
 - `f::Vector{Float64}`: frequencies
 """
-function s_fcoherence(signal::AbstractArray; fs::Int64)
+function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     fs < 0 && throw(ArgumentError("fs must be > 0."))
     c = mt_coherence(signal, fs=fs)
+    f = Vector(c.freq)
+    c = c.coherence
+    if frq_lim !== nothing
+        frq_lim = tuple_order(frq_lim)
+        frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+        frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $fs."))
+        idx1 = vsearch(frq_lim[1], f)
+        idx2 = vsearch(frq_lim[2], f)
+        c = c[:, :, idx1:idx2]
+        f = f[idx1:idx2]
+    end
 
-    return (c=c.coherence, f=Vector(c.freq))
+    return (c=c, f=f)
 end
 
 """
-    s_fcoherence(signal1; fs)
+    s_fcoherence(signal1; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
 Calculate coherence (mean over all frequencies) between channels of `signal`.
 
 # Arguments
 
-- `signal1::Vector{Float64}`
-- `signal2::Vector{Float64}`
+- `signal1::AbstractArray`
+- `signal2::AbstractArray`
 - `fs::Int64`
+- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
 - `f::Vector{Float64}`: frequencies
 """
-function s2_fcoherence(signal1::Vector{Float64}, signal2::Vector{Float64}; fs::Int64)
+function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
     fs < 0 && throw(ArgumentError("fs must be > 0."))
 
     signal = hcat(signal1, signal2)'
     c = mt_coherence(signal, fs=fs)
-
-    return (c=c.coherence[1, 2, :], f=Vector(c.freq))
-end
-
-"""
-    s_cmp(s1, s2; p, perm_n)
-
-Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
-
-# Arguments
-
-- `s1::Array{Float64, 3}`: first array
-- `s2::Array{Float64, 3}`: second array
-- `p::Float64=0.05`: p-value
-- `perm_n::Int64=1000`: number of permutations
-
-# Returns
-
-Named tuple containing:
-- `zmap::Array{Float64, 3}`: array of Z-values
-- `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
-"""
-function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
-    size(s1) == size(s2) || throw(ArgumentError("Both arrays must have the same size"))
-
-    spec_diff = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
-    zval = abs(norminvcdf(p))
-    perm_n = 1000
-    spec_all = cat(s1, s2, dims=3)
-    perm_maps = zeros(size(s1, 1), size(s1, 2), perm_n)
-    epoch_n = size(spec_all, 3)
-    @inbounds @simd for perm_idx in 1:perm_n
-        rand_idx = sample(1:epoch_n, epoch_n, replace=false)
-        rand_spec = spec_all[:, :, rand_idx]
-        s2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
-        s1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
-        perm_maps[:, :, perm_idx] = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
+    f = Vector(c.freq)
+    c = c.coherence
+    if frq_lim !== nothing
+        frq_lim = tuple_order(frq_lim)
+        frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+        frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $fs."))
+        idx1 = vsearch(frq_lim[1], f)
+        idx2 = vsearch(frq_lim[2], f)
+        c = c[:, :, idx1:idx2]
+        f = f[idx1:idx2]
     end
-    mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
-    std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
-
-    # threshold real data
-    zmap = @. (spec_diff - mean_h0) / std_h0
-    heatmap(zmap, seriescolor=:grays)
-    # threshold at p-value
-    zmap_b = deepcopy(zmap)
-    @. zmap_b[abs(zmap) < zval] = 0
-    @. zmap_b[zmap_b != 0] = 1
-    zmap_b = Bool.(zmap_b)
-    zmap_b = map(x -> !x, zmap_b)
-
-    return (zmap=zmap, zmap_b=zmap_b)
+    return (c=c[1, 2, :], f=f)
 end
-
-"""
-    s_cmp(s1, s2; p, perm_n)
-
-Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
-
-# Arguments
-
-- `s1::Array{Float64, 3}`: first array
-- `s2::Array{Float64, 3}`: second array
-- `p::Float64=0.05`: p-value
-- `perm_n::Int64=1000`: number of permutations
-
-# Returns
-
-Named tuple containing:
-- `zmap::Array{Float64, 3}`: array of Z-values
-- `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
-"""
-function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
-    size(s1) == size(s2) || throw(ArgumentError("Both arrays must have the same size"))
-
-    spec_diff = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
-    zval = abs(norminvcdf(p))
-    perm_n = 1000
-    spec_all = cat(s1, s2, dims=3)
-    perm_maps = zeros(size(s1, 1), size(s1, 2), perm_n)
-    epoch_n = size(spec_all, 3)
-    @inbounds @simd for perm_idx in 1:perm_n
-        rand_idx = sample(1:epoch_n, epoch_n, replace=false)
-        rand_spec = spec_all[:, :, rand_idx]
-        s2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
-        s1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
-        perm_maps[:, :, perm_idx] = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
-    end
-    mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
-    std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
-
-    # threshold real data
-    zmap = @. (spec_diff - mean_h0) / std_h0
-    heatmap(zmap, seriescolor=:grays)
-    # threshold at p-value
-    zmap_b = deepcopy(zmap)
-    @. zmap_b[abs(zmap) < zval] = 0
-    @. zmap_b[zmap_b != 0] = 1
-    zmap_b = Bool.(zmap_b)
-    zmap_b = map(x -> !x, zmap_b)
-
-    return (zmap=zmap, zmap_b=zmap_b)
-end
-
-"""
-    s_cmp(s1, s2; p, perm_n)
-
-Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
-
-# Arguments
-
-- `s1::Array{Float64, 3}`: first array
-- `s2::Array{Float64, 3}`: second array
-- `p::Float64=0.05`: p-value
-- `perm_n::Int64=1000`: number of permutations
-
-# Returns
-
-Named tuple containing:
-- `zmap::Array{Float64, 3}`: array of Z-values
-- `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
-"""
-function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
-    size(s1) == size(s2) || throw(ArgumentError("Both arrays must have the same size"))
-
-    spec_diff = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
-    zval = abs(norminvcdf(p))
-    perm_n = 1000
-    spec_all = cat(s1, s2, dims=3)
-    perm_maps = zeros(size(s1, 1), size(s1, 2), perm_n)
-    epoch_n = size(spec_all, 3)
-    @inbounds @simd for perm_idx in 1:perm_n
-        rand_idx = sample(1:epoch_n, epoch_n, replace=false)
-        rand_spec = spec_all[:, :, rand_idx]
-        s2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
-        s1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
-        perm_maps[:, :, perm_idx] = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
-    end
-    mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
-    std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
-
-    # threshold real data
-    zmap = @. (spec_diff - mean_h0) / std_h0
-    heatmap(zmap, seriescolor=:grays)
-    # threshold at p-value
-    zmap_b = deepcopy(zmap)
-    @. zmap_b[abs(zmap) < zval] = 0
-    @. zmap_b[zmap_b != 0] = 1
-    zmap_b = Bool.(zmap_b)
-    zmap_b = map(x -> !x, zmap_b)
-
-    return (zmap=zmap, zmap_b=zmap_b)
-end
-
-

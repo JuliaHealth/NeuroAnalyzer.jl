@@ -2545,7 +2545,7 @@ function eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::
 end
 
 """
-    eeg_fcoherence(eeg1, eeg2)
+    eeg_fcoherence(eeg1, eeg2, frq_lim)
 
 Calculate coherence (mean over frequencies) between all channels of `eeg1` and `eeg2`.
 
@@ -2553,6 +2553,7 @@ Calculate coherence (mean over frequencies) between all channels of `eeg1` and `
 
 - `eeg1::NeuroJ.EEG`
 - `eeg2::NeuroJ.EEG`
+- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
 
@@ -2560,7 +2561,7 @@ Named tuple containing:
 - `c::Array{ComplexF64, 4}`: coherence
 - `f::Vector{Float64}`: frequencies
 """
-function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -2568,14 +2569,16 @@ function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     eeg_sr(eeg1) == eeg_sr(eeg2) || throw(ArgumentError("Sampling rate of EEG1 and EEG2 must be the same."))
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
-    _, f_tmp = s_fcoherence(eeg1.eeg_signals[1:2, :, 1], fs=eeg_sr(eeg))
+    _, f_tmp = s_fcoherence(eeg1.eeg_signals[1:2, :, 1], fs=eeg_sr(eeg1), frq_lim=frq_lim)
     c = zeros(channel_n, channel_n, length(f_tmp), epoch_n)
+    f = zeros(length(f_tmp))
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            s1 = @view eeg1.eeg_signals[channel_idx, :, epoch_idx]
-            s2 = @view eeg2.eeg_signals[channel_idx, :, epoch_idx]
-            s = hcat(s1, s2)'
-            c[:, :, :, epoch_idx], f = s_fcoherence(s, fs=eeg_sr(eeg1))
+        Threads.@threads for channel_idx1 in 1:channel_n
+            s1 = @view eeg1.eeg_signals[channel_idx1, :, epoch_idx]
+            for channel_idx2 in 1:channel_n
+                s2 = @view eeg2.eeg_signals[channel_idx2, :, epoch_idx]
+                c[channel_idx1, channel_idx2, :, epoch_idx], f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg1), frq_lim=frq_lim)
+            end
         end
     end
 
@@ -2583,7 +2586,7 @@ function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 end
 
 """
-    eeg_fcoherence(eeg; channel1, channel2, epoch1, epoch2)
+    eeg_fcoherence(eeg; channel1, channel2, epoch1, epoch2, frq_lim)
 
 Calculate coherence (mean over frequencies) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
@@ -2594,6 +2597,7 @@ Calculate coherence (mean over frequencies) between `channel1`/`epoch1` and `cha
 - `channel2::Int64`
 - `epoch1::Int64`
 - `epoch2::Int64`
+- `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
 
@@ -2601,7 +2605,7 @@ Named tuple containing:
 - `c::Array{ComplexF64, 3}`: coherence
 - `f::Vector{Float64}`: frequencies
 """
-function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     (channel1 < 0 || channel2 < 0 || epoch1 < 0 || epoch2 < 0) && throw(ArgumentError("channel1/epoch1/channel2/epoch2 must be > 0."))
@@ -2613,7 +2617,7 @@ function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch
 
     s1 = @view eeg.eeg_signals[channel1, :, epoch1]
     s2 = @view eeg.eeg_signals[channel2, :, epoch2]
-    c, f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg))
+    c, f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg), frq_lim=frq_lim)
 
-    return (c=c, ic=ic)
+    return (c=c, f=f)
 end

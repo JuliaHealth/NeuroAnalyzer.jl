@@ -391,33 +391,25 @@ plot(eeg_labels(edf), e, seriestype=:bar)
 Coherence over time:
 ```julia
 c, ic = eeg_tcoherence(edf1, edf2)
-hz, nyq = eeg_freqs(edf1)
-plot(hz, abs.(c[1, 1:length(hz)]), xlims=(0, 40))
+plot(c[2, 1:2560])
+plot(ic[2, 1:2560])
 
 edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
 eeg_labels(edf_alpha)
 # O1 vs O2
-c, ic = eeg_tcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=2)
-plot(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
-# Fp1 vs Fp2
-c, ic = eeg_tcoherence(edf_alpha, channel1=1, channel2=2, epoch1=1, epoch2=2)
-plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+c, ic = eeg_tcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1)
+plot(c[1:2560])
+plot(ic[1:2560])
 ```
 
 Coherence over frequencies:
 ```julia
 c, f = eeg_fcoherence(edf1, edf2)
-hz, nyq = eeg_freqs(edf1)
-plot(hz, abs.(m[1, 1:length(hz)]), xlims=(0, 40))
+plot(f[1:2560], c[1, 2, 1:2560])
 
-edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
-eeg_labels(edf_alpha)
-# O1 vs O2
-c, f = eeg_tcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=2)
-plot(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
-# Fp1 vs Fp2
-c, f = eeg_tcoherence(edf_alpha, channel1=1, channel2=2, epoch1=1, epoch2=2)
-plot!(hz, abs.(m[1:length(hz)]), xlims=(0, 20))
+# O1 vs O2, alpha range
+c, f = eeg_fcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1, frq_lim=eeg_band(edf, band=:alpha))
+plot(f, c)
 ```
 
 Generate PCA:
