@@ -361,6 +361,7 @@ s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
 s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
 s_tkeo(signal::AbstractArray)
 s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6)
+s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
 s_fcoherence(signal::AbstractArray; fs::Int64)
 s2_fcoherence(signal1::Vector{Float64}, signal2::Vector{Float64}; fs::Int64)
 ```

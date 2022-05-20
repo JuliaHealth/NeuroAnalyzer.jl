@@ -21,6 +21,7 @@ using Plots.PlotMeasures
 using Polynomials
 using ScatteredInterpolation
 using Simpson
+using StatsFuns
 using StatsKit
 using StatsPlots
 using Wavelets
@@ -137,6 +138,7 @@ export s_gfilter
 export s_ghspectrogram
 export s_tkeo
 export s_wspectrum
+export s_cmp
 export s_fcoherence
 export s2_fcoherence
 

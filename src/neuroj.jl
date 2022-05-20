@@ -26,6 +26,7 @@ function neuroj_version()
                          "Polynomials",
                          "ScatteredInterpolation",
                          "Simpson",
+                         "StatsFuns",
                          "StatsKit",
                          "StatsPlots",
                          "Wavelets"]
