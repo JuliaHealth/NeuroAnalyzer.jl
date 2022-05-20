@@ -96,5 +96,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
 @test length(s_wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
 @test length(s_wspectrum(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
+@test length(s_cmp(ones(10,10,10), zeros(10,10,10))) == 2
 
 true

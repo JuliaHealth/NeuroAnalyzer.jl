@@ -44,6 +44,7 @@ The following packages are required:
 - Polynomials
 - ScatteredInterpolation
 - [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
+- StatsFuns
 - StatsKit
 - StatsPlots
 - Wavelets
@@ -177,7 +178,7 @@ EEG:
 - automated cleaning of artifacts
 - bad channel marking / rejection
 - bad epoch marking / rejection
-- signals/PSD/spectrograms comparison
+- signals/PSD comparison
 - more channel location formats
 - io: import from EDF+, BDF and other formats
 - channel interpolation: manual, automated
