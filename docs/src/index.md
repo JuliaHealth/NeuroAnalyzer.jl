@@ -255,8 +255,9 @@ eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int6
 eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{Float64}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
 eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
-plot_psd_3d(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", title="", ylabel="", title="", mono::Bool=false, kwargs...)
-eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
+plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", title="", ylabel="", title="", mono::Bool=false, kwargs...)
+plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", title="", ylabel="", title="", mono::Bool=false, kwargs...)
+eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, type::Symbol=:w, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 ```
 
 ## Low level functions

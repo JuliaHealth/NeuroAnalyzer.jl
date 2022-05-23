@@ -6060,7 +6060,7 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
 end
 
 """
-    plot_psd_3d(signal; <keyword arguments>)
+    plot_psd_3dw(signal; <keyword arguments>)
 
 Plot 3-d waterfall plot of `signal` channels power spectrum density.
 
@@ -6083,7 +6083,7 @@ Plot 3-d waterfall plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_3d(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", zlabel::String="", title="", mono::Bool=false, kwargs...)
+function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", zlabel::String="", title="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -6171,6 +6171,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 - `channel::Int64`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `type::Symbol=:w`: plot type: :w waterfall, :s surface
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -6186,11 +6187,12 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, type::Symbol=:w, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    type in [:w, :s] || throw(ArgumentError("type must be :w or :s."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    _check_channels(eeg, channel)
 
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -6240,20 +6242,115 @@ function eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRan
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
     title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $channel, epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = plot_psd_3d(signal,
-                    fs=fs,
-                    norm=norm,
-                    frq_lim=frq_lim,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    zlabel=zlabel,
-                    mw=mw,
-                    mt=mt,
-                    title=title,
-                    mono=mono;
-                    kwargs...)
+    if type ===:w
+        p = plot_psd_3dw(signal,
+                         fs=fs,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         mw=mw,
+                         mt=mt,
+                         title=title,
+                         mono=mono;
+                         kwargs...)
+    else
+        p = plot_psd_3ds(signal,
+                         fs=fs,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         zlabel=zlabel,
+                         mw=mw,
+                         mt=mt,
+                         title=title,
+                         mono=mono;
+                         kwargs...)
+    end
 
     plot(p)
+
+    return p
+end
+
+"""
+    plot_psd_3ds(signal; <keyword arguments>)
+
+Plot 3-d surface plot of `signal` channels power spectrum density.
+
+# Arguments
+
+- `signal::Matrix{Float64}`
+- `fs::Int64`: sampling frequency
+- `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]"`: x-axis label
+- `ylabel="Channel"`: y-axis label
+- `zlabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", zlabel::String="", title="", mono::Bool=false, kwargs...)
+
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
+    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+    frq_lim = tuple_order(frq_lim)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+
+    mono == true ? palette = :grays : palette = :darktest
+
+    zlabel == "" && (norm == true ? zlabel = "Power [dB]" : zlabel = "Power [μV^2/Hz]")
+
+    if mw == false
+        p_tmp, f_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
+    else
+        p_tmp, f_tmp = s_wspectrum(signal[1, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
+    end
+
+    channel_n = size(signal, 1)
+    s_pow = zeros(channel_n, length(p_tmp))
+    s_frq = zeros(length(f_tmp))
+    for channel_idx in 1:channel_n
+        s = @view signal[channel_idx, :]
+        if mw == false
+            s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
+        else
+            s_pow[channel_idx, :], s_frq = s_wspectrum(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
+        end
+    end
+
+    channel = 1:channel_n
+
+    p = plot(s_frq,
+             channel,
+             s_pow,
+             seriestype=:surface,
+             xlabel=xlabel,
+             ylabel=ylabel,
+             zlabel=zlabel,
+             xlims=frq_lim,
+             yticks=collect(1:channel_n),
+             legend=false,
+             title=title,
+             palette=palette,
+             titlefontsize=10,
+             xlabelfontsize=8,
+             ylabelfontsize=8,
+             xtickfontsize=4,
+             ytickfontsize=4;
+             kwargs...)
 
     return p
 end

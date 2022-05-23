@@ -591,6 +591,12 @@ eeg_plot_save(p, file_name="images/edf_psd.png")
 
 ![edf topo :amp](images/edf_psd.png)
 
+Plot PSD 3d:
+```julia
+p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10)
+eeg_plot_save(p, file_name="images/edf_psd_3d.png")
+```
+
 Topographical plots:
 ```julia
 p = eeg_plot_signal_topo(edf, offset=1, len=2560, frq_lim=(0, 20))

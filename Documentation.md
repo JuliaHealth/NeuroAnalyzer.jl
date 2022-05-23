@@ -5207,16 +5207,46 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd_3d-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3d-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_3d`** &mdash; *Method*.
+<a id='NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.plot_psd_3dw`** &mdash; *Method*.
 
 
 
 ```julia
-plot_psd_3d(signal; <keyword arguments>)
+plot_psd_3dw(signal; <keyword arguments>)
 ```
 
 Plot 3-d waterfall plot of `signal` channels power spectrum density.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.plot_psd_3ds`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_3ds(signal; <keyword arguments>)
+```
+
+Plot 3-d surface plot of `signal` channels power spectrum density.
 
 **Arguments**
 
@@ -5255,6 +5285,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
   * `channel::Int64`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `type::Symbol=:w`: plot type: :w waterfall, :s surface
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
