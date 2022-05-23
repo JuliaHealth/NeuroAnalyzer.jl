@@ -138,9 +138,10 @@ export s_gfilter
 export s_ghspectrogram
 export s_tkeo
 export s_wspectrum
-export s_cmp
+export a2_cmp
 export s_fcoherence
 export s2_fcoherence
+export a2_l1
 
 include("eeg_io.jl")
 export eeg_export_csv

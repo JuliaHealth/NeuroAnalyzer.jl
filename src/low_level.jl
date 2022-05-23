@@ -3176,14 +3176,14 @@ function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_l
 end
 
 """
-    s_cmp(s1, s2; p, perm_n)
+    a2_cmp(a1, a2; p, perm_n)
 
-Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using permutation based statistic.
 
 # Arguments
 
-- `s1::Array{Float64, 3}`: first array
-- `s2::Array{Float64, 3}`: second array
+- `a1::Array{Float64, 3}`: first array
+- `a2::Array{Float64, 3}`: second array
 - `p::Float64=0.05`: p-value
 - `perm_n::Int64=1000`: number of permutations
 
@@ -3193,21 +3193,21 @@ Named tuple containing:
 - `zmap::Array{Float64, 3}`: array of Z-values
 - `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
-function s_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
-    size(s1) == size(s2) || throw(ArgumentError("Both arrays must have the same size"))
+function a2_cmp(a1::Array{Float64, 3}, a2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
+    size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
 
-    spec_diff = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
+    spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
     zval = abs(norminvcdf(p))
     perm_n = 1000
-    spec_all = cat(s1, s2, dims=3)
-    perm_maps = zeros(size(s1, 1), size(s1, 2), perm_n)
+    spec_all = cat(a1, a2, dims=3)
+    perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
     epoch_n = size(spec_all, 3)
     @inbounds @simd for perm_idx in 1:perm_n
         rand_idx = sample(1:epoch_n, epoch_n, replace=false)
         rand_spec = spec_all[:, :, rand_idx]
-        s2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
-        s1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
-        perm_maps[:, :, perm_idx] = dropdims(mean(s2, dims=3) .- mean(s1, dims=3), dims=3)
+        a2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
+        a1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
+        perm_maps[:, :, perm_idx] = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
     end
     mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
     std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
@@ -3296,4 +3296,27 @@ function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64
         f = f[idx1:idx2]
     end
     return (c=c[1, 2, :], f=f)
+end
+
+"""
+    a2_l1(a1, a2)
+
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) distance.
+
+# Arguments
+
+- `a1::Array{Float64, 3}`: first array
+- `a2::AbstractArray`: second array
+
+# Returns
+
+- `l1::Float64`
+"""
+function a2_l1(a1::AbstractArray, a2::AbstractArray)
+
+    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+
+    l1 = sum(abs.(a1 .- a2))
+
+    return l1
 end
