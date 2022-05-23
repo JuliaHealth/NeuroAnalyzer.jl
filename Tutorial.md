@@ -596,6 +596,7 @@ Plot PSD 3d:
 p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10)
 eeg_plot_save(p, file_name="images/edf_psd_3d.png")
 ```
+![](images/edf_psd_3d.png)
 
 Topographical plots:
 ```julia
