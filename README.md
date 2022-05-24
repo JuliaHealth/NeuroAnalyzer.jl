@@ -131,6 +131,7 @@ EEG:
 - cross-frequency phase-amplitude coupling
 - add edge padding for filters
 - ITPC topoplot
+- non-phase-locked part of the signal (= total - phase-locked)
 - phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
 - multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
 - simple convolution bandpass filter for data analysis

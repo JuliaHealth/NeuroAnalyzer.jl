@@ -96,8 +96,10 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
 @test length(s_wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
 @test length(s_wspectrum(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
-@test length(s_cmp(ones(10,10,10), zeros(10,10,10))) == 2
+@test length(a2_cmp(ones(10,10,10), zeros(10,10,10))) == 2
 @test length(s_fcoherence(ones(2, 10), fs=1)) == 2
 @test length(s2_fcoherence(ones(10), ones(10), fs=1)) == 2
+@test a2_l1(ones(10,10,10), zeros(10,10,10)) == 1000.0
+@test a2_l2(ones(10,10,10), zeros(10,10,10)) == 31.622776601683793
 
 true

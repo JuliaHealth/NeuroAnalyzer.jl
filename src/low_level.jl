@@ -3320,3 +3320,26 @@ function a2_l1(a1::AbstractArray, a2::AbstractArray)
 
     return l1
 end
+
+"""
+    a2_l2(a1, a2)
+
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) distance.
+
+# Arguments
+
+- `a1::Array{Float64, 3}`: first array
+- `a2::AbstractArray`: second array
+
+# Returns
+
+- `l2::Float64`
+"""
+function a2_l2(a1::AbstractArray, a2::AbstractArray)
+
+    size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+
+    l2 = sqrt(sum((a1 .- a2).^2))
+
+    return l2
+end

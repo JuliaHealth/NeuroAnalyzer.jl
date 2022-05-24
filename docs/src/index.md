@@ -366,6 +366,7 @@ a2_cmp(s1::Array{Float64, 3}, s2::Array{Float64, 3}; p::Float64=0.05, perm_n::In
 s_fcoherence(signal::AbstractArray; fs::Int64)
 s2_fcoherence(signal1::Vector{Float64}, signal2::Vector{Float64}; fs::Int64)
 a2_l1(a1::AbstractArray, a2::AbstractArray)
+a2_l2(a1::AbstractArray, a2::AbstractArray)
 ```
 
 ## NSTIM
