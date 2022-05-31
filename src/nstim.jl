@@ -31,7 +31,7 @@ function tes_dose(current::Real, pad_area::Real, duration::Int64)
     
     charge = (current / 1_000) * duration
     current_density = (current / 1_000) / (pad_area / 1_000)
-    charge_density = (current / 1_000) / (pad_area / 10_000)
+    charge_density = (charge / 1_000) / (pad_area / 1_000)
     
     return charge, current_density, charge_density
 end
