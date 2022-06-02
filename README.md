@@ -16,6 +16,8 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ```
 using Pkg
+Pkg.add("NeuroJ.jl")
+# or
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 Pkg.instantiate()
 ```
@@ -43,11 +45,39 @@ The following packages are required:
 - Plots
 - Polynomials
 - ScatteredInterpolation
-- [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
+- Simpson
 - StatsFuns
 - StatsKit
 - StatsPlots
 - Wavelets
+
+```julia
+import Pkg
+NeuroJ_requirements = ["CSV",
+                       "CubicSplines",
+                       "DataFrames",
+                       "Distances",
+                       "DSP",
+                       "FFTW",
+                       "FindPeaks1D",
+                       "HypothesisTests",
+                       "InformationMeasures",
+                       "Interpolations",
+                       "JLD2",
+                       "LinearAlgebra",
+                       "Loess",
+                       "MultivariateStats",
+                       "Pkg",
+                       "Plots",
+                       "Polynomials",
+                       "ScatteredInterpolation",
+                       "Simpson",
+                       "StatsFuns",
+                       "StatsKit",
+                       "StatsPlots",
+                       "Wavelets"]
+Pkg.add(NeuroJ_requirements)
+```
 
 NeuroJ.jl will be 100% Julia based.
 
