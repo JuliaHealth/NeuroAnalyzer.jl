@@ -143,6 +143,7 @@ export s_fcoherence
 export s2_fcoherence
 export a2_l1
 export a2_l2
+export s_cums
 
 include("eeg_io.jl")
 export eeg_export_csv

@@ -367,6 +367,8 @@ s_fcoherence(signal::AbstractArray; fs::Int64)
 s2_fcoherence(signal1::Vector{Float64}, signal2::Vector{Float64}; fs::Int64)
 a2_l1(a1::AbstractArray, a2::AbstractArray)
 a2_l2(a1::AbstractArray, a2::AbstractArray)
+s_cums(signal::Vector{Float64})
+s_cums(signal::Array{Float64, 3})
 ```
 
 ## NSTIM

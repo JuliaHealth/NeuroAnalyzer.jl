@@ -2,13 +2,13 @@
 
 Welcome fellow researcher!
 
-NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
+NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
 NeuroJ.jl contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroJ.jl functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroJ.jl particularly useful for processing large amounts of research data.
 
 NeuroJ.jl is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 
-Initially NeuroJ.jl will be focused on resting-state EEG analysis, but ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and elastic environment for EEG/MRI/NIRS/NIBS analyses.
+Currently NeuroJ.jl is focused on resting-state EEG analysis, but ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS analyses.
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
@@ -16,7 +16,8 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ```
 using Pkg
-Pkg.add("NeuroJ.jl")
+Pkg.add("NeuroJ")
+Pkg.instantiate()
 # or
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 Pkg.instantiate()

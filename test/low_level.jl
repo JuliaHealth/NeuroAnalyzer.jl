@@ -101,5 +101,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test length(s2_fcoherence(ones(10), ones(10), fs=1)) == 2
 @test a2_l1(ones(10,10,10), zeros(10,10,10)) == 1000.0
 @test a2_l2(ones(10,10,10), zeros(10,10,10)) == 31.622776601683793
+@test s_cums(ones(10)) == 1:10
+@test s_cums(zeros(2,2,2)) == zeros(2,2,2)
 
 true
