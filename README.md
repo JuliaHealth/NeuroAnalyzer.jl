@@ -22,6 +22,10 @@ Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 Pkg.instantiate()
 ```
 
+There are two branches of NeuroJ.jl:
+- stable: released once per month, recommended
+- devel: a rolling release model
+
 ## Requirements
 
 Julia version ≥ 1.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroJ.jl is only tested against it.
@@ -51,6 +55,7 @@ The following packages are required:
 - StatsPlots
 - Wavelets
 
+To install dependencies manually:
 ```julia
 import Pkg
 NeuroJ_requirements = ["CSV",
@@ -79,7 +84,7 @@ NeuroJ_requirements = ["CSV",
 Pkg.add(NeuroJ_requirements)
 ```
 
-NeuroJ.jl will be 100% Julia based.
+Wherever possible, NeuroJ.jl will be 100% Julia based. If required, external open-source applications will be called for certain tasks.
 
 ## General remarks
 
@@ -90,6 +95,7 @@ EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are
 Functions name prefix:
 - `eeg_` functions taking EEG object as an argument
 - `eeg_plot_` plotting functions
+There are also low level functions operating on single-/multi-channel signal vector/matrix/array (`s_` and `s2_`).
 
 The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array)
 
@@ -106,7 +112,7 @@ mutable struct EEG
 end
 ```
 
-Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object, e.g. `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
+Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
 ## Documentation
 
