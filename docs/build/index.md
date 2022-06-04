@@ -6943,7 +6943,7 @@ Named tuple containing:
 
 
 ```julia
-s_detect_epoch_flat(signal, threshold=0.1)
+s_detect_epoch_flat(signal)
 ```
 
 Detect bad `signal` epochs based on: flat channel(s)
@@ -7456,21 +7456,21 @@ Named tuple containing:
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroJ.s_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.s_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_cmp`** &mdash; *Method*.
+<a id='NeuroJ.a2_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.a2_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.a2_cmp`** &mdash; *Method*.
 
 
 
 ```julia
-s_cmp(s1, s2; p, perm_n)
+a2_cmp(a1, a2; p, perm_n)
 ```
 
-Compare two 3-dimensional arrays `s1` and `s2` (e.g. two spectrograms), using permutation based statistic.
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using permutation based statistic.
 
 **Arguments**
 
-  * `s1::Array{Float64, 3}`: first array
-  * `s2::Array{Float64, 3}`: second array
+  * `a1::Array{Float64, 3}`: first array
+  * `a2::Array{Float64, 3}`: second array
   * `p::Float64=0.05`: p-value
   * `perm_n::Int64=1000`: number of permutations
 
@@ -7525,6 +7525,84 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 
   * `c::Array{Float64, 3}`: coherence
   * `f::Vector{Float64}`: frequencies
+
+<a id='NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.a2_l1`** &mdash; *Method*.
+
+
+
+```julia
+a2_l1(a1, a2)
+```
+
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) distance.
+
+**Arguments**
+
+  * `a1::Array{Float64, 3}`: first array
+  * `a2::AbstractArray`: second array
+
+**Returns**
+
+  * `l1::Float64`
+
+<a id='NeuroJ.a2_l2-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.a2_l2-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.a2_l2`** &mdash; *Method*.
+
+
+
+```julia
+a2_l2(a1, a2)
+```
+
+Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) distance.
+
+**Arguments**
+
+  * `a1::Array{Float64, 3}`: first array
+  * `a2::AbstractArray`: second array
+
+**Returns**
+
+  * `l2::Float64`
+
+<a id='NeuroJ.s_cums-Tuple{Vector{Float64}}' href='#NeuroJ.s_cums-Tuple{Vector{Float64}}'>#</a>
+**`NeuroJ.s_cums`** &mdash; *Method*.
+
+
+
+```julia
+s_cums(signal)
+```
+
+Calculate cumulative sum of the `signal`.
+
+**Arguments**
+
+  * `signal::Vector{Float64}`
+
+**Returns**
+
+  * `signal_cs::Vector{Float64}`
+
+<a id='NeuroJ.s_cums-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_cums-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroJ.s_cums`** &mdash; *Method*.
+
+
+
+```julia
+s_cums(signal)
+```
+
+Calculate cumulative sum of the `signal`.
+
+**Arguments**
+
+  * `signal::Array{Float64, 3}`
+
+**Returns**
+
+  * `signal_cs::Array{Float64, 3}`
 
 
 <a id='NSTIM'></a>

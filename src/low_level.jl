@@ -410,7 +410,10 @@ Calculate Root Mean Square of `signal`.
 """
 function s_rms(signal::Vector{<:Real})
 
-    return norm(signal) / sqrt(length(signal))
+    # rms = sqrt(mean(signal.^2))    
+    rms = norm(signal) / sqrt(length(signal))
+
+    return rms
 end
 
 """
@@ -2403,7 +2406,7 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bo
 end
 
 """
-    s_detect_epoch_flat(signal, threshold=0.1)
+    s_detect_epoch_flat(signal)
 
 Detect bad `signal` epochs based on: flat channel(s)
 
@@ -2423,7 +2426,8 @@ function s_detect_epoch_flat(signal::Array{Float64, 3})
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            c_tmp_diff = abs.(diff(signal[channel_idx, :, epoch_idx]))
+            s = @view signal[channel_idx, :, epoch_idx]
+            c_tmp_diff = abs.(diff(s))
             # add tolerance around zero μV
             sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch_idx] += 1)
         end
@@ -3342,4 +3346,52 @@ function a2_l2(a1::AbstractArray, a2::AbstractArray)
     l2 = sqrt(sum((a1 .- a2).^2))
 
     return l2
+end
+
+"""
+    s_cums(signal)
+
+Calculate cumulative sum of the `signal`.
+
+# Arguments
+
+- `signal::Vector{Float64}`
+
+# Returns
+
+- `signal_cs::Vector{Float64}`
+"""
+function s_cums(signal::Vector{Float64})
+    
+    signal_cs = cumsum(signal)
+
+    return signal_cs
+end
+
+"""
+    s_cums(signal)
+
+Calculate cumulative sum of the `signal`.
+
+# Arguments
+
+- `signal::Array{Float64, 3}`
+
+# Returns
+
+- `signal_cs::Array{Float64, 3}`
+"""
+function s_cums(signal::Array{Float64, 3})
+    
+    channel_n, _, epoch_n = size(signal)
+    signal_cs = similar(signal)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view signal[channel_idx, :, epoch_idx]
+            signal_cs[channel_idx, :, epoch_idx] = cumsum(s)
+        end
+    end
+
+    return signal_cs
 end
