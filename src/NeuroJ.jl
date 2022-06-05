@@ -144,6 +144,9 @@ export s2_fcoherence
 export a2_l1
 export a2_l2
 export s_cums
+export s_gfp
+export s_gfp_norm
+export s2_diss
 
 include("eeg_io.jl")
 export eeg_export_csv

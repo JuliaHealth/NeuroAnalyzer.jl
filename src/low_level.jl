@@ -3309,7 +3309,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1
 
 # Arguments
 
-- `a1::Array{Float64, 3}`: first array
+- `a1::AbstractArray`: first array
 - `a2::AbstractArray`: second array
 
 # Returns
@@ -3332,7 +3332,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2
 
 # Arguments
 
-- `a1::Array{Float64, 3}`: first array
+- `a1::AbstractArray`: first array
 - `a2::AbstractArray`: second array
 
 # Returns
@@ -3355,13 +3355,13 @@ Calculate cumulative sum of the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}`
+- `signal::Vector{<:Real}`
 
 # Returns
 
 - `signal_cs::Vector{Float64}`
 """
-function s_cums(signal::Vector{Float64})
+function s_cums(signal::Vector{<:Real})
     
     signal_cs = cumsum(signal)
 
@@ -3375,13 +3375,13 @@ Calculate cumulative sum of the `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::Array{<:Real, 3}`
 
 # Returns
 
 - `signal_cs::Array{Float64, 3}`
 """
-function s_cums(signal::Array{Float64, 3})
+function s_cums(signal::Array{<:Real, 3})
     
     channel_n, _, epoch_n = size(signal)
     signal_cs = similar(signal)
@@ -3403,14 +3403,17 @@ Perform detrended fluctuation analysis of the `signal`.
 
 # Arguments
 
-- `signal::Vector{Float64}`
+- `signal::Array{<:Real, 3}`
 
 # Returns
 
 - `signal_cs::Vector{Float64}`
 """
-function s_dfa(signal::Array{Float64, 3}; fs::Int64)
+function s_dfa(signal::Array{<:Real, 3}; fs::Int64)
     
+    # INCOMPLETE, DOES NOT WORK, DO NOT USE
+    # also, eeg_dfa() is missing
+
     signal_dm = s_demean(signal)
     signal_cs = s_cums(signal_dm)
 
@@ -3450,5 +3453,74 @@ function s_dfa(signal::Array{Float64, 3}; fs::Int64)
     scatter(scale_order, epoch_rms)
     atilde = pinv(log.(scale_order)) * log.(epoch_rms)
     plot!(atilde .* log.(scale_order))
+
     return signal_cs
+end
+
+"""
+    s_gfp(signal)
+
+Calculate GFP (Global Field Power) of the `signal`.
+
+# Arguments
+
+- `signal::Vector{<:Real}`
+
+# Returns
+
+- `gfp::Float64`
+"""
+function s_gfp(signal::Vector{<:Real})
+    
+    gfp = sum(signal.^2) / length(signal)
+
+    return gfp
+end
+
+"""
+    s_gfp_norm(signal)
+
+Calculate `signal` values normalized for GFP (Global Field Power) of that signal.
+
+# Arguments
+
+- `signal::Vector{<:Real}`
+
+# Returns
+
+- `gfp_norm::Float64`
+"""
+function s_gfp_norm(signal::Vector{<:Real})
+    
+    gfp = s_gfp(signal)
+    gfp_norm = signal ./ gfp
+
+    return gfp_norm
+end
+
+"""
+    s2_diss(signal1, signal2)
+
+Calculate DISS (global dissimilarity) and spatial correlation between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::Vector{<:Real}`
+- `signal2::Vector{<:Real}`
+
+# Returns
+
+Named tuple containing:
+- `diss::Float64`: global dissimilarity
+- `c::Float64`: spatial correlation
+"""
+function s2_diss(signal1::Vector{<:Real}, signal2::Vector{<:Real})
+    
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
+    gfp_norm1 = s_gfp_norm(signal1)
+    gfp_norm2 = s_gfp_norm(signal2)
+    diss = sqrt(sum((gfp_norm1 .- gfp_norm2).^2) / length(signal1))
+    c = 0.5 * (2 - diss^2)
+
+    return (diss=diss, c=c)
 end
