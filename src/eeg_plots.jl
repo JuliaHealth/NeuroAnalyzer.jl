@@ -6354,3 +6354,21 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
 
     return p
 end
+
+function eeg_plot_plots_topo()
+    # PSD
+    x1 = rand(256)
+    x2 = rand(256)
+    vline([0], ylims=(0, 1), lc=:grey)
+    hline!([0], xlims=(0, 256), lc=:grey)
+    plot!(x1, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
+    plot!(x2, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
+
+    # signal
+    x1 = rand(-2:2, 256) .* rand(256)
+    x2 = rand(-2:2, 256) .* rand(256)
+    vline([0], lc=:grey)
+    hline!([0], xlims=(0, 256), lc=:grey)
+    plot!(x1, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
+    plot!(x2, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
+end

@@ -1,7 +1,7 @@
 name = "NeuroJ"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
-version = "2022.06"
+version = "2022.6.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -15,6 +15,8 @@ FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 FIRLSFilterDesign = "1d969ca1-ee82-491a-b198-7f2f63a25c18"
 FindPeaks1D = "d8961e24-b28b-4efb-8e50-1c680b9a7431"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
+ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 InformationMeasures = "96684042-fbdc-5399-9b8e-d34e539a126c"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
