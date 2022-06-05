@@ -149,6 +149,8 @@ General:
 - Pluto interface
 
 EEG:
+- calculate difference between channels
+- topoplot of which electrode at a given time exhibits statistically significant difference between two signals
 - check where pad0 is not used
 - add s_hspectrum() and s_wspectrum() for PSD plots
 - detect artifacts using TKEO
