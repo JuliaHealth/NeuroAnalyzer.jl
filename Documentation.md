@@ -2394,7 +2394,7 @@ Return frequency limits for a `band` range.
 eeg_tcoherence(eeg1, eeg2)
 ```
 
-Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between all channels of `eeg1` and `eeg2`.
 
 **Arguments**
 
@@ -2405,7 +2405,8 @@ Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
 
 Named tuple containing:
 
-  * `c::Array{ComplexF64, 3}`: coherence
+  * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
   * `ic::Array{Float64, 3}`: imaginary part of coherence
 
 <a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}'>#</a>
@@ -2417,7 +2418,7 @@ Named tuple containing:
 eeg_tcoherence(eeg; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 **Arguments**
 
@@ -2431,7 +2432,8 @@ Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` 
 
 Named tuple containing:
 
-  * `c::Vector{ComplexF64}`: coherence
+  * `c::Vector{Float64}`: coherence
+  * `msc::Vector{Float64}`: MSC
   * `ic::Vector{Float64}`: imaginary part of coherence
 
 <a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
@@ -6786,7 +6788,7 @@ Averages `signal1` and `signal2`.
 s2_tcoherence(signal1, signal2)
 ```
 
-Calculate coherence (mean over time) between `signal1` and `signal2`.
+Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `signal1` and `signal2`.
 
 **Arguments**
 
@@ -6798,6 +6800,7 @@ Calculate coherence (mean over time) between `signal1` and `signal2`.
 Named tuple containing:
 
   * `c::Vector{Float64}`: coherence
+  * `msc::Vector{Float64}`: magnitude-squares coherence
   * `ic::Vector{Float64}`: imaginary part of coherence
 
 <a id='NeuroJ.s_pca-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_pca-Tuple{Array{Float64, 3}}'>#</a>
@@ -7456,7 +7459,7 @@ Named tuple containing:
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroJ.a2_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.a2_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+<a id='NeuroJ.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}' href='#NeuroJ.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}'>#</a>
 **`NeuroJ.a2_cmp`** &mdash; *Method*.
 
 
@@ -7469,8 +7472,8 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using pe
 
 **Arguments**
 
-  * `a1::Array{Float64, 3}`: first array
-  * `a2::Array{Float64, 3}`: second array
+  * `a1::Array{<:Real, 3}`: first array
+  * `a2::Array{<:Real, 3}`: second array
   * `p::Float64=0.05`: p-value
   * `perm_n::Int64=1000`: number of permutations
 
@@ -7490,7 +7493,7 @@ Named tuple containing:
 s_fcoherence(signal; fs, frq)
 ```
 
-Calculate coherence (mean over all frequencies) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal`.
 
 **Arguments**
 
@@ -7501,18 +7504,19 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 **Returns**
 
   * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
   * `f::Vector{Float64}`: frequencies
 
-<a id='NeuroJ.s2_fcoherence-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s2_fcoherence-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+<a id='NeuroJ.s2_fcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_fcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
 **`NeuroJ.s2_fcoherence`** &mdash; *Method*.
 
 
 
 ```julia
-s_fcoherence(signal1; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+s2_fcoherence(signal1, signal2; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 ```
 
-Calculate coherence (mean over all frequencies) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal1` and `signal2`.
 
 **Arguments**
 
@@ -7524,6 +7528,7 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 **Returns**
 
   * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
   * `f::Vector{Float64}`: frequencies
 
 <a id='NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}'>#</a>
@@ -7539,7 +7544,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1
 
 **Arguments**
 
-  * `a1::Array{Float64, 3}`: first array
+  * `a1::AbstractArray`: first array
   * `a2::AbstractArray`: second array
 
 **Returns**
@@ -7559,14 +7564,14 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2
 
 **Arguments**
 
-  * `a1::Array{Float64, 3}`: first array
+  * `a1::AbstractArray`: first array
   * `a2::AbstractArray`: second array
 
 **Returns**
 
   * `l2::Float64`
 
-<a id='NeuroJ.s_cums-Tuple{Vector{Float64}}' href='#NeuroJ.s_cums-Tuple{Vector{Float64}}'>#</a>
+<a id='NeuroJ.s_cums-Tuple{Vector{<:Real}}' href='#NeuroJ.s_cums-Tuple{Vector{<:Real}}'>#</a>
 **`NeuroJ.s_cums`** &mdash; *Method*.
 
 
@@ -7579,13 +7584,13 @@ Calculate cumulative sum of the `signal`.
 
 **Arguments**
 
-  * `signal::Vector{Float64}`
+  * `signal::Vector{<:Real}`
 
 **Returns**
 
   * `signal_cs::Vector{Float64}`
 
-<a id='NeuroJ.s_cums-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_cums-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroJ.s_cums-Tuple{Array{<:Real, 3}}' href='#NeuroJ.s_cums-Tuple{Array{<:Real, 3}}'>#</a>
 **`NeuroJ.s_cums`** &mdash; *Method*.
 
 
@@ -7598,11 +7603,72 @@ Calculate cumulative sum of the `signal`.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::Array{<:Real, 3}`
 
 **Returns**
 
   * `signal_cs::Array{Float64, 3}`
+
+<a id='NeuroJ.s_gfp-Tuple{Vector{<:Real}}' href='#NeuroJ.s_gfp-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.s_gfp`** &mdash; *Method*.
+
+
+
+```julia
+s_gfp(signal)
+```
+
+Calculate GFP (Global Field Power) of the `signal`.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+
+**Returns**
+
+  * `gfp::Float64`
+
+<a id='NeuroJ.s_gfp_norm-Tuple{Vector{<:Real}}' href='#NeuroJ.s_gfp_norm-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.s_gfp_norm`** &mdash; *Method*.
+
+
+
+```julia
+s_gfp_norm(signal)
+```
+
+Calculate `signal` values normalized for GFP (Global Field Power) of that signal.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+
+**Returns**
+
+  * `gfp_norm::Float64`
+
+<a id='NeuroJ.s2_diss-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.s2_diss-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+**`NeuroJ.s2_diss`** &mdash; *Method*.
+
+
+
+```julia
+s2_diss(signal1, signal2)
+```
+
+Calculate DISS (global dissimilarity) and spatial correlation between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::Vector{<:Real}`
+  * `signal2::Vector{<:Real}`
+
+**Returns**
+
+Named tuple containing:
+
+  * `diss::Float64`: global dissimilarity
+  * `c::Float64`: spatial correlation
 
 
 <a id='NSTIM'></a>

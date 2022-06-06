@@ -524,7 +524,7 @@ end
 """
     eeg_tcoherence(eeg1, eeg2)
 
-Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -534,7 +534,8 @@ Calculate coherence (mean over time) between all channels of `eeg1` and `eeg2`.
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 3}`: coherence
+- `c::Array{Float64, 3}`: coherence
+- `msc::Array{Float64, 3}`: MSC
 - `ic::Array{Float64, 3}`: imaginary part of coherence
 """
 function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
@@ -546,22 +547,23 @@ function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
     c = zeros(size(eeg1.eeg_signals))
+    msc = zeros(size(eeg1.eeg_signals))
     ic = zeros(size(eeg1.eeg_signals))
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx in 1:channel_n
             s1 = @view eeg1.eeg_signals[idx, :, epoch_idx]
             s2 = @view eeg2.eeg_signals[idx, :, epoch_idx]
-            c[idx, :, epoch_idx], ic[idx, :, epoch_idx] = s2_tcoherence(s1, s2)            
+            c[idx, :, epoch_idx], msc[idx, :, epoch_idx], ic[idx, :, epoch_idx] = s2_tcoherence(s1, s2)            
         end
     end
 
-    return (c=c, ic=ic)
+    return (c=c, msc=msc, ic=ic)
 end
 
 """
     eeg_tcoherence(eeg; channel1, channel2, epoch1, epoch2)
 
-Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 # Arguments
 
@@ -574,7 +576,8 @@ Calculate coherence (mean over time) between `channel1`/`epoch1` and `channel2` 
 # Returns
 
 Named tuple containing:
-- `c::Vector{ComplexF64}`: coherence
+- `c::Vector{Float64}`: coherence
+- `msc::Vector{Float64}`: MSC
 - `ic::Vector{Float64}`: imaginary part of coherence
 """
 function eeg_tcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
@@ -589,9 +592,9 @@ function eeg_tcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch
 
     s1 = @view eeg.eeg_signals[channel1, :, epoch1]
     s2 = @view eeg.eeg_signals[channel2, :, epoch2]
-    c, ic = s2_tcoherence(s1, s2)
+    c, msc, ic = s2_tcoherence(s1, s2)
 
-    return (c=c, ic=ic)
+    return (c=c, msc=mc, ic=ic)
 end
 
 """
@@ -2547,7 +2550,7 @@ end
 """
     eeg_fcoherence(eeg1, eeg2, frq_lim)
 
-Calculate coherence (mean over frequencies) between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
@@ -2558,7 +2561,8 @@ Calculate coherence (mean over frequencies) between all channels of `eeg1` and `
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 4}`: coherence
+- `c::Array{Float64, 4}`: coherence
+- `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
 function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -2571,24 +2575,25 @@ function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; frq_lim::Union{Tuple
     epoch_n = eeg_epoch_n(eeg1)
     _, f_tmp = s_fcoherence(eeg1.eeg_signals[1:2, :, 1], fs=eeg_sr(eeg1), frq_lim=frq_lim)
     c = zeros(channel_n, channel_n, length(f_tmp), epoch_n)
+    msc = zeros(channel_n, channel_n, length(f_tmp), epoch_n)
     f = zeros(length(f_tmp))
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
             s1 = @view eeg1.eeg_signals[channel_idx1, :, epoch_idx]
             for channel_idx2 in 1:channel_n
                 s2 = @view eeg2.eeg_signals[channel_idx2, :, epoch_idx]
-                c[channel_idx1, channel_idx2, :, epoch_idx], f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg1), frq_lim=frq_lim)
+                c[channel_idx1, channel_idx2, :, epoch_idx], msc[channel_idx1, channel_idx2, :, epoch_idx], f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg1), frq_lim=frq_lim)
             end
         end
     end
 
-    return (c=c, f=f)
+    return (c=c, msc=msc, f=f)
 end
 
 """
     eeg_fcoherence(eeg; channel1, channel2, epoch1, epoch2, frq_lim)
 
-Calculate coherence (mean over frequencies) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
 
 # Arguments
 
@@ -2602,7 +2607,8 @@ Calculate coherence (mean over frequencies) between `channel1`/`epoch1` and `cha
 # Returns
 
 Named tuple containing:
-- `c::Array{ComplexF64, 3}`: coherence
+- `c::Array{Float64, 3}`: coherence
+- `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
 function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -2617,7 +2623,7 @@ function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch
 
     s1 = @view eeg.eeg_signals[channel1, :, epoch1]
     s2 = @view eeg.eeg_signals[channel2, :, epoch2]
-    c, f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg), frq_lim=frq_lim)
+    c, msc, f = s2_fcoherence(s1, s2, fs=eeg_sr(eeg), frq_lim=frq_lim)
 
-    return (c=c, f=f)
+    return (c=c, msc=msc, f=f)
 end

@@ -2122,7 +2122,7 @@ end
 """
     s2_tcoherence(signal1, signal2)
 
-Calculate coherence (mean over time) between `signal1` and `signal2`.
+Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `signal1` and `signal2`.
 
 # Arguments
 
@@ -2133,6 +2133,7 @@ Calculate coherence (mean over time) between `signal1` and `signal2`.
 
 Named tuple containing:
 - `c::Vector{Float64}`: coherence
+- `msc::Vector{Float64}`: magnitude-squares coherence
 - `ic::Vector{Float64}`: imaginary part of coherence
 """
 function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
@@ -2147,8 +2148,9 @@ function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
 
     coh = (abs.((s1_fft) .* conj.(s2_fft)).^2) ./ (s1_fft .* s2_fft)
     coh = _chop(coh)
+    msc = @. abs(coh)^2
 
-    return (c=real.(coh), ic=imag.(coh))
+    return (c=real.(coh), msc=msc, ic=imag.(coh))
 end
 
 """
@@ -3186,8 +3188,8 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using pe
 
 # Arguments
 
-- `a1::Array{Float64, 3}`: first array
-- `a2::Array{Float64, 3}`: second array
+- `a1::Array{<:Real, 3}`: first array
+- `a2::Array{<:Real, 3}`: second array
 - `p::Float64=0.05`: p-value
 - `perm_n::Int64=1000`: number of permutations
 
@@ -3197,7 +3199,7 @@ Named tuple containing:
 - `zmap::Array{Float64, 3}`: array of Z-values
 - `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
-function a2_cmp(a1::Array{Float64, 3}, a2::Array{Float64, 3}; p::Float64=0.05, perm_n::Int64=1000)
+function a2_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
 
     spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
@@ -3232,7 +3234,7 @@ end
 """
     s_fcoherence(signal; fs, frq)
 
-Calculate coherence (mean over all frequencies) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal`.
 
 # Arguments
 
@@ -3243,6 +3245,7 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
+- `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
 function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -3260,14 +3263,15 @@ function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Rea
         c = c[:, :, idx1:idx2]
         f = f[idx1:idx2]
     end
+    msc = c.^2
 
-    return (c=c, f=f)
+    return (c=c, msc=msc, f=f)
 end
 
 """
-    s_fcoherence(signal1; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+    s2_fcoherence(signal1, signal2; fs, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-Calculate coherence (mean over all frequencies) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal1` and `signal2`.
 
 # Arguments
 
@@ -3279,6 +3283,7 @@ Calculate coherence (mean over all frequencies) between channels of `signal`.
 # Returns
 
 - `c::Array{Float64, 3}`: coherence
+- `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
 function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
@@ -3299,7 +3304,10 @@ function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64
         c = c[:, :, idx1:idx2]
         f = f[idx1:idx2]
     end
-    return (c=c[1, 2, :], f=f)
+    c = c[1, 2, :]
+    msc = @. abs(c)^2
+    
+    return (c=c, msc=msc, f=f)
 end
 
 """

@@ -136,7 +136,7 @@ e = eeg_negentropy(edf)
 a = eeg_band(edf, band=:alpha)
 @test a == (8, 13)
 
-c, ic = eeg_tcoherence(edf, edf)
+c, msc, ic = eeg_tcoherence(edf, edf)
 @test size(c) == (19, 309760, 1)
 
 hz, nyq = eeg_freqs(edf)
@@ -275,7 +275,7 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test length(eeg_wspectrum(edf, frq_lim=(0, 20), frq_n=21)) == 2
 @test length(eeg_wspectrogram(edf, frq_lim=(0, 20), frq_n=21)) == 3
 
-c, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
+c, msc, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
 
 true
