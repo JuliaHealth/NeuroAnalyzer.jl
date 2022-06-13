@@ -20,7 +20,7 @@ neuroj_version()
 
 Get help:
 ```julia
-?eeg_plot
+?eeg_plot_signal
 ```
 
 ## EEG
