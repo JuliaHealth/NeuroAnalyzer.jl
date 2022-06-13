@@ -19,7 +19,6 @@ function neuroj_version()
                          "InformationMeasures",
                          "Interpolations",
                          "JLD2",
-                         "LinearAlgebra",
                          "Loess",
                          "MultivariateStats",
                          "Plots",

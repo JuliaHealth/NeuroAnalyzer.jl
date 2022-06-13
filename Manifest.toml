@@ -1542,11 +1542,11 @@ uuid = "47aef6b3-ad0c-573a-a1e2-d07658019622"
 version = "1.2.1"
 
 [[deps.Simpson]]
-git-tree-sha1 = "b3596cb77ed8a48beafd93ba0a05926feff16ba3"
+git-tree-sha1 = "358c5192007452a9272a4b0e9a0545e5adc40fa8"
 repo-rev = "master"
 repo-url = "https://codeberg.org/AdamWysokinski/Simpson.jl"
 uuid = "8e55fee6-e67b-4637-994c-810009a3f62d"
-version = "1.0.0"
+version = "1.0.1"
 
 [[deps.Sixel]]
 deps = ["Dates", "FileIO", "ImageCore", "IndirectArrays", "OffsetArrays", "REPL", "libsixel_jll"]
