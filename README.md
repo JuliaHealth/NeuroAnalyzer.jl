@@ -93,6 +93,7 @@ EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are
 Functions name prefix:
 - `eeg_` functions taking EEG object as an argument
 - `eeg_plot_` plotting functions
+
 There are also low level functions operating on single-/multi-channel signal vector/matrix/array (`s_` and `s2_`).
 
 The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array)
