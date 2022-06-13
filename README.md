@@ -21,8 +21,8 @@ Pkg.instantiate()
 ```
 
 There are two branches of NeuroJ.jl:
-- stable: released once per month, recommended
-- devel: a rolling release model
+- [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended
+- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release model
 
 ## Requirements
 
