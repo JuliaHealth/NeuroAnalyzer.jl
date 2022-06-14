@@ -14,15 +14,41 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ## Installation
 
-```
-using Pkg
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
-Pkg.instantiate()
-```
+First, download [Julia](https://julialang.org/downloads/) 1.0 or later. 
 
 There are two branches of NeuroJ.jl:
 - [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended
 - [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release model
+
+You can add NeuroJ.jl from using Julia's package manager, by typing:
+
+```Julia
+using Pkg
+Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
+# activate the package
+using NeuroJ
+# check if correctly installed
+neuroj_version()
+```
+
+Another option is to initialize a new Julia environment for the package:
+```shell
+git clone https://codeberg.org/AdamWysokinski/NeuroJ.jl
+cd NeuroJ.jl
+```
+
+Next, start Julia and do the following:
+```Julia
+using Pkg
+Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
+Pkg.activate(".")
+Pkg.instantiate()
+# activate the package
+using NeuroJ
+# check if correctly installed
+neuroj_version()
+```
 
 ## Requirements
 
@@ -52,35 +78,6 @@ The following packages are required:
 - StatsKit
 - StatsPlots
 - Wavelets
-
-To install dependencies manually:
-```julia
-import Pkg
-NeuroJ_requirements = ["CSV",
-                       "CubicSplines",
-                       "DataFrames",
-                       "Distances",
-                       "DSP",
-                       "FFTW",
-                       "FindPeaks1D",
-                       "HypothesisTests",
-                       "InformationMeasures",
-                       "Interpolations",
-                       "JLD2",
-                       "LinearAlgebra",
-                       "Loess",
-                       "MultivariateStats",
-                       "Pkg",
-                       "Plots",
-                       "Polynomials",
-                       "ScatteredInterpolation",
-                       "StatsFuns",
-                       "StatsKit",
-                       "StatsPlots",
-                       "Wavelets"]
-Pkg.add(NeuroJ_requirements)
-Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
-```
 
 Wherever possible, NeuroJ.jl will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
 
