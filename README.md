@@ -143,6 +143,8 @@ General:
 - stable branch to be released monthly
 - performance optimization
 - Pluto interface
+- plugins are in separate subdirectories
+- use Git for plugins
 - plugins: update
 - plugins: remove
 - plugins: install

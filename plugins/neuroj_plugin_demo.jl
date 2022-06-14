@@ -8,5 +8,5 @@ Plugin example.
 function neuroj_plugin_demo()
     println("This is an example of NeuroJ plugin.")
     
-    return 
+    return nothing
 end
