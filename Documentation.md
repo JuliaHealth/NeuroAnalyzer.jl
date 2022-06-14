@@ -26,16 +26,27 @@ neuroj_version()
 
 Show NeuroJ and imported packages versions.
 
-<a id='NeuroJ.neuroj_reload_plugins-Tuple{}' href='#NeuroJ.neuroj_reload_plugins-Tuple{}'>#</a>
-**`NeuroJ.neuroj_reload_plugins`** &mdash; *Method*.
+<a id='NeuroJ.neuroj_plugins_reload-Tuple{}' href='#NeuroJ.neuroj_plugins_reload-Tuple{}'>#</a>
+**`NeuroJ.neuroj_plugins_reload`** &mdash; *Method*.
 
 
 
 ```julia
-neuroj_reload_plugins()
+neuroj_plugins_reload()
 ```
 
 Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
+
+<a id='NeuroJ.neuroj_plugins_list-Tuple{}' href='#NeuroJ.neuroj_plugins_list-Tuple{}'>#</a>
+**`NeuroJ.neuroj_plugins_list`** &mdash; *Method*.
+
+
+
+```julia
+neuroj_plugins_list()
+```
+
+List NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 
 
 <a id='EEG-io'></a>

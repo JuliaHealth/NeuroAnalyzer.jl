@@ -123,7 +123,8 @@ Initial plugin architecture is already available, just put .jl plugin scripts in
 Run `neuroj_reload_plugins()` to refresh plugins.
 
 ```julia
-neuroj_reload_plugins()
+neuroj_plugins_reload()
+neuroj_plugins_list()
 neuroj_plugin_demo()
 ```
 
@@ -142,6 +143,9 @@ General:
 - stable branch to be released monthly
 - performance optimization
 - Pluto interface
+- plugins: update
+- plugins: remove
+- plugins: install
 
 EEG:
 - calculate difference between channels

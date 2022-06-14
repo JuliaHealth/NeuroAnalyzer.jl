@@ -6,7 +6,8 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 
 ```@docs
 neuroj_version()
-neuroj_reload_plugins()
+neuroj_plugins_reload()
+neuroj_plugins_list()
 ```
 
 ## EEG io

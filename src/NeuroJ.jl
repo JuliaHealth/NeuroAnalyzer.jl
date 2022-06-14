@@ -39,9 +39,10 @@ if VERSION < v"1.0.0"
 end
 
 include("neuroj.jl")
-export neuroj_reload_plugins
+export neuroj_plugins_reload
+export neuroj_plugins_list
 export neuroj_version
-neuroj_reload_plugins()
+neuroj_plugins_reload()
 
 include("low_level.jl")
 export linspace

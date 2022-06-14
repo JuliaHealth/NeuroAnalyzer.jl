@@ -32,16 +32,16 @@ function neuroj_version()
     for idx in 1:length(required_packages)
         pkg = lpad(required_packages[idx], 25 - length(idx), " ")
         pkg_ver = m[findfirst(v->v.name==required_packages[idx], m)].version
-        println("$pkg $pkg_ver")
+        println("$pkg $pkg_ver ")
     end
 end
 
 """
-    neuroj_reload_plugins()
+    neuroj_plugins_reload()
 
 Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 """
-function neuroj_reload_plugins()
+function neuroj_plugins_reload()
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
     plugins_path=expanduser("~/Documents/NeuroJ/plugins/")
     cd(plugins_path)
@@ -50,5 +50,20 @@ function neuroj_reload_plugins()
         if splitext(f)[2] == ".jl"
             include(plugins_path * f)
         end
+    end
+end
+
+"""
+    neuroj_plugins_list()
+
+List NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
+"""
+function neuroj_plugins_list()
+    isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
+    plugins_path=expanduser("~/Documents/NeuroJ/plugins/")
+    cd(plugins_path)
+    plugins = readdir(plugins_path)
+    for idx in 1:length(plugins)
+        println("$idx. $(replace(plugins[idx], ".jl" => "()"))")
     end
 end
