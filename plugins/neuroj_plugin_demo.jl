@@ -1,7 +1,7 @@
 export neuroj_plugin_demo
 
 """
-    neuroj_plugin_demO()
+    neuroj_plugin_demo()
 
 Plugin example.
 """
