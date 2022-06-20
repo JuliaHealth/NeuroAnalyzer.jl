@@ -106,5 +106,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_gfp(ones(10)) == 1.0
 @test s_gfp_norm(ones(10)) == ones(10)
 @test s2_diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
+@test length(generate_morlet_fwhm(10, 10)) == 21
 
 true

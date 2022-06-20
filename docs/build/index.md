@@ -7681,6 +7681,32 @@ Named tuple containing:
   * `diss::Float64`: global dissimilarity
   * `c::Float64`: spatial correlation
 
+<a id='NeuroJ.generate_morlet_fwhm' href='#NeuroJ.generate_morlet_fwhm'>#</a>
+**`NeuroJ.generate_morlet_fwhm`** &mdash; *Function*.
+
+
+
+```julia
+generate_morlet_fwhm(fs, f, t; h)
+```
+
+Generate Morlet wavelet using Mike X Cohen formula.
+
+**Arguments**
+
+  * `fs::Int64`: sampling rate
+  * `f::Real`: frequency
+  * `t::Real=1`: length = -t:1/fs:t
+  * `h::Float64=0.25`: full width at half-maximum in seconds (FWHM)
+
+**Returns**
+
+  * `morlet::Vector{ComplexF64}`
+
+**Source**
+
+Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
+
 
 <a id='NSTIM'></a>
 

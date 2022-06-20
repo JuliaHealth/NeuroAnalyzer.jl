@@ -373,6 +373,7 @@ s_cums(signal::Array{<:Real, 3})
 s_gfp(signal::Vector{<:Real})
 s_gfp_norm(signal::Vector{<:Real})
 s2_diss(signal1::Vector{<:Real}, signal2::Vector{<:Real})
+generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
 ```
 
 ## NSTIM

@@ -150,6 +150,7 @@ General:
 - plugins: install
 
 EEG:
+- use variable ncyc for s_wspectrogram()
 - calculate difference between channels
 - topoplot of which electrode at a given time exhibits statistically significant difference between two signals
 - add user-defined voltage scale for eeg signal plots
