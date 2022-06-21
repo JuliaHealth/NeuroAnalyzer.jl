@@ -150,6 +150,8 @@ General:
 - plugins: install
 
 EEG:
+- tensor maps (magnitude and direction)
+- probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
 - calculate difference between channels
 - topoplot of which electrode at a given time exhibits statistically significant difference between two signals
