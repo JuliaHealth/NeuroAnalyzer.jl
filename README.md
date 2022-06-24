@@ -150,7 +150,7 @@ General:
 - plugins: install
 
 EEG:
-- tensor maps (magnitude and direction)
+- tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
 - calculate difference between channels
