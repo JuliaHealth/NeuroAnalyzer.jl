@@ -229,6 +229,7 @@ v = eeg_channels_stats(edf)
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
+eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 
 v = eeg_snr(edf)
 @test size(v) == (19, 1)
@@ -277,5 +278,8 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 
 c, msc, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
+
+edf1 = eeg_reference_slap(edf)
+@test size(edf1.eeg_signals) == (19, 309760, 1)
 
 true

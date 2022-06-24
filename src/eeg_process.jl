@@ -1683,3 +1683,94 @@ function eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 
     nothing
 end
+
+"""
+    eeg_reference_slap(eeg, nn, weights)
+
+Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `nn::Int64=4`: number of nearest electrodes
+- `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_reference_slap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    channel_n = eeg_channel_n(eeg)
+    nn < channel_n - 1 || throw(ArgumentError("nn must be < $(channel_n - 1)"))
+    epoch_n = eeg_epoch_n(eeg)
+    
+    loc_x = zeros(channel_n)
+    loc_y = zeros(channel_n)
+    for idx in 1:channel_n
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    # Euclidean distance matrix
+    d = zeros(channel_n, channel_n)
+    for idx1 in 1:channel_n
+        for idx2 in 1:channel_n
+            d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
+        end
+    end
+    # nn nearest neighbors index matrix
+    nn_idx = zeros(Int64, channel_n, nn)
+    for idx1 in 1:channel_n
+        nn_idx[idx1, :] = sortperm(d[idx1, :])[2:(nn + 1)] # 1st neighbor is the electrode itself
+    end
+
+    s_ref = zeros(size(eeg.eeg_signals))
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            reference_channels = @view eeg.eeg_signals[nn_idx[channel_idx, :], :, epoch_idx]
+            if weights == false
+                reference_channel = vec(mean(reference_channels, dims=1))
+            else
+                g = Vector{Float64}()
+                for idx1 in 1:nn
+                    push!(g, 1 / d[channel_idx, nn_idx[channel_idx, idx1]] / sum(1 / d[channel_idx, nn_idx[channel_idx, :]]))
+                end
+                reference_channel = vec(sum(g .* reference_channels, dims=1))
+            end
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+        end
+    end
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_ref
+    eeg_new.eeg_header[:reference] = "SLAP ($nn)"
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_reference_slap(EEG, nn=$nn))")
+
+    return eeg_new
+end
+
+"""
+    eeg_reference_slap!(eeg, nn, weights)
+
+Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `nn::Int64=4`: number of nearest electrodes
+- `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+"""
+function eeg_reference_slap!(eeg::NeuroJ.EEG; nn::Int64=4)
+
+    eeg.eeg_signals = eeg_reference_slap(eeg, nn=nn).eeg_signals
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_reference_slap!(EEG, nn=$nn)")
+
+    nothing
+end

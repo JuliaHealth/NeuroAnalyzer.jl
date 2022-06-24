@@ -260,6 +260,8 @@ export eeg_wdenoise
 export eeg_wdenoise!
 export eeg_fftdenoise
 export eeg_fftdenoise!
+export eeg_reference_slap
+export eeg_reference_slap!
 
 include("eeg_analyze.jl")
 export eeg_total_power

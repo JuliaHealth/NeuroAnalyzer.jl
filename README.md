@@ -213,7 +213,7 @@ EEG:
 - 3d headplots
 - small plots (amplitude, PSD, spectrogram) at electrode locations
 - phase-amplitude cross-frequency coupling (PAC)
-- more re-referencing methods: Laplacian, REST
+- more re-referencing methods: spherical Laplacian, REST
 - io: import from CSV
 - create EEG object
 - dipoles

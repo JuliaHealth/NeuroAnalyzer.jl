@@ -2116,6 +2116,44 @@ Perform wavelet denoising.
   * `pad::Int64=0`: pad signal with `pad` zeros
   * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
+<a id='NeuroJ.eeg_reference_slap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_slap-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_slap`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_slap(eeg, nn, weights)
+```
+
+Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `nn::Int64=4`: number of nearest electrodes
+  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_slap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_slap!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_slap!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_slap!(eeg, nn, weights)
+```
+
+Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `nn::Int64=4`: number of nearest electrodes
+  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+
 
 <a id='EEG-analyze'></a>
 
