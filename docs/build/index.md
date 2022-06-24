@@ -2116,16 +2116,16 @@ Perform wavelet denoising.
   * `pad::Int64=0`: pad signal with `pad` zeros
   * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
-<a id='NeuroJ.eeg_reference_slap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_slap-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_slap`** &mdash; *Method*.
+<a id='NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_plap`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_reference_slap(eeg, nn, weights)
+eeg_reference_plap(eeg, nn, weights)
 ```
 
-Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 
@@ -2137,16 +2137,16 @@ Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electro
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_reference_slap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_slap!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_slap!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_plap!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_reference_slap!(eeg, nn, weights)
+eeg_reference_plap!(eeg, nn, weights)
 ```
 
-Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 

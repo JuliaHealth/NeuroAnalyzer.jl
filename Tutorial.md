@@ -247,13 +247,13 @@ Re-reference to contralateral mastoid electrodes:
 eeg_reference_m!(edf, type=:c)
 ```
 
-Re-reference using simple (planar) Laplacian, 4 adjacent electrodes:
+Re-reference using planar Laplacian, 4 adjacent electrodes:
 ```julia
 edf_car = eeg_reference_car(edf)
 p1 = eeg_plot_signal_topo(edf_car, offset=1, len=2560, frq_lim=(0, 40), title="CAR",)
-edf_lap = eeg_reference_slap(edf, nn=4, weights=false)
+edf_lap = eeg_reference_plap(edf, nn=4, weights=false)
 p2 = eeg_plot_signal_topo(edf_lap, offset=1, len=2560, frq_lim=(0, 40), title="unweighted Laplacian (4)")
-edf_lap = eeg_reference_slap(edf, nn=4, weights=true)
+edf_lap = eeg_reference_plap(edf, nn=4, weights=true)
 p3 = eeg_plot_signal_topo(edf_lap, offset=1, len=2560, frq_lim=(0, 40), title="weighted Laplacian (4)")
 plot(p1, p2, p3, layout=(3, 1))
 ```

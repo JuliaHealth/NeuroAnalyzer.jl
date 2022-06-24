@@ -1685,9 +1685,9 @@ function eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 end
 
 """
-    eeg_reference_slap(eeg, nn, weights)
+    eeg_reference_plap(eeg, nn, weights)
 
-Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 # Arguments
 
@@ -1699,7 +1699,7 @@ Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electro
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_reference_slap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
+function eeg_reference_plap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -1748,17 +1748,17 @@ function eeg_reference_slap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_ref
-    eeg_new.eeg_header[:reference] = "SLAP ($nn)"
+    eeg_new.eeg_header[:reference] = "PLAP ($nn)"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_slap(EEG, nn=$nn))")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_plap(EEG, nn=$nn))")
 
     return eeg_new
 end
 
 """
-    eeg_reference_slap!(eeg, nn, weights)
+    eeg_reference_plap!(eeg, nn, weights)
 
-Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electrodes).
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 # Arguments
 
@@ -1766,11 +1766,11 @@ Reference the `eeg` using simple (planar) Laplacian (using `nn` adjacent electro
 - `nn::Int64=4`: number of nearest electrodes
 - `weights::Bool=true`: use distance weights; use mean of nearest channels if false
 """
-function eeg_reference_slap!(eeg::NeuroJ.EEG; nn::Int64=4)
+function eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4)
 
-    eeg.eeg_signals = eeg_reference_slap(eeg, nn=nn).eeg_signals
+    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_slap!(EEG, nn=$nn)")
+    push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn)")
 
     nothing
 end
