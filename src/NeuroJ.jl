@@ -151,6 +151,7 @@ export s_gfp_norm
 export s2_diss
 export generate_morlet_fwhm
 export infcrit
+export grubbs
 
 include("eeg_io.jl")
 export eeg_export_csv

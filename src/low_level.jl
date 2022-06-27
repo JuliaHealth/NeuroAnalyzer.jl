@@ -3576,7 +3576,9 @@ Named tuple containing:
 - `aic::Float64`
 - `bic::Float64`
 """
-function infcrit(model::StatsModels.TableRegressionModel)
+function infcrit(model)
+
+    typeof(linearRegressor) <: StatsModels.TableRegressionModel || throw(ArgumentError("Argument must be a regression model."))
 
     k = length(coef(model)) - 1
     n = length(MultivariateStats.predict(model))
@@ -3584,4 +3586,32 @@ function infcrit(model::StatsModels.TableRegressionModel)
     bic = k * log(n) - 2 * log(r2(model))
     
     return (aic=aic, bic=bic)
+end
+
+"""
+    grubbs(signal)
+
+Perform Grubbs test for outlier in `signal`.
+
+# Arguments
+
+- `signal::Vector{<:Real}`
+
+# Returns
+
+- `g::Bool`: true: outlier exists, false: there is no outlier
+"""
+function grubbs(signal::Vector{<:Real})
+    n = length(signal)
+    d = n - 2
+    alpha = 0.95
+    g = maximum(abs.(signal .- mean(signal))) / std(signal)
+    h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha  / (2 * n)))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / (2 * n)))^2))
+    if g > h
+        g = true
+    else
+        g = false
+    end
+
+    return g
 end

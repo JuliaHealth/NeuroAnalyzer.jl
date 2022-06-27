@@ -113,5 +113,6 @@ y = rand(10)
 df = DataFrame(:x=>x, :y=>y)
 m = lm(@formula(y ~ x), df)
 @test length(infcrit(m)) == 2
+@test grubbs(x) == false
 
 true
