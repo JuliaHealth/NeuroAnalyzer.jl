@@ -28,6 +28,7 @@ function neuroj_version()
                          "Simpson",
                          "StatsFuns",
                          "StatsKit",
+                         "StatsModels",
                          "StatsPlots",
                          "Wavelets"]
     for idx in 1:length(required_packages)

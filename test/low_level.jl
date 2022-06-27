@@ -108,4 +108,10 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s2_diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
 @test length(generate_morlet_fwhm(10, 10)) == 21
 
+x = rand(10)
+y = rand(10)
+df = DataFrame(:x=>x, :y=>y)
+m = lm(@formula(y ~ x), df)
+@test length(infcrit(m)) == 2
+
 true

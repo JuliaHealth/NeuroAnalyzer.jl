@@ -3560,3 +3560,28 @@ function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
     
     return m
 end
+
+"""
+    infcrit(model)
+
+Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression `model`.
+
+# Arguments
+
+- `model::StatsModels.TableRegressionModel`
+
+# Returns
+
+Named tuple containing:
+- `aic::Float64`
+- `bic::Float64`
+"""
+function infcrit(model::StatsModels.TableRegressionModel)
+
+    k = length(coef(model)) - 1
+    n = length(MultivariateStats.predict(model))
+    aic = 2 * k - 2 * log(r2(model))
+    bic = k * log(n) - 2 * log(r2(model))
+    
+    return (aic=aic, bic=bic)
+end

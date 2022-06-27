@@ -76,6 +76,7 @@ The following packages are required:
 - [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsFuns
 - StatsKit
+- StatsModels
 - StatsPlots
 - Wavelets
 

@@ -23,6 +23,7 @@ using ScatteredInterpolation
 using Simpson
 using StatsFuns
 using StatsKit
+using StatsModels
 using StatsPlots
 using Wavelets
 
@@ -149,6 +150,7 @@ export s_gfp
 export s_gfp_norm
 export s2_diss
 export generate_morlet_fwhm
+export infcrit
 
 include("eeg_io.jl")
 export eeg_export_csv
