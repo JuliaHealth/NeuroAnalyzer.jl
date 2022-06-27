@@ -7751,14 +7751,14 @@ Cohen MX. A better way to define and describe Morlet wavelets for time-frequency
 
 
 ```julia
-infcrit(model)
+infcrit(m)
 ```
 
 Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression `model`.
 
 **Arguments**
 
-  * `model::StatsModels.TableRegressionModel`
+  * `m::StatsModels.TableRegressionModel`
 
 **Returns**
 
