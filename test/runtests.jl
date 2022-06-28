@@ -5,6 +5,9 @@ using Test
     println("\tRunning low_level.jl tests.. ")
     @test include("low_level.jl")
 
+    println("\tRunning statistic.jl tests.. ")
+    @test include("statistic.jl")
+
     println("\tRunning eeg_io.jl tests.. ")
     @test include("eeg_io.jl")
 

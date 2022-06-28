@@ -49,13 +49,13 @@ include("low_level.jl")
 export linspace
 export logspace
 export m_pad0
+export cmax
+export cmin
 export vsearch
 export cart2pol
 export pol2cart
 export sph2cart
 export generate_window
-export hildebrand_rule
-export jaccard_similarity
 export fft0
 export ifft0
 export nextpow2
@@ -68,10 +68,6 @@ export m_sort
 export pad0
 export hz2rads
 export rads2hz
-export z_score
-export k_categories
-export cmax
-export cmin
 export generate_sinc
 export generate_morlet
 export generate_gaussian
@@ -125,7 +121,6 @@ export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
 export s_wdenoise
-export effsize
 export s_ispc
 export s_itpc
 export s_pli
@@ -150,6 +145,13 @@ export s_gfp
 export s_gfp_norm
 export s2_diss
 export generate_morlet_fwhm
+
+include("statistic.jl")
+export hildebrand_rule
+export jaccard_similarity
+export z_score
+export k_categories
+export effsize
 export infcrit
 export grubbs
 

@@ -9,8 +9,6 @@ using Test
 @test pol2cart(2, 2) == (-0.8322936730942848, 1.8185948536513634)
 @test sph2cart(2, 2, 2) == (0.3463563791363881, -0.7568024953079283, 1.8185948536513634)
 @test generate_window(:hann, 3) == [0.0, 1.0, 0.0]
-@test hildebrand_rule([1, 2, 3]) == 0.0
-@test jaccard_similarity(ones(3), zeros(3)) == 0.0
 @test length(fft0(ones(10), 10)) == 20
 @test length(ifft0(ones(10), 10)) == 20
 @test nextpow2(5) == 8
@@ -23,8 +21,6 @@ using Test
 @test length(pad0(ones(10), 10)) == 20
 @test hz2rads(1) == 6.283185307179586
 @test rads2hz(1) == 1.5707963267948966
-@test z_score([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test k_categories(10) == (3.1622776601683795, 4.2219999999999995)
 @test cmax([1.0im, 2.0im]) == 0.0 + 2.0im
 @test cmin([1.0im, 2.0im]) == 0.0 + 1.0im
 @test length(generate_sinc(-2:2)) == 5
@@ -85,7 +81,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test length(s_wdenoise(rand(100))) == 100
-@test effsize([1,2,3], [2,3,4]) == (cohen = 1.0, hedges = 1.0)
 @test s_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test s_itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 @test s_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
@@ -107,12 +102,5 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_gfp_norm(ones(10)) == ones(10)
 @test s2_diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
 @test length(generate_morlet_fwhm(10, 10)) == 21
-
-x = rand(10)
-y = rand(10)
-df = DataFrame(:x=>x, :y=>y)
-m = lm(@formula(y ~ x), df)
-@test length(infcrit(m)) == 2
-@test grubbs(x) == false
 
 true

@@ -5560,44 +5560,6 @@ Return the `n`-point long symmetric window `type`.
 
   * `w::Vector{Float64}`:: generated window
 
-<a id='NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.hildebrand_rule`** &mdash; *Method*.
-
-
-
-```julia
-hildebrand_rule(x)
-```
-
-Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symmetrical.
-
-**Arguments**
-
-  * `x::Vector{<:Real}`
-
-**Returns**
-
-  * `h::Float64`
-
-<a id='NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
-**`NeuroJ.jaccard_similarity`** &mdash; *Method*.
-
-
-
-```julia
-jaccard_similarity(x, y)
-```
-
-Calculate Jaccard similarity between two vectors `x` and `y`.
-
-**Arguments**
-
-  * `n::Int64`
-
-**Returns**
-
-  * `j::Float64`
-
 <a id='NeuroJ.fft0-Tuple{AbstractArray, Int64}' href='#NeuroJ.fft0-Tuple{AbstractArray, Int64}'>#</a>
 **`NeuroJ.fft0`** &mdash; *Method*.
 
@@ -5860,44 +5822,6 @@ Convert frequency `f` in rad/s to Hz.
 **Returns**
 
   * `f_rads::Float64`
-
-<a id='NeuroJ.z_score-Tuple{Vector{<:Real}}' href='#NeuroJ.z_score-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.z_score`** &mdash; *Method*.
-
-
-
-```julia
-z_score(x)
-```
-
-Calculate Z-scores for each value of the vector `x`.
-
-**Arguments**
-
-  * `x::Vector{<:Real}`
-
-**Returns**
-
-  * `z_score::Vector{Float64}`
-
-<a id='NeuroJ.k_categories-Tuple{Int64}' href='#NeuroJ.k_categories-Tuple{Int64}'>#</a>
-**`NeuroJ.k_categories`** &mdash; *Method*.
-
-
-
-```julia
-k_categories(n)
-```
-
-Calculate number of categories for a given sample size `n`.
-
-**Arguments**
-
-  * `n::Int64`
-
-**Returns**
-
-  * `k::Float64`
 
 <a id='NeuroJ.cmax-Tuple{Vector{ComplexF64}}' href='#NeuroJ.cmax-Tuple{Vector{ComplexF64}}'>#</a>
 **`NeuroJ.cmax`** &mdash; *Method*.
@@ -7147,29 +7071,6 @@ Perform wavelet denoising.
 
   * `signal_denoised::Vector{Float64}`
 
-<a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
-**`NeuroJ.effsize`** &mdash; *Method*.
-
-
-
-```julia
-effsize(x1, x2)
-```
-
-Calculate Cohen's d and Hedges g effect sizes.
-
-**Arguments**
-
-  * `x1::Vector{Float64}`
-  * `x2::Vector{Float64}`
-
-**Returns**
-
-Named tuple containing:
-
-  * `d::Float64`: Cohen's d
-  * `g::Float64`: Hedges g
-
 <a id='NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}'>#</a>
 **`NeuroJ.s_ispc`** &mdash; *Method*.
 
@@ -7744,6 +7645,112 @@ Generate Morlet wavelet using Mike X Cohen formula.
 **Source**
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
+
+
+<a id='Statistic'></a>
+
+<a id='Statistic-1'></a>
+
+## Statistic
+
+<a id='NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.hildebrand_rule`** &mdash; *Method*.
+
+
+
+```julia
+hildebrand_rule(x)
+```
+
+Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symmetrical.
+
+**Arguments**
+
+  * `x::Vector{<:Real}`
+
+**Returns**
+
+  * `h::Float64`
+
+<a id='NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+**`NeuroJ.jaccard_similarity`** &mdash; *Method*.
+
+
+
+```julia
+jaccard_similarity(x, y)
+```
+
+Calculate Jaccard similarity between two vectors `x` and `y`.
+
+**Arguments**
+
+  * `n::Int64`
+
+**Returns**
+
+  * `j::Float64`
+
+<a id='NeuroJ.z_score-Tuple{Vector{<:Real}}' href='#NeuroJ.z_score-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.z_score`** &mdash; *Method*.
+
+
+
+```julia
+z_score(x)
+```
+
+Calculate Z-scores for each value of the vector `x`.
+
+**Arguments**
+
+  * `x::Vector{<:Real}`
+
+**Returns**
+
+  * `z_score::Vector{Float64}`
+
+<a id='NeuroJ.k_categories-Tuple{Int64}' href='#NeuroJ.k_categories-Tuple{Int64}'>#</a>
+**`NeuroJ.k_categories`** &mdash; *Method*.
+
+
+
+```julia
+k_categories(n)
+```
+
+Calculate number of categories for a given sample size `n`.
+
+**Arguments**
+
+  * `n::Int64`
+
+**Returns**
+
+  * `k::Float64`
+
+<a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+**`NeuroJ.effsize`** &mdash; *Method*.
+
+
+
+```julia
+effsize(x1, x2)
+```
+
+Calculate Cohen's d and Hedges g effect sizes.
+
+**Arguments**
+
+  * `x1::Vector{Float64}`
+  * `x2::Vector{Float64}`
+
+**Returns**
+
+Named tuple containing:
+
+  * `d::Float64`: Cohen's d
+  * `g::Float64`: Hedges g
 
 <a id='NeuroJ.infcrit-Tuple{Any}' href='#NeuroJ.infcrit-Tuple{Any}'>#</a>
 **`NeuroJ.infcrit`** &mdash; *Method*.
