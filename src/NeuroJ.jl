@@ -8,6 +8,7 @@ using Distances
 using DSP
 using FFTW
 using FindPeaks1D
+using GLM
 using HypothesisTests
 using InformationMeasures
 using Interpolations

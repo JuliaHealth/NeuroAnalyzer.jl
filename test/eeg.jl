@@ -279,7 +279,7 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 c, msc, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
 
-edf1 = eeg_reference_slap(edf)
+edf1 = eeg_reference_plap(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
 true

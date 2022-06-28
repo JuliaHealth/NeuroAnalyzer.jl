@@ -16,6 +16,7 @@ function neuroj_version()
                          "DSP",
                          "FFTW",
                          "FindPeaks1D",
+                         "GLM",
                          "HypothesisTests",
                          "InformationMeasures",
                          "Interpolations",

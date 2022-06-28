@@ -1,6 +1,7 @@
 using NeuroJ
 using Test
 using DataFrames
+using GLM
 
 @test hildebrand_rule([1, 2, 3]) == 0.0
 @test jaccard_similarity(ones(3), zeros(3)) == 0.0
@@ -13,6 +14,7 @@ y = rand(10)
 df = DataFrame(:x=>x, :y=>y)
 m = lm(@formula(y ~ x), df)
 @test length(infcrit(m)) == 2
-@test grubbs(x) == false
+
+@test grubbs(ones(10)) == false
 
 true
