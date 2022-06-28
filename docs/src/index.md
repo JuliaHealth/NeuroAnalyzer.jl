@@ -382,7 +382,8 @@ z_score(x::Vector{<:Real})
 k_categories(n::Int64)
 effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
 infcrit(m)
-grubbs(x::Vector{<:Real})
+grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
+outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
 ```
 
 ## NSTIM

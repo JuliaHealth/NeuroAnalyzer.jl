@@ -7780,18 +7780,40 @@ Named tuple containing:
 
 
 ```julia
-grubbs(signal)
+grubbs(x; alpha, t)
 ```
 
-Perform Grubbs test for outlier in `signal`.
+Perform Grubbs test for outlier in vector `x`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `x::Vector{<:Real}`
+  * `alpha::Float64=0.95`
+  * `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
 
 **Returns**
 
   * `g::Bool`: true: outlier exists, false: there is no outlier
+
+<a id='NeuroJ.outlier_detect-Tuple{Vector{<:Real}}' href='#NeuroJ.outlier_detect-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.outlier_detect`** &mdash; *Method*.
+
+
+
+```julia
+outlier_detect(x; method)
+```
+
+Detect outliers in `x`.
+
+**Arguments**
+
+  * `x::Vector{<:Real}`
+  * `method::Symbol=iqr`: methods: `:iqr` (interquartile range), `:z` (z-score) or `:g` (Grubbs test)
+
+**Returns**
+
+  * `o::Vector{Bool}`: index of outliers
 
 
 <a id='NSTIM'></a>

@@ -155,6 +155,7 @@ export k_categories
 export effsize
 export infcrit
 export grubbs
+export outlier_detect
 
 include("eeg_io.jl")
 export eeg_export_csv

@@ -125,29 +125,97 @@ function infcrit(m)
 end
 
 """
-    grubbs(signal)
+    grubbs(x; alpha, t)
 
-Perform Grubbs test for outlier in `signal`.
+Perform Grubbs test for outlier in vector `x`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `x::Vector{<:Real}`
+- `alpha::Float64=0.95`
+- `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
 
 # Returns
 
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
-function grubbs(signal::Vector{<:Real})
-    n = length(signal)
+function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
+
+    n = length(x)
     d = n - 2
-    alpha = 0.95
-    g = maximum(abs.(signal .- mean(signal))) / std(signal)
-    h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha  / (2 * n)))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / (2 * n)))^2))
-    if g > h
-        g = true
+
+    if t == 0
+        two_sided = true
+        g = maximum(abs.(x .- mean(x))) / std(x)
+    elseif t == -1
+        two_sided = false
+        g = (mean(x) - minimum(x)) / std(x)
+    elseif t == 1
+        two_sided = false
+        g = (maximum(x) - mean(x)) / std(x)
     else
-        g = false
+        throw(ArgumentError("type must be -1, 0 or 1."))
     end
 
-    return g
+    if two_sided == true
+        h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha / (2 * n)))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / (2 * n)))^2))
+    else
+        h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha / n))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / n))^2))
+    end
+
+    g < h && return false
+    g > h && return true
+
 end
+
+"""
+    outlier_detect(x; method)
+
+Detect outliers in `x`.
+
+# Arguments
+
+- `x::Vector{<:Real}`
+- `method::Symbol=iqr`: methods: `:iqr` (interquartile range), `:z` (z-score) or `:g` (Grubbs test)
+
+# Returns
+
+- `o::Vector{Bool}`: index of outliers
+"""
+function outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
+    method in [:iqr, :z, :g] || throw(ArgumentError("method must be :iqr, :z or :g."))
+
+    o = zeros(Bool, length(x))
+    
+    if method === :iqr
+        m1 = quantile(x, 0.25) - 1.5 * iqr(x)
+        m2 = quantile(x, 0.75) + 1.5 * iqr(x)
+        o[x .< m1] .= true
+        o[x .> m2] .= true
+    elseif method === :z
+        z = z_score(x)
+        o[z .< -3] .= true
+        o[z .> 3] .= true
+    else
+        length(x) > 6 || throw(ArgumentError("For :g method length(x) must be > 6."))
+        x_tmp = deepcopy(x)
+        for idx in length(x_tmp):-1:6
+            _, m_idx = findmax(x_tmp)
+            if grubbs(x_tmp, t=1) == true
+                o[m_idx] = true
+                deleteat!(x_tmp, m_idx)
+            end
+        end
+        x_tmp = deepcopy(x)
+        for idx in length(x_tmp):-1:6
+            _, m_idx = findmin(x_tmp)
+            if grubbs(x_tmp, t=-1) == true
+                o[m_idx] = true
+                deleteat!(x_tmp, m_idx)
+            end
+        end
+    end
+    
+    return o
+end
+

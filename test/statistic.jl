@@ -16,5 +16,6 @@ m = lm(@formula(y ~ x), df)
 @test length(infcrit(m)) == 2
 
 @test grubbs(ones(10)) == false
+@test outlier_detect(ones(10)) == zeros(10)
 
 true
