@@ -6413,6 +6413,25 @@ Normalize `signal` in [0, +1].
 
   * `s_normalized::Vector{Float64}`
 
+<a id='NeuroJ.s_normalize_log-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_log-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_normalize_log`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_log(signal)
+```
+
+Normalize `signal` using log-transformation.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
 <a id='NeuroJ.s_add_noise-Tuple{AbstractArray}' href='#NeuroJ.s_add_noise-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_add_noise`** &mdash; *Method*.
 
@@ -7833,7 +7852,7 @@ Named tuple containing:
 
 
 ```julia
-grubbs(x; alpha, t)
+grubbsx; alpha, t)
 ```
 
 Perform Grubbs test for outlier in vector `x`.
@@ -7845,6 +7864,8 @@ Perform Grubbs test for outlier in vector `x`.
   * `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
 
 **Returns**
+
+Named tuple containing:
 
   * `g::Bool`: true: outlier exists, false: there is no outlier
 

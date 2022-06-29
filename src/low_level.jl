@@ -1440,6 +1440,27 @@ function s_normalize_max(signal::AbstractArray)
 end
 
 """
+    s_normalize_log(signal)
+
+Normalize `signal` using log-transformation.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_log(signal::AbstractArray)
+
+    m = abs(minimum(signal))
+    s_normalized = @. log.(1 + signal + m)
+
+    return s_normalized
+end
+
+"""
     s_add_noise(signal)
 
 Adds random noise to the `signal`.

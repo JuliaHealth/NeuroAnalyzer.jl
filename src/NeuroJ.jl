@@ -92,6 +92,7 @@ export s_demean
 export s_normalize_zscore
 export s_normalize_minmax
 export s_normalize_max
+export s_normalize_log
 export s_add_noise
 export s_resample
 export s_invert_polarity
@@ -245,6 +246,8 @@ export eeg_normalize_minmax
 export eeg_normalize_minmax!
 export eeg_normalize_max
 export eeg_normalize_max!
+export eeg_normalize_log
+export eeg_normalize_log!
 export eeg_add_noise
 export eeg_add_noise!
 export eeg_filter

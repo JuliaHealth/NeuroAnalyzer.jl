@@ -46,6 +46,7 @@ using Test
 @test s_normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test s_normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test s_normalize_max([1, 2, 1]) == [0.5, 1.0, 0.5]
+@test s_normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
 @test length(s_add_noise(ones(10))) == 10
 s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0

@@ -70,6 +70,9 @@ edf1 = eeg_normalize_minmax(edf)
 edf1 = eeg_normalize_max(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
+edf1 = eeg_normalize_log(edf)
+@test size(edf1.eeg_signals) == (19, 309760, 1)
+
 cov_m = eeg_cov(edf)
 @test size(cov_m) == (19, 19, 1)
 
