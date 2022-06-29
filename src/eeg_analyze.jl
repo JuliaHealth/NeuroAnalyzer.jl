@@ -2627,3 +2627,84 @@ function eeg_fcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch
 
     return (c=c, msc=msc, f=f)
 end
+
+"""
+    eeg_vartest(eeg)
+
+Calculate variance F-test for all channels of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+Named tuple containing:
+- `f::Array{Float64, 3}`
+- `p::Array{Float64, 3}`
+"""
+function eeg_vartest(eeg::NeuroJ.EEG)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+
+    f = zeros(channel_n, channel_n, epoch_n)
+    p = zeros(channel_n, channel_n, epoch_n)
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+       @inbounds @simd for channel_idx1 in 1:channel_n
+           for channel_idx2 in 1:channel_n
+                s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
+                s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
+                ftest = VarianceFTest(s1, s2)
+                f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
+                p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
+            end
+        end
+    end
+
+    return (f=f, p=p)
+end
+
+"""
+    eeg_vartest(eeg1, eeg2)
+
+Calculate variance F-test for all channels of `eeg1` and `eeg2`.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`
+- `eeg2::NeuroJ.EEG`
+
+# Returns
+
+Named tuple containing:
+- `f::Array{Float64, 3}`
+- `p::Array{Float64, 3}`
+"""
+function eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+
+    channel_n1 = eeg_channel_n(eeg1)
+    epoch_n1 = eeg_epoch_n(eeg1)
+    channel_n2 = eeg_channel_n(eeg1)
+    epoch_n2 = eeg_epoch_n(eeg1)
+    channel_n1 == channel_n2 || throw(ArgumentError("Both EEG objects must have the same number of channels."))
+    epoch_n1 == epoch_n2 || throw(ArgumentError("Both EEG objects must have the same number of epochs."))
+
+    f = zeros(channel_n1, channel_n1, epoch_n1)
+    p = zeros(channel_n1, channel_n1, epoch_n1)
+
+    Threads.@threads for epoch_idx in 1:epoch_n1
+       @inbounds @simd for channel_idx1 in 1:channel_n1
+           for channel_idx2 in 1:channel_n1
+                s1 = @view eeg1.eeg_signals[channel_idx1, :, epoch_idx]
+                s2 = @view eeg2.eeg_signals[channel_idx2, :, epoch_idx]
+                ftest = VarianceFTest(s1, s2)
+                f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
+                p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
+            end
+        end
+    end
+
+    return (f=f, p=p)
+end

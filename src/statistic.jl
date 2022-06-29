@@ -142,6 +142,8 @@ Named tuple containing:
 """
 function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
 
+    std(x) == 0 && throw(ArgumentError("Standard deviation of the input vector must not be 0."))
+
     n = length(x)
     df = n - 2
 
@@ -165,7 +167,7 @@ function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
     end
 
     t_critical = quantile(TDist(df), 1 - p)
-    h = (n - 1) * t_critical / sqrt(n * (d + t_critical^2))
+    h = (n - 1) * t_critical / sqrt(n * (df + t_critical^2))
 
     if g < h
         return false

@@ -3502,6 +3502,51 @@ Named tuple containing:
   * `w_pow::Array{Float64, 4}`
   * `w_frq::Matrix{Float64}`
 
+<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vartest(eeg)
+```
+
+Calculate variance F-test for all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `f::Array{Float64, 3}`
+  * `p::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vartest(eeg1, eeg2)
+```
+
+Calculate variance F-test for all channels of `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `f::Array{Float64, 3}`
+  * `p::Array{Float64, 3}`
+
 
 <a id='EEG-plots'></a>
 

@@ -192,6 +192,8 @@ eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::I
 eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6, demean::Bool=true)
 eeg_tkeo(eeg::NeuroJ.EEG)
 eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
+eeg_vartest(eeg::NeuroJ.EEG)
+eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 ```
 
 ## EEG plots

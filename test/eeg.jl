@@ -288,4 +288,7 @@ c, msc, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 edf1 = eeg_reference_plap(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
+f, p = eeg_vartest(edf)
+@test size(f) == (19, 19, 1)
+
 true

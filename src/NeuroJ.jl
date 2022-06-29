@@ -332,6 +332,7 @@ export eeg_wspectrogram
 export eeg_tkeo
 export eeg_wspectrum
 export eeg_fcoherence
+export eeg_vartest
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

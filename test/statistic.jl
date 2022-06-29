@@ -15,7 +15,7 @@ df = DataFrame(:x=>x, :y=>y)
 m = lm(@formula(y ~ x), df)
 @test length(infcrit(m)) == 2
 
-@test grubbs(ones(10)) == false
+@test grubbs([1, 2, 3, 4, 5]) == false
 @test outlier_detect(ones(10)) == zeros(10)
 
 true
