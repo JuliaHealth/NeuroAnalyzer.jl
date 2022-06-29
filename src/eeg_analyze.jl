@@ -403,8 +403,8 @@ function eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    eeg_channel_n(eeg1) == eeg_channel_n(eeg2) || throw(ArgumentError("Both signals must have the same number of channels."))
-    eeg_epoch_n(eeg1) == eeg_epoch_n(eeg2) || throw(ArgumentError("Both signals must have the same number of epochs."))
+    eeg_channel_n(eeg1) == eeg_channel_n(eeg2) || throw(ArgumentError("Both EEG objects must have the same number of channels."))
+    eeg_epoch_n(eeg1) == eeg_epoch_n(eeg2) || throw(ArgumentError("Both EEG objects must have the same number of epochs."))
 
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
@@ -542,7 +542,7 @@ function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both signals must have the same size."))
+    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both EEG signals must have the same size."))
 
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
@@ -1248,7 +1248,7 @@ Named tuple containing:
 """
 function eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
-    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both signals must be of the same as size."))
+    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both EEG signals must have the same size."))
 
     epoch_n = eeg_epoch_n(eeg1)
     e_len = eeg_epoch_len(eeg1)
@@ -1296,7 +1296,7 @@ Named tuple containing:
 """
 function eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
 
-    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both signals must be of the same size."))
+    size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both EEG signals must have the same size."))
     method in [:absdiff, :diff2int] || throw(ArgumentError("method must be :absdiff or :diff2int."))
 
     epoch_n = eeg_epoch_n(eeg1)
@@ -2569,7 +2569,7 @@ function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; frq_lim::Union{Tuple
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("EEG1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both signals must have the same size."))
+    size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("Both EEG signals must have the same size."))
     eeg_sr(eeg1) == eeg_sr(eeg2) || throw(ArgumentError("Sampling rate of EEG1 and EEG2 must be the same."))
     channel_n = eeg_channel_n(eeg1)
     epoch_n = eeg_epoch_n(eeg1)
