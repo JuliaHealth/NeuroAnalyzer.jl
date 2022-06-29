@@ -125,7 +125,7 @@ function infcrit(m)
 end
 
 """
-    grubbs(x; alpha, t)
+    grubbsx; alpha, t)
 
 Perform Grubbs test for outlier in vector `x`.
 
@@ -137,12 +137,13 @@ Perform Grubbs test for outlier in vector `x`.
 
 # Returns
 
+Named tuple containing:
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
 function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
 
     n = length(x)
-    d = n - 2
+    df = n - 2
 
     if t == 0
         two_sided = true
@@ -158,13 +159,19 @@ function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
     end
 
     if two_sided == true
-        h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha / (2 * n)))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / (2 * n)))^2))
+        p = (1 - alpha) / (2 * n)
     else
-        h = (n - 1) / sqrt(n) * sqrt(quantile(TDist(d), 1 - (alpha / n))^2 / (n - 2 + quantile(TDist(d), 1 - (alpha / n))^2))
+        p = (1 - alpha) / n
     end
 
-    g < h && return false
-    g > h && return true
+    t_critical = quantile(TDist(df), 1 - p)
+    h = (n - 1) * t_critical / sqrt(n * (d + t_critical^2))
+
+    if g < h
+        return false
+    else
+        return true
+    end
 
 end
 

@@ -880,15 +880,15 @@ function s_msci95(signal::Vector{Float64})
 end
 
 """
-    s_msci95(signal; n=3, method=:normal)
+    s_msci95(signal; n, method)
 
 Calculates mean, std and 95% confidence interval for each the `signal` channels.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `n::Int64`: number of bootstraps
-- `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+- `n::Int64=3`: number of bootstraps
+- `method::Symbol=:normal`: use normal method (:normal) or `n`-times boostrapping (:boot)
 
 # Returns
 
@@ -966,7 +966,7 @@ function s2_mean(signal1::Vector{Float64}, signal2::Vector{Float64})
 end
 
 """
-    s2_difference(signal1, signal2; n=3, method=:absdiff)
+    s2_difference(signal1, signal2; n, method)
 
 Calculates mean difference and 95% confidence interval for 2 signals.
 
@@ -974,8 +974,8 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 - `signal1::AbstractArray`
 - `signal2::AbstractArray`
-- `n::Int64`: number of bootstraps
-- `method::Symbol[:absdiff, :diff2int]`
+- `n::Int64=3`: number of bootstraps
+- `method::Symbol=:absdiff`
     - `:absdiff`: maximum difference
     - `:diff2int`: integrated area of the squared difference
 
@@ -1040,16 +1040,16 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
 end
 
 """
-   s_acov(signal; lag=1, demean=false, norm=false)
+   s_acov(signal; lag, demean, norm)
 
 Calculate autocovariance of the `signal`.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean `signal` prior to calculations
-- `norm::Bool`: normalize autocovariance
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `demean::Bool=false`: demean `signal` prior to calculations
+- `norm::Bool=false`: normalize autocovariance
 
 # Returns
 
@@ -1414,6 +1414,27 @@ function s_normalize_minmax(signal::AbstractArray)
     mi = minimum(signal)
     mx = maximum(signal)
     s_normalized = 2 .* (signal .- mi) ./ (mx - mi) .- 1
+
+    return s_normalized
+end
+
+"""
+    s_normalize_max(signal)
+
+Normalize `signal` in [0, +1].
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_max(signal::AbstractArray)
+
+    mx = maximum(signal)
+    s_normalized = signal ./ mx
 
     return s_normalized
 end

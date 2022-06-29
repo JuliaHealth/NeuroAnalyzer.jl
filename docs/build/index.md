@@ -1600,6 +1600,40 @@ Normalize to 0...1
 
   * `eeg::NeuroJ.EEG`
 
+<a id='NeuroJ.eeg_normalize_max-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_max-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize_max`** &mdash; *Method*.
+
+
+
+```julia
+eeg_normalize_max(eeg)
+```
+
+Normalize to 0...1
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_normalize_max!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_max!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize_max!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_normalize_max!(eeg)
+```
+
+Normalize to 0...1
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 <a id='NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_add_noise`** &mdash; *Method*.
 
@@ -6076,7 +6110,7 @@ Calculate mean, std and 95% confidence interval for `signal`.
 
 
 ```julia
-s_msci95(signal; n=3, method=:normal)
+s_msci95(signal; n, method)
 ```
 
 Calculates mean, std and 95% confidence interval for each the `signal` channels.
@@ -6084,8 +6118,8 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `n::Int64`: number of bootstraps
-  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+  * `n::Int64=3`: number of bootstraps
+  * `method::Symbol=:normal`: use normal method (:normal) or `n`-times boostrapping (:boot)
 
 **Returns**
 
@@ -6123,7 +6157,7 @@ Calculates mean and 95% confidence interval for 2 signals.
 
 
 ```julia
-s2_difference(signal1, signal2; n=3, method=:absdiff)
+s2_difference(signal1, signal2; n, method)
 ```
 
 Calculates mean difference and 95% confidence interval for 2 signals.
@@ -6132,8 +6166,8 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
   * `signal1::AbstractArray`
   * `signal2::AbstractArray`
-  * `n::Int64`: number of bootstraps
-  * `method::Symbol[:absdiff, :diff2int]`
+  * `n::Int64=3`: number of bootstraps
+  * `method::Symbol=:absdiff`
 
       * `:absdiff`: maximum difference
       * `:diff2int`: integrated area of the squared difference
@@ -6149,16 +6183,16 @@ Calculates mean difference and 95% confidence interval for 2 signals.
 
 
 
-s_acov(signal; lag=1, demean=false, norm=false)
+s_acov(signal; lag, demean, norm)
 
 Calculate autocovariance of the `signal`.
 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `lag::Int64`: lags range is `-lag:lag`
-  * `demean::Bool`: demean `signal` prior to calculations
-  * `norm::Bool`: normalize autocovariance
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean `signal` prior to calculations
+  * `norm::Bool=false`: normalize autocovariance
 
 **Returns**
 
@@ -6351,6 +6385,25 @@ s_normalize_minmax(signal)
 ```
 
 Normalize `signal` in [-1, +1].
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroJ.s_normalize_max-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_max-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_normalize_max`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_max(signal)
+```
+
+Normalize `signal` in [0, +1].
 
 **Arguments**
 
