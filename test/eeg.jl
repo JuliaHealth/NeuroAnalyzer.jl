@@ -291,4 +291,13 @@ edf1 = eeg_reference_plap(edf)
 f, p = eeg_vartest(edf)
 @test size(f) == (19, 19, 1)
 
+edf1 = eeg_add_note(edf, note="test")
+@test eeg_view_note(edf1) == "test"
+eeg_delete_note!(edf1)
+@test eeg_view_note(edf1) == ""
+
+new_channel = zeros(1, eeg_epoch_len(edf), eeg_epoch_n(edf))
+edf1 = eeg_replace_channel(edf, channel=1, signal=new_channel)
+@test edf1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
+
 true

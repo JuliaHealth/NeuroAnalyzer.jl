@@ -88,6 +88,13 @@ eeg_edit_header!(edf, field=:patient, value="N.N.")
 eeg_edit_header!(edf, field=:comment, value="This is a tutorial EEG dataset.")
 ```
 
+Add note:
+```julia
+eeg_add_note!(edf, note="This is a test description.")
+eeg_view_note(edf)
+eeg_delete_note!(edf)
+```
+
 Show EEG properties:
 ```julia
 eeg_info(edf)
@@ -135,6 +142,12 @@ edf = eeg_delete_channel(edf, channel=[1, 5, 9])
 Keep channel:
 ```julia
 edf = eeg_keep_channel(edf, channel=1:4)
+```
+
+Replace channel 1 with channel 18:
+```julia
+ch = eeg_extract_channel(edf, channel=18)
+edf1 = eeg_replace_channel(edf, channel=1, signal=ch)
 ```
 
 Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):

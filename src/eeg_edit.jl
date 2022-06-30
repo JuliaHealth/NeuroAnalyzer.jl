@@ -1683,17 +1683,17 @@ function eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_comment(eeg)
+    eeg_view_note(eeg)
 
-Return `eeg` comment.
+Return `eeg` note.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_comment(eeg::NeuroJ.EEG)
+function eeg_view_note(eeg::NeuroJ.EEG)
 
-    return eeg.eeg_header[:comment]
+    return eeg.eeg_header[:note]
 end
 
 """
@@ -1764,6 +1764,167 @@ function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Real)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
     push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
+
+    nothing
+end
+
+"""
+    eeg_add_note(eeg; note)
+
+Return `eeg` note.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `note::String`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_add_note(eeg::NeuroJ.EEG; note::String)
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:note] = note
+
+    return eeg_new
+end
+
+"""
+    eeg_add_note!(eeg; note)
+
+Return `eeg` note.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `note::String`
+"""
+function eeg_add_note!(eeg::NeuroJ.EEG; note::String)
+
+    eeg.eeg_header[:note] = note
+    
+    nothing
+end
+
+"""
+    eeg_delete_note(eeg)
+
+Return `eeg` note.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_delete_note(eeg::NeuroJ.EEG)
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:note] = ""
+
+    return eeg_new
+end
+
+"""
+    eeg_delete_note!(eeg)
+
+Return `eeg` note.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_delete_note!(eeg::NeuroJ.EEG)
+
+    eeg.eeg_header[:note] = ""
+    
+    nothing
+end
+
+"""
+    eeg_replace_channel(eeg; channel, signal)
+
+Replace the `channel` index / name with `signal`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, String}`: channel name
+- `signal::Array{Float64, 3}
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_replace_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+
+
+    channel_idx = nothing
+    labels = eeg_labels(eeg)
+    if typeof(channel) == String
+        for idx in 1:length(labels)
+            if channel == labels[idx]
+                channel_idx = idx
+            end
+        end
+        channel_idx === nothing && throw(ArgumentError("channel name does not match signal labels."))
+    else
+        if channel < 1 || channel > length(labels)
+            throw(ArgumentError("channel index does not match signal channels."))
+        end
+        channel_idx = channel
+    end
+
+    eeg_new = deepcopy(eeg)
+    size(signal) == (1, eeg_epoch_len(eeg_new), eeg_epoch_n(eeg_new)) || throw(ArgumentError("signal size must be the same as EEG channel size ($(size(eeg_new.eeg_signals[channel_idx, :, :]))."))
+    eeg_new.eeg_signals[channel_idx, :, :] = signal
+    eeg_reset_components!(eeg_new)
+
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal")
+
+    return eeg_new
+end
+
+"""
+    eeg_replace_channel!(eeg; channel, signal)
+
+Replace the `channel` index / name with `signal`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, String}`: channel name
+- `signal::Array{Float64, 3}
+"""
+function eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+
+
+    labels = eeg_labels(eeg)
+    channel_idx = nothing
+    if typeof(channel) == String
+        for idx in 1:length(labels)
+            if channel == labels[idx]
+                channel_idx = idx
+            end
+        end
+        channel_idx === nothing && throw(ArgumentError("channel name does not match signal labels."))
+    else
+        if channel < 1 || channel > length(labels)
+            throw(ArgumentError("channel index does not match signal channels."))
+        end
+        channel_idx = channel
+    end
+
+    size(signal) == (1, eeg_epoch_len(eeg_new), eeg_epoch_n(eeg_new)) || throw(ArgumentError("signal size must be the same as EEG channel size ($(size(eeg.eeg_signals[channel_idx, :, :]))."))
+    eeg.eeg_signals[channel_idx, :, :] = signal
+    eeg_reset_components!(eeg)
+
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal")
 
     nothing
 end

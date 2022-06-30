@@ -163,9 +163,8 @@ EEG:
 - visual / auditory stimuli presentation module
 - add/delete markers, view markers on plots
 - amplitude turbulence
-- add/edit/save/load annotations
 - power envelope connectivity
-- mean alpha frequency / amplitude
+- mean alpha/beta/... frequency / amplitude
 - custom reference (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
@@ -209,7 +208,6 @@ EEG:
 - preview 2d/3d channel locs
 - swap channel locs axes
 - insert channel
-- modify channel data
 - virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots
 - small plots (amplitude, PSD, spectrogram) at electrode locations

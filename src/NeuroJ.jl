@@ -219,9 +219,15 @@ export eeg_edit_channel
 export eeg_edit_channel!
 export eeg_keep_eeg_channels
 export eeg_keep_eeg_channels!
-export eeg_comment
+export eeg_view_note
 export eeg_epochs_time
 export eeg_epochs_time!
+export eeg_add_note
+export eeg_add_note!
+export eeg_delete_note
+export eeg_delete_note!
+export eeg_replace_channel
+export eeg_replace_channel!
 
 include("eeg_process.jl")
 export eeg_reference_ch

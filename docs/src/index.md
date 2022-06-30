@@ -74,10 +74,16 @@ eeg_edit_channel(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
 eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
 eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
 eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
-eeg_comment(eeg::NeuroJ.EEG)
+eeg_view_note(eeg::NeuroJ.EEG)
 eeg_copy(eeg::NeuroJ.EEG)
 eeg_epochs_time(eeg::NeuroJ.EEG; ts::Real)
 eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Real)
+eeg_add_note(eeg::NeuroJ.EEG; note::String)
+eeg_add_note!(eeg::NeuroJ.EEG; note::String)
+eeg_delete_note(eeg::NeuroJ.EEG)
+eeg_delete_note!(eeg::NeuroJ.EEG)
+eeg_replace_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 ```
 
 ## EEG process

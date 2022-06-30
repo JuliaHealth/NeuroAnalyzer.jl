@@ -1149,16 +1149,16 @@ Keep only EEG channels of `eeg`.
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_comment-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_comment-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_comment`** &mdash; *Method*.
+<a id='NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_view_note`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_comment(eeg)
+eeg_view_note(eeg)
 ```
 
-Return `eeg` comment.
+Return `eeg` note.
 
 **Arguments**
 
@@ -1222,6 +1222,114 @@ Edit `eeg` epochs time start.
 **Returns**
 
   * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_note`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_note(eeg; note)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `note::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_note!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_note!(eeg; note)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `note::String`
+
+<a id='NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_note`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_note(eeg)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_note!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_note!(eeg)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_replace_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_replace_channel(eeg; channel, signal)
+```
+
+Replace the `channel` index / name with `signal`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+  * `signal::Array{Float64, 3}
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_replace_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_replace_channel!(eeg; channel, signal)
+```
+
+Replace the `channel` index / name with `signal`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+  * `signal::Array{Float64, 3}
 
 
 <a id='EEG-process'></a>
