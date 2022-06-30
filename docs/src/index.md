@@ -383,6 +383,7 @@ s_gfp(signal::Vector{<:Real})
 s_gfp_norm(signal::Vector{<:Real})
 s2_diss(signal1::Vector{<:Real}, signal2::Vector{<:Real})
 generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
+f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
 ```
 
 ## Statistic

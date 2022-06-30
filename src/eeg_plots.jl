@@ -3594,6 +3594,8 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
                                           eeg_tmp.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -4106,6 +4108,8 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -4115,8 +4119,10 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolated_x = round.(interpolated_x, digits=2)
+    interpolated_y = round.(interpolated_y, digits=2)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
         end
@@ -4126,7 +4132,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
     m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
     m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
@@ -4264,6 +4270,8 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -4273,8 +4281,10 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolated_x = round.(interpolated_x, digits=2)
+    interpolated_y = round.(interpolated_y, digits=2)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
         end
@@ -4284,7 +4294,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
     m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
     m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
@@ -4402,6 +4412,8 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -4508,6 +4520,8 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
@@ -4517,8 +4531,10 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolated_x = round.(interpolated_x, digits=2)
+    interpolated_y = round.(interpolated_y, digits=2)
     interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
         end
@@ -4528,7 +4544,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, c))
     m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, c))
     m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, c))
-    for idx1 in 1:interpolation_factor
+    @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
@@ -4688,7 +4704,7 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
         interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
         interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-        for idx1 in 1:interpolation_factor
+        @inbounds @simd for idx1 in 1:interpolation_factor
             for idx2 in 1:interpolation_factor
                 interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
             end
@@ -4698,7 +4714,7 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
         m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
         m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-        for idx1 in 1:interpolation_factor
+        @inbounds @simd for idx1 in 1:interpolation_factor
             for idx2 in 1:interpolation_factor
                 s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
             end
@@ -5981,6 +5997,8 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
     x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
     y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 

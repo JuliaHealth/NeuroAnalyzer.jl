@@ -197,6 +197,11 @@ eeg_check_bad_epochs(e10, bad_epochs)
 eeg_delete_epoch!(e10, epoch=bad_epochs)
 ```
 
+Interpolate channel (slow for long signals):
+```julia
+edf_new = eeg_interpolate_channel(edf, channel=1)
+```
+
 ### EEG Process
 
 Any analysis data (e.g. ICA, PCA) can be stored within the EEG object (see `eeg_add_component()`, `eeg_delete_component()`, `eeg_rename_component()`, `eeg_component_type()`) for later use (see `eeg_extract_component()`). Note: any function that changes EEG signal data (e.g. channel removal, filtering) resets embedded components (see `eeg_reset_components()`.

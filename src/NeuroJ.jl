@@ -148,6 +148,7 @@ export s_gfp
 export s_gfp_norm
 export s2_diss
 export generate_morlet_fwhm
+export f_nearest
 
 include("statistic.jl")
 export hildebrand_rule
@@ -228,6 +229,8 @@ export eeg_delete_note
 export eeg_delete_note!
 export eeg_replace_channel
 export eeg_replace_channel!
+export eeg_interpolate_channel
+export eeg_interpolate_channel!
 
 include("eeg_process.jl")
 export eeg_reference_ch

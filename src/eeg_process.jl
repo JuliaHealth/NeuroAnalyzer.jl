@@ -1797,7 +1797,7 @@ function eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 end
 
 """
-    eeg_reference_plap(eeg, nn, weights)
+    eeg_reference_plap(eeg; nn, weights)
 
 Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
@@ -1868,7 +1868,7 @@ function eeg_reference_plap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 end
 
 """
-    eeg_reference_plap!(eeg, nn, weights)
+    eeg_reference_plap!(eeg; nn, weights)
 
 Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
@@ -1878,9 +1878,9 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 - `nn::Int64=4`: number of nearest electrodes
 - `weights::Bool=true`: use distance weights; use mean of nearest channels if false
 """
-function eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4)
+function eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 
-    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn).eeg_signals
+    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn)")
 

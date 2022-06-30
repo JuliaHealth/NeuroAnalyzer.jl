@@ -3504,3 +3504,31 @@ function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
     
     return m
 end
+
+"""
+    f_nearest(m, pos)
+
+Find nearest position tuple `pos` in matrxi of positions `m`.
+
+# Arguments
+
+- `m::Matrix{Tuple{Float64, Float64}}`
+- `p::Tuple{Float64, Float64}`
+
+# Returns
+
+- `pos::Tuple{Int64, Int64}`: row and column in m
+"""
+function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
+    d = zeros(size(m))
+    for idx1 in 1:size(m, 1)
+        for idx2 in 1:size(m, 2)
+            d[idx1, idx2] = euclidean(m[idx1, idx2], p)
+        end
+    end
+    r = findmin(d)[2][1]
+    c = findmin(d)[2][2]
+    pos = (r, c)
+
+    return pos
+end

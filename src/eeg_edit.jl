@@ -1902,7 +1902,6 @@ Replace the `channel` index / name with `signal`.
 """
 function eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
-
     labels = eeg_labels(eeg)
     channel_idx = nothing
     if typeof(channel) == String
@@ -1925,6 +1924,108 @@ function eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, si
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal")
+
+    nothing
+end
+
+"""
+    eeg_interpolate_channel(eeg; channel, m)
+
+Interpolate `eeg` channel using planar interpolation.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`: channel number to interpolate
+- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Int64, m::Symbol=:shepard)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_tmp = eeg_delete_channel(eeg, channel=1).eeg_signals
+    eeg_new = deepcopy(eeg)
+
+    # plot signal at electrodes at time
+    loc_x = zeros(eeg_channel_n(eeg))
+    loc_y = zeros(eeg_channel_n(eeg))
+    for idx in 1:eeg_channel_n(eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
+    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
+    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+    ch_loc_x = loc_x[channel]
+    ch_loc_y = loc_y[channel]
+    deleteat!(loc_x, channel)
+    deleteat!(loc_y, channel)
+    # interpolate
+    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
+    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+    interpolation_factor = 100
+    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
+    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolated_x = round.(interpolated_x, digits=2)
+    interpolated_y = round.(interpolated_y, digits=2)
+    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
+    @inbounds @simd for idx1 in 1:interpolation_factor
+        for idx2 in 1:interpolation_factor
+            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
+        end
+    end
+    epoch_n = eeg_epoch_n(eeg)
+    epoch_len = eeg_epoch_len(eeg)
+    electrode_locations = [loc_x loc_y]'
+    s_interpolated = zeros(Float64, epoch_len, epoch_n)
+    ch_pos = f_nearest(interpolation_m, (ch_loc_x, ch_loc_y))
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for length_idx in 1:epoch_len
+            s_non_interpolated = @view eeg_tmp[:, length_idx, epoch_idx]
+            s_interpolated_tmp = zeros(interpolation_factor, interpolation_factor)
+            m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
+            m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
+            m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
+            for idx1 in 1:interpolation_factor
+                for idx2 in 1:interpolation_factor
+                    s_interpolated_tmp[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
+                end
+            end
+            s_interpolated[length_idx, epoch_idx] = s_interpolated_tmp[ch_pos[1], ch_pos[2]]
+        end
+    end
+    eeg_new.eeg_signals[channel, :, :] = s_interpolated
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel)")
+
+    return eeg_new
+end
+
+
+"""
+    eeg_interpolate_channel!(eeg; channel, m)
+
+Interpolate `eeg` channel using planar interpolation.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Int64`: channel number to interpolate
+- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+"""
+function eeg_interpolate_channel!(eeg::NeuroJ.EEG; channel::Int64, m::Symbol=:shepard)
+
+    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, m=m).eeg_signals
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel)")
 
     nothing
 end

@@ -2264,7 +2264,7 @@ Perform wavelet denoising.
 
 
 ```julia
-eeg_reference_plap(eeg, nn, weights)
+eeg_reference_plap(eeg; nn, weights)
 ```
 
 Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
@@ -2285,7 +2285,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 
 ```julia
-eeg_reference_plap!(eeg, nn, weights)
+eeg_reference_plap!(eeg; nn, weights)
 ```
 
 Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
@@ -7870,6 +7870,26 @@ Generate Morlet wavelet using Mike X Cohen formula.
 **Source**
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
+
+<a id='NeuroJ.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}' href='#NeuroJ.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}'>#</a>
+**`NeuroJ.f_nearest`** &mdash; *Method*.
+
+
+
+```julia
+f_nearest(m, pos)
+```
+
+Find nearest position tuple `pos` in matrxi of positions `m`.
+
+**Arguments**
+
+  * `m::Matrix{Tuple{Float64, Float64}}`
+  * `p::Tuple{Float64, Float64}`
+
+**Returns**
+
+  * `pos::Tuple{Int64, Int64}`: row and column in m
 
 
 <a id='Statistic'></a>
