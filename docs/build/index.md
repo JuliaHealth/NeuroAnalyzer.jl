@@ -1331,6 +1331,46 @@ Replace the `channel` index / name with `signal`.
   * `channel::Union{Int64, String}`: channel name
   * `signal::Array{Float64, 3}
 
+<a id='NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_interpolate_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_interpolate_channel(eeg; channel, m, q)
+```
+
+Interpolate `eeg` channel using planar interpolation.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_interpolate_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_interpolate_channel(eeg; channel, m, q)
+```
+
+Interpolate `eeg` channel using planar interpolation.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+
 
 <a id='EEG-process'></a>
 

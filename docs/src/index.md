@@ -84,6 +84,8 @@ eeg_delete_note(eeg::NeuroJ.EEG)
 eeg_delete_note!(eeg::NeuroJ.EEG)
 eeg_replace_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
+eeg_interpolate_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
 ```
 
 ## EEG process

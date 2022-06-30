@@ -151,7 +151,6 @@ General:
 - plugins: install
 
 EEG:
-- interpolate more than one channel
 - tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
