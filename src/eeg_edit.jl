@@ -1956,7 +1956,6 @@ function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{I
     eeg_tmp = eeg_delete_channel(eeg, channel=channel).eeg_signals
     eeg_new = deepcopy(eeg)
 
-    # plot signal at electrodes at time
     loc_x = zeros(eeg_channel_n(eeg))
     loc_y = zeros(eeg_channel_n(eeg))
     for idx in 1:eeg_channel_n(eeg)
