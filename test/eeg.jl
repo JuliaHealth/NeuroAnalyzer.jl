@@ -227,9 +227,6 @@ eeg_keep_eeg_channels!(e)
 e = eeg_invert_polarity(edf, channel=1)
 @test e.eeg_signals[1, 1, 1] == -edf.eeg_signals[1, 1, 1]
 
-c = eeg_comment(edf)
-@test c == ""
-
 v = eeg_channels_stats(edf)
 @test length(v) == 10
 
