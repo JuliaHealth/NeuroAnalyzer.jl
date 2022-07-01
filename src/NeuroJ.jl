@@ -8,6 +8,7 @@ using Distances
 using DSP
 using FFTW
 using FindPeaks1D
+using Git
 using GLM
 using HypothesisTests
 using InformationMeasures
@@ -43,6 +44,9 @@ end
 include("neuroj.jl")
 export neuroj_plugins_reload
 export neuroj_plugins_list
+export neuroj_plugins_remove
+export neuroj_plugins_install
+export neuroj_plugins_update
 export neuroj_version
 neuroj_plugins_reload()
 

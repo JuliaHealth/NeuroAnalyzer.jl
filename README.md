@@ -62,6 +62,8 @@ The following packages are required:
 - DSP
 - FFTW
 - FindPeaks1D
+- Git
+- GLM
 - HypothesisTests
 - InformationMeasures
 - Interpolations
@@ -141,14 +143,8 @@ neuroj_plugin_demo()
 The lists below are not in any particular order.
 
 General:
-- stable branch to be released monthly
-- performance optimization
+- further performance optimizations
 - Pluto interface
-- plugins are in separate subdirectories
-- use Git for plugins
-- plugins: update
-- plugins: remove
-- plugins: install
 
 EEG:
 - tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
