@@ -1709,18 +1709,22 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
     end
 
     if fprototype === :poly
+        signal = _reflect(signal)
         t = collect(0:1/fs:(length(signal) - 1) / fs)        
         p = Polynomials.fit(t, signal, order)
         s_filtered = zeros(length(signal))
         for idx in 1:length(signal)
             s_filtered[idx] = p(t[idx])
         end
+        s_filtered = _chop(s_filtered)
 
         return s_filtered
     end
 
     if fprototype === :conv
+        signal = _reflect(signal)
         s_filtered = s_tconv(signal, window)
+        s_filtered = _chop(s_filtered)
 
         return s_filtered
     end
@@ -1770,9 +1774,11 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
     end
 
     if fprototype !== :mavg && fprototype !== :mmed && fprototype !== :conv
+        signal = _reflect(signal)
         dir === :twopass && (s_filtered = filtfilt(flt, signal))
         dir === :onepass && (s_filtered = filt(flt, signal))
         dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
+        s_filtered = _chop(s_filtered)
     end
 
     return s_filtered

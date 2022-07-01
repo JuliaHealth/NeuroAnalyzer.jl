@@ -172,7 +172,6 @@ EEG:
 - wavelets
 - normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
-- add edge padding for filters
 - ITPC topoplot
 - non-phase-locked part of the signal (= total - phase-locked)
 - phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
