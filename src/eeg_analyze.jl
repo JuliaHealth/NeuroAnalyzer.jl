@@ -2708,3 +2708,47 @@ function eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 
     return (f=f, p=p)
 end
+
+"""
+    eeg_band_mpower(eeg; f, mt)
+
+Calculate mean and maximum band power and its frequency.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+- `mt::Bool=false`: if true use multi-tapered periodogram
+
+# Returns
+
+Named tuple containing:
+- `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
+- `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
+- `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
+"""
+function eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    fs = eeg_sr(eeg)
+    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
+    f = tuple_order(f)
+    f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    mbp = zeros(channel_n, epoch_n)
+    maxfrq = zeros(channel_n, epoch_n)
+    maxbp = zeros(channel_n, epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            mbp[channel_idx, epoch_idx], maxfrq[channel_idx, epoch_idx], maxbp[channel_idx, epoch_idx] = s_band_mpower(s, fs=fs, f=f, mt=mt)
+        end
+    end
+
+    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+end

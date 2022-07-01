@@ -164,7 +164,6 @@ EEG:
 - add/delete markers, view markers on plots
 - amplitude turbulence
 - power envelope connectivity
-- mean alpha/beta/... frequency / amplitude
 - custom reference (e.g. bipolar longitudinal/horizontal)
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison

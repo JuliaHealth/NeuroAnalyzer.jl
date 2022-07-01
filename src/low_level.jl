@@ -771,7 +771,7 @@ end
 """
    s_cov(signal; norm=true)
 
-Calculates covariance between all channels of the `signal`.
+Calculate covariance between all channels of the `signal`.
 
 # Arguments
 
@@ -798,7 +798,7 @@ end
 """
    s2_cov(signal1, signal2; norm=true)
 
-Calculates covariance between `signal1` and `signal2`.
+Calculate covariance between `signal1` and `signal2`.
 
 # Arguments
 
@@ -882,7 +882,7 @@ end
 """
     s_msci95(signal; n, method)
 
-Calculates mean, std and 95% confidence interval for each the `signal` channels.
+Calculate mean, std and 95% confidence interval for each the `signal` channels.
 
 # Arguments
 
@@ -930,7 +930,7 @@ end
 """
     s2_mean(signal1, signal2)
 
-Calculates mean and 95% confidence interval for 2 signals.
+Calculate mean and 95% confidence interval for 2 signals.
 
 # Arguments
 
@@ -968,7 +968,7 @@ end
 """
     s2_difference(signal1, signal2; n, method)
 
-Calculates mean difference and 95% confidence interval for 2 signals.
+Calculate mean difference and 95% confidence interval for 2 signals.
 
 # Arguments
 
@@ -1100,7 +1100,7 @@ end
 """
    s_xcov(signal1, signal2; lag=1, demean=false, norm=false)
 
-Calculates cross-covariance between `signal1` and `signal2`.
+Calculate cross-covariance between `signal1` and `signal2`.
 
 # Arguments
 
@@ -1162,7 +1162,7 @@ end
 """
     s_spectrum(signal; pad)
 
-Calculates FFT, amplitudes, powers and phases of the `signal`.
+Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 # Arguments
 
@@ -1197,7 +1197,7 @@ end
 """
     s_total_power(signal; fs)
 
-Calculates `signal` total power.
+Calculate `signal` total power.
 
 # Arguments
 
@@ -1224,7 +1224,7 @@ end
 """
     s_band_power(signal; fs, f)
 
-Calculates `signal` power between `f[1]` and `f[2]`.
+Calculate `signal` power between `f[1]` and `f[2]`.
 
 # Arguments
 
@@ -2122,7 +2122,7 @@ end
 """
     s_pca(signal, n)
 
-Calculates `n` first PCs for `signal`.
+Calculate `n` first PCs for `signal`.
 
 # Arguments
 
@@ -3531,4 +3531,38 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
     pos = (r, c)
 
     return pos
+end
+
+"""
+    s_band_mpower(signal; fs, f)
+
+Calculate mean and maximum band power and its frequency.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `fs::Int64`: sampling rate
+- `f::Tuple{Real, Real}`: lower and upper frequency bounds
+
+# Returns
+
+Named tuple containing:
+- `mbp::Float64`: mean band power [dB]
+- `maxfrq::Float64`: frequency of maximum band power [Hz]
+- `maxbp::Float64`: power at maximum band frequency [dB]
+"""
+function s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
+
+    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
+    mt == true && (psd = mt_pgram(signal, fs=fs))
+
+    psd_freq = Vector(psd.freq)
+    
+    f1_idx = vsearch(f[1], psd_freq)
+    f2_idx = vsearch(f[2], psd_freq)
+    mbp = mean(psd.power[f1_idx:f2_idx])
+    maxfrq = psd_freq[f1_idx:f2_idx][findmax(psd.power[f1_idx:f2_idx])[2]]
+    maxbp = psd.power[vsearch(maxfrq, psd_freq)]
+
+    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
 end

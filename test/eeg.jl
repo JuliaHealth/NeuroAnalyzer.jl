@@ -302,4 +302,6 @@ edf1 = eeg_replace_channel(edf1, channel=5, signal=new_channel)
 edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5], q=0.2)
 @test edf2.eeg_signals[1, :, :] != zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
 
+@test length(eeg_band_mpower(edf, f=(1,4))) == 3
+
 true

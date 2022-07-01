@@ -202,6 +202,7 @@ eeg_tkeo(eeg::NeuroJ.EEG)
 eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
 eeg_vartest(eeg::NeuroJ.EEG)
 eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 ```
 
 ## EEG plots
@@ -386,6 +387,7 @@ s_gfp_norm(signal::Vector{<:Real})
 s2_diss(signal1::Vector{<:Real}, signal2::Vector{<:Real})
 generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
 f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
+s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 ```
 
 ## Statistic

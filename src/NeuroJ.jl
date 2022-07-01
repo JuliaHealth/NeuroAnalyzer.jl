@@ -149,6 +149,7 @@ export s_gfp_norm
 export s2_diss
 export generate_morlet_fwhm
 export f_nearest
+export s_band_mpower
 
 include("statistic.jl")
 export hildebrand_rule
@@ -342,6 +343,7 @@ export eeg_tkeo
 export eeg_wspectrum
 export eeg_fcoherence
 export eeg_vartest
+export eeg_band_mpower
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

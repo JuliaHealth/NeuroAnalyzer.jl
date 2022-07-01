@@ -105,5 +105,6 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s2_diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
 @test length(generate_morlet_fwhm(10, 10)) == 21
 @test f_nearest([(1.0, 1.0) (0.0, 0.0); (0.0, 0.0) (0.0, 0.0)], (1.0, 0.0)) == (1, 1)
+@test s_band_mpower(ones(100), f=(1,2), fs=10) == (mbp = 0.0, maxfrq = 1.0, maxbp = 0.0)
 
 true

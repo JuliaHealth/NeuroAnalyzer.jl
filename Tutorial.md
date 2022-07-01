@@ -367,6 +367,12 @@ Calculate band power:
 eeg_band_power(edf, f=(8, 12.5))
 ```
 
+Calculate mean and maximum band power and frequency of maximum band power:
+```julia
+_, mfrq, _ = eeg_band_mpower(edf, f=eeg_band(edf, band=:alpha))
+eeg_plot_channels(edf, c=mfrq, epoch=1, title="Maximum α band frequency\n[epoch: 1]")
+```
+
 Calculate covariance matrix:
 ```julia
 eeg_cov(edf)

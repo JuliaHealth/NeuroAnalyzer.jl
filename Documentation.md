@@ -3695,6 +3695,31 @@ Named tuple containing:
   * `f::Array{Float64, 3}`
   * `p::Array{Float64, 3}`
 
+<a id='NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_band_mpower`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band_mpower(eeg; f, mt)
+```
+
+Calculate mean and maximum band power and its frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
+  * `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
+  * `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
+
 
 <a id='EEG-plots'></a>
 
@@ -6222,7 +6247,7 @@ Normalize matrix `m`.
 
 s_cov(signal; norm=true)
 
-Calculates covariance between all channels of the `signal`.
+Calculate covariance between all channels of the `signal`.
 
 **Arguments**
 
@@ -6240,7 +6265,7 @@ Calculates covariance between all channels of the `signal`.
 
 s2_cov(signal1, signal2; norm=true)
 
-Calculates covariance between `signal1` and `signal2`.
+Calculate covariance between `signal1` and `signal2`.
 
 **Arguments**
 
@@ -6306,7 +6331,7 @@ Calculate mean, std and 95% confidence interval for `signal`.
 s_msci95(signal; n, method)
 ```
 
-Calculates mean, std and 95% confidence interval for each the `signal` channels.
+Calculate mean, std and 95% confidence interval for each the `signal` channels.
 
 **Arguments**
 
@@ -6330,7 +6355,7 @@ Calculates mean, std and 95% confidence interval for each the `signal` channels.
 s2_mean(signal1, signal2)
 ```
 
-Calculates mean and 95% confidence interval for 2 signals.
+Calculate mean and 95% confidence interval for 2 signals.
 
 **Arguments**
 
@@ -6353,7 +6378,7 @@ Calculates mean and 95% confidence interval for 2 signals.
 s2_difference(signal1, signal2; n, method)
 ```
 
-Calculates mean difference and 95% confidence interval for 2 signals.
+Calculate mean difference and 95% confidence interval for 2 signals.
 
 **Arguments**
 
@@ -6399,7 +6424,7 @@ Calculate autocovariance of the `signal`.
 
 s_xcov(signal1, signal2; lag=1, demean=false, norm=false)
 
-Calculates cross-covariance between `signal1` and `signal2`.
+Calculate cross-covariance between `signal1` and `signal2`.
 
 **Arguments**
 
@@ -6423,7 +6448,7 @@ Calculates cross-covariance between `signal1` and `signal2`.
 s_spectrum(signal; pad)
 ```
 
-Calculates FFT, amplitudes, powers and phases of the `signal`.
+Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 **Arguments**
 
@@ -6448,7 +6473,7 @@ Named tuple containing:
 s_total_power(signal; fs)
 ```
 
-Calculates `signal` total power.
+Calculate `signal` total power.
 
 **Arguments**
 
@@ -6469,7 +6494,7 @@ Calculates `signal` total power.
 s_band_power(signal; fs, f)
 ```
 
-Calculates `signal` power between `f[1]` and `f[2]`.
+Calculate `signal` power between `f[1]` and `f[2]`.
 
 **Arguments**
 
@@ -7050,7 +7075,7 @@ Named tuple containing:
 s_pca(signal, n)
 ```
 
-Calculates `n` first PCs for `signal`.
+Calculate `n` first PCs for `signal`.
 
 **Arguments**
 
@@ -7930,6 +7955,31 @@ Find nearest position tuple `pos` in matrxi of positions `m`.
 **Returns**
 
   * `pos::Tuple{Int64, Int64}`: row and column in m
+
+<a id='NeuroJ.s_band_mpower-Tuple{AbstractArray}' href='#NeuroJ.s_band_mpower-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_band_mpower`** &mdash; *Method*.
+
+
+
+```julia
+s_band_mpower(signal; fs, f)
+```
+
+Calculate mean and maximum band power and its frequency.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+
+**Returns**
+
+Named tuple containing:
+
+  * `mbp::Float64`: mean band power [dB]
+  * `maxfrq::Float64`: frequency of maximum band power [Hz]
+  * `maxbp::Float64`: power at maximum band frequency [dB]
 
 
 <a id='Statistic'></a>
