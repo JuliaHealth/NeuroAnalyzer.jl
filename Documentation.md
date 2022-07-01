@@ -48,6 +48,51 @@ neuroj_plugins_list()
 
 List NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 
+<a id='NeuroJ.neuroj_plugins_remove-Tuple{String}' href='#NeuroJ.neuroj_plugins_remove-Tuple{String}'>#</a>
+**`NeuroJ.neuroj_plugins_remove`** &mdash; *Method*.
+
+
+
+```julia
+neuroj_plugins_remove(plugin)
+```
+
+Remove NeuroJ plugin.
+
+**Attributes**
+
+  * `plugin::String`: plugin name
+
+<a id='NeuroJ.neuroj_plugins_install-Tuple{String}' href='#NeuroJ.neuroj_plugins_install-Tuple{String}'>#</a>
+**`NeuroJ.neuroj_plugins_install`** &mdash; *Method*.
+
+
+
+```julia
+neuroj_plugins_install(plugin)
+```
+
+Install NeuroJ plugin.
+
+**Attributes**
+
+  * `plugin::String`: plugin Git repository URL
+
+<a id='NeuroJ.neuroj_plugins_update-Tuple{Union{Nothing, String}}' href='#NeuroJ.neuroj_plugins_update-Tuple{Union{Nothing, String}}'>#</a>
+**`NeuroJ.neuroj_plugins_update`** &mdash; *Method*.
+
+
+
+```julia
+neuroj_plugins_update(plugin)
+```
+
+Install NeuroJ plugin.
+
+**Attributes**
+
+  * `plugin::String`: plugin to update; if empty, update all
+
 
 <a id='EEG-io'></a>
 

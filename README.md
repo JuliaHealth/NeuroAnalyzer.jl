@@ -121,14 +121,16 @@ Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWyso
 
 ## Plugins (extensions)
 
-Initial plugin architecture is already available, just put .jl plugin scripts into `~/Documents/NeuroJ/plugins`.
+Plugins are git repositories, located at `~/Documents/NeuroJ/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory.
 
 Run `neuroj_reload_plugins()` to refresh plugins.
 
 ```julia
 neuroj_plugins_reload()
 neuroj_plugins_list()
-neuroj_plugin_demo()
+neuroj_plugins_add()
+neuroj_plugins_remove()
+neuroj_plugins_update()
 ```
 
 ## Known bugs

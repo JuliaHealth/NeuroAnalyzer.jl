@@ -50,11 +50,12 @@ function neuroj_plugins_reload()
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
     plugins_path=expanduser("~/Documents/NeuroJ/plugins/")
     cd(plugins_path)
-    plugins_folders = readdir(plugins_path)
-    for idx in 1:length(plugins_folders)
-        for f in readdir(plugins_folders[idx])
-            if splitext(f)[2] == ".jl"
-                include(plugins_folders[idx] * "/" * f)
+    plugins = readdir(plugins_path)
+    for idx1 in 1:length(plugins)
+        plugin = readdir(plugins[idx1] * "/src/")
+        for idx2 in 1:length(plugin)
+            if splitext(plugin[idx2])[2] == ".jl"
+                include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
             end
         end
     end
@@ -71,7 +72,7 @@ function neuroj_plugins_list()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     for idx in 1:length(plugins)
-        println("$idx. $(replace(plugins[idx], ".jl" => "()"))")
+        println("$idx. $(replace(plugins[idx]))")
     end
 end
 
@@ -96,6 +97,7 @@ function neuroj_plugins_remove(plugin::String)
     catch err
         @warn "Cannot remove $plugin directory."
     end
+    neuroj_plugins_reload()
 end
 
 """
@@ -105,7 +107,7 @@ Install NeuroJ plugin.
 
 # Attributes
 
-- `plugin::String`: plugin URL
+- `plugin::String`: plugin Git repository URL
 """
 function neuroj_plugins_install(plugin::String)
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
@@ -116,6 +118,7 @@ function neuroj_plugins_install(plugin::String)
     catch err
         @warn "Cannot install $plugin."
     end
+    neuroj_plugins_reload()
 end
 
 """
@@ -127,27 +130,31 @@ Install NeuroJ plugin.
 
 - `plugin::String`: plugin to update; if empty, update all
 """
-function neuroj_plugins_update(plugin::Union{String, Nothing})
+function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
     plugins_path=expanduser("~/Documents/NeuroJ/plugins/")
     cd(plugins_path)
     plugins = readdir(plugins_path)
-    plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
     if plugin === nothing
-        for idx in 1:length(plugins_folders)
+        for idx in 1:length(plugins)
             cd(plugins[idx])
+            println(plugins[idx])
             try
                 run(`$(git()) pull`)
             catch err
                 @warn "Cannot update $(plugins[idx])."
             end
+            cd(plugins_path)
         end
     else
+        plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
         cd(plugin)
         try
             run(`$(git()) pull`)
         catch err
             @warn "Cannot update $plugin."
         end
+        cd(plugins_path)
     end
+    neuroj_plugins_reload()
 end

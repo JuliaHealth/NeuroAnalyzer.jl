@@ -8,6 +8,9 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 neuroj_version()
 neuroj_plugins_reload()
 neuroj_plugins_list()
+neuroj_plugins_remove(plugin::String)
+neuroj_plugins_install(plugin::String)
+neuroj_plugins_update(plugin::Union{String, Nothing})
 ```
 
 ## EEG io
