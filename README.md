@@ -202,7 +202,6 @@ EEG:
 - eeg_keep_eeg_channels → keep_channels(type)
 - export channel locs to .CED
 - preview 2d/3d channel locs
-- swap channel locs axes
 - insert channel
 - virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - 3d headplots

@@ -1416,6 +1416,40 @@ Interpolate `eeg` channel using planar interpolation.
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
+<a id='NeuroJ.eeg_loc_swap_axes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swap_axes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swap_axes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swap_axes(eeg)
+```
+
+Swap x and y axes of `eeg` channel locations.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_swap_axes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swap_axes!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swap_axes!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swap_axes!(eeg)
+```
+
+Swap x and y axes of `eeg` channel locations.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-process'></a>
 

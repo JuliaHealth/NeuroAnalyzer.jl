@@ -2022,7 +2022,6 @@ function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{I
     return eeg_new
 end
 
-
 """
     eeg_interpolate_channel(eeg; channel, m, q)
 
@@ -2040,6 +2039,76 @@ function eeg_interpolate_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{
     eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, m=m, q=q).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, m=$m, q=$q)")
+
+    nothing
+end
+
+"""
+    eeg_loc_swap_axes(eeg)
+
+Swap x and y axes of `eeg` channel locations.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_swap_axes(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    loc_x = zeros(eeg_channel_n(eeg))
+    loc_y = zeros(eeg_channel_n(eeg))
+    for idx in 1:eeg_channel_n(eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    for idx in 1:eeg_channel_n(eeg)
+        r, t = cart2pol(loc_x[idx], loc_y[idx])
+        eeg_new.eeg_header[:loc_radius][idx] = r
+        eeg_new.eeg_header[:loc_theta][idx] = round(Int64, rad2deg(t))
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_swap_axes(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_swap_axes!(eeg)
+
+Swap x and y axes of `eeg` channel locations.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_swap_axes!(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    loc_x = zeros(eeg_channel_n(eeg))
+    loc_y = zeros(eeg_channel_n(eeg))
+    for idx in 1:eeg_channel_n(eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    for idx in 1:eeg_channel_n(eeg)
+        r, t = cart2pol(loc_x[idx], loc_y[idx])
+        eeg.eeg_header[:loc_radius][idx] = r
+        eeg.eeg_header[:loc_theta][idx] = round(Int64, rad2deg(t))
+    end
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_swap_axes!(EEG)")
 
     nothing
 end

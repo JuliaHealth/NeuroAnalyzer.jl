@@ -71,6 +71,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
     # - `kwargs`: optional arguments for plot() function
+    loc_x, loc_y = loc_y, loc_x
     pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
     x, y = Plots.unzip(pts)
     x = x .* 4
@@ -3684,7 +3685,8 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
             loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
                                               eeg_tmp.eeg_header[:loc_radius][idx])
         end
-        hd = _draw_head(p, loc_x, loc_x, head_labels=head_labels)
+
+        hd = _draw_head(p, minimum([loc_x, loc_y]), minimum([loc_x, loc_y]), head_labels=head_labels)
         plot!(hd)
     end
 

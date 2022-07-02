@@ -48,6 +48,12 @@ eeg_plot_save(p, file_name="images/edf_electrodes.png")
 
 ![edf electrodes](images/edf_electrodes.png)
 
+Swap axes:
+```julia
+eeg_loc_swap_axes!(edf)
+eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
+```
+
 Save EEG object as HDF5-based file:
 ```julia
 eeg_save(edf, file_name="test.bin", overwrite=true)
@@ -823,16 +829,7 @@ eeg_info(edf)
 
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf");
-ecg = eeg_extract_channel(edf, channel=24);
-eeg_delete_channel!(edf, channel=24);
-eog2 = eeg_extract_channel(edf, channel=23);
-eeg_delete_channel!(edf, channel=23);
-eog1 = eeg_extract_channel(edf, channel=22);
-eeg_delete_channel!(edf, channel=22);
-a2 = eeg_extract_channel(edf, channel=18);
-eeg_delete_channel!(edf, channel=18);
-a1 = eeg_extract_channel(edf, channel=17);
-eeg_delete_channel!(edf, channel=17);
+eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 function eeg_benchmark(n::Int64)
     for idx in 1:n
         edf_new = eeg_reference_car(edf)

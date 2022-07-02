@@ -236,6 +236,8 @@ export eeg_replace_channel
 export eeg_replace_channel!
 export eeg_interpolate_channel
 export eeg_interpolate_channel!
+export eeg_loc_swap_axes
+export eeg_loc_swap_axes!
 
 include("eeg_process.jl")
 export eeg_reference_ch
