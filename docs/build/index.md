@@ -2559,10 +2559,10 @@ Named tuple containing:
 
 
 ```julia
-eeg_psd(eeg; norm)
+eeg_psd(eeg; norm, mt)
 ```
 
-Calculate total power for each the `eeg` channels.
+Calculate power spectrum density for each the `eeg` channels.
 
 **Arguments**
 
@@ -3798,6 +3798,31 @@ Named tuple containing:
   * `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
   * `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
   * `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
+
+<a id='NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rel_psd(eeg; norm, mt)
+```
+
+Calculate relative power spectrum density for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+
+**Returns**
+
+Named tuple containing:
+
+  * `psd_pow::Array{Float64, 3}`:powers
+  * `psd_frq::Array{Float64, 3}`: frequencies
 
 
 <a id='EEG-plots'></a>
@@ -6549,7 +6574,7 @@ Named tuple containing:
 
 
 ```julia
-s_total_power(signal; fs)
+s_total_power(signal; fs, mt)
 ```
 
 Calculate `signal` total power.
@@ -6874,7 +6899,7 @@ Filter `signal`.
 
 
 ```julia
-s_psd(signal; fs, norm=false)
+s_psd(signal; fs, norm, mt)
 ```
 
 Calculate power spectrum density of the `signal`.
@@ -6899,7 +6924,7 @@ Named tuple containing:
 
 
 ```julia
-s_psd(signal; fs, norm=false)
+s_psd(signal; fs, norm, mt)
 ```
 
 Calculate power spectrum density of the `signal`.
@@ -6924,7 +6949,7 @@ named tuple containing:
 
 
 ```julia
-s_psd(signal; fs, norm=false)
+s_psd(signal; fs, norm, mt)
 ```
 
 Calculate power spectrum density of the `signal`.
@@ -6949,7 +6974,7 @@ Named tuple containing:
 
 
 ```julia
-s_stationarity_hilbert(signal::Vector{Float64})
+s_stationarity_hilbert(signal)
 ```
 
 Calculate phase stationarity using Hilbert transformation.
@@ -7008,7 +7033,7 @@ Calculate variance stationarity.
 
 
 ```julia
-s_trim(signal; len::Int64)
+s_trim(signal; len, offset, from)
 ```
 
 Remove `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
@@ -7030,7 +7055,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 
 ```julia
-s2_mi(signal1::AbstractArray, signal2::AbstractArray)
+s2_mi(signal1, signal2)
 ```
 
 Calculate mutual information between `signal1` and `signal2`.
@@ -7215,7 +7240,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 
 ```julia
-s_ica(signal, n, tol=1.0e-6, iter=100, f=:tanh)
+s_ica(signal, n, tol, iter, f)
 ```
 
 Calculate `n` first ICs for `signal`.
@@ -7224,9 +7249,9 @@ Calculate `n` first ICs for `signal`.
 
   * `signal::Array{Float64, 3}`
   * `n::Int64`: number of PCs
-  * `tol::Float64`: tolerance for ICA
-  * `iter::Int64`: maximum number of iterations
-  * `f::Symbol[:tanh, :gaus]`: neg-entropy functor
+  * `tol::Float64=1.0e-6`: tolerance for ICA
+  * `iter::Int64=100`: maximum number of iterations
+  * `f::Symbol=:tanh`: neg-entropy functor (:tanh or :gaus)
 
 **Returns**
 
@@ -7261,7 +7286,7 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
 
 ```julia
-s_spectrogram(signal; fs, norm=true, demean=true)
+s_spectrogram(signal; fs, norm, mt, demean)
 ```
 
 Calculate spectrogram of `signal`.
@@ -8059,6 +8084,32 @@ Named tuple containing:
   * `mbp::Float64`: mean band power [dB]
   * `maxfrq::Float64`: frequency of maximum band power [Hz]
   * `maxbp::Float64`: power at maximum band frequency [dB]
+
+<a id='NeuroJ.s_rel_psd-Tuple{AbstractArray}' href='#NeuroJ.s_rel_psd-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+s_rel_psd(signal; fs, norm, mt, f)
+```
+
+Calculate relative power spectrum density of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+
+**Returns**
+
+Named tuple containing:
+
+  * `psd_pow::Vector{Float64}`
+  * `psd_frq::Vector{Float64}`
 
 
 <a id='Statistic'></a>

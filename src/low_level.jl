@@ -1215,7 +1215,7 @@ function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
-    deleteat!(psd_pow, 1)
+    psd_pow[1] = psd_pow[2]
     # dx: frequency resolution
     dx = psd.freq[2] - psd.freq[1]
     stp = simpson(psd_pow, dx=dx)
@@ -1814,8 +1814,7 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
     mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
-    deleteat!(psd_pow, 1)
-    deleteat!(psd_frq, 1)
+    psd_pow[1] = psd_pow[2]
     norm == true && (psd_pow = pow2db.(psd_pow))
 
     return (psd_pow=psd_pow, psd_frq=Vector(psd_frq))
@@ -3613,8 +3612,7 @@ function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=
     mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
-    deleteat!(psd_pow, 1)
-    deleteat!(psd_frq, 1)
+    psd_pow[1] = psd_pow[2]
     psd_pow ./= ref_pow
 
     norm == true && (psd_pow = pow2db.(psd_pow))

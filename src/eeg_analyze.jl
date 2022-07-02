@@ -1576,24 +1576,20 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
     fs = eeg_sr(eeg)
 
     s_tmp = @view eeg.eeg_signals[1, :, 1]
-    mt == false && (psd_tmp = welch_pgram(s_tmp, 4*fs, fs=fs))
-    mt == true && (psd_tmp = mt_pgram(s_tmp, fs=fs))
-    p_env = zeros(channel_n, length(psd_tmp.freq), epoch_n)
-    frq = psd_tmp.freq
+    psd_tmp, frq = s_psd(s_tmp, fs=fs, mt=mt)
+    p_env = zeros(channel_n, length(psd_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            mt == false && (psd = welch_pgram(s, 4*fs, fs=fs))
-            mt == true && (psd = mt_pgram(s, fs=fs))
-            psd_pow = pow2db.(psd.power)
+            psd_pow, _ = s_psd(s, fs=fs, mt=mt, norm=true)
             p_idx = s_findpeaks(psd_pow, d=d)
             pushfirst!(p_idx, 1)
             push!(p_idx, length(psd_pow))
             if length(p_idx) > 4
-                model = CubicSpline(psd.freq[p_idx], psd_pow[p_idx])
+                model = CubicSpline(frq[p_idx], psd_pow[p_idx])
                 try
-                    p_env[channel_idx, :, epoch_idx] = model(psd.freq)
+                    p_env[channel_idx, :, epoch_idx] = model(frq)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
