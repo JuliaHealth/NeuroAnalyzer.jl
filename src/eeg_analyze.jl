@@ -215,14 +215,14 @@ function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s1 = @view eeg1.eeg_signals[idx, :, epoch_idx]
-            s2 = @view eeg2.eeg_signals[idx, :, epoch_idx]
+        Threads.@threads for channel_idx in 1:channel_n
+            s1 = @view eeg1.eeg_signals[channel_idx, :, epoch_idx]
+            s2 = @view eeg2.eeg_signals[channel_idx, :, epoch_idx]
             ccov[idx, :, epoch_idx], lags = s_xcov(s1,
-                                               s2,
-                                               lag=lag,
-                                               demean=demean,
-                                               norm=norm)
+                                                   s2,
+                                                   lag=lag,
+                                                   demean=demean,
+                                                   norm=norm)
         end
     end
 
@@ -232,9 +232,9 @@ function eeg_crosscov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; lag::Int64=1, demean::
 end
 
 """
-    eeg_psd(eeg; norm)
+    eeg_psd(eeg; norm, mt)
 
-Calculate total power for each the `eeg` channels.
+Calculate power spectrum density for each the `eeg` channels.
 
 # Arguments
 
@@ -260,12 +260,12 @@ function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false)
     psd_frq = zeros(channel_n, length(psd_len), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = eeg.eeg_signals[idx, :, epoch_idx]
-            psd_pow[idx, :, epoch_idx], psd_frq[idx, :, epoch_idx] = s_psd(s,
-                                                                           fs=fs,
-                                                                           norm=norm,
-                                                                           mt=mt)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_psd(s,
+                                                                                           fs=fs,
+                                                                                           norm=norm,
+                                                                                           mt=mt)
         end
     end
 
@@ -300,9 +300,9 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
     if method === :mean
         s_stationarity = zeros(channel_n, window, epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx in 1:channel_n
-                s = @view eeg.eeg_signals[idx, :, epoch_idx]
-                s_stationarity[idx, :, epoch_idx] = s_stationarity_mean(s, window=window)
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                s_stationarity[channel_idx, :, epoch_idx] = s_stationarity_mean(s, window=window)
             end
         end
     end
@@ -310,9 +310,9 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
     if method === :var
         s_stationarity = zeros(channel_n, window, epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx in 1:channel_n
-                s = @view eeg.eeg_signals[idx, :, epoch_idx]
-                s_stationarity[idx, :, epoch_idx] = s_stationarity_var(s, window=window)
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                s_stationarity[channel_idx, :, epoch_idx] = s_stationarity_var(s, window=window)
             end
         end
     end
@@ -320,9 +320,9 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
     if method === :hilbert
         s_stationarity = zeros(channel_n, eeg_epoch_len(eeg) - 1, epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx in 1:channel_n
-                s = @view eeg.eeg_signals[idx, :, epoch_idx]
-                s_stationarity[idx, :, epoch_idx] = s_stationarity_hilbert(s)
+            Threads.@threads for channel_idx in 1:channel_n
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                s_stationarity[channel_idx, :, epoch_idx] = s_stationarity_hilbert(s)
             end
         end
     end
@@ -334,17 +334,17 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
         s_stationarity = zeros(1 + length(2:window:window_n), epoch_n)
 
         @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx = 1:window_n
-                s = @view eeg.eeg_signals[:, idx, epoch_idx]
-                cov_mat[:, :, idx, epoch_idx] = s2_cov(s, s)
+            Threads.@threads for window_idx = 1:window_n
+                s = @view eeg.eeg_signals[:, window_idx, epoch_idx]
+                cov_mat[:, :, window_idx, epoch_idx] = s2_cov(s, s)
             end
         end
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             phase_idx = 1
-            Threads.@threads for idx = 2:window:window_n
-                s_stationarity[phase_idx, epoch_idx] = euclidean(cov_mat[:, :, idx - 1, epoch_idx],
-                                                             cov_mat[:, :, idx, epoch_idx])
+            Threads.@threads for window_idx = 2:window:window_n
+                s_stationarity[phase_idx, epoch_idx] = euclidean(cov_mat[:, :, window_idx - 1, epoch_idx],
+                                                                 cov_mat[:, :, window_idx, epoch_idx])
                 phase_idx += 1
             end
         end
@@ -445,9 +445,9 @@ function eeg_entropy(eeg::NeuroJ.EEG)
     s_ent = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_ent[idx, epoch_idx] = s_entropy(s)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_ent[channel_idx, epoch_idx] = s_entropy(s)
         end
     end
 
@@ -476,9 +476,9 @@ function eeg_negentropy(eeg::NeuroJ.EEG)
     ne = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            ne[idx, epoch_idx] = s_negentropy(s)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            ne[channel_idx, epoch_idx] = s_negentropy(s)
         end
     end
 
@@ -550,10 +550,10 @@ function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     msc = zeros(size(eeg1.eeg_signals))
     ic = zeros(size(eeg1.eeg_signals))
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s1 = @view eeg1.eeg_signals[idx, :, epoch_idx]
-            s2 = @view eeg2.eeg_signals[idx, :, epoch_idx]
-            c[idx, :, epoch_idx], msc[idx, :, epoch_idx], ic[idx, :, epoch_idx] = s2_tcoherence(s1, s2)            
+        Threads.@threads for channel_idx in 1:channel_n
+            s1 = @view eeg1.eeg_signals[channel_idx, :, epoch_idx]
+            s2 = @view eeg2.eeg_signals[channel_idx, :, epoch_idx]
+            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = s2_tcoherence(s1, s2)            
         end
     end
 
@@ -842,9 +842,9 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demea
     s_t = zeros(length(t_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_pow[:, :, idx, epoch_idx], s_frq[:, epoch_idx], s_t[:, epoch_idx] = s_spectrogram(s, fs=fs, norm=norm, mt=mt, demean=demean)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_pow[:, :, channel_idx, epoch_idx], s_frq[:, epoch_idx], s_t[:, epoch_idx] = s_spectrogram(s, fs=fs, norm=norm, mt=mt, demean=demean)
         end
     end
 
@@ -980,18 +980,18 @@ function eeg_channels_stats(eeg::NeuroJ.EEG)
     c_dev_mean = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            c_mean[idx, epoch_idx] = mean(s)
-            c_median[idx, epoch_idx] = median(s)
-            c_std[idx, epoch_idx] = std(s)
-            c_var[idx, epoch_idx] = var(s)
-            c_kurt[idx, epoch_idx] = kurtosis(s)
-            c_skew[idx, epoch_idx] = skewness(s)
-            c_mean_diff[idx, epoch_idx] = mean(diff(s))
-            c_median_diff[idx, epoch_idx] = median(diff(s))
-            c_max_dif[idx, epoch_idx] = maximum(s) - minimum(s)
-            c_dev_mean[idx, epoch_idx] = abs(mean(s)) - mean(s)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            c_mean[channel_idx, epoch_idx] = mean(s)
+            c_median[channel_idx, epoch_idx] = median(s)
+            c_std[channel_idx, epoch_idx] = std(s)
+            c_var[channel_idx, epoch_idx] = var(s)
+            c_kurt[channel_idx, epoch_idx] = kurtosis(s)
+            c_skew[channel_idx, epoch_idx] = skewness(s)
+            c_mean_diff[channel_idx, epoch_idx] = mean(diff(s))
+            c_median_diff[channel_idx, epoch_idx] = median(diff(s))
+            c_max_dif[channel_idx, epoch_idx] = maximum(s) - minimum(s)
+            c_dev_mean[channel_idx, epoch_idx] = abs(mean(s)) - mean(s)
         end
     end
 
@@ -1022,9 +1022,9 @@ function eeg_snr(eeg::NeuroJ.EEG)
     snr = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            snr[idx, epoch_idx] = s_snr(s)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            snr[channel_idx, epoch_idx] = s_snr(s)
         end
     end
 
@@ -1147,9 +1147,9 @@ function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{Complex
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_convoluted[idx, :, epoch_idx] = s_tconv(s, kernel=kernel)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_convoluted[channel_idx, :, epoch_idx] = s_tconv(s, kernel=kernel)
         end
     end
 
@@ -1180,9 +1180,9 @@ function eeg_dft(eeg::NeuroJ.EEG)
     s_sf = zeros(size(eeg.eeg_signals))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            s_fft[idx, :, epoch_idx], s_sf[idx, :, epoch_idx] = s_dft(s, fs=fs)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            s_fft[channel_idx, :, epoch_idx], s_sf[channel_idx, :, epoch_idx] = s_dft(s, fs=fs)
         end
     end
 
@@ -1222,7 +1222,7 @@ function eeg_msci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:norma
 
     Threads.@threads for epoch_idx in 1:epoch_n
         s = @view eeg.eeg_signals[:, :, epoch_idx]
-        s_m[idx, :], s_s[idx, :], s_u[idx, :], s_l[idx, :] = s_msci95(s, n=n, method=method)
+        s_m[epoch_idx, :], s_s[epoch_idx, :], s_u[epoch_idx, :], s_l[epoch_idx, :] = s_msci95(s, n=n, method=method)
     end
 
     return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)
@@ -1341,12 +1341,12 @@ function eeg_autocov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bo
     acov = zeros(channel_n, length(lags), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
-            acov[idx, :, epoch_idx], lags = s_acov(s,
-                                                   lag=lag,
-                                                   demean=demean,
-                                                   norm=norm)
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            acov[channel_idx, :, epoch_idx], lags = s_acov(s,
+                                                           lag=lag,
+                                                           demean=demean,
+                                                           norm=norm)
         end
     end
 
@@ -1379,24 +1379,24 @@ function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
     s_t = eeg.eeg_epochs_time[:, 1]
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
             p_idx = s_findpeaks(s, d=d)
             pushfirst!(p_idx, 1)
             push!(p_idx, length(s))
             if length(p_idx) > 4
                 model = CubicSpline(s_t[p_idx], s[p_idx])
                 try
-                    t_env[idx, :, epoch_idx] = model(s_t)
+                    t_env[channel_idx, :, epoch_idx] = model(s_t)
                 catch
                     @error "CubicSpline error."
                 end
             else
                 @warn "Less than 5 peaks detected, using Loess."
                 model = loess(s_t[p_idx], s[p_idx], span=0.5)
-                t_env[idx, :, epoch_idx] = Loess.predict(model, s_t)
+                t_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
             end
-            t_env[idx, 1, epoch_idx] = t_env[idx, 2, epoch_idx]
+            t_env[channel_idx, 1, epoch_idx] = t_env[channel_idx, 2, epoch_idx]
         end
     end
     
@@ -1436,22 +1436,22 @@ function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_u = zeros(length(s_t), epoch_n)
         t_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            t_env_m[:, idx] = mean(s_a[:, :, idx], dims=1)
-            s = std(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
-            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
-            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            t_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
+            s = std(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
+            t_env_u[:, epoch_idx] = @. t_env_m[:, epoch_idx] + 1.96 * s
+            t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         t_env_m = zeros(length(s_t), channel_n)
         t_env_u = zeros(length(s_t), channel_n)
         t_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            t_env_m[:, idx] = mean(s_a[idx, :, :], dims=2)
-            s = std(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
-            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
-            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+        @inbounds @simd for channel_idx in 1:channel_n
+            t_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
+            s = std(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
+            t_env_u[:, channel_idx] = @. t_env_m[:, channel_idx] + 1.96 * s
+            t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
         end
     else
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_mean(eeg, dims=1, d=d)
@@ -1499,44 +1499,44 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
         t_env_u = zeros(length(s_t), epoch_n)
         t_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            t_env_m[:, idx] = median(s_a[:, :, idx], dims=1)
-            t_idx = s_findpeaks(t_env_m[:, idx], d=d)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            t_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
+            t_idx = s_findpeaks(t_env_m[:, epoch_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, idx]))
+            push!(t_idx, length(t_env_m[:, epoch_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
                 try
-                    t_env_m[:, idx] = model(s_t)
+                    t_env_m[:, epoch_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
-            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
-            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+            s = iqr(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
+            t_env_u[:, epoch_idx] = @. t_env_m[:, epoch_idx] + 1.96 * s
+            t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         t_env_m = zeros(length(s_t), channel_n)
         t_env_u = zeros(length(s_t), channel_n)
         t_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            t_env_m[:, idx] = median(s_a[idx, :, :], dims=2)
-            t_idx = s_findpeaks(t_env_m[:, idx], d=d)
+        @inbounds @simd for channel_idx in 1:channel_n
+            t_env_m[:, idx] = median(s_a[channel_idx, :, :], dims=2)
+            t_idx = s_findpeaks(t_env_m[:, channel_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, idx]))
+            push!(t_idx, length(t_env_m[:, channel_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
                 try
-                    t_env_m[:, idx] = model(s_t)
+                    t_env_m[:, channel_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(t_env_m[:, idx]) / sqrt(length(t_env_m[:, idx]))
-            t_env_u[:, idx] = @. t_env_m[:, idx] + 1.96 * s
-            t_env_l[:, idx] = @. t_env_m[:, idx] - 1.96 * s
+            s = iqr(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
+            t_env_u[:, channel_idx] = @. t_env_m[:, channel_idx] + 1.96 * s
+            t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
         end
     else
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_median(eeg, dims=1, d=d)
@@ -1582,8 +1582,8 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
     frq = psd_tmp.freq
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
             mt == false && (psd = welch_pgram(s, 4*fs, fs=fs))
             mt == true && (psd = mt_pgram(s, fs=fs))
             psd_pow = pow2db.(psd.power)
@@ -1593,14 +1593,14 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
             if length(p_idx) > 4
                 model = CubicSpline(psd.freq[p_idx], psd_pow[p_idx])
                 try
-                    p_env[idx, :, epoch_idx] = model(psd.freq)
+                    p_env[channel_idx, :, epoch_idx] = model(psd.freq)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             else
-                p_env[idx, :, epoch_idx] = psd_pow
+                p_env[channel_idx, :, epoch_idx] = psd_pow
             end
-            p_env[idx, 1, epoch_idx] = p_env[idx, 2, epoch_idx]
+            p_env[channel_idx, 1, epoch_idx] = p_env[channel_idx, 2, epoch_idx]
         end
     end
     
@@ -1643,46 +1643,46 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
         p_env_u = zeros(length(s_f), epoch_n)
         p_env_l = zeros(length(s_f), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            p_env_m[:, idx] = mean(s_p[:, :, idx], dims=1)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            p_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
 
-            p_idx = s_findpeaks(p_env_m[:, idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
             pushfirst!(p_idx, 1)
-            push!(p_idx, length(p_env_m[:, idx]))
+            push!(p_idx, length(p_env_m[:, epoch_idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, idx] = model(s_f)
+                    p_env_m[:, epoch_idx] = model(s_f)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
+            s = std(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
+            p_env_u[:, epoch_idx] = @. p_env_m[:, epoch_idx] + 1.96 * s
+            p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            p_env_m[:, idx] = mean(s_p[idx, :, :], dims=2)
+        @inbounds @simd for channel_idx in 1:channel_n
+            p_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
 
-            p_idx = s_findpeaks(p_env_m[:, idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
             pushfirst!(p_idx, 1)
-            push!(p_idx, length(p_env_m[:, idx]))
+            push!(p_idx, length(p_env_m[:, channel_idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, idx] = model(s_f)
+                    p_env_m[:, channel_idx] = model(s_f)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = std(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
+            s = std(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
+            p_env_u[:, channel_idx] = @. p_env_m[:, channel_idx] + 1.96 * s
+            p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
         end
     else
         p_env_m, p_env_u, p_env_l, _ = eeg_penv_mean(eeg, dims=1, d=d)
@@ -1733,46 +1733,46 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=fals
         p_env_u = zeros(length(s_f), epoch_n)
         p_env_l = zeros(length(s_f), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            p_env_m[:, idx] = median(s_p[:, :, idx], dims=1)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            p_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
 
-            p_idx = s_findpeaks(p_env_m[:, idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
             pushfirst!(p_idx, 1)
-            push!(p_idx, length(p_env_m[:, idx]))
+            push!(p_idx, length(p_env_m[:, epoch_idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, idx] = model(s_f)
+                    p_env_m[:, epoch_idx] = model(s_f)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
+            s = iqr(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
+            p_env_u[:, epoch_idx] = @. p_env_m[:, epoch_idx] + 1.96 * s
+            p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            p_env_m[:, idx] = median(s_p[idx, :, :], dims=2)
+        @inbounds @simd for channel_idx in 1:channel_n
+            p_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
 
-            p_idx = s_findpeaks(p_env_m[:, idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
             pushfirst!(p_idx, 1)
-            push!(p_idx, length(p_env_m[:, idx]))
+            push!(p_idx, length(p_env_m[:, channel_idx]))
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, idx] = model(s_f)
+                    p_env_m[:, channel_idx] = model(s_f)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(p_env_m[:, idx]) / sqrt(length(p_env_m[:, idx]))
-            p_env_u[:, idx] = @. p_env_m[:, idx] + 1.96 * s
-            p_env_l[:, idx] = @. p_env_m[:, idx] - 1.96 * s
+            s = iqr(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
+            p_env_u[:, channel_idx] = @. p_env_m[:, channel_idx] + 1.96 * s
+            p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
         end
     else
         p_env_m, p_env_u, p_env_l, _ = eeg_penv_median(eeg, dims=1, d=d)
@@ -1823,8 +1823,8 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
     s_env = zeros(channel_n, length(sp_t), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for idx in 1:channel_n
-            s = @view eeg.eeg_signals[idx, :, epoch_idx]
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
 
             mt == false && (spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning))
             mt == true && (spec = mt_spectrogram(s, fs=fs))
@@ -1843,14 +1843,14 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
             if length(p_idx) > 4
                 model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
                 try
-                    s_env[idx, :, epoch_idx] = model(sp_t)
+                    s_env[channel_idx, :, epoch_idx] = model(sp_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             else
-                s_env[idx, :, epoch_idx] = f_idx
+                s_env[channel_idx, :, epoch_idx] = f_idx
             end
-            s_env[idx, 1, epoch_idx] = s_env[idx, 2, epoch_idx]
+            s_env[channel_idx, 1, epoch_idx] = s_env[channel_idx, 2, epoch_idx]
         end
     end
     
@@ -1891,46 +1891,46 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            s_env_m[:, idx] = mean(s_p[:, :, idx], dims=1)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            s_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
 
-            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
             pushfirst!(s_idx, 1)
-            push!(s_idx, length(s_env_m[:, idx]))
+            push!(s_idx, length(s_env_m[:, epoch_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, idx] = model(s_t)
+                    s_env_m[:, epoch_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = std(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
-            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
-            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
+            s = std(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
+            s_env_u[:, epoch_idx] = @. s_env_m[:, epoch_idx] + 1.96 * s
+            s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            s_env_m[:, idx] = mean(s_p[idx, :, :], dims=2)
+        @inbounds @simd for channel_idx in 1:channel_n
+            s_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
 
-            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
             pushfirst!(s_idx, 1)
-            push!(s_idx, length(s_env_m[:, idx]))
+            push!(s_idx, length(s_env_m[:, channel_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, idx] = model(s_t)
+                    s_env_m[:, channel_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = std(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
-            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
-            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
+            s = std(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
+            s_env_u[:, channel_idx] = @. s_env_m[:, channel_idx] + 1.96 * s
+            s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
         end
     else
         s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, d=d, mt=mt)
@@ -1979,46 +1979,46 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=fals
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
-        @inbounds @simd for idx in 1:epoch_n
-            s_env_m[:, idx] = median(s_p[:, :, idx], dims=1)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            s_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
 
-            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
             pushfirst!(s_idx, 1)
-            push!(s_idx, length(s_env_m[:, idx]))
+            push!(s_idx, length(s_env_m[:, epoch_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, idx] = model(s_t)
+                    s_env_m[:, epoch_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
-            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
-            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
+            s = iqr(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
+            s_env_u[:, epoch_idx] = @. s_env_m[:, epoch_idx] + 1.96 * s
+            s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
-        @inbounds @simd for idx in 1:channel_n
-            s_env_m[:, idx] = median(s_p[idx, :, :], dims=2)
+        @inbounds @simd for channel_idx in 1:channel_n
+            s_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
 
-            s_idx = s_findpeaks(s_env_m[:, idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
             pushfirst!(s_idx, 1)
-            push!(s_idx, length(s_env_m[:, idx]))
+            push!(s_idx, length(s_env_m[:, channel_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, idx] = model(s_t)
+                    s_env_m[:, channel_idx] = model(s_t)
                 catch
                     @warn "CubicSpline error, non-smoothed variant used."
                 end
             end
-            s = iqr(s_env_m[:, idx]) / sqrt(length(s_env_m[:, idx]))
-            s_env_u[:, idx] = @. s_env_m[:, idx] + 1.96 * s
-            s_env_l[:, idx] = @. s_env_m[:, idx] - 1.96 * s
+            s = iqr(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
+            s_env_u[:, channel_idx] = @. s_env_m[:, channel_idx] + 1.96 * s
+            s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
         end
     else
         s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, d=d, mt=mt)
@@ -2751,4 +2751,54 @@ function eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
     end
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+end
+
+"""
+    eeg_rel_psd(eeg; norm, mt)
+
+Calculate relative power spectrum density for each the `eeg` channels.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+
+# Returns
+
+Named tuple containing:
+- `psd_pow::Array{Float64, 3}`:powers
+- `psd_frq::Array{Float64, 3}`: frequencies
+"""
+function eeg_rel_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    fs = eeg_sr(eeg)
+
+    if f !== nothing
+        length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
+        f = tuple_order(f)
+        f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
+        f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+    end
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    psd_len, _ = s_rel_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
+    psd_pow = zeros(channel_n, length(psd_len), epoch_n)
+    psd_frq = zeros(channel_n, length(psd_len), epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_rel_psd(s,
+                                                                                               fs=fs,
+                                                                                               norm=norm,
+                                                                                               mt=mt,
+                                                                                               f=f)
+        end
+    end
+
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end

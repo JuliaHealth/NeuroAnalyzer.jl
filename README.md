@@ -149,6 +149,7 @@ General:
 - Pluto interface
 
 EEG:
+- plot rel_psd
 - tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
@@ -168,7 +169,6 @@ EEG:
 - PSD plot line slope over frequencies (adjusted power)
 - PSD/spectrogram lin-log (x-y), log-lin or log-log axes
 - wavelets
-- normalized/relative PSD (to total power or arbitrary freq range)
 - cross-frequency phase-amplitude coupling
 - ITPC topoplot
 - non-phase-locked part of the signal (= total - phase-locked)

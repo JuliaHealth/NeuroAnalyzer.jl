@@ -54,7 +54,7 @@ s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test s_tconv(ones(10), kernel=[1.0, 1.0]) == [1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 @test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
 p, f = s_psd(ones(10), fs=10)
-@test p == zeros(21)
+@test p == zeros(20)
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0;;]
 @test s_stationarity_var(ones(10), window=1) == [0.0;;]
@@ -106,5 +106,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test length(generate_morlet_fwhm(10, 10)) == 21
 @test f_nearest([(1.0, 1.0) (0.0, 0.0); (0.0, 0.0) (0.0, 0.0)], (1.0, 0.0)) == (1, 1)
 @test s_band_mpower(ones(100), f=(1,2), fs=10) == (mbp = 0.0, maxfrq = 1.0, maxbp = 0.0)
+p, f = s_rel_psd(ones(10), fs=10)
+@test f == [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
 
 true

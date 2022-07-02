@@ -309,4 +309,7 @@ edf1 = eeg_loc_swap_axes(edf)
 @test edf1.eeg_header[:loc_theta][1] == 108
 @test edf1.eeg_header[:loc_radius][1] == 0.511
 
+p, f = eeg_rel_psd(edf, f=(8,12))
+@test size(p) == (19, 512, 1)
+
 true

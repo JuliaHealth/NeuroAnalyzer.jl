@@ -1195,7 +1195,7 @@ function s_spectrum(signal::AbstractArray; pad::Int64=0)
 end
 
 """
-    s_total_power(signal; fs)
+    s_total_power(signal; fs, mt)
 
 Calculate `signal` total power.
 
@@ -1214,9 +1214,11 @@ function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
+    psd_pow = power(psd)
+    deleteat!(psd_pow, 1)
     # dx: frequency resolution
     dx = psd.freq[2] - psd.freq[1]
-    stp = simpson(psd.power, dx=dx)
+    stp = simpson(psd_pow, dx=dx)
 
     return stp
 end
@@ -1238,6 +1240,9 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 """
 function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
+    f = tuple_order(f)
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
 
@@ -1785,7 +1790,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
 end
 
 """
-    s_psd(signal; fs, norm=false)
+    s_psd(signal; fs, norm, mt)
 
 Calculate power spectrum density of the `signal`.
 
@@ -1808,14 +1813,16 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
-    psd_frq = freq(psd)
+    psd_frq = Vector(freq(psd))
+    deleteat!(psd_pow, 1)
+    deleteat!(psd_frq, 1)
     norm == true && (psd_pow = pow2db.(psd_pow))
 
     return (psd_pow=psd_pow, psd_frq=Vector(psd_frq))
 end
 
 """
-    s_psd(signal; fs, norm=false)
+    s_psd(signal; fs, norm, mt)
 
 Calculate power spectrum density of the `signal`.
 
@@ -1849,7 +1856,7 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
 end
 
 """
-    s_psd(signal; fs, norm=false)
+    s_psd(signal; fs, norm, mt)
 
 Calculate power spectrum density of the `signal`.
 
@@ -1886,7 +1893,7 @@ function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=
 end
 
 """
-    s_stationarity_hilbert(signal::Vector{Float64})
+    s_stationarity_hilbert(signal)
 
 Calculate phase stationarity using Hilbert transformation.
 
@@ -1952,7 +1959,7 @@ function s_stationarity_var(signal::AbstractArray; window::Int64)
 end
 
 """
-    s_trim(signal; len::Int64)
+    s_trim(signal; len, offset, from)
 
 Remove `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
 
@@ -1984,7 +1991,7 @@ function s_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol
 end
 
 """
-    s2_mi(signal1::AbstractArray, signal2::AbstractArray)
+    s2_mi(signal1, signal2)
 
 Calculate mutual information between `signal1` and `signal2`.
 
@@ -2251,7 +2258,7 @@ function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
 end
 
 """
-    s_ica(signal, n, tol=1.0e-6, iter=100, f=:tanh)
+    s_ica(signal, n, tol, iter, f)
 
 Calculate `n` first ICs for `signal`.
 
@@ -2259,9 +2266,9 @@ Calculate `n` first ICs for `signal`.
 
 - `signal::Array{Float64, 3}`
 - `n::Int64`: number of PCs
-- `tol::Float64`: tolerance for ICA
-- `iter::Int64`: maximum number of iterations
-- `f::Symbol[:tanh, :gaus]`: neg-entropy functor
+- `tol::Float64=1.0e-6`: tolerance for ICA
+- `iter::Int64=100`: maximum number of iterations
+- `f::Symbol=:tanh`: neg-entropy functor (:tanh or :gaus)
 
 # Returns
 
@@ -2337,7 +2344,7 @@ function s_ica_reconstruct(signal::Array{Float64, 3}; ic::Array{Float64, 3}, ic_
 end
 
 """
-    s_spectrogram(signal; fs, norm=true, demean=true)
+    s_spectrogram(signal; fs, norm, mt, demean)
 
 Calculate spectrogram of `signal`.
 
@@ -2451,6 +2458,7 @@ end
     detect_epoch_rmsd(signal)
 
 Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
+
 # Arguments
 
 - `signal::Array{Float64, 3}`
@@ -3571,4 +3579,46 @@ function s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, m
     maxbp = psd.power[vsearch(maxfrq, psd_freq)]
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
+end
+
+"""
+    s_rel_psd(signal; fs, norm, mt, f)
+
+Calculate relative power spectrum density of the `signal`.
+
+# Arguments
+- `signal::AbstractArray`
+- `fs::Int64`: sampling rate
+- `norm::Bool`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+
+# Returns
+
+Named tuple containing:
+- `psd_pow::Vector{Float64}`
+- `psd_frq::Vector{Float64}`
+"""
+function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    
+    if f === nothing
+        ref_pow = s_total_power(signal, fs=fs, mt=mt)
+    else
+        ref_pow = s_band_power(signal, fs=fs, mt=mt, f=f)
+    end    
+  
+    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
+    mt == true && (psd = mt_pgram(signal, fs=fs))
+    psd_pow = power(psd)
+    psd_frq = Vector(freq(psd))
+    deleteat!(psd_pow, 1)
+    deleteat!(psd_frq, 1)
+    psd_pow ./= ref_pow
+
+    norm == true && (psd_pow = pow2db.(psd_pow))
+    plot(psd_frq, psd_pow)
+
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
