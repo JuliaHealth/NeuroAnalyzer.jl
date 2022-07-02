@@ -37,6 +37,7 @@ The tutorial is divided into five major steps of typical pipeline:
 Load EDF file:
 ```julia
 edf = eeg_import_edf("test/eeg-test-edf.edf")
+eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
 Load electrode positions (CED, LOCS and ELC formats are supported):
@@ -48,11 +49,12 @@ eeg_plot_save(p, file_name="images/edf_electrodes.png")
 
 ![edf electrodes](images/edf_electrodes.png)
 
-Swap axes:
+If necessary, swap axes:
 ```julia
 eeg_loc_swap_axes!(edf)
-eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
+p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
 ```
+![](images//edf_electrodes_xy.png)
 
 Save EEG object as HDF5-based file:
 ```julia
@@ -91,7 +93,7 @@ Edit EEG header:
 ```julia
 eeg_show_header(edf)
 eeg_edit_header!(edf, field=:patient, value="N.N.")
-eeg_edit_header!(edf, field=:comment, value="This is a tutorial EEG dataset.")
+eeg_edit_header!(edf, field=:note, value="This is a tutorial EEG dataset.")
 ```
 
 Add note:
@@ -119,11 +121,6 @@ edf.eeg_header[:eeg_duration_seconds]
 Show labels:
 ```julia
 eeg_labels(edf)
-```
-
-Show comment:
-```julia
-eeg_comment(edf)
 ```
 
 Get channel (by name or number):
@@ -158,7 +155,7 @@ edf1 = eeg_replace_channel(edf, channel=1, signal=ch)
 
 Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):
 ```julia
-edf = eeg_trim(edf, len=(10*eeg_sr(edf)), from=:start)
+eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:start)
 edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
 eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:end)
 ```
@@ -525,7 +522,7 @@ aec, aec_p = eeg_aec(e10, e10, channel1=3, channel2=4, epoch1=10, epoch2=10)
 
 Plot multi-channel:
 ```julia
-p = eeg_plot_signal(edf, scaled=false)
+p = eeg_plot_signal(edf, scaled=false, channel=1:19)
 eeg_plot_save(p, file_name="images/edf_channels.png")
 p = eeg_plot_signal(edf, scaled=true)
 eeg_plot_save(p, file_name="images/edf_channels-2.png")
@@ -544,7 +541,7 @@ Plot single-channel:
 ```julia
 p = eeg_plot_signal(edf, channel=1)
 eeg_plot_save(p, file_name="images/edf_channel_1_simple.png")
-p = eeg_plot_signal_details(edf, channel=1, frq_lim=(0, 20))
+p = eeg_plot_signal_details(edf, channel=1, frq_lim=(0, 40))
 eeg_plot_save(p, file_name="images/edf_channel_1.png")
 ```
 
