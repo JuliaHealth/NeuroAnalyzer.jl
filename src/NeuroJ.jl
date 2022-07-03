@@ -418,6 +418,7 @@ export eeg_plot_itpc_f
 export plot_psd_3dw
 export plot_psd_3ds
 export eeg_plot_signal_psd_3d
+export plot_rel_psd
 
 include("nstim.jl")
 export tes_dose

@@ -249,9 +249,9 @@ function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::Abs
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=8,
              ytickfontsize=8;
              kwargs...)
@@ -315,9 +315,9 @@ function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:R
               palette=palette,
               linewidth=0.5,
               grid=false,
-              titlefontsize=10,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
+              titlefontsize=8,
+              xlabelfontsize=6,
+              ylabelfontsize=6,
               xtickfontsize=4,
               ytickfontsize=4;
               kwargs...)
@@ -1257,9 +1257,9 @@ function plot_signal_avg(t::Union{Vector{<:Real}, AbstractRange}, signal::Matrix
              ylims=ylim,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -1676,9 +1676,9 @@ function plot_signal_butterfly(t::Union{Vector{<:Real}, AbstractRange}, signal::
              ylims=ylim,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -2067,11 +2067,7 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
     frq_lim = tuple_order(frq_lim)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    if mw == false
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    else
-        s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
-    end
+    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -2087,9 +2083,9 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
              c=:black,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -2152,9 +2148,9 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
              xlims=frq_lim,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -2238,9 +2234,9 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
              xlims=frq_lim,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -2273,17 +2269,21 @@ Plot `eeg` channels power spectrum density.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ref::Symbol=:abs, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+
+    ref in [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("type must be :abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2336,19 +2336,49 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
 
     epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
     epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
 
-    p = plot_psd(signal,
-                 fs=fs,
-                 labels=labels,
-                 norm=norm,
-                 frq_lim=frq_lim,
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 mono=mono;
-                 kwargs...)
-
+    if ref === :abs
+        title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+        p = plot_psd(signal,
+                     fs=fs,
+                     labels=labels,
+                     norm=norm,
+                     frq_lim=frq_lim,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title,
+                     mt=mt,
+                     mono=mono;
+                     kwargs...)
+    elseif ref === :total
+        title == "" && (title = "PSD relative to total power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+        p = plot_rel_psd(signal,
+                         fs=fs,
+                         labels=labels,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         mono=mono,
+                         mt=mt,
+                         f=nothing;
+                         kwargs...)
+    else
+        title == "" && (title = "PSD relative to $ref power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+        p = plot_rel_psd(signal,
+                         fs=fs,
+                         labels=labels,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         mono=mono,
+                         mt=mt,
+                         f=eeg_band(eeg, band=ref);
+                         kwargs...)
+    end
     plot(p)
 
     return p
@@ -2373,13 +2403,14 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2450,7 +2481,8 @@ function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     mono=mono;
+                     mono=mono,
+                     mt=mt;
                      kwargs...)
 
     plot(p)
@@ -2477,13 +2509,14 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2552,7 +2585,8 @@ function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abst
                            xlabel=xlabel,
                            ylabel=ylabel,
                            title=title,
-                           mono=mono;
+                           mono=mono,
+                           mt=mt;
                            kwargs...)
 
     plot(p)
@@ -2577,13 +2611,14 @@ Plot PSD of `eeg` external or embedded component.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2623,7 +2658,8 @@ function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Sym
                  xlabel=xlabel,
                  ylabel=ylabel,
                  title=title,
-                 mono=mono;
+                 mono=mono,
+                 mt=mt;
                  kwargs...)
 
     plot(p)
@@ -2648,13 +2684,14 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2693,7 +2730,8 @@ function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3},
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     mono=mono;
+                     mono=mono,
+                     mt=mt;
                      kwargs...)
 
     plot(p)
@@ -2718,13 +2756,14 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `mt::Bool=false`: if true use multi-tapered periodogram
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
@@ -2763,7 +2802,8 @@ function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float6
                            xlabel=xlabel,
                            ylabel=ylabel,
                            title=title,
-                           mono=mono;
+                           mono=mono,
+                           mt=mt;
                            kwargs...)
 
     plot(p)
@@ -2836,9 +2876,9 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
                 title=title,
                 seriescolor=palette,
                 colorbar_title=cb_title,
-                titlefontsize=10,
-                xlabelfontsize=8,
-                ylabelfontsize=8,
+                titlefontsize=8,
+                xlabelfontsize=6,
+                ylabelfontsize=6,
                 xtickfontsize=4,
                 ytickfontsize=4;
                 kwargs...)
@@ -2984,9 +3024,9 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                     title=title,
                     seriescolor=palette,
                     colorbar_title=cb_title,
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
+                    titlefontsize=8,
+                    xlabelfontsize=6,
+                    ylabelfontsize=6,
                     xtickfontsize=4,
                     ytickfontsize=4;
                     kwargs...)
@@ -3209,9 +3249,9 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                     title=title,
                     seriescolor=palette,
                     colorbar_title=cb_title,
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
+                    titlefontsize=8,
+                    xlabelfontsize=6,
+                    ylabelfontsize=6,
                     xtickfontsize=4,
                     ytickfontsize=4;
                     kwargs...)
@@ -3441,9 +3481,9 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
                     title=title,
                     seriescolor=palette,
                     colorbar_title=cb_title,
-                    titlefontsize=10,
-                    xlabelfontsize=8,
-                    ylabelfontsize=8,
+                    titlefontsize=8,
+                    xlabelfontsize=6,
+                    ylabelfontsize=6,
                     xtickfontsize=4,
                     ytickfontsize=4;
                     kwargs...)
@@ -3618,7 +3658,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
              border=:none,
              aspect_ratio=1,
              margins=-20Plots.px,
-             titlefontsize=10;
+             titlefontsize=8;
              kwargs...)
     if length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
@@ -3727,9 +3767,9 @@ function eeg_plot_matrix(eeg::NeuroJ.EEG, m::Union{Matrix{<:Real}, Array{Float64
                 xticks=(1:channel_n, labels),
                 yticks=(1:channel_n, eeg_labels(eeg)),
                 seriescolor=palette,
-                titlefontsize=10,
-                xlabelfontsize=8,
-                ylabelfontsize=8,
+                titlefontsize=8,
+                xlabelfontsize=6,
+                ylabelfontsize=6,
                 xtickfontsize=4,
                 ytickfontsize=4;
                 kwargs...)
@@ -3779,8 +3819,8 @@ function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{<:Real}, Array{
                    label="",
                    palette=palette,
                    titlefontsize=6,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
                    xtickfontsize=4,
                    ytickfontsize=4,
                    lw=0.5))
@@ -3831,9 +3871,9 @@ function plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label::Strin
              linewidth=0.5,
              margins=0Plots.px,
              yticks=false,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
@@ -3889,9 +3929,9 @@ function plot_histogram(signal::Matrix{<:Real}; type::Symbol=:hist, labels::Vect
                                 linewidth=0.5,
                                 left_margin=30Plots.px,
                                 yticks=true,
-                                titlefontsize=10,
-                                xlabelfontsize=8,
-                                ylabelfontsize=8,
+                                titlefontsize=8,
+                                xlabelfontsize=6,
+                                ylabelfontsize=6,
                                 xtickfontsize=4,
                                 ytickfontsize=4,
                                 xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
@@ -4011,9 +4051,9 @@ function plot_ica(t::Union{Vector{<:Real}, AbstractRange}, ica::Vector{Float64};
              xticks=_xticks(t),
              ylims=ylim,
              title=title,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              palette=palette;
@@ -4147,9 +4187,9 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
              border=:none,
              margins=0Plots.px,
              aspect_ratio=1,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              title=title,
@@ -4309,9 +4349,9 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
              border=:none,
              margins=0Plots.px,
              aspect_ratio=1,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              title=title,
@@ -4437,7 +4477,7 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
              border=:none,
              aspect_ratio=1,
              margins=-20Plots.px,
-             titlefontsize=10;
+             titlefontsize=8;
              kwargs...)
     for idx in 1:eeg.eeg_header[:channel_n]
         p = plot!((loc_x[idx], loc_y[idx]),
@@ -4559,9 +4599,9 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
              border=:none,
              margins=0Plots.px,
              aspect_ratio=1,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              title=title,
@@ -4729,9 +4769,9 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
                  border=:none,
                  margins=0Plots.px,
                  aspect_ratio=1,
-                 titlefontsize=10,
-                 xlabelfontsize=8,
-                 ylabelfontsize=8,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
                  xtickfontsize=4,
                  ytickfontsize=4,
                  title=title,
@@ -4909,9 +4949,9 @@ function plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:de
                  ylabel=ylabel,
                  title=title,
                  palette=palette,
-                 titlefontsize=10,
-                 xlabelfontsize=8,
-                 ylabelfontsize=8,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
                  xtickfontsize=8,
                  ytickfontsize=8;
                  kwargs...)
@@ -4925,9 +4965,9 @@ function plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:de
                  ylabel=ylabel,
                  title=title,
                  palette=palette,
-                 titlefontsize=10,
-                 xlabelfontsize=8,
-                 ylabelfontsize=8,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
                  xtickfontsize=8,
                  ytickfontsize=8;
                  kwargs...)
@@ -5131,9 +5171,9 @@ function eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{<:Rea
              ylabel=ylabel,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=8,
              ytickfontsize=8;
              kwargs...)
@@ -5185,9 +5225,9 @@ function eeg_plot_epochs(eeg::NeuroJ.EEG; c::Union{Vector{<:Real}, Symbol}, epoc
              title=title,
              palette=palette,
              linewidth=0.5,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=8,
              ytickfontsize=8;
              kwargs...)
@@ -5284,9 +5324,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
                   ylabel="Magnitude\n[dB]",
                   xlabel="Frequency [Hz]",
                   label="",
-                  titlefontsize=10,
-                  xlabelfontsize=8,
-                  ylabelfontsize=8,
+                  titlefontsize=8,
+                  xlabelfontsize=6,
+                  ylabelfontsize=6,
                   xtickfontsize=4,
                   ytickfontsize=4,
                   palette=palette)
@@ -5320,9 +5360,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
                   ylabel="Phase\n[°]",
                   xlabel="Frequency [Hz]",
                   label="",
-                  titlefontsize=10,
-                  xlabelfontsize=8,
-                  ylabelfontsize=8,
+                  titlefontsize=8,
+                  xlabelfontsize=6,
+                  ylabelfontsize=6,
                   xtickfontsize=4,
                   ytickfontsize=4,
                   palette=palette)
@@ -5355,9 +5395,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
                   ylabel="Group delay\n[samples]",
                   xlabel="Frequency [Hz]",
                   label="",
-                  titlefontsize=10,
-                  xlabelfontsize=8,
-                  ylabelfontsize=8,
+                  titlefontsize=8,
+                  xlabelfontsize=6,
+                  ylabelfontsize=6,
                   xtickfontsize=4,
                   ytickfontsize=4,
                   palette=palette)
@@ -5395,9 +5435,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
                   ylabel="Magnitude\n[dB]",
                   xlabel="Frequency [Hz]",
                   label="",
-                  titlefontsize=10,
-                  xlabelfontsize=8,
-                  ylabelfontsize=8,
+                  titlefontsize=8,
+                  xlabelfontsize=6,
+                  ylabelfontsize=6,
                   xtickfontsize=4,
                   ytickfontsize=4,
                   palette=palette)
@@ -5430,9 +5470,9 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
                   ylabel="Phase\n[rad]",
                   xlabel="Frequency [Hz]",
                   label="",
-                  titlefontsize=10,
-                  xlabelfontsize=8,
-                  ylabelfontsize=8,
+                  titlefontsize=8,
+                  xlabelfontsize=6,
+                  ylabelfontsize=6,
                   xtickfontsize=4,
                   ytickfontsize=4,
                   palette=palette)
@@ -5611,9 +5651,9 @@ function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::
              linewidth=0.5,
              color=:black,
              grid=true,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4,
              palette=palette;
@@ -5700,7 +5740,7 @@ function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chan
     
     p = plot(p1, p2, p3, p4, p5, p6,
              layout=(3, 2),
-             titlefontsize=10,
+             titlefontsize=8,
              xlabelfontsize=6,
              ylabelfontsize=6,
              xtickfontsize=4,
@@ -5771,7 +5811,7 @@ function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, z::Bool=false,
 
     p = plot(p1, p2,
              legend=false,
-             titlefontsize=10,
+             titlefontsize=8,
              xlabelfontsize=6,
              ylabelfontsize=6,
              xtickfontsize=4,
@@ -5842,7 +5882,7 @@ function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, chann
     
     p = plot(p1, p2, p3, p4, p5, p6,
              layout=(3, 2),
-             titlefontsize=10,
+             titlefontsize=8,
              xlabelfontsize=6,
              ylabelfontsize=6,
              xtickfontsize=4,
@@ -5894,7 +5934,7 @@ function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, R
                 xlabel=xlabel,
                 ylabel=ylabel,
                 xticks=_xticks(eeg.eeg_epochs_time[:, 1]),
-                titlefontsize=10,
+                titlefontsize=8,
                 xlabelfontsize=6,
                 ylabelfontsize=6,
                 xtickfontsize=4,
@@ -5949,7 +5989,7 @@ function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, R
              xlabel=xlabel,
              ylabel=ylabel,
              xticks=_xticks(eeg.eeg_epochs_time[:, 1]),
-             titlefontsize=10,
+             titlefontsize=8,
              xlabelfontsize=6,
              ylabelfontsize=6,
              xtickfontsize=4,
@@ -6011,7 +6051,7 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
              border=:none,
              aspect_ratio=1,
              margins=-20Plots.px,
-             titlefontsize=10;
+             titlefontsize=8;
              kwargs...)
     p = plot!(loc_x,
               loc_y,
@@ -6149,9 +6189,9 @@ function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
              palette=palette,
              lw=0.2,
              lc=1,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -6365,9 +6405,9 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
              legend=false,
              title=title,
              palette=palette,
-             titlefontsize=10,
-             xlabelfontsize=8,
-             ylabelfontsize=8,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
              xtickfontsize=4,
              ytickfontsize=4;
              kwargs...)
@@ -6391,4 +6431,66 @@ function eeg_plot_plots_topo()
     hline!([0], xlims=(0, 256), lc=:grey)
     plot!(x1, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
     plot!(x2, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
+end
+
+"""
+    plot_rel_psd(signal; <keyword arguments>)
+
+Plot `signal` channel power spectrum density.
+
+# Arguments
+
+- `signal::Vector{<:Real}`
+- `fs::Int64`: sampling frequency
+- `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `xlabel::String="Frequency [Hz]"`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, kwargs...)
+
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
+    frq_lim = tuple_order(frq_lim)
+    if f !== nothing
+        f = tuple_order(f)
+        (f[1] < 0 || f[2] > fs / 2) && throw(ArgumentError("f must be ≥ 0 and ≤ $(fs / 2)."))
+    end
+    s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=mt, f=f)
+
+    mono == true ? palette = :grays : palette = :darktest
+
+    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+
+    p = plot(s_frq,
+             s_pow,
+             xlabel=xlabel,
+             ylabel=ylabel,
+             xlims=frq_lim,
+             legend=false,
+             t=:line,
+             c=:black,
+             title=title,
+             palette=palette,
+             titlefontsize=8,
+             xlabelfontsize=6,
+             ylabelfontsize=6,
+             xtickfontsize=4,
+             ytickfontsize=4;
+             kwargs...)
+
+    return p
 end

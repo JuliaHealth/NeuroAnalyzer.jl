@@ -631,16 +631,24 @@ eeg_plot_save(p, file_name="images/edf_psd.png")
 
 Plot PSD relative to alpha band power:
 ```julia
-p = eeg_plot_signal_rel_psd(edf, average=true, norm=true, channel=1, f=eeg_band(edf, band=:alpha))
+p = eeg_plot_signal_psd(edf, channel=1, ref=:alpha)
 eeg_plot_save(p, file_name="images/edf_rel_psd.png")
 ```
+![](images/edf_rel_psd.png)
 
-Plot PSD 3d:
+Plot PSD 3d waterfall:
 ```julia
 p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10)
 eeg_plot_save(p, file_name="images/edf_psd_3d.png")
 ```
 ![](images/edf_psd_3d.png)
+
+Plot PSD 3d surface:
+```julia
+p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10, type=:s)
+eeg_plot_save(p, file_name="images/edf_psd_3dw.png")
+```
+![](images/edf_psd_3dw.png)
 
 Topographical plots:
 ```julia

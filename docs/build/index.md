@@ -4517,6 +4517,8 @@ Plot `eeg` channels power spectrum density.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4548,6 +4550,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4579,6 +4582,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4608,6 +4612,7 @@ Plot PSD of `eeg` external or embedded component.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4637,6 +4642,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4666,6 +4672,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -5702,6 +5709,36 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
   * `zlabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+plot_rel_psd(signal; <keyword arguments>)
+```
+
+Plot `signal` channel power spectrum density.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
