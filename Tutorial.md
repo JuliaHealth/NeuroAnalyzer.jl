@@ -621,9 +621,9 @@ eeg_plot_save(p, file_name="images/edf_spec2.png")
 
 ![edf topo :amp](images/edf_spec2.png)
 
-Plot PSD:
+Plot PSD, x and y axes are log10-scaled:
 ```julia
-p = eeg_plot_signal_psd(edf, average=true, norm=true, channel=1)
+p = eeg_plot_signal_psd(edf, norm=false, channel=1, ax=:loglog)
 eeg_plot_save(p, file_name="images/edf_psd.png")
 ```
 
