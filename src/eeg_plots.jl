@@ -2095,13 +2095,14 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
                  kwargs...)
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[1] == 0 && (s_frq[1] = 1)
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = plot(s_frq,
                  s_pow,
                  xaxis=:log10,
+                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                  xlabel=xlabel,
                  ylabel=ylabel,
                  xlims=frq_lim,
@@ -2155,15 +2156,16 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
         end
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[1] == 0 && (s_frq[1] = 1)
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false
             p = plot(s_frq,
                      s_pow,
                      xaxis=:log10,
                      yaxis=:log10,
+                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                      xlabel=xlabel,
                      ylabel=ylabel,
                      xlims=frq_lim,
@@ -2284,11 +2286,12 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
                   c=:black)
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[1] == 0 && (s_frq[1] = 1)
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = plot(xaxis=:log10,
+                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                  xlabel=xlabel,
                  ylabel=ylabel,
                  xlims=frq_lim,
@@ -2398,11 +2401,12 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
             end
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = ones(Float64, channel_n))
+        s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         p = plot(xaxis=:log10,
+                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                  xlabel=xlabel,
                  ylabel=ylabel,
                  xlims=frq_lim,
@@ -2464,13 +2468,14 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
         end
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = ones(channel_n))
+        s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         if norm == false
             p = plot(xaxis=:log10,
                      yaxis=:log10,
+                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                      xlabel=xlabel,
                      ylabel=ylabel,
                      xlims=frq_lim,
@@ -6755,13 +6760,14 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bo
                  kwargs...)
     elseif ax === :loglin
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[1] == 0 && (s_frq[1] = 1)
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = plot(s_frq,
                  s_pow,
                  xaxis=:log10,
+                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                  xlabel=xlabel,
                  ylabel=ylabel,
                  xlims=frq_lim,
@@ -6815,16 +6821,16 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bo
         end
     elseif ax === :loglog
         if frq_lim[1] == 0
-            frq_lim = (1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 1.0 Hz"
+            frq_lim = (0.1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[1] == 0 && (s_frq[1] = 1)
-
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false
             p = plot(s_frq,
                      s_pow,
                      xaxis=:log10,
                      yaxis=:log10,
+                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
                      xlabel=xlabel,
                      ylabel=ylabel,
                      xlims=frq_lim,
