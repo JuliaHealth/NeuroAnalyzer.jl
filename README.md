@@ -149,6 +149,7 @@ General:
 - Pluto interface
 
 EEG:
+- fix ticks for :log xaxis in PSD
 - tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
@@ -166,7 +167,6 @@ EEG:
 - PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plot two EEG one over another for comparison
 - PSD plot line slope over frequencies (adjusted power)
-- PSD/spectrogram lin-log (x-y), log-lin or log-log axes
 - wavelets
 - cross-frequency phase-amplitude coupling
 - ITPC topoplot

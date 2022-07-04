@@ -4131,6 +4131,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4429,6 +4430,7 @@ Plot `signal` channel power spectrum density.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4458,6 +4460,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4487,6 +4490,7 @@ Butterfly plot of `signal` channels power spectrum density.
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4519,6 +4523,7 @@ Plot `eeg` channels power spectrum density.
   * `mono::Bool=false`: use color or grey palette
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4551,6 +4556,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4583,6 +4589,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4613,6 +4620,7 @@ Plot PSD of `eeg` external or embedded component.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4643,6 +4651,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -5739,6 +5748,7 @@ Plot `signal` channel power spectrum density.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+  * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
 **Returns**

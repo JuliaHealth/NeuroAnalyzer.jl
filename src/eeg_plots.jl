@@ -1063,15 +1063,17 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -1122,7 +1124,8 @@ function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64,
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     mono=mono;
+                     mono=mono,
+                     ax=ax;
                      kwargs...)
 
     plot(p)
@@ -1314,7 +1317,6 @@ Plot `eeg` channels: mean and ±95% CI.
 function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg() channel must contain ≥ 2 channels."))
-
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     ylim = _tuple_max(ylim)
@@ -2052,16 +2054,17 @@ Plot `signal` channel power spectrum density.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
     frq_lim = tuple_order(frq_lim)
@@ -2073,22 +2076,128 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
-    p = plot(s_frq,
-             s_pow,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=frq_lim,
-             legend=false,
-             t=:line,
-             c=:black,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
+    if ax === :linlin
+        p = plot(s_frq,
+                 s_pow,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 legend=false,
+                 t=:line,
+                 c=:black,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 1)
+        p = plot(s_frq,
+                 s_pow,
+                 xaxis=:log10,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 legend=false,
+                 t=:line,
+                 c=:black,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+    elseif ax === :linlog
+        if norm == false
+            p = plot(s_frq,
+                     s_pow,
+                     yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        else
+            p = plot(s_frq,
+                     s_pow,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        end
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 1)
+        if norm == false
+            p = plot(s_frq,
+                     s_pow,
+                     xaxis=:log10,
+                     yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        else
+            p = plot(s_frq,
+                     s_pow,
+                     xaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        end
+    end
 
     return p
 end
@@ -2110,16 +2219,17 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
@@ -2139,40 +2249,77 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
 
     s_pow_m, s_pow_s, s_pow_u, s_pow_l = s_msci95(s_pow)
     s_frq = s_frq[1, :]
-    channel_n = 1
-    labels == [""]
 
     # plot channels
-    p = plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=frq_lim,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
-    p = plot!(s_frq,
-              s_pow_u,
-              fillrange=s_pow_l,
-              fillalpha=0.35,
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
-    p = plot!(s_frq,
-              s_pow_l,
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
-    p = plot!(s_frq,
-              s_pow_m,
-              label=false,
-              t=:line,
-              c=:black)
+    if ax === :linlin
+        p = plot(xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+        p = plot!(s_frq,
+                  s_pow_u,
+                  fillrange=s_pow_l,
+                  fillalpha=0.35,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_frq,
+                  s_pow_l,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_frq,
+                  s_pow_m,
+                  label=false,
+                  t=:line,
+                  c=:black)
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 1)
+        p = plot(xaxis=:log10,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+        p = plot!(s_frq,
+                  s_pow_u,
+                  fillrange=s_pow_l,
+                  fillalpha=0.35,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_frq,
+                  s_pow_l,
+                  label=false,
+                  t=:line,
+                  c=:grey,
+                  lw=0.5)
+        p = plot!(s_frq,
+                  s_pow_m,
+                  label=false,
+                  t=:line,
+                  c=:black)
+    end
 
     return p
 end
@@ -2194,16 +2341,17 @@ Butterfly plot of `signal` channels power spectrum density.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
@@ -2229,23 +2377,139 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
     end
 
     # plot channels
-    p = plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=frq_lim,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
-    for idx in 1:channel_n
-        p = plot!(s_frq[idx, :],
-                  s_pow[idx, :],
-                  label=labels[idx],
-                  linewidth=0.1,
-                  t=:line)
+    if ax === :linlin
+        p = plot(xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+            for idx in 1:channel_n
+                p = plot!(s_frq[idx, :],
+                          s_pow[idx, :],
+                          label=labels[idx],
+                          linewidth=0.1,
+                          t=:line)
+            end
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = ones(Float64, channel_n))
+        p = plot(xaxis=:log10,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+        for idx in 1:channel_n
+            p = plot!(s_frq[idx, :],
+                      s_pow[idx, :],
+                      label=labels[idx],
+                      linewidth=0.1,
+                      t=:line)
+        end
+    elseif ax === :linlog
+        if norm == false
+            p = plot(yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+            for idx in 1:channel_n
+                p = plot!(s_frq[idx, :],
+                          s_pow[idx, :],
+                          label=labels[idx],
+                          linewidth=0.1,
+                          t=:line)
+            end
+        else
+            p = plot(xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+            for idx in 1:channel_n
+                p = plot!(s_frq[idx, :],
+                          s_pow[idx, :],
+                          label=labels[idx],
+                          linewidth=0.1,
+                          t=:line)
+            end
+        end
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = ones(channel_n))
+        if norm == false
+            p = plot(xaxis=:log10,
+                     yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+            for idx in 1:channel_n
+                p = plot!(s_frq[idx, :],
+                          s_pow[idx, :],
+                          label=labels[idx],
+                          linewidth=0.1,
+                          t=:line)
+            end
+        else
+            p = plot(xaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+            for idx in 1:channel_n
+                p = plot!(s_frq[idx, :],
+                          s_pow[idx, :],
+                          label=labels[idx],
+                          linewidth=0.1,
+                          t=:line)
+            end
+        end
     end
 
     return p
@@ -2271,19 +2535,21 @@ Plot `eeg` channels power spectrum density.
 - `mono::Bool=false`: use color or grey palette
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ref::Symbol=:abs, kwargs...)
+function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     ref in [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("type must be :abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
 
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
@@ -2348,7 +2614,8 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
                      ylabel=ylabel,
                      title=title,
                      mt=mt,
-                     mono=mono;
+                     mono=mono,
+                     ax=ax;
                      kwargs...)
     elseif ref === :total
         title == "" && (title = "PSD relative to total power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
@@ -2362,7 +2629,8 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
                          title=title,
                          mono=mono,
                          mt=mt,
-                         f=nothing;
+                         f=nothing,
+                         ax=ax;
                          kwargs...)
     else
         title == "" && (title = "PSD relative to $ref power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
@@ -2376,7 +2644,8 @@ function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}
                          title=title,
                          mono=mono,
                          mt=mt,
-                         f=eeg_band(eeg, band=ref);
+                         f=eeg_band(eeg, band=ref),
+                         ax=ax;
                          kwargs...)
     end
     plot(p)
@@ -2404,16 +2673,17 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
+function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -2482,7 +2752,8 @@ function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
                      ylabel=ylabel,
                      title=title,
                      mono=mono,
-                     mt=mt;
+                     mt=mt,
+                     ax=ax;
                      kwargs...)
 
     plot(p)
@@ -2510,16 +2781,17 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
+function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -2586,7 +2858,8 @@ function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, Abst
                            ylabel=ylabel,
                            title=title,
                            mono=mono,
-                           mt=mt;
+                           mt=mt,
+                           ax=ax;
                            kwargs...)
 
     plot(p)
@@ -2612,16 +2885,17 @@ Plot PSD of `eeg` external or embedded component.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
+function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
     size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
@@ -2659,7 +2933,8 @@ function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Sym
                  ylabel=ylabel,
                  title=title,
                  mono=mono,
-                 mt=mt;
+                 mt=mt,
+                 ax=ax;
                  kwargs...)
 
     plot(p)
@@ -2685,16 +2960,17 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, kwargs...)
+function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, mt::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
-
+    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
     size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
@@ -2731,7 +3007,8 @@ function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3},
                      ylabel=ylabel,
                      title=title,
                      mono=mono,
-                     mt=mt;
+                     mt=mt,
+                     ax=ax;
                      kwargs...)
 
     plot(p)
@@ -2856,11 +3133,11 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
         else
             spec = mt_spectrogram(signal, fs=fs)
         end
-        norm == true && (spec_power = pow2db.(spec.power))
+        norm == true ? spec_power = pow2db.(spec.power) : spec_power = spec.power
         spec_frq = spec.freq
         t = collect(spec.time) .+ offset
     else
-        _, spec_power, spec_frq = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), norm=norm)
+        _, spec_power, _, spec_frq = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), norm=norm)
         t = linspace(0, size(spec_power, 2)/fs, size(spec_power, 2)) .+ offset
     end
 
@@ -6415,24 +6692,6 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     return p
 end
 
-function eeg_plot_plots_topo()
-    # PSD
-    x1 = rand(256)
-    x2 = rand(256)
-    vline([0], ylims=(0, 1), lc=:grey)
-    hline!([0], xlims=(0, 256), lc=:grey)
-    plot!(x1, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
-    plot!(x2, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
-
-    # signal
-    x1 = rand(-2:2, 256) .* rand(256)
-    x2 = rand(-2:2, 256) .* rand(256)
-    vline([0], lc=:grey)
-    hline!([0], xlims=(0, 256), lc=:grey)
-    plot!(x1, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
-    plot!(x2, legend=false, yaxis=false, xaxis=false, grid=false, yticks=false, xticks=false)
-end
-
 """
     plot_rel_psd(signal; <keyword arguments>)
 
@@ -6451,15 +6710,17 @@ Plot `signal` channel power spectrum density.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+- `ax::Symbol=:linlin`: type of axes scaling
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, kwargs...)
+function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
@@ -6475,22 +6736,129 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bo
 
     ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
 
-    p = plot(s_frq,
-             s_pow,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=frq_lim,
-             legend=false,
-             t=:line,
-             c=:black,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
+    if ax === :linlin
+        p = plot(s_frq,
+                 s_pow,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 legend=false,
+                 t=:line,
+                 c=:black,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 1)
+        p = plot(s_frq,
+                 s_pow,
+                 xaxis=:log10,
+                 xlabel=xlabel,
+                 ylabel=ylabel,
+                 xlims=frq_lim,
+                 legend=false,
+                 t=:line,
+                 c=:black,
+                 title=title,
+                 palette=palette,
+                 titlefontsize=8,
+                 xlabelfontsize=6,
+                 ylabelfontsize=6,
+                 xtickfontsize=4,
+                 ytickfontsize=4;
+                 kwargs...)
+    elseif ax === :linlog
+        if norm == false
+            p = plot(s_frq,
+                     s_pow,
+                     yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        else
+            p = plot(s_frq,
+                     s_pow,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        end
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (1, frq_lim[2])
+            @warn "Lower frequency bound truncated to 1.0 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 1)
+
+        if norm == false
+            p = plot(s_frq,
+                     s_pow,
+                     xaxis=:log10,
+                     yaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        else
+            p = plot(s_frq,
+                     s_pow,
+                     xaxis=:log10,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     xlims=frq_lim,
+                     legend=false,
+                     t=:line,
+                     c=:black,
+                     title=title,
+                     palette=palette,
+                     titlefontsize=8,
+                     xlabelfontsize=6,
+                     ylabelfontsize=6,
+                     xtickfontsize=4,
+                     ytickfontsize=4;
+                     kwargs...)
+        end
+    end
 
     return p
 end
