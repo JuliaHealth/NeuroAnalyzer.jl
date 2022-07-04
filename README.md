@@ -149,7 +149,6 @@ General:
 - Pluto interface
 
 EEG:
-- fix ticks for :log xaxis in PSD
 - tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - probability maps: the local likelihood of belonging to a given population
 - use variable ncyc for s_wspectrogram()
@@ -181,7 +180,6 @@ EEG:
 - set baseline
 - sync epoch starts at phase = 0
 - topo plots: asymmetric color bars to highlight increase/decrease in activity
-- PSD of short epochs
 - eeg_senv threshold
 - eeg_plot() meta function
 - update tutorial.md
