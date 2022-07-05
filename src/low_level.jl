@@ -1809,7 +1809,7 @@ Named tuple containing:
 function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    
+    length(signal) < 4 * fs && (mt = true)
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
     psd_pow = power(psd)
@@ -1840,7 +1840,7 @@ named tuple containing:
 function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-
+    size(signal, 2) < 4 * fs && (mt = true)
     channel_n = size(signal, 1)
     psd_tmp, frq_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_tmp))
@@ -1874,7 +1874,7 @@ Named tuple containing:
 function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-
+    size(signal, 2) < 4 * fs && (mt = true)
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     psd_tmp, frq_tmp = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)

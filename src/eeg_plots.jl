@@ -2070,7 +2070,6 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
     frq_lim = tuple_order(frq_lim)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    length(signal) < 4 * fs && (mt = true)
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
 
     mono == true ? palette = :grays : palette = :darktest
@@ -2236,7 +2235,6 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
     mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    size(signal, 2) < 4 * fs && (mt = true)
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
@@ -2246,7 +2244,6 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    size(signal, 2) < 4 * fs && (mt = true)
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     s_pow = s_pow[:, :, 1]
     s_frq = s_frq[:, :, 1]
@@ -2361,7 +2358,6 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
     mono == true ? palette = :grays : palette = :darktest
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    size(signal, 2) < 4 * fs && (mt = true)
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
     frq_lim = tuple_order(frq_lim)
@@ -2371,7 +2367,6 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
 
     channel_n = size(signal, 1)
     signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    size(signal, 2) < 4 * fs && (mt = true)
     s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
     s_pow = s_pow[:, :, 1]
     s_frq = s_frq[:, :, 1]
@@ -3297,7 +3292,6 @@ function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
     else
         ylabel = "Channel"
         xlabel = "Frequency [Hz]"
-        length(signal) < 4 * fs && (mt = true)
         s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
         norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
@@ -3523,7 +3517,6 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
-        length(c) < 4 * fs && (mt = true)
         s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
         norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
@@ -3756,7 +3749,6 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Floa
     else
         ylabel = "Components"
         xlabel = "Frequency [Hz]"
-        size(c, 2) < 4 * fs && (mt = true)
         s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
         norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
         palette = :darktest
@@ -6448,7 +6440,6 @@ function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     zlabel == "" && (norm == true ? zlabel = "Power [dB]" : zlabel = "Power [μV^2/Hz]")
 
     if mw == false
-        size(signal, 2) < 4 * fs && (mt = true)
         p_tmp, f_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     else
         p_tmp, f_tmp = s_wspectrum(signal[1, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
@@ -6460,7 +6451,6 @@ function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     for channel_idx in 1:channel_n
         s = @view signal[channel_idx, :]
         if mw == false
-            size(s, 2) < 4 * fs && (mt = true)
             s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
         else
             s_pow[channel_idx, :], s_frq = s_wspectrum(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
@@ -6666,7 +6656,6 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     zlabel == "" && (norm == true ? zlabel = "Power [dB]" : zlabel = "Power [μV^2/Hz]")
 
     if mw == false
-        size(signal, 2) < 4 * fs && (mt = true)
         p_tmp, f_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     else
         p_tmp, f_tmp = s_wspectrum(signal[1, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
@@ -6678,8 +6667,7 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     for channel_idx in 1:channel_n
         s = @view signal[channel_idx, :]
         if mw == false
-            size(signal, 2) < 4 * fs && (mt = true)
-            s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
+                s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
         else
             s_pow[channel_idx, :], s_frq = s_wspectrum(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
         end

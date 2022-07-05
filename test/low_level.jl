@@ -54,7 +54,7 @@ s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test s_tconv(ones(10), kernel=[1.0, 1.0]) == [1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 @test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
 p, f = s_psd(ones(10), fs=10)
-@test p == zeros(21)
+@test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0;;]
 @test s_stationarity_var(ones(10), window=1) == [0.0;;]
