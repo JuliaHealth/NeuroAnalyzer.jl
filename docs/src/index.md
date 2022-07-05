@@ -162,7 +162,7 @@ eeg_mi(eeg::NeuroJ.EEG)
 eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_entropy(eeg::NeuroJ.EEG)
 eeg_negentropy(eeg::NeuroJ.EEG)
-eeg_band(eeg; band::Symbol)
+eeg_band(eeg::NeuroJ.EEG; band::Symbol)
 eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_tcoherence(eeg::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_freqs(eeg::NeuroJ.EEG)
@@ -209,6 +209,7 @@ eeg_vartest(eeg::NeuroJ.EEG)
 eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 eeg_rel_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false)
+eeg_fbsplit(eeg::NeuroJ.EEG; order::Int64=8)
 ```
 
 ## EEG plots

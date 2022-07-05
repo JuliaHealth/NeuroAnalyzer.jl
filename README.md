@@ -177,7 +177,6 @@ EEG:
 - analysis: signals/PSD comparison
 - analysis: simple convolution bandpass filter for data analysis
 - analysis: source localization
-- analysis: split signal into frequency bands
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - analysis: use variable ncyc for s_wspectrogram()
 - analysis: wavelets

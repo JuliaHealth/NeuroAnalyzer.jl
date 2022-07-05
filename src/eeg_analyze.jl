@@ -499,12 +499,12 @@ Return frequency limits for a `band` range.
 
 - `band_frequency::Tuple{Real, Real}`
 """
-function eeg_band(eeg; band::Symbol)
+function eeg_band(eeg::NeuroJ.EEG; band::Symbol)
 
     band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
-    band === :total && (band_frequency = (0.0, round(eeg_sr(eeg) / 2, digits=1)))
-    band === :delta && (band_frequency = (0.5, 4.0))
+    band === :total && (band_frequency = (0.1, round(eeg_sr(eeg) / 2, digits=1)))
+    band === :delta && (band_frequency = (0.1, 4.0))
     band === :theta && (band_frequency = (4.0, 8.0))
     band === :alpha && (band_frequency = (8.0, 13.0))
     band === :beta && (band_frequency = (14.0, 30.0))
@@ -516,7 +516,7 @@ function eeg_band(eeg; band::Symbol)
     band === :gamma_higher && (band_frequency = (80.0, 150.0))
     
     band_frequency[1] > eeg_sr(eeg) / 2 && (band_frequency = (eeg_sr(eeg) / 2, band_frequency[2]))
-    band_frequency[2] > eeg_sr(eeg) / 2 && (band_frequency = (band_frequency[1], eeg_sr(eeg) / 2))
+    band_frequency[2] > eeg_sr(eeg) / 2 && (band_frequency = (band_frequency[1], (eeg_sr(eeg) / 2) - 0.1))
 
     return band_frequency
 end
@@ -2797,4 +2797,45 @@ function eeg_rel_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false, f::Union
     end
 
     return (psd_pow=psd_pow, psd_frq=psd_frq)
+end
+
+"""
+    eeg_fbsplit(eeg; order)
+
+Split EEG signal into frequency bands.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `order::Int64=8`: bandpass filter order
+
+# Returns
+
+Named tuple containing:
+- `band_names::Vector{Symbol}`
+- `band_frq::Vector{Tuple{Real, Real}}`
+- `signal_split::Array{Float64, 4}`
+"""
+function eeg_fbsplit(eeg::NeuroJ.EEG; order::Int64=8)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
+    epoch_n = eeg_epoch_n(eeg)
+    channel_n = eeg_channel_n(eeg)
+    fs = eeg_sr(eeg)
+    signal_split = zeros(length(band), size(eeg.eeg_signals, 1), size(eeg.eeg_signals, 2), size(eeg.eeg_signals, 3))
+    band_frq = Vector{Tuple{Real, Real}}()
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for band_idx in 1:length(band)
+            band_f = eeg_band(eeg, band=band[band_idx])
+            push!(band_frq, band_f)
+            for channel_idx in 1:channel_n
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                signal_split[band_idx, channel_idx, :, epoch_idx] = s_filter(s, fs=fs, fprototype=:butterworth, ftype=:bp, cutoff=band_f, order=8)
+            end
+        end
+    end
+
+    return (band_names=band, band_frq=band_frq, signal_split=signal_split)
 end

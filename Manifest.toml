@@ -1224,6 +1224,12 @@ version = "1.3.5+1"
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 
+[[deps.OpenCL]]
+deps = ["Libdl", "LinearAlgebra", "Printf"]
+git-tree-sha1 = "95c0e41b075c6a326952044be29defa9c2ec1f02"
+uuid = "08131aa3-fb12-5dee-8b74-c09406e224a2"
+version = "0.8.1"
+
 [[deps.OpenEXR]]
 deps = ["Colors", "FileIO", "OpenEXR_jll"]
 git-tree-sha1 = "327f53360fdb54df7ecd01e96ef1983536d1e633"

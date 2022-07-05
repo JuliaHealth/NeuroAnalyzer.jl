@@ -2675,7 +2675,7 @@ Calculate negentropy of all channels of `eeg`.
 
   * `ne::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_band-Tuple{Any}' href='#NeuroJ.eeg_band-Tuple{Any}'>#</a>
+<a id='NeuroJ.eeg_band-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_band`** &mdash; *Method*.
 
 
@@ -3823,6 +3823,30 @@ Named tuple containing:
 
   * `psd_pow::Array{Float64, 3}`:powers
   * `psd_frq::Array{Float64, 3}`: frequencies
+
+<a id='NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fbsplit`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fbsplit(eeg; order)
+```
+
+Split EEG signal into frequency bands.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `order::Int64=8`: bandpass filter order
+
+**Returns**
+
+Named tuple containing:
+
+  * `band_names::Vector{Symbol}`
+  * `band_frq::Vector{Tuple{Real, Real}}`
+  * `signal_split::Array{Float64, 4}`
 
 
 <a id='EEG-plots'></a>

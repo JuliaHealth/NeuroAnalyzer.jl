@@ -312,4 +312,7 @@ edf1 = eeg_loc_swap_axes(edf)
 p, f = eeg_rel_psd(edf, f=(8,12))
 @test size(p) == (19, 513, 1)
 
+_, _, ss = eeg_fbsplit(edf)
+@test size(ss) == (10, 19, 309760, 1)
+
 true
