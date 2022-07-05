@@ -1786,7 +1786,7 @@ end
 """
     eeg_senv(eeg; d, mt)
 
-Calculate spectral (in dB) envelope of `eeg`.
+Calculate spectral envelope of `eeg`.
 
 # Arguments
 
@@ -1811,8 +1811,12 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
     nfft = length(s_tmp)
     interval = fs
     overlap = round(Int64, fs * 0.85)
-    mt == false && (spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-    mt == true && (spec_tmp = mt_spectrogram(s_tmp, fs=fs))
+    length(s_tmp) < 4 * fs && (mt = true)
+    if mt == false
+        spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    else
+        spec_tmp = mt_spectrogram(s_tmp, fs=fs)
+    end
     sp_t = collect(spec_tmp.time)
     sp_t .+= eeg.eeg_epochs_time[1]
 
@@ -1821,9 +1825,11 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-
-            mt == false && (spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-            mt == true && (spec = mt_spectrogram(s, fs=fs))
+            if mt == false
+                spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+            else
+                spec = mt_spectrogram(s_tmp, fs=fs)
+            end
 
             s_p = pow2db.(spec.power)
             s_frq = Vector(spec.freq)
@@ -1856,7 +1862,7 @@ end
 """
     eeg_senv_mean(eeg; dims, d, mt)
 
-Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
+Calculate spectral envelope of `eeg`: mean and 95% CI.
 
 # Arguments
 
@@ -1944,7 +1950,7 @@ end
 """
     eeg_senv_median(eeg; dims, d, mt)
 
-Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
+Calculate spectral envelope of `eeg`: median and 95% CI.
 
 # Arguments
 

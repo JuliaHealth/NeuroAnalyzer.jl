@@ -2371,16 +2371,14 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bo
     nfft = length(signal)
     interval = fs
     overlap = round(Int64, fs * 0.85)
-
-    mt == false && (spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-    mt == true && (spec = mt_spectrogram(signal, fs=fs))
+    if mt == false
+        spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    else
+        spec = mt_spectrogram(signal, fs=fs)
+    end
     s_t = collect(spec.time)
     s_frq = Vector(spec.freq)
-    if norm == true
-        s_pow = pow2db.(spec.power)
-    else
-        s_pow = Vector(spec.power)
-    end
+    norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
 
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
