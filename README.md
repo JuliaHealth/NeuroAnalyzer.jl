@@ -17,8 +17,8 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 First, download [Julia](https://julialang.org/downloads/) 1.0 or later. 
 
 There are two branches of NeuroJ.jl:
-- [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended
-- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release model
+- [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended for research tasks
+- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release for developers
 
 You can add NeuroJ.jl from using Julia's package manager, by typing:
 
@@ -36,6 +36,7 @@ Another option is to initialize a new Julia environment for the package:
 ```shell
 git clone https://codeberg.org/AdamWysokinski/NeuroJ.jl
 cd NeuroJ.jl
+julia
 ```
 
 Next, start Julia and do the following:
@@ -149,77 +150,76 @@ General:
 - Pluto interface
 
 EEG:
-- tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
-- probability maps: the local likelihood of belonging to a given population
-- use variable ncyc for s_wspectrogram()
-- calculate difference between channels
-- topoplot of which electrode at a given time exhibits statistically significant difference between two signals
-- add user-defined voltage scale for eeg signal plots
-- check where pad0 is not used
-- add s_hspectrum() and s_wspectrum() for PSD plots
-- detect artifacts using TKEO
-- visual / auditory stimuli presentation module
-- add/delete markers, view markers on plots
-- amplitude turbulence
-- power envelope connectivity
-- custom reference (e.g. bipolar longitudinal/horizontal)
-- PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
-- plot two EEG one over another for comparison
-- PSD plot line slope over frequencies (adjusted power)
-- wavelets
-- cross-frequency phase-amplitude coupling
-- ITPC topoplot
-- non-phase-locked part of the signal (= total - phase-locked)
-- phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
-- multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
-- simple convolution bandpass filter for data analysis
-- beamforming, leakage correction
-- Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
-- FOOOF
-- topo plot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
-- set baseline
-- sync epoch starts at phase = 0
-- topo plots: asymmetric color bars to highlight increase/decrease in activity
-- eeg_senv threshold
-- eeg_plot() meta function
-- update tutorial.md
-- complex kernel convolution: plot magnitude and phase of the convoluted signal
-- multi-trial data
-- split signal into frequency bands
-- continuous wavelet transform (using ContinuousWavelets.jl)
-- conectomes graph
-- coherence spectrum (y: relative amplitude, x: frequencies)
-- spectrogram: extract area of specific frequencies
-- CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
-- EEG bands: medial vs left vs right channels within each band
-- merge EEG objects
-- reports in .md format
-- brain topography
-- events markers; epoch by event markers; rewrite epoching
-- eeg_keep_eeg_channels → keep_channels(type)
-- export channel locs to .CED
-- preview 2d/3d channel locs
-- insert channel
-- virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
-- 3d headplots
-- small plots (amplitude, PSD, spectrogram) at electrode locations
-- phase-amplitude cross-frequency coupling (PAC)
-- more re-referencing methods: spherical Laplacian, REST
+- analysis, plots: brain topography
+- analysis, plots: conectomes graph
+- analysis, plots: PSD plot line slope over frequencies (adjusted power)
+- analysis, plots: spectrogram: extract area of specific frequencies
+- analysis: add s_hspectrum() and s_wspectrum() for PSD plots
+- analysis: amplitude turbulence
+- analysis: beamforming, leakage correction
+- analysis: calculate difference between channels
+- analysis: CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
+- analysis: check where pad0 is not used
+- analysis: continuous wavelet transform (using ContinuousWavelets.jl)
+- analysis: cross-frequency phase-amplitude coupling
+- analysis: dipoles
+- analysis: EEG bands: medial vs left vs right channels within each band
+- analysis: eeg_senv threshold
+- analysis: FOOOF
+- analysis: Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
+- analysis: ML/DL
+- analysis: multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
+- analysis: non-phase-locked part of the signal (= total - phase-locked)
+- analysis: phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
+- analysis: phase-amplitude cross-frequency coupling (PAC)
+- analysis: power envelope connectivity
+- analysis: probability maps: the local likelihood of belonging to a given population
+- analysis: signals/PSD comparison
+- analysis: simple convolution bandpass filter for data analysis
+- analysis: source localization
+- analysis: split signal into frequency bands
+- analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
+- analysis: use variable ncyc for s_wspectrogram()
+- analysis: wavelets
+- edit: add/delete markers, view markers on plots
+- edit: automated channel rejection
+- edit: automated cleaning of artifacts
+- edit: automated DC line cleaning
+- edit: bad channel marking / rejection
+- edit: bad epoch marking / rejection
+- edit: create EEG object
+- edit: eeg_keep_eeg_channels → keep_channels(type)
+- edit: events markers; epoch by event markers; rewrite epoching
+- edit: insert channel
+- edit: merge EEG objects
+- edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
+- io: export channel locs to .CED
 - io: import from CSV
-- create EEG object
-- dipoles
-- automated DC line cleaning
-- automated channel rejection
-- automated cleaning of artifacts
-- bad channel marking / rejection
-- bad epoch marking / rejection
-- signals/PSD comparison
-- more channel location formats
 - io: import from EDF+, BDF and other formats
-- source localization
-- ERPs
-- ML/DL analysis
+- io: more channel location formats
+- misc: reports in .md format
+- misc: update tutorial.md
+- plots: 3d headplots
+- plots: add user-defined voltage scale for eeg signal plots
+- plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
+- plots: coherence spectrum (y: relative amplitude, x: frequencies)
+- plots: complex kernel convolution: plot magnitude and phase of the convoluted signal
+- plots: eeg_plot() meta function
+- plots: ITPC topoplot
+- plots: plot two EEG one over another for comparison
+- plots: preview 2d/3d channel locs
+- plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
+- plots: small plots (amplitude, PSD, spectrogram) at electrode locations
+- plots: topo plot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
+- plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
+- process: custom reference (e.g. bipolar longitudinal/horizontal)
+- process: detect artifacts using TKEO
+- process: more re-referencing methods: spherical Laplacian, REST
+- process: set baseline
+- process: sync epoch starts at phase = 0
+- trial: multi-trial data
 
+- ERPs
 - CUDA/AMD ROCm acceleration
 - visual / auditory stimuli presentation module
 - use eyetracker data to detect ocular artifacts
