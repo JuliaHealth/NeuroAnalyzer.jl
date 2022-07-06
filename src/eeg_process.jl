@@ -1903,8 +1903,8 @@ Zero `eeg` channel at the beginning and at the end.
 function eeg_zero(eeg::NeuroJ.EEG)
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals[1, 1, 1] = 0
-    eeg_new.eeg_signals[1, end, 1] = 0
+    eeg_new.eeg_signals[:, 1, :] .= 0
+    eeg_new.eeg_signals[:, end, :] .= 0
 
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_zero(EEG)")
@@ -1923,8 +1923,8 @@ Zero `eeg` channel at the beginning and at the end.
 """
 function eeg_zero!(eeg::NeuroJ.EEG)
 
-    eeg.eeg_signals[1, 1, 1] = 0
-    eeg.eeg_signals[1, end, 1] = 0
+    eeg.eeg_signals[:, 1, :] .= 0
+    eeg.eeg_signals[:, end, :] .= 0
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_zero(EEG)")
