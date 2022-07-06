@@ -2415,6 +2415,40 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
   * `nn::Int64=4`: number of nearest electrodes
   * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
 
+<a id='NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_zero`** &mdash; *Method*.
+
+
+
+```julia
+eeg_zero(eeg)
+```
+
+Zero `eeg` channel at the beginning and at the end.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_zero!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_zero!(eeg)
+```
+
+Zero `eeg` channel at the beginning and at the end.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-analyze'></a>
 
@@ -3358,7 +3392,7 @@ Named tuple containing:
 eeg_senv(eeg; d, mt)
 ```
 
-Calculate spectral (in dB) envelope of `eeg`.
+Calculate spectral envelope of `eeg`.
 
 **Arguments**
 
@@ -3382,7 +3416,7 @@ Named tuple containing:
 eeg_senv_mean(eeg; dims, d, mt)
 ```
 
-Calculate spectral (in dB) envelope of `eeg`: mean and 95% CI.
+Calculate spectral envelope of `eeg`: mean and 95% CI.
 
 **Arguments**
 
@@ -3409,7 +3443,7 @@ Named tuple containing:
 eeg_senv_median(eeg; dims, d, mt)
 ```
 
-Calculate spectral (in dB) envelope of `eeg`: median and 95% CI.
+Calculate spectral envelope of `eeg`: median and 95% CI.
 
 **Arguments**
 

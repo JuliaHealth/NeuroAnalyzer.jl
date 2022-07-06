@@ -315,4 +315,7 @@ p, f = eeg_rel_psd(edf, f=(8,12))
 _, _, ss = eeg_fbsplit(edf)
 @test size(ss) == (10, 19, 309760, 1)
 
+edf1 = eeg_zero(edf)
+@test edf1.eeg_signals[1, 1, 1] == 0
+
 true

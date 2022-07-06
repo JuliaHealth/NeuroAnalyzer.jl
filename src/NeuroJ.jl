@@ -292,6 +292,8 @@ export eeg_fftdenoise
 export eeg_fftdenoise!
 export eeg_reference_plap
 export eeg_reference_plap!
+export eeg_zero
+export eeg_zero!
 
 include("eeg_analyze.jl")
 export eeg_total_power

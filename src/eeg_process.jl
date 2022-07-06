@@ -1886,3 +1886,48 @@ function eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 
     nothing
 end
+
+"""
+    eeg_zero(eeg)
+
+Zero `eeg` channel at the beginning and at the end.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_zero(eeg::NeuroJ.EEG)
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals[1, 1, 1] = 0
+    eeg_new.eeg_signals[1, end, 1] = 0
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_zero(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_zero!(eeg)
+
+Zero `eeg` channel at the beginning and at the end.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_zero!(eeg::NeuroJ.EEG)
+
+    eeg.eeg_signals[1, 1, 1] = 0
+    eeg.eeg_signals[1, end, 1] = 0
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_zero(EEG)")
+
+    nothing
+end

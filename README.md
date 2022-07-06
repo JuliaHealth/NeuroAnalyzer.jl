@@ -216,7 +216,6 @@ EEG:
 - process: detect artifacts using TKEO
 - process: more re-referencing methods: spherical Laplacian, REST
 - process: set baseline
-- process: sync epoch starts at phase = 0
 - trial: multi-trial data
 
 - ERPs

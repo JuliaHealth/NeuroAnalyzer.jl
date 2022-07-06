@@ -145,6 +145,8 @@ eeg_fftdenoise(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 eeg_fftdenoise!(eeg::NeuroJ.EEG; pad::Int64=0, threshold::Int64=100)
 eeg_reference_plap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
+eeg_zero(eeg::NeuroJ.EEG)
+eeg_zero!(eeg::NeuroJ.EEG)
 ```
 
 ## EEG analyze
