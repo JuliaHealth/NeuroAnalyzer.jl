@@ -2845,3 +2845,36 @@ function eeg_fbsplit(eeg::NeuroJ.EEG; order::Int64=8)
 
     return (band_names=band, band_frq=band_frq, signal_split=signal_split)
 end
+
+"""
+    eeg_chdiff(eeg1, eeg2; channel1, channel2)
+
+Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
+
+# Arguments
+
+- `eeg1::NeuroJ.EEG`
+- `eeg2::NeuroJ.EEG`
+- `channel1::Int64`
+- `channel2::Int64`
+
+# Returns
+
+- `ch_diff::Matrix{Float64}`
+"""
+function eeg_chdiff(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64)
+
+    channel1 < 0 || channel2 < 0 && throw(ArgumentError("channel1/channel2 must be > 0."))
+    channel1 > eeg_channel_n(eeg1) && throw(ArgumentError("channel1 must be ≤ $(eeg_channel_n(eeg1))."))
+    channel2 > eeg_channel_n(eeg2) && throw(ArgumentError("channel2 must be ≤ $(eeg_channel_n(eeg2))."))
+    size(eeg1.eeg_signals[channel1, :, :]) == size(eeg2.eeg_signals[channel2, :, :]) || throw(ArgumentError("Both EEG channels must have the same size."))
+
+    ch_diff = zeros(size(eeg1.eeg_signals[channel1, :, :]))
+    @inbounds @simd for epoch_idx in 1:eeg_epoch_n(eeg1)
+        s1 = @view eeg1.eeg_signals[channel1, :, epoch_idx]
+        s2 = @view eeg2.eeg_signals[channel2, :, epoch_idx]
+        ch_diff[:, epoch_idx] = s1 .- s2
+    end
+
+    return ch_diff
+end

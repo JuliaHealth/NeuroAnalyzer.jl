@@ -212,6 +212,7 @@ eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 eeg_rel_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false)
 eeg_fbsplit(eeg::NeuroJ.EEG; order::Int64=8)
+eeg_chdiff(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64)
 ```
 
 ## EEG plots

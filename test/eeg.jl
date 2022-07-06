@@ -318,4 +318,7 @@ _, _, ss = eeg_fbsplit(edf)
 edf1 = eeg_zero(edf)
 @test edf1.eeg_signals[1, 1, 1] == 0
 
+c = eeg_chdiff(edf, edf, channel1=1, channel2=2)
+@test size(c) == (309760, 1)
+
 true

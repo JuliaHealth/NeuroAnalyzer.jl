@@ -2424,7 +2424,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 eeg_zero(eeg)
 ```
 
-Zero `eeg` channel at the beginning and at the end.
+Zero `eeg` channels at the beginning and at the end.
 
 **Arguments**
 
@@ -3881,6 +3881,28 @@ Named tuple containing:
   * `band_names::Vector{Symbol}`
   * `band_frq::Vector{Tuple{Real, Real}}`
   * `signal_split::Array{Float64, 4}`
+
+<a id='NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_chdiff`** &mdash; *Method*.
+
+
+
+```julia
+eeg_chdiff(eeg1, eeg2; channel1, channel2)
+```
+
+Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+
+**Returns**
+
+  * `ch_diff::Matrix{Float64}`
 
 
 <a id='EEG-plots'></a>

@@ -157,7 +157,6 @@ EEG:
 - analysis: add s_hspectrum() and s_wspectrum() for PSD plots
 - analysis: amplitude turbulence
 - analysis: beamforming, leakage correction
-- analysis: calculate difference between channels
 - analysis: CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
 - analysis: check where pad0 is not used
 - analysis: continuous wavelet transform (using ContinuousWavelets.jl)

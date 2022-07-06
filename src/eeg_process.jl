@@ -1890,7 +1890,7 @@ end
 """
     eeg_zero(eeg)
 
-Zero `eeg` channel at the beginning and at the end.
+Zero `eeg` channels at the beginning and at the end.
 
 # Arguments
 

@@ -355,6 +355,7 @@ export eeg_vartest
 export eeg_band_mpower
 export eeg_rel_psd
 export eeg_fbsplit
+export eeg_chdiff
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo
