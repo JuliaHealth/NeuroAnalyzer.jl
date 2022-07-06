@@ -12,6 +12,7 @@ function neuroj_version()
     required_packages = ["ColorSchemes",
                          "CSV",
                          "CubicSplines",
+                         "CUDA",
                          "DataFrames",
                          "Distances",
                          "DSP",
