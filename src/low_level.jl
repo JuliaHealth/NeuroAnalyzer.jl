@@ -2376,9 +2376,10 @@ function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bo
     else
         spec = mt_spectrogram(signal, fs=fs)
     end
+    s_pow = spec.power
+    norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
     s_t = collect(spec.time)
     s_frq = Vector(spec.freq)
-    norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
 
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
@@ -2910,6 +2911,9 @@ Named tuple containing:
 """
 function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 
+    # add reflected signal to reduce edge artifacts
+    s_r = _reflect(signal)
+
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
@@ -2936,6 +2940,12 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
         w_powers[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
         w_phases[frq_idx, :] = @. angle(w_conv[frq_idx, :])
     end
+
+    # remove reflected part of the signal
+    w_conv = w_conv[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    w_powers = w_powers[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    w_phases = w_phases[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    
     norm == true && (w_powers = pow2db.(w_powers))
 
     return (w_conv=w_conv, w_powers=w_powers, w_phases=w_phases, frq_list=frq_list)
@@ -2990,7 +3000,7 @@ Named tuple containing:
 """
 function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
 
-    # add reflected signals to reduce edge artifacts
+    # add reflected signal to reduce edge artifacts
     s_r = _reflect(signal)
     
     # create Gaussian in frequency domain
@@ -3004,7 +3014,7 @@ function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
     # filter
     s_f = 2 .* real.(ifft(fft(s_r).*g))
     
-    # remove reflected signals
+    # remove reflected part of the signal
     s_f = _chop(s_f)
 
     return s_f

@@ -3135,10 +3135,12 @@ function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, nor
     if mw == false
         if mt == false
             spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+            spec_power = spec.power
         else
             spec = mt_spectrogram(signal, fs=fs)
+            spec_power = spec.power
         end
-        norm == true ? spec_power = pow2db.(spec.power) : spec_power = spec.power
+        norm == true && (spec_power = pow2db.(spec_power))
         spec_frq = spec.freq
         t = collect(spec.time) .+ offset
     else

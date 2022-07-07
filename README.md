@@ -177,11 +177,11 @@ EEG:
 - analysis: simple convolution bandpass filter for data analysis
 - analysis: source localization
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
-- analysis: use reflect() and chop() for spectrogram
 - analysis: use variable ncyc for s_wspectrogram()
 - analysis: wavelets
 - edit: add/delete markers, view markers on plots
 - edit: automated channel rejection
+- edit: automated epoch rejection
 - edit: automated cleaning of artifacts
 - edit: automated DC line cleaning
 - edit: bad channel marking / rejection
@@ -218,7 +218,8 @@ EEG:
 - trial: multi-trial data
 
 - ERPs
-- CUDA/AMD ROCm acceleration
+- CUDA acceleration
+- AMD ROCm acceleration
 - visual / auditory stimuli presentation module
 - use eyetracker data to detect ocular artifacts
 - IEEG/ECoG/MEG
