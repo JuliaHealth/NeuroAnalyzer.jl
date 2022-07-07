@@ -3,6 +3,7 @@ module NeuroJ
 using ColorSchemes
 using CSV
 using CubicSplines
+using CUDA
 using DataFrames
 using Distances
 using DSP

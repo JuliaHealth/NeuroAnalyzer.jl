@@ -1069,6 +1069,7 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     end
 
     acov = zeros(length(lags))
+    l = length(signal)
 
     for idx in 1:length(lags)
         if lags[idx] == 0
@@ -1087,11 +1088,7 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
             s_mul = s1 .* s2
         end
         s_sum = sum(s_mul)
-        if norm == true
-            acov[idx] = s_sum / length(signal)
-        else
-            acov[idx] = s_sum
-        end
+        norm == true ? acov[idx] = s_sum / l : acov[idx] = s_sum
     end
 
     return acov, lags
@@ -1131,6 +1128,7 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
     end
 
     xcov = zeros(length(lags))
+    l = length(signal1)
 
     for idx in 1:length(lags)
         if lags[idx] == 0
@@ -1149,11 +1147,7 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
             s_mul = s1 .* s2
         end
         s_sum = sum(s_mul)
-        if norm == true
-            xcov[idx] = s_sum / length(signal1)
-        else
-            xcov[idx] = s_sum
-        end
+        norm == true ? xcov[idx] = s_sum / l : xcov[idx] = s_sum
     end
 
     return xcov, lags

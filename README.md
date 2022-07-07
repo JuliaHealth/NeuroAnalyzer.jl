@@ -58,6 +58,7 @@ Julia version ≥ 1.0 is required. Julia [current stable version](https://julial
 The following packages are required:
 - CSV
 - CubicSplines
+- CUDA
 - DataFrames
 - Distances
 - DSP
