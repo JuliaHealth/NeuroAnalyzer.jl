@@ -843,6 +843,8 @@ edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 function eeg_benchmark(n::Int64)
     for idx in 1:n
+        e10 = nothing
+        edf_new = nothing
         edf_new = eeg_reference_car(edf)
         e10 = eeg_epochs(edf_new, epoch_len=10*eeg_sr(edf_new))
         e10 = eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2)
@@ -857,7 +859,8 @@ end
 
 @time eeg_benchmark(1);
 @time eeg_benchmark(1);
+@benchmark eeg_benchmark(1)
 
 # workstation:  4.187989 seconds (8.47 M allocations: 24.189 GiB, 10.54% gc time)
-# laptop:       4.258223 seconds (8.26 M allocations: 24.173 GiB, 10.48% gc time)
+# laptop:       5.355243 seconds (8.28 M allocations: 24.174 GiB, 18.80% gc time)
 ```

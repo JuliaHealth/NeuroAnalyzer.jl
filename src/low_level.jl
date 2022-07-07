@@ -99,8 +99,7 @@ function vsearch(y::Real, x::Vector{<:Real}; return_distance::Bool=false)
 
     y_dist, y_idx = findmin(abs.(x .- y))
 
-    return_distance == false && (return y_idx)
-    return_distance == true && (return y_idx, y_dist)
+    return_distance == true ? (return y_idx, y_dist) : return y_idx
 end
 
 """
@@ -130,8 +129,7 @@ function vsearch(y::Vector{<:Real}, x::Vector{<:Real}; return_distance=false)
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
 
-    return_distance == false && (return convert.(Int64, y_idx))
-    return_distance == true && (return convert.(Int64, y_idx), y_dist)
+    return_distance == true ? (return convert.(Int64, y_idx), y_dist) : return convert.(Int64, y_idx)
 end
 
 """
@@ -275,7 +273,6 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 function fft0(x::AbstractArray, n::Int64)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
-
     n > length(x) && (n = n - length(x))
 
     return fft(vcat(x, zeros(eltype(x), n)))
@@ -298,7 +295,6 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 function ifft0(x::AbstractArray, n::Int64)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
-
     n > length(x) && (n = n - length(x))
 
     return ifft(vcat(x, zeros(eltype(x), n)))
@@ -370,9 +366,8 @@ Calculate Root Mean Square of `signal`.
 function s_rms(signal::Vector{<:Real})
 
     # rms = sqrt(mean(signal.^2))    
-    rms = norm(signal) / sqrt(length(signal))
 
-    return rms
+    return norm(signal) / sqrt(length(signal))
 end
 
 """
@@ -526,6 +521,7 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
             m_sorted[idx, :] = tmp
         end
     end
+
     return m_sorted
 end
 
@@ -548,8 +544,7 @@ function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
-    sym == false && (v_pad = vcat(x, zeros(eltype(x), n)))
-    sym == true && (v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)))
+    sym == true ? v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : v_pad = vcat(x, zeros(eltype(x), n))
 
     return v_pad
 end
@@ -643,8 +638,7 @@ Generate normalized or unnormalized sinc function.
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
-    norm == true && (y_sinc = @. sin(2 * pi * f * (t - peak)) / (pi * (t - peak)))
-    norm == false && (y_sinc = @. sin(2 * f * (t - peak)) / (t - peak))
+    norm == true ? y_sinc = (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : y_sinc = (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(y_sinc)
     sum(nan_idx) != 0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
     
@@ -763,6 +757,7 @@ Normalize matrix `m`.
 - `m_norm::Matrix{Float64}`
 """
 function m_norm(m::Array{Float64, 3})
+    
     m_norm = m ./ (size(m, 2) - 1)
     
     return m_norm
@@ -911,7 +906,7 @@ function s_msci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
         Threads.@threads for idx1 in 1:size(signal, 1) * n
             s_tmp2 = zeros(size(signal))
             sample_idx = rand(1:size(signal, 1), size(signal, 1))
-            for idx2 in 1:size(signal, 1)
+            @inbounds @simd for idx2 in 1:size(signal, 1)
                 s_tmp2[idx2, :] = signal[sample_idx[idx2], :]'
             end
             s_tmp1[idx1, :] = mean(s_tmp2, dims=1)
@@ -1010,14 +1005,14 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
         s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
         # sample_idx = sample_idx[1:1000]
-        for idx2 in 1:size(signal1, 1)
+        @inbounds @simd for idx2 in 1:size(signal1, 1)
             s = @view signals[sample_idx[idx2], :]
             s_tmp1[idx2, :] = s'
         end
         s1_mean = mean(s_tmp1, dims=1)
         s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
-        for idx2 in 1:size(signal1, 1)
+        @inbounds @simd for idx2 in 1:size(signal1, 1)
             s = @view signals[sample_idx[idx2], :]
             s_tmp1[idx2, :] = s'
         end
@@ -1071,23 +1066,21 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     acov = zeros(length(lags))
     l = length(signal)
 
-    for idx in 1:length(lags)
+    @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            s_lagged = s_demeaned
-            s_mul = s_demeaned .* s_lagged
+            s_sum = sum(s_demeaned.^2)
         elseif lags[idx] > 0
             # positive lag
             s1 = @view s_demeaned[(1 + lags[idx]):end]
             s2 = @view s_demeaned[1:(end - lags[idx])]
-            s_mul =  s1 .* s2
+            s_sum = sum(s1 .* s2)
         elseif lags[idx] < 0
             # negative lag
             s1 = @view s_demeaned[1:(end - abs(lags[idx]))]
             s2 = @view s_demeaned[(1 + abs(lags[idx])):end]
-            s_mul = s1 .* s2
+            s_sum = sum(s1 .* s2)
         end
-        s_sum = sum(s_mul)
         norm == true ? acov[idx] = s_sum / l : acov[idx] = s_sum
     end
 
@@ -1130,23 +1123,21 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    for idx in 1:length(lags)
+    @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            s_lagged = s_demeaned2
-            s_mul = s_demeaned1 .* s_lagged
+            s_sum = sum(s_demeaned1 .* s_demeaned2)
         elseif lags[idx] > 0
             # positive lag
             s1 = @view s_demeaned1[(1 + lags[idx]):end]
             s2 = @view s_demeaned2[1:(end - lags[idx])]
-            s_mul = s1 .* s2
+            s_sum = sum(s1 .* s2)
         elseif lags[idx] < 0
             # negative lag
             s1 = @view s_demeaned1[1:(end - abs(lags[idx]))] 
             s2 = @view s_demeaned2[(1 + abs(lags[idx])):end]
-            s_mul = s1 .* s2
+            s_sum = sum(s1 .* s2)
         end
-        s_sum = sum(s_mul)
         norm == true ? xcov[idx] = s_sum / l : xcov[idx] = s_sum
     end
 
@@ -1206,8 +1197,7 @@ Calculate `signal` total power.
 function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
-    mt == true && (psd = mt_pgram(signal, fs=fs))
+    mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_pow = power(psd)
     psd_pow[1] = psd_pow[2]
     # dx: frequency resolution
@@ -1237,8 +1227,7 @@ function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
     f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
-    mt == true && (psd = mt_pgram(signal, fs=fs))
+    mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
 
     psd_freq = Vector(psd.freq)
     
@@ -1304,11 +1293,7 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         model = loess(t, signal, span=span)
         trend = Loess.predict(model, t)
         s_det = signal .- trend
-
-        return s_det
-    end
-
-    if type === :poly
+    elseif type === :poly
         t = collect(1:1:length(signal))        
         p = Polynomials.fit(t, signal, order)
         trend = zeros(length(signal))
@@ -1316,18 +1301,10 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
             trend[idx] = p(t[idx])
         end
         s_det = signal .- trend
-
-        return s_det
-    end
-
-    if type === :constant
+    elseif type === :constant
         offset == 0 && (offset = mean(signal))
         s_det = signal .- mean(signal)
-
-        return s_det
-    end
-
-    if type === :ls
+    elseif type === :ls
         T = eltype(signal)
         N = size(signal, 1)
         # create linear trend matrix
@@ -1340,16 +1317,12 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         Rinv = inv(Array(R)) |> typeof(R)
         factor = Rinv * transpose(A)
         s_det = signal .- A * (factor * signal)
-
-        return s_det
-    end
-
-    if type == :linear
+    elseif type == :linear
         trend = linspace(signal[1], signal[end], length(signal))
         s_det = signal .- trend
-
-        return s_det
     end
+
+    return s_det
 end
 
 """
@@ -1390,7 +1363,7 @@ function s_normalize_zscore(signal::AbstractArray)
 
     m = mean(signal)
     s = std(signal)
-    s_normalized = (signal .- m) ./ s
+    s_normalized = @. (signal - m) / s
 
     return s_normalized
 end
@@ -1412,7 +1385,8 @@ function s_normalize_minmax(signal::AbstractArray)
 
     mi = minimum(signal)
     mx = maximum(signal)
-    s_normalized = 2 .* (signal .- mi) ./ (mx - mi) .- 1
+    mxi = 0.5 * (mx - mi - 1)
+    s_normalized = @. (signal - mi) / mxi
 
     return s_normalized
 end
@@ -1454,7 +1428,7 @@ Normalize `signal` using log-transformation.
 function s_normalize_log(signal::AbstractArray)
 
     m = abs(minimum(signal))
-    s_normalized = @. log.(1 + signal + m)
+    s_normalized = @. log(1 + signal + m)
 
     return s_normalized
 end
@@ -1586,12 +1560,10 @@ function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
 
     # remove in- and out- edges
     if mod(length(kernel), 2) == 0 
-        s_conv = s_conv[half_kernel:(end - half_kernel)]
+        return s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
+        return s_conv[(half_kernel + 1):(end - half_kernel)]
     end
-
-    return s_conv
 end
 
 """
@@ -1675,7 +1647,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         signal = _reflect(signal)
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
-        for idx in (1 + order):(length(signal) - order)
+        @inbounds @simd for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + mean(signal)
                     s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
@@ -1693,7 +1665,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         signal = _reflect(signal)
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
-        for idx in (1 + order):(length(signal) - order)
+        @inbounds @simd for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
                     s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
@@ -1712,7 +1684,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         t = collect(0:1/fs:(length(signal) - 1) / fs)        
         p = Polynomials.fit(t, signal, order)
         s_filtered = zeros(length(signal))
-        for idx in 1:length(signal)
+        @inbounds @simd for idx in 1:length(signal)
             s_filtered[idx] = p(t[idx])
         end
         s_filtered = _chop(s_filtered)
@@ -2118,7 +2090,7 @@ function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
     s1_fft = fft(signal1) ./ length(signal1)
     s2_fft = fft(signal2) ./ length(signal2)
 
-    coh = (abs.((s1_fft) .* conj.(s2_fft)).^2) ./ (s1_fft .* s2_fft)
+    coh = @. (abs((s1_fft) * conj.(s2_fft))^2) / (s1_fft * s2_fft)
     coh = _chop(coh)
     msc = @. abs(coh)^2
 
@@ -2151,7 +2123,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
 
     # check maximum n
     n_tmp = n
-    Threads.@threads for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         s = @view signal[:, :, epoch_idx]
         pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
         size(pc_m, 2) < n_tmp && (n_tmp = size(pc_m, 2))
@@ -2163,7 +2135,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     pc_var = zeros(n, epoch_n)
     pc_reconstructed = zeros(size(signal))
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         s = @view signal[:, :, epoch_idx]
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
@@ -2592,6 +2564,7 @@ Find peaks in `signal`.
 
 """
 function s_findpeaks(signal::AbstractArray; d::Int64=32)
+    
     p_idx, = findpeaks1d(signal, distance=d)
     
     return p_idx
@@ -3082,7 +3055,7 @@ function s_tkeo(signal::AbstractArray)
     tkeo = zeros(length(signal))
     tkeo[1] = signal[1]
     tkeo[end] = signal[end]
-    for idx in 2:(length(signal) - 1)
+    @inbounds @simd for idx in 2:(length(signal) - 1)
         tkeo[idx] = signal[idx]^2 - (signal[idx - 1] * signal[idx + 1])
     end
 
@@ -3388,13 +3361,13 @@ function s_dfa(signal::Array{<:Real, 3}; fs::Int64)
     scale_duration = log.(scale_order)
     scatter(scale_order, scale_duration)
 
-    for idx in length(scale_duration):-1:1
+    @inbounds @simd for idx in length(scale_duration):-1:1
         if scale_duration[idx] > length(signal) ÷ 2
             popat!(scale_duration, idx)
             popat!(scale_order, idx)
         end
     end
-    for idx in length(scale_duration):-1:2
+    @inbounds @simd for idx in length(scale_duration):-1:2
         if scale_duration[idx] == scale_duration[idx - 1]
             popat!(scale_duration, idx)
             popat!(scale_order, idx)
@@ -3402,7 +3375,7 @@ function s_dfa(signal::Array{<:Real, 3}; fs::Int64)
     end
 
     epoch_rms = zeros(length(scale_duration))
-    for order_idx in 1:length(scale_duration)
+    @inbounds @simd for order_idx in 1:length(scale_duration)
         epochs_n = Int(length(signal_cs) ÷ scale_duration[order_idx])
         epochs = zeros(epochs_n, scale_duration[order_idx])
         for epoch_idx in 1:epochs_n
@@ -3536,7 +3509,7 @@ Find nearest position tuple `pos` in matrxi of positions `m`.
 """
 function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
     d = zeros(size(m))
-    for idx1 in 1:size(m, 1)
+    @inbounds @simd for idx1 in 1:size(m, 1)
         for idx2 in 1:size(m, 2)
             d[idx1, idx2] = euclidean(m[idx1, idx2], p)
         end
@@ -3568,8 +3541,7 @@ Named tuple containing:
 """
 function s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
-    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
-    mt == true && (psd = mt_pgram(signal, fs=fs))
+    mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
 
     psd_freq = Vector(psd.freq)
     
@@ -3610,8 +3582,7 @@ function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=
         ref_pow = s_band_power(signal, fs=fs, mt=mt, f=f)
     end    
   
-    mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
-    mt == true && (psd = mt_pgram(signal, fs=fs))
+    mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
     psd_pow[1] = psd_pow[2]

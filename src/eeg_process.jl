@@ -30,18 +30,12 @@ function eeg_reference_ch(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, 
 
     channel_list = collect(1:channel_n)
     for channel_idx in 1:length(channel)
-        if (channel[channel_idx] in channel_list) == false
-            throw(ArgumentError("channel does not match signal channels."))
-        end
+        channel[channel_idx] in channel_list == false && throw(ArgumentError("channel does not match signal channels."))
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         s = @view eeg.eeg_signals[channel, :, epoch_idx]
-        if length(channel) == 1
-            reference_channel = mean(s, dims=2)
-        else
-            reference_channel = vec(mean(s, dims=1))
-        end
+        length(channel) == 1 ? reference_channel = mean(s, dims=2) : reference_channel = vec(mean(s, dims=1))
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
             s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
@@ -103,9 +97,7 @@ function eeg_reference_car(eeg::NeuroJ.EEG; exclude_fpo::Bool=false, exclude_cur
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             reference_channels = @view eeg.eeg_signals[:, :, epoch_idx]
-            if exclude_current == true
-                reference_channels[setdiff(1:end, (channel_idx)), :, :]
-            end
+            exclude_current == true && (reference_channels = reference_channels[setdiff(1:end, (channel_idx)), :, :])
             if exclude_fpo == true
                 l = lowercase.(eeg_labels(eeg))
                 "fp1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp1"), l))), :, :])
