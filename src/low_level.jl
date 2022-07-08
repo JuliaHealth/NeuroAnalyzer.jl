@@ -3546,7 +3546,6 @@ function s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, m
     mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
 
     psd_freq = Vector(psd.freq)
-    
     f1_idx = vsearch(f[1], psd_freq)
     f2_idx = vsearch(f[2], psd_freq)
     mbp = mean(psd.power[f1_idx:f2_idx])
@@ -3578,13 +3577,9 @@ function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     
-    if f === nothing
-        ref_pow = s_total_power(signal, fs=fs, mt=mt)
-    else
-        ref_pow = s_band_power(signal, fs=fs, mt=mt, f=f)
-    end    
-  
+    ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
     mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
+
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
     psd_pow[1] = psd_pow[2]

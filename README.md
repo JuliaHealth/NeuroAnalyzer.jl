@@ -115,6 +115,8 @@ end
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
+CUDA acceleration is used if compatible NVIDIA card and drivers are installed.
+
 ## Documentation
 
 Complete NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
@@ -217,7 +219,6 @@ EEG:
 - trial: multi-trial data
 
 - ERPs
-- CUDA acceleration
 - AMD ROCm acceleration
 - visual / auditory stimuli presentation module
 - use eyetracker data to detect ocular artifacts
