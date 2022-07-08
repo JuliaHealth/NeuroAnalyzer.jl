@@ -7,6 +7,11 @@ function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
     println("    Julia version: $VERSION")
     println("   NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
+    if CUDA.functional()
+        println("     CUDA version: $(CUDA.version())")
+    else
+        println("     CUDA version: CUDA not available")
+    end
     println("     Plugins path: $(expanduser("~/Documents/NeuroJ/plugins/"))")
     println("          Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
     println("Imported packages:")
