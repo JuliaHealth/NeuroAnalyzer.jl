@@ -274,8 +274,15 @@ function fft0(x::AbstractArray, n::Int64)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n = n - length(x))
+    x = vcat(x, zeros(eltype(x), n))
+    if CUDA.functional()
+        cx = CuArray(x)
+        pfft = Vector(fft(cx))
+    else
+        pfft = fft(x)
+    end
 
-    return fft(vcat(x, zeros(eltype(x), n)))
+    return pfft
 end
 
 """
@@ -296,8 +303,15 @@ function ifft0(x::AbstractArray, n::Int64)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
+    x = vcat(x, zeros(eltype(x), n))
+    if CUDA.functional()
+        cx = CuArray(x)
+        pifft = Vector(ifft(cx))
+    else
+        pifft = ifft(x)
+    end
 
-    return ifft(vcat(x, zeros(eltype(x), n)))
+    return pifft
 end
 
 """
@@ -1216,7 +1230,6 @@ function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt
     mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
 
     psd_freq = Vector(psd.freq)
-    
     f1_idx = vsearch(f[1], psd_freq)
     f2_idx = vsearch(f[2], psd_freq)
     frq_idx = [f1_idx, f2_idx]
@@ -1762,8 +1775,10 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     length(signal) < 4 * fs && (mt = true)
+
     mt == false && (psd = welch_pgram(signal, 4*fs, fs=fs))
     mt == true && (psd = mt_pgram(signal, fs=fs))
+    
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
     psd_pow[1] = psd_pow[2]
