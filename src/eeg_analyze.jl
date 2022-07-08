@@ -413,8 +413,8 @@ function eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for idx1 in 1:channel_n
             for idx2 in 1:channel_n
-                s1 = eeg1.eeg_signals[idx2, :, epoch_idx]
-                s2 = eeg2.eeg_signals[idx2, :, epoch_idx]
+                s1 = @view eeg1.eeg_signals[idx2, :, epoch_idx]
+                s2 = @view eeg2.eeg_signals[idx2, :, epoch_idx]
                 mi[idx1, idx2, epoch_idx] = s2_mi(s1, s2)
             end
         end

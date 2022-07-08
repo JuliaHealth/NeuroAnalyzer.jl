@@ -5,6 +5,7 @@ Show NeuroJ and imported packages versions.
 """
 function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
+    println("    Julia version: $VERSION")
     println("   NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
     println("     Plugins path: $(expanduser("~/Documents/NeuroJ/plugins/"))")
     println("          Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")

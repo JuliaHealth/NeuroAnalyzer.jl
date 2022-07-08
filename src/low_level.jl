@@ -99,7 +99,7 @@ function vsearch(y::Real, x::Vector{<:Real}; return_distance::Bool=false)
 
     y_dist, y_idx = findmin(abs.(x .- y))
 
-    return_distance == true ? (return y_idx, y_dist) : return y_idx
+    return return_distance == true ? (y_idx, y_dist) : y_idx
 end
 
 """
@@ -125,11 +125,11 @@ function vsearch(y::Vector{<:Real}, x::Vector{<:Real}; return_distance=false)
     y_idx = zeros(length(y))
     y_dist = zeros(length(y))
 
-    for idx in 1:length(y)
+    @fastmath @inbounds @simd for idx in eachindex(y)
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
 
-    return_distance == true ? (return convert.(Int64, y_idx), y_dist) : return convert.(Int64, y_idx)
+    return return_distance == true ? (convert.(Int64, y_idx), y_dist) : convert.(Int64, y_idx)
 end
 
 """
@@ -236,7 +236,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     elseif type === :triangle
         mod(n, 2) == 0 && (n += 1)
         w = zeros(n)
-        for idx in 1:((n ÷ 2) + 1)
+        @inbounds @simd for idx in 1:((n ÷ 2) + 1)
             w[idx] = @. (idx * (idx + 1)) / 2
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
@@ -244,7 +244,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     elseif type === :exp
         mod(n, 2) == 0 && (n += 1)
         w = ones(n)
-        for idx in 1:((n ÷ 2) + 1)
+        @inbounds @simd for idx in 1:((n ÷ 2) + 1)
             w[idx] = 1 / idx
         end
         w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
@@ -295,7 +295,7 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 function ifft0(x::AbstractArray, n::Int64)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
-    n > length(x) && (n = n - length(x))
+    n > length(x) && (n -= length(x))
 
     return ifft(vcat(x, zeros(eltype(x), n)))
 end
@@ -315,11 +315,7 @@ Return the next power of 2 for given number `x`.
 """
 function nextpow2(x::Int64)
 
-    if x == 0
-        return 1
-    else
-        return 2 ^ ndigits(x - 1, base=2)
-    end
+    return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
 end
 
 """
@@ -343,7 +339,7 @@ function vsplit(x::Vector{<:Real}, n::Int64=1)
 
     x_m = reshape(x, length(x) ÷ n, n)
     result = [x_m[1, :]]
-    for idx in 2:size(x_m, 1)
+    @inbounds @simd for idx in 2:size(x_m, 1)
         result = vcat(result, [x_m[idx, :]])
     end
 
@@ -471,12 +467,12 @@ function m_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
     
     m_idx = zeros(Int, size(m))
     if dims == 1
-        for idx = 1:size(m, 2)
+        @inbounds @simd for idx = 1:size(m, 2)
             # sort by columns
             m_idx[:, idx] = sortperm(m[:, idx], rev=rev)
         end
     else
-        for idx = 1:size(m, 1)
+        @inbounds @simd for idx = 1:size(m, 1)
             # sort by rows
             m_idx[idx, :] = sortperm(m[idx, :], rev=rev)'
         end     
@@ -507,17 +503,15 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
-        for idx = 1:size(m, 2)
+        @inbounds @simd for idx = 1:size(m, 2)
             # sort by columns
-            tmp = @view m[:, idx]
-            tmp = tmp[m_idx]
+            tmp = @view m[:, idx][m_idx]
             m_sorted[:, idx] = tmp
         end
     else
-        for idx = 1:size(m, 1)
+        @inbounds @simd for idx = 1:size(m, 1)
             # sort by rows
-            tmp = @view m[idx, :]
-            tmp = tmp[m_idx]
+            tmp = @view m[idx, :][m_idx]
             m_sorted[idx, :] = tmp
         end
     end
@@ -544,7 +538,7 @@ function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
-    sym == true ? v_pad = vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : v_pad = vcat(x, zeros(eltype(x), n))
+    v_pad = sym == true ? vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : vcat(x, zeros(eltype(x), n))
 
     return v_pad
 end
@@ -632,13 +626,14 @@ Generate normalized or unnormalized sinc function.
 - `f::Real=10.0`: frequency
 - `peak::Real=0`: sinc peak time
 - `norm::Bool=true`: generate normalized function
+
 # Returns
 
 - `sinc::Vector{Float64}`
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
-    norm == true ? y_sinc = (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : y_sinc = (@. sin(2 * f * (t - peak)) / (t - peak))
+    y_sinc = norm == true ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
     nan_idx = isnan.(y_sinc)
     sum(nan_idx) != 0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
     
@@ -665,8 +660,7 @@ Generate Morlet wavelet.
 function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
 
     t = -t:1/fs:t
-    complex == true && (sin_wave = @. exp(im * 2 * pi * f * t))       # for symmetry at x = 0
-    complex == false && (sin_wave = @. sin(2 * pi * f * t))           # for symmetry at x = 0
+    sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
     m = sin_wave .* g
     
@@ -1066,22 +1060,18 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     acov = zeros(length(lags))
     l = length(signal)
 
-    @inbounds @simd for idx in 1:length(lags)
+    @inbounds @simd for idx in eachindex(lags)
         if lags[idx] == 0
             # no lag
             s_sum = sum(s_demeaned.^2)
         elseif lags[idx] > 0
             # positive lag
-            s1 = @view s_demeaned[(1 + lags[idx]):end]
-            s2 = @view s_demeaned[1:(end - lags[idx])]
-            s_sum = sum(s1 .* s2)
+            s_sum = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])])
         elseif lags[idx] < 0
             # negative lag
-            s1 = @view s_demeaned[1:(end - abs(lags[idx]))]
-            s2 = @view s_demeaned[(1 + abs(lags[idx])):end]
-            s_sum = sum(s1 .* s2)
+            s_sum = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end])
         end
-        norm == true ? acov[idx] = s_sum / l : acov[idx] = s_sum
+        acov[idx] = norm == true ? s_sum / l : s_sum
     end
 
     return acov, lags
@@ -1129,16 +1119,12 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
             s_sum = sum(s_demeaned1 .* s_demeaned2)
         elseif lags[idx] > 0
             # positive lag
-            s1 = @view s_demeaned1[(1 + lags[idx]):end]
-            s2 = @view s_demeaned2[1:(end - lags[idx])]
-            s_sum = sum(s1 .* s2)
+            s_sum = @views sum(s_demeaned1[(1 + lags[idx]):end] .* s_demeaned2[1:(end - lags[idx])])
         elseif lags[idx] < 0
             # negative lag
-            s1 = @view s_demeaned1[1:(end - abs(lags[idx]))] 
-            s2 = @view s_demeaned2[(1 + abs(lags[idx])):end]
-            s_sum = sum(s1 .* s2)
+            s_sum = @views sum(s_demeaned1[1:(end - abs(lags[idx]))] .* s_demeaned2[(1 + abs(lags[idx])):end])
         end
-        norm == true ? xcov[idx] = s_sum / l : xcov[idx] = s_sum
+        xcov[idx] = norm == true ? s_sum / l : s_sum
     end
 
     return xcov, lags
@@ -1385,8 +1371,8 @@ function s_normalize_minmax(signal::AbstractArray)
 
     mi = minimum(signal)
     mx = maximum(signal)
-    mxi = 0.5 * (mx - mi - 1)
-    s_normalized = @. (signal - mi) / mxi
+    mxi = mx - mi
+    s_normalized = @. (2 * (signal - mi) / mxi) - 1
 
     return s_normalized
 end

@@ -160,21 +160,11 @@ function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
         throw(ArgumentError("type must be -1, 0 or 1."))
     end
 
-    if two_sided == true
-        p = (1 - alpha) / (2 * n)
-    else
-        p = (1 - alpha) / n
-    end
-
+    p = two_sided == true ? (1 - alpha) / (2 * n) : (1 - alpha) / n
     t_critical = quantile(TDist(df), 1 - p)
     h = (n - 1) * t_critical / sqrt(n * (df + t_critical^2))
 
-    if g < h
-        return false
-    else
-        return true
-    end
-
+    return g < h ? false : true
 end
 
 """
