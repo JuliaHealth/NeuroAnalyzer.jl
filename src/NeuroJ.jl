@@ -156,6 +156,7 @@ export generate_morlet_fwhm
 export f_nearest
 export s_band_mpower
 export s_rel_psd
+export s_wbp
 
 include("statistic.jl")
 export hildebrand_rule
@@ -295,6 +296,8 @@ export eeg_reference_plap
 export eeg_reference_plap!
 export eeg_zero
 export eeg_zero!
+export eeg_wbp
+export eeg_wbp!
 
 include("eeg_analyze.jl")
 export eeg_total_power

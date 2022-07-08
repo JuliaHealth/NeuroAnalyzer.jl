@@ -164,7 +164,6 @@ EEG:
 - analysis: cross-frequency phase-amplitude coupling
 - analysis: dipoles
 - analysis: EEG bands: medial vs left vs right channels within each band
-- analysis: eeg_senv threshold
 - analysis: FOOOF
 - analysis: Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
 - analysis: ML/DL
@@ -175,7 +174,6 @@ EEG:
 - analysis: power envelope connectivity
 - analysis: probability maps: the local likelihood of belonging to a given population
 - analysis: signals/PSD comparison
-- analysis: simple convolution bandpass filter for data analysis
 - analysis: source localization
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - analysis: use variable ncyc for s_wspectrogram()

@@ -2864,8 +2864,10 @@ Named tuple containing:
 """
 function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 
+    pad > 0 && (signal = pad0(signal, pad))
+
     # add reflected signal to reduce edge artifacts
-    s_r = _reflect(signal)
+    signal = _reflect(signal)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
@@ -2883,7 +2885,6 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
     end
 
     demean == true && (signal = s_demean(signal))
-    pad > 0 && (signal = pad0(signal, pad))
     w_conv = zeros(ComplexF64, length(frq_list), length(signal))
     w_powers = zeros(length(frq_list), length(signal))
     w_phases = zeros(length(frq_list), length(signal))
@@ -3575,7 +3576,46 @@ function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=
     psd_pow ./= ref_pow
 
     norm == true && (psd_pow = pow2db.(psd_pow))
-    plot(psd_frq, psd_pow)
 
     return (psd_pow=psd_pow, psd_frq=psd_frq)
+end
+
+"""
+    s_wbp(signal; pad, norm, frq_lim, fs, ncyc, demean)
+
+Perform wavelet bandpass filtering of the `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Real`: filter frequency
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool=true`: demean signal prior to analysis
+
+# Returns
+
+- `signal_new::Vector{Float64}`
+"""
+function s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
+
+    pad > 0 && (signal = pad0(signal, pad))
+    # add reflected signal to reduce edge artifacts
+    signal = _reflect(signal)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq < 0 && throw(ArgumentError("frq must be ≥ 0."))
+    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+
+    demean == true && (signal = s_demean(signal))
+
+    kernel = generate_morlet(fs, frq, 1, ncyc=ncyc, complex=true)
+    w_conv = s_fconv(signal, kernel=kernel, norm=true)
+
+    # remove reflected part of the signal
+    signal_new = _chop(real.(w_conv))
+
+    return signal_new
 end

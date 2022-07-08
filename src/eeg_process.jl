@@ -1923,3 +1923,64 @@ function eeg_zero!(eeg::NeuroJ.EEG)
 
     nothing
 end
+
+"""
+    eeg_wbp(eeg; pad, frq, ncyc, demean)
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Tuple{Real, Real}`: filter frequency
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool=true`: demean signal prior to analysis
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_wbp(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+
+    eeg_new = deepcopy(eeg)
+
+    epoch_n = eeg_epoch_n(eeg)
+    channel_n = eeg_channel_n(eeg)
+    fs = eeg_sr(eeg)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_wbp(s, pad=pad, frq=frq, fs=fs, ncyc=ncyc, demean=demean)
+        end
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_wbp(EEG, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
+
+    return eeg_new
+end
+
+"""
+    eeg_wbp!(eeg; pad, frq, ncyc, demean)
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Tuple{Real, Real}`: filter frequency
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool=true`: demean signal prior to analysis
+"""
+function eeg_wbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+
+    eeg.eeg_signals = eeg_wbp(eeg, pad=pad, frq=frq, ncyc=ncyc, demean=demean).eeg_signals
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_wbp!(EEG, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
+
+    nothing
+end

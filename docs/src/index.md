@@ -147,6 +147,8 @@ eeg_reference_plap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 eeg_reference_plap!(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 eeg_zero(eeg::NeuroJ.EEG)
 eeg_zero!(eeg::NeuroJ.EEG)
+eeg_wbp(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+eeg_wbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 ```
 
 ## EEG analyze
@@ -192,9 +194,9 @@ eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
 eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
 eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
 eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
-eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
-eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
-eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
+eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
@@ -400,6 +402,7 @@ generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
 f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
 s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union(Tuple{Real, Real}, Nothing)=nothing)
+s_wbp(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 ```
 
 ## Statistic

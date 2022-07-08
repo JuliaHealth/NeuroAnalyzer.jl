@@ -2449,6 +2449,48 @@ Zero `eeg` channel at the beginning and at the end.
 
   * `eeg::NeuroJ.EEG`
 
+<a id='NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wbp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wbp(eeg; pad, frq, ncyc, demean)
+```
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Tuple{Real, Real}`: filter frequency
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wbp!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wbp!(eeg; pad, frq, ncyc, demean)
+```
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Tuple{Real, Real}`: filter frequency
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
 
 <a id='EEG-analyze'></a>
 
@@ -3389,7 +3431,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv(eeg; d, mt)
+eeg_senv(eeg; d, mt, t)
 ```
 
 Calculate spectral envelope of `eeg`.
@@ -3399,6 +3441,7 @@ Calculate spectral envelope of `eeg`.
   * `eeg::NeuroJ.EEG`
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 **Returns**
 
@@ -3413,7 +3456,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_mean(eeg; dims, d, mt)
+eeg_senv_mean(eeg; dims, d, mt, t)
 ```
 
 Calculate spectral envelope of `eeg`: mean and 95% CI.
@@ -3424,6 +3467,7 @@ Calculate spectral envelope of `eeg`: mean and 95% CI.
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 **Returns**
 
@@ -3451,6 +3495,7 @@ Calculate spectral envelope of `eeg`: median and 95% CI.
   * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 **Returns**
 
@@ -8237,6 +8282,30 @@ Named tuple containing:
 
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
+
+<a id='NeuroJ.s_wbp-Tuple{AbstractArray}' href='#NeuroJ.s_wbp-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_wbp`** &mdash; *Method*.
+
+
+
+```julia
+s_wbp(signal; pad, norm, frq_lim, fs, ncyc, demean)
+```
+
+Perform wavelet bandpass filtering of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `signal_new::Vector{Float64}`
 
 
 <a id='Statistic'></a>

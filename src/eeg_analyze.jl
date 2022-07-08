@@ -1784,7 +1784,7 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=fals
 end
 
 """
-    eeg_senv(eeg; d, mt)
+    eeg_senv(eeg; d, mt, t)
 
 Calculate spectral envelope of `eeg`.
 
@@ -1793,6 +1793,7 @@ Calculate spectral envelope of `eeg`.
 - `eeg::NeuroJ.EEG`
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 # Returns
 
@@ -1800,7 +1801,7 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
+function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1828,12 +1829,16 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
             if mt == false
                 spec = spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning)
             else
-                spec = mt_spectrogram(s_tmp, fs=fs)
+                spec = mt_spectrogram(s, fs=fs)
             end
 
             s_p = pow2db.(spec.power)
-            s_frq = Vector(spec.freq)
-
+            if t !== nothing
+                s_p[s_p .> t] .= 0
+                s_p = reverse(s_p)
+                s_frq = reverse(Vector(spec.freq))
+            end
+            
             f_idx = zeros(length(spec.time))
             m = maximum(s_p, dims=1)
             for idx2 in 1:length(m)
@@ -1860,7 +1865,7 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false)
 end
 
 """
-    eeg_senv_mean(eeg; dims, d, mt)
+    eeg_senv_mean(eeg; dims, d, mt, t)
 
 Calculate spectral envelope of `eeg`: mean and 95% CI.
 
@@ -1870,6 +1875,7 @@ Calculate spectral envelope of `eeg`: mean and 95% CI.
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 # Returns
 
@@ -1879,14 +1885,14 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
+function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_t = eeg_senv(eeg, d=d, mt=mt)
+    s_p, s_t = eeg_senv(eeg, d=d, mt=mt, t=t)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
@@ -1958,6 +1964,7 @@ Calculate spectral envelope of `eeg`: median and 95% CI.
 - `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
 
 # Returns
 
@@ -1967,14 +1974,14 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false)
+function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
 
-    s_p, s_t = eeg_senv(eeg, d=d, mt=mt)
+    s_p, s_t = eeg_senv(eeg, d=d, mt=mt, t=t)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
