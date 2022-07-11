@@ -281,16 +281,16 @@ Calculate stationarity.
 
 - `eeg:EEG`
 - `window::Int64=10`: time window in samples
-- `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
+- `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert, :adf
 
 # Returns
 
-- `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
+- `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
 """
 function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    method in [:mean, :var, :euclid, :hilbert] || throw(ArgumentError("Method must be must be :mean, :var, :euclid or :hilbert."))
+    method in [:mean, :var, :euclid, :hilbert, :adf] || throw(ArgumentError("Method must be must be :mean, :var, :euclid, :hilbert or :adf."))
     (typeof(window) == Int64 && window < 1) && throw(ArgumentError("window must be ≥ 1."))
     (typeof(window) == Int64 && window > size(eeg.eeg_signals, 2)) && throw(ArgumentError("window must be ≤ $(size(eeg.eeg_signals, 2))."))
 
@@ -346,6 +346,23 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
                 s_stationarity[phase_idx, epoch_idx] = euclidean(cov_mat[:, :, window_idx - 1, epoch_idx],
                                                                  cov_mat[:, :, window_idx, epoch_idx])
                 phase_idx += 1
+            end
+        end
+    end
+
+    if method === :adf
+        s_stationarity = zeros(channel_n, 2, epoch_n)
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            Threads.@threads for channel_idx = 1:channel_n
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                adf = ADFTest(s, :trend, window)
+                a = adf.stat
+                p = pvalue(adf)
+                p < eps() && (p = 0.0001)
+                a = round(a, digits=2)
+                p = round(p, digits=4)
+                p == 0.0 && (p = 0.0001)
+                s_stationarity[channel_idx, :, epoch_idx] = [a, p]
             end
         end
     end
