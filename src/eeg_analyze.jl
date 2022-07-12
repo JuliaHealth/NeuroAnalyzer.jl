@@ -355,7 +355,7 @@ function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hil
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for channel_idx = 1:channel_n
                 s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-                adf = ADFTest(s, :trend, window)
+                adf = ADFTest(s, :constant, window)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)
