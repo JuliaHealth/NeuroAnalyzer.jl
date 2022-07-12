@@ -378,21 +378,23 @@ function eeg_demean!(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_normalize_zscore(eeg)
+    eeg_normalize(eeg; method)
 
-Normalize each `eeg` channel by z-score.
+Normalize each `eeg` channel.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `method::Symbol`
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_normalize_zscore(eeg::NeuroJ.EEG)
+function eeg_normalize(eeg::NeuroJ.EEG; method::Symbol)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    method in [:zscore, :minmax, :max, :log, :gauss] || throw(ArgumentError("Method must be :zscore, :minmax, :max, :log or :gauss."))
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -401,203 +403,46 @@ function eeg_normalize_zscore(eeg::NeuroJ.EEG)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_normalized[channel_idx, :, epoch_idx] = s_normalize_zscore(s)
+            if method === :zscore
+                s_normalized[channel_idx, :, epoch_idx] = s_normalize_zscore(s)
+            elseif method === :minmax
+                s_normalized[channel_idx, :, epoch_idx] = s_normalize_minmax(s)
+            elseif method === :max
+                s_normalized[channel_idx, :, epoch_idx] = s_normalize_max(s)
+            elseif method === :log
+                s_normalized[channel_idx, :, epoch_idx] = s_normalize_log(s)
+            elseif method === :gauss
+                s_normalized[channel_idx, :, epoch_idx] = s_normalize_gauss(s)
+            end
         end
     end
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_normalized
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_zscore(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_normalize(EEG, method=$method)")
 
     return eeg_new
 end
 
 """
-    eeg_normalize_zscore!(eeg)
+    eeg_normalize!(eeg; method)
 
-Normalize by z-score.
+Normalize each `eeg` channel.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `method::Symbol`
 """
-function eeg_normalize_zscore!(eeg::NeuroJ.EEG)
+function eeg_normalize!(eeg::NeuroJ.EEG; method::Symbol)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    eeg.eeg_signals = eeg_normalize_zscore(eeg).eeg_signals
+    eeg.eeg_signals = eeg_normalize(eeg, method=method).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize_zscore!(EEG)")
-
-    nothing
-end
-
-"""
-    eeg_normalize_minmax(eeg)
-
-Normalize to 0...1
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_minmax(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-    s_normalized = zeros(size(eeg.eeg_signals))
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_normalized[channel_idx, :, epoch_idx] = s_normalize_minmax(s)
-        end
-    end
-
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_normalized
-    eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_minmax(EEG)")
-
-    return eeg_new
-end
-
-"""
-    eeg_normalize_minmax!(eeg)
-
-Normalize to 0...1
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_minmax!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = eeg_normalize_minmax(eeg.eeg_signals).eeg_signals
-    eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize_minmax!(EEG)")
-
-    nothing
-end
-
-"""
-    eeg_normalize_max(eeg)
-
-Normalize to 0...1
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_max(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-    s_normalized = zeros(size(eeg.eeg_signals))
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_normalized[channel_idx, :, epoch_idx] = s_normalize_max(s)
-        end
-    end
-
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_normalized
-    eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_max(EEG)")
-
-    return eeg_new
-end
-
-"""
-    eeg_normalize_max!(eeg)
-
-Normalize to 0...1
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_max!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = eeg_normalize_max(eeg.eeg_signals).eeg_signals
-    eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize_max!(EEG)")
-
-    nothing
-end
-
-"""
-    eeg_normalize_log(eeg)
-
-Normalize to using log-transformation.
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-
-# Returns
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_log(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-    s_normalized = zeros(size(eeg.eeg_signals))
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_normalized[channel_idx, :, epoch_idx] = s_normalize_log(s)
-        end
-    end
-
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_normalized
-    eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_normalize_log(EEG)")
-
-    return eeg_new
-end
-
-"""
-    eeg_normalize_log!(eeg)
-
-Normalize to 0...1
-
-# Arguments
-
-- `eeg::NeuroJ.EEG`
-"""
-function eeg_normalize_log!(eeg::NeuroJ.EEG)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = eeg_normalize_log(eeg.eeg_signals).eeg_signals
-    eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize_log!(EEG)")
-
+    push!(eeg.eeg_header[:history], "eeg_normalize(EEG, method=$method)")
+    
     nothing
 end
 

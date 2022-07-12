@@ -3629,3 +3629,26 @@ function s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::
 
     return signal_new
 end
+
+"""
+    s_normalize_gauss(signal)
+
+Normalize `signal` to Gaussian.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_gauss(signal::AbstractArray)
+
+    l = length(signal) + 1
+    s_normalized = cumsum(signal)
+    s_normalized = (tiedrank(signal) ./ l .- 0.5) .* 2
+    s_normalized = atanh.(s_normalized)
+
+    return s_normalized
+end

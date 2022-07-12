@@ -1759,107 +1759,41 @@ Remove mean value (DC offset).
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_normalize_zscore-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_zscore-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_zscore`** &mdash; *Method*.
+<a id='NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_normalize_zscore(eeg)
+eeg_normalize(eeg; method)
 ```
 
-Normalize each `eeg` channel by z-score.
+Normalize each `eeg` channel.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `method::Symbol`
 
 **Returns**
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_normalize_zscore!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_zscore!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_zscore!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_normalize_zscore!(eeg)
+eeg_normalize!(eeg; method)
 ```
 
-Normalize by z-score.
+Normalize each `eeg` channel.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize_minmax-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_minmax-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_minmax`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize_minmax(eeg)
-```
-
-Normalize to 0...1
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize_minmax!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_minmax!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_minmax!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize_minmax!(eeg)
-```
-
-Normalize to 0...1
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize_max-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_max-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_max`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize_max(eeg)
-```
-
-Normalize to 0...1
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize_max!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize_max!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize_max!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize_max!(eeg)
-```
-
-Normalize to 0...1
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
+  * `method::Symbol`
 
 <a id='NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_add_noise`** &mdash; *Method*.
@@ -2668,11 +2602,11 @@ Calculate stationarity.
 
   * `eeg:EEG`
   * `window::Int64=10`: time window in samples
-  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert
+  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert, :adf
 
 **Returns**
 
-  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}`
+  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
 
 <a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_mi`** &mdash; *Method*.
@@ -8306,6 +8240,25 @@ Perform wavelet bandpass filtering of the `signal`.
 **Returns**
 
   * `signal_new::Vector{Float64}`
+
+<a id='NeuroJ.s_normalize_gauss-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_gauss-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_normalize_gauss`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_gauss(signal)
+```
+
+Normalize `signal` to Gaussian.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
 
 
 <a id='Statistic'></a>

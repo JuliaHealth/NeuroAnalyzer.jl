@@ -61,16 +61,15 @@ edf1 = eeg_taper(edf, taper=edf.eeg_signals[1, :, 1])
 edf1 = eeg_demean(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
-edf1 = eeg_normalize_zscore(edf)
+edf1 = eeg_normalize(edf, method=:zscore)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-
-edf1 = eeg_normalize_minmax(edf)
+edf1 = eeg_normalize(edf, method=:minmax)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-
-edf1 = eeg_normalize_max(edf)
+edf1 = eeg_normalize(edf, method=:max)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-
-edf1 = eeg_normalize_log(edf)
+edf1 = eeg_normalize(edf, method=:log)
+@test size(edf1.eeg_signals) == (19, 309760, 1)
+edf1 = eeg_normalize(edf, method=:gauss)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
 cov_m = eeg_cov(edf)

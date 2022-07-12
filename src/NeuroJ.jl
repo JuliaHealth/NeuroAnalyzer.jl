@@ -157,6 +157,7 @@ export f_nearest
 export s_band_mpower
 export s_rel_psd
 export s_wbp
+export s_normalize_gauss
 
 include("statistic.jl")
 export hildebrand_rule
@@ -259,14 +260,8 @@ export eeg_taper
 export eeg_taper!
 export eeg_demean
 export eeg_demean!
-export eeg_normalize_zscore
-export eeg_normalize_zscore!
-export eeg_normalize_minmax
-export eeg_normalize_minmax!
-export eeg_normalize_max
-export eeg_normalize_max!
-export eeg_normalize_log
-export eeg_normalize_log!
+export eeg_normalize
+export eeg_normalize!
 export eeg_add_noise
 export eeg_add_noise!
 export eeg_filter

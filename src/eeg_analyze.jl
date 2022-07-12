@@ -1849,11 +1849,12 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, No
                 spec = mt_spectrogram(s, fs=fs)
             end
 
+            s_frq = Vector(spec.freq)
             s_p = pow2db.(spec.power)
             if t !== nothing
                 s_p[s_p .> t] .= 0
-                s_p = reverse(s_p)
-                s_frq = reverse(Vector(spec.freq))
+                reverse!(s_p)
+                reverse!(s_frq)
             end
             
             f_idx = zeros(length(spec.time))
