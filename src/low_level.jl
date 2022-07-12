@@ -270,11 +270,11 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractArray, n::Int64)
+function fft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
-    n > length(x) && (n = n - length(x))
-    x = vcat(x, zeros(eltype(x), n))
+    n > length(x) && (n -= length(x))
+    n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional()
         cx = CuArray(x)
         pfft = Vector(fft(cx))
@@ -299,11 +299,11 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 
 - `ifft0::Vector{ComplexF64}`
 """
-function ifft0(x::AbstractArray, n::Int64)
+function ifft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
-    x = vcat(x, zeros(eltype(x), n))
+    n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional()
         cx = CuArray(x)
         pifft = Vector(ifft(cx))
@@ -842,11 +842,11 @@ Named tuple containing:
 - `s_fft::Vector{ComplexF64}`
 - `s_sf::Vector{Float64}`
 """
-function s_dft(signal::AbstractArray; fs::Int64)
+function s_dft(signal::AbstractArray; fs::Int64, n::Int64=0)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    s_fft = fft(signal)
+    s_fft = fft0(signal)
     # number of samples
     n = length(signal)
     # time between samples
@@ -2088,8 +2088,8 @@ function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
     signal1 = _reflect(signal1)
     signal2 = _reflect(signal2)
 
-    s1_fft = fft(signal1) ./ length(signal1)
-    s2_fft = fft(signal2) ./ length(signal2)
+    s1_fft = fft0(signal1) ./ length(signal1)
+    s2_fft = fft0(signal2) ./ length(signal2)
 
     coh = @. (abs((s1_fft) * conj.(s2_fft))^2) / (s1_fft * s2_fft)
     coh = _chop(coh)
@@ -2211,7 +2211,7 @@ function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
     s_fft = fft0(signal, n_conv)
     kernel_fft = fft0(kernel, n_conv)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = ifft(s_fft .* kernel_fft)
+    s_conv = ifft0(s_fft .* kernel_fft)
     
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
@@ -2945,7 +2945,7 @@ function s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
     signal_idx = signal_psd .> threshold
     signal_psd .*= signal_idx
     signal_fft .*= signal_idx
-    signal_denoised = real.(ifft(signal_fft))
+    signal_denoised = real.(ifft0(signal_fft))
 
     return signal_denoised
 end
@@ -2981,7 +2981,7 @@ function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_f = 2 .* real.(ifft(fft(s_r).*g))
+    s_f = 2 .* real.(ifft0(fft0(s_r).*g))
     
     # remove reflected part of the signal
     s_f = _chop(s_f)
