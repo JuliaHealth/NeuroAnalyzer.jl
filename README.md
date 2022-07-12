@@ -161,7 +161,6 @@ EEG:
 - analysis: amplitude turbulence
 - analysis: beamforming, leakage correction
 - analysis: CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
-- analysis: check where pad0 is not used
 - analysis: continuous wavelet transform (using ContinuousWavelets.jl)
 - analysis: cross-frequency phase-amplitude coupling
 - analysis: dipoles
