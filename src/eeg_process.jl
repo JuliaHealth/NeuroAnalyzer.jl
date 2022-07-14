@@ -206,6 +206,7 @@ Perform piecewise detrending of `eeg`.
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
     - `:poly`: polynomial of `order` is subtracted
     - `:loess`: fit and subtract loess approximation
+    - `:hp`: use HP filter
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64=0.5`: smoothing of loess
@@ -218,16 +219,17 @@ function eeg_detrend(eeg::NeuroJ.EEG; type::Symbol=:linear, offset::Real=0, orde
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
-    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
+    type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
     s_det = zeros(size(eeg.eeg_signals))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_det[channel_idx, :, epoch_idx] = s_detrend(s, type=type, offset=offset, order=order, span=span)
+            s_det[channel_idx, :, epoch_idx] = s_detrend(s, type=type, offset=offset, order=order, span=span, fs=fs)
         end
     end
 
@@ -253,6 +255,7 @@ Remove linear trend from the `eeg`.
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
     - `:poly`: polynomial of `order` order is subtracted
     - `:loess`: fit and subtract loess approximation
+    - `:hp`: use HP filter
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64`: smoothing of loess
@@ -1778,7 +1781,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `pad::Int64`: pad the `signal` with `pad` zeros
-- `frq::Tuple{Real, Real}`: filter frequency
+- `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 - `demean::Bool=true`: demean signal prior to analysis
 
@@ -1816,7 +1819,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 
 - `eeg::NeuroJ.EEG`
 - `pad::Int64`: pad the `signal` with `pad` zeros
-- `frq::Tuple{Real, Real}`: filter frequency
+- `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 - `demean::Bool=true`: demean signal prior to analysis
 """
@@ -1826,6 +1829,65 @@ function eeg_wbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demea
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wbp!(EEG, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
+
+    nothing
+end
+
+"""
+    eeg_cbp(eeg; pad, frq, demean)
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Real`: filter frequency
+- `demean::Bool=true`: demean signal prior to analysis
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_cbp(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, demean::Bool=true)
+
+    eeg_new = deepcopy(eeg)
+
+    epoch_n = eeg_epoch_n(eeg)
+    channel_n = eeg_channel_n(eeg)
+    fs = eeg_sr(eeg)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_cbp(s, pad=pad, frq=frq, fs=fs, demean=demean)
+        end
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_cbp(EEG, pad=$pad, frq=$frq, demean=$demean)")
+
+    return eeg_new
+end
+
+"""
+    eeg_cbp!(eeg; pad, frq, ncyc, demean)
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Tuple{Real, Real}`: filter frequency
+- `demean::Bool=true`: demean signal prior to analysis
+"""
+function eeg_cbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, demean::Bool=true)
+
+    eeg.eeg_signals = eeg_cbp(eeg, pad=pad, frq=frq, demean=demean).eeg_signals
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_cbp!(EEG, pad=$pad, frq=$frq, demean=$demean)")
 
     nothing
 end

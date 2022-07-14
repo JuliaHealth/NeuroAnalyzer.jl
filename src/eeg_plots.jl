@@ -685,7 +685,7 @@ function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRa
     _, _, _, s_phase = s_hspectrum(signal)
     ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
     if head == true
-        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channel: $channel\nLabel: $channel_name", mono=mono)
+        hd = eeg_plot_electrode(eeg, channel=channel, title="Channel: $channel\nLabel: $channel_name")
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
         pc = eeg_plot_compose([p, ht_a, psd, ht_p, s, hd], layout=l)
     else
@@ -3909,10 +3909,21 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
         length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
         length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
     end
-    
-    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
 
-    # look for location data
+    # get axis limits
+    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg, type=:eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
+    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
+    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+    
+    # get channels positions
+    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
     loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
     for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
@@ -3921,44 +3932,56 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     end
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
     if small == true
-        plot_size = (800, 800)
-        marker_size = 4
+        plot_size = 200
+        marker_size = 2
         labels = false
     else
-        plot_size = (800, 800)
-        marker_size = 6
+        plot_size = 400
+        marker_size = 4
         font_size = 4
     end
 
     p = plot(grid=true,
              framestyle=:none,
              palette=palette,
-             size=plot_size,
+             size=(plot_size, plot_size),
              markerstrokewidth=0,
              border=:none,
              aspect_ratio=1,
-             margins=-20Plots.px,
+             margins=-plot_size * Plots.px,
              titlefontsize=8;
              kwargs...)
-    if length(selected) == eeg_tmp.eeg_header[:channel_n]
+    if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
-            p = plot!((loc_x[idx], loc_y[idx]),
-                      color=idx,
-                      seriestype=:scatter,
-                      xlims=x_lim,
-                      ylims=x_lim,
-                      grid=true,
-                      label="",
-                      markersize=marker_size,
-                      markerstrokewidth=0,
-                      markerstrokealpha=0;
-                      kwargs...)
+            if mono != true
+                p = plot!((loc_x[idx], loc_y[idx]),
+                          color=idx,
+                          seriestype=:scatter,
+                          xlims=x_lim,
+                          ylims=x_lim,
+                          grid=true,
+                          label="",
+                          markersize=marker_size,
+                          markerstrokewidth=0,
+                          markerstrokealpha=0;
+                          kwargs...)
+            else
+                p = plot!((loc_x[idx], loc_y[idx]),
+                          color=:black,
+                          seriestype=:scatter,
+                          xlims=x_lim,
+                          ylims=x_lim,
+                          grid=true,
+                          label="",
+                          markersize=marker_size,
+                          markerstrokewidth=0,
+                          markerstrokealpha=0;
+                          kwargs...)
+            end                
         end
-    else
+    elseif selected == 0
         p = plot!(loc_x,
                   loc_y,
                   seriestype=:scatter,
@@ -3972,15 +3995,31 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
                   markerstrokewidth=0,
                   markerstrokealpha=0;
                   kwargs...)
-        if selected != 0
-            eeg_tmp = eeg_keep_channel(eeg, channel=selected)
-            loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-            loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-            for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-                loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
-                                                  eeg_tmp.eeg_header[:loc_radius][idx])
-            end
-            for idx in 1:eeg_tmp.eeg_header[:channel_n]
+    elseif selected != 0
+        deleteat!(loc_x, selected)
+        deleteat!(loc_y, selected)
+        p = plot!(loc_x,
+                  loc_y,
+                  seriestype=:scatter,
+                  color=:black,
+                  alpha=0.2,
+                  xlims=x_lim,
+                  ylims=y_lim,
+                  grid=true,
+                  label="",
+                  markersize=marker_size,
+                  markerstrokewidth=0,
+                  markerstrokealpha=0;
+                  kwargs...)
+        eeg_tmp = eeg_keep_channel(eeg, channel=selected)
+        loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+        loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+        for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+            loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
+                                              eeg_tmp.eeg_header[:loc_radius][idx])
+        end
+        for idx in 1:eeg_tmp.eeg_header[:channel_n]
+            if mono != true
                 p = plot!((loc_x[idx], loc_y[idx]),
                           color=idx,
                           seriestype=:scatter,
@@ -3990,7 +4029,20 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
                           label="",
                           markersize=marker_size,
                           markerstrokewidth=0,
-                          markerstrokealpha=0)
+                          markerstrokealpha=0;
+                          kwargs...)
+            else
+                p = plot!((loc_x[idx], loc_y[idx]),
+                          color=:black,
+                          seriestype=:scatter,
+                          xlims=x_lim,
+                          ylims=x_lim,
+                          grid=true,
+                          label="",
+                          markersize=marker_size,
+                          markerstrokewidth=0,
+                          markerstrokealpha=0;
+                          kwargs...)
             end
         end
     end
@@ -4001,17 +4053,8 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
         p = plot!()
     end
     if head == true
-        # for some reason head is enlarged for channel > 1
-        eeg_tmp = eeg_keep_channel(eeg, channel=1)
-        loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-        loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-        for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-            loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][idx],
-                                              eeg_tmp.eeg_header[:loc_radius][idx])
-        end
-
-        hd = _draw_head(p, minimum([loc_x, loc_y]), minimum([loc_x, loc_y]), head_labels=head_labels)
-        plot!(hd)
+        hd = _draw_head(p, minimum([[loc_x[1]], [loc_y[1]]]), minimum([[loc_x[1]], [loc_y[1]]]), head_labels=false)
+        p = plot!(hd)
     end
 
     plot(p)
@@ -6867,6 +6910,71 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bo
                      kwargs...)
         end
     end
+
+    return p
+end
+
+"""
+    eeg_plot_electrode(eeg; <keyword arguments>)
+
+Plot `eeg` electrodes.
+
+# Arguments
+
+- `eeg:EEG`
+- `channel::Int64`: channel to display
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+
+    _check_channels(eeg, channel)
+
+    # get axis limits
+    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg, type=:eeg)
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
+                                          eeg.eeg_header[:loc_radius][idx])
+    end
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
+    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
+    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+
+    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
+    loc_y_ch, loc_x_ch = pol2cart(pi / 180 * eeg_tmp.eeg_header[:loc_theta][1],
+                                  eeg_tmp.eeg_header[:loc_radius][1])
+    loc_x_ch = round(loc_x_ch, digits=2)
+    loc_y_ch = round(loc_y_ch, digits=2)
+    p = plot((loc_x_ch, loc_y_ch),
+             seriestype=:scatter,
+             grid=true,
+             framestyle=:none,
+             size=(200, 200),
+             border=:none,
+             aspect_ratio=1,
+             margins=-200Plots.px,
+             titlefontsize=8,
+             color=:black,
+             fillcolor=:black,
+             xlims=x_lim,
+             ylims=x_lim,
+             label="",
+             markersize=2,
+             markerstrokewidth=0,
+             markerstrokealpha=0;
+             kwargs...)
+    hd = _draw_head(p, minimum([[loc_x[1]], [loc_y[1]]]), minimum([[loc_x[1]], [loc_y[1]]]), head_labels=false)
+    p = plot!(hd)
+    plot(p)
 
     return p
 end

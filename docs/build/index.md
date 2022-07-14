@@ -1656,6 +1656,7 @@ Perform piecewise detrending of `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` is subtracted
       * `:loess`: fit and subtract loess approximation
+      * `:hp`: use HP filter
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64=0.5`: smoothing of loess
@@ -1685,6 +1686,7 @@ Remove linear trend from the `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` order is subtracted
       * `:loess`: fit and subtract loess approximation
+      * `:hp`: use HP filter
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64`: smoothing of loess
@@ -2398,7 +2400,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 
   * `eeg::NeuroJ.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Tuple{Real, Real}`: filter frequency
+  * `frq::Real`: filter frequency
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
   * `demean::Bool=true`: demean signal prior to analysis
 
@@ -2421,7 +2423,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 
   * `eeg::NeuroJ.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Tuple{Real, Real}`: filter frequency
+  * `frq::Real`: filter frequency
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
   * `demean::Bool=true`: demean signal prior to analysis
 
@@ -5814,6 +5816,28 @@ Plot `signal` channel power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_electrode`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_electrode(eeg; <keyword arguments>)
+```
+
+Plot `eeg` electrodes.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`: channel to display
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
 
 <a id='Low-level-functions'></a>
 
@@ -6742,7 +6766,7 @@ Taper the `signal` with `taper`.
 
 
 ```julia
-s_detrend(signal; type, offset, order, span)
+s_detrend(signal; type, offset, order, span, fs)
 ```
 
 Perform piecewise detrending of `eeg`.
@@ -6757,9 +6781,11 @@ Perform piecewise detrending of `eeg`.
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` is subtracted
       * `:loess`: fit and subtract loess approximation
+      * `:hp`: use HP filter
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64=0.5`: smoothing of loess
+  * `fs::Real=0`: sampling frequency
 
 **Returns**
 
@@ -8223,7 +8249,7 @@ Named tuple containing:
 
 
 ```julia
-s_wbp(signal; pad, norm, frq_lim, fs, ncyc, demean)
+s_wbp(signal; pad, frq, fs, ncyc, demean)
 ```
 
 Perform wavelet bandpass filtering of the `signal`.
@@ -8259,6 +8285,30 @@ Normalize `signal` to Gaussian.
 **Returns**
 
   * `s_normalized::Vector{Float64}`
+
+<a id='NeuroJ.s_cbp-Tuple{AbstractArray}' href='#NeuroJ.s_cbp-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_cbp`** &mdash; *Method*.
+
+
+
+```julia
+s_cbp(signal; pad, frq, fs, demean)
+```
+
+Perform convolution bandpass filtering of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `signal_new::Vector{Float64}`
 
 
 <a id='Statistic'></a>

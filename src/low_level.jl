@@ -1264,7 +1264,7 @@ function s_taper(signal::AbstractArray; taper::Union{Vector{<:Real}, Vector{Comp
 end
 
 """
-    s_detrend(signal; type, offset, order, span)
+    s_detrend(signal; type, offset, order, span, fs)
 Perform piecewise detrending of `eeg`.
 
 # Arguments
@@ -1276,16 +1276,18 @@ Perform piecewise detrending of `eeg`.
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
     - `:poly`: polynomial of `order` is subtracted
     - `:loess`: fit and subtract loess approximation
+    - `:hp`: use HP filter
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64=0.5`: smoothing of loess
+- `fs::Real=0`: sampling frequency
 
 # Returns
 - `s_det::Vector{Float64}`
 """
-function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
+function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Real=0)
 
-    type in [:ls, :linear, :constant, :poly, :loess] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess."))
+    type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
 
     if type === :loess
         t = collect(1.0:1:length(signal))
@@ -1316,9 +1318,12 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         Rinv = inv(Array(R)) |> typeof(R)
         factor = Rinv * transpose(A)
         s_det = signal .- A * (factor * signal)
-    elseif type == :linear
+    elseif type === :linear
         trend = linspace(signal[1], signal[end], length(signal))
         s_det = signal .- trend
+    elseif type === :hp
+        fs <= 0 && throw(ArgumentError("fs must be > 0."))
+        s_det = s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=1, fs=fs, order=8)
     end
 
     return s_det
@@ -3591,7 +3596,7 @@ function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=
 end
 
 """
-    s_wbp(signal; pad, norm, frq_lim, fs, ncyc, demean)
+    s_wbp(signal; pad, frq, fs, ncyc, demean)
 
 Perform wavelet bandpass filtering of the `signal`.
 
@@ -3651,4 +3656,44 @@ function s_normalize_gauss(signal::AbstractArray)
     s_normalized = atanh.(s_normalized)
 
     return s_normalized
+end
+
+"""
+    s_cbp(signal; pad, frq, fs, demean)
+
+Perform convolution bandpass filtering of the `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `frq::Real`: filter frequency
+- `fs::Int64`: sampling rate
+- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `demean::Bool=true`: demean signal prior to analysis
+
+# Returns
+
+- `signal_new::Vector{Float64}`
+"""
+function s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
+
+    pad > 0 && (signal = pad0(signal, pad))
+    # add reflected signal to reduce edge artifacts
+    signal = _reflect(signal)
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq < 0 && throw(ArgumentError("frq must be ≥ 0."))
+    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+
+    demean == true && (signal = s_demean(signal))
+
+    kernel = generate_sine(frq, -1:1/fs:1)
+    w_conv = s_tconv(signal, kernel=kernel)
+
+    # remove reflected part of the signal
+    signal_new = _chop(w_conv)
+
+    return signal_new
 end

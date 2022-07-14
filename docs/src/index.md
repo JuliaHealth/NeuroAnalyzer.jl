@@ -283,6 +283,7 @@ plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false
 plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel="Frequency [Hz]", ylabel="Channel", title="", ylabel="", title="", mono::Bool=false, kwargs...)
 eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, type::Symbol=:w, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, kwargs...)
+eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
 ```
 
 ## Low level functions
@@ -331,7 +332,7 @@ s_spectrum(signal::AbstractArray; pad::Int64=0)
 s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
 s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 s_taper(signal::AbstractArray; taper::Union{Vector{<:Real}, Vector{ComplexF64}})
-s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
+s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Real=0)
 s_demean(signal::AbstractArray)
 s_normalize_zscore(signal::AbstractArray)
 s_normalize_minmax(signal::AbstractArray)
@@ -398,8 +399,9 @@ generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
 f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
 s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union(Tuple{Real, Real}, Nothing)=nothing)
-s_wbp(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
+s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 s_normalize_gauss(signal::AbstractArray)
+s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
 ```
 
 ## Statistic

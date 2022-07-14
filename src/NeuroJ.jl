@@ -158,6 +158,7 @@ export s_band_mpower
 export s_rel_psd
 export s_wbp
 export s_normalize_gauss
+export s_cbp
 
 include("statistic.jl")
 export hildebrand_rule
@@ -293,6 +294,8 @@ export eeg_zero
 export eeg_zero!
 export eeg_wbp
 export eeg_wbp!
+export eeg_cbp
+export eeg_cbp!
 
 include("eeg_analyze.jl")
 export eeg_total_power
@@ -422,6 +425,7 @@ export plot_psd_3dw
 export plot_psd_3ds
 export eeg_plot_signal_psd_3d
 export plot_rel_psd
+export eeg_plot_electrode
 
 include("nstim.jl")
 export tes_dose
