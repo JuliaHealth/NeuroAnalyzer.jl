@@ -795,6 +795,26 @@ eeg_plot_save(p, file_name="images/e10_pli_m.png")
 
 ![e10 PLI matrix](images/e10_pli_m.png)
 
+### Statistics
+
+Generate spectrogram segments:
+```julia
+sp, sf, st = eeg_spectrogram(e10) 
+segp1, segs1, tidx1, fidx1 = s_specseg(sp, st, sf, channel=1, t=(1,4), f=(0,10))
+segp2, segs2, tidx2, fidx2 = s_specseg(sp, st, sf, channel=1, t=(5,8), f=(45,55))
+
+p = eeg_plot_signal_spectrogram(e10, channel=1)
+p = plot!(segs1, lc=:black, fill=nothing, label=false)
+p = plot!(segs2, lc=:white, fill=nothing, label=false)
+eeg_plot_save(p, file_name="images/spec_seg.png")
+
+tt, t, c, df, p, m1, sd1, m2, sd2 = seg_tcmp(segp1, segp2, paired=true);
+println("segment 1: mean $m1, sd $sd1")
+println("segment 2: mean $m2, sd $sd2")
+println("t: $t (95%CI: [$(c[1]) - $(c[2])]), p: $p")
+```
+![](images/spec_seg.png)
+
 ### EEG Misc
 
 ```julia

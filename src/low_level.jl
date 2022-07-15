@@ -2907,19 +2907,23 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
     demean == true && (signal = s_demean(signal))
     w_conv = zeros(ComplexF64, length(frq_list), length(signal))
     w_powers = zeros(length(frq_list), length(signal))
+    w_amp = zeros(length(frq_list), length(signal))
     w_phases = zeros(length(frq_list), length(signal))
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
         w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
+        # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(w_conv), imag.(w_conv), 2)
         w_powers[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
         w_phases[frq_idx, :] = @. angle(w_conv[frq_idx, :])
     end
 
     # remove reflected part of the signal
     w_conv = w_conv[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    w_amp = w_amp[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
     w_powers = w_powers[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
     w_phases = w_phases[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
     
+    frq_list = round.(frq_list, digits=1)
     norm == true && (w_powers = pow2db.(w_powers))
 
     return (w_conv=w_conv, w_powers=w_powers, w_phases=w_phases, frq_list=frq_list)
@@ -3302,13 +3306,13 @@ Calculate cumulative sum of the `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `signal_cs::Vector{Float64}`
 """
-function s_cums(signal::Vector{<:Real})
+function s_cums(signal::AbstractArray)
     
     signal_cs = cumsum(signal)
 
@@ -3336,7 +3340,7 @@ function s_cums(signal::Array{<:Real, 3})
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view signal[channel_idx, :, epoch_idx]
-            signal_cs[channel_idx, :, epoch_idx] = cumsum(s)
+            signal_cs[channel_idx, :, epoch_idx] = s_cums(s)
         end
     end
 
@@ -3696,4 +3700,91 @@ function s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean
     signal_new = _chop(w_conv)
 
     return signal_new
+end
+
+"""
+    s_specseg(sp, sf, st; t, f)
+
+Return spectrogram segment.
+
+# Arguments
+
+- `sp::Matrix{Float64}`: spectrogram powers
+- `st::Vector{Float64}`: spectrogram time
+- `sf::Vector{Float64}`: spectrogram frequencies
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency bounds
+
+# Returns
+
+Named tuple containing:
+- `seg_pow::Matrix{Float64}`: powers
+- `seg_shape::Shape{Real, Int64}`: shape for plotting
+- `t_idx::Tuple{Real, Real}`: time indices
+- `f_idx::Tuple{Real, Real}`: frequency indices
+"""
+function s_specseg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
+
+    t = tuple_order(t)
+    f = tuple_order(f)
+
+    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
+    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
+    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
+    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
+
+    f_idx1 = vsearch(f[1], sf)
+    f_idx2 = vsearch(f[2], sf)
+    t_idx1 = vsearch(t[1], st)
+    t_idx2 = vsearch(t[2], st)
+    seg_pow = sp[f_idx1:f_idx2, t_idx1:t_idx2]
+    seg_shape = Shape([(st[t_idx1], sf[f_idx1]), (st[t_idx2], sf[f_idx1]), (st[t_idx2], sf[f_idx2]), (st[t_idx1], sf[f_idx2])])
+
+    return (seg_pow=seg_pow, seg_shape=seg_shape, t_idx=(t_idx1,t_idx2), f_idx=(f_idx1,f_idx2))
+end
+
+
+"""
+    s_specseg(sp, sf, st; t, f)
+
+Return spectrogram segment.
+
+# Arguments
+
+- `sp::Array{Float64, 4}`: spectrogram powers
+- `st::Vector{Float64}`: spectrogram time
+- `sf::Vector{Float64}`: spectrogram frequencies
+- `t::Tuple{Real, Real}`: time bounds
+- `f::Tuple{Real, Real}`: frequency bounds
+
+# Returns
+
+Named tuple containing:
+- `seg_pow::Array{Float64, 3}`: segment of powers
+- `seg_shape::Shape{Real, Int64}`: segment coordinates (shape for plotting)
+- `t_idx::Tuple{Real, Real}`: time indices
+- `f_idx::Tuple{Real, Real}`: frequency indices
+"""
+function s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
+
+    t = tuple_order(t)
+    f = tuple_order(f)
+
+    channel < 1 && throw(ArgumentError("channel must be ≥ 1."))
+    channel > size(sp, 3) && throw(ArgumentError("channel must be ≤ $(size(sp, 3))."))
+    epoch_n = size(sp, 4)
+
+    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
+    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
+    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
+    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
+
+    f_idx1 = vsearch(f[1], sf)
+    f_idx2 = vsearch(f[2], sf)
+    t_idx1 = vsearch(t[1], st)
+    t_idx2 = vsearch(t[2], st)
+    seg_pow = sp[f_idx1:f_idx2, t_idx1:t_idx2, channel, :]
+    seg_shape = Shape([(st[t_idx1], sf[f_idx1]), (st[t_idx2], sf[f_idx1]), (st[t_idx2], sf[f_idx2]), (st[t_idx1], sf[f_idx2])])
+
+    return (seg_pow=seg_pow, seg_shape=seg_shape, t_idx=(t_idx1,t_idx2), f_idx=(f_idx1,f_idx2))
 end

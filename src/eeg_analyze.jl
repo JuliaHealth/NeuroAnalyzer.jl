@@ -835,16 +835,16 @@ Return spectrogram of `eeg`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`=true: normalize powers to dB
+- `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
-- `demean::Bool`=true: demean signal prior to analysis
+- `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
 
 Named tuple containing:
 - `s_pow::Array{Float64, 3}`
-- `s_frq::Matrix{Float64}`
-- `s_t::Matrix{Float64}`
+- `s_frq::Vector{Float64}`
+- `s_t::Vector{Float64}`
 """
 function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
 
@@ -853,18 +853,18 @@ function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demea
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    p_tmp, f_tmp, t_tmp = s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, demean=demean)
+    p_tmp, s_frq, s_t = s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, demean=demean)
     s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
-    s_frq = zeros(length(f_tmp), epoch_n)
-    s_t = zeros(length(t_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_pow[:, :, channel_idx, epoch_idx], s_frq[:, epoch_idx], s_t[:, epoch_idx] = s_spectrogram(s, fs=fs, norm=norm, mt=mt, demean=demean)
+            s_pow[:, :, channel_idx, epoch_idx], _, _ = s_spectrogram(s, fs=fs, norm=norm, mt=mt, demean=demean)
         end
     end
 
+    s_frq = round.(s_frq, digits=2)
+    s_t = round.(s_t, digits=2)
     s_t .+= eeg.eeg_epochs_time[1]
 
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
@@ -2485,18 +2485,18 @@ function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_li
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    _, p_tmp, _, f_tmp = s_wspectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+    _, p_tmp, _, w_frq = s_wspectrogram(eeg.eeg_signals[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
     w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
-    w_frq = zeros(length(f_tmp), epoch_n)
-    w_t = zeros(length(eeg.eeg_epochs_time[:, 1]), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            _, w_pow[:, :, channel_idx, epoch_idx], _, w_frq[:, epoch_idx] = s_wspectrogram(s, pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
-            w_t[:, epoch_idx] = eeg.eeg_epochs_time[:, 1]
+            _, w_pow[:, :, channel_idx, epoch_idx], _, _ = s_wspectrogram(s, pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
         end
     end
+
+    w_frq = round.(w_frq, digits=2)
+    w_t = eeg.eeg_epochs_time[:, 1]
 
     return (w_pow=w_pow, w_frq=w_frq, w_t=w_t)
 end

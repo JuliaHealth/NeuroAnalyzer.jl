@@ -159,6 +159,7 @@ export s_rel_psd
 export s_wbp
 export s_normalize_gauss
 export s_cbp
+export s_specseg
 
 include("statistic.jl")
 export hildebrand_rule
@@ -169,6 +170,7 @@ export effsize
 export infcrit
 export grubbs
 export outlier_detect
+export seg_tcmp
 
 include("eeg_io.jl")
 export eeg_export_csv

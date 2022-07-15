@@ -218,3 +218,48 @@ function outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
     return o
 end
 
+"""
+    seg_tcmp(seg1, seg2, paired)
+
+Compare two segments using t-test.
+
+# Arguments
+
+- `seg1::Array{Float64, 3}`
+- `seg2::Array{Float64, 3}`
+- `paired::Bool`
+- `alpha::Float64=0.05`: confidence level
+
+# Returns
+
+Named tuple containing:
+- `t`: test results
+- `c::Tuple{Float64, Float64}`: confidence interval
+- `df::Int64`: degrees of freedom
+- `p::Float64`: p-value
+"""
+function seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
+
+    paired == true && size(seg1) == size(seg2) || throw(ArgumentError("For paired test both segments must have the same size."))
+    seg1_avg = reshape(mean(mean(seg1, dims=1), dims=2), size(seg1, 3))
+    seg2_avg = reshape(mean(mean(seg2, dims=1), dims=2), size(seg2, 3))
+    if paired == true
+        tt = OneSampleTTest(seg1_avg, seg2_avg)
+    else
+        pf = pvalue(VarianceFTest(seg1_avg, seg2_avg))
+        if pf < alpha
+            tt = EqualVarianceTTest(seg1_avg, seg2_avg)
+        else
+            tt = UnequalVarianceTTest(seg1_avg, seg2_avg)
+        end
+    end
+
+    p = pvalue(tt)
+    p < eps() && (p = 0.0001)
+    p = round(p, digits=4)
+    df = tt.df
+    t = round(tt.t, digits=2)
+    c = round.(confint(tt, level=(1 - alpha)), digits=2)
+
+    return (tt=tt, t=t, c=c, df=df, p=p, m1=round(mean(seg1_avg), digits=2), sd1=round(std(seg1_avg), digits=2), m2=round(mean(seg2_avg), digits=2), sd2=round(std(seg2_avg), digits=2))
+end

@@ -390,7 +390,7 @@ s_fcoherence(signal::AbstractArray; fs::Int64)
 s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 a2_l1(a1::AbstractArray, a2::AbstractArray)
 a2_l2(a1::AbstractArray, a2::AbstractArray)
-s_cums(signal::Vector{<:Real})
+s_cums(signal::AbstractArray)
 s_cums(signal::Array{<:Real, 3})
 s_gfp(signal::Vector{<:Real})
 s_gfp_norm(signal::Vector{<:Real})
@@ -402,6 +402,8 @@ s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, f:
 s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 s_normalize_gauss(signal::AbstractArray)
 s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
+s_specseg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
+s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 ```
 
 ## Statistic
@@ -415,6 +417,7 @@ effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
 infcrit(m)
 grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
 outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
+seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
 ```
 
 ## NSTIM

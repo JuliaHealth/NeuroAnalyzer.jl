@@ -2872,17 +2872,17 @@ Return spectrogram of `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `norm::Bool`=true: normalize powers to dB
+  * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `demean::Bool`=true: demean signal prior to analysis
+  * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
 
 Named tuple containing:
 
   * `s_pow::Array{Float64, 3}`
-  * `s_frq::Matrix{Float64}`
-  * `s_t::Matrix{Float64}`
+  * `s_frq::Vector{Float64}`
+  * `s_t::Vector{Float64}`
 
 <a id='NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_spectrum`** &mdash; *Method*.
@@ -8047,7 +8047,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2
 
   * `l2::Float64`
 
-<a id='NeuroJ.s_cums-Tuple{Vector{<:Real}}' href='#NeuroJ.s_cums-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroJ.s_cums-Tuple{AbstractArray}' href='#NeuroJ.s_cums-Tuple{AbstractArray}'>#</a>
 **`NeuroJ.s_cums`** &mdash; *Method*.
 
 
@@ -8060,7 +8060,7 @@ Calculate cumulative sum of the `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractArray`
 
 **Returns**
 
@@ -8310,6 +8310,62 @@ Perform convolution bandpass filtering of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
+<a id='NeuroJ.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.s_specseg`** &mdash; *Method*.
+
+
+
+```julia
+s_specseg(sp, sf, st; t, f)
+```
+
+Return spectrogram segment.
+
+**Arguments**
+
+  * `sp::Matrix{Float64}`: spectrogram powers
+  * `st::Vector{Float64}`: spectrogram time
+  * `sf::Vector{Float64}`: spectrogram frequencies
+  * `t::Tuple{Real, Real}`: time bounds
+  * `f::Tuple{Real, Real}`: frequency bounds
+
+**Returns**
+
+Named tuple containing:
+
+  * `seg_pow::Matrix{Float64}`: powers
+  * `seg_shape::Shape{Real, Int64}`: shape for plotting
+  * `t_idx::Tuple{Real, Real}`: time indices
+  * `f_idx::Tuple{Real, Real}`: frequency indices
+
+<a id='NeuroJ.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroJ.s_specseg`** &mdash; *Method*.
+
+
+
+```julia
+s_specseg(sp, sf, st; t, f)
+```
+
+Return spectrogram segment.
+
+**Arguments**
+
+  * `sp::Array{Float64, 4}`: spectrogram powers
+  * `st::Vector{Float64}`: spectrogram time
+  * `sf::Vector{Float64}`: spectrogram frequencies
+  * `t::Tuple{Real, Real}`: time bounds
+  * `f::Tuple{Real, Real}`: frequency bounds
+
+**Returns**
+
+Named tuple containing:
+
+  * `seg_pow::Array{Float64, 3}`: segment of powers
+  * `seg_shape::Shape{Real, Int64}`: segment coordinates (shape for plotting)
+  * `t_idx::Tuple{Real, Real}`: time indices
+  * `f_idx::Tuple{Real, Real}`: frequency indices
+
 
 <a id='Statistic'></a>
 
@@ -8480,6 +8536,33 @@ Detect outliers in `x`.
 **Returns**
 
   * `o::Vector{Bool}`: index of outliers
+
+<a id='NeuroJ.seg_tcmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.seg_tcmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.seg_tcmp`** &mdash; *Method*.
+
+
+
+```julia
+seg_tcmp(seg1, seg2, paired)
+```
+
+Compare two segments using t-test.
+
+**Arguments**
+
+  * `seg1::Array{Float64, 3}`
+  * `seg2::Array{Float64, 3}`
+  * `paired::Bool`
+  * `alpha::Float64=0.05`: confidence level
+
+**Returns**
+
+Named tuple containing:
+
+  * `t`: test results
+  * `c::Tuple{Float64, Float64}`: confidence interval
+  * `df::Int64`: degrees of freedom
+  * `p::Float64`: p-value
 
 
 <a id='NSTIM'></a>

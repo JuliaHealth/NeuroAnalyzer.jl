@@ -156,9 +156,9 @@ EEG:
 - analysis, plots: brain topography
 - analysis, plots: conectomes graph
 - analysis, plots: PSD plot line slope over frequencies (adjusted power)
-- analysis, plots: spectrogram: extract area of specific frequencies
 - analysis: add s_hspectrum() and s_wspectrum() for PSD plots
 - analysis: amplitude turbulence
+- analysis: ANOVA test for segments
 - analysis: beamforming, leakage correction
 - analysis: CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
 - analysis: continuous wavelet transform (using ContinuousWavelets.jl)
@@ -179,6 +179,7 @@ EEG:
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - analysis: use variable ncyc for s_wspectrogram()
 - analysis: wavelets
+- analysis: Wilcoxon test for segments
 - edit: add/delete markers, view markers on plots
 - edit: automated channel rejection
 - edit: automated epoch rejection
