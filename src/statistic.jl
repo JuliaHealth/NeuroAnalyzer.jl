@@ -234,9 +234,16 @@ Compare two segments using t-test.
 
 Named tuple containing:
 - `t`: test results
-- `c::Tuple{Float64, Float64}`: confidence interval
+- `ttFloat64`: t-test value
+- `c::Tuple{Float64, Float64}`: t-test value confidence interval
 - `df::Int64`: degrees of freedom
 - `p::Float64`: p-value
+- `seg1::Vector{Float64}`: averaged segment 1
+- `seg2::Vector{Float64}`: averaged segment 2
+- `m1::Float64`: mean of segment 1
+- `sd1::Float64`: std of segment 1
+- `m2::Float64`: mean of segment 2
+- `sd2::Float64`: std of segment 2
 """
 function seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
 
@@ -261,5 +268,5 @@ function seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool
     t = round(tt.t, digits=2)
     c = round.(confint(tt, level=(1 - alpha)), digits=2)
 
-    return (tt=tt, t=t, c=c, df=df, p=p, m1=round(mean(seg1_avg), digits=2), sd1=round(std(seg1_avg), digits=2), m2=round(mean(seg2_avg), digits=2), sd2=round(std(seg2_avg), digits=2))
+    return (tt=tt, t=t, c=c, df=df, p=p, seg1=seg1_avg, seg2=seg2_avg, m1=round(mean(seg1_avg), digits=2), sd1=round(std(seg1_avg), digits=2), m2=round(mean(seg2_avg), digits=2), sd2=round(std(seg2_avg), digits=2))
 end
