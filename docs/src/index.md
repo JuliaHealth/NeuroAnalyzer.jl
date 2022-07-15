@@ -417,7 +417,7 @@ effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
 infcrit(m)
 grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
 outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
-seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
+seg_cmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
 ```
 
 ## NSTIM

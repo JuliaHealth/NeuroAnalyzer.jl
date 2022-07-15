@@ -170,7 +170,7 @@ export effsize
 export infcrit
 export grubbs
 export outlier_detect
-export seg_tcmp
+export seg_cmp
 
 include("eeg_io.jl")
 export eeg_export_csv

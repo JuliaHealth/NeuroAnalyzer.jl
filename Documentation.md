@@ -8537,8 +8537,8 @@ Detect outliers in `x`.
 
   * `o::Vector{Bool}`: index of outliers
 
-<a id='NeuroJ.seg_tcmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.seg_tcmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
-**`NeuroJ.seg_tcmp`** &mdash; *Method*.
+<a id='NeuroJ.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.seg_cmp`** &mdash; *Method*.
 
 
 
@@ -8546,7 +8546,7 @@ Detect outliers in `x`.
 seg_tcmp(seg1, seg2, paired)
 ```
 
-Compare two segments using t-test.
+Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
 
 **Arguments**
 
@@ -8554,15 +8554,19 @@ Compare two segments using t-test.
   * `seg2::Array{Float64, 3}`
   * `paired::Bool`
   * `alpha::Float64=0.05`: confidence level
+  * `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
 
 **Returns**
 
 Named tuple containing:
 
-  * `t`: test results
-  * `c::Tuple{Float64, Float64}`: confidence interval
+  * `tt`: test results
+  * `t::Tuple{Float64, String}`: test value and name
+  * `c::Tuple{Float64, Float64}`: test value confidence interval
   * `df::Int64`: degrees of freedom
   * `p::Float64`: p-value
+  * `seg1::Vector{Float64}`: averaged segment 1
+  * `seg2::Vector{Float64}`: averaged segment 2
 
 
 <a id='NSTIM'></a>

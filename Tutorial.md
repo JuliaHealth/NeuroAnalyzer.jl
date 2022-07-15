@@ -808,10 +808,10 @@ p = plot!(segs1, lc=:black, fill=nothing, label=false)
 p = plot!(segs2, lc=:white, fill=nothing, label=false)
 eeg_plot_save(p, file_name="images/spec_seg.png")
 
-tt, t, c, df, p, s1, s2, m1, sd1, m2, sd2 = seg_tcmp(segp1, segp2, paired=true);
-println("segment 1: mean $m1, sd $sd1")
-println("segment 2: mean $m2, sd $sd2")
-println("t: $t (95%CI: [$(c[1]) - $(c[2])]), p: $p")
+tt, t, c, df, p, s1, s2, = seg_cmp(segp1, segp2, paired=true, type=:p);
+println("segment 1: mean $(round(mean(s1), digits=2)), sd $(round(std(s1), digits=2))")
+println("segment 2: mean $(round(mean(s2), digits=2)), sd $(round(std(s2), digits=2))")
+println("test statistic $(t[2]): $(t[1]) (df = $df), p: $p")
 p = boxplot([s1, s2], xticks=([1, 2], ["segment 1", "segment 2"]), legend=false, outliers=false)
 eeg_plot_save(p, file_name="images/spec_seg_box.png")
 ```

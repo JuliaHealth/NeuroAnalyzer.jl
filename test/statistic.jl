@@ -18,7 +18,7 @@ m = lm(@formula(y ~ x), df)
 @test grubbs([1, 2, 3, 4, 5]) == false
 @test outlier_detect(ones(10)) == zeros(10)
 
-_, t, c, df, p, _, _, _, _ = seg_tcmp(ones(5,5,5), zeros(5,5,5), paired=true)
+_, t, c, df, p, _, _ = seg_cmp(ones(5,5,5), zeros(5,5,5), paired=true, type=:p)
 @test df == 4
 
 true

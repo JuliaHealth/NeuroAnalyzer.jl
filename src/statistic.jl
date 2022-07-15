@@ -221,7 +221,7 @@ end
 """
     seg_tcmp(seg1, seg2, paired)
 
-Compare two segments using t-test.
+Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
 
 # Arguments
 
@@ -229,44 +229,62 @@ Compare two segments using t-test.
 - `seg2::Array{Float64, 3}`
 - `paired::Bool`
 - `alpha::Float64=0.05`: confidence level
+- `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
 
 # Returns
 
 Named tuple containing:
-- `t`: test results
-- `ttFloat64`: t-test value
-- `c::Tuple{Float64, Float64}`: t-test value confidence interval
+- `tt`: test results
+- `t::Tuple{Float64, String}`: test value and name
+- `c::Tuple{Float64, Float64}`: test value confidence interval
 - `df::Int64`: degrees of freedom
 - `p::Float64`: p-value
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
-- `m1::Float64`: mean of segment 1
-- `sd1::Float64`: std of segment 1
-- `m2::Float64`: mean of segment 2
-- `sd2::Float64`: std of segment 2
 """
-function seg_tcmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05)
+function seg_cmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto)
 
-    paired == true && size(seg1) == size(seg2) || throw(ArgumentError("For paired test both segments must have the same size."))
+    type in [:auto, :p, :np] || throw(ArgumentError("type must be :auto, :p or :np."))
+    paired == true && size(seg1) != size(seg2) && throw(ArgumentError("For paired test both segments must have the same size."))
+
     seg1_avg = reshape(mean(mean(seg1, dims=1), dims=2), size(seg1, 3))
     seg2_avg = reshape(mean(mean(seg2, dims=1), dims=2), size(seg2, 3))
-    if paired == true
-        tt = OneSampleTTest(seg1_avg, seg2_avg)
-    else
-        pf = pvalue(VarianceFTest(seg1_avg, seg2_avg))
-        if pf < alpha
-            tt = EqualVarianceTTest(seg1_avg, seg2_avg)
+
+    ks = ApproximateTwoSampleKSTest(seg1_avg, seg2_avg)
+    pks = pvalue(ks)
+    if (pks < alpha && type === :auto) || type === :p
+        if paired == true
+            tt = OneSampleTTest(seg1_avg, seg2_avg)
         else
-            tt = UnequalVarianceTTest(seg1_avg, seg2_avg)
+            pf = pvalue(VarianceFTest(seg1_avg, seg2_avg))
+            if pf < alpha
+                tt = EqualVarianceTTest(seg1_avg, seg2_avg)
+            else
+                tt = UnequalVarianceTTest(seg1_avg, seg2_avg)
+            end
         end
+        df = tt.df
+        t = round(tt.t, digits=2)
+        c = round.(confint(tt, level=(1 - alpha)), digits=2)
+        tn = "t"
+    elseif (pks >= alpha && type === :auto) || type === :np
+        if paired == true
+            tt = SignedRankTest(seg1_avg, seg2_avg)
+            t = round(tt.W, digits=2)
+            df = tt.n - 1
+            tn = "W"
+        else
+            tt = MannWhitneyUTest(seg1_avg, seg2_avg)
+            t = round(tt.U, digits=2)
+            df = 2 * size(seg1, 3) - 2
+            tn = "U"
+        end
+        c = NaN
     end
 
     p = pvalue(tt)
     p < eps() && (p = 0.0001)
     p = round(p, digits=4)
-    df = tt.df
-    t = round(tt.t, digits=2)
-    c = round.(confint(tt, level=(1 - alpha)), digits=2)
 
-    return (tt=tt, t=t, c=c, df=df, p=p, seg1=seg1_avg, seg2=seg2_avg, m1=round(mean(seg1_avg), digits=2), sd1=round(std(seg1_avg), digits=2), m2=round(mean(seg2_avg), digits=2), sd2=round(std(seg2_avg), digits=2))
+    return (tt=tt, t=(t, tn), c=c, df=df, p=p, seg1=seg1_avg, seg2=seg2_avg)
 end
