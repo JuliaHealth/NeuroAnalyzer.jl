@@ -68,11 +68,13 @@ Calculate number of categories for a given sample size `n`.
 
 # Returns
 
-- `k::Float64`
+Named tuple containing:
+- `k1::Float64`: sqrt(n)
+- `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)
 
-    return (sqrt(n), (1 + 3.222 * log10(n)))
+    return (k1=sqrt(n), k2=(1 + 3.222 * log10(n)))
 end
 
 """
