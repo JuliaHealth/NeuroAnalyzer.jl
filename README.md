@@ -123,6 +123,8 @@ Complete NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWy
 
 Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
 
+Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Changelog.md).
+
 ## Plugins (extensions)
 
 Plugins are git repositories, located at `~/Documents/NeuroJ/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory.
