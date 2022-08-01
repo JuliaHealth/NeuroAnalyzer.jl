@@ -550,7 +550,7 @@ function eeg_load(file_name::String)
 end
 
 """
-    eeg_export_csv(eeg, file_name, header, overwrite)
+    eeg_export_csv(eeg; file_name, header, overwrite)
 
 Export EEG data as CSV.
 
@@ -592,6 +592,7 @@ function eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, 
         println(f, key, ": ", value)
     end
     close(f)
+    components == false && return true
 
     # COMPONENTS
     file_name = replace(file_name, ".csv" => "_components.csv")

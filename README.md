@@ -189,7 +189,7 @@ EEG:
 - edit: bad channel marking / rejection
 - edit: bad epoch marking / rejection
 - edit: create EEG object
-- edit: eeg_keep_eeg_channels → keep_channels(type)
+- edit: eeg_keep_eeg_channels → eeg_keep_channels(type)
 - edit: events markers; epoch by event markers; rewrite epoching
 - edit: insert channel
 - edit: merge EEG objects
