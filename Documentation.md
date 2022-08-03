@@ -278,7 +278,7 @@ Load the `eeg` from `file_name` file (HDF5-based).
 
 
 ```julia
-eeg_export_csv(eeg, file_name, header, overwrite)
+eeg_export_csv(eeg; file_name, header, overwrite)
 ```
 
 Export EEG data as CSV.
@@ -3685,7 +3685,7 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
   * `fs::Int64`: sampling rate
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
   * `demean::Bool`=true: demean signal prior to analysis
 
 **Returns**
@@ -3705,7 +3705,7 @@ Named tuple containing:
 eeg_tkeo(eeg)
 ```
 
-Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
 
 **Arguments**
 
@@ -7803,7 +7803,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
   * `fs::Int64`: sampling rate
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
   * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
@@ -7896,7 +7896,7 @@ Named tuple containing:
 s_tkeo(signal)
 ```
 
-Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
 
 **Arguments**
 
@@ -8447,7 +8447,10 @@ Calculate number of categories for a given sample size `n`.
 
 **Returns**
 
-  * `k::Float64`
+Named tuple containing:
+
+  * `k1::Float64`: sqrt(n)
+  * `k2::Float64`: 1 + 3.222 * log10(n)
 
 <a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
 **`NeuroJ.effsize`** &mdash; *Method*.

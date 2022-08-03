@@ -179,7 +179,6 @@ EEG:
 - analysis: signals/PSD comparison
 - analysis: source localization
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
-- analysis: use variable ncyc for s_wspectrogram()
 - analysis: wavelets
 - edit: add/delete markers, view markers on plots
 - edit: automated channel rejection

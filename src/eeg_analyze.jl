@@ -2468,7 +2468,7 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
-- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
 - `demean::Bool`=true: demean signal prior to analysis
 
 # Returns
@@ -2478,7 +2478,7 @@ Named tuple containing:
 - `w_frq::Matrix{Float64}`
 - `w_t::Matrix{Float64}`
 """
-function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6, demean::Bool=true)
+function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2504,7 +2504,7 @@ end
 """
     eeg_tkeo(eeg)
 
-Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1)x(t+1)
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
 
 # Arguments
 

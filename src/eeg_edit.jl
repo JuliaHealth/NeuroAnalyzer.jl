@@ -891,7 +891,8 @@ Show info.
 function eeg_info(eeg::NeuroJ.EEG)
 
     println("          EEG file name: $(eeg.eeg_header[:eeg_filename])")
-    println("          EEG size [Mb]: $(eeg.eeg_header[:eeg_filesize_mb])")
+    println("          EEG size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
+    println("   EEG memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
     println("     Sampling rate (Hz): $(eeg_sr(eeg))")
     println("Signal length (samples): $(eeg_signal_len(eeg))")
     println("Signal length (seconds): $(round(eeg.eeg_header[:eeg_duration_seconds], digits=2))")
