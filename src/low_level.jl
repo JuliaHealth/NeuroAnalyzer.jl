@@ -3103,7 +3103,7 @@ Calculate power spectrum of the `signal` using wavelet convolution.
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
-- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
 
 # Returns
 
@@ -3111,7 +3111,7 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Int64=6)
+function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
@@ -3128,10 +3128,20 @@ function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_l
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
+    if typeof(ncyc) != Tuple{Int64, Int64}
+        ncyc = repeat([ncyc], frq_n)
+    else
+        if frq === :log
+            ncyc = round.(Int64, logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n))
+        else
+            ncyc = round.(Int64, linspace(ncyc[1], ncyc[2], frq_n))
+        end
+    end
+
     pad > 0 && (signal = pad0(signal, pad))
     w_powers = zeros(length(frq_list))
     @inbounds @simd for frq_idx in 1:frq_n
-        kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc, complex=true)
+        kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         w_conv = s_fconv(signal, kernel=kernel, norm=true)
         w_powers[frq_idx] = mean(@. abs(w_conv)^2)
     end

@@ -611,15 +611,23 @@ p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true)
 eeg_plot_save(p, file_name="images/edf_spec1.png")
 ```
 
+Plot spectrogram using wavelet convolution and variable number of Morlet-wavelet cycles:
+```julia
+p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true, mw=true, ncyc=(2, 32))
+eeg_plot_save(p, file_name="images/edf_spec2.png")
+```
+
 ![edf topo :amp](images/edf_spec1.png)
+
+![edf topo :amp](images/edf_spec2.png)
 
 Plot multi-channel spectrogram:
 ```julia
 p = eeg_plot_signal_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=(0, 50))
-eeg_plot_save(p, file_name="images/edf_spec2.png")
+eeg_plot_save(p, file_name="images/edf_spec3.png")
 ```
 
-![edf topo :amp](images/edf_spec2.png)
+![edf topo :amp](images/edf_spec3.png)
 
 Plot PSD, x and y axes are log10-scaled:
 ```julia
@@ -645,9 +653,10 @@ eeg_plot_save(p, file_name="images/edf_psd_3d.png")
 
 Plot PSD 3d surface:
 ```julia
-p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10, type=:s)
+p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10, type=:s, mw=true, ncyc=(2, 32))
 eeg_plot_save(p, file_name="images/edf_psd_3dw.png")
 ```
+
 ![](images/edf_psd_3dw.png)
 
 Topographical plots:

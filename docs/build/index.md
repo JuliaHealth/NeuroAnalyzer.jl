@@ -4018,13 +4018,15 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `head::Bool=true`: add head plot
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -4304,12 +4306,14 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `head::Bool=true`: add head plot
   * `mono::Bool=false`: use color or grey palette
@@ -4425,12 +4429,14 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
   * `title::String=""`: plot title
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `head::Bool=true`: add head plot
   * `mono::Bool=false`: use color or grey palette
@@ -4487,6 +4493,7 @@ Plot `signal` channel power spectrum density.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -4514,8 +4521,10 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `signal::Matrix{<:Real}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -4544,8 +4553,10 @@ Butterfly plot of `signal` channels power spectrum density.
   * `signal::Matrix{<:Real}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -4577,12 +4588,14 @@ Plot `eeg` channels power spectrum density.
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
   * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
@@ -4611,12 +4624,14 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `labels::Vector{String}=[""]`: channel labels vector
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
@@ -4644,12 +4659,14 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `labels::Vector{String}=[""]`: channel labels vector
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
@@ -4675,12 +4692,14 @@ Plot PSD of `eeg` external or embedded component.
   * `epoch::Int64`: epoch to display
   * `channel::Int64`: channel to display
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
@@ -4706,12 +4725,14 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `ax::Symbol=:linlin`: type of axes scaling
   * `kwargs`: optional arguments for plot() function
 
@@ -4737,12 +4758,14 @@ Butterfly plot PSD of `eeg` external or embedded component:.
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `mt::Bool=false`: if true use multi-tapered periodogram
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -4769,6 +4792,7 @@ Plot spectrogram of `signal`.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -4804,6 +4828,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -4836,6 +4861,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -4864,6 +4890,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -4900,6 +4927,7 @@ Plots spectrogram of `eeg` channel(s).
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -4928,6 +4956,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Times [s]`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -4959,6 +4988,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -5710,6 +5740,7 @@ Plot 3-d waterfall plot of `signal` channels power spectrum density.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel="Channel"`: y-axis label
   * `zlabel::String=""`: y-axis label
@@ -5740,6 +5771,7 @@ Plot 3-d surface plot of `signal` channels power spectrum density.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]"`: x-axis label
   * `ylabel="Channel"`: y-axis label
   * `zlabel::String=""`: y-axis label
@@ -5774,6 +5806,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel="Channel"`: y-axis label
   * `zlabel::String=""`: y-axis label
@@ -5794,14 +5827,13 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 plot_rel_psd(signal; <keyword arguments>)
 ```
 
-Plot `signal` channel power spectrum density.
+Plot relative `signal` channel power spectrum density.
 
 **Arguments**
 
   * `signal::Vector{<:Real}`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
@@ -7926,7 +7958,7 @@ Calculate power spectrum of the `signal` using wavelet convolution.
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
   * `fs::Int64`: sampling rate
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
 
 **Returns**
 
