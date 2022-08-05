@@ -804,7 +804,7 @@ Return number of `eeg` channels of `type`.
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `type::Vector{Symbol}[:all, :eeg, :ecg, :eog, :emg]`
+- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
 
 # Returns
 
@@ -1651,10 +1651,10 @@ Keep `type` channels.
 """
 function eeg_keep_channel_type(eeg::NeuroJ.EEG; type::Symbol=:eeg)
 
-    String(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
+    string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] === String(type) && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] === string(type) && push!(eeg_channels_idx, idx)
     end
     eeg_new = eeg_keep_channel(eeg, channel=eeg_channels_idx)
     eeg_reset_components!(eeg_new)
@@ -1675,10 +1675,10 @@ Keep `type` channels.
 """
 function eeg_keep_channel_type!(eeg::NeuroJ.EEG; type::Symbol=:eeg)
 
-    String(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
+    string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] === String(type) && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] === string(type) && push!(eeg_channels_idx, idx)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
     push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
@@ -1711,8 +1711,7 @@ Make copy of `eeg`.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
-
+- `eeg_copy::NeuroJ.EEG`
 """
 function eeg_copy(eeg::NeuroJ.EEG)
     

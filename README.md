@@ -188,7 +188,9 @@ EEG:
 - edit: bad channel marking / rejection
 - edit: bad epoch marking / rejection
 - edit: create EEG object
-- edit: events markers; epoch by event markers; rewrite epoching
+- edit: events markers
+- edit: epoch by event markers
+- edit: rewrite epoching
 - edit: insert channel
 - edit: merge EEG objects
 - edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)

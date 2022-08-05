@@ -79,14 +79,14 @@ function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 end
 
 """
-    eeg_cov(eeg; norm=true)
+    eeg_cov(eeg; norm)
 
 Calculate covariance matrix for all channels of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
-- `norm::Bool`: normalize covariance
+- `norm::Bool=true`: normalize covariance
 
 # Returns
 
@@ -1526,7 +1526,7 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
                 try
                     t_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
@@ -1548,7 +1548,7 @@ function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
                 try
                     t_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
@@ -1608,7 +1608,7 @@ function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
                 try
                     p_env[channel_idx, :, epoch_idx] = model(frq)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             else
                 p_env[channel_idx, :, epoch_idx] = psd_pow
@@ -1667,7 +1667,7 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
                 try
                     p_env_m[:, epoch_idx] = model(s_f)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
@@ -1690,7 +1690,7 @@ function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
                 try
                     p_env_m[:, channel_idx] = model(s_f)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
@@ -1757,7 +1757,7 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=fals
                 try
                     p_env_m[:, epoch_idx] = model(s_f)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
@@ -1780,7 +1780,7 @@ function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=fals
                 try
                     p_env_m[:, channel_idx] = model(s_f)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
@@ -1870,7 +1870,7 @@ function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, No
                 try
                     s_env[channel_idx, :, epoch_idx] = model(sp_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             else
                 s_env[channel_idx, :, epoch_idx] = f_idx
@@ -1928,7 +1928,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false,
                 try
                     s_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
@@ -1951,7 +1951,7 @@ function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false,
                 try
                     s_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
@@ -2017,7 +2017,7 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=fals
                 try
                     s_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
@@ -2040,7 +2040,7 @@ function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=fals
                 try
                     s_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @warn "CubicSpline error, non-smoothed variant used."
+                    @warn "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
