@@ -188,7 +188,6 @@ EEG:
 - edit: bad channel marking / rejection
 - edit: bad epoch marking / rejection
 - edit: create EEG object
-- edit: eeg_keep_eeg_channels → eeg_keep_channels(type)
 - edit: events markers; epoch by event markers; rewrite epoching
 - edit: insert channel
 - edit: merge EEG objects
@@ -208,9 +207,9 @@ EEG:
 - plots: ITPC topoplot
 - plots: plot two EEG one over another for comparison
 - plots: preview 2d/3d channel locs
-- plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
+- plots: PSD of multi channels signal like eeg_plot_signal(), u sing normalized power (a.u.)
 - plots: small plots (amplitude, PSD, spectrogram) at electrode locations
-- plots: topo plot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
+- plots: topoplot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
 - process: custom reference (e.g. bipolar longitudinal/horizontal)
 - process: detect artifacts using TKEO

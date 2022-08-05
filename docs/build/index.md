@@ -1160,39 +1160,41 @@ Edit `eeg` `channel` properties.
   * `field::Any`
   * `value::Any`
 
-<a id='NeuroJ.eeg_keep_eeg_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_eeg_channels-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_eeg_channels`** &mdash; *Method*.
+<a id='NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel_type`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
+eeg_keep_channel_type(eeg; type)
 ```
 
-Keep only EEG channels of `eeg`.
+Keep `type` channels.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:eeg`: type of channels to keep
 
 **Returns**
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_keep_eeg_channels!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_eeg_channels!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_eeg_channels!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel_type!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
+eeg_keep_channel_type!(eeg)
 ```
 
-Keep only EEG channels of `eeg`.
+Keep `type` channels.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:eeg`: type of channels to keep
 
 <a id='NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_view_note`** &mdash; *Method*.
@@ -1215,7 +1217,7 @@ Return `eeg` note.
 
 
 ```julia
-eeg_copy(eeg::NeuroJ.EEG)
+eeg_copy(eeg)
 ```
 
 Make copy of `eeg`.

@@ -1636,49 +1636,52 @@ function eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::A
 end
 
 """
-    eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
+    eeg_keep_channel_type(eeg; type)
 
-Keep only EEG channels of `eeg`.
+Keep `type` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `type::Symbol=:eeg`: type of channels to keep
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_keep_eeg_channels(eeg::NeuroJ.EEG)
+function eeg_keep_channel_type(eeg::NeuroJ.EEG; type::Symbol=:eeg)
 
-    eeg_channel_n(eeg, type=:eeg) == eeg_channel_n(eeg, type=:all) && (return eeg)
-
+    String(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] === String(type) && push!(eeg_channels_idx, idx)
     end
     eeg_new = eeg_keep_channel(eeg, channel=eeg_channels_idx)
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_keep_channel_type(EEG, type=$type")
 
     return eeg_new
 end
 
 """
-    eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
+    eeg_keep_channel_type!(eeg)
 
-Keep only EEG channels of `eeg`.
+Keep `type` channels.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
+- `type::Symbol=:eeg`: type of channels to keep
 """
-function eeg_keep_eeg_channels!(eeg::NeuroJ.EEG)
+function eeg_keep_channel_type!(eeg::NeuroJ.EEG; type::Symbol=:eeg)
 
-    eeg_channel_n(eeg, type=:eeg) == eeg_channel_n(eeg, type=:all) && return
-
+    String(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] == "eeg" && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] === String(type) && push!(eeg_channels_idx, idx)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
+    push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
 
     nothing
 end
@@ -1698,7 +1701,7 @@ function eeg_view_note(eeg::NeuroJ.EEG)
 end
 
 """
-    eeg_copy(eeg::NeuroJ.EEG)
+    eeg_copy(eeg)
 
 Make copy of `eeg`.
 
@@ -1885,7 +1888,7 @@ function eeg_replace_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, sig
     eeg_reset_components!(eeg_new)
 
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal")
+    push!(eeg_new.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal=$signal")
 
     return eeg_new
 end
@@ -1924,7 +1927,7 @@ function eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, si
     eeg_reset_components!(eeg)
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal")
+    push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal=$signal")
 
     nothing
 end

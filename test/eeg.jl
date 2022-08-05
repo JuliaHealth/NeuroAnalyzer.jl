@@ -217,10 +217,10 @@ b = eeg_detect_bad_epochs(edf)
 @test eeg_t2s(edf, t=10) == 2561
 @test eeg_s2t(edf, t=10) == 0.04
 
-e = eeg_keep_eeg_channels(edf)
+e = eeg_keep_channel_type(edf)
 @test size(e.eeg_signals) == (19, 309760, 1)
 eeg_edit_channel!(e, channel=19, field=:channel_type, value="ecg")
-eeg_keep_eeg_channels!(e)
+eeg_keep_channel_type!(e, type=:eeg)
 @test size(e.eeg_signals) == (18, 309760, 1)
 
 e = eeg_invert_polarity(edf, channel=1)
