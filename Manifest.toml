@@ -330,6 +330,12 @@ git-tree-sha1 = "97f1325c10bd02b1cc1882e9c2bf6407ba630ace"
 uuid = "ee1fde0b-3d02-5ea6-8484-8dfef6360eab"
 version = "1.12.16+3"
 
+[[deps.Deconvolution]]
+deps = ["FFTW"]
+git-tree-sha1 = "154fcb2726a7ec3055993a3a8b9cc816117e9a3d"
+uuid = "41ba435c-a500-5816-a783-a9707c6f5f3a"
+version = "1.1.1"
+
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"

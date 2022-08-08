@@ -748,7 +748,7 @@ Return number of `eeg` channels of `type`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `type::Vector{Symbol}[:all, :eeg, :ecg, :eog, :emg]`
+  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
 
 **Returns**
 
@@ -1228,7 +1228,7 @@ Make copy of `eeg`.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg_copy::NeuroJ.EEG`
 
 <a id='NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_epochs_time`** &mdash; *Method*.
@@ -2483,7 +2483,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
 
 ```julia
-eeg_cov(eeg; norm=true)
+eeg_cov(eeg; norm)
 ```
 
 Calculate covariance matrix for all channels of `eeg`.
@@ -2491,7 +2491,7 @@ Calculate covariance matrix for all channels of `eeg`.
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `norm::Bool`: normalize covariance
+  * `norm::Bool=true`: normalize covariance
 
 **Returns**
 
@@ -8399,6 +8399,25 @@ Named tuple containing:
   * `seg_shape::Shape{Real, Int64}`: segment coordinates (shape for plotting)
   * `t_idx::Tuple{Real, Real}`: time indices
   * `f_idx::Tuple{Real, Real}`: frequency indices
+
+<a id='NeuroJ.s_denoise_wien-Tuple{AbstractArray}' href='#NeuroJ.s_denoise_wien-Tuple{AbstractArray}'>#</a>
+**`NeuroJ.s_denoise_wien`** &mdash; *Method*.
+
+
+
+```julia
+s_denoise_wien(signal)
+```
+
+Perform Wiener deconvolution denoising of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `signal_new::Vector{Float64}`
 
 
 <a id='Statistic'></a>

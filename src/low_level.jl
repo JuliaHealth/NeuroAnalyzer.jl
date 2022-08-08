@@ -3814,3 +3814,36 @@ function s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float6
 
     return (seg_pow=seg_pow, seg_shape=seg_shape, t_idx=(t_idx1,t_idx2), f_idx=(f_idx1,f_idx2))
 end
+
+"""
+    s_denoise_wien(signal)
+
+Perform Wiener deconvolution denoising of the `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `signal_new::Vector{Float64}`
+"""
+function s_denoise_wien(signal::AbstractArray)
+
+    channel_n, _, epoch_n = size(signal)
+    signal_new = similar(signal)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        s_m = mean(signal[:, :, epoch_idx], dims=1)'[:, 1]
+        s_m = _reflect(s_m)
+        noise = rand(Float64, size(s_m)) .* mean(s_m)
+        Threads.@threads for channel_idx in 1:channel_n
+            s2 = @view signal[channel_idx, :, epoch_idx]
+            s2 = _reflect(s2)
+            signal_denoised = wiener(s2, s_m, noise)
+            signal_new[channel_idx, :, epoch_idx] = _chop(signal_denoised)
+        end
+    end
+
+    return signal_new
+end

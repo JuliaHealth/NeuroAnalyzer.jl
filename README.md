@@ -60,6 +60,7 @@ The following packages are required:
 - CubicSplines
 - CUDA
 - DataFrames
+- Deconvolution
 - Distances
 - DSP
 - FFTW

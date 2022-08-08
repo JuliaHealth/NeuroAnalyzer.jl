@@ -353,6 +353,11 @@ eeg_fconv(e10, kernel=mw)
 eeg_fconv!(e10, kernel=mw)
 ```
 
+Denoising using Wiener deconvolution:
+```julia
+edf_denoised = eeg_denoise_wien(edf)
+```
+
 ### EEG Analyze
 
 Channels stats:
@@ -518,7 +523,7 @@ Amplitude Envelope Correlation:
 aec, aec_p = eeg_aec(e10, e10, channel1=3, channel2=4, epoch1=10, epoch2=10)
 ```
 
-### EEG Plotss
+### EEG Plots
 
 Plot multi-channel:
 ```julia

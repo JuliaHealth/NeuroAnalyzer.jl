@@ -5,6 +5,7 @@ using CSV
 using CubicSplines
 using CUDA
 using DataFrames
+using Deconvolution
 using Distances
 using DSP
 using FFTW
@@ -160,6 +161,7 @@ export s_wbp
 export s_normalize_gauss
 export s_cbp
 export s_specseg
+export s_denoise_wien
 
 include("statistic.jl")
 export hildebrand_rule
@@ -298,6 +300,8 @@ export eeg_wbp
 export eeg_wbp!
 export eeg_cbp
 export eeg_cbp!
+export eeg_denoise_wien
+export eeg_denoise_wien!
 
 include("eeg_analyze.jl")
 export eeg_total_power

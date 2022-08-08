@@ -1836,7 +1836,7 @@ end
 """
     eeg_cbp(eeg; pad, frq, demean)
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of the `eeg`.
 
 # Arguments
 
@@ -1873,7 +1873,7 @@ end
 """
     eeg_cbp!(eeg; pad, frq, ncyc, demean)
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of the `eeg`.
 
 # Arguments
 
@@ -1888,6 +1888,43 @@ function eeg_cbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, demean::Bool=true)
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_cbp!(EEG, pad=$pad, frq=$frq, demean=$demean)")
+
+    nothing
+end
+
+"""
+    eeg_denoise_wien(eeg)
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+# Returns
+
+- `eeg_new::NeuroJ.EEG`
+"""
+function eeg_denoise_wien(eeg::NeuroJ.EEG)
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = s_denoise_wien(eeg.eeg_signals)
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_denoise_wien(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_denoise_wien!(eeg)
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_denoise_wien!(eeg::NeuroJ.EEG)
+
+    eeg.eeg_signals = s_denoise_wien(eeg.eeg_signals)
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_denoise_wien!(EEG)")
 
     nothing
 end

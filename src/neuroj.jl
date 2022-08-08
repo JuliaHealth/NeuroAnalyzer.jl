@@ -20,6 +20,7 @@ function neuroj_version()
                          "CubicSplines",
                          "CUDA",
                          "DataFrames",
+                         "Deconvolution",
                          "Distances",
                          "DSP",
                          "FFTW",

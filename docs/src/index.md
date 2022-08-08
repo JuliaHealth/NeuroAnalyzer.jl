@@ -145,6 +145,10 @@ eeg_zero(eeg::NeuroJ.EEG)
 eeg_zero!(eeg::NeuroJ.EEG)
 eeg_wbp(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 eeg_wbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+eeg_cbp(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, demean::Bool=true)
+eeg_cbp!(eeg::NeuroJ.EEG; pad::Int64=0, frq::Real, demean::Bool=true)
+eeg_denoise_wien(eeg::NeuroJ.EEG)
+eeg_denoise_wien!(eeg::NeuroJ.EEG)
 ```
 
 ## EEG analyze
@@ -404,6 +408,7 @@ s_normalize_gauss(signal::AbstractArray)
 s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
 s_specseg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
 s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
+s_denoise_wien(signal::AbstractArray)
 ```
 
 ## Statistic

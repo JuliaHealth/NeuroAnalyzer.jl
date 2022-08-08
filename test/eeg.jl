@@ -322,8 +322,9 @@ c = eeg_chdiff(edf, edf, channel1=1, channel2=2)
 
 edf1 = eeg_wbp(edf, frq=10)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
-
 edf1 = eeg_cbp(edf, frq=10)
+@test size(edf1.eeg_signals) == (19, 309760, 1)
+edf1 = eeg_denoise_wien(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
 true
