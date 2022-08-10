@@ -1,11 +1,3 @@
-################################
-#                              #
-# Low-level internal functions #
-#                              #
-################################
-
-################################
-
 function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))

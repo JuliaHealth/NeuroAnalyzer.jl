@@ -52,6 +52,8 @@ export neuroj_plugins_update
 export neuroj_version
 neuroj_plugins_reload()
 
+include("low_level_internal.jl")
+
 include("low_level.jl")
 export linspace
 export logspace
@@ -162,6 +164,7 @@ export s_normalize_gauss
 export s_cbp
 export s_specseg
 export s_denoise_wien
+export s_cps
 
 include("statistic.jl")
 export hildebrand_rule
@@ -308,8 +311,7 @@ export eeg_total_power
 export eeg_band_power
 export eeg_cov
 export eeg_cor
-export eeg_crosscov
-export eeg_crosscov
+export eeg_xcov
 export eeg_psd
 export eeg_stationarity
 export eeg_mi
@@ -336,7 +338,7 @@ export eeg_dft
 export eeg_msci95
 export eeg_mean
 export eeg_difference
-export eeg_autocov
+export eeg_acov
 export eeg_tenv
 export eeg_tenv_mean
 export eeg_tenv_median
@@ -349,7 +351,6 @@ export eeg_senv_median
 export eeg_ispc
 export eeg_itpc
 export eeg_pli
-export eeg_pli_m
 export eeg_ispc_m
 export eeg_aec
 export eeg_ged
@@ -364,6 +365,7 @@ export eeg_band_mpower
 export eeg_rel_psd
 export eeg_fbsplit
 export eeg_chdiff
+export eeg_cps
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

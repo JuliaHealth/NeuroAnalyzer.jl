@@ -58,12 +58,12 @@ edf_cor = eeg_cor(edf)
 p = eeg_plot_matrix(edf, edf_cor)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-ac, lags = eeg_autocov(edf, lag=5, norm=false)
-p = eeg_plot_covmatrix(edf, ac, lags)
+ac, lags = eeg_acov(edf, lag=5, norm=false)
+p = eeg_plot_covmatrix(edf, ac[:, :, 1], lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-cc, lags = eeg_crosscov(edf, lag=5, norm=false)
-p = eeg_plot_covmatrix(edf, cc, lags)
+cc, lags = eeg_xcov(edf, lag=5, norm=false)
+p = eeg_plot_covmatrix(edf, cc[:, :, 1], lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = eeg_plot_histogram(edf, channel=1)

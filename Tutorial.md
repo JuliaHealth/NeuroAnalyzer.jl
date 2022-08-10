@@ -393,18 +393,18 @@ eeg_cor(edf)
 
 Calculate auto-covariance:
 ```julia
-eeg_autocov(edf, lag=20, norm=false)
+eeg_acov(edf, lag=20, norm=false)
 ```
 
 Calculate cross-covariance:
 ```julia
-cc, lags = eeg_crosscov(edf, lag=20, demean=true)
+cc, lags = eeg_xcov(edf, lag=20, demean=true)
 # channel by channel, all combinations
 plot(lags, cc[1, :])
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=12)
-cc, lags = eeg_crosscov(edf1, edf2, lag=20, demean=true, norm=true)
+cc, lags = eeg_xcov(edf1, edf2, channel1=1, channel2=1, epoch1=1, epoch2=2, lag=20, demean=true, norm=true)
 plot(lags, cc[1, :])
 ```
 
@@ -433,26 +433,26 @@ plot(eeg_labels(edf), e, seriestype=:bar)
 
 Coherence over time:
 ```julia
-c, ic = eeg_tcoherence(edf1, edf2)
-plot(c[2, 1:2560])
-plot(ic[2, 1:2560])
+c, msc, ic = eeg_tcoherence(edf1, edf2)
+plot(c[2, 1:2560, 1])
+plot(ic[2, 1:2560, 1])
 
 edf_alpha = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
 eeg_labels(edf_alpha)
 # O1 vs O2
-c, ic = eeg_tcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1)
+c, ic = eeg_tcoherence(edf_alpha, edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1)
 plot(c[1:2560])
 plot(ic[1:2560])
 ```
 
 Coherence over frequencies:
 ```julia
-c, f = eeg_fcoherence(edf1, edf2)
-plot(f[1:2560], c[1, 2, 1:2560])
+c, msc, f = eeg_fcoherence(edf, edf, channel1=[1, 2], channel2=3:4, epoch1=1, epoch2=1)
+plot(f[1, :], c[1, :, 1])
 
 # O1 vs O2, alpha range
-c, f = eeg_fcoherence(edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1, frq_lim=eeg_band(edf, band=:alpha))
-plot(f, c)
+c, msc, f = eeg_fcoherence(edf_alpha, edf_alpha, channel1=9, channel2=10, epoch1=1, epoch2=1, frq_lim=eeg_band(edf, band=:alpha))
+plot(f[1, :], c[1, :, 1])
 ```
 
 Generate PCA:
@@ -509,7 +509,7 @@ bar(v)
 ISPC:
 ```julia
 e10 = eeg_epochs(edf, epoch_len=10*256)
-i, _, _, _, _, _ = eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+i, _, _, _, _, _ = eeg_ispc(e10, e10, channel1=1:5, channel2=6:10, epoch1=1, epoch2=1)
 ```
 
 PLI:
@@ -717,7 +717,7 @@ eeg_plot_save(p, file_name="images/edf_cov.png")
 
 Plot autocovariance matrix:
 ```julia
-ac, lags = eeg_autocov(edf, lag=5, norm=false)
+ac, lags = eeg_acov(edf, lag=5, norm=false)
 p = eeg_plot_covmatrix(edf, ac, lags)
 eeg_plot_save(p, file_name="images/edf_autocov.png")
 ```
@@ -768,8 +768,8 @@ ISPC:
 ```julia
 p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 eeg_plot_save(p, file_name="images/e10_ispc.png")
-m = eeg_ispc_m(e10, epoch=1)
-p = eeg_plot_matrix(e10, m)
+m = eeg_ispc(e10, epoch=1)
+p = eeg_plot_matrix(e10, m[:, :, 1])
 eeg_plot_save(p, file_name="images/e10_ispc_m.png")
 p = eeg_plot_connections(edf, m=m, threshold=0.8, threshold_type=:geq)
 eeg_plot_save(p, file_name="images/e10_ispc_connections.png")
@@ -800,8 +800,8 @@ PLI:
 ```julia
 p = eeg_plot_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 eeg_plot_save(p, file_name="images/e10_pli.png")
-m = eeg_pli_m(e10, epoch=1)
-p = eeg_plot_matrix(e10, m)
+m = eeg_pli(e10)
+p = eeg_plot_matrix(e10, m[:, :, 1])
 eeg_plot_save(p, file_name="images/e10_pli_m.png")
 ```
 
@@ -888,8 +888,8 @@ function eeg_benchmark(n::Int64)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
         tbp = eeg_total_power(e10)
-        ac = eeg_autocov(e10, norm=false)
-        cc = eeg_crosscov(e10, lag=10, demean=true)
+        ac = eeg_acov(e10, norm=false)
+        cc = eeg_xcov(e10, lag=10, demean=true)
         mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
     end
 end

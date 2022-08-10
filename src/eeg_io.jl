@@ -1,11 +1,3 @@
-################################
-#                              #
-# Low-level internal functions #
-#                              #
-################################
-
-################################
-
 """
     eeg_import_edf(file_name; read_annotations, clean_labels)
 

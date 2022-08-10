@@ -1,14 +1,3 @@
-################################
-#                              #
-# Low-level internal functions #
-#                              #
-################################
-
-_reflect(signal::AbstractArray) = vcat(signal[end:-1:1], signal, signal[end:-1:1])
-_chop(signal::AbstractArray) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
-
-################################
-
 """
     linspace(start, stop, length)
 
@@ -3846,4 +3835,34 @@ function s_denoise_wien(signal::AbstractArray)
     end
 
     return signal_new
+end
+
+"""
+    s_cps(signal1, signal2; fs, norm)
+
+Calculate cross power spectrum between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::AbstractArray`
+- `signal2::AbstractArray`
+- `fs::Int64`: sampling rate
+- `norm::Bool=true`: normalize do dB
+
+# Returns
+
+Named tuple containing:
+- `cps_pw::Vector{Float64}`: cross power spectrum power
+- `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
+- `cps_fq::Vector{Float64}`: cross power spectrum frequencies
+"""
+function s_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
+
+    s = hcat(signal1, signal2)'
+    p = mt_cross_power_spectra(s, fs=fs)
+    cps_pw = real.(p.power)[1, 2, :]
+    cps_ph = angle.(imag.(p.power))[1, 2, :]
+    cps_fq = Vector(p.freq)
+
+    return (cps_pw=cps_pw, cps_ph=cps_ph, cps_fq=cps_fq)
 end

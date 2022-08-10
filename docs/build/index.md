@@ -2429,6 +2429,76 @@ Perform wavelet bandpass filtering of the `eeg`.
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
   * `demean::Bool=true`: demean signal prior to analysis
 
+<a id='NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cbp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cbp(eeg; pad, frq, demean)
+```
+
+Perform convolution bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cbp!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cbp!(eeg; pad, frq, ncyc, demean)
+```
+
+Perform convolution bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Tuple{Real, Real}`: filter frequency
+  * `demean::Bool=true`: demean signal prior to analysis
+
+<a id='NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_denoise_wien`** &mdash; *Method*.
+
+
+
+```julia
+eeg_denoise_wien(eeg)
+```
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_denoise_wien!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_denoise_wien!(eeg)
+```
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
 
 <a id='EEG-analyze'></a>
 
@@ -2516,13 +2586,13 @@ Calculate correlation coefficients between all channels of `eeg`.
 
   * `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
 
-<a id='NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_crosscov`** &mdash; *Method*.
+<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_xcov`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_crosscov(eeg; lag, demean, norm)
+eeg_xcov(eeg; lag, demean, norm)
 ```
 
 Calculate cross-covariance of each the `eeg` channels.
@@ -2541,21 +2611,25 @@ Named tuple containing:
   * `ccov::Matrix{Float64}`
   * `lags::Vector{Float64}`
 
-<a id='NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_crosscov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_crosscov`** &mdash; *Method*.
+<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_xcov`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_crosscov(eeg1, eeg2; lag, demean, norm)
+eeg_xcov(eeg1, eeg2; channel1, channel2, epoch1, epoch2, lag, demean, norm)
 ```
 
-Calculate cross-covariance between `eeg1` and `eeg2` channels.
+Calculate cross-covariance between `eeg1` and `eeg2`.
 
 **Arguments**
 
   * `eeg1::NeuroJ.EEG`
   * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean signal prior to analysis
   * `norm::Bool=false`: normalize cross-covariance
@@ -2715,15 +2789,19 @@ Return frequency limits for a `band` range.
 
 
 ```julia
-eeg_tcoherence(eeg1, eeg2)
+eeg_tcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between all channels of `eeg1` and `eeg2`.
+Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
 
 **Arguments**
 
   * `eeg1::NeuroJ.EEG`
   * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 
 **Returns**
 
@@ -2732,33 +2810,6 @@ Named tuple containing:
   * `c::Array{Float64, 3}`: coherence
   * `msc::Array{Float64, 3}`: MSC
   * `ic::Array{Float64, 3}`: imaginary part of coherence
-
-<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tcoherence(eeg; channel1, channel2, epoch1, epoch2)
-```
-
-Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
-
-**Returns**
-
-Named tuple containing:
-
-  * `c::Vector{Float64}`: coherence
-  * `msc::Vector{Float64}`: MSC
-  * `ic::Vector{Float64}`: imaginary part of coherence
 
 <a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_freqs`** &mdash; *Method*.
@@ -3187,12 +3238,12 @@ Named tuple containing:
   * `statistic_single::Vector{Float64}`
   * `p::Vector{Float64}`
 
-<a id='NeuroJ.eeg_autocov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_autocov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_autocov`** &mdash; *Method*.
+<a id='NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_acov`** &mdash; *Method*.
 
 
 
-eeg_autocov(eeg; lag=1, demean=false, norm=false)
+eeg_acov(eeg; lag=1, demean=false, norm=false)
 
 Calculate autocovariance of each the `eeg` channels.
 
@@ -3459,21 +3510,21 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
   * `eeg1::NeuroJ.EEG`
   * `eeg2::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
 
 **Returns**
 
 Named tuple containing:
 
-  * `ispc::Float64`: ISPC value
-  * `ispc_angle::Float64`: ISPC angle
-  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
-  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
-  * `s1_phase::Vector{Float64}`: signal 1 phase
-  * `s2_phase::Vector{Float64}`: signal 2 phase
+  * `ispc::Array{Float64, 2}`: ISPC value
+  * `ispc_angle::Array{Float64, 2}`: ISPC angle
+  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
+  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
+  * `s1_phase::Array{Float64, 3}`: signal 1 phase
+  * `s2_phase::Array{Float64, 3}`: signal 2 phase
 
 <a id='NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_itpc`** &mdash; *Method*.
@@ -3511,7 +3562,7 @@ Named tuple containing:
 eeg_pli(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate PLI (Phase Lag Index) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
 
 **Arguments**
 
@@ -3531,45 +3582,43 @@ Named tuple containing:
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroJ.eeg_pli_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli_m-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pli_m`** &mdash; *Method*.
+<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pli`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_pli_m(eeg; epoch)
+eeg_pli(eeg)
 ```
 
-Calculate matrix of PLIs (Phase Lag Index) between all channels of `eeg` at `epoch`.
+Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `epoch1::Int64`
 
 **Returns**
 
-  * `pli_m::Matrix{Float64}`: PLI values matrix
+  * `pli_m::Array{Float64, 3}`: PLI value matrices over epochs
 
-<a id='NeuroJ.eeg_ispc_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc_m-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc_m`** &mdash; *Method*.
+<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_ispc_m(eeg; epoch)
+eeg_ispc(eeg)
 ```
 
-Calculate matrix of ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg` at `epoch`.
+Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
-  * `epoch1::Int64`
 
 **Returns**
 
-  * `ispc_m::Matrix{Float64}`: ISPC values matrix
+  * `ispc_m::Array{Float64, 3}`: ISPC value matrices over epochs
 
 <a id='NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_aec`** &mdash; *Method*.
@@ -3746,6 +3795,35 @@ Named tuple containing:
   * `w_pow::Array{Float64, 4}`
   * `w_frq::Matrix{Float64}`
 
+<a id='NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fcoherence`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2, frq_lim)
+```
+
+Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
+
+**Returns**
+
+Named tuple containing:
+
+  * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
+  * `f::Vector{Float64}`: frequencies
+
 <a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_vartest`** &mdash; *Method*.
 
@@ -3886,6 +3964,58 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 **Returns**
 
   * `ch_diff::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cps`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cps(eeg; norm)
+```
+
+Calculate cross power spectrum between `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize do dB
+
+**Returns**
+
+Named tuple containing:
+
+  * `cps_pw::Array{Float64, 4}`: cross power spectrum power
+  * `cps_ph::Array{Float64, 4}`: cross power spectrum phase (in radians)
+  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
+
+<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cps`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cps(eeg1, eeg2; channel1, channel2, epoch1, epoch2, norm)
+```
+
+Calculate cross power spectrum between `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+  * `norm::Bool=true`: normalize do dB
+
+**Returns**
+
+Named tuple containing:
+
+  * `cps_pw::Vector{Float64}`: cross power spectrum power
+  * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
+  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 
 
 <a id='EEG-plots'></a>
@@ -8418,6 +8548,32 @@ Perform Wiener deconvolution denoising of the `signal`.
 **Returns**
 
   * `signal_new::Vector{Float64}`
+
+<a id='NeuroJ.s_cps-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_cps-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroJ.s_cps`** &mdash; *Method*.
+
+
+
+```julia
+s_cps(signal1, signal2; fs, norm)
+```
+
+Calculate cross power spectrum between `signal1` and `signal2`.
+
+**Arguments**
+
+  * `signal1::AbstractArray`
+  * `signal2::AbstractArray`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=true`: normalize do dB
+
+**Returns**
+
+Named tuple containing:
+
+  * `cps_pw::Vector{Float64}`: cross power spectrum power
+  * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
+  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 
 
 <a id='Statistic'></a>

@@ -107,11 +107,11 @@ edf1 = eeg_filter(edf, fprototype=:mmed, order=10)
 
 edf1 = eeg_downsample(edf, new_sr=128)
 @test size(edf1.eeg_signals) == (19, 154880, 1)
-acov_m, _ = eeg_autocov(edf)
+acov_m, _ = eeg_acov(edf)
 @test size(acov_m) == (19, 3, 1)
 
-ccov_m, _ = eeg_crosscov(edf)
-@test size(ccov_m) == (361, 3, 1)
+xcov_m, _ = eeg_xcov(edf)
+@test size(xcov_m) == (361, 3, 1)
 
 p, f = eeg_psd(edf1)
 @test size(p, 1) == 19
@@ -263,8 +263,8 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test length(eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
 @test length(eeg_itpc(e10, channel=1, t=12)) == 4
 @test length(eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
-@test size(eeg_pli_m(e10, epoch=1)) == (19, 19)
-@test size(eeg_ispc_m(e10, epoch=1)) == (19, 19)
+@test size(eeg_pli(e10)) == (19, 19, 121)
+@test size(eeg_ispc(e10)) == (19, 19, 121)
 
 @test length(eeg_aec(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
 
@@ -278,7 +278,7 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test length(eeg_wspectrum(edf, frq_lim=(0, 20), frq_n=21)) == 2
 @test length(eeg_wspectrogram(edf, frq_lim=(0, 20), frq_n=21)) == 3
 
-c, msc, f = eeg_fcoherence(edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
+c, msc, f = eeg_fcoherence(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
 
 edf1 = eeg_reference_plap(edf)
@@ -326,5 +326,8 @@ edf1 = eeg_cbp(edf, frq=10)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 edf1 = eeg_denoise_wien(edf)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
+
+p, _, _ = eeg_cps(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
+@test length(p) == 262145
 
 true
