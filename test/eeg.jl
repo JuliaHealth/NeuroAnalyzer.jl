@@ -97,6 +97,18 @@ edf1 = eeg_extract_epoch(edf, epoch=1)
 s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
 @test size(s_conv) == (19, 309760, 1)
 
+f, s = eeg_dft(edf)
+@test size(f) == (19, 309760, 1)
+
+m, _, _, _ = eeg_msci95(edf)
+@test size(m) == (1, 309760)
+
+m, _, _, _ = eeg_mean(edf, edf)
+@test m == zeros(1, 309760)
+
+s, ss, p = eeg_difference(edf, edf)
+@test p == [1.0]
+
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 edf1 = eeg_filter(edf, fprototype=:mavg, order=10)
@@ -107,9 +119,9 @@ edf1 = eeg_filter(edf, fprototype=:mmed, order=10)
 
 edf1 = eeg_downsample(edf, new_sr=128)
 @test size(edf1.eeg_signals) == (19, 154880, 1)
+
 acov_m, _ = eeg_acov(edf)
 @test size(acov_m) == (19, 3, 1)
-
 xcov_m, _ = eeg_xcov(edf)
 @test size(xcov_m) == (361, 3, 1)
 

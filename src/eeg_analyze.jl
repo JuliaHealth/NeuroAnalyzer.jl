@@ -229,6 +229,7 @@ function eeg_xcov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vec
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
+    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
     ccov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
 
     @inbounds @simd for epoch_idx in 1:length(epoch1)
@@ -242,8 +243,6 @@ function eeg_xcov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vec
                                                         norm=norm)
         end
     end
-
-    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
 
     return (ccov=ccov, ccov_lags=lags)
 end
@@ -667,15 +666,15 @@ function eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     epoch_n = size(eeg1.eeg_signals, 3)
-    signals_statistic = zeros(epoch_n, size(eeg1.eeg_signals, 1) * n)
-    signals_statistic_single = zeros(epoch_n)
+    s_stat = zeros(epoch_n, size(eeg1.eeg_signals, 1) * n)
+    s_stat_single = zeros(epoch_n)
     p = zeros(epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        signals_statistic[epoch_idx, :], signals_statistic_single[epoch_idx], p[epoch_idx] = s2_difference(eeg1.eeg_signals[:, :, epoch_idx], eeg2.eeg_signals[:, :, epoch_idx], n=n, method=method)
+        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = s2_difference(eeg1.eeg_signals[:, :, epoch_idx], eeg2.eeg_signals[:, :, epoch_idx], n=n, method=method)
     end
 
-    return (s_stat=signals_statistic, s_stat_single=signals_statistic_single, p=p)
+    return (s_stat=s_stat, s_stat_single=s_stat_single, p=p)
 end
 
 """
@@ -1031,10 +1030,6 @@ Calculate SNR of `eeg` channels.
 # Returns
 
 - `snr::Matrix(Float64)`: SNR for each channel per epoch
-
-# Source
-
-D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function eeg_snr(eeg::NeuroJ.EEG)
 
@@ -1064,7 +1059,7 @@ Standardize `eeg` channels for ML.
 # Returns
 
 - `eeg_new::NeuroJ.EEG`: standardized EEG
-- `scaler::Matrix{Float64}`: standardized EEG
+- `scaler::Matrix{Float64}`: standardizing matrix
 """
 function eeg_standardize(eeg::NeuroJ.EEG)
     
@@ -1097,7 +1092,7 @@ Standardize `eeg` channels for ML.
 
 # Returns
 
-- `scaler::Matrix{Float64}`: standardized EEG
+- `scaler::Matrix{Float64}`: standardizing matrix
 """
 function eeg_standardize!(eeg::NeuroJ.EEG)
     ss, scaler = s_standardize(eeg.eeg_signals)
@@ -1178,7 +1173,7 @@ function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{Complex
 end
 
 """
-    eeg_make_spectrum(eeg)
+    eeg_dft(eeg)
 
 Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 
@@ -1189,7 +1184,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 # Returns
 
 Named tuple containing:
-- `fft::Array{ComplexF64, 3}`: FFT
+- `sfft::Array{ComplexF64, 3}`: FFT
 - `sf::Array{Float64, 3}`: sample frequencies
 """
 function eeg_dft(eeg::NeuroJ.EEG)
@@ -1197,17 +1192,17 @@ function eeg_dft(eeg::NeuroJ.EEG)
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    s_fft = zeros(ComplexF64, size(eeg.eeg_signals))
-    s_sf = zeros(size(eeg.eeg_signals))
+    sfft = zeros(ComplexF64, size(eeg.eeg_signals))
+    sf = zeros(size(eeg.eeg_signals))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_fft[channel_idx, :, epoch_idx], s_sf[channel_idx, :, epoch_idx] = s_dft(s, fs=fs)
+            sfft[channel_idx, :, epoch_idx], sf[channel_idx, :, epoch_idx] = s_dft(s, fs=fs)
         end
     end
 
-    return (fft=fft, sf=sf)
+    return (sfft=sfft, sf=sf)
 end
 
 """
@@ -1229,7 +1224,7 @@ Named tuple containing:
 - `s_u::Matrix{Float64}`: upper 95% CI
 - `s_l::Matrix{Float64}`: lower 95% CI
 """
-function eeg_msci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
+function eeg_msci95(eeg::NeuroJ.EEG; n::Int64=3, method::Symbol=:normal)
 
     method in [:normal, :boot] || throw(ArgumentError("method must be :normal or :boot."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
@@ -1272,15 +1267,15 @@ function eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
     size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both EEG signals must have the same size."))
 
     epoch_n = eeg_epoch_n(eeg1)
-    e_len = eeg_epoch_len(eeg1)
+    epoch_len = eeg_epoch_len(eeg1)
     s_m = zeros(epoch_n, epoch_len)
     s_s = zeros(epoch_n, epoch_len)
     s_u = zeros(epoch_n, epoch_len)
     s_l = zeros(epoch_n, epoch_len)
 
     Threads.@threads for epoch_idx in 1:epoch_n
-        s1 = @view signal1[:, :, epoch_idx]
-        s2 = @view signal2[:, :, epoch_idx]
+        s1 = @view eeg1.eeg_signals[:, :, epoch_idx]
+        s2 = @view eeg1.eeg_signals[:, :, epoch_idx]
         s1_mean = mean(s1, dims=1)
         s2_mean = mean(s2, dims=1)
         s_m[epoch_idx, :] = s1_mean - s2_mean
@@ -1291,7 +1286,7 @@ function eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
         s_l[epoch_idx, :] = @. s_m[epoch_idx, :] - 1.96 * s_s[epoch_idx, :]
     end
 
-    return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)
+    return (s_m=s_m, s_s=s_s, s_u=s_u, s_l=s_l)
 end
 
 """
@@ -1311,8 +1306,8 @@ Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
 # Returns
 
 Named tuple containing:
-- `statistic::Matrix{Float64}`
-- `statistic_single::Vector{Float64}`
+- `s_stat::Matrix{Float64}`
+- `s_stat_single::Vector{Float64}`
 - `p::Vector{Float64}`
 """
 function eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
@@ -1321,17 +1316,17 @@ function eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int
     method in [:absdiff, :diff2int] || throw(ArgumentError("method must be :absdiff or :diff2int."))
 
     epoch_n = eeg_epoch_n(eeg1)
-    s_statistic = zeros(epoch_n, size(signal1, 1) * n)
-    s_statistic_single = zeros(epoch_n)
+    s_stat = zeros(epoch_n, size(signal1, 1) * n)
+    s_stat_single = zeros(epoch_n)
     p = zeros(epoch_n)
 
     Threads.@threads for epoch_idx in 1:epoch_n
-        s1 = @view signal1[:, :, epoch_idx]
-        s2 = @view signal2[:, :, epoch_idx]
-        s_statistic[epoch_idx, :], s_statistic_single[epoch_idx], p[epoch_idx] = s2_difference(s1, s2)
+        s1 = @view eeg1.eeg_signals[:, :, epoch_idx]
+        s2 = @view eeg2.eeg_signals[:, :, epoch_idx]
+        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = s2_difference(s1, s2)
     end
 
-    return (statistic=s_statistic, statsitic_single=s_statistic_single, p=p)
+    return (s_stat=s_stat, statsitic_single=s_stat_single, p=p)
 end
 
 """

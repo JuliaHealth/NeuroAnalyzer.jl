@@ -973,8 +973,9 @@ Calculate mean difference and 95% confidence interval for 2 signals.
 
 # Returns
 
-- `s_statistic::Vector{Float64}`
-- `s_statistic_single::Float64`
+Named tuple containing:
+- `s_stat::Vector{Float64}`
+- `s_stat_single::Float64`
 - `p::Float64`
 """
 function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
@@ -988,15 +989,15 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
     if method === :absdiff
         # statistic: maximum difference
         s_diff = s1_mean - s2_mean
-        s_statistic_single = maximum(abs.(s_diff))
+        s_stat_single = maximum(abs.(s_diff))
     else
         # statistic: integrated area of the squared difference
         s_diff_squared = (s1_mean - s2_mean).^2
-        s_statistic_single = simpson(s_diff_squared)
+        s_stat_single = simpson(s_diff_squared)
     end
 
     signals = [signal1; signal2]
-    s_statistic = zeros(size(signal1, 1) * n)
+    s_stat = zeros(size(signal1, 1) * n)
 
     Threads.@threads for idx1 in 1:(size(signal1, 1) * n)
         s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
@@ -1017,18 +1018,18 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
         if method === :absdiff
             # statistic: maximum difference
             s_diff = s1_mean - s2_mean
-            s_statistic[idx1] = maximum(abs.(s_diff))
+            s_stat[idx1] = maximum(abs.(s_diff))
         else
             # statistic: integrated area of the squared difference
             s_diff_squared = (s1_mean - s2_mean).^2
-            s_statistic[idx1] = simpson(s_diff_squared)
+            s_stat[idx1] = simpson(s_diff_squared)
         end
     end
 
-    p = length(s_statistic[s_statistic .> s_statistic_single]) / size(signal1, 1) * n
+    p = length(s_stat[s_stat .> s_stat_single]) / size(signal1, 1) * n
     p > 1 && (p = 1.0)
 
-    return s_statistic, s_statistic_single, p
+    return (s_stat=s_stat, s_stat_single=s_stat_single, p=p)
 end
 
 """
