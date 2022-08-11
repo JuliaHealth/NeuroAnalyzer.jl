@@ -404,7 +404,7 @@ plot(lags, cc[1, :])
 
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
 edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=12)
-cc, lags = eeg_xcov(edf1, edf2, channel1=1, channel2=1, epoch1=1, epoch2=2, lag=20, demean=true, norm=true)
+cc, lags = eeg_xcov(edf1, edf2, channel1=1, channel2=1, epoch1=1, epoch2=1, lag=20, demean=true, norm=true)
 plot(lags, cc[1, :])
 ```
 
@@ -898,6 +898,6 @@ end
 @time eeg_benchmark(1);
 
 # workstation:  3.446309 seconds (8.46 M allocations: 24.189 GiB, 14.77% gc time)
-# laptop:       4.610091 seconds (8.32 M allocations: 24.176 GiB, 8.22% gc time)
+# laptop:       3.123244 seconds (5.52 M allocations: 14.993 GiB, 5.78% gc time)
 
 ```

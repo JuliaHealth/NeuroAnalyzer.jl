@@ -156,28 +156,32 @@ function eeg_xcov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    lags = collect(-lag:lag)
+
+    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
     ccov = zeros(channel_n^2, length(lags), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         ccov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
         Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+            for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
-                ccov_packed[channel_idx1, channel_idx2], lags = s_xcov(s1,
-                                                                       s2,
-                                                                       lag=lag,
-                                                                       demean=demean,
-                                                                       norm=norm)
+                ccov_packed[channel_idx1, channel_idx2], _ = s_xcov(s1,
+                                                                    s2,
+                                                                    lag=lag,
+                                                                    demean=demean,
+                                                                    norm=norm)
             end
         end
-        for channel_idx in 1:channel_n^2
-            ccov[channel_idx, :, epoch_idx] = ccov_packed[channel_idx]
+        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):channel_n
+                ccov_packed[channel_idx1, channel_idx2] = @views ccov_packed[channel_idx2, channel_idx1]
+            end
+        end
+        Threads.@threads for channel_idx in 1:channel_n^2
+            ccov[channel_idx, :, epoch_idx] = @views ccov_packed[channel_idx]
         end
     end
-
-    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
 
     return (ccov=ccov, ccov_lags=lags)
 end
@@ -202,7 +206,7 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 # Returns
 
 Named tuple containing:
-- `ccov::Matrix{Float64}`
+- `ccov::Array{Float64, 3}`
 - `lags::Vector{Float64}`
 """
 function eeg_xcov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, lag::Int64=1, demean::Bool=false, norm::Bool=false)
@@ -232,10 +236,10 @@ function eeg_xcov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vec
             s1 = @view eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]]
             s2 = @view eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]]
             ccov[channel_idx, :, epoch_idx], _ = s_xcov(s1,
-                                                s2,
-                                                lag=lag,
-                                                demean=demean,
-                                                norm=norm)
+                                                        s2,
+                                                        lag=lag,
+                                                        demean=demean,
+                                                        norm=norm)
         end
     end
 
@@ -406,13 +410,19 @@ function eeg_mi(eeg::NeuroJ.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+            for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
                 mi[channel_idx1, channel_idx2, epoch_idx] = s2_mi(s1, s2)
             end
         end
+        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):channel_n
+                mi[channel_idx1, channel_idx2, epoch_idx] = @views mi[channel_idx2, channel_idx1, epoch_idx]
+            end
+        end
     end
+
     return mi
 end
 
@@ -2233,11 +2243,16 @@ function eeg_pli(eeg::NeuroJ.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+            for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
                 pli, _, _, _, _ = s_pli(s1, s2)
                 pli_m[channel_idx1, channel_idx2, epoch_idx] = round(pli, digits=4)
+            end
+        end
+        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):channel_n
+                pli_m[channel_idx1, channel_idx2, epoch_idx] = @views pli_m[channel_idx2, channel_idx1, epoch_idx]
             end
         end
     end
@@ -2268,12 +2283,17 @@ function eeg_ispc(eeg::NeuroJ.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+            for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
                 ispc, _, _, _, _, _ = s_ispc(s1, s2)
                 # idx1 == idx2 && (ispc = 0)
                 ispc_m[channel_idx1, channel_idx2, epoch_idx] = round(ispc, digits=4)
+            end
+        end
+        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):channel_n
+                ispc_m[channel_idx1, channel_idx2, epoch_idx] = @views ispc_m[channel_idx2, channel_idx1, epoch_idx]
             end
         end
     end
@@ -2677,14 +2697,20 @@ function eeg_vartest(eeg::NeuroJ.EEG)
     f = zeros(channel_n, channel_n, epoch_n)
     p = zeros(channel_n, channel_n, epoch_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
-       @inbounds @simd for channel_idx1 in 1:channel_n
-           for channel_idx2 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
+       Threads.@threads for channel_idx1 in 1:channel_n
+           for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
                 ftest = VarianceFTest(s1, s2)
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
+            end
+        end
+        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):channel_n
+                f[channel_idx1, channel_idx2, epoch_idx] = @views f[channel_idx2, channel_idx1, epoch_idx]
+                p[channel_idx1, channel_idx2, epoch_idx] = @views p[channel_idx2, channel_idx1, epoch_idx]
             end
         end
     end
@@ -2934,10 +2960,20 @@ function eeg_cps(eeg::NeuroJ.EEG; norm::Bool=true)
     cps_ph = zeros(channel_n, channel_n, length(cps_ph_tmp), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
-           for channel_idx2 in 1:channel_n
+           for channel_idx2 in 1:channel_idx1
                 s1 = @view eeg.eeg_signals[channel_idx1, :, epoch_idx]
                 s2 = @view eeg.eeg_signals[channel_idx2, :, epoch_idx]
                 cps_pw[channel_idx1, channel_idx2, :, epoch_idx], cps_ph[channel_idx1, channel_idx2, :, epoch_idx], _ = s_cps(s1, s2, fs=fs, norm=norm)
+            end
+        end
+    end
+    @inbounds @simd for time_idx in 1:size(cps_pw, 3)
+        Threads.@threads for epoch_idx in 1:epoch_n
+            for channel_idx1 in 1:(channel_n - 1)
+                for channel_idx2 in (channel_idx1 + 1):channel_n
+                    cps_pw[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_pw[channel_idx2, channel_idx1, time_idx, epoch_idx]
+                    cps_ph[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_ph[channel_idx2, channel_idx1, time_idx, epoch_idx]
+                end
             end
         end
     end
