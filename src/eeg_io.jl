@@ -239,7 +239,7 @@ Load electrode positions from CED file.
 function eeg_import_ced(file_name::String)
 
     sensors = CSV.read(file_name, delim="\t", DataFrame)
-    
+
     return sensors
 end
 
@@ -350,9 +350,14 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
         loc_theta = sensors[:, :theta]
         loc_radius = sensors[:, :radius]
+
         loc_radius_sph = sensors[:, :sph_radius]
         loc_theta_sph = sensors[:, :sph_theta]
         loc_phi_sph = sensors[:, :sph_phi]
+
+        loc_x = sensors[:, :X]
+        loc_y = sensors[:, :Y]
+        loc_z = sensors[:, :Z]
     end
 
     if splitext(file_name)[2] == ".elc"
@@ -362,7 +367,7 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
         
         loc_x = sensors[:, :x]
         loc_y = sensors[:, :y]
-        loc_z = sensors[:, :y]
+        loc_z = sensors[:, :z]
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -376,7 +381,7 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in $file_name."))
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in 1:length(e_labels)
@@ -391,8 +396,8 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
     length(loc_theta) > 0 && (eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx])
     length(loc_radius) > 0 && (eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx])
     length(loc_x) > 0 && (eeg_new.eeg_header[:loc_x] = loc_x[labels_idx])
-    length(loc_y) > 0 && (eeg_new.eeg_header[:loc_x] = loc_y[labels_idx])
-    length(loc_z) > 0 && (eeg_new.eeg_header[:loc_y] = loc_z[labels_idx])
+    length(loc_y) > 0 && (eeg_new.eeg_header[:loc_y] = loc_y[labels_idx])
+    length(loc_z) > 0 && (eeg_new.eeg_header[:loc_z] = loc_z[labels_idx])
     length(loc_radius_sph) > 0 && (eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
     length(loc_theta_sph) > 0 && (eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
     length(loc_phi_sph) > 0 && (eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
@@ -437,6 +442,9 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
         loc_theta = sensors[:, :theta]
         loc_radius = sensors[:, :radius]
+        loc_x = sensors[:, :X]
+        loc_y = sensors[:, :Y]
+        loc_z = sensors[:, :Z]
         loc_radius_sph = sensors[:, :sph_radius]
         loc_theta_sph = sensors[:, :sph_theta]
         loc_phi_sph = sensors[:, :sph_phi]
@@ -449,7 +457,7 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
         
         loc_x = sensors[:, :x]
         loc_y = sensors[:, :y]
-        loc_z = sensors[:, :y]
+        loc_z = sensors[:, :z]
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -477,8 +485,8 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     length(loc_theta) > 0 && (eeg.eeg_header[:loc_theta] = loc_theta[labels_idx])
     length(loc_radius) > 0 && (eeg.eeg_header[:loc_radius] = loc_radius[labels_idx])
     length(loc_x) > 0 && (eeg.eeg_header[:loc_x] = loc_x[labels_idx])
-    length(loc_y) > 0 && (eeg.eeg_header[:loc_x] = loc_y[labels_idx])
-    length(loc_z) > 0 && (eeg.eeg_header[:loc_y] = loc_z[labels_idx])
+    length(loc_y) > 0 && (eeg.eeg_header[:loc_y] = loc_y[labels_idx])
+    length(loc_z) > 0 && (eeg.eeg_header[:loc_z] = loc_z[labels_idx])
     length(loc_radius_sph) > 0 && (eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
     length(loc_theta_sph) > 0 && (eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
     length(loc_phi_sph) > 0 && (eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])

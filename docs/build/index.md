@@ -2638,7 +2638,7 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 
 Named tuple containing:
 
-  * `ccov::Matrix{Float64}`
+  * `ccov::Array{Float64, 3}`
   * `lags::Vector{Float64}`
 
 <a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
@@ -3052,10 +3052,6 @@ Calculate SNR of `eeg` channels.
 
   * `snr::Matrix(Float64)`: SNR for each channel per epoch
 
-**Source**
-
-D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
-
 <a id='NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_standardize`** &mdash; *Method*.
 
@@ -3074,7 +3070,7 @@ Standardize `eeg` channels for ML.
 **Returns**
 
   * `eeg_new::NeuroJ.EEG`: standardized EEG
-  * `scaler::Matrix{Float64}`: standardized EEG
+  * `scaler::Matrix{Float64}`: standardizing matrix
 
 <a id='NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_standardize!`** &mdash; *Method*.
@@ -3093,7 +3089,7 @@ Standardize `eeg` channels for ML.
 
 **Returns**
 
-  * `scaler::Matrix{Float64}`: standardized EEG
+  * `scaler::Matrix{Float64}`: standardizing matrix
 
 <a id='NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_fconv`** &mdash; *Method*.
@@ -3142,7 +3138,7 @@ Perform convolution in the time domain.
 
 
 ```julia
-eeg_make_spectrum(eeg)
+eeg_dft(eeg)
 ```
 
 Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
@@ -3155,10 +3151,10 @@ Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 
 Named tuple containing:
 
-  * `fft::Array{ComplexF64, 3}`: FFT
+  * `sfft::Array{ComplexF64, 3}`: FFT
   * `sf::Array{Float64, 3}`: sample frequencies
 
-<a id='NeuroJ.eeg_msci95-Tuple{Array{Float64, 3}}' href='#NeuroJ.eeg_msci95-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_msci95`** &mdash; *Method*.
 
 
@@ -3234,8 +3230,8 @@ Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
 
 Named tuple containing:
 
-  * `statistic::Matrix{Float64}`
-  * `statistic_single::Vector{Float64}`
+  * `s_stat::Matrix{Float64}`
+  * `s_stat_single::Vector{Float64}`
   * `p::Vector{Float64}`
 
 <a id='NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}'>#</a>
@@ -3566,21 +3562,22 @@ Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
 
 **Returns**
 
 Named tuple containing:
 
-  * `pli::Float64`: PLI value
-  * `signal_diff::Vector{Float64}`: signal difference (signal2 - signal1)
-  * `phase_diff::Vector{Float64}`: phase difference (signal2 - signal1)
-  * `s1_phase::Vector{Float64}`: signal 1 phase
-  * `s2_phase::Vector{Float64}`: signal 2 phase
+  * `pli::Array{Float64, 2}`: PLI value
+  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
+  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
+  * `s1_phase::Array{Float64, 3}`: signal 1 phase
+  * `s2_phase::Array{Float64, 3}`: signal 2 phase
 
 <a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_pli`** &mdash; *Method*.
@@ -3974,7 +3971,7 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 eeg_cps(eeg; norm)
 ```
 
-Calculate cross power spectrum between `eeg` channels.
+Calculate cross power spectrum between all channels of `eeg`.
 
 **Arguments**
 
@@ -5705,8 +5702,8 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
   * `eeg1:NeuroJ.EEG`
   * `eeg2:NeuroJ.EEG`
-  * `channel1::Int64`: epoch to plot
-  * `channel2::Int64`: epoch to plot
+  * `channel1::Int64`: channel to plot
+  * `channel2::Int64`: channel to plot
   * `epoch1::Int64`: epoch to plot
   * `epoch2::Int64`: epoch to plot
   * `mono::Bool=false`: use color or grey palette
@@ -5756,8 +5753,8 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
   * `eeg1:NeuroJ.EEG`
   * `eeg2:NeuroJ.EEG`
-  * `channel1::Int64`: epoch to plot
-  * `channel2::Int64`: epoch to plot
+  * `channel1::Int64`: channel to plot
+  * `channel2::Int64`: channel to plot
   * `epoch1::Int64`: epoch to plot
   * `epoch2::Int64`: epoch to plot
   * `mono::Bool=false`: use color or grey palette
@@ -6002,6 +5999,30 @@ Plot `eeg` electrodes.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_electrodes3d`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_electrodes3d(eeg; <keyword arguments>)
+```
+
+Plot `eeg` electrodes.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted, default is all channels
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=false`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+
+**Returns**
+
+  * `f::GLMakie.Figure`
+
 
 <a id='Low-level-functions'></a>
 
@@ -6133,7 +6154,7 @@ Convert cartographic coordinates `x` and `y` to polar.
 
 **Returns**
 
-  * `phi::Float64`
+  * `radius::Float64`
   * `theta::Float64`
 
 <a id='NeuroJ.pol2cart-Tuple{Real, Real}' href='#NeuroJ.pol2cart-Tuple{Real, Real}'>#</a>
@@ -6142,14 +6163,14 @@ Convert cartographic coordinates `x` and `y` to polar.
 
 
 ```julia
-pol2cart(theta, phi)
+pol2cart(radius, theta)
 ```
 
-Convert polar coordinates `theta` and `phi` to cartographic.
+Convert polar coordinates `radius` and `theta` to cartographic.
 
 **Arguments**
 
-  * `phi::Real`
+  * `radius::Real`
   * `theta::Real`
 
 **Returns**
@@ -6163,16 +6184,16 @@ Convert polar coordinates `theta` and `phi` to cartographic.
 
 
 ```julia
-pol2cart_sph(rho, theta, phi=0)
+sph2cart(radius, theta, phi=0)
 ```
 
-Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
+Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 
 **Arguments**
 
+  * `radius::Real`: the distance from the origin to the point
   * `phi::Real`: the angle with respect to the z-axis (elevation)
   * `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
-  * `rho::Real`: the distance from the origin to the point
 
 **Returns**
 
@@ -6790,8 +6811,10 @@ Calculate mean difference and 95% confidence interval for 2 signals.
 
 **Returns**
 
-  * `s_statistic::Vector{Float64}`
-  * `s_statistic_single::Float64`
+Named tuple containing:
+
+  * `s_stat::Vector{Float64}`
+  * `s_stat_single::Float64`
   * `p::Float64`
 
 <a id='NeuroJ.s_acov-Tuple{AbstractArray}' href='#NeuroJ.s_acov-Tuple{AbstractArray}'>#</a>

@@ -133,7 +133,7 @@ Convert cartographic coordinates `x` and `y` to polar.
 
 # Returns
 
-- `phi::Float64`
+- `radius::Float64`
 - `theta::Float64`
 """
 function cart2pol(x::Real, y::Real)
@@ -142,13 +142,13 @@ function cart2pol(x::Real, y::Real)
 end
 
 """
-    pol2cart(theta, phi)
+    pol2cart(radius, theta)
 
-Convert polar coordinates `theta` and `phi` to cartographic.
+Convert polar coordinates `radius` and `theta` to cartographic.
 
 # Arguments
 
-- `phi::Real`
+- `radius::Real`
 - `theta::Real`
 
 # Returns
@@ -156,21 +156,23 @@ Convert polar coordinates `theta` and `phi` to cartographic.
 - `x::Float64`
 - `y::Float64`
 """
-function pol2cart(theta::Real, phi::Real)
+function pol2cart(radius::Real, theta::Real)
+    
+    theta = deg2rad.(theta)
 
-    return phi * cos(theta), phi * sin(theta)
+    return radius * cos(theta), radius * sin(theta)
 end
 
 """
-    pol2cart_sph(rho, theta, phi=0)
+    sph2cart(radius, theta, phi=0)
 
-Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
+Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 
 # Arguments
 
+- `radius::Real`: the distance from the origin to the point
 - `phi::Real`: the angle with respect to the z-axis (elevation)
 - `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
-- `rho::Real`: the distance from the origin to the point
 
 # Returns
 
@@ -178,9 +180,12 @@ Convert spherical coordinates `theta` and `phi` and `rho` to cartographic.
 - `y::Float64`
 - `z::Float64`
 """
-function sph2cart(rho::Real, theta::Real, phi::Real=0)
+function sph2cart(radius::Real, theta::Real, phi::Real=0)
+    
+    theta = deg2rad.(theta)
+    phi = deg2rad.(phi)
 
-    return rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta), rho * sin(phi)
+    return radius * sin(theta) * cos(phi), radius * sin(theta) * sin(phi), radius * cos(theta)
 end
 
 """
@@ -3419,7 +3424,7 @@ function s_dfa(signal::Array{<:Real, 3}; fs::Int64)
     epoch_rms = log.(epoch_rms)
     scatter(scale_order, epoch_rms)
     atilde = pinv(log.(scale_order)) * log.(epoch_rms)
-    plot!(atilde .* log.(scale_order))
+    Plots.plot!(atilde .* log.(scale_order))
 
     return signal_cs
 end

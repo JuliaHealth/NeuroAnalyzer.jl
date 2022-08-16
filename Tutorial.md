@@ -49,6 +49,13 @@ eeg_plot_save(p, file_name="images/edf_electrodes.png")
 
 ![edf electrodes](images/edf_electrodes.png)
 
+Preview electrodes in 3D:
+```julia
+p = eeg_plot_electrodes3d(edf, selected=1:19)
+eeg_plot_save(p, file_name="images/edf_electrodes3d.png")
+```
+![edf electrodes 3d](images/edf_electrodes3d.png)
+
 If necessary, swap axes:
 ```julia
 eeg_loc_swap_axes!(edf)

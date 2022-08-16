@@ -183,7 +183,7 @@ eeg_standardize!(eeg::NeuroJ.EEG)
 eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
 eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 eeg_dft(eeg::NeuroJ.EEG)
-eeg_msci95(signal::Array{Float64, 3}; n::Int64=3, method::Symbol=:normal)
+eeg_msci95(eeg::NeuroJ.EEG; n::Int64=3, method::Symbol=:normal)
 eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
 eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; n::Int64=3, method::Symbol=:absdiff)
 eeg_acov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
@@ -290,6 +290,7 @@ plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false
 eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, type::Symbol=:w, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, kwargs...)
 eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
+eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=false, mono::Bool=false)
 ```
 
 ## Low level functions

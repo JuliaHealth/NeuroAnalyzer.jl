@@ -93,21 +93,21 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_
     x, y = Plots.unzip(pts)
     x = x .* 4
     y = y .* 4
-    head = Shape(x, y)
-    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
-    p = plot!(p, head, fill=nothing, label="")
-    p = plot!(nose, fill=nothing, label="")
-    p = plot!(ear_l, fill=nothing, label="")
-    p = plot!(ear_r, fill=nothing, label="")
+    head = Plots.Shape(x, y)
+    nose = Plots.Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
+    ear_l = Plots.Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
+    ear_r = Plots.Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
+    p = Plots.plot!(p, head, fill=nothing, label="")
+    p = Plots.plot!(nose, fill=nothing, label="")
+    p = Plots.plot!(ear_l, fill=nothing, label="")
+    p = Plots.plot!(ear_r, fill=nothing, label="")
     if head_labels == true
-        p = plot!(annotation=(0, 1 - maximum(y) / 5, Plots.text("Inion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(0, -1 - minimum(y) / 5, Plots.text("Nasion", pointsize=12, halign=:center, valign=:center)))
-        p = plot!(annotation=(-1 - minimum(x) / 5, 0, Plots.text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
-        p = plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
+        p = Plots.plot!(annotation=(0, 1 - maximum(y) / 5, Plots.text("Inion", pointsize=12, halign=:center, valign=:center)))
+        p = Plots.plot!(annotation=(0, -1 - minimum(y) / 5, Plots.text("Nasion", pointsize=12, halign=:center, valign=:center)))
+        p = Plots.plot!(annotation=(-1 - minimum(x) / 5, 0, Plots.text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
+        p = Plots.plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
-    p = plot!(; kwargs...)
+    p = Plots.plot!(; kwargs...)
     return p
 end
 

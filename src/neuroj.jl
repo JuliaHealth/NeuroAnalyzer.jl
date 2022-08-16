@@ -27,6 +27,7 @@ function neuroj_version()
                          "FindPeaks1D",
                          "Git",
                          "GLM",
+                         "GLMakie",
                          "HypothesisTests",
                          "InformationMeasures",
                          "Interpolations",

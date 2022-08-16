@@ -12,6 +12,7 @@ using FFTW
 using FindPeaks1D
 using Git
 using GLM
+using GLMakie
 using HypothesisTests
 using InformationMeasures
 using Interpolations
@@ -434,6 +435,7 @@ export plot_psd_3ds
 export eeg_plot_signal_psd_3d
 export plot_rel_psd
 export eeg_plot_electrode
+export eeg_plot_electrodes3d
 
 include("nstim.jl")
 export tes_dose
