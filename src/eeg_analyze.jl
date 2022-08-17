@@ -1392,7 +1392,7 @@ function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     t_env = similar(eeg.eeg_signals)
-    s_t = eeg.eeg_epochs_time[:, 1]
+    s_t = eeg.eeg_epochs_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
@@ -2534,7 +2534,7 @@ function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_li
     end
 
     w_frq = round.(w_frq, digits=2)
-    w_t = eeg.eeg_epochs_time[:, 1]
+    w_t = eeg.eeg_epochs_time
 
     return (w_pow=w_pow, w_frq=w_frq, w_t=w_t)
 end

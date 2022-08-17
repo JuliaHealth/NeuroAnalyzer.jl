@@ -154,10 +154,11 @@ The lists below are not in any particular order.
 General:
 - further performance optimizations
 - Pluto interface
+- cleanup electrode locs  (use x, y and xsph, ysph, zsph only)
 
 EEG:
 - analysis, plots: brain topography
-- analysis, plots: conectomes graph
+- analysis, plots: connectome graph
 - analysis, plots: PSD plot line slope over frequencies (adjusted power)
 - analysis: add s_hspectrum() and s_wspectrum() for PSD plots
 - analysis: amplitude turbulence
@@ -195,13 +196,15 @@ EEG:
 - edit: insert channel
 - edit: merge EEG objects
 - edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
+- edit: modify channel locs
+- edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
 - io: export channel locs to .CED
 - io: import from CSV
 - io: import from EDF+, BDF and other formats
 - io: more channel location formats
 - misc: reports in .md format
 - misc: update tutorial.md
-- plots: 3d headplots
+- plots: 3d head/brain plots
 - plots: add user-defined voltage scale for eeg signal plots
 - plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
 - plots: coherence spectrum (y: relative amplitude, x: frequencies)
@@ -209,9 +212,9 @@ EEG:
 - plots: eeg_plot() meta function
 - plots: ITPC topoplot
 - plots: plot two EEG one over another for comparison
-- plots: preview 2d/3d channel locs
-- plots: PSD of multi channels signal like eeg_plot_signal(), u sing normalized power (a.u.)
+- plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plots: small plots (amplitude, PSD, spectrogram) at electrode locations
+- plots: topoplot of amplitude differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
 - process: custom reference (e.g. bipolar longitudinal/horizontal)
@@ -221,9 +224,9 @@ EEG:
 - trial: multi-trial data
 
 - ERPs
-- AMD ROCm acceleration
-- visual / auditory stimuli presentation module
+- visual / auditory stimuli presentation module (via Raspberry Pi)
 - use eyetracker data to detect ocular artifacts
+- AMD ROCm acceleration
 - IEEG/ECoG/MEG
 
 NIRS

@@ -1,35 +1,3 @@
-function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
-
-    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
-    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
-    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
-    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
-
-    channel_n, _ = size(signal)
-
-    if epoch_n === nothing
-        epoch_n = size(signal, 2) ÷ epoch_len
-    else
-        epoch_len = size(signal, 2) ÷ epoch_n
-    end
-
-    epochs = zeros(channel_n, epoch_len, epoch_n)
-
-    idx1 = 1
-    for idx2 in 1:epoch_len:(epoch_n * epoch_len - 1)
-        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1), 1]
-        idx1 += 1
-    end
-
-    if average == true
-        epochs = mean(epochs, dims=3)[:, :]
-    end
-
-    return epochs
-end
-
-################################
-
 """
     eeg_add_component(eeg; c, v)
 
@@ -972,9 +940,9 @@ function eeg_epochs(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epo
 
     # update epochs time
     fs = eeg_sr(eeg_new)
-    ts = eeg.eeg_epochs_time[1, 1]
+    ts = eeg.eeg_epochs_time[1]
     new_epochs_time = linspace(ts, ts + (epoch_duration_samples / fs), epoch_duration_samples)
-    eeg_new.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
+    eeg_new.eeg_epochs_time = new_epochs_time
 
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
@@ -1026,9 +994,9 @@ function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, ep
 
     # update epochs time
     fs = eeg_sr(eeg)
-    ts = eeg.eeg_epochs_time[1, 1]
+    ts = eeg.eeg_epochs_time[1]
     new_epochs_time = linspace(ts, ts + (epoch_duration_samples / fs), epoch_duration_samples)
-    eeg.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
+    eeg.eeg_epochs_time = new_epochs_time
 
     eeg.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
@@ -1065,7 +1033,7 @@ function eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
     s_new = reshape(eeg.eeg_signals[:, :, epoch], eeg_channel_n(eeg), eeg_signal_len(eeg), 1)
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_new
-    eeg_new.eeg_epochs_time = repeat(eeg.eeg_epochs_time[:, epoch], 1, 1)
+    eeg_new.eeg_epochs_time = eeg.eeg_epochs_time
     eeg_new.eeg_header[:epoch_n] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
@@ -1114,7 +1082,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_signals = s_trimmed
         eeg_new.eeg_time = t_trimmed
-        eeg_new.eeg_epochs_time = hcat(t_trimmed)
+        eeg_new.eeg_epochs_time = t_trimmed
         eeg_new.eeg_header[:eeg_duration_samples] -= len
         eeg_new.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
         eeg_new.eeg_header[:epoch_duration_samples] -= len
@@ -1176,7 +1144,7 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg.eeg_signals = s_trimmed
         eeg.eeg_time = t_trimmed
-        eeg.eeg_epochs_time = hcat(t_trimmed)
+        eeg.eeg_epochs_time = t_trimmed
         eeg.eeg_header[:eeg_duration_samples] -= len
         eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
         eeg.eeg_header[:epoch_duration_samples] -= len
@@ -1306,7 +1274,7 @@ function eeg_delete_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Ab
 
     # remove epoch
     eeg_new.eeg_signals = eeg_new.eeg_signals[:, :, setdiff(1:end, (epoch))]
-    eeg_new.eeg_epochs_time = eeg_new.eeg_epochs_time[:, setdiff(1:end, (epoch))]
+
     # update headers
     eeg_new.eeg_header[:epoch_n] -= length(epoch)
     epoch_n = eeg_new.eeg_header[:epoch_n]
@@ -1349,7 +1317,6 @@ function eeg_delete_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, A
 
     # remove epoch
     eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch))]
-    eeg.eeg_epochs_time = eeg.eeg_epochs_time[:, setdiff(1:end, (epoch))]
 
     # update headers
     eeg.eeg_header[:epoch_n] -= length(epoch)
@@ -1401,7 +1368,6 @@ function eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abst
 
     # remove epoch
     eeg_new.eeg_signals = eeg_new.eeg_signals[:, :, setdiff(1:end, (epoch_to_remove))]
-    eeg_new.eeg_epochs_time = eeg_new.eeg_epochs_time[:, setdiff(1:end, (epoch))]
 
     # update headers
     eeg_new.eeg_header[:epoch_n] = eeg_new.eeg_header[:epoch_n] - length(epoch_to_remove)
@@ -1447,7 +1413,6 @@ function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, Abs
 
     # remove epoch
     eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch_to_remove))]
-    eeg.eeg_epochs_time = eeg.eeg_epochs_time[:, setdiff(1:end, (epoch))]
 
     # update headers
     eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch_to_remove)
@@ -1731,7 +1696,7 @@ function eeg_epochs_time(eeg::NeuroJ.EEG; ts::Real)
     fs = eeg_sr(eeg)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
+    eeg_new.eeg_epochs_time = new_epochs_time
     push!(eeg_new.eeg_header[:history], "eeg_epochs_time(EEG, ts=$ts)")
 
     return eeg_new
@@ -1757,7 +1722,7 @@ function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Real)
     epoch_len = eeg_epoch_len(eeg)
     fs = eeg_sr(eeg)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
-    eeg.eeg_epochs_time = repeat(new_epochs_time, 1, epoch_n)
+    eeg.eeg_epochs_time = new_epochs_time
     push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
 
     nothing

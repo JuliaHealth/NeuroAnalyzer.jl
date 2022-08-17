@@ -221,3 +221,31 @@ function _fir_response(f::Vector{Float64}, w=range(0, stop=π, length=1024))
     end
     return h
 end
+
+function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+
+    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
+    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
+    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
+    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
+
+    channel_n, _ = size(signal)
+
+    if epoch_n === nothing
+        epoch_n = size(signal, 2) ÷ epoch_len
+    else
+        epoch_len = size(signal, 2) ÷ epoch_n
+    end
+
+    epochs = zeros(channel_n, epoch_len, epoch_n)
+
+    idx1 = 1
+    for idx2 in 1:epoch_len:(epoch_n * epoch_len - 1)
+        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1), 1]
+        idx1 += 1
+    end
+
+    average == true && (epochs = mean(epochs, dims=3)[:, :])
+
+    return epochs
+end

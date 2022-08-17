@@ -35,13 +35,13 @@ using Wavelets
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
-    eeg_epochs_time::Matrix{Float64}
+    eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
 end
 
-if VERSION < v"1.0.0"
-    @warn("This version of NeuroJ requires Julia 1.0 or above.")
+if VERSION < v"1.7.0"
+    @warn("This version of NeuroJ requires Julia 1.7.0 or above.")
 end
 
 include("neuroj.jl")

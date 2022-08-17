@@ -216,7 +216,7 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :note => "")
 
     eeg_components = Vector{Any}()
-    eeg_epochs_time = hcat(eeg_time)
+    eeg_epochs_time = eeg_time
 
     eeg = EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components)
 
