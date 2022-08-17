@@ -6892,7 +6892,7 @@ Plot `eeg` electrodes.
 
 - `f::GLMakie.Figure`
 """
-function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=false, mono::Bool=false)
+function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -6949,9 +6949,7 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
 
     f = Figure(; resolution=(plot_size, plot_size))
     ax = Axis3(f[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (y_lim, x_lim, z_lim))
-    # hidedecorations!(ax)
-    hidedecorations!(ax, grid=false)
-    hidespines!(ax)
+    hidedecorations!(ax, grid=true, ticks=true)
     if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             if mono != true
