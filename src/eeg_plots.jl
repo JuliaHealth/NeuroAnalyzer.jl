@@ -3774,7 +3774,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     _check_channels(eeg, channel)
 
     if small == true
-        plot_size = 200
+        plot_size = 250
         marker_size = 2
         labels = false
     else
@@ -4594,8 +4594,6 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
         p = Plots.plot!((loc_x[idx], loc_y[idx]),
                   color=idx,
                   seriestype=:scatter,
-                  xlims=x_lim,
-                  ylims=x_lim,
                   grid=true,
                   label="",
                   markersize=marker_size,
@@ -6124,10 +6122,9 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
         loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = extrema(loc_x) .* 1.8
-    y_lim = extrema(loc_y) .* 1.8
 
     p = Plots.plot(grid=true,
              framestyle=:none,
@@ -6143,8 +6140,6 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
               seriestype=:scatter,
               color=:black,
               alpha=0.2,
-              xlims=x_lim,
-              ylims=y_lim,
               grid=true,
               label="",
               markersize=4,
@@ -6709,25 +6704,29 @@ function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
     loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)[channel]
     loc_y = round.(loc_y, digits=2)[channel]
-    p = Plots.plot((loc_x, loc_y),
-             seriestype=:scatter,
-             grid=true,
-             framestyle=:none,
-             size=(200, 200),
-             border=:none,
-             aspect_ratio=1,
-             margins=-200Plots.px,
-             titlefontsize=8,
-             color=:black,
-             fillcolor=:black,
-             label="",
-             markersize=2,
-             markerstrokewidth=0,
-             markerstrokealpha=0;
-             kwargs...)
+    
+    plot_size = 250
+    marker_size = 2
+    
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   size=(plot_size, plot_size),
+                   border=:none,
+                   aspect_ratio=1,
+                   margins=-plot_size * Plots.px,
+                   titlefontsize=8;
+                   kwargs...)
+    p = Plots.plot!((loc_x, loc_y),
+              color=:black,
+              seriestype=:scatter,
+              label="",
+              markersize=marker_size,
+              markerstrokewidth=0,
+              markerstrokealpha=0;
+              kwargs...)
+
     hd = _draw_head(p, head_labels=false)
     p = Plots.plot!(hd)
-    Plots.plot(p)
 
     return p
 end

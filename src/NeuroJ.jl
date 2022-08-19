@@ -44,6 +44,8 @@ if VERSION < v"1.7.0"
     @warn("This version of NeuroJ requires Julia 1.7.0 or above.")
 end
 
+const neuroj_ver = v"0.22.8"
+
 include("neuroj.jl")
 export neuroj_plugins_reload
 export neuroj_plugins_list
@@ -53,7 +55,7 @@ export neuroj_plugins_update
 export neuroj_version
 neuroj_plugins_reload()
 
-include("low_level_internal.jl")
+include("internal.jl")
 
 include("low_level.jl")
 export linspace

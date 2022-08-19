@@ -43,7 +43,7 @@ eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 Load electrode positions (CED, LOCS and ELC formats are supported):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
+p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
@@ -70,7 +70,7 @@ eeg_loc_cart2sph!(edf)
 eeg_plot_electrodes3d(edf, selected=1:19)
 ```
 
-If necessary, flip or swap axes:
+If necessary, flip or swap axes (frontal channel should be at the top):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
@@ -89,6 +89,7 @@ p = eeg_plot_electrodes(edf, labels=true, selected=1)
 p = eeg_plot_electrodes(edf, labels=true)
 p = eeg_plot_electrodes3d(edf, selected=1)
 ```
+
 ![](images//edf_electrodes_xy.png)
 
 Save EEG object as HDF5-based file:
@@ -740,6 +741,14 @@ eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 ```
 
 ![edf topo :power](images/edf_alpha_topo.png)
+
+Plot weights:
+```julia
+w = (1:19) * 0.05
+p = eeg_plot_weights_topo(edf, weights=w, epoch=1)
+eeg_plot_save(p, file_name="images/edf_weights.png")
+```
+![](images/edf_weights.png)
 
 Plot covariance matrix:
 ```julia

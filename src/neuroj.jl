@@ -6,7 +6,7 @@ Show NeuroJ and imported packages versions.
 function neuroj_version()
     m = Pkg.Operations.Context().env.manifest
     println("    Julia version: $VERSION")
-    println("   NeuroJ version: $(m[findfirst(v->v.name=="NeuroJ", m)].version)")
+    println("   NeuroJ version: $neuroj_ver")
     if CUDA.functional()
         println("     CUDA version: $(CUDA.version())")
     else

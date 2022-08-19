@@ -70,7 +70,7 @@ p, w, m = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
 s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pc_m=m)
 @test s == ones(2, 10, 1)
-@test s_fconv(ones(10), kernel=[1.0, 2.0]) == [1.0000000000000004 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
+@test round.(s_fconv(ones(10), kernel=[1.0, 2.0])) == [1.00 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)
 @test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ic=i, ic_mw=m, ic_v=[1]) == zeros(2, 2, 1)

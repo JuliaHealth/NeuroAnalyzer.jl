@@ -2168,7 +2168,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     @inbounds @simd for epoch_idx in 1:epoch_n
         s = @view signal[:, :, epoch_idx]
         pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
-        size(pc_m, 2) < n_tmp && (n_tmp = size(pc_m, 2))
+        size(pc_m)[2] < n_tmp && (n_tmp = size(pc_m)[2])
     end
     n_tmp < n && @warn "Only $n_tmp PC components were generated."
     n = n_tmp
@@ -2187,7 +2187,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
         pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
-        v = principalvars(pc_m) ./ var(pc_m) * 100
+        v = MultivariateStats.principalvars(pc_m) ./ MultivariateStats.var(pc_m) * 100
 
         for idx in 1:n
             pc_var[idx, epoch_idx] = v[idx]

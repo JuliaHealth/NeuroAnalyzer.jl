@@ -43,19 +43,20 @@ julia
 Next, start Julia and do the following:
 ```Julia
 using Pkg
-Pkg.update()
 Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 Pkg.activate(".")
 Pkg.instantiate()
+Pkg.resolve()
+Pkg.update()
 # activate the package
 using NeuroJ
-# check if correctly installed
+# check if NeuroJ has been correctly installed
 neuroj_version()
 ```
 
 ## Requirements
 
-Julia version ≥ 1.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroJ.jl is only tested against it.
+Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroJ.jl is only tested against it.
 
 The following packages are required:
 - CSV
@@ -69,6 +70,7 @@ The following packages are required:
 - FindPeaks1D
 - Git
 - GLM
+- GLMakie
 - HypothesisTests
 - InformationMeasures
 - Interpolations
@@ -110,7 +112,7 @@ EEG object (headers + time + epochs time + EEG signal + (optional) components) i
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
-    eeg_epochs_time::Matrix{Float64}
+    eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
 end

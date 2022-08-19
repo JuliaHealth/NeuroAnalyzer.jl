@@ -625,16 +625,16 @@ Return the `channel` index / name.
 
 
 ```julia
-eeg_rename_channel(eeg; channel, new_name)
+eeg_rename_channel(eeg; channel, name)
 ```
 
-Renames the `eeg` `channel`.
+Rename the `eeg` `channel`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
   * `channel::Union{Int64, String}`
-  * `new_name::String`
+  * `name::String`
 
 **Returns**
 
@@ -646,16 +646,16 @@ Renames the `eeg` `channel`.
 
 
 ```julia
-eeg_rename_channel!(eeg; channel, new_name)
+eeg_rename_channel!(eeg; channel, name)
 ```
 
-Renames the `eeg` `channel`.
+Rename the `eeg` `channel`.
 
 **Arguments**
 
   * `eeg::NeuroJ.EEG`
   * `channel::Union{Int64, String}`
-  * `new_name::String`
+  * `name::String`
 
 <a id='NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_extract_channel`** &mdash; *Method*.
@@ -1418,16 +1418,92 @@ Interpolate `eeg` channel using planar interpolation.
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
-<a id='NeuroJ.eeg_loc_swap_axes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swap_axes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_swap_axes`** &mdash; *Method*.
+<a id='NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipy`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_swap_axes(eeg)
+eeg_loc_flipy(eeg; planar, spherical)
 ```
 
-Swap x and y axes of `eeg` channel locations.
+Flip `eeg` channel locations along y axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipy!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipy!(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along y axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipx`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipx(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along x axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipx!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipx!(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along x axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipz`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipz(eeg)
+```
+
+Flip `eeg` channel locations along z axis.
 
 **Arguments**
 
@@ -1437,16 +1513,245 @@ Swap x and y axes of `eeg` channel locations.
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_loc_swap_axes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swap_axes!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_swap_axes!`** &mdash; *Method*.
+<a id='NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipz!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_swap_axes!(eeg)
+eeg_loc_flipz!(eeg)
 ```
 
-Swap x and y axes of `eeg` channel locations.
+Flip `eeg` channel locations along z axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_type`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_type(eeg; channel, type)
+```
+
+Change the `eeg` `channel` type.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `type::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_type!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_type!(eeg; channel, new_name)
+```
+
+Change the `eeg` `channel` type.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `type::String`
+
+<a id='NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_electrode`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_electrode(eeg; <keyword arguments>)
+```
+
+Edit `eeg` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{String, Int64}`: channel number or name
+  * `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
+  * `theta::Union{Real, Nothing}`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}`: polar planar radius coordinate
+  * `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `name::String=""`: channel name
+  * `type::String=""`: channel type
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_electrode!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_electrode!(eeg; <keyword arguments>)
+```
+
+Edit `eeg` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{String, Int64}`: channel number or name
+  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `name::String=""`: channel name
+  * `type::String=""`: channel type
+
+<a id='NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_electrode_loc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_electrode_loc(eeg; channel)
+```
+
+Return locations of the `eeg` `channel` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+
+**Returns**
+
+Named tuple containing:
+
+  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+
+<a id='NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swapxy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swapxy(eeg; planar, spherical)
+```
+
+Swap `eeg` channel locations x and y axes.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swapxy!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swapxy!(eeg; planar, spherical)
+```
+
+Swap `eeg` channel locations x and y axes.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_sph2cart`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_sph2cart(eeg)
+```
+
+Convert `eeg` spherical locations to Cartesian.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_sph2cart!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_sph2cart!(eeg)
+```
+
+Convert `eeg` spherical locations to Cartesian.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_cart2sph`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_cart2sph(eeg)
+```
+
+Convert `eeg` Cartesian locations to spherical.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_cart2sph!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_cart2sph!(eeg)
+```
+
+Convert `eeg` Cartesian locations to spherical.
 
 **Arguments**
 
@@ -5143,7 +5448,7 @@ Plot `eeg` electrodes.
 
   * `eeg:EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted, default is all channels
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
   * `labels::Bool=true`: plot electrode labels
   * `head::Bool`=true: plot head
   * `head_labels::Bool=false`: plot head labels
@@ -5547,7 +5852,7 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 
 **Arguments**
 
-  * `p::Plots.Plot{Plots.GRBackend}`
+  * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
   * `file_name::String`
 
 <a id='NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}'>#</a>
@@ -5871,7 +6176,7 @@ Plot 3-d waterfall plot of `signal` channels power spectrum density.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel="Channel"`: y-axis label
+  * `ylabel::String="Channel"`: y-axis label
   * `zlabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -5937,7 +6242,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel="Channel"`: y-axis label
+  * `ylabel::String="Channel"`: y-axis label
   * `zlabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -6014,7 +6319,7 @@ Plot `eeg` electrodes.
 
   * `eeg:EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted, default is all channels
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
   * `labels::Bool=true`: plot electrode labels
   * `head_labels::Bool=false`: plot head labels
   * `mono::Bool=false`: use color or grey palette
@@ -6170,36 +6475,59 @@ Convert polar coordinates `radius` and `theta` to cartographic.
 
 **Arguments**
 
-  * `radius::Real`
-  * `theta::Real`
+  * `radius::Real`: polar radius, the distance from the origin to the point, in degrees
+  * `theta::Real`: polar angle
 
 **Returns**
 
   * `x::Float64`
   * `y::Float64`
 
-<a id='NeuroJ.sph2cart' href='#NeuroJ.sph2cart'>#</a>
-**`NeuroJ.sph2cart`** &mdash; *Function*.
+<a id='NeuroJ.sph2cart-Tuple{Real, Real, Real}' href='#NeuroJ.sph2cart-Tuple{Real, Real, Real}'>#</a>
+**`NeuroJ.sph2cart`** &mdash; *Method*.
 
 
 
 ```julia
-sph2cart(radius, theta, phi=0)
+sph2cart(radius, theta, phi)
 ```
 
 Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 
 **Arguments**
 
-  * `radius::Real`: the distance from the origin to the point
-  * `phi::Real`: the angle with respect to the z-axis (elevation)
-  * `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
+  * `radius::Real`: spherical radius, the distance from the origin to the point
+  * `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `phi::Real`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
 **Returns**
 
   * `x::Float64`
   * `y::Float64`
   * `z::Float64`
+
+<a id='NeuroJ.cart2sph-Tuple{Real, Real, Real}' href='#NeuroJ.cart2sph-Tuple{Real, Real, Real}'>#</a>
+**`NeuroJ.cart2sph`** &mdash; *Method*.
+
+
+
+```julia
+cart2sph(x, y, z)
+```
+
+Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+
+**Arguments**
+
+  * `x::Real`
+  * `y::Real`
+  * `z::Real`
+
+**Returns**
+
+  * `radius::Float64`: spherical radius, the distance from the origin to the point
+  * `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `phi::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
 <a id='NeuroJ.generate_window-Tuple{Symbol, Int64}' href='#NeuroJ.generate_window-Tuple{Symbol, Int64}'>#</a>
 **`NeuroJ.generate_window`** &mdash; *Method*.

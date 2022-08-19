@@ -75,6 +75,7 @@ p = eeg_plot_bands(edf, channel=1, type=:abs)
 
 p = eeg_plot_signal_topo(edf, offset=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 e10 = eeg_epochs(edf, epoch_len=10*256)
 _, a, pow, ph = eeg_spectrum(e10)
 p = eeg_plot_acomponent_topo(e10, c=ph, epoch=1)
@@ -82,6 +83,7 @@ p = eeg_plot_acomponent_topo(e10, c=ph, epoch=1)
 
 p = eeg_plot_weights_topo(edf, weights=rand(19), epoch=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 p = eeg_plot_mcomponent_topo(edf, c=rand(19, 1), epoch=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
@@ -99,6 +101,7 @@ p = eeg_plot_channels(edf, c=snr, epoch=1)
 e = eeg_epochs_stats(e10)
 p = eeg_plot_epochs(e10, c=e[4])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_epochs(e10, c=:epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}

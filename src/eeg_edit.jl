@@ -2033,6 +2033,7 @@ function eeg_loc_flipy(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
             q == 2 && (t = 90 - (t - 90))
             q == 3 && (t = 270 + (270 - t))
             q == 4 && (t = 270 - (t - 270))
+            t = mod(t, 360)
             eeg_new.eeg_header[:loc_theta][idx] = t
         end
         spherical == true && (eeg_new.eeg_header[:loc_y][idx] = -eeg_new.eeg_header[:loc_y][idx])
@@ -2069,6 +2070,7 @@ function eeg_loc_flipy!(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true
             q == 2 && (t = 90 - (t - 90))
             q == 3 && (t = 270 + (270 - t))
             q == 4 && (t = 270 - (t - 270))
+            t = mod(t, 360)
             eeg.eeg_header[:loc_theta][idx] = t
         end
         spherical == true && (eeg.eeg_header[:loc_y][idx] = -eeg.eeg_header[:loc_y][idx])
@@ -2111,6 +2113,7 @@ function eeg_loc_flipx(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
             q == 2 && (t = 180 + (180 - t))
             q == 3 && (t = 180 - (t - 180))
             q == 4 && (t = 360 - t)
+            t = mod(t, 360)
             eeg_new.eeg_header[:loc_theta][idx] = t
         end
         spherical == true && (eeg_new.eeg_header[:loc_x][idx] = -eeg_new.eeg_header[:loc_x][idx])
@@ -2147,6 +2150,7 @@ function eeg_loc_flipx!(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true
             q == 2 && (t = 180 + (180 - t))
             q == 3 && (t = 180 - (t - 180))
             q == 4 && (t = 360 - t)
+            t = mod(t, 360)
             eeg.eeg_header[:loc_theta][idx] = t
         end
         spherical == true && (eeg.eeg_header[:loc_x][idx] = -eeg.eeg_header[:loc_x][idx])

@@ -81,12 +81,13 @@ function _len(eeg::NeuroJ.EEG, len::Int64, def_l::Int64)
     return len
 end
 
-function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, kwargs...)
+function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo::Bool=false, kwargs...)
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
     # - `loc_x::Vector{Float64}`: vector of x electrode position
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
+    # - `topo::Bool=false`: if true, use head for topo plot
     # - `kwargs`: optional arguments for plot() function
     # loc_x, loc_y = loc_y, loc_x
     pts = Plots.partialcircle(0, 2π, 100, 1.1)
@@ -106,17 +107,18 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, kwar
         p = Plots.plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
 
-    pts = Plots.partialcircle(0, 2π, 64, 1.5)
-    x, y = Plots.unzip(pts)
-    peripheral = Shape(x, y)
-    p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=50)
-
-    pts = Plots.partialcircle(0, 2π, 64, 1.8)
-    x, y = Plots.unzip(pts)
-    peripheral = Shape(x, y)
-    p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=100)
-
-    p = Plots.plot!(xlims=(-1.4, 1.4), ylims=(-1.4, 1.4); kwargs...)
+    if topo == true
+        pts = Plots.partialcircle(0, 2π, 100, 1.3)
+        x, y = Plots.unzip(pts)
+        for idx in 1:0.001:1.5
+            peripheral = Shape(x .* idx, y .* idx)
+            p = Plots.plot!(p, peripheral, label="", lc=:white)
+        end
+        rect = Plots.Shape([(-1.3, -1.3), (-1.3, 1.3), (1.3, 1.3), (1.3, -1.3)])
+        p = Plots.plot!(rect, fill=nothing, label="", lc=:white)
+        p = Plots.plot!(xlims=(-1.2, 1.2), ylims=(-1.2, 1.2); kwargs...)
+    end
+    
     return p
 end
 

@@ -349,4 +349,28 @@ edf2 = eeg_edit_electrode(edf, channel=1, x=2)
 _, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1)
 @test x == 2.0
 
+ch1 = eeg_electrode_loc(edf, channel=1)
+@test ch1[1] == -18.0
+edf2 = eeg_loc_flipy(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[1] == 198.0
+edf2 = eeg_loc_flipx(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[1] == 18
+edf2 = eeg_loc_flipz(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[5] == 0.0349
+edf2 = eeg_edit_electrode(edf, channel=1, x=-9)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[3] == -9.0
+edf2 = eeg_loc_swapxy(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[1] == 72.0
+edf2 = eeg_loc_sph2cart(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[3] == 0.95
+edf2 = eeg_loc_cart2sph(edf)
+ch1 = eeg_electrode_loc(edf2, channel=1)
+@test ch1[6] == 18.0
+
 true
