@@ -45,8 +45,8 @@ Next, start Julia and do the following:
 using Pkg
 Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 Pkg.activate(".")
-Pkg.instantiate()
 Pkg.resolve()
+Pkg.instantiate()
 Pkg.update()
 # activate the package
 using NeuroJ

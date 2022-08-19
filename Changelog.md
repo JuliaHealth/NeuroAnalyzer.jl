@@ -14,7 +14,7 @@ Changes for v0.22.8 (01/08/2022)
 7bb6f58 update: seg_tcmp() -> seg_cmp() update: seg_cmp() use parametric or non-parametric test
 c22dcff add: s_specseg() add: seg_tcmp()
 abcf9bd add: s_cbp(), eeg_cbp(), eeg_cbp!() add: eeg_plot_electrode() update: new method for s_detrend(): HP filter fix: eeg_plot_electrode() margins update: eeg_plot_electrodes() code cleanup
-3e7803b update: use fft0() and ifft0() insted of fft() and ifft()
+3e7803b update: use fft0() and ifft0() instead of fft() and ifft()
 c70a773 add: s_normalize_gauss() update: eeg_normalize() now use all available methods of normalization
 5abdc38 update: ADF test added to eeg_stationarity()
 3186f4e update: CUDA version in neuroj_version()

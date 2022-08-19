@@ -4374,7 +4374,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
               markerstrokealpha=0)
 
     # draw head
-    hd = _draw_head(p, head_labels=false)
+    hd = _draw_head(p, head_labels=false, topo=true)
     p = Plots.plot!(hd)
 
     Plots.plot(p)
@@ -4516,7 +4516,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
               markerstrokewidth=0,
               markerstrokealpha=0)
     # draw head
-    hd = _draw_head(p, head_labels=false)
+    hd = _draw_head(p, head_labels=false, topo=true)
     p = Plots.plot!(hd)
 
     Plots.plot(p)
@@ -4607,7 +4607,7 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
     end
 
     if head == true
-        hd = _draw_head(p, head_labels=head_labels)
+        hd = _draw_head(p, head_labels=head_labels, topo=true)
         Plots.plot!(hd)
     end
 
@@ -4739,7 +4739,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
               markerstrokewidth=0,
               markerstrokealpha=0)
     # draw head
-    hd = _draw_head(p, head_labels=false)
+    hd = _draw_head(p, head_labels=false, topo=true)
     p = Plots.plot!(hd)
 
     Plots.plot(p)
@@ -4893,7 +4893,7 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
                   markerstrokewidth=0,
                   markerstrokealpha=0)
         # draw head
-        hd = _draw_head(p, head_labels=false)
+        hd = _draw_head(p, head_labels=false, topo=true)
         p = Plots.plot!(hd)
 
         push!(p_ica, p)
