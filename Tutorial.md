@@ -36,7 +36,7 @@ The tutorial is divided into five major steps of typical pipeline:
 
 Load EDF file:
 ```julia
-edf = eeg_import_edf("test/eeg-test-edf.edf")
+edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
@@ -67,10 +67,9 @@ Convert spherical to Cartesian coordinates:
 ```julia
 eeg_loc_sph2cart!(edf)
 eeg_loc_cart2sph!(edf)
-eeg_plot_electrodes3d(edf, selected=1:19)
 ```
 
-If necessary, flip or swap axes (frontal channel should be at the top):
+If necessary, flip or swap axes (frontal channels should be at the top):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
@@ -86,11 +85,14 @@ edf = eeg_loc_swapxy(edf);
 
 p = eeg_plot_electrode(edf, channel=1)
 p = eeg_plot_electrodes(edf, labels=true, selected=1)
-p = eeg_plot_electrodes(edf, labels=true)
+p = eeg_plot_electrodes(edf, selected=1:19)
+eeg_plot_save(p, file_name="images/edf_electrodes_xy.png")
 p = eeg_plot_electrodes3d(edf, selected=1)
+eeg_plot_save(p, file_name="images/edf_electrodes3d_xy.png")
 ```
 
 ![](images//edf_electrodes_xy.png)
+![](images//edf_electrodes3d_xy.png)
 
 Save EEG object as HDF5-based file:
 ```julia

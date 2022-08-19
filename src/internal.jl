@@ -87,7 +87,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     # - `loc_x::Vector{Float64}`: vector of x electrode position
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
-    # - `topo::Bool=false`: if true, use head for topo plot
+    # - `topo::Bool=false`: if true, use head for topo plot (perform peripheral erasing)
     # - `kwargs`: optional arguments for plot() function
     # loc_x, loc_y = loc_y, loc_x
     pts = Plots.partialcircle(0, 2π, 100, 1.1)
@@ -115,10 +115,10 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
             p = Plots.plot!(p, peripheral, label="", lc=:white)
         end
         rect = Plots.Shape([(-1.3, -1.3), (-1.3, 1.3), (1.3, 1.3), (1.3, -1.3)])
-        p = Plots.plot!(rect, fill=nothing, label="", lc=:white)
+        p = Plots.plot!(rect, label="", lc=:white)
         p = Plots.plot!(xlims=(-1.2, 1.2), ylims=(-1.2, 1.2); kwargs...)
     end
-    
+
     return p
 end
 
