@@ -18,12 +18,13 @@ First, download [Julia](https://julialang.org/downloads/) 1.0 or later.
 
 There are two branches of NeuroJ.jl:
 - [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended for research tasks
-- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release for developers
+- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release for NeuroJ.jl developers, not for production use
 
 You can add NeuroJ.jl from using Julia's package manager, by typing:
 
 ```Julia
 using Pkg
+Pkg.update()
 Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl")
 # activate the package
@@ -42,6 +43,7 @@ julia
 Next, start Julia and do the following:
 ```Julia
 using Pkg
+Pkg.update()
 Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 Pkg.activate(".")
 Pkg.instantiate()
