@@ -138,7 +138,14 @@ Convert cartographic coordinates `x` and `y` to polar.
 """
 function cart2pol(x::Real, y::Real)
 
-    return hypot(x, y), atan(y, x)
+    radius = round(hypot(x, y), digits=2)
+    theta = round(atand(y, x), digits=1)
+    q = _angle_quadrant(theta)
+    q == 2 && (theta += 180)
+    q == 3 && (theta += 180)
+    q == 4 && (theta += 360)
+
+    return radius, theta
 end
 
 """
@@ -148,8 +155,8 @@ Convert polar coordinates `radius` and `theta` to cartographic.
 
 # Arguments
 
-- `radius::Real`
-- `theta::Real`
+- `radius::Real`: polar radius, the distance from the origin to the point, in degrees
+- `theta::Real`: polar angle
 
 # Returns
 
@@ -158,21 +165,23 @@ Convert polar coordinates `radius` and `theta` to cartographic.
 """
 function pol2cart(radius::Real, theta::Real)
     
-    theta = deg2rad.(theta)
+    theta = mod(theta, 360)
+    x = round(radius * cosd(theta), digits=2)
+    y = round(radius * sind(theta), digits=2)
 
-    return radius * cos(theta), radius * sin(theta)
+    return x, y
 end
 
 """
-    sph2cart(radius, theta, phi=0)
+    sph2cart(radius, theta, phi)
 
 Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 
 # Arguments
 
-- `radius::Real`: the distance from the origin to the point
-- `phi::Real`: the angle with respect to the z-axis (elevation)
-- `theta::Real`: the angle in the xy plane with respect to the x-axis (azimuth)
+- `radius::Real`: spherical radius, the distance from the origin to the point
+- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `phi::Real`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
 # Returns
 
@@ -180,12 +189,44 @@ Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 - `y::Float64`
 - `z::Float64`
 """
-function sph2cart(radius::Real, theta::Real, phi::Real=0)
-    
-    theta = deg2rad.(theta)
-    phi = deg2rad.(phi)
+function sph2cart(radius::Real, theta::Real, phi::Real)
 
-    return radius * sin(theta) * cos(phi), radius * sin(theta) * sin(phi), radius * cos(theta)
+    theta < 0 && (theta = 360 - abs(theta))
+
+    x = round(radius * sind(phi) * cosd(theta), digits=2)
+    y = round(radius * sind(phi) * sind(theta), digits=2)
+    z = round(radius * cosd(phi), digits=2)
+
+    return x, y, z
+end
+
+"""
+    cart2sph(x, y, z)
+
+Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+
+# Arguments
+
+- `x::Real`
+- `y::Real`
+- `z::Real`
+
+# Returns
+- `radius::Float64`: spherical radius, the distance from the origin to the point
+- `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `phi::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+"""
+function cart2sph(x::Real, y::Real, z::Real)
+    
+    round(x, digits=1)
+    round(y, digits=1)
+    round(z, digits=1)
+    
+    radius = round(hypot(x, y, z), digits=2)
+    x != 0 ? theta = round(rad2deg(atan(y / x)), digits=1) : theta = round(rad2deg(atan(y)), digits=1)
+    phi = round(rad2deg(acos(z / radius)), digits=2)
+    
+    return radius, theta, phi
 end
 
 """

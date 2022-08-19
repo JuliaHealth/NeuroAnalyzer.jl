@@ -56,10 +56,38 @@ eeg_plot_save(p, file_name="images/edf_electrodes3d.png")
 ```
 ![edf electrodes 3d](images/edf_electrodes3d.png)
 
-If necessary, swap axes:
+Edit electrode position:
 ```julia
-eeg_loc_swap_axes!(edf)
-p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19, size=(400, 400))
+eeg_electrode_loc(edf, channel=1)
+eeg_edit_electrode!(edf, channel=1, x=-1.0)
+eeg_plot_electrodes3d(edf)
+```
+
+Convert spherical to Cartesian coordinates:
+```julia
+eeg_loc_sph2cart!(edf)
+eeg_loc_cart2sph!(edf)
+eeg_plot_electrodes3d(edf, selected=1:19)
+```
+
+If necessary, flip or swap axes:
+```julia
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+
+eeg_loc_flipy!(edf)
+eeg_loc_flipy!(edf, planar=false)
+eeg_loc_flipy!(edf, spherical=false)
+eeg_loc_flipx!(edf, planar=false)
+eeg_loc_flipx!(edf, spherical=false)
+
+eeg_loc_flipz!(edf)
+
+edf = eeg_loc_swapxy(edf);
+
+p = eeg_plot_electrode(edf, channel=1)
+p = eeg_plot_electrodes(edf, labels=true, selected=1)
+p = eeg_plot_electrodes(edf, labels=true)
+p = eeg_plot_electrodes3d(edf, selected=1)
 ```
 ![](images//edf_electrodes_xy.png)
 
@@ -138,8 +166,8 @@ eeg_get_channel(edf, channel=18)
 
 Rename channels:
 ```julia
-edf = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
-eeg_rename_channel!(edf, channel=18, new_name="Cz")
+edf = eeg_rename_channel(edf, channel="Cz", name="CZ")
+eeg_rename_channel!(edf, channel=18, name="Cz")
 ```
 
 Delete channels (epochs and channels may be specified using number, range or vector):

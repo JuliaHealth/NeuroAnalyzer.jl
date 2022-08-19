@@ -50,9 +50,9 @@ edf1 = eeg_extract_channel(edf, channel=18)
 @test eeg_get_channel(edf, channel=1) == "Fp1"
 @test eeg_get_channel(edf, channel="Fp1") == 1
 
-edf1 = eeg_rename_channel(edf, channel="Cz", new_name="CZ")
+edf1 = eeg_rename_channel(edf, channel="Cz", name="CZ")
 @test edf1.eeg_header[:labels][18] == "CZ"
-edf1 = eeg_rename_channel(edf, channel=1, new_name="FP1")
+edf1 = eeg_rename_channel(edf, channel=1, name="FP1")
 @test edf1.eeg_header[:labels][1] == "FP1"
 
 edf1 = eeg_taper(edf, taper=edf.eeg_signals[1, :, 1])
@@ -341,5 +341,12 @@ edf1 = eeg_denoise_wien(edf)
 
 p, _, _ = eeg_cps(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(p) == 262145
+
+edf2 = eeg_channel_type(edf, channel=1, type="eog")
+@test edf2.eeg_header[:channel_type][1] == "eog"
+edf2 = eeg_edit_electrode(edf, channel=1, x=2)
+@test edf2.eeg_header[:loc_x][1] == 2.0
+_, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1)
+@test x == 2.0
 
 true

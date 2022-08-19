@@ -65,6 +65,7 @@ export vsearch
 export cart2pol
 export pol2cart
 export sph2cart
+export cart2sph
 export generate_window
 export fft0
 export ifft0
@@ -249,8 +250,23 @@ export eeg_replace_channel
 export eeg_replace_channel!
 export eeg_interpolate_channel
 export eeg_interpolate_channel!
-export eeg_loc_swap_axes
-export eeg_loc_swap_axes!
+export eeg_loc_flipy
+export eeg_loc_flipy!
+export eeg_loc_flipx
+export eeg_loc_flipx!
+export eeg_loc_flipz
+export eeg_loc_flipz!
+export eeg_channel_type
+export eeg_channel_type!
+export eeg_edit_electrode
+export eeg_edit_electrode!
+export eeg_electrode_loc
+export eeg_loc_swapxy
+export eeg_loc_swapxy!
+export eeg_loc_sph2cart
+export eeg_loc_sph2cart!
+export eeg_loc_cart2sph
+export eeg_loc_cart2sph!
 
 include("eeg_process.jl")
 export eeg_reference_ch

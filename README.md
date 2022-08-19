@@ -156,7 +156,6 @@ The lists below are not in any particular order.
 General:
 - further performance optimizations
 - Pluto interface
-- cleanup electrode locs  (use x, y and xsph, ysph, zsph only)
 
 EEG:
 - analysis, plots: brain topography
@@ -198,7 +197,6 @@ EEG:
 - edit: insert channel
 - edit: merge EEG objects
 - edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
-- edit: modify channel locs
 - edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
 - io: export channel locs to .CED
 - io: import from CSV
