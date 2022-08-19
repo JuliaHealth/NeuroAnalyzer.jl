@@ -3773,40 +3773,6 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     channel = _select_channels(eeg, channel, 0)
     _check_channels(eeg, channel)
 
-    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
-    # selected channels
-    if selected != 0
-        length(selected) > 1 && sort!(selected)
-        for idx in 1:length(selected)
-            (selected[idx] < 1 || selected[idx] > eeg_tmp.eeg_header[:channel_n]) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg_tmp.eeg_header[:channel_n])."))
-        end
-        typeof(selected) <: AbstractRange && (selected = collect(selected))
-        length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
-        length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
-    end
-
-    # get axis limits
-    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg_tmp.eeg_header[:loc_radius][idx], 
-                                          eeg_tmp.eeg_header[:loc_theta][idx])
-    end
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
-    
-    # get channels positions
-    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg_tmp.eeg_header[:loc_radius][idx], 
-                                          eeg_tmp.eeg_header[:loc_theta][idx])
-    end
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
     if small == true
         plot_size = 200
         marker_size = 2
@@ -3818,23 +3784,39 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     end
 
     p = Plots.plot(grid=true,
-             framestyle=:none,
-             palette=palette,
-             size=(plot_size, plot_size),
-             markerstrokewidth=0,
-             border=:none,
-             aspect_ratio=1,
-             margins=-plot_size * Plots.px,
-             titlefontsize=8;
-             kwargs...)
-    if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
-        for idx in 1:eeg_tmp.eeg_header[:channel_n]
+                   framestyle=:none,
+                   palette=palette,
+                   size=(plot_size, plot_size),
+                   markerstrokewidth=0,
+                   border=:none,
+                   aspect_ratio=1,
+                   margins=-plot_size * Plots.px,
+                   titlefontsize=8;
+                   kwargs...)
+
+    # plot selected channels positions
+    if selected != 0
+        length(selected) > 1 && sort!(selected)
+        for idx in 1:length(selected)
+            (selected[idx] < 1 || selected[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
+        end
+        typeof(selected) <: AbstractRange && (selected = collect(selected))
+        length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
+        length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
+        loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+        loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+        for idx in 1:eeg_channel_n(eeg, type=:eeg)
+            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+                                              eeg.eeg_header[:loc_theta][idx])
+        end
+        loc_x, loc_y = _locnorm(loc_x, loc_y)
+        loc_x = round.(loc_x, digits=2)[selected]
+        loc_y = round.(loc_y, digits=2)[selected]
+        for idx in 1:length(selected)
             if mono != true
                 p = Plots.plot!((loc_x[idx], loc_y[idx]),
                           color=idx,
                           seriestype=:scatter,
-                          xlims=x_lim,
-                          ylims=x_lim,
                           grid=true,
                           label="",
                           markersize=marker_size,
@@ -3845,8 +3827,6 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
                 p = Plots.plot!((loc_x[idx], loc_y[idx]),
                           color=:black,
                           seriestype=:scatter,
-                          xlims=x_lim,
-                          ylims=x_lim,
                           grid=true,
                           label="",
                           markersize=marker_size,
@@ -3855,79 +3835,45 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
                           kwargs...)
             end                
         end
-    elseif selected == 0
-        p = Plots.plot!(loc_x,
-                  loc_y,
-                  seriestype=:scatter,
-                  color=:black,
-                  alpha=0.2,
-                  xlims=x_lim,
-                  ylims=y_lim,
-                  grid=true,
-                  label="",
-                  markersize=marker_size,
-                  markerstrokewidth=0,
-                  markerstrokealpha=0;
-                  kwargs...)
-    elseif selected != 0 && length(selected) != eeg_tmp.eeg_header[:channel_n]
-        deleteat!(loc_x, selected)
-        deleteat!(loc_y, selected)
-        p = Plots.plot!(loc_x,
-                  loc_y,
-                  seriestype=:scatter,
-                  color=:black,
-                  alpha=0.2,
-                  xlims=x_lim,
-                  ylims=y_lim,
-                  grid=true,
-                  label="",
-                  markersize=marker_size,
-                  markerstrokewidth=0,
-                  markerstrokealpha=0;
-                  kwargs...)
-        eeg_tmp = eeg_keep_channel(eeg, channel=selected)
-        loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-        loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-        for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-            loc_y[idx], loc_x[idx] = pol2cart(eeg_tmp.eeg_header[:loc_radius][idx], 
-                                              eeg_tmp.eeg_header[:loc_theta][idx])
-        end
-        for idx in 1:eeg_tmp.eeg_header[:channel_n]
-            if mono != true
-                p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                          color=idx,
-                          seriestype=:scatter,
-                          xlims=x_lim,
-                          ylims=x_lim,
-                          grid=true,
-                          label="",
-                          markersize=marker_size,
-                          markerstrokewidth=0,
-                          markerstrokealpha=0;
-                          kwargs...)
-            else
-                p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                          color=:black,
-                          seriestype=:scatter,
-                          xlims=x_lim,
-                          ylims=x_lim,
-                          grid=true,
-                          label="",
-                          markersize=marker_size,
-                          markerstrokewidth=0,
-                          markerstrokealpha=0;
-                          kwargs...)
+        if labels == true
+            for idx in selected
+                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=font_size)))
             end
         end
     end
-    if labels == true
-        for idx in 1:length(eeg_labels(eeg_tmp))
-            Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg_tmp)[idx], pointsize=font_size)))
+
+    # plot non-selected channels positions
+    if selected != channel
+        channel = setdiff(channel, selected)
+        loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
+        loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
+        for idx in 1:eeg_channel_n(eeg, type=:eeg)
+            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+                                              eeg.eeg_header[:loc_theta][idx])
         end
-        p = Plots.plot!()
+        loc_x, loc_y = _locnorm(loc_x, loc_y)
+        loc_x = round.(loc_x, digits=2)[channel]
+        loc_y = round.(loc_y, digits=2)[channel]
+        for idx in 1:length(channel)
+            p = Plots.plot!((loc_x[idx], loc_y[idx]),
+                      color=:gray,
+                      seriestype=:scatter,
+                      grid=true,
+                      label="",
+                      markersize=marker_size,
+                      markerstrokewidth=0,
+                      markerstrokealpha=0;
+                      kwargs...)
+        end
+        if selected == 0 && labels == true
+            for idx in channel
+                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=font_size)))
+            end
+        end
     end
+
     if head == true
-        hd = _draw_head(p, minimum([[loc_x[1]], [loc_y[1]]]), minimum([[loc_x[1]], [loc_y[1]]]), head_labels=false)
+        hd = _draw_head(p, head_labels=false)
         p = Plots.plot!(hd)
     end
 
@@ -4348,17 +4294,16 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     loc_x = zeros(eeg_channel_n(eeg))
     loc_y = zeros(eeg_channel_n(eeg))
     for idx in 1:eeg_channel_n(eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
     # interpolate
-    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
-    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+    x_lim_int = (-1.4, 1.4)
+    y_lim_int = (-1.4, 1.4)
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
@@ -4422,31 +4367,15 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     p = Plots.plot!((loc_x, loc_y),
               color=:black,
               seriestype=:scatter,
-              xlims=x_lim,
-              ylims=x_lim,
               grid=true,
               label="",
               markersize=2,
               markerstrokewidth=0,
               markerstrokealpha=0)
+
     # draw head
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-    x, y = Plots.unzip(pts)
-    x = x .* 1.2
-    y = y .* 1.2
-    head = Shape(x, y)
-    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
-    for idx = 0:0.001:1
-        peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
-        p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
-    end
-    p = Plots.plot!(p, head, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, nose, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_l, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_r, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, xlims=(x_lim_int), ylims=(y_lim_int))
+    hd = _draw_head(p, head_labels=false)
+    p = Plots.plot!(hd)
 
     Plots.plot(p)
 
@@ -4510,17 +4439,16 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     loc_x = zeros(eeg_channel_n(eeg))
     loc_y = zeros(eeg_channel_n(eeg))
     for idx in 1:eeg_channel_n(eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
     # interpolate
-    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
-    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+    x_lim_int = (-1.4, 1.4)
+    y_lim_int = (-1.4, 1.4)
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
@@ -4582,31 +4510,14 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     p = Plots.plot!((loc_x, loc_y),
               color=:black,
               seriestype=:scatter,
-              xlims=x_lim,
-              ylims=x_lim,
               grid=true,
               label="",
               markersize=2,
               markerstrokewidth=0,
               markerstrokealpha=0)
     # draw head
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-    x, y = Plots.unzip(pts)
-    x = x .* 1.2
-    y = y .* 1.2
-    head = Shape(x, y)
-    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
-    for idx = 0:0.001:1
-        peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
-        p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
-    end
-    p = Plots.plot!(p, head, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, nose, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_l, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_r, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, xlims=(x_lim_int), ylims=(y_lim_int))
+    hd = _draw_head(p, head_labels=false)
+    p = Plots.plot!(hd)
 
     Plots.plot(p)
 
@@ -4652,13 +4563,12 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
     loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
     for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
     if small == true
         plot_size = (400, 400)
@@ -4699,15 +4609,7 @@ function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:R
     end
 
     if head == true
-        # for some reason head is enlarged for channel > 1
-        eeg = eeg_keep_channel(eeg, channel=1)
-        loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-        loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-        for idx in 1:eeg_channel_n(eeg, type=:eeg)
-            loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                              eeg.eeg_header[:loc_theta][idx])
-        end
-        hd = _draw_head(p, loc_x, loc_x, head_labels=head_labels)
+        hd = _draw_head(p, head_labels=head_labels)
         Plots.plot!(hd)
     end
 
@@ -4760,17 +4662,16 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     loc_x = zeros(eeg_channel_n(eeg))
     loc_y = zeros(eeg_channel_n(eeg))
     for idx in 1:eeg_channel_n(eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
 
     # interpolate
-    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
-    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+    x_lim_int = (-1.4, 1.4)
+    y_lim_int = (-1.4, 1.4)
     interpolation_factor = 100
     interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
     interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
@@ -4834,31 +4735,14 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     p = Plots.plot!((loc_x, loc_y),
               color=:black,
               seriestype=:scatter,
-              xlims=x_lim,
-              ylims=x_lim,
               grid=true,
               label="",
               markersize=2,
               markerstrokewidth=0,
               markerstrokealpha=0)
     # draw head
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-    x, y = Plots.unzip(pts)
-    x = x .* 1.2
-    y = y .* 1.2
-    head = Shape(x, y)
-    nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
-    for idx = 0:0.001:1
-        peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
-        p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
-    end
-    p = Plots.plot!(p, head, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, nose, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_l, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, ear_r, fill=nothing, label="", linewidth=1)
-    p = Plots.plot!(p, xlims=(x_lim_int), ylims=(y_lim_int))
+    hd = _draw_head(p, head_labels=false)
+    p = Plots.plot!(hd)
 
     Plots.plot(p)
 
@@ -4934,15 +4818,16 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         loc_x = zeros(eeg_channel_n(eeg))
         loc_y = zeros(eeg_channel_n(eeg))
         for idx in 1:eeg_channel_n(eeg)
-            loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                               eeg.eeg_header[:loc_theta][idx])
         end
-        x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-        y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+        loc_x, loc_y = _locnorm(loc_x, loc_y)
+        loc_x = round.(loc_x, digits=2)
+        loc_y = round.(loc_y, digits=2)
 
         # interpolate
-        x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
-        y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
+        x_lim_int = (-1.4, 1.4)
+        y_lim_int = (-1.4, 1.4)
         interpolation_factor = 100
         interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
         interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
@@ -5004,31 +4889,14 @@ function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::
         p = Plots.plot!((loc_x, loc_y),
                   color=:black,
                   seriestype=:scatter,
-                  xlims=x_lim,
-                  ylims=x_lim,
                   grid=true,
                   label="",
                   markersize=2,
                   markerstrokewidth=0,
                   markerstrokealpha=0)
         # draw head
-        pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
-        x, y = Plots.unzip(pts)
-        x = x .* 1.2
-        y = y .* 1.2
-        head = Shape(x, y)
-        nose = Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-        ear_l = Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-        ear_r = Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
-        for idx = 0:0.001:1
-            peripheral = Shape(x .* (1 + idx), y .* (1 + idx))
-            p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=1)
-        end
-        p = Plots.plot!(p, head, fill=nothing, label="", linewidth=1)
-        p = Plots.plot!(p, nose, fill=nothing, label="", linewidth=1)
-        p = Plots.plot!(p, ear_l, fill=nothing, label="", linewidth=1)
-        p = Plots.plot!(p, ear_r, fill=nothing, label="", linewidth=1)
-        p = Plots.plot!(p, xlims=(x_lim_int), ylims=(y_lim_int))
+        hd = _draw_head(p, head_labels=false)
+        p = Plots.plot!(hd)
 
         push!(p_ica, p)
     end
@@ -6253,13 +6121,13 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
     loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
     for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
+    x_lim = extrema(loc_x) .* 1.8
+    y_lim = extrema(loc_y) .* 1.8
 
     p = Plots.plot(grid=true,
              framestyle=:none,
@@ -6301,7 +6169,7 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
     loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
     for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
 
@@ -6832,24 +6700,16 @@ function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
 
     _check_channels(eeg, channel)
 
-    # get axis limits
     loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
     for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
+        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
-
-    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
-    loc_y_ch, loc_x_ch = pol2cart(eeg_tmp.eeg_header[:loc_radius][1], 
-                                  eeg_tmp.eeg_header[:loc_theta][1])
-    loc_x_ch = round(loc_x_ch, digits=2)
-    loc_y_ch = round(loc_y_ch, digits=2)
-    p = Plots.plot((loc_x_ch, loc_y_ch),
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    loc_x = round.(loc_x, digits=2)[channel]
+    loc_y = round.(loc_y, digits=2)[channel]
+    p = Plots.plot((loc_x, loc_y),
              seriestype=:scatter,
              grid=true,
              framestyle=:none,
@@ -6860,14 +6720,12 @@ function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
              titlefontsize=8,
              color=:black,
              fillcolor=:black,
-             xlims=x_lim,
-             ylims=x_lim,
              label="",
              markersize=2,
              markerstrokewidth=0,
              markerstrokealpha=0;
              kwargs...)
-    hd = _draw_head(p, minimum([[loc_x[1]], [loc_y[1]]]), minimum([[loc_x[1]], [loc_y[1]]]), head_labels=false)
+    hd = _draw_head(p, head_labels=false)
     p = Plots.plot!(hd)
     Plots.plot(p)
 
@@ -6915,33 +6773,20 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
         length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
     end
 
-    # use Cartesian coordinates
-    if :loc_x in keys(eeg_tmp.eeg_header) && :loc_y in keys(eeg_tmp.eeg_header) && :loc_z in keys(eeg_tmp.eeg_header)
-        loc_x = eeg_tmp.eeg_header[:loc_x]
-        loc_y = eeg_tmp.eeg_header[:loc_y]
-        loc_z = eeg_tmp.eeg_header[:loc_z]
-    else
-        @warn "EEG does not contain Cartesian 3D coordinates, trying spherical coordinates."
-        if :loc_radius_sph in keys(eeg_tmp.eeg_header) && :loc_theta_sph in keys(eeg_tmp.eeg_header) && :loc_phi_sph in keys(eeg_tmp.eeg_header)
-            loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-            loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-            loc_z = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-            for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-                loc_y[idx], loc_z[idx], loc_x[idx] = sph2cart(eeg_tmp.eeg_header[:loc_radius_sph][idx], 
-                                                              eeg_tmp.eeg_header[:loc_theta_sph][idx], 
-                                                              eeg_tmp.eeg_header[:loc_phi_sph][idx])
-            end
-        else
-            throw(ArgumentError("EEG does not contain Cartesian 3D nor spherical coordinates."))
-        end
+    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_z = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+        loc_x[idx], loc_y[idx], loc_z[idx] = eeg_tmp.eeg_header[:loc_x][idx], eeg_tmp.eeg_header[:loc_y][idx], eeg_tmp.eeg_header[:loc_z][idx]
     end
 
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)
     loc_z = round.(loc_z, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.2, findmax(loc_x)[1] * 1.2)
-    y_lim = (findmin(loc_y)[1] * 1.2, findmax(loc_y)[1] * 1.2)
-    z_lim = (findmin(loc_z)[1] * 1.2, findmax(loc_z)[1] * 1.2)
+    x_lim = (-1.1, 1.1)
+    y_lim = (-1.1, 1.1)
+    z_lim = extrema(loc_z)
 
     plot_size = 800
     marker_size = 15
@@ -6949,17 +6794,17 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
 
     f = Figure(; resolution=(plot_size, plot_size))
     ax = Axis3(f[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (y_lim, x_lim, z_lim))
-    hidedecorations!(ax, grid=true, ticks=true)
+    # hidedecorations!(ax, grid=true, ticks=true)
     if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             if mono != true
-                GLMakie.scatter!(ax, -loc_y[idx], loc_x[idx], loc_z[idx], markersize=marker_size)
+                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size)
             else
-                GLMakie.scatter!(ax, -loc_y[idx], loc_x[idx], loc_z[idx], markersize=marker_size, color=:black)
+                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size, color=:black)
             end                
         end
     elseif selected == 0
-        GLMakie.scatter!(ax, -loc_y, loc_x, loc_z, markersize=marker_size, color=:gray)
+        GLMakie.scatter!(ax, loc_x, loc_y, loc_z, markersize=marker_size, color=:gray)
     elseif selected != 0 && length(selected) != eeg_tmp.eeg_header[:channel_n]
         loc_x_tmp = deepcopy(loc_x)
         loc_y_tmp = deepcopy(loc_y)
@@ -6967,19 +6812,19 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
         deleteat!(loc_x_tmp, selected)
         deleteat!(loc_y_tmp, selected)
         deleteat!(loc_z_tmp, selected)
-        GLMakie.scatter!(ax, -loc_y_tmp, loc_x_tmp, loc_z_tmp, markersize=marker_size, color=:grey)
+        GLMakie.scatter!(ax, loc_x_tmp, loc_y_tmp, loc_z_tmp, markersize=marker_size, color=:grey)
         eeg_tmp = eeg_keep_channel(eeg, channel=selected)
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             if mono != true
-                GLMakie.scatter!(ax, -loc_y[idx], loc_x[idx], loc_z[idx], markersize=marker_size)
+                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size)
             else
-                GLMakie.scatter!(ax, -loc_y[idx], loc_x[idx], loc_z[idx], markersize=marker_size, color=:black)
+                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size, color=:black)
             end                
         end
     end
     if labels == true
         for idx in 1:length(eeg_labels(eeg_tmp))
-            GLMakie.text!(ax, eeg_labels(eeg_tmp)[idx], position=(-loc_y[idx], loc_x[idx], loc_z[idx]), textsize=font_size)
+            GLMakie.text!(ax, eeg_labels(eeg_tmp)[idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
         end
     end
     if head_labels == true

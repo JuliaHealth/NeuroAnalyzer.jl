@@ -187,14 +187,14 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
-                      :loc_theta => Float64[],
-                      :loc_radius => Float64[],
-                      :loc_x => Float64[],
-                      :loc_y => Float64[],
-                      :loc_z => Float64[],
-                      :loc_radius_sph => Float64[],
-                      :loc_theta_sph => Float64[],
-                      :loc_phi_sph => Float64[],
+                      :loc_theta => zeros(channel_n),
+                      :loc_radius => zeros(channel_n),
+                      :loc_x => zeros(channel_n),
+                      :loc_y => zeros(channel_n),
+                      :loc_z => zeros(channel_n),
+                      :loc_radius_sph => zeros(channel_n),
+                      :loc_theta_sph => zeros(channel_n),
+                      :loc_phi_sph => zeros(channel_n),
                       :history => String[],
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
@@ -336,10 +336,10 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
     loc_theta = Vector{Float64}()       # polar angle
     loc_radius = Vector{Float64}()      # polar radius
-    loc_x = Vector{Float64}()           # cartesian x
-    loc_y = Vector{Float64}()           # cartesian y
-    loc_z = Vector{Float64}()           # cartesian z
-    loc_radius_sph = Vector{Float64}()  # sperical radius
+    loc_x = Vector{Float64}()           # Cartesian x
+    loc_y = Vector{Float64}()           # Cartesian y
+    loc_z = Vector{Float64}()           # Cartesian z
+    loc_radius_sph = Vector{Float64}()  # spherical radius
     loc_theta_sph = Vector{Float64}()   # spherical horizontal angle
     loc_phi_sph = Vector{Float64}()     # spherical azimuth angle
 
@@ -348,16 +348,16 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
         f_labels = lowercase.(sensors[:, :labels])
 
-        loc_theta = sensors[:, :theta]
-        loc_radius = sensors[:, :radius]
+        loc_theta = float.(sensors[:, :theta])
+        loc_radius = float.(sensors[:, :radius])
 
-        loc_radius_sph = sensors[:, :sph_radius]
-        loc_theta_sph = sensors[:, :sph_theta]
-        loc_phi_sph = sensors[:, :sph_phi]
+        loc_radius_sph = float.(sensors[:, :sph_radius])
+        loc_theta_sph = float.(sensors[:, :sph_theta])
+        loc_phi_sph = float.(sensors[:, :sph_phi])
 
-        loc_x = sensors[:, :X]
-        loc_y = sensors[:, :Y]
-        loc_z = sensors[:, :Z]
+        loc_x = float.(sensors[:, :X])
+        loc_y = float.(sensors[:, :Y])
+        loc_z = float.(sensors[:, :Z])
     end
 
     if splitext(file_name)[2] == ".elc"
@@ -365,9 +365,16 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
         f_labels = lowercase.(sensors[:, :labels])
         
-        loc_x = sensors[:, :x]
-        loc_y = sensors[:, :y]
-        loc_z = sensors[:, :z]
+        loc_theta = zeros(length(f_labels))
+        loc_radius = zeros(length(f_labels))
+
+        loc_radius_sph = zeros(length(f_labels))
+        loc_theta_sph = zeros(length(f_labels))
+        loc_phi_sph = zeros(length(f_labels))
+
+        loc_x = float.(sensors[:, :x])
+        loc_y = float.(sensors[:, :y])
+        loc_z = float.(sensors[:, :z])
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -377,6 +384,14 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
         loc_theta = sensors[:, :theta]
         loc_radius = sensors[:, :radius]
+
+        loc_radius_sph = zeros(length(f_labels))
+        loc_theta_sph = zeros(length(f_labels))
+        loc_phi_sph = zeros(length(f_labels))
+
+        loc_x = zeros(length(f_labels))
+        loc_y = zeros(length(f_labels))
+        loc_z = zeros(length(f_labels))
     end
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
@@ -393,14 +408,14 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
     # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:channel_locations] = true
-    length(loc_theta) > 0 && (eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx])
-    length(loc_radius) > 0 && (eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx])
-    length(loc_x) > 0 && (eeg_new.eeg_header[:loc_x] = loc_x[labels_idx])
-    length(loc_y) > 0 && (eeg_new.eeg_header[:loc_y] = loc_y[labels_idx])
-    length(loc_z) > 0 && (eeg_new.eeg_header[:loc_z] = loc_z[labels_idx])
-    length(loc_radius_sph) > 0 && (eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
-    length(loc_theta_sph) > 0 && (eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
-    length(loc_phi_sph) > 0 && (eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
+    eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx]
+    eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx]
+    eeg_new.eeg_header[:loc_x] = loc_x[labels_idx]
+    eeg_new.eeg_header[:loc_y] = loc_y[labels_idx]
+    eeg_new.eeg_header[:loc_z] = loc_z[labels_idx]
+    eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
+    eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
+    eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
@@ -428,10 +443,10 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
     loc_theta = Vector{Float64}()       # polar angle
     loc_radius = Vector{Float64}()      # polar radius
-    loc_x = Vector{Float64}()           # cartesian x
-    loc_y = Vector{Float64}()           # cartesian y
-    loc_z = Vector{Float64}()           # cartesian z
-    loc_radius_sph = Vector{Float64}()  # sperical radius
+    loc_x = Vector{Float64}()           # Cartesian x
+    loc_y = Vector{Float64}()           # Cartesian y
+    loc_z = Vector{Float64}()           # Cartesian z
+    loc_radius_sph = Vector{Float64}()  # spherical radius
     loc_theta_sph = Vector{Float64}()   # spherical horizontal angle
     loc_phi_sph = Vector{Float64}()     # spherical azimuth angle
 
@@ -440,14 +455,16 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
         f_labels = lowercase.(sensors[:, :labels])
 
-        loc_theta = sensors[:, :theta]
-        loc_radius = sensors[:, :radius]
-        loc_x = sensors[:, :X]
-        loc_y = sensors[:, :Y]
-        loc_z = sensors[:, :Z]
-        loc_radius_sph = sensors[:, :sph_radius]
-        loc_theta_sph = sensors[:, :sph_theta]
-        loc_phi_sph = sensors[:, :sph_phi]
+        loc_theta = float.(sensors[:, :theta])
+        loc_radius = float.(sensors[:, :radius])
+
+        loc_x = float.(sensors[:, :X])
+        loc_y = float.(sensors[:, :Y])
+        loc_z = float.(sensors[:, :Z])
+        
+        loc_radius_sph = float.(sensors[:, :sph_radius])
+        loc_theta_sph = float.(sensors[:, :sph_theta])
+        loc_phi_sph = float.(sensors[:, :sph_phi])
     end
 
     if splitext(file_name)[2] == ".elc"
@@ -455,9 +472,16 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
         f_labels = lowercase.(sensors[:, :labels])
         
-        loc_x = sensors[:, :x]
-        loc_y = sensors[:, :y]
-        loc_z = sensors[:, :z]
+        loc_theta = zeros(length(f_labels))
+        loc_radius = zeros(length(f_labels))
+
+        loc_radius_sph = zeros(length(f_labels))
+        loc_theta_sph = zeros(length(f_labels))
+        loc_phi_sph = zeros(length(f_labels))
+
+        loc_x = float.(sensors[:, :x])
+        loc_y = float.(sensors[:, :y])
+        loc_z = float.(sensors[:, :z])
     end
 
     if splitext(file_name)[2] == ".locs"
@@ -467,6 +491,14 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
         loc_theta = sensors[:, :theta]
         loc_radius = sensors[:, :radius]
+
+        loc_radius_sph = zeros(length(f_labels))
+        loc_theta_sph = zeros(length(f_labels))
+        loc_phi_sph = zeros(length(f_labels))
+
+        loc_x = zeros(length(f_labels))
+        loc_y = zeros(length(f_labels))
+        loc_z = zeros(length(f_labels))
     end
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
@@ -482,14 +514,14 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     
     # create new dataset
     eeg.eeg_header[:channel_locations] = true
-    length(loc_theta) > 0 && (eeg.eeg_header[:loc_theta] = loc_theta[labels_idx])
-    length(loc_radius) > 0 && (eeg.eeg_header[:loc_radius] = loc_radius[labels_idx])
-    length(loc_x) > 0 && (eeg.eeg_header[:loc_x] = loc_x[labels_idx])
-    length(loc_y) > 0 && (eeg.eeg_header[:loc_y] = loc_y[labels_idx])
-    length(loc_z) > 0 && (eeg.eeg_header[:loc_z] = loc_z[labels_idx])
-    length(loc_radius_sph) > 0 && (eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx])
-    length(loc_theta_sph) > 0 && (eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx])
-    length(loc_phi_sph) > 0 && (eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx])
+    eeg.eeg_header[:loc_theta] = loc_theta[labels_idx]
+    eeg.eeg_header[:loc_radius] = loc_radius[labels_idx]
+    eeg.eeg_header[:loc_x] = loc_x[labels_idx]
+    eeg.eeg_header[:loc_y] = loc_y[labels_idx]
+    eeg.eeg_header[:loc_z] = loc_z[labels_idx]
+    eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
+    eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
+    eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")

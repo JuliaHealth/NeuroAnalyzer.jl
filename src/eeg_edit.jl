@@ -578,21 +578,21 @@ function eeg_get_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
 end
 
 """
-    eeg_rename_channel(eeg; channel, new_name)
+    eeg_rename_channel(eeg; channel, name)
 
-Renames the `eeg` `channel`.
+Rename the `eeg` `channel`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, String}`
-- `new_name::String`
+- `name::String`
 
 # Returns
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_name::String)
+function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, name::String)
 
     # create new dataset
     eeg_new = deepcopy(eeg)
@@ -602,7 +602,7 @@ function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_
         channel_found = nothing
         for idx in 1:length(labels)
             if channel == labels[idx]
-                labels[idx] = new_name
+                labels[idx] = name
                 channel_found = idx
             end
         end
@@ -613,29 +613,29 @@ function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_
         if channel < 1 || channel > length(labels)
             throw(ArgumentError("channel index does not match signal channels."))
         else
-            labels[channel] = new_name
+            labels[channel] = name
         end
     end
     eeg_new.eeg_header[:labels] = labels
     
     # add entry to :history field
-    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel=$channel, new_name=$new_name)")
+    push!(eeg_new.eeg_header[:history], "eeg_rename_channel(EEG, channel=$channel, name=$name)")
 
     return eeg_new
 end
 
 """
-    eeg_rename_channel!(eeg; channel, new_name)
+    eeg_rename_channel!(eeg; channel, name)
 
-Renames the `eeg` `channel`.
+Rename the `eeg` `channel`.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, String}`
-- `new_name::String`
+- `name::String`
 """
-function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new_name::String)
+function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, name::String)
 
     labels = eeg_labels(eeg)
     
@@ -643,7 +643,7 @@ function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new
         channel_found = nothing
         for idx in 1:length(labels)
             if channel == labels[idx]
-                labels[idx] = new_name
+                labels[idx] = name
                 channel_found = idx
             end
         end
@@ -654,12 +654,12 @@ function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, new
         if channel < 1 || channel > length(labels)
             throw(ArgumentError("channel index does not match signal channels."))
         else
-            labels[channel] = new_name
+            labels[channel] = name
         end
     end
     eeg.eeg_header[:labels] = labels
     
-    push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, new_name=$new_name)")
+    push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, name=$name)")
 
     nothing
 end
@@ -1905,7 +1905,7 @@ Interpolate `eeg` channel using planar interpolation.
 """
 function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
     for idx in 1:length(channel)
@@ -2004,9 +2004,165 @@ function eeg_interpolate_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{
 end
 
 """
-    eeg_loc_swap_axes(eeg)
+    eeg_loc_flipy(eeg; planar, spherical)
 
-Swap x and y axes of `eeg` channel locations.
+Flip `eeg` channel locations along y axis.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_flipy(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    for idx in 1:eeg_channel_n(eeg_new)
+        if planar == true
+            t = eeg_new.eeg_header[:loc_theta][idx]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 90 + (90 - t))
+            q == 2 && (t = 90 - (t - 90))
+            q == 3 && (t = 270 + (270 - t))
+            q == 4 && (t = 270 - (t - 270))
+            eeg_new.eeg_header[:loc_theta][idx] = t
+        end
+        spherical == true && (eeg_new.eeg_header[:loc_y][idx] = -eeg_new.eeg_header[:loc_y][idx])
+    end
+    eeg_loc_cart2sph!(eeg_new)
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_flipy(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_flipy!(eeg; planar, spherical)
+
+Flip `eeg` channel locations along y axis.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+"""
+function eeg_loc_flipy!(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    for idx in 1:eeg_channel_n(eeg)
+        if planar == true
+            t = eeg.eeg_header[:loc_theta][idx]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 90 + (90 - t))
+            q == 2 && (t = 90 - (t - 90))
+            q == 3 && (t = 270 + (270 - t))
+            q == 4 && (t = 270 - (t - 270))
+            eeg.eeg_header[:loc_theta][idx] = t
+        end
+        spherical == true && (eeg.eeg_header[:loc_y][idx] = -eeg.eeg_header[:loc_y][idx])
+    end
+    eeg_loc_cart2sph!(eeg)
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_flipy!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_loc_flipx(eeg; planar, spherical)
+
+Flip `eeg` channel locations along x axis.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_flipx(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    for idx in 1:eeg_channel_n(eeg_new)
+        if planar == true
+            t = eeg_new.eeg_header[:loc_theta][idx]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 360 - t)
+            q == 2 && (t = 180 + (180 - t))
+            q == 3 && (t = 180 - (t - 180))
+            q == 4 && (t = 360 - t)
+            eeg_new.eeg_header[:loc_theta][idx] = t
+        end
+        spherical == true && (eeg_new.eeg_header[:loc_x][idx] = -eeg_new.eeg_header[:loc_x][idx])
+    end
+    eeg_loc_cart2sph!(eeg_new)
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_flipx(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_flipx!(eeg; planar, spherical)
+
+Flip `eeg` channel locations along x axis.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+"""
+function eeg_loc_flipx!(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    for idx in 1:eeg_channel_n(eeg)
+        if planar == true
+            t = eeg.eeg_header[:loc_theta][idx]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 360 - t)
+            q == 2 && (t = 180 + (180 - t))
+            q == 3 && (t = 180 - (t - 180))
+            q == 4 && (t = 360 - t)
+            eeg.eeg_header[:loc_theta][idx] = t
+        end
+        spherical == true && (eeg.eeg_header[:loc_x][idx] = -eeg.eeg_header[:loc_x][idx])
+    end
+    eeg_loc_cart2sph!(eeg)
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_flipx!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_loc_flipz(eeg)
+
+Flip `eeg` channel locations along z axis.
 
 # Arguments
 
@@ -2016,59 +2172,487 @@ Swap x and y axes of `eeg` channel locations.
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_loc_swap_axes(eeg::NeuroJ.EEG)
+function eeg_loc_flipz(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    for idx in 1:eeg_channel_n(eeg_new)
+        eeg_new.eeg_header[:loc_z][idx] = -eeg_new.eeg_header[:loc_z][idx]
+    end
+    eeg_loc_cart2sph!(eeg_new)
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_flipz(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_flipz!(eeg)
+
+Flip `eeg` channel locations along z axis.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_flipz!(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    for idx in 1:eeg_channel_n(eeg)
+        eeg.eeg_header[:loc_z][idx] = -eeg.eeg_header[:loc_z][idx]
+    end
+    eeg_loc_cart2sph!(eeg)
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_flipz!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_channel_type(eeg; channel, type)
+
+Change the `eeg` `channel` type.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, String}`
+- `type::String`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_channel_type(eeg::NeuroJ.EEG; channel::Union{Int64, String}, type::String)
+
+    type = lowercase(type)
+    labels = eeg_labels(eeg)
+
+    # create new dataset
+    eeg_new = deepcopy(eeg)
+    types = eeg_new.eeg_header[:channel_type]
+    
+    if typeof(channel) == String
+        channel_found = nothing
+        for idx in 1:length(labels)
+            if channel == labels[idx]
+                types[idx] = type
+                channel_found = idx
+            end
+        end
+        if channel_found === nothing
+            throw(ArgumentError("channel name does not match signal labels."))
+        end
+    else
+        if channel < 1 || channel > length(labels)
+            throw(ArgumentError("channel index does not match signal channels."))
+        else
+            types[channel] = type
+        end
+    end
+    eeg_new.eeg_header[:channel_type] = types
+    
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_channel_type(EEG, channel=$channel, type=$type)")
+
+    return eeg_new
+end
+
+"""
+    eeg_channel_type!(eeg; channel, new_name)
+
+Change the `eeg` `channel` type.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, String}`
+- `type::String`
+"""
+function eeg_channel_type!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, type::String)
+
+    type = lowercase(type)
+    labels = eeg_labels(eeg)
+    types = eeg.eeg_header[:channel_type]
+    
+    if typeof(channel) == String
+        channel_found = nothing
+        for idx in 1:length(labels)
+            if channel == labels[idx]
+                types[idx] = type
+                channel_found = idx
+            end
+        end
+        if channel_found === nothing
+            throw(ArgumentError("channel name does not match signal labels."))
+        end
+    else
+        if channel < 1 || channel > length(labels)
+            throw(ArgumentError("channel index does not match signal channels."))
+        else
+            types[channel] = type
+        end
+    end
+    eeg_new.eeg_header[:channel_type] = types
+    
+    push!(eeg.eeg_header[:history], "eeg_channel_type!(EEG, channel=$channel, type=$type)")
+
+    nothing
+end
+
+"""
+    eeg_edit_electrode(eeg; <keyword arguments>)
+
+Edit `eeg` electrode.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{String, Int64}`: channel number or name
+- `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
+- `theta::Union{Real, Nothing}`: polar planar theta coordinate
+- `radius::Union{Real, Nothing}`: polar planar radius coordinate
+- `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `name::String=""`: channel name
+- `type::String=""`: channel type
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_edit_electrode(eeg::NeuroJ.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+
+    eeg_new = deepcopy(eeg)
+    channel = _get_channel_idx(eeg_labels(eeg_new), channel)
+
+    name != "" && eeg_rename_channel!(eeg_new, channel=channel, name=name)
+    type != "" && eeg_channel_type!(eeg_new, channel=channel, type=type)
+
+    x !== nothing && (eeg_new.eeg_header[:loc_x][channel] = x)
+    y !== nothing && (eeg_new.eeg_header[:loc_y][channel] = y)
+    z !== nothing && (eeg_new.eeg_header[:loc_z][channel] = z)
+    theta !== nothing && (eeg_new.eeg_header[:loc_theta][channel] = theta)
+    radius !== nothing && (eeg_new.eeg_header[:loc_radius][channel] = radius)
+    theta_sph !== nothing && (eeg_new.eeg_header[:loc_theta_sph][channel] = theta_sph)
+    radius_sph !== nothing && (eeg_new.eeg_header[:loc_radius_sph][channel] = radius_sph)
+    phi_sph !== nothing && (eeg_new.eeg_header[:loc_phi_sph][channel] = phi_sph)
+
+    (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (eeg_new.eeg_header[:channel_locations] == true)
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_edit_electrode(EEG; channel=$channel, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
+
+    return eeg_new
+end
+
+"""
+    eeg_edit_electrode!(eeg; <keyword arguments>)
+
+Edit `eeg` electrode.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{String, Int64}`: channel number or name
+- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+- `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+- `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `name::String=""`: channel name
+- `type::String=""`: channel type
+"""
+function eeg_edit_electrode!(eeg::NeuroJ.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+
+    channel = _get_channel_idx(eeg_labels(eeg), channel)
+
+    name != "" && eeg_rename_channel!(eeg, channel=channel, name=name)
+    type != "" && eeg_channel_type!(eeg, channel=channel, type=type)
+
+    x !== nothing && (eeg.eeg_header[:loc_x][channel] = x)
+    y !== nothing && (eeg.eeg_header[:loc_y][channel] = y)
+    z !== nothing && (eeg.eeg_header[:loc_z][channel] = z)
+    theta !== nothing && (eeg.eeg_header[:loc_theta][channel] = theta)
+    radius !== nothing && (eeg.eeg_header[:loc_radius][channel] = radius)
+    theta_sph !== nothing && (eeg.eeg_header[:loc_theta_sph][channel] = theta_sph)
+    radius_sph !== nothing && (eeg.eeg_header[:loc_radius_sph][channel] = radius_sph)
+    phi_sph !== nothing && (eeg.eeg_header[:loc_phi_sph][channel] = phi_sph)
+
+    (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (eeg.eeg_header[:channel_locations] == true)
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_edit_electrode(EEG; channel=$channel, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
+
+    nothing
+end
+
+"""
+    eeg_electrode_loc(eeg; channel)
+
+Return locations of the `eeg` `channel` electrode.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `channel::Union{Int64, String}`
+
+# Returns
+
+Named tuple containing:
+- `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+- `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+"""
+function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    channel = _get_channel_idx(eeg_labels(eeg), channel)
+
+    x = eeg.eeg_header[:loc_x][channel]
+    y = eeg.eeg_header[:loc_y][channel]
+    z = eeg.eeg_header[:loc_z][channel]
+    theta = eeg.eeg_header[:loc_theta][channel]
+    radius = eeg.eeg_header[:loc_radius][channel]
+    theta_sph = eeg.eeg_header[:loc_theta_sph][channel]
+    radius_sph = eeg.eeg_header[:loc_radius_sph][channel]
+    phi_sph = eeg.eeg_header[:loc_phi_sph][channel]
+
+    println("Channel: $channel")
+    println("  Label: $(eeg_labels(eeg)[channel])")
+    println("  theta: $theta (planar)")
+    println(" radius: $radius (planar)")
+    println("      X: $x (spherical)")
+    println("      Y: $y (spherical)")
+    println("      Z: $z (spherical)")
+    println(" radius: $radius_sph (spherical)")
+    println("  theta: $theta_sph (spherical)")
+    println("    phi: $phi_sph (spherical)")
+
+    return (theta=theta, radius=radius, x=x, y=y, z=z, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph)
+end
+
+"""
+    eeg_loc_swapxy(eeg; planar, spherical)
+
+Swap `eeg` channel locations x and y axes.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_swapxy(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    for idx in 1:eeg_channel_n(eeg_new)
+        if planar == true
+            t = deg2rad(eeg_new.eeg_header[:loc_theta][idx])
+            t += pi / 2
+            eeg_new.eeg_header[:loc_theta][idx] = rad2deg(t)
+        end
+        if spherical == true
+            eeg_new.eeg_header[:loc_x][idx], eeg_new.eeg_header[:loc_y][idx] = eeg_new.eeg_header[:loc_y][idx], eeg_new.eeg_header[:loc_x][idx]
+        end
+    end
+    eeg_loc_cart2sph!(eeg_new)
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_swapxy(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_swapxy!(eeg; planar, spherical)
+
+Swap `eeg` channel locations x and y axes.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
+"""
+function eeg_loc_swapxy!(eeg::NeuroJ.EEG; planar::Bool=true, spherical::Bool=true)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    for idx in 1:eeg_channel_n(eeg)
+        if planar == true
+            t = deg2rad(eeg.eeg_header[:loc_theta][idx])
+            t += pi / 2
+            eeg.eeg_header[:loc_theta][idx] = rad2deg(t)
+        end
+        if spherical == true
+            eeg.eeg_header[:loc_x][idx], eeg.eeg_header[:loc_y][idx] = eeg.eeg_header[:loc_y][idx], eeg.eeg_header[:loc_x][idx]
+        end
+    end
+    eeg_loc_cart2sph!(eeg)
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_swapxy!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_loc_sph2cart(eeg)
+
+Convert `eeg` spherical locations to Cartesian.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_sph2cart(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
 
     eeg_new = deepcopy(eeg)
 
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
-    for idx in 1:eeg_channel_n(eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
-                                          eeg.eeg_header[:loc_radius][idx])
-    end
-    for idx in 1:eeg_channel_n(eeg)
-        r, t = cart2pol(loc_x[idx], loc_y[idx])
-        eeg_new.eeg_header[:loc_radius][idx] = r
-        eeg_new.eeg_header[:loc_theta][idx] = round(Int64, rad2deg(t))
+    for idx in 1:eeg_channel_n(eeg_new)
+        r = eeg_new.eeg_header[:loc_radius_sph][idx]
+        t = eeg_new.eeg_header[:loc_theta_sph][idx]
+        p = eeg_new.eeg_header[:loc_phi_sph][idx]
+        x, y, z = sph2cart(r, t, p)
+        eeg_new.eeg_header[:loc_x][idx] = x
+        eeg_new.eeg_header[:loc_y][idx] = y
+        eeg_new.eeg_header[:loc_z][idx] = z
     end
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_loc_swap_axes(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_loc_sph2cart(EEG)")
 
     return eeg_new
 end
 
 """
-    eeg_loc_swap_axes!(eeg)
+    eeg_loc_sph2cart!(eeg)
 
-Swap x and y axes of `eeg` channel locations.
+Convert `eeg` spherical locations to Cartesian.
 
 # Arguments
 
 - `eeg::NeuroJ.EEG`
 """
-function eeg_loc_swap_axes!(eeg::NeuroJ.EEG)
+function eeg_loc_sph2cart!(eeg::NeuroJ.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
 
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
     for idx in 1:eeg_channel_n(eeg)
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
-                                          eeg.eeg_header[:loc_radius][idx])
-    end
-    for idx in 1:eeg_channel_n(eeg)
-        r, t = cart2pol(loc_x[idx], loc_y[idx])
-        eeg.eeg_header[:loc_radius][idx] = r
-        eeg.eeg_header[:loc_theta][idx] = round(Int64, rad2deg(t))
+        r = eeg.eeg_header[:loc_radius_sph][idx]
+        t = eeg.eeg_header[:loc_theta_sph][idx]
+        p = eeg.eeg_header[:loc_phi_sph][idx]
+        x, y, z = sph2cart(r, t, p)
+        eeg.eeg_header[:loc_x][idx] = x
+        eeg.eeg_header[:loc_y][idx] = y
+        eeg.eeg_header[:loc_z][idx] = z
     end
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_loc_swap_axes!(EEG)")
+    push!(eeg.eeg_header[:history], "eeg_loc_sph2cart!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_loc_cart2sph(eeg)
+
+Convert `eeg` Cartesian locations to spherical.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+
+# Returns
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_cart2sph(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    eeg_new = deepcopy(eeg)
+
+    for idx in 1:eeg_channel_n(eeg_new)
+        x = eeg_new.eeg_header[:loc_x][idx]
+        y = eeg_new.eeg_header[:loc_y][idx]
+        z = eeg_new.eeg_header[:loc_z][idx]
+        r, t, p = cart2sph(x, y, z)
+        eeg_new.eeg_header[:loc_radius_sph][idx] = r
+        eeg_new.eeg_header[:loc_theta_sph][idx] = t
+        eeg_new.eeg_header[:loc_phi_sph][idx] = p
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_loc_cart2sph(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_loc_cart2sph!(eeg)
+
+Convert `eeg` Cartesian locations to spherical.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+"""
+function eeg_loc_cart2sph!(eeg::NeuroJ.EEG)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before interpolating."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+
+    for idx in 1:eeg_channel_n(eeg)
+        x = eeg.eeg_header[:loc_x][idx]
+        y = eeg.eeg_header[:loc_y][idx]
+        z = eeg.eeg_header[:loc_z][idx]
+        r, t, p = cart2sph(x, y, z)
+        eeg.eeg_header[:loc_radius_sph][idx] = r
+        eeg.eeg_header[:loc_theta_sph][idx] = t
+        eeg.eeg_header[:loc_phi_sph][idx] = p
+    end
+
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_loc_cart2sph!(EEG)")
 
     nothing
 end

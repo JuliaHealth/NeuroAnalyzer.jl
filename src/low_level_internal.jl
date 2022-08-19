@@ -81,22 +81,20 @@ function _len(eeg::NeuroJ.EEG, len::Int64, def_l::Int64)
     return len
 end
 
-function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_y::Vector{Float64}; head_labels::Bool=true, kwargs...)
+function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, kwargs...)
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
     # - `loc_x::Vector{Float64}`: vector of x electrode position
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
     # - `kwargs`: optional arguments for plot() function
-    loc_x, loc_y = loc_y, loc_x
-    pts = Plots.partialcircle(0, 2π, 100, maximum(loc_x))
+    # loc_x, loc_y = loc_y, loc_x
+    pts = Plots.partialcircle(0, 2π, 100, 1.1)
     x, y = Plots.unzip(pts)
-    x = x .* 4
-    y = y .* 4
     head = Plots.Shape(x, y)
     nose = Plots.Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Plots.Shape([(minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), -0.1), (minimum(x) + 0.05 * minimum(x), 0.1), (minimum(x), 0.1)])
-    ear_r = Plots.Shape([(maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), -0.1), (maximum(x) + 0.05 * maximum(x), 0.1), (maximum(x), 0.1)])
+    ear_l = Plots.Shape([(minimum(x), -0.2), (minimum(x) + 0.05 * minimum(x), -0.2), (minimum(x) + 0.05 * minimum(x), 0.2), (minimum(x), 0.2)])
+    ear_r = Plots.Shape([(maximum(x), -0.2), (maximum(x) + 0.05 * maximum(x), -0.2), (maximum(x) + 0.05 * maximum(x), 0.2), (maximum(x), 0.2)])
     p = Plots.plot!(p, head, fill=nothing, label="")
     p = Plots.plot!(nose, fill=nothing, label="")
     p = Plots.plot!(ear_l, fill=nothing, label="")
@@ -107,7 +105,18 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}, loc_x::Vector{Float64}, loc_
         p = Plots.plot!(annotation=(-1 - minimum(x) / 5, 0, Plots.text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
         p = Plots.plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
-    p = Plots.plot!(; kwargs...)
+
+    pts = Plots.partialcircle(0, 2π, 64, 1.5)
+    x, y = Plots.unzip(pts)
+    peripheral = Shape(x, y)
+    p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=50)
+
+    pts = Plots.partialcircle(0, 2π, 64, 1.8)
+    x, y = Plots.unzip(pts)
+    peripheral = Shape(x, y)
+    p = Plots.plot!(p, peripheral, fill=nothing, label="", linecolor=:white, linewidth=100)
+
+    p = Plots.plot!(xlims=(-1.4, 1.4), ylims=(-1.4, 1.4); kwargs...)
     return p
 end
 
@@ -223,7 +232,6 @@ function _fir_response(f::Vector{Float64}, w=range(0, stop=π, length=1024))
 end
 
 function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
-
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
     (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
     (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
@@ -248,4 +256,58 @@ function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=no
     average == true && (epochs = mean(epochs, dims=3)[:, :])
 
     return epochs
+end
+
+function _get_channel_idx(labels::Vector{String}, channel::Union{String, Int64})
+    if typeof(channel) == String
+        channel_found = nothing
+        for idx in 1:length(labels)
+            if channel == labels[idx]
+                channel_found = idx
+            end
+        end
+        if channel_found === nothing
+            throw(ArgumentError("channel name does not match signal labels."))
+        end
+    else
+        channel < 1 || channel > length(labels) && throw(ArgumentError("channel index does not match signal channels."))
+        channel_found = channel
+    end
+
+    return channel_found
+end
+
+function _angle_quadrant(a::Real)
+    if a >= 0
+        a = mod(a, 360)
+        a <= 90 && (q = 1)
+        (a > 90 && a <= 180) && (q = 2)
+        (a > 180 && a <= 270) && (q = 3)
+        (a > 270 && a < 360) && (q = 4)
+    else
+        a = mod(a, -360)
+        a >= -90 && (q = 4)
+        (a < -90 && a >= -180) && (q = 3)
+        (a < -180 && a >= -270) && (q = 2)
+        (a < -270 && a > -360) && (q = 1)
+    end
+
+    return q    
+end 
+
+function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
+    xy = s_normalize_minmax(hcat(x, y))
+    x = xy[:, 1]
+    y = xy[:, 2]
+
+    return x, y
+end
+
+function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}, z::Union{AbstractVector, Real})
+    xyz = s_normalize_minmax(hcat(x, y, z))
+    x = xyz[:, 1]
+    y = xyz[:, 2]
+    z = xyz[:, 3]
+
+    return x, y, z
 end
