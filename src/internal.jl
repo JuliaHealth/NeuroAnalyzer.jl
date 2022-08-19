@@ -81,13 +81,12 @@ function _len(eeg::NeuroJ.EEG, len::Int64, def_l::Int64)
     return len
 end
 
-function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo::Bool=false, kwargs...)
+function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, kwargs...)
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
     # - `loc_x::Vector{Float64}`: vector of x electrode position
     # - `loc_y::Vector{Float64}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
-    # - `topo::Bool=false`: if true, use head for topo plot (perform peripheral erasing)
     # - `kwargs`: optional arguments for plot() function
     # loc_x, loc_y = loc_y, loc_x
     pts = Plots.partialcircle(0, 2π, 100, 1.1)
@@ -100,24 +99,22 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     p = Plots.plot!(nose, fill=nothing, label="")
     p = Plots.plot!(ear_l, fill=nothing, label="")
     p = Plots.plot!(ear_r, fill=nothing, label="")
+
     if head_labels == true
         p = Plots.plot!(annotation=(0, 1 - maximum(y) / 5, Plots.text("Inion", pointsize=12, halign=:center, valign=:center)))
         p = Plots.plot!(annotation=(0, -1 - minimum(y) / 5, Plots.text("Nasion", pointsize=12, halign=:center, valign=:center)))
         p = Plots.plot!(annotation=(-1 - minimum(x) / 5, 0, Plots.text("Left", pointsize=12, halign=:center, valign=:center, rotation=90)))
         p = Plots.plot!(annotation=(1 - maximum(x) / 5, 0, Plots.text("Right", pointsize=12, halign=:center, valign=:center, rotation=-90)))
     end
-
-    if topo == true
-        pts = Plots.partialcircle(0, 2π, 100, 1.3)
-        x, y = Plots.unzip(pts)
-        for idx in 1:0.001:1.5
-            peripheral = Shape(x .* idx, y .* idx)
-            p = Plots.plot!(p, peripheral, label="", lc=:white)
-        end
-        rect = Plots.Shape([(-1.3, -1.3), (-1.3, 1.3), (1.3, 1.3), (1.3, -1.3)])
-        p = Plots.plot!(rect, label="", lc=:white)
-        p = Plots.plot!(xlims=(-1.2, 1.2), ylims=(-1.2, 1.2); kwargs...)
+    pts = Plots.partialcircle(0, 2π, 100, 1.3)
+    x, y = Plots.unzip(pts)
+    for idx in 1:0.001:1.5
+        peripheral = Shape(x .* idx, y .* idx)
+        p = Plots.plot!(p, peripheral, label="", lc=:white)
     end
+    rect = Plots.Shape([(-1.3, -1.3), (-1.3, 1.3), (1.3, 1.3), (1.3, -1.3)])
+    p = Plots.plot!(rect, label="", lc=:white)
+    p = Plots.plot!(xlims=(-1.2, 1.2), ylims=(-1.2, 1.2); kwargs...)
 
     return p
 end

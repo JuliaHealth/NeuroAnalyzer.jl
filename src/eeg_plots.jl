@@ -3873,7 +3873,7 @@ function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64
     end
 
     if head == true
-        hd = _draw_head(p, head_labels=false, topo=true)
+        hd = _draw_head(p, head_labels=false)
         p = Plots.plot!(hd)
     end
 
