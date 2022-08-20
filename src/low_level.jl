@@ -310,7 +310,7 @@ function fft0(x::AbstractArray, n::Int64=0)
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
-    if CUDA.functional()
+    if CUDA.functional() && use_cuda
         cx = CuArray(x)
         pfft = Vector(fft(cx))
     else
@@ -339,7 +339,7 @@ function ifft0(x::AbstractArray, n::Int64=0)
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
-    if CUDA.functional()
+    if CUDA.functional() && use_cuda
         cx = CuArray(x)
         pifft = Vector(ifft(cx))
     else
@@ -375,7 +375,7 @@ Splits the vector `x` into `n`-long pieces.
 # Argument
 
 - `x::Vector{<:Real}`
- - `n::Int64`
+- `n::Int64`
 
 # Returns
 

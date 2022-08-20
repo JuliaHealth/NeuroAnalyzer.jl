@@ -36,4 +36,14 @@ eeg_export_csv(edf, file_name="edf.csv", header=false)
 @test isfile("edf.csv") == true
 isfile("edf.csv") && rm("edf.csv")
 
+isfile("test.ced") && rm("tesdt.ced")
+eeg_export_locs(edf, file_name="test.ced")
+@test isfile("test.ced") == true
+isfile("test.ced") && rm("test.ced")
+
+isfile("test.locs") && rm("tesdt.locs")
+eeg_export_locs(edf, file_name="test.locs")
+@test isfile("test.locs") == true
+isfile("test.locs") && rm("test.locs")
+
 true

@@ -943,6 +943,11 @@ end
 @time eeg_benchmark(1);
 @time eeg_benchmark(1);
 
+# Julia 1.7.3
 # workstation:  1.546805 seconds (5.74 M allocations: 15.011 GiB, 13.36% gc time)
 # laptop:       3.123244 seconds (5.52 M allocations: 14.993 GiB, 5.78% gc time)
+
+# Julia 1.8.
+# workstation:  1.546805 seconds (5.74 M allocations: 15.011 GiB, 13.36% gc time)
+# laptop:       4.777272 seconds (5.49 M allocations: 14.979 GiB, 6.99% gc time)
 ```

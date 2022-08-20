@@ -314,11 +314,6 @@ edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5], q=0.2)
 @test edf2.eeg_signals[1, :, :] != zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
 
 @test length(eeg_band_mpower(edf, f=(1,4))) == 3
-edf1 = eeg_loc_swap_axes(edf)
-@test edf.eeg_header[:loc_theta][1] == -18
-@test edf.eeg_header[:loc_radius][1] == 0.511
-@test edf1.eeg_header[:loc_theta][1] == -91
-@test edf1.eeg_header[:loc_radius][1] == 0.3141592653589793
 
 p, f = eeg_rel_psd(edf, f=(8,12))
 @test size(p) == (19, 513, 1)

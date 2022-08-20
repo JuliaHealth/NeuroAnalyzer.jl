@@ -25,6 +25,7 @@ eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 eeg_load(file_name::String)
 eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
+eeg_export_locs(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 ```
 
 ## EEG edit

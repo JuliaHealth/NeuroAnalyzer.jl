@@ -639,3 +639,48 @@ function eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, 
 
     return true
 end
+
+"""
+    eeg_export_locs(eeg; file_name, overwrite)
+
+Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `file_name::String`
+- `overwrite::Bool=false`
+
+# Returns
+
+- `success::Bool`
+"""
+function eeg_export_locs(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
+
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before exporting."))
+
+    labels = eeg_labels(eeg)
+    channels = collect(1:eeg_channel_n(eeg))
+    theta = eeg.eeg_header[:loc_theta]
+    radius = eeg.eeg_header[:loc_radius]
+    x = eeg.eeg_header[:loc_x]
+    y = eeg.eeg_header[:loc_y]
+    z = eeg.eeg_header[:loc_z]
+    radius_sph = eeg.eeg_header[:loc_radius_sph]
+    theta_sph = eeg.eeg_header[:loc_theta_sph]
+    phi_sph = eeg.eeg_header[:loc_phi_sph]
+
+    if splitext(file_name)[2] == ".ced"
+        df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
+        CSV.write(file_name, df, delim="\t")
+    elseif splitext(file_name)[2] == ".locs"
+        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=labels)
+        CSV.write(file_name, df, delim="\t", header=false)
+    else
+        throw(ArgumentError("file_name format must be .ced or .locs."))
+    end
+    
+    return true
+end

@@ -45,6 +45,7 @@ if VERSION < v"1.7.0"
 end
 
 const neuroj_ver = v"0.22.8"
+use_cuda::Bool = true
 
 include("neuroj.jl")
 export neuroj_plugins_reload
@@ -53,6 +54,7 @@ export neuroj_plugins_remove
 export neuroj_plugins_install
 export neuroj_plugins_update
 export neuroj_version
+
 neuroj_plugins_reload()
 
 include("internal.jl")
@@ -191,6 +193,7 @@ export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!
 export eeg_save
+export eeg_export_locs
 
 include("eeg_edit.jl")
 export eeg_copy

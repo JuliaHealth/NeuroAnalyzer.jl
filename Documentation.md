@@ -295,6 +295,27 @@ Export EEG data as CSV.
 
   * `success::Bool`
 
+<a id='NeuroJ.eeg_export_locs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_export_locs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_export_locs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_export_locs(eeg; file_name, overwrite)
+```
+
+Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`
+  * `overwrite::Bool=false`
+
+**Returns**
+
+  * `success::Bool`
+
 
 <a id='EEG-edit'></a>
 

@@ -157,7 +157,7 @@ The lists below are not in any particular order.
 
 General:
 - further performance optimizations
-- Pluto interface
+- Pluto/Interact interface
 
 EEG:
 - analysis, plots: brain topography
@@ -200,7 +200,6 @@ EEG:
 - edit: merge EEG objects
 - edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
-- io: export channel locs to .CED
 - io: import from CSV
 - io: import from EDF+, BDF and other formats
 - io: more channel location formats
