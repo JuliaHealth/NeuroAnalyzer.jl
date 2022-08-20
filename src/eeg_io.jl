@@ -641,7 +641,7 @@ function eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, 
 end
 
 """
-    eeg_export_locs(eeg; file_name, overwrite)
+    eeg_save_electrodes(eeg; file_name, overwrite)
 
 Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
 
@@ -655,7 +655,7 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
 - `success::Bool`
 """
-function eeg_export_locs(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
+function eeg_save_electrodes(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 

@@ -67,6 +67,7 @@ The following packages are required:
 - Distances
 - DSP
 - FFTW
+- FileIO
 - FindPeaks1D
 - Git
 - GLM
@@ -214,7 +215,7 @@ EEG:
 - plots: ITPC topoplot
 - plots: plot two EEG one over another for comparison
 - plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
-- plots: small plots (amplitude, PSD, spectrogram) at electrode locations
+- plots: topographical maps (amplitude, spectrogram, component) at electrode locations
 - plots: topoplot of amplitude differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals

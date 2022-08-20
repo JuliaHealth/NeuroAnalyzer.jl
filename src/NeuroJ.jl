@@ -9,6 +9,7 @@ using Deconvolution
 using Distances
 using DSP
 using FFTW
+using FileIO
 using FindPeaks1D
 using Git
 using GLM
@@ -193,7 +194,7 @@ export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!
 export eeg_save
-export eeg_export_locs
+export eeg_save_electrodes
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -457,6 +458,7 @@ export eeg_plot_signal_psd_3d
 export plot_rel_psd
 export eeg_plot_electrode
 export eeg_plot_electrodes3d
+export eeg_plot_signal_psd_topomap
 
 include("nstim.jl")
 export tes_dose

@@ -796,7 +796,7 @@ Plot PSD of indexed `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -805,9 +805,9 @@ Plot PSD of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -867,7 +867,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -877,9 +877,9 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
@@ -954,7 +954,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -963,9 +963,9 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -1863,7 +1863,7 @@ Plot `signal` channel power spectrum density.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -1873,7 +1873,7 @@ Plot `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
@@ -1891,7 +1891,7 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
 
     mono == true ? palette = :grays : palette = :darktest
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     if ax === :linlin
         p = Plots.plot(s_frq,
@@ -2037,7 +2037,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2047,10 +2047,10 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     mono == true ? palette = :grays : palette = :darktest
 
@@ -2167,7 +2167,7 @@ Butterfly plot of `signal` channels power spectrum density.
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `labels::Vector{String}=[""]`: channel labels vector
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2177,10 +2177,10 @@ Butterfly plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     mono == true ? palette = :grays : palette = :darktest
 
@@ -2369,7 +2369,7 @@ Plot `eeg` channels power spectrum density.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
@@ -2380,10 +2380,10 @@ Plot `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -2513,7 +2513,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2523,10 +2523,10 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
@@ -2626,7 +2626,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2636,10 +2636,10 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
 
@@ -2735,7 +2735,7 @@ Plot PSD of `eeg` external or embedded component.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2745,10 +2745,10 @@ Plot PSD of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2815,7 +2815,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling
@@ -2825,10 +2825,10 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2894,7 +2894,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -2903,10 +2903,10 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3333,7 +3333,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64,
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -6332,7 +6332,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 function eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, type::Symbol=:w, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     type in [:w, :s] || throw(ArgumentError("type must be :w or :s."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
     _check_channels(eeg, channel)
@@ -6514,7 +6514,7 @@ Plot relative `signal` channel power spectrum density.
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String=""`: y-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
@@ -6525,9 +6525,8 @@ Plot relative `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}, ax::Symbol=:linlin, kwargs...)
+function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing, ax::Symbol=:linlin, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
@@ -6542,7 +6541,7 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
 
     mono == true ? palette = :grays : palette = :darktest
 
-    ylabel == "" && (norm == true ? ylabel = "Power [dB]" : ylabel = "Power [μV^2/Hz]")
+    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
     if ax === :linlin
         p = Plots.plot(s_frq,
@@ -6747,7 +6746,7 @@ Plot `eeg` electrodes.
 
 # Returns
 
-- `f::GLMakie.Figure`
+- `fig::GLMakie.Figure`
 """
 function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 
@@ -6791,9 +6790,10 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
     marker_size = 15
     font_size = 15
 
-    f = Figure(; resolution=(plot_size, plot_size))
-    ax = Axis3(f[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (y_lim, x_lim, z_lim))
+    fig = Figure(; resolution=(plot_size, plot_size))
+    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
     # hidedecorations!(ax, grid=true, ticks=true)
+
     if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
         for idx in 1:eeg_tmp.eeg_header[:channel_n]
             if mono != true
@@ -6832,7 +6832,200 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
         GLMakie.text!(ax, "L", position=(-1, 0, 0.5), textsize = font_size)
         GLMakie.text!(ax, "R", position=(1, 0, 0.5), textsize = font_size)
     end
-    f
+    fig
 
-    return f
+    return fig
+end
+
+"""
+    eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
+
+Plot topographical map `eeg` PSD.
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`: EEG object
+- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `offset::Int64=0`: displayed segment offset in samples
+- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `norm::Bool=true`: normalize powers to dB
+- `mw::Bool=false`: if true use Morlet wavelet convolution
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `xlabel::String="Frequency [Hz]`: x-axis label
+- `ylabel::String="Power [dB]"`: y-axis label
+- `title::String=""`: plot title
+- `plot_size::Int64=1000`: plot dimensions
+- `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions
+- `labels::Bool=true`: add channel labels
+- `mono::Bool=false`: use color or grey palette
+- `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
+- `ax::Symbol=:linlin`: type of axes scaling
+
+# Returns
+
+- `fig::GLMakie.Figure`
+"""
+function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
+
+    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+
+    mono == true ? palette = :grays : palette = :darktest
+
+    ref in [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("type must be :abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
+    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
+
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+
+    # select channels, default is all channels
+    channel = _select_channels(eeg, channel, 0)
+    _check_channels(eeg, channel)
+
+    epoch_tmp = epoch
+    if epoch != 0
+        # convert epochs to offset and len
+        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
+        _check_epochs(eeg, epoch)
+        length(epoch) > 1 && sort!(epoch)
+        len = eeg_epoch_len(eeg) * length(epoch)
+        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
+        epoch_tmp = epoch[1]:epoch[end]
+        epoch = epoch[1]
+    else
+        # default length is one epoch or 20 seconds
+        len == 0 && (len = _len(eeg, len, 20))
+        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
+        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+    end
+
+    # set epoch markers if len > epoch_len
+    eeg_tmp, _ = _get_epoch_markers(eeg, offset, len)
+
+    # get time vector
+    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
+        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
+        t[1] = floor(t[1], digits=2)
+        t[end] = ceil(t[end], digits=2)
+    else
+        t = _get_t(eeg_tmp, offset, len)
+    end
+
+    _check_offset_len(eeg_tmp, offset, len)
+
+    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+
+    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+
+    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
+    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+
+    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
+    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
+        loc_x[idx], loc_y[idx] = pol2cart(eeg_tmp.eeg_header[:loc_radius][idx], eeg_tmp.eeg_header[:loc_theta][idx])
+    end
+
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    # get marker centers
+    loc_x .*= ((plot_size ÷ 2) - marker_size[1] ÷ 2)
+    loc_y .*= ((plot_size ÷ 2) - marker_size[2] ÷ 2)
+    loc_x = round.(loc_x, digits=0)[channel]
+    loc_y = round.(loc_y, digits=0)[channel]
+
+    if ref === :abs
+        title == "" && (title = "Topographical map: PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+    elseif ref === :total
+        title == "" && (title = "Topographical map: PSD relative to total power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Topographical map: PSD relative to $ref power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+    end
+
+    if labels == true
+        labels = eeg_labels(eeg)
+    else
+        labels = repeat([""], length(channel))
+    end
+
+    fig = Figure(; resolution=(plot_size, plot_size))
+    fig_axis = Axis(fig[1, 1])
+    fig_axis.aspect = AxisAspect(1)
+    fig_axis.title = title
+    GLMakie.xlims!(fig_axis, [-plot_size ÷ 2, plot_size ÷ 2])
+    GLMakie.ylims!(fig_axis, [-plot_size ÷ 2, plot_size ÷ 2])
+    hidedecorations!(fig_axis, grid=true, ticks=true)
+
+    for channel_idx in channel
+        s = signal[channel_idx, :, 1]
+        if ref === :abs
+            p = plot_psd(s,
+                         fs=fs,
+                         norm=norm,
+                         xlabel="",
+                         ylabel="",
+                         title=labels[channel_idx],
+                         mw=mw,
+                         mt=mt,
+                         frq_lim=frq_lim,
+                         ncyc=ncyc,
+                         mono=mono,
+                         ax=ax,
+                         grid=false,
+                         ticks=false,
+                         size=marker_size,
+                         ylims=(-40, 40))
+        elseif ref === :total
+            p = plot_rel_psd(s,
+                             fs=fs,
+                             norm=norm,
+                             xlabel="",
+                             ylabel="",
+                             title=labels[channel_idx],
+                             mt=mt,
+                             frq_lim=frq_lim,
+                             f=nothing,
+                             ncyc=ncyc,
+                             mono=mono,
+                             ax=ax,
+                             grid=false,
+                             ticks=false,
+                             size=marker_size,
+                             ylims=(-40, 40))
+        else
+            p = plot_rel_psd(s,
+                             fs=fs,
+                             labels=labels,
+                             norm=norm,
+                             frq_lim=frq_lim,
+                             xlabel="",
+                             ylabel="",
+                             title=labels[channel_idx],
+                             mono=mono,
+                             mt=mt,
+                             f=eeg_band(eeg, band=ref),
+                             ax=ax,
+                             grid=false,
+                             ticks=false,
+                             size=marker_size,
+                             ylims=(-40, 40))
+        end
+
+        marker_img = tempname() * ".png"
+        savefig(p, marker_img)
+        marker = load(marker_img)
+        GLMakie.scatter!(fig_axis, (loc_x[channel_idx], loc_y[channel_idx]), marker=marker, markersize=marker_size)
+    end
+
+    fig
+
+    return fig
 end

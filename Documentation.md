@@ -295,13 +295,13 @@ Export EEG data as CSV.
 
   * `success::Bool`
 
-<a id='NeuroJ.eeg_export_locs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_export_locs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_export_locs`** &mdash; *Method*.
+<a id='NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_export_locs(eeg; file_name, overwrite)
+eeg_save_electrodes(eeg; file_name, overwrite)
 ```
 
 Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
@@ -4617,7 +4617,7 @@ Plot PSD of indexed `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -4646,7 +4646,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -4676,7 +4676,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -4950,7 +4950,7 @@ Plot `signal` channel power spectrum density.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -4982,7 +4982,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5014,7 +5014,7 @@ Butterfly plot of `signal` channels power spectrum density.
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `labels::Vector{String}=[""]`: channel labels vector
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5048,7 +5048,7 @@ Plot `eeg` channels power spectrum density.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
@@ -5084,7 +5084,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5119,7 +5119,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5152,7 +5152,7 @@ Plot PSD of `eeg` external or embedded component.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5185,7 +5185,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `ax::Symbol=:linlin`: type of axes scaling
@@ -5218,7 +5218,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -6292,7 +6292,7 @@ Plot relative `signal` channel power spectrum density.
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
@@ -6347,7 +6347,44 @@ Plot `eeg` electrodes.
 
 **Returns**
 
-  * `f::GLMakie.Figure`
+  * `fig::GLMakie.Figure`
+
+<a id='NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
+```
+
+Plot topographical map `eeg` PSD.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `plot_size::Int64=1000`: plot dimensions
+  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions
+  * `labels::Bool=true`: add channel labels
+  * `mono::Bool=false`: use color or grey palette
+  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
+  * `ax::Symbol=:linlin`: type of axes scaling
+
+**Returns**
+
+  * `fig::GLMakie.Figure`
 
 
 <a id='Low-level-functions'></a>

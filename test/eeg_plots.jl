@@ -179,7 +179,10 @@ p = eeg_plot_signal_psd_3d(edf, channel=1:5, offset=25600, mt=true)
 p = eeg_plot_electrode(edf, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_electrodes3d(edf, selected=1:10)
-@test typeof(p) == GLMakie.Figure
+f = eeg_plot_electrodes3d(edf, selected=1:10)
+@test typeof(f) == GLMakie.Figure
+
+f = eeg_plot_signal_psd_topomap(edf)
+@test typeof(f) == GLMakie.Figure
 
 true

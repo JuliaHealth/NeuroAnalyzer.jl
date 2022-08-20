@@ -43,8 +43,14 @@ eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 Load electrode positions (CED, LOCS and ELC formats are supported):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
 p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
+```
+
+Save electrode positions (CED and LOCS format are supported)
+```
+eeg_save_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
 ```
 
 ![edf electrodes](images/edf_electrodes.png)
@@ -710,12 +716,19 @@ eeg_plot_save(p, file_name="images/edf_amp.png")
 
 ![edf topo :amp](images/edf_amp.png)
 
+Topographical map of PSD
+```julia
+p = eeg_plot_signal_psd_topomap(edf, offset=25600, frq_lim=(0, 8), mt=true, ref=:total)
+eeg_plot_save(p, file_name="images/edf_psd_topo.png")
+```
+![](images/edf_psd_topo.png)
+
 Plot PCA components:
 ```julia
 pc, pc_m, pc_var = eeg_pca(edf, n=10)
 p = eeg_plot_component_idx(edf, c=pc, c_idx=1:5, epoch=1)
 eeg_plot_save(p, file_name="images/edf_pca_1_5.png")
- bar(vec(pc_var))
+bar(vec(pc_var))
 ```
 
 ![pca](images/edf_pca_1_5.png)

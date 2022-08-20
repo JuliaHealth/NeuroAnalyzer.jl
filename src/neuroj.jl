@@ -24,6 +24,7 @@ function neuroj_version()
                          "Distances",
                          "DSP",
                          "FFTW",
+                         "FileIO",
                          "FindPeaks1D",
                          "Git",
                          "GLM",
