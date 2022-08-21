@@ -2413,6 +2413,7 @@ Return locations of the `eeg` `channel` electrode.
 
 - `eeg::NeuroJ.EEG`
 - `channel::Union{Int64, String}`
+- `output::Bool=true`: print output if true
 
 # Returns
 
@@ -2426,7 +2427,7 @@ Named tuple containing:
 - `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
 - `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
-function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String}, output::Bool=true)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
 
@@ -2441,17 +2442,19 @@ function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String})
     radius_sph = eeg.eeg_header[:loc_radius_sph][channel]
     phi_sph = eeg.eeg_header[:loc_phi_sph][channel]
 
-    println("Channel: $channel")
-    println("  Label: $(eeg_labels(eeg)[channel])")
-    println("  theta: $theta (planar)")
-    println(" radius: $radius (planar)")
-    println("      X: $x (spherical)")
-    println("      Y: $y (spherical)")
-    println("      Z: $z (spherical)")
-    println(" radius: $radius_sph (spherical)")
-    println("  theta: $theta_sph (spherical)")
-    println("    phi: $phi_sph (spherical)")
-
+    if output
+        println("Channel: $channel")
+        println("  Label: $(eeg_labels(eeg)[channel])")
+        println("  theta: $theta (planar)")
+        println(" radius: $radius (planar)")
+        println("      X: $x (spherical)")
+        println("      Y: $y (spherical)")
+        println("      Z: $z (spherical)")
+        println(" radius: $radius_sph (spherical)")
+        println("  theta: $theta_sph (spherical)")
+        println("    phi: $phi_sph (spherical)")
+    end
+    
     return (theta=theta, radius=radius, x=x, y=y, z=z, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph)
 end
 

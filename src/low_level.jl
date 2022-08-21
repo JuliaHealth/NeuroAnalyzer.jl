@@ -144,6 +144,8 @@ function cart2pol(x::Real, y::Real)
     q == 2 && (theta += 180)
     q == 3 && (theta += 180)
     q == 4 && (theta += 360)
+    # add 2π (360° in radians) to make theta positive
+    theta < 0 && (theta += 2 * pi)
 
     return radius, theta
 end
@@ -190,8 +192,9 @@ Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 - `z::Float64`
 """
 function sph2cart(radius::Real, theta::Real, phi::Real)
-
-    theta < 0 && (theta = 360 - abs(theta))
+    
+    # add 2π (360° in radians) to make theta positive
+    theta < 0 && (theta += 2 * pi)
 
     x = round(radius * sind(phi) * cosd(theta), digits=2)
     y = round(radius * sind(phi) * sind(theta), digits=2)
@@ -225,6 +228,8 @@ function cart2sph(x::Real, y::Real, z::Real)
     radius = round(hypot(x, y, z), digits=2)
     x != 0 ? theta = round(rad2deg(atan(y / x)), digits=1) : theta = round(rad2deg(atan(y)), digits=1)
     phi = round(rad2deg(acos(z / radius)), digits=2)
+    # add 2π (360° in radians) to make theta positive
+    theta < 0 && (theta += 2 * pi)
     
     return radius, theta, phi
 end
@@ -1110,7 +1115,7 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     acov = zeros(length(lags))
     l = length(signal)
 
-    @inbounds @simd for idx in eachindex(lags)
+    @fastmath @inbounds @simd for idx in eachindex(lags)
         if lags[idx] == 0
             # no lag
             s_sum = sum(s_demeaned.^2)
@@ -1163,7 +1168,7 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    @inbounds @simd for idx in 1:length(lags)
+    @fastmath @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
             s_sum = sum(s_demeaned1 .* s_demeaned2)

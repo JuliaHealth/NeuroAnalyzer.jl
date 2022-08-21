@@ -935,6 +935,9 @@ eeg_info(edf)
 # NeuroJ.jl Benchmarking
 
 ```julia
+if ENV["JULIA_COPY_STACKS"] == "1"
+    @warn "Environment variable JULIA_COPY_STACKS is set to 1, multithreading may not work correctly"
+end
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 function eeg_benchmark(n::Int64)
@@ -962,5 +965,5 @@ end
 
 # Julia 1.8.
 # workstation:  1.546805 seconds (5.74 M allocations: 15.011 GiB, 13.36% gc time)
-# laptop:       4.777272 seconds (5.49 M allocations: 14.979 GiB, 6.99% gc time)
+# laptop:       3.158540 seconds (5.49 M allocations: 14.979 GiB, 6.76% gc time)
 ```
