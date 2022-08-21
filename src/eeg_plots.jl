@@ -3744,7 +3744,7 @@ end
 """
     eeg_plot_electrodes(eeg; <keyword arguments>)
 
-Plot `eeg` electrodes.
+Plot `eeg` electrodes. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -4214,7 +4214,7 @@ end
 """
     eeg_plot_signal_topo(eeg; <keyword arguments>)
 
-Plot topographical view of `eeg` signal.
+Plot topographical view of `eeg` signal. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -4385,7 +4385,7 @@ end
 """
     eeg_plot_acomponent_topo(eeg; <keyword arguments>)
 
-Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch).
+Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -4527,7 +4527,7 @@ end
 """
     eeg_plot_weights_topo(eeg; <keyword arguments>)
 
-Topographical plot `eeg` of weights values at electrodes locations.
+Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -4619,7 +4619,7 @@ end
 """
     eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
 
-Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch).
+Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -4750,7 +4750,7 @@ end
 """
     eeg_plot_ica_topo(eeg; <keyword arguments>)
 
-Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA).
+Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -6674,7 +6674,7 @@ end
 """
     eeg_plot_electrode(eeg; <keyword arguments>)
 
-Plot `eeg` electrodes.
+Plot single `eeg` electrode. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -6733,7 +6733,7 @@ end
 """
     eeg_plot_electrodes3d(eeg; <keyword arguments>)
 
-Plot `eeg` electrodes.
+Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc_x, :loc_y and :loc_z locations.
 
 # Arguments
 
@@ -6840,7 +6840,7 @@ end
 """
     eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
 
-Plot topographical map `eeg` PSD.
+Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -6849,16 +6849,15 @@ Plot topographical map `eeg` PSD.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
 - `xlabel::String="Frequency [Hz]`: x-axis label
 - `ylabel::String="Power [dB]"`: y-axis label
 - `title::String=""`: plot title
-- `plot_size::Int64=1000`: plot dimensions
-- `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions
+- `plot_size::Int64=1000`: plot dimensions in px
+- `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
 - `labels::Bool=true`: add channel labels
 - `mono::Bool=false`: use color or grey palette
 - `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
@@ -6868,7 +6867,12 @@ Plot topographical map `eeg` PSD.
 
 - `fig::GLMakie.Figure`
 """
-function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
+function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
+
+    # always normalize to dB
+    norm = true
+    # plots y-axes are scaled to -40..+40 dB
+    ylims = (-40, 40)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -6982,7 +6986,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                          grid=false,
                          ticks=false,
                          size=marker_size,
-                         ylims=(-40, 40))
+                         ylims=ylims)
         elseif ref === :total
             p = plot_rel_psd(s,
                              fs=fs,
@@ -6999,7 +7003,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                              grid=false,
                              ticks=false,
                              size=marker_size,
-                             ylims=(-40, 40))
+                             ylims=ylims)
         else
             p = plot_rel_psd(s,
                              fs=fs,
@@ -7016,7 +7020,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
                              grid=false,
                              ticks=false,
                              size=marker_size,
-                             ylims=(-40, 40))
+                             ylims=ylims)
         end
 
         marker_img = tempname() * ".png"
