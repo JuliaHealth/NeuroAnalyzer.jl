@@ -5463,7 +5463,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 eeg_plot_electrodes(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` electrodes.
+Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -5648,7 +5648,7 @@ Plot `ica` components against time vector `t`.
 eeg_plot_signal_topo(eeg; <keyword arguments>)
 ```
 
-Plot topographical view of `eeg` signal.
+Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -5676,7 +5676,7 @@ Plot topographical view of `eeg` signal.
 eeg_plot_acomponent_topo(eeg; <keyword arguments>)
 ```
 
-Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch).
+Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -5704,7 +5704,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 eeg_plot_weights_topo(eeg; <keyword arguments>)
 ```
 
-Topographical plot `eeg` of weights values at electrodes locations.
+Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -5730,7 +5730,7 @@ Topographical plot `eeg` of weights values at electrodes locations.
 eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
 ```
 
-Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch).
+Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -5757,7 +5757,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 eeg_plot_ica_topo(eeg; <keyword arguments>)
 ```
 
-Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA).
+Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -6312,7 +6312,7 @@ Plot relative `signal` channel power spectrum density.
 eeg_plot_electrode(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` electrodes.
+Plot single `eeg` electrode. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -6334,7 +6334,7 @@ Plot `eeg` electrodes.
 eeg_plot_electrodes3d(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` electrodes.
+Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc*x, :loc*y and :loc_z locations.
 
 **Arguments**
 
@@ -6358,7 +6358,7 @@ Plot `eeg` electrodes.
 eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
 ```
 
-Plot topographical map `eeg` PSD.
+Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
@@ -6367,16 +6367,15 @@ Plot topographical map `eeg` PSD.
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
   * `xlabel::String="Frequency [Hz]`: x-axis label
   * `ylabel::String="Power [dB]"`: y-axis label
   * `title::String=""`: plot title
-  * `plot_size::Int64=1000`: plot dimensions
-  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions
+  * `plot_size::Int64=1000`: plot dimensions in px
+  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
   * `labels::Bool=true`: add channel labels
   * `mono::Bool=false`: use color or grey palette
   * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
