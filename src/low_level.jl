@@ -114,7 +114,7 @@ function vsearch(y::Vector{<:Real}, x::Vector{<:Real}; return_distance=false)
     y_idx = zeros(length(y))
     y_dist = zeros(length(y))
 
-    @fastmath @inbounds @simd for idx in eachindex(y)
+    @inbounds @simd for idx in eachindex(y)
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
 
@@ -1115,7 +1115,7 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     acov = zeros(length(lags))
     l = length(signal)
 
-    @fastmath @inbounds @simd for idx in eachindex(lags)
+    @inbounds @simd for idx in eachindex(lags)
         if lags[idx] == 0
             # no lag
             s_sum = sum(s_demeaned.^2)
@@ -1168,7 +1168,7 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    @fastmath @inbounds @simd for idx in 1:length(lags)
+    @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
             s_sum = sum(s_demeaned1 .* s_demeaned2)

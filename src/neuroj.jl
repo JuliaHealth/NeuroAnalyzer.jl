@@ -15,7 +15,7 @@ function neuroj_version()
     println("     Plugins path: $(expanduser("~/Documents/NeuroJ/plugins/"))")
     println("          Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
     if ENV["JULIA_COPY_STACKS"] == "1"
-        @warn "Environment variable JULIA_COPY_STACKS is set to 1, multithreading may not work correctly"
+        @warn "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
     end
     println("Imported packages:")
     required_packages = ["ColorSchemes",
