@@ -8,7 +8,7 @@ function neuroj_version()
     println("    Julia version: $VERSION")
     println("   NeuroJ version: $neuroj_ver")
     if CUDA.functional()
-        println("     CUDA version: $(CUDA.version())")
+        println("     CUDA version: $(CUDA.version()) (use_cuda = $use_cuda)")
     else
         println("     CUDA version: CUDA not available")
     end
