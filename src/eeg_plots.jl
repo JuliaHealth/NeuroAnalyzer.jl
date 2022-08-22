@@ -6827,10 +6827,10 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
         end
     end
     if head_labels == true
-        GLMakie.text!(ax, "N", position=(0, 1, 0), textsize = font_size)
-        GLMakie.text!(ax, "I", position=(0, -1, 0), textsize = font_size)
-        GLMakie.text!(ax, "L", position=(-1, 0, 0.5), textsize = font_size)
-        GLMakie.text!(ax, "R", position=(1, 0, 0.5), textsize = font_size)
+        GLMakie.text!(ax, "NAS", position=(0, 1, 0), textsize = font_size)
+        GLMakie.text!(ax, "IN", position=(0, -1, 0), textsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1, 0, 0), textsize = font_size)
     end
     fig
 
@@ -7029,6 +7029,146 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
         GLMakie.scatter!(fig_axis, (loc_x[channel_idx], loc_y[channel_idx]), marker=marker, markersize=marker_size)
     end
 
+    fig
+
+    return fig
+end
+
+"""
+    plot_electrodes(locs; <keyword arguments>)
+
+Preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
+
+# Arguments
+
+- `locs::DataFrame`
+- `labels::Bool=true`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_electrodes(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
+
+    mono == true ? palette = :grays : palette = :darktest
+
+    plot_size = 400
+    marker_size = 4
+    font_size = 4
+
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   palette=palette,
+                   size=(plot_size, plot_size),
+                   markerstrokewidth=0,
+                   border=:none,
+                   aspect_ratio=1,
+                   margins=-plot_size * Plots.px,
+                   titlefontsize=8)
+
+    loc_x = zeros(length(locs[!, :labels]))
+    loc_y = zeros(length(locs[!, :labels]))
+    for idx in 1:length(locs[!, :labels])
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :radius][idx], 
+                                          locs[!, :theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
+
+    for idx in 1:length(locs[!, :labels])
+        if mono != true
+            p = Plots.plot!((loc_x, loc_y),
+                      color=:black,
+                      seriestype=:scatter,
+                      grid=true,
+                      label="",
+                      markersize=marker_size,
+                      markerstrokewidth=0,
+                      markerstrokealpha=0)
+        else
+            p = Plots.plot!((loc_x[idx], loc_y[idx]),
+                      color=:black,
+                      seriestype=:scatter,
+                      grid=true,
+                      label="",
+                      markersize=marker_size,
+                      markerstrokewidth=0,
+                      markerstrokealpha=0)
+        end                
+    end
+
+    if labels == true
+        for idx in 1:length(locs[!, :labels])
+            Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+        end
+    end
+
+    hd = _draw_head(p, head_labels=head_labels)
+    p = Plots.plot!(hd)
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_electrodes3d(locs; <keyword arguments>)
+
+3D interactive preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
+
+# Arguments
+
+- `locs::DataFrame`
+- `labels::Bool=true`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+
+# Returns
+
+- `fig::GLMakie.Figure`
+"""
+function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
+
+    mono == true ? palette = :grays : palette = :darktest
+
+    loc_x = locs[!, :x]
+    loc_y = locs[!, :y]
+    loc_z = locs[!, :z]
+
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    loc_x = round.(loc_x, digits=2)
+    loc_y = round.(loc_y, digits=2)
+    loc_z = round.(loc_z, digits=2)
+    x_lim = (-1.1, 1.1)
+    y_lim = (-1.1, 1.1)
+    z_lim = extrema(loc_z)
+
+    plot_size = 800
+    marker_size = 15
+    font_size = 15
+
+    fig = Figure(; resolution=(plot_size, plot_size))
+    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
+    # hidedecorations!(ax, grid=true, ticks=true)
+
+    GLMakie.scatter!(ax, loc_x, loc_y, loc_z, markersize=marker_size, color=:gray)
+
+    if labels == true
+        for idx in 1:length(locs[!, :labels])
+            GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
+        end
+    end
+
+    if head_labels == true
+        GLMakie.text!(ax, "NAS", position=(0, 1, 0), textsize = font_size)
+        GLMakie.text!(ax, "IN", position=(0, -1, 0), textsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "top", position=(0, 0, 1), textsize = font_size)
+    end
     fig
 
     return fig

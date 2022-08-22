@@ -40,7 +40,7 @@ edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
-Load electrode positions (CED, LOCS and ELC formats are supported):
+Load electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported):
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
@@ -48,19 +48,12 @@ p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
-Save electrode positions (CED and LOCS format are supported)
-```
-eeg_save_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
-```
-
-![edf electrodes](images/edf_electrodes.png)
-
-Preview electrodes in 3D:
+Load and preview electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported):
 ```julia
-p = eeg_plot_electrodes3d(edf, selected=1:19)
-eeg_plot_save(p, file_name="images/edf_electrodes3d.png")
+locs = eeg_import_ced("locs/standard-10-20-cap19-elmiko-correct.ced")
+plot_electrodes(locs)
+plot_electrodes3d(locs)
 ```
-![edf electrodes 3d](images/edf_electrodes3d.png)
 
 Edit electrode position:
 ```julia
@@ -99,6 +92,26 @@ eeg_plot_save(p, file_name="images/edf_electrodes3d_xy.png")
 
 ![](images//edf_electrodes_xy.png)
 ![](images//edf_electrodes3d_xy.png)
+
+Finally, add electrode positions:
+```julia
+eeg_add_electrodes!(edf, locs=locs)
+```
+
+Save electrode positions (CED and LOCS format are supported)
+```
+eeg_save_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
+```
+
+![edf electrodes](images/edf_electrodes.png)
+
+Preview electrodes in 3D:
+```julia
+p = eeg_plot_electrodes3d(edf, selected=1:19)
+eeg_plot_save(p, file_name="images/edf_electrodes3d.png")
+```
+![edf electrodes 3d](images/edf_electrodes3d.png)
+
 
 Save EEG object as HDF5-based file:
 ```julia

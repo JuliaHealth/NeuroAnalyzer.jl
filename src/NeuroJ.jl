@@ -192,11 +192,14 @@ export eeg_import_ced
 export eeg_import_locs
 export eeg_import_elc
 export eeg_import_tsv
+export eeg_import_sfp
 export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!
 export eeg_save
 export eeg_save_electrodes
+export eeg_add_electrodes
+export eeg_add_electrodes!
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -461,6 +464,8 @@ export plot_rel_psd
 export eeg_plot_electrode
 export eeg_plot_electrodes3d
 export eeg_plot_signal_psd_topomap
+export plot_electrodes
+export plot_electrodes3d
 
 include("nstim.jl")
 export tes_dose

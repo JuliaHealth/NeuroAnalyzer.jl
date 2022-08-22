@@ -185,4 +185,10 @@ f = eeg_plot_electrodes3d(edf, selected=1:10)
 f = eeg_plot_signal_psd_topomap(edf)
 @test typeof(f) == GLMakie.Figure
 
+locs = eeg_import_ced("standard-10-20-cap19-elmiko.ced")
+p = plot_electrodes(locs)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+f = plot_electrodes3d(locs)
+@test typeof(f) == GLMakie.Figure
+
 true

@@ -290,7 +290,6 @@ function eeg_import_locs(file_name::String)
     sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
 
     DataFrames.rename!(sensors, [:number, :theta, :radius, :labels])
-    colnames = names(sensors)
     labels = lstrip.(sensors[!, "labels"])
 
     x = zeros(length(labels))
@@ -302,8 +301,8 @@ function eeg_import_locs(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
 
-    "theta" in colnames && (theta = sensors[!, "theta"])
-    "radius" in colnames && (radius = sensors[!, "radius"])
+    theta = sensors[!, "theta"]
+    radius = sensors[!, "radius"]
 
     sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
 
@@ -420,6 +419,47 @@ function eeg_import_tsv(file_name::String)
 end
 
 """
+    eeg_import_sfp(file_name)
+
+Load electrode positions from SFP file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `sensors::DataFrame`
+"""
+function eeg_import_sfp(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
+    splitext(file_name)[2] == ".sfp" || throw(ArgumentError("Not a SFP file."))
+    sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
+
+    DataFrames.rename!(sensors, [:label, :x, :y, :z])
+
+    labels = lstrip.(sensors[!, "label"])
+
+    x = zeros(length(labels))
+    y = zeros(length(labels))
+    z = zeros(length(labels))
+    radius = zeros(length(labels))
+    theta = zeros(length(labels))
+    radius_sph = zeros(length(labels))
+    theta_sph = zeros(length(labels))
+    phi_sph = zeros(length(labels))
+    
+    x = sensors[!, "x"]
+    y = sensors[!, "y"]
+    z = sensors[!, "z"]
+
+    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+
+    return sensors
+end
+
+"""
     eeg_load_electrodes(eeg; file_name)
 
 Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
@@ -429,6 +469,7 @@ Accepted formats:
 - LOCS
 - ELC
 - TSV
+- SFP
 
 Electrode locations:
 - loc_theta       planar polar angle
@@ -462,8 +503,10 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
         sensors = eeg_import_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
         sensors = eeg_import_tsv(file_name)
+    elseif splitext(file_name)[2] == ".sfp"
+        sensors = eeg_import_sfp(file_name)
     else
-        throw(ArgumentError("File format not recognized."))
+        throw(ArgumentError("Unknown file format."))
     end
 
     f_labels = lowercase.(sensors[:, :labels])
@@ -511,10 +554,24 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
+Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Accepted formats:
 - CED
 - LOCS
 - ELC
+- TSV
+- SFP
+
+Electrode locations:
+- loc_theta       planar polar angle
+- loc_radius      planar polar radius
+- loc_x           spherical Cartesian x
+- loc_y           spherical Cartesian y
+- loc_z           spherical Cartesian z
+- loc_radius_sph  spherical radius
+- loc_theta_sph   spherical horizontal angle
+- loc_phi_sph     spherical azimuth angle
 
 # Arguments
 
@@ -526,65 +583,32 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    loc_theta = Vector{Float64}()       # polar angle
-    loc_radius = Vector{Float64}()      # polar radius
-    loc_x = Vector{Float64}()           # Cartesian x
-    loc_y = Vector{Float64}()           # Cartesian y
-    loc_z = Vector{Float64}()           # Cartesian z
-    loc_radius_sph = Vector{Float64}()  # spherical radius
-    loc_theta_sph = Vector{Float64}()   # spherical horizontal angle
-    loc_phi_sph = Vector{Float64}()     # spherical azimuth angle
-
     if splitext(file_name)[2] == ".ced"
         sensors = eeg_import_ced(file_name)
-
-        f_labels = lowercase.(sensors[:, :labels])
-
-        loc_theta = float.(sensors[:, :theta])
-        loc_radius = float.(sensors[:, :radius])
-
-        loc_x = float.(sensors[:, :X])
-        loc_y = float.(sensors[:, :Y])
-        loc_z = float.(sensors[:, :Z])
-        
-        loc_radius_sph = float.(sensors[:, :sph_radius])
-        loc_theta_sph = float.(sensors[:, :sph_theta])
-        loc_phi_sph = float.(sensors[:, :sph_phi])
-    end
-
-    if splitext(file_name)[2] == ".elc"
+    elseif splitext(file_name)[2] == ".elc"
         sensors = eeg_import_elc(file_name)
-
-        f_labels = lowercase.(sensors[:, :labels])
-        
-        loc_theta = zeros(length(f_labels))
-        loc_radius = zeros(length(f_labels))
-
-        loc_radius_sph = zeros(length(f_labels))
-        loc_theta_sph = zeros(length(f_labels))
-        loc_phi_sph = zeros(length(f_labels))
-
-        loc_x = float.(sensors[:, :x])
-        loc_y = float.(sensors[:, :y])
-        loc_z = float.(sensors[:, :z])
-    end
-
-    if splitext(file_name)[2] == ".locs"
+    elseif splitext(file_name)[2] == ".locs"
         sensors = eeg_import_locs(file_name)
-
-        f_labels = lowercase.(sensors[:, :labels])
-
-        loc_theta = sensors[:, :theta]
-        loc_radius = sensors[:, :radius]
-
-        loc_radius_sph = zeros(length(f_labels))
-        loc_theta_sph = zeros(length(f_labels))
-        loc_phi_sph = zeros(length(f_labels))
-
-        loc_x = zeros(length(f_labels))
-        loc_y = zeros(length(f_labels))
-        loc_z = zeros(length(f_labels))
+    elseif splitext(file_name)[2] == ".tsv"
+        sensors = eeg_import_tsv(file_name)
+    elseif splitext(file_name)[2] == ".sfp"
+        sensors = eeg_import_sfp(file_name)
+    else
+        throw(ArgumentError("Unknown file format."))
     end
+
+    f_labels = lowercase.(sensors[:, :labels])
+
+    loc_theta = float.(sensors[:, :theta])
+    loc_radius = float.(sensors[:, :radius])
+
+    loc_radius_sph = float.(sensors[:, :radius_sph])
+    loc_theta_sph = float.(sensors[:, :theta_sph])
+    loc_phi_sph = float.(sensors[:, :phi_sph])
+
+    loc_x = float.(sensors[:, :x])
+    loc_y = float.(sensors[:, :y])
+    loc_z = float.(sensors[:, :z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
@@ -609,7 +633,7 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
     eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_load_sensor_positions(EEG, $file_name)")
+    push!(eeg.eeg_header[:history], "eeg_load_electrodes!(EEG, $file_name)")
 
     nothing
 end
@@ -768,4 +792,135 @@ function eeg_save_electrodes(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool
     end
     
     return true
+end
+
+"""
+    eeg_add_electrodes(eeg; locs)
+
+Add electrode positions from `locs`. 
+
+Electrode locations:
+- loc_theta       planar polar angle
+- loc_radius      planar polar radius
+- loc_x           spherical Cartesian x
+- loc_y           spherical Cartesian y
+- loc_z           spherical Cartesian z
+- loc_radius_sph  spherical radius
+- loc_theta_sph   spherical horizontal angle
+- loc_phi_sph     spherical azimuth angle
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `locs::DataFrame`
+
+# Returns
+
+- `eeg:EEG`
+"""
+function eeg_add_electrodes(eeg::NeuroJ.EEG; locs::DataFrame)
+
+    f_labels = lowercase.(locs[:, :labels])
+
+    loc_theta = float.(locs[:, :theta])
+    loc_radius = float.(locs[:, :radius])
+
+    loc_radius_sph = float.(locs[:, :radius_sph])
+    loc_theta_sph = float.(locs[:, :theta_sph])
+    loc_phi_sph = float.(locs[:, :phi_sph])
+
+    loc_x = float.(locs[:, :x])
+    loc_y = float.(locs[:, :y])
+    loc_z = float.(locs[:, :z])
+
+    e_labels = lowercase.(eeg.eeg_header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in locs object."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in 1:length(e_labels)
+        for idx2 in 1:length(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
+    # create new dataset
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_header[:channel_locations] = true
+    eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx]
+    eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx]
+    eeg_new.eeg_header[:loc_x] = loc_x[labels_idx]
+    eeg_new.eeg_header[:loc_y] = loc_y[labels_idx]
+    eeg_new.eeg_header[:loc_z] = loc_z[labels_idx]
+    eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
+    eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
+    eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
+
+    # add entry to :history field
+    push!(eeg_new.eeg_header[:history], "eeg_add_electrodes(EEG, locs)")
+
+    return eeg_new
+end
+
+"""
+    eeg_add_electrodes!(eeg; locs)
+
+Load electrode positions from `locs` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Electrode locations:
+- loc_theta       planar polar angle
+- loc_radius      planar polar radius
+- loc_x           spherical Cartesian x
+- loc_y           spherical Cartesian y
+- loc_z           spherical Cartesian z
+- loc_radius_sph  spherical radius
+- loc_theta_sph   spherical horizontal angle
+- loc_phi_sph     spherical azimuth angle
+
+# Arguments
+
+- `eeg::NeuroJ.EEG`
+- `locs::DataFrame`
+"""
+function eeg_add_electrodes!(eeg::NeuroJ.EEG; locs::DataFrame)
+    
+    f_labels = lowercase.(locs[:, :labels])
+
+    loc_theta = float.(locs[:, :theta])
+    loc_radius = float.(locs[:, :radius])
+
+    loc_radius_sph = float.(locs[:, :radius_sph])
+    loc_theta_sph = float.(locs[:, :theta_sph])
+    loc_phi_sph = float.(locs[:, :phi_sph])
+
+    loc_x = float.(locs[:, :x])
+    loc_y = float.(locs[:, :y])
+    loc_z = float.(locs[:, :z])
+
+    e_labels = lowercase.(eeg.eeg_header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in locs object."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in 1:length(e_labels)
+        for idx2 in 1:length(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
+    # create new dataset
+    eeg.eeg_header[:channel_locations] = true
+    eeg.eeg_header[:loc_theta] = loc_theta[labels_idx]
+    eeg.eeg_header[:loc_radius] = loc_radius[labels_idx]
+    eeg.eeg_header[:loc_x] = loc_x[labels_idx]
+    eeg.eeg_header[:loc_y] = loc_y[labels_idx]
+    eeg.eeg_header[:loc_z] = loc_z[labels_idx]
+    eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
+    eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
+    eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
+
+    # add entry to :history field
+    push!(eeg.eeg_header[:history], "eeg_add_electrodes!(EEG, locs)")
+
+    nothing
 end

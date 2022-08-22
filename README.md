@@ -203,7 +203,6 @@ EEG:
 - edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
 - io: import from CSV
 - io: import from EDF+, BDF and other formats
-- io: more channel location formats (SFP)
 - misc: reports in .md format
 - misc: update tutorial.md
 - plots: 3d head/brain plots

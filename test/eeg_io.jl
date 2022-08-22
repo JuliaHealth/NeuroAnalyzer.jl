@@ -55,4 +55,8 @@ eeg_save_electrodes(edf, file_name="test_out.locs")
 @test isfile("test_out.locs") == true
 isfile("test_out.locs") && rm("test_out.locs")
 
+locs = eeg_import_ced("standard-10-20-cap19-elmiko.ced")
+edf2 = eeg_add_electrodes(edf, locs=locs)
+@test typeof(edf2) == NeuroJ.EEG
+
 true

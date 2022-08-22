@@ -158,12 +158,15 @@ eeg_import_ced(file_name::String)
 eeg_import_locs(file_name::String)
 eeg_import_elc(file_name::String)
 eeg_import_tsv(file_name::String)
+eeg_import_sfp(file_name::String)
 eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
 eeg_load(file_name::String)
 eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
 eeg_save_electrodes(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
+eeg_add_electrodes(eeg::NeuroJ.EEG; locs::DataFrame)
+eeg_add_electrodes!(eeg::NeuroJ.EEG; locs::DataFrame)
 ```
 
 ## EEG edit
@@ -446,6 +449,8 @@ plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false,
 eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
 eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
+plot_electrodes(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
+plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 ```
 
 ## Neurostimulation
