@@ -4,7 +4,7 @@
 Show NeuroJ and imported packages versions.
 """
 function neuroj_version()
-    m = Pkg.Operations.Context().env.manifest
+
     println("    Julia version: $VERSION")
     println("   NeuroJ version: $neuroj_ver")
     if CUDA.functional()
@@ -15,41 +15,48 @@ function neuroj_version()
     println("     Plugins path: $(expanduser("~/Documents/NeuroJ/plugins/"))")
     println("          Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
-        @warn "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
+        @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
     end
+
     println("Imported packages:")
-    required_packages = ["ColorSchemes",
-                         "CSV",
-                         "CubicSplines",
-                         "CUDA",
-                         "DataFrames",
-                         "Deconvolution",
-                         "Distances",
-                         "DSP",
-                         "FFTW",
-                         "FileIO",
-                         "FindPeaks1D",
-                         "Git",
-                         "GLM",
-                         "GLMakie",
-                         "HypothesisTests",
-                         "InformationMeasures",
-                         "Interpolations",
-                         "JLD2",
-                         "Loess",
-                         "MultivariateStats",
-                         "Plots",
-                         "Polynomials",
-                         "ScatteredInterpolation",
-                         "Simpson",
-                         "StatsFuns",
-                         "StatsKit",
-                         "StatsModels",
-                         "StatsPlots",
-                         "Wavelets"]
+    # required_packages = Vector{String}()
+    # for (key, value) in TOML.parsefile("Project.toml")["deps"]
+    #     push!(required_packages, key)
+    # end
+    required_packages = [
+        "ColorSchemes",
+        "CSV",
+        "CubicSplines",
+        "CUDA",
+        "DataFrames",
+        "Deconvolution",
+        "Distances",
+        "DSP",
+        "FFTW",
+        "FileIO",
+        "FindPeaks1D",
+        "Git",
+        "GLM",
+        "GLMakie",
+        "HypothesisTests",
+        "InformationMeasures",
+        "Interpolations",
+        "JLD2",
+        "Loess",
+        "MultivariateStats",
+        "Plots",
+        "Polynomials",
+        "ScatteredInterpolation",
+        "Simpson",
+        "StatsFuns",
+        "StatsKit",
+        "StatsModels",
+        "StatsPlots",
+        "Wavelets"]
+    versions = TOML.parsefile("Manifest.toml")["deps"]
     for idx in 1:length(required_packages)
         pkg = lpad(required_packages[idx], 25 - length(idx), " ")
-        pkg_ver = m[findfirst(v->v.name==required_packages[idx], m)].version
+        pkg_ver = versions[required_packages[idx]][1]["version"]
         println("$pkg $pkg_ver ")
     end
 end
@@ -99,7 +106,7 @@ Remove NeuroJ plugin.
 - `plugin::String`: plugin name
 """
 function neuroj_plugins_remove(plugin::String)
-    @warn "This will remove the whole $plugin directory, along with its file contents."
+    @info "This will remove the whole $plugin directory, along with its file contents."
     isdir(expanduser("~/Documents/NeuroJ/plugins/")) || mkpath(expanduser("~/Documents/NeuroJ/plugins/"))
     plugins_path=expanduser("~/Documents/NeuroJ/plugins/")
     cd(plugins_path)
@@ -108,7 +115,7 @@ function neuroj_plugins_remove(plugin::String)
     try
         rm(plugin, recursive=true)
     catch err
-        @warn "Cannot remove $plugin directory."
+        @error "Cannot remove $plugin directory."
     end
     neuroj_plugins_reload()
 end
@@ -129,7 +136,7 @@ function neuroj_plugins_install(plugin::String)
     try
         run(`$(git()) clone $plugin`)
     catch err
-        @warn "Cannot install $plugin."
+        @error "Cannot install $plugin."
     end
     neuroj_plugins_reload()
 end
@@ -155,7 +162,7 @@ function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
             try
                 run(`$(git()) pull`)
             catch err
-                @warn "Cannot update $(plugins[idx])."
+                @error "Cannot update $(plugins[idx])."
             end
             cd(plugins_path)
         end
@@ -165,7 +172,7 @@ function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
         try
             run(`$(git()) pull`)
         catch err
-            @warn "Cannot update $plugin."
+            @error "Cannot update $plugin."
         end
         cd(plugins_path)
     end

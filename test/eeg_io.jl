@@ -18,6 +18,15 @@ eeg_delete_channel!(edf, channel=17)
 @test edf.eeg_header[:channel_locations] == false
 @test edf.eeg_header[:channel_locations] == false
 
+s = eeg_import_ced("test.ced")
+@test typeof(s) == DataFrame
+s = eeg_import_locs("test.locs")
+@test typeof(s) == DataFrame
+s = eeg_import_elc("test.elc")
+@test typeof(s) == DataFrame
+s = eeg_import_tsv("test.tsv")
+@test typeof(s) == DataFrame
+
 edf = eeg_load_electrodes(edf, file_name="standard-10-20-cap19-elmiko.ced")
 @test typeof(edf) == NeuroJ.EEG
 @test edf.eeg_header[:channel_locations] == true
@@ -36,14 +45,14 @@ eeg_export_csv(edf, file_name="edf.csv", header=false)
 @test isfile("edf.csv") == true
 isfile("edf.csv") && rm("edf.csv")
 
-isfile("test.ced") && rm("tesdt.ced")
-eeg_save_electrodes(edf, file_name="test.ced")
-@test isfile("test.ced") == true
-isfile("test.ced") && rm("test.ced")
+isfile("test_out.ced") && rm("test_out.ced")
+eeg_save_electrodes(edf, file_name="test_out.ced")
+@test isfile("test_out.ced") == true
+isfile("test_out.ced") && rm("test_out.ced")
 
-isfile("test.locs") && rm("tesdt.locs")
-eeg_save_electrodes(edf, file_name="test.locs")
-@test isfile("test.locs") == true
-isfile("test.locs") && rm("test.locs")
+isfile("test_out.locs") && rm("test_out.locs")
+eeg_save_electrodes(edf, file_name="test_out.locs")
+@test isfile("test_out.locs") == true
+isfile("test_out.locs") && rm("test_out.locs")
 
 true

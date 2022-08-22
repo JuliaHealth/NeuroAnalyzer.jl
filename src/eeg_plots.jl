@@ -1913,7 +1913,7 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(s_frq,
@@ -1974,7 +1974,7 @@ function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=f
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false
@@ -2111,7 +2111,7 @@ function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(xaxis=:log10,
@@ -2233,7 +2233,7 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         p = Plots.plot(xaxis=:log10,
@@ -2300,7 +2300,7 @@ function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, 
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         if norm == false
@@ -5187,7 +5187,7 @@ function eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; fi
 
     ext = splitext(file_name)[2]
     ext in [".png", ".pdf", ".jpg", ".tiff"] || throw(ArgumentError("Fiel format must be: .png, .pdf, .tiff or .jpg"))
-    isfile(file_name) && @warn "File $file_name will be overwritten."
+    isfile(file_name) && @info "File $file_name will be overwritten."
     if typeof(p) == Plots.Plot{Plots.GRBackend}
         savefig(p, file_name)
     else
@@ -5356,7 +5356,7 @@ function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Sy
     fprototype === :butterworth && (prototype = Butterworth(order))
     if fprototype === :fir
         if window === nothing
-            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
             window = hanning(3 * floor(Int64, fs / cutoff[1]))
         end
         if ftype === :hp || ftype === :bp || ftype === :bs
@@ -6563,7 +6563,7 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(s_frq,
@@ -6624,7 +6624,7 @@ function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @warn "Lower frequency bound truncated to 0.1 Hz"
+            @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false

@@ -78,8 +78,8 @@ Install NeuroJ plugin.
 
   * `plugin::String`: plugin Git repository URL
 
-<a id='NeuroJ.neuroj_plugins_update-Tuple{Union{Nothing, String}}' href='#NeuroJ.neuroj_plugins_update-Tuple{Union{Nothing, String}}'>#</a>
-**`NeuroJ.neuroj_plugins_update`** &mdash; *Method*.
+<a id='NeuroJ.neuroj_plugins_update' href='#NeuroJ.neuroj_plugins_update'>#</a>
+**`NeuroJ.neuroj_plugins_update`** &mdash; *Function*.
 
 
 
@@ -94,6303 +94,11 @@ Install NeuroJ plugin.
   * `plugin::String`: plugin to update; if empty, update all
 
 
-<a id='EEG-io'></a>
-
-<a id='EEG-io-1'></a>
-
-## EEG io
-
-<a id='NeuroJ.eeg_import_edf-Tuple{String}' href='#NeuroJ.eeg_import_edf-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_edf`** &mdash; *Method*.
-
-
-
-```julia
-eeg_import_edf(file_name; read_annotations, clean_labels)
-```
-
-Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
-
-**Arguments**
-
-  * `file_name::String`: name of the file to load
-  * `read_annotations::Bool=true`: read annotations from EDF+ file (currently not implemented)
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
-
-**Returns**
-
-  * `eeg:EEG`
-
-**Notes**
-
-  * sampling_rate = n.samples / data.record.duration
-  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
-  * value = (value - digital*minimum ) * gain + physical*minimum
-
-**Source**
-
-Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
-
-<a id='NeuroJ.eeg_import_ced-Tuple{String}' href='#NeuroJ.eeg_import_ced-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_ced`** &mdash; *Method*.
-
-
-
-```julia
-eeg_import_ced(file_name)
-```
-
-Load electrode positions from CED file.
-
-**Arguments**
-
-  * `file_name::String`
-
-**Returns**
-
-  * `sensors::DataFrame`
-
-<a id='NeuroJ.eeg_import_locs-Tuple{String}' href='#NeuroJ.eeg_import_locs-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_locs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_import_locs(file_name)
-```
-
-Load electrode positions from LOCS file.
-
-**Arguments**
-
-  * `file_name::String`
-
-**Returns**
-
-  * `sensors::DataFrame`
-
-<a id='NeuroJ.eeg_import_elc-Tuple{String}' href='#NeuroJ.eeg_import_elc-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_elc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_import_elc(file_name)
-```
-
-Load electrode positions from ELC file.
-
-**Arguments**
-
-  * `file_name::String`
-
-**Returns**
-
-  * `sensors::DataFrame`
-
-<a id='NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_load_electrodes`** &mdash; *Method*.
-
-
-
-```julia
-eeg_load_electrodes(eeg; file_name)
-```
-
-Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
-
-  * CED
-  * LOCS
-  * ELC
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `file_name::String`
-
-**Returns**
-
-  * `eeg:EEG`
-
-<a id='NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_load_electrodes!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_load_electrodes!(eeg; file_name)
-```
-
-Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
-
-  * CED
-  * LOCS
-  * ELC
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `file_name::String`
-
-<a id='NeuroJ.eeg_save-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_save`** &mdash; *Method*.
-
-
-
-```julia
-eeg_save(eeg; file_name, overwrite)
-```
-
-Save the `eeg` to `file_name` file (HDF5-based).
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `file_name::String`: file name
-  * `overwrite::Bool=false`
-
-**Returns**
-
-  * `success::Bool`
-
-<a id='NeuroJ.eeg_load-Tuple{String}' href='#NeuroJ.eeg_load-Tuple{String}'>#</a>
-**`NeuroJ.eeg_load`** &mdash; *Method*.
-
-
-
-```julia
-eeg_load(file_name)
-```
-
-Load the `eeg` from `file_name` file (HDF5-based).
-
-**Arguments**
-
-  * `file_name::String`: file name
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_export_csv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_export_csv(eeg; file_name, header, overwrite)
-```
-
-Export EEG data as CSV.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `file_name::String`
-  * `header::Bool=false`: export header
-  * `components::Bool=false`: export components
-  * `overwrite::Bool=false`
-
-**Returns**
-
-  * `success::Bool`
-
-<a id='NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
-
-
-
-```julia
-eeg_save_electrodes(eeg; file_name, overwrite)
-```
-
-Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `file_name::String`
-  * `overwrite::Bool=false`
-
-**Returns**
-
-  * `success::Bool`
-
-
-<a id='EEG-edit'></a>
-
-<a id='EEG-edit-1'></a>
-
-## EEG edit
-
-<a id='NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_component(eeg; c, v)
-```
-
-Add component name `c` of value `v` to `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Symbol`: component name
-  * `v::Any`: component value
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_component!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_component!(eeg; c, v)
-```
-
-Add component name `c` of value `v` to `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Symbol`: component name
-  * `v::Any`: component value
-
-<a id='NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_list_components`** &mdash; *Method*.
-
-
-
-```julia
-eeg_list_components(eeg)
-```
-
-List `eeg` components.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `components::Vector{Symbol}`
-
-<a id='NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_extract_component(eeg, c)
-```
-
-Extract component `c` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Symbol`: component name
-
-**Returns**
-
-  * `component::Any`
-
-<a id='NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_component(eeg; c)
-```
-
-Delete component `c` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Symbol`: component name
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_component!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_component!(eeg; c)
-```
-
-Delete component `c` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Symbol`: component name
-
-<a id='NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reset_components`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reset_components(eeg)
-```
-
-Remove all `eeg` components.
-
-**Arguments**
-
-  * `eeg:EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reset_components!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reset_components!(eeg)
-```
-
-Remove all `eeg` components.
-
-**Arguments**
-
-  * `eeg:EEG`
-
-<a id='NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_component_idx`** &mdash; *Method*.
-
-
-
-```julia
-eeg_component_idx(eeg, c)
-```
-
-Return index of `eeg` component.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c::Symbol`: component name
-
-**Return**
-
-  * `c_idx::Int64`
-
-<a id='NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_component_type`** &mdash; *Method*.
-
-
-
-```julia
-eeg_component_type(eeg, c)
-```
-
-Return type of `eeg` components.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c::Symbol`: component name
-
-**Return**
-
-  * `c_type::DataType`
-
-<a id='NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_rename_component(eeg, c_old, c_new)
-```
-
-Return type of `eeg` components.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c_old::Symbol`: old component name
-  * `c_new::Symbol`: new component name
-
-**Return**
-
-  * `eeg_new:EEG`
-
-<a id='NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_component!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_rename_component(eeg, c_old, c_new)
-```
-
-Return type of `eeg` components.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c_old::Symbol`: old component name
-  * `c_new::Symbol`: new component name
-
-<a id='NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_channel(eeg; channel)
-```
-
-Remove `channel` from the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_channel!(eeg; channel)
-```
-
-Remove `channel` from the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
-
-<a id='NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_channel(eeg; channel)
-```
-
-Keep `channels` in the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_channel!(eeg; channel)
-```
-
-Keep `channels` in the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
-
-<a id='NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_get_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_get_channel(eeg; channel)
-```
-
-Return the `channel` index / name.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`: channel name
-
-**Returns**
-
-  * `channel_idx::Int64`
-
-<a id='NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_rename_channel(eeg; channel, name)
-```
-
-Rename the `eeg` `channel`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-  * `name::String`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_rename_channel!(eeg; channel, name)
-```
-
-Rename the `eeg` `channel`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-  * `name::String`
-
-<a id='NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_extract_channel(eeg; channel)
-```
-
-Extract `channel` number or name.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-
-**Returns**
-
-  * `channel::Vector{Float64}`
-
-<a id='NeuroJ.eeg_history-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_history-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_history`** &mdash; *Method*.
-
-
-
-```julia
-eeg_history(eeg)
-```
-
-Show processing history.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_labels`** &mdash; *Method*.
-
-
-
-```julia
-eeg_labels(eeg)
-```
-
-Return `eeg` labels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `labels::Vector{String}`
-
-<a id='NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_sr`** &mdash; *Method*.
-
-
-
-```julia
-eeg_sr(eeg)
-```
-
-Return `eeg` sampling rate.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `sr::Int64`
-
-<a id='NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_n`** &mdash; *Method*.
-
-
-
-```julia
-eeg_channel_n(eeg; type=:eeg)
-```
-
-Return number of `eeg` channels of `type`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
-
-**Returns**
-
-  * `channel_n::Int64`
-
-<a id='NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epoch_n`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epoch_n(eeg)
-```
-
-Return number of `eeg` epochs.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `epoch_n::Int64`
-
-<a id='NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_signal_len`** &mdash; *Method*.
-
-
-
-```julia
-eeg_signal_len(eeg)
-```
-
-Return length of `eeg` signal.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `signal_len::Int64`
-
-<a id='NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epoch_len`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epoch_len(eeg)
-```
-
-Return length of `eeg` signal.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `epoch_len::Int64`
-
-<a id='NeuroJ.eeg_info-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_info-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_info`** &mdash; *Method*.
-
-
-
-```julia
-eeg_info(eeg)
-```
-
-Show info.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
-```
-
-Splits `eeg` into epochs.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch_n::Union{Int64, Nothing}`: number of epochs
-  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
-```
-
-Splits `eeg` into epochs.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch_n::Union{Int64, Nothing}`: number of epochs
-  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, return one averaged epoch
-
-<a id='NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_epoch`** &mdash; *Method*.
-
-
-
-```julia
-eeg_extract_epoch(eeg; epoch)
-```
-
-Extract the `epoch` epoch.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Int64`: epoch index
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_trim`** &mdash; *Method*.
-
-
-
-```julia
-eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
-```
-
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `len::Int64`: number of samples to remove
-  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
-
-**Returns**
-
-  * `eeg:EEG`
-
-<a id='NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_trim!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
-```
-
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `len::Int64`: number of samples to remove
-  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
-
-<a id='NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_header`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_header(eeg; field, value)
-```
-
-Change value of `eeg` `field` to `value`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `field::Symbol`
-  * `value::Any`
-
-**Returns**
-
-  * `eeg:EEG`
-
-<a id='NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_header!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_header!(eeg; field, value)
-```
-
-Change value of `eeg` `field` to `value`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `field::Symbol`
-  * `value::Any`
-
-**Returns**
-
-  * `eeg:EEG`
-
-<a id='NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_show_header`** &mdash; *Method*.
-
-
-
-```julia
-eeg_show_header(eeg)
-```
-
-Show keys and values of `eeg` header.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_epoch`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_epoch(eeg; epoch)
-```
-
-Remove `epoch` from the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_epoch!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_epoch!(eeg; epoch)
-```
-
-Remove `epoch` from the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
-
-<a id='NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_epoch`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_epoch(eeg; epoch)
-```
-
-Keep `epoch` in the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_epoch!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_epoch!(eeg; epoch)
-```
-
-Keep `epoch` in the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
-
-<a id='NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detect_bad_epochs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
-```
-
-Detect bad `eeg` epochs based on:
-
-  * flat channel(s)
-  * RMSE
-  * RMSD
-  * Euclidean distance
-  * peak-to-peak amplitude
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
-  * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
-
-**Returns**
-
-  * `bad_epochs_idx::Vector{Int64}`
-
-<a id='NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
-**`NeuroJ.eeg_add_labels`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
-```
-
-Add `labels` to `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `labels::Vector{String}`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
-**`NeuroJ.eeg_add_labels!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
-```
-
-Add `labels` to `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `labels::Vector{String}`
-
-<a id='NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_channel(eeg; channel, field, value)
-```
-
-Edits `eeg` `channel` properties.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Int64`
-  * `field::Any`
-  * `value::Any`
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_channel!(eeg; channel, field, value)
-```
-
-Edit `eeg` `channel` properties.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Int64`
-  * `field::Any`
-  * `value::Any`
-
-<a id='NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel_type`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_channel_type(eeg; type)
-```
-
-Keep `type` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:eeg`: type of channels to keep
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel_type!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_keep_channel_type!(eeg)
-```
-
-Keep `type` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:eeg`: type of channels to keep
-
-<a id='NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_view_note`** &mdash; *Method*.
-
-
-
-```julia
-eeg_view_note(eeg)
-```
-
-Return `eeg` note.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_copy`** &mdash; *Method*.
-
-
-
-```julia
-eeg_copy(eeg)
-```
-
-Make copy of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg_copy::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_time`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epochs_time(eeg; ts)
-```
-
-Edit `eeg` epochs time start.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `ts::Real`: time start in seconds
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_time!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epochs_time!(eeg; ts)
-```
-
-Edit `eeg` epochs time start.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `ts::Real`: time start in seconds
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_note`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_note(eeg; note)
-```
-
-Return `eeg` note.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `note::String`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_note!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_note!(eeg; note)
-```
-
-Return `eeg` note.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `note::String`
-
-<a id='NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_note`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_note(eeg)
-```
-
-Return `eeg` note.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_note!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_delete_note!(eeg)
-```
-
-Return `eeg` note.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_replace_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_replace_channel(eeg; channel, signal)
-```
-
-Replace the `channel` index / name with `signal`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`: channel name
-  * `signal::Array{Float64, 3}
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_replace_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_replace_channel!(eeg; channel, signal)
-```
-
-Replace the `channel` index / name with `signal`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`: channel name
-  * `signal::Array{Float64, 3}
-
-<a id='NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_interpolate_channel`** &mdash; *Method*.
-
-
-
-```julia
-eeg_interpolate_channel(eeg; channel, m, q)
-```
-
-Interpolate `eeg` channel using planar interpolation.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_interpolate_channel!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_interpolate_channel(eeg; channel, m, q)
-```
-
-Interpolate `eeg` channel using planar interpolation.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
-
-<a id='NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipy`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipy(eeg; planar, spherical)
-```
-
-Flip `eeg` channel locations along y axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipy!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipy!(eeg; planar, spherical)
-```
-
-Flip `eeg` channel locations along y axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-<a id='NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipx`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipx(eeg; planar, spherical)
-```
-
-Flip `eeg` channel locations along x axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipx!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipx!(eeg; planar, spherical)
-```
-
-Flip `eeg` channel locations along x axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-<a id='NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipz`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipz(eeg)
-```
-
-Flip `eeg` channel locations along z axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_flipz!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_flipz!(eeg)
-```
-
-Flip `eeg` channel locations along z axis.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_type`** &mdash; *Method*.
-
-
-
-```julia
-eeg_channel_type(eeg; channel, type)
-```
-
-Change the `eeg` `channel` type.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-  * `type::String`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_type!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_channel_type!(eeg; channel, new_name)
-```
-
-Change the `eeg` `channel` type.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-  * `type::String`
-
-<a id='NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_electrode`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_electrode(eeg; <keyword arguments>)
-```
-
-Edit `eeg` electrode.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{String, Int64}`: channel number or name
-  * `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
-  * `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
-  * `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
-  * `theta::Union{Real, Nothing}`: polar planar theta coordinate
-  * `radius::Union{Real, Nothing}`: polar planar radius coordinate
-  * `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  * `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
-  * `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
-  * `name::String=""`: channel name
-  * `type::String=""`: channel type
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_electrode!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_edit_electrode!(eeg; <keyword arguments>)
-```
-
-Edit `eeg` electrode.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{String, Int64}`: channel number or name
-  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
-  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
-  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
-  * `name::String=""`: channel name
-  * `type::String=""`: channel type
-
-<a id='NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_electrode_loc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_electrode_loc(eeg; channel)
-```
-
-Return locations of the `eeg` `channel` electrode.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, String}`
-
-**Returns**
-
-Named tuple containing:
-
-  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
-  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
-  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
-
-<a id='NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_swapxy`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_swapxy(eeg; planar, spherical)
-```
-
-Swap `eeg` channel locations x and y axes.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_swapxy!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_swapxy!(eeg; planar, spherical)
-```
-
-Swap `eeg` channel locations x and y axes.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `planar::Bool=true`: modify planar coordinates
-  * `spherical::Bool=true`: modify spherical coordinates
-
-<a id='NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_sph2cart`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_sph2cart(eeg)
-```
-
-Convert `eeg` spherical locations to Cartesian.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_sph2cart!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_sph2cart!(eeg)
-```
-
-Convert `eeg` spherical locations to Cartesian.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_cart2sph`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_cart2sph(eeg)
-```
-
-Convert `eeg` Cartesian locations to spherical.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_loc_cart2sph!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_loc_cart2sph!(eeg)
-```
-
-Convert `eeg` Cartesian locations to spherical.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-
-<a id='EEG-process'></a>
-
-<a id='EEG-process-1'></a>
-
-## EEG process
-
-<a id='NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_ch`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_ch(eeg; channel)
-```
-
-Reference the `eeg` to specific `channel`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_ch!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_ch!(eeg; channel)
-```
-
-Reference the `eeg` to specific channel `channel`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
-
-<a id='NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_car`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_car(eeg)
-```
-
-Reference the `eeg` to common average reference.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
-  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_car!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_car!(eeg)
-```
-
-Reference the `eeg` to common average reference.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_a`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_a(eeg; type)
-```
-
-Reference the `eeg` to auricular channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_a!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_a!(eeg; type)
-```
-
-Reference the `eeg` to auricular channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
-
-<a id='NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_m`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_m(eeg; type)
-```
-
-Reference the `eeg` to mastoid channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_m!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_m!(eeg; type)
-```
-
-Reference the `eeg` to mastoid channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
-
-<a id='NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_derivative`** &mdash; *Method*.
-
-
-
-```julia
-eeg_derivative(eeg)
-```
-
-Return the derivative of the `eeg` with length same as the signal.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_derivative!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_derivative!(eeg)
-```
-
-Return the derivative of the `eeg` with length same as the signal.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detrend`** &mdash; *Method*.
-
-
-
-```julia
-eeg_detrend(eeg; type)
-```
-
-Perform piecewise detrending of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol`, optional
-
-      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-      * `:linear`: linear trend is subtracted from `signal`
-      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
-      * `:poly`: polynomial of `order` is subtracted
-      * `:loess`: fit and subtract loess approximation
-      * `:hp`: use HP filter
-  * `offset::Real=0`: constant for :constant detrending
-  * `order::Int64=1`: polynomial fitting order
-  * `span::Float64=0.5`: smoothing of loess
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detrend!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_detrend!(eeg; type)
-```
-
-Remove linear trend from the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol`, optional
-
-      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
-      * `:linear`: linear trend is subtracted from `signal`
-      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
-      * `:poly`: polynomial of `order` order is subtracted
-      * `:loess`: fit and subtract loess approximation
-      * `:hp`: use HP filter
-  * `offset::Real=0`: constant for :constant detrending
-  * `order::Int64=1`: polynomial fitting order
-  * `span::Float64`: smoothing of loess
-
-<a id='NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_taper`** &mdash; *Method*.
-
-
-
-```julia
-eeg_taper(eeg; taper)
-```
-
-Taper `eeg` with `taper`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `taper::Union{Vector{Real, Vector{ComplexF64}}``
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_taper!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_taper!(eeg; taper)
-```
-
-Taper `eeg` with `taper`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
-
-<a id='NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_demean`** &mdash; *Method*.
-
-
-
-```julia
-eeg_demean(eeg)
-```
-
-Remove mean value (DC offset).
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_demean!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_demean!(eeg)
-```
-
-Remove mean value (DC offset).
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize(eeg; method)
-```
-
-Normalize each `eeg` channel.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `method::Symbol`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_normalize!(eeg; method)
-```
-
-Normalize each `eeg` channel.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `method::Symbol`
-
-<a id='NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_noise`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_noise(eeg)
-```
-
-Add random noise to the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_noise!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_add_noise!(eeg)
-```
-
-Add random noise to the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_filter`** &mdash; *Method*.
-
-
-
-```julia
-eeg_filter(eeg; <keyword arguments>)
-```
-
-Filter `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `fprototype::Symbol`: filter prototype:
-
-      * `:butterworth`
-      * `:chebyshev1`
-      * `:chebyshev2`
-      * `:elliptic`
-      * `:fir`
-      * `:iirnotch`
-      * `:remez`
-      * `:mavg`: moving average (with threshold)
-      * `:mmed`: moving median (with threshold)
-      * `:poly`: polynomial of `order` order
-  * `ftype::Symbol`: filter type:
-
-      * `:lp`: low pass
-      * `:hp`: high pass
-      * `:bp`: band pass
-      * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_filter!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_filter!(eeg; <keyword arguments>)
-```
-
-Filter `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `fprototype::Symbol`: filter prototype:
-
-      * `:butterworth`
-      * `:chebyshev1`
-      * `:chebyshev2`
-      * `:elliptic`
-      * `:fir`
-      * `:iirnotch`
-      * `:remez`
-      * `:mavg`: moving average (with threshold)
-      * `:mmed`: moving median (with threshold)
-      * `:poly`: polynomial of `order` order
-  * `ftype::Symbol`: filter type:
-
-      * `:lp`: low pass
-      * `:hp`: high pass
-      * `:bp`: band pass
-      * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
-
-<a id='NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pca(eeg; n)
-```
-
-Calculate `n` first PCs for `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `n::Int64`: number of PCs
-
-**Returns**
-
-Named tuple containing:
-
-  * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
-  * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
-  * `pc_m::PCA{Float64}`: PC mean
-
-<a id='NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca_reconstruct`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pca_reconstruct(eeg)
-```
-
-Reconstruct `eeg` signals using PCA components.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca_reconstruct!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pca_reconstruct!(eeg)
-```
-
-Reconstruct `eeg` signals using PCA components.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica(eeg; <keyword arguments>)
-```
-
-Calculate `n` first ICs for `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `n::Int64`: number of ICs
-  * `tol::Float64=1.0e-6`: tolerance for ICA
-  * `iter::Int64=100`: maximum number of iterations
-  * `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
-
-**Returns**
-
-Named tuple containing:
-
-  * `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
-  * `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-
-<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average(eeg)
-```
-
-Return the average signal of all `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average!(eeg)
-```
-
-Return the average signal of all `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average(eeg1, eeg2)
-```
-
-Return the average signal of all `eeg1` and `eeg2` channels.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica_reconstruct`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica_reconstruct(eeg; ica)
-```
-
-Reconstruct `eeg` signals using removal of `ica` ICA components.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica_reconstruct!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica_reconstruct!(eeg; ica)
-```
-
-Reconstruct `eeg` signals using removal of `ica` ICA components.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
-
-<a id='NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_invert_polarity`** &mdash; *Method*.
-
-
-
-```julia
-eeg_invert_polarity(eeg; channel)
-```
-
-Invert polarity of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Int64`: channel to invert
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_invert_polarity!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_invert_polarity!(eeg; channel)
-```
-
-Invert polarity of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
-
-<a id='NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_resample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_resample(eeg; new_sr)
-```
-
-Resample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_resample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_resample!(eeg; new_sr)
-```
-
-Resample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-<a id='NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_upsample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_upsample(eeg; new_sr)
-```
-
-Upsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_upsample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_upsample!(eeg; new_sr)
-```
-
-Upsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_downsample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_downsample(eeg; new_sr)
-```
-
-Downsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_downsample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_downsample!(eeg; new_sr)
-```
-
-Downsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-<a id='NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wdenoise`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wdenoise(eeg; wt)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wdenoise!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wdenoise!(eeg; wt)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
-
-<a id='NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fftdenoise`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fftdenoise(eeg; pad, threshold)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64=0`: pad signal with `pad` zeros
-  * `threshold::Int64=100`: PSD threshold for keeping frequency components
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fftdenoise!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fftdenoise!(eeg; pad, threshold)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64=0`: pad signal with `pad` zeros
-  * `threshold::Int64=100`: PSD threshold for keeping frequency components
-
-<a id='NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_plap`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_plap(eeg; nn, weights)
-```
-
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `nn::Int64=4`: number of nearest electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
-
-**Returns**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_plap!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_plap!(eeg; nn, weights)
-```
-
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `nn::Int64=4`: number of nearest electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
-
-<a id='NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_zero`** &mdash; *Method*.
-
-
-
-```julia
-eeg_zero(eeg)
-```
-
-Zero `eeg` channels at the beginning and at the end.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_zero!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_zero!(eeg)
-```
-
-Zero `eeg` channel at the beginning and at the end.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wbp`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wbp(eeg; pad, frq, ncyc, demean)
-```
-
-Perform wavelet bandpass filtering of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-  * `demean::Bool=true`: demean signal prior to analysis
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wbp!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wbp!(eeg; pad, frq, ncyc, demean)
-```
-
-Perform wavelet bandpass filtering of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-  * `demean::Bool=true`: demean signal prior to analysis
-
-<a id='NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cbp`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cbp(eeg; pad, frq, demean)
-```
-
-Perform convolution bandpass filtering of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `demean::Bool=true`: demean signal prior to analysis
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cbp!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cbp!(eeg; pad, frq, ncyc, demean)
-```
-
-Perform convolution bandpass filtering of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Tuple{Real, Real}`: filter frequency
-  * `demean::Bool=true`: demean signal prior to analysis
-
-<a id='NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_denoise_wien`** &mdash; *Method*.
-
-
-
-```julia
-eeg_denoise_wien(eeg)
-```
-
-Perform Wiener deconvolution denoising of the `eeg`.
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`
-
-<a id='NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_denoise_wien!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_denoise_wien!(eeg)
-```
-
-Perform Wiener deconvolution denoising of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-
-<a id='EEG-analyze'></a>
-
-<a id='EEG-analyze-1'></a>
-
-## EEG analyze
-
-<a id='NeuroJ.eeg_total_power' href='#NeuroJ.eeg_total_power'>#</a>
-**`NeuroJ.eeg_total_power`** &mdash; *Function*.
-
-
-
-```julia
-eeg_total_power(eeg, mt)
-```
-
-Calculate total power of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-  * `stp::Matrix{Float64}`: total power for each channel per epoch
-
-<a id='NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band_power`** &mdash; *Method*.
-
-
-
-```julia
-eeg_band_power(eeg; f, mt)
-```
-
-Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-  * `sbp::Matrix{Float64}`: band power for each channel per epoch
-
-<a id='NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cov`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cov(eeg; norm)
-```
-
-Calculate covariance matrix for all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `norm::Bool=true`: normalize covariance
-
-**Returns**
-
-  * `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
-
-<a id='NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cor`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cor(eeg)
-```
-
-Calculate correlation coefficients between all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
-
-<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_xcov`** &mdash; *Method*.
-
-
-
-```julia
-eeg_xcov(eeg; lag, demean, norm)
-```
-
-Calculate cross-covariance of each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `lag::Int64=1`: lags range is `-lag:lag`
-  * `demean::Bool=false`: demean signal prior to analysis
-  * `norm::Bool=false`: normalize cross-covariance
-
-**Returns**
-
-Named tuple containing:
-
-  * `ccov::Matrix{Float64}`
-  * `lags::Vector{Float64}`
-
-<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_xcov`** &mdash; *Method*.
-
-
-
-```julia
-eeg_xcov(eeg1, eeg2; channel1, channel2, epoch1, epoch2, lag, demean, norm)
-```
-
-Calculate cross-covariance between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `lag::Int64=1`: lags range is `-lag:lag`
-  * `demean::Bool=false`: demean signal prior to analysis
-  * `norm::Bool=false`: normalize cross-covariance
-
-**Returns**
-
-Named tuple containing:
-
-  * `ccov::Array{Float64, 3}`
-  * `lags::Vector{Float64}`
-
-<a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_psd(eeg; norm, mt)
-```
-
-Calculate power spectrum density for each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `norm::Bool=false`: normalize do dB
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-Named tuple containing:
-
-  * `psd_pow::Array{Float64, 3}`:powers
-  * `psd_frq::Array{Float64, 3}`: frequencies
-
-<a id='NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_stationarity`** &mdash; *Method*.
-
-
-
-```julia
-eeg_stationarity(eeg; window, method)
-```
-
-Calculate stationarity.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `window::Int64=10`: time window in samples
-  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert, :adf
-
-**Returns**
-
-  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
-
-<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mi`** &mdash; *Method*.
-
-
-
-```julia
-eeg_mi(eeg)
-```
-
-Calculate mutual information between all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `mi::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mi`** &mdash; *Method*.
-
-
-
-```julia
-eeg_mi(eeg1, eeg2)
-```
-
-Calculate mutual information between all channels of `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-
-**Returns**
-
-  * `mi::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_entropy`** &mdash; *Method*.
-
-
-
-```julia
-eeg_entropy(eeg)
-```
-
-Calculate entropy of all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `entropy::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_negentropy`** &mdash; *Method*.
-
-
-
-```julia
-eeg_negentropy(eeg)
-```
-
-Calculate negentropy of all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `ne::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_band-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band`** &mdash; *Method*.
-
-
-
-```julia
-eeg_band(eeg, band)
-```
-
-Return frequency limits for a `band` range.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `band::Symbol`: name of band range: :total, :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
-
-**Returns**
-
-  * `band_frequency::Tuple{Real, Real}`
-
-<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
-```
-
-Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-
-**Returns**
-
-Named tuple containing:
-
-  * `c::Array{Float64, 3}`: coherence
-  * `msc::Array{Float64, 3}`: MSC
-  * `ic::Array{Float64, 3}`: imaginary part of coherence
-
-<a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_freqs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_freqs(eeg)
-```
-
-Return vector of frequencies and Nyquist frequency for `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `hz::Vector{Float64}`
-  * `nyquist::Float64`
-
-<a id='NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_difference`** &mdash; *Method*.
-
-
-
-```julia
-eeg_difference(eeg1, eeg2; n, method)
-```
-
-Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `n::Int64=3`: number of bootstraps
-  * `method::Symbol=:absdiff`
-
-      * `:absdiff`: maximum difference
-      * `:diff2int`: integrated area of the squared difference
-
-**Returns**
-
-Named tuple containing:
-
-  * `signals_statistic::Matrix{Float64}`
-  * `signals_statistic_single::Vector{Float64}`
-  * `p::Vector{Float64}`
-
-<a id='NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pick`** &mdash; *Method*.
-
-
-
-```julia
-eeg_picks(eeg; pick)
-```
-
-Return `pick` of electrodes for `eeg` electrodes.
-
-**Arguments**
-
-  * `pick::Vector{Symbol}`
-
-**Returns**
-
-  * `channels::Vector{Int64}`
-
-<a id='NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_stats`** &mdash; *Method*.
-
-
-
-```julia
-eeg_epochs_stats(eeg)
-```
-
-Calculate `eeg` epochs statistics.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `e_mean::Vector(Float64)`: mean
-  * `e_median::Vector(Float64)`: median
-  * `e_std::Vector(Float64)`: standard deviation
-  * `e_var::Vector(Float64)`: variance
-  * `e_kurt::Vector(Float64)`: kurtosis
-  * `e_skew::Vector(Float64)`: skewness
-  * `e_mean_diff::Vector(Float64)`: mean diff value
-  * `e_median_diff::Vector(Float64)`: median diff value
-  * `e_max_dif::Vector(Float64)`: max difference
-  * `e_dev_mean::Vector(Float64)`: deviation from channel mean
-
-<a id='NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_spectrogram(eeg; norm, mt, demean)
-```
-
-Return spectrogram of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `norm::Bool=true`: normalize powers to dB
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `demean::Bool=true`: demean signal prior to analysis
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_pow::Array{Float64, 3}`
-  * `s_frq::Vector{Float64}`
-  * `s_t::Vector{Float64}`
-
-<a id='NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_spectrum`** &mdash; *Method*.
-
-
-
-```julia
-eeg_spectrum(eeg; pad, h)
-```
-
-Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64=0`: pad with `pad` zeros
-  * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
-
-**Returns**
-
-Named tuple containing:
-
-  * `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
-  * `amp::Array{Float64, 3}`: amplitudes
-  * `pow::Array{Float64, 3}`: powers
-  * `phase::Array{Float64, 3}: phase angles
-
-<a id='NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_s2t`** &mdash; *Method*.
-
-
-
-```julia
-eeg_s2t(eeg; t)
-```
-
-Convert time `t` in samples to seconds using `eeg` sampling rate.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `t::Int64`: time in samples
-
-**Returns**
-
-  * `t_s::Float64`: time in seconds
-
-<a id='NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_t2s`** &mdash; *Method*.
-
-
-
-```julia
-eeg_t2s(eeg; t)
-```
-
-Convert time `t` in seconds to samples using `eeg` sampling rate.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `t::Real`: time in seconds
-
-**Returns**
-
-  * `t_s::Int64`: time in samples
-
-<a id='NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channels_stats`** &mdash; *Method*.
-
-
-
-```julia
-eeg_channels_stats(eeg)
-```
-
-Calculate `eeg` channels statistics.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `c_mean::Matrix(Float64)`: mean
-  * `c_median::Matrix(Float64)`: median
-  * `c_std::Matrix(Float64)`: standard deviation
-  * `c_var::Matrix(Float64)`: variance
-  * `c_kurt::Matrix(Float64)`: kurtosis
-  * `c_skew::Matrix(Float64)`: skewness
-  * `c_mean_diff::Matrix(Float64)`: mean diff value
-  * `c_median_diff::Matrix(Float64)`: median diff value
-  * `c_max_dif::Matrix(Float64)`: max difference
-  * `c_dev_mean::Matrix(Float64)`: deviation from channel mean
-
-<a id='NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_snr`** &mdash; *Method*.
-
-
-
-```julia
-eeg_snr(eeg)
-```
-
-Calculate SNR of `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `snr::Matrix(Float64)`: SNR for each channel per epoch
-
-<a id='NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_standardize`** &mdash; *Method*.
-
-
-
-```julia
-eeg_standardize(eeg)
-```
-
-Standardize `eeg` channels for ML.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `eeg_new::NeuroJ.EEG`: standardized EEG
-  * `scaler::Matrix{Float64}`: standardizing matrix
-
-<a id='NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_standardize!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_standardize!(eeg)
-```
-
-Standardize `eeg` channels for ML.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `scaler::Matrix{Float64}`: standardizing matrix
-
-<a id='NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fconv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fconv(eeg, kernel, norm)
-```
-
-Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
-  * `norm::Bool=false`: normalize kernel
-
-**Returns**
-
-  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
-
-<a id='NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tconv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tconv(eeg; kernel)
-```
-
-Perform convolution in the time domain.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
-
-**Returns**
-
-  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
-
-<a id='NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_dft`** &mdash; *Method*.
-
-
-
-```julia
-eeg_dft(eeg)
-```
-
-Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `sfft::Array{ComplexF64, 3}`: FFT
-  * `sf::Array{Float64, 3}`: sample frequencies
-
-<a id='NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_msci95`** &mdash; *Method*.
-
-
-
-```julia
-eeg_msci95(eeg; n::=3, method=:normal)
-```
-
-Calculates mean, std and 95% confidence interval for each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `n::Int64`: number of bootstraps
-  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_m::Matrix{Float64}`: mean
-  * `s_s::Matrix{Float64}`: standard deviation
-  * `s_u::Matrix{Float64}`: upper 95% CI
-  * `s_l::Matrix{Float64}`: lower 95% CI
-
-<a id='NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mean`** &mdash; *Method*.
-
-
-
-```julia
-eeg_mean(eeg1, eeg2)
-```
-
-Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_m::Matrix{Float64}`: mean by epochs
-  * `s_s::Matrix{Float64}`: std by epochs
-  * `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
-  * `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
-
-<a id='NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
-**`NeuroJ.eeg_difference`** &mdash; *Method*.
-
-
-
-```julia
-eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
-```
-
-Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::Array{Float64, 3}`
-  * `eeg2:Array{Float64, 3}`
-  * `n::Int64`: number of bootstraps
-  * `method::Symbol[:absdiff, :diff2int]`
-
-      * `:absdiff`: maximum difference
-      * `:diff2int`: integrated area of the squared difference
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_stat::Matrix{Float64}`
-  * `s_stat_single::Vector{Float64}`
-  * `p::Vector{Float64}`
-
-<a id='NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_acov`** &mdash; *Method*.
-
-
-
-eeg_acov(eeg; lag=1, demean=false, norm=false)
-
-Calculate autocovariance of each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `lag::Int64`: lags range is `-lag:lag`
-  * `demean::Bool`: demean eeg prior to analysis
-  * `norm::Bool`: normalize autocovariance
-
-**Returns**
-
-Named tuple containing:
-
-  * `acov::Matrix{Float64}`
-  * `lags::Vector{Float64}`
-
-<a id='NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tenv(eeg; d)
-```
-
-Calculate temporal envelope of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
-
-**Returns**
-
-Named tuple containing:
-
-  * `t_env::Array{Float64, 3}`: temporal envelope
-  * `s_t::Vector{Float64}`: signal time
-
-<a id='NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv_mean`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tenv_mean(eeg; dims, d)
-```
-
-Calculate temporal envelope of `eeg`: mean and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
-
-**Returns**
-
-Named tuple containing:
-
-  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: mean
-  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
-  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
-  * `s_t::Vector{Float64}`: signal time
-
-<a id='NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv_median`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tenv_median(eeg; dims, d)
-```
-
-Calculate temporal envelope of `eeg`: median and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
-
-**Returns**
-
-Named tuple containing:
-
-  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: median
-  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
-  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
-  * `s_t::Vector{Float64}`: signal time
-
-<a id='NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_penv(eeg; d)
-```
-
-Calculate power (in dB) envelope of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-Named tuple containing:
-
-  * `p_env::Array{Float64, 3}`: power spectrum envelope
-  * `p_env_frq::Vector{Float64}`: frequencies for each envelope
-
-<a id='NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv_mean`** &mdash; *Method*.
-
-
-
-```julia
-eeg_penv_mean(eeg; dims, d)
-```
-
-Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-Named tuple containing:
-
-  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: mean
-  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
-  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
-  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
-
-<a id='NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv_median`** &mdash; *Method*.
-
-
-
-```julia
-eeg_penv_median(eeg; dims, d)
-```
-
-Calculate power (in dB) envelope of `eeg`: median and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
-  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-Named tuple containing:
-
-  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: median
-  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
-  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
-  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
-
-<a id='NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv`** &mdash; *Method*.
-
-
-
-```julia
-eeg_senv(eeg; d, mt, t)
-```
-
-Calculate spectral envelope of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_env::Array{Float64, 3}`: spectral envelope
-  * `s_env_t::Vector{Float64}`: spectrogram time
-
-<a id='NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv_mean`** &mdash; *Method*.
-
-
-
-```julia
-eeg_senv_mean(eeg; dims, d, mt, t)
-```
-
-Calculate spectral envelope of `eeg`: mean and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_env_m::Array{Float64, 3}`: spectral envelope: mean
-  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
-  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
-  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
-
-<a id='NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv_median`** &mdash; *Method*.
-
-
-
-```julia
-eeg_senv_median(eeg; dims, d, mt)
-```
-
-Calculate spectral envelope of `eeg`: median and 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
-
-**Returns**
-
-Named tuple containing:
-
-  * `s_env_m::Array{Float64, 3}`: spectral envelope: median
-  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
-  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
-  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
-
-<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
-```
-
-Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-
-**Returns**
-
-Named tuple containing:
-
-  * `ispc::Array{Float64, 2}`: ISPC value
-  * `ispc_angle::Array{Float64, 2}`: ISPC angle
-  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
-  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
-  * `s1_phase::Array{Float64, 3}`: signal 1 phase
-  * `s2_phase::Array{Float64, 3}`: signal 2 phase
-
-<a id='NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_itpc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_itpc(eeg; channel)
-```
-
-Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Int64`
-  * `t::Int64`: time point (sample number) at which ITPC is calculated
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-
-**Returns**
-
-Named tuple containing:
-
-  * `itpc::Float64`: ITPC or wITPC value
-  * `itpcz::Float64`: Rayleigh's ITPC Z value
-  * `itpc_angle::Float64`: ITPC angle
-  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
-
-<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pli`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pli(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
-```
-
-Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-
-**Returns**
-
-Named tuple containing:
-
-  * `pli::Array{Float64, 2}`: PLI value
-  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
-  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
-  * `s1_phase::Array{Float64, 3}`: signal 1 phase
-  * `s2_phase::Array{Float64, 3}`: signal 2 phase
-
-<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pli`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pli(eeg)
-```
-
-Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `pli_m::Array{Float64, 3}`: PLI value matrices over epochs
-
-<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ispc(eeg)
-```
-
-Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `ispc_m::Array{Float64, 3}`: ISPC value matrices over epochs
-
-<a id='NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_aec`** &mdash; *Method*.
-
-
-
-```julia
-eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
-```
-
-Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
-
-**Returns**
-
-Named tuple containing:
-
-  * `aec::Float64`: power correlation value
-  * `aec_p::Float64`: power correlation p-value
-
-<a id='NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ged`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ged(eeg1, eeg2)
-```
-
-Perform generalized eigendecomposition between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`: signal data to be analyzed
-  * `eeg2::NeuroJ.EEG`: original signal data
-
-**Returns**
-
-  * `sged::Array{Float64, 3}`
-  * `ress::Matrix{Float64}`
-  * `ress_normalized::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_frqinst`** &mdash; *Method*.
-
-
-
-```julia
-eeg_frqinst(eeg)
-```
-
-Calculate instantaneous frequency of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `frqinst::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_itpc_s`** &mdash; *Method*.
-
-
-
-```julia
-eeg_itpc_s(eeg; <keyword arguments>)
-```
-
-Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Int64`
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-
-**Returns**
-
-Named tuple containing:
-
-  * `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
-  * `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
-  * `itpc_frq::Vector{Float64}`: frequencies list
-
-<a id='NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wspectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wspectrogram(eeg; norm, mt, demean)
-```
-
-Return spectrogram of `eeg` using Morlet wavelet convolution.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `norm::Bool`=true: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-  * `fs::Int64`: sampling rate
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
-  * `demean::Bool`=true: demean signal prior to analysis
-
-**Returns**
-
-Named tuple containing:
-
-  * `w_pow::Array{Float64, 4}`
-  * `w_frq::Matrix{Float64}`
-  * `w_t::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tkeo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_tkeo(eeg)
-```
-
-Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-  * `tkeo::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wspectrum`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wspectrum(eeg; norm, mt, demean)
-```
-
-Return power spectrogrum of `eeg` using Morlet wavelet convolution.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `norm::Bool`=true: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-  * `fs::Int64`: sampling rate
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-
-**Returns**
-
-Named tuple containing:
-
-  * `w_pow::Array{Float64, 4}`
-  * `w_frq::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fcoherence`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2, frq_lim)
-```
-
-Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
-
-**Returns**
-
-Named tuple containing:
-
-  * `c::Array{Float64, 3}`: coherence
-  * `msc::Array{Float64, 3}`: MSC
-  * `f::Vector{Float64}`: frequencies
-
-<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_vartest`** &mdash; *Method*.
-
-
-
-```julia
-eeg_vartest(eeg)
-```
-
-Calculate variance F-test for all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `f::Array{Float64, 3}`
-  * `p::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_vartest`** &mdash; *Method*.
-
-
-
-```julia
-eeg_vartest(eeg1, eeg2)
-```
-
-Calculate variance F-test for all channels of `eeg1` and `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-
-**Returns**
-
-Named tuple containing:
-
-  * `f::Array{Float64, 3}`
-  * `p::Array{Float64, 3}`
-
-<a id='NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band_mpower`** &mdash; *Method*.
-
-
-
-```julia
-eeg_band_mpower(eeg; f, mt)
-```
-
-Calculate mean and maximum band power and its frequency.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-
-**Returns**
-
-Named tuple containing:
-
-  * `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
-  * `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
-  * `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
-
-<a id='NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rel_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_rel_psd(eeg; norm, mt)
-```
-
-Calculate relative power spectrum density for each the `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `norm::Bool=false`: normalize do dB
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
-
-**Returns**
-
-Named tuple containing:
-
-  * `psd_pow::Array{Float64, 3}`:powers
-  * `psd_frq::Array{Float64, 3}`: frequencies
-
-<a id='NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fbsplit`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fbsplit(eeg; order)
-```
-
-Split EEG signal into frequency bands.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `order::Int64=8`: bandpass filter order
-
-**Returns**
-
-Named tuple containing:
-
-  * `band_names::Vector{Symbol}`
-  * `band_frq::Vector{Tuple{Real, Real}}`
-  * `signal_split::Array{Float64, 4}`
-
-<a id='NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_chdiff`** &mdash; *Method*.
-
-
-
-```julia
-eeg_chdiff(eeg1, eeg2; channel1, channel2)
-```
-
-Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
-
-**Arguments**
-
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-
-**Returns**
-
-  * `ch_diff::Matrix{Float64}`
-
-<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cps`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cps(eeg; norm)
-```
-
-Calculate cross power spectrum between all channels of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `norm::Bool=true`: normalize do dB
-
-**Returns**
-
-Named tuple containing:
-
-  * `cps_pw::Array{Float64, 4}`: cross power spectrum power
-  * `cps_ph::Array{Float64, 4}`: cross power spectrum phase (in radians)
-  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
-
-<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cps`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cps(eeg1, eeg2; channel1, channel2, epoch1, epoch2, norm)
-```
-
-Calculate cross power spectrum between `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
-  * `norm::Bool=true`: normalize do dB
-
-**Returns**
-
-Named tuple containing:
-
-  * `cps_pw::Vector{Float64}`: cross power spectrum power
-  * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
-  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
-
-
-<a id='EEG-plots'></a>
-
-<a id='EEG-plots-1'></a>
-
-## EEG plots
-
-<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
-**`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal_scaled(t, signal; <keyword arguments>)
-```
-
-Plot scaled multi-channel `signal`.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::AbstractArray`
-  * `labels::Vector{String}=[""]`: labels vector
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal(t, signal; <keyword arguments>)
-```
-
-Plot single-channel `signal`.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Vector{<:Real}`
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
-**`NeuroJ.plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal(t, signal; <keyword arguments>)
-```
-
-Plot multi-channel `signal`.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::AbstractArray`
-  * `labels::Vector{String}=[""]`: labels vector
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channel or channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_details`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_details(eeg; <keyword arguments>)
-```
-
-Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `head::Bool=true`: add head plot
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `pc::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component(eeg; <keyword arguments>)
-```
-
-Plot `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx(eeg; <keyword arguments>)
-```
-
-Plot indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_avg(eeg; <keyword arguments>)
-```
-
-Plot indexed `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Int64`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd_avg(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{Float64}}' href='#NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_signal_avg`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal_avg(t, signal; <keyword arguments>)
-```
-
-Plot `signal` channels: mean and ±95% CI.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Matrix{<:Real}`
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_avg_details`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_avg_details(eeg; <keyword arguments>)
-```
-
-Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `head::Bool=true`: add head plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{Float64}}' href='#NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_signal_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal_butterfly(t, signal; <keyword arguments>)
-```
-
-Butterfly plot of `signal` channels.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Matrix{<:Real}`
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple`: y-axis limits, default (0, 0)
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of `eeg` channels.
-
-**Arguments**
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
-```
-
-Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Int64=1`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `head::Bool=true`: add head plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_psd-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_psd`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd(signal; <keyword arguments>)
-```
-
-Plot `signal` channel power spectrum density.
-
-**Arguments**
-
-  * `signal::Vector{<:Real}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_psd_avg-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_avg-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_avg`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_avg(signal; <keyword arguments>)
-```
-
-Plot `signal` channels power spectrum density: mean and ±95% CI.
-
-**Arguments**
-
-  * `signal::Matrix{<:Real}`
-  * `fs::Int64`: sampling rate
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_psd_butterfly-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_butterfly-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_butterfly(signal; <keyword arguments>)
-```
-
-Butterfly plot of `signal` channels power spectrum density.
-
-**Arguments**
-
-  * `signal::Matrix{<:Real}`
-  * `fs::Int64`: sampling rate
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels power spectrum density.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_psd(eeg; <keyword arguments>)
-```
-
-Plot PSD of `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Int64`: channel to display
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_psd_avg(eeg; <keyword arguments>)
-```
-
-Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot PSD of `eeg` external or embedded component:.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-plot_spectrogram(signal; <keyword arguments>)
-```
-
-Plot spectrogram of `signal`.
-
-**Arguments**
-
-  * `signal::Vector{<:Real}`
-  * `fs::Int64`: sampling frequency
-  * `offset::Real`: displayed segment offset in seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
-```
-
-Plots spectrogram of `eeg` channel(s).
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_spectrogram_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_spectrogram_avg(eeg; <keyword arguments>)
-```
-
-Plots spectrogram of `eeg` channel(s).
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_spectrogram(eeg; <keyword arguments>)
-```
-
-Plots spectrogram of `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Int64`: channel to display
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_spectrogram_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_spectrogram_avg(eeg; <keyword arguments>)
-```
-
-Plots spectrogram of `eeg` channel(s).
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_spectrogram(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Int64`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Times [s]`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_spectrogram_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_spectrogram_avg(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of averaged indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrodes`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_electrodes(eeg; <keyword arguments>)
-```
-
-Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
-  * `labels::Bool=true`: plot electrode labels
-  * `head::Bool`=true: plot head
-  * `head_labels::Bool=false`: plot head labels
-  * `small::Bool=false`: draws small plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{Float64}}}' href='#NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{Float64}}}'>#</a>
-**`NeuroJ.eeg_plot_matrix`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_matrix(eeg, m; <keyword arguments>)
-```
-
-Plot matrix `m` of `eeg` channels.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `m::Union{Matrix{<:Real}, Array{Float64, 3}}`: channels by channels matrix
-  * `epoch::Int64=1`: epoch number to display
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{Float64}}, Vector{<:Real}}' href='#NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{Float64}}, Vector{<:Real}}'>#</a>
-**`NeuroJ.eeg_plot_covmatrix`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_matrix(eeg, cov_m, lags; <keyword arguments>)
-```
-
-Plot covariance matrix `m` of `eeg` channels.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}`: covariance matrix
-  * `lags::Vector{<:Real}`: covariance lags
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
-  * `epoch::Int64=1`: epoch number to display
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_histogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_histogram-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_histogram`** &mdash; *Method*.
-
-
-
-```julia
-plot_histogram(signal; <keyword arguments>)
-```
-
-Plot histogram of `signal`.
-
-**Arguments**
-
-  * `signal::Vector{<:Real}`
-  * `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
-  * `label::String=""`: channel label
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_histogram-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_histogram-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_histogram`** &mdash; *Method*.
-
-
-
-```julia
-plot_histogram(signal; <keyword arguments>)
-```
-
-Plot histogram of `signal`.
-
-**Arguments**
-
-  * `signal::Matrix{<:Real}`
-  * `type::Symbol`: type of histogram: :hist or :kd
-  * `labels::Vector{String}=[""]`
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_histogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_histogram(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channel histograms.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `type::Symbol: type of histogram: :hist or :kd
-  * `epoch::Int64=1`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
-  * `label::String=""`: channel label
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}' href='#NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}'>#</a>
-**`NeuroJ.plot_ica`** &mdash; *Method*.
-
-
-
-```julia
-plot_ica(t, ica; <keyword arguments>)
-```
-
-Plot `ica` components against time vector `t`.
-
-**Arguments**
-
-  * `t::Union{Vector{<:Real}, AbstractRange}`: the time vector
-  * `ica::Vector{Float64}`
-  * `label::String=""`: channel label
-  * `norm::Bool=true`: normalize the `ica` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits (-ylim:ylim)
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=true`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_acomponent_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_acomponent_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_weights_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_weights_topo(eeg; <keyword arguments>)
-```
-
-Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `weights=Matrix{<:Real}`: weights to plot
-  * `head::Bool`=true: plot head
-  * `small::Bool=false`: draws small plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_mcomponent_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `epoch::Int64`: epoch to display
-  * `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=false`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_ica_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_ica_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Int64`: epoch to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `ic::Union{Vector{Int64}, AbstractRange}=0`: list of ICAs plot, default is all ICAs
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=false`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_tile' href='#NeuroJ.eeg_plot_tile'>#</a>
-**`NeuroJ.eeg_plot_tile`** &mdash; *Function*.
-
-
-
-```julia
-eeg_plot_tile(p)
-```
-
-Plot vector of plots `p` as tiles.
-
-**Arguments**
-
-  * `p::Vector{Any}`: vector of plots
-  * `w::Int64=800`: single plot width (px)
-  * `h::Int64=800`: single plot height (px)
-  * `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `p_tiled::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_bands-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_bands-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_bands`** &mdash; *Method*.
-
-
-
-```julia
-plot_bands(signal; <keyword arguments>)
-```
-
-Plot absolute/relative bands powers of a single-channel `signal`.
-
-**Arguments**
-
-  * `signal::Vector{<:Real}`
-  * `fs::Int64`: sampling rate
-  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha](see `eeg_band()`)
-  * `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
-  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-  * `norm::Bool=true`: normalize powers to dB
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_bands`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_bands(eeg; <keyword arguments>)
-```
-
-Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
-  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-  * `norm::Bool=true`: normalize powers to dB
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_save-Tuple{Plots.Plot{Plots.GRBackend}}' href='#NeuroJ.eeg_plot_save-Tuple{Plots.Plot{Plots.GRBackend}}'>#</a>
-**`NeuroJ.eeg_plot_save`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_save(p; file_name::String)
-```
-
-Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
-
-**Arguments**
-
-  * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
-  * `file_name::String`
-
-<a id='NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_channels`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_channels(eeg; <keyword arguments>)
-```
-
-Plot values of `c` for selected channels of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroJ.EEG`
-  * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
-  * `epoch::Int64`: number of epoch for which `c` should be plotted
-  * `xlabel::String="Channel"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_epochs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_epochs(eeg; <keyword arguments>)
-```
-
-Plot values of `c` for selected epoch of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroJ.EEG`
-  * `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
-  * `xlabel::String="Epochs"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_filter_response`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_filter_response(eeg; <keyword arguments>)
-```
-
-Plot filter response.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
-  * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-  * `order::Int64`: filter order
-  * `rp::Real`: dB ripple in the passband
-  * `rs::Real`: dB attenuation in the stopband
-  * `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}' href='#NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}'>#</a>
-**`NeuroJ.eeg_plot_compose`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_compose(p; <keyword arguments>)
-```
-
-Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
-
-  * `(2, 2)`: 2 × 2 plots, regular layout
-  * `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
-
-**Arguments**
-
-  * `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
-  * `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for `p` vector plots
-
-**Returns**
-
-  * `pc::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_env`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_env(eeg; <keyword arguments>)
-```
-
-Plot envelope of `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
-  * `average::Symbol`: averaging method: :no, :mean or :median
-  * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `epoch::Int64`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_ispc(eeg1, eeg2; <keyword arguments>)
-```
-
-Plot ISPC `eeg1` and `eeg2` channels/epochs.
-
-**Arguments**
-
-  * `eeg1:NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
-  * `channel1::Int64`: channel to plot
-  * `channel2::Int64`: channel to plot
-  * `epoch1::Int64`: epoch to plot
-  * `epoch2::Int64`: epoch to plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc(eeg; <keyword arguments>)
-```
-
-Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroJ.EEG`
-  * `channel::Int64`: channel to plot
-  * `t::Int64`: time point to plot
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_pli`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
-```
-
-Plot pli `eeg1` and `eeg2` channels/epochs.
-
-**Arguments**
-
-  * `eeg1:NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
-  * `channel1::Int64`: channel to plot
-  * `channel2::Int64`: channel to plot
-  * `epoch1::Int64`: epoch to plot
-  * `epoch2::Int64`: epoch to plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc_s`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc_s(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Int64`
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String="ITPC spectrogram"`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_connections`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_connections(eeg; <keyword arguments>)
-```
-
-Plot connections between `eeg` electrodes.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `m::Matrix{<:Real}`: matrix of connections weights
-  * `threshold::Float64`: plot all connection above threshold
-  * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
-  * `labels::Bool=false`: plot electrode labels
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc_f`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc_f(eeg; <keyword arguments>)
-```
-
-Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`
-  * `channel::Int64`
-  * `f::Int64`: frequency to plot
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_3dw`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_3dw(signal; <keyword arguments>)
-```
-
-Plot 3-d waterfall plot of `signal` channels power spectrum density.
-
-**Arguments**
-
-  * `signal::Matrix{Float64}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_3ds`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_3ds(signal; <keyword arguments>)
-```
-
-Plot 3-d surface plot of `signal` channels power spectrum density.
-
-**Arguments**
-
-  * `signal::Matrix{Float64}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_3d`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_3d(eeg; <keyword arguments>)
-```
-
-Plot 3-d waterfall plot of `eeg` channels power spectrum density.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `type::Symbol=:w`: plot type: :w waterfall, :s surface
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_rel_psd`** &mdash; *Method*.
-
-
-
-```julia
-plot_rel_psd(signal; <keyword arguments>)
-```
-
-Plot relative `signal` channel power spectrum density.
-
-**Arguments**
-
-  * `signal::Vector{<:Real}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrode`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_electrode(eeg; <keyword arguments>)
-```
-
-Plot single `eeg` electrode. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Int64`: channel to display
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrodes3d`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_electrodes3d(eeg; <keyword arguments>)
-```
-
-Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc*x, :loc*y and :loc_z locations.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
-  * `labels::Bool=true`: plot electrode labels
-  * `head_labels::Bool=false`: plot head labels
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `fig::GLMakie.Figure`
-
-<a id='NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
-```
-
-Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroJ.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `plot_size::Int64=1000`: plot dimensions in px
-  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
-  * `labels::Bool=true`: add channel labels
-  * `mono::Bool=false`: use color or grey palette
-  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
-  * `ax::Symbol=:linlin`: type of axes scaling
-
-**Returns**
-
-  * `fig::GLMakie.Figure`
-
-
 <a id='Low-level-functions'></a>
 
 <a id='Low-level-functions-1'></a>
 
-## Low level functions
+## Low-level functions
 
 <a id='NeuroJ.linspace-Tuple{Real, Real, Int64}' href='#NeuroJ.linspace-Tuple{Real, Real, Int64}'>#</a>
 **`NeuroJ.linspace`** &mdash; *Method*.
@@ -6616,8 +324,8 @@ Return the `n`-point long symmetric window `type`.
 
   * `w::Vector{Float64}`:: generated window
 
-<a id='NeuroJ.fft0-Tuple{AbstractArray, Int64}' href='#NeuroJ.fft0-Tuple{AbstractArray, Int64}'>#</a>
-**`NeuroJ.fft0`** &mdash; *Method*.
+<a id='NeuroJ.fft0' href='#NeuroJ.fft0'>#</a>
+**`NeuroJ.fft0`** &mdash; *Function*.
 
 
 
@@ -6636,8 +344,8 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 
   * `fft0::Vector{ComplexF64}`
 
-<a id='NeuroJ.ifft0-Tuple{AbstractArray, Int64}' href='#NeuroJ.ifft0-Tuple{AbstractArray, Int64}'>#</a>
-**`NeuroJ.ifft0`** &mdash; *Method*.
+<a id='NeuroJ.ifft0' href='#NeuroJ.ifft0'>#</a>
+**`NeuroJ.ifft0`** &mdash; *Function*.
 
 
 
@@ -9189,11 +2897,6337 @@ Named tuple containing:
   * `seg2::Vector{Float64}`: averaged segment 2
 
 
-<a id='NSTIM'></a>
+<a id='EEG-I/O'></a>
 
-<a id='NSTIM-1'></a>
+<a id='EEG-I/O-1'></a>
 
-## NSTIM
+## EEG I/O
+
+<a id='NeuroJ.eeg_import_edf-Tuple{String}' href='#NeuroJ.eeg_import_edf-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_edf`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_edf(file_name; read_annotations, clean_labels)
+```
+
+Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load
+  * `read_annotations::Bool=true`: read annotations from EDF+ file (currently not implemented)
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
+
+**Notes**
+
+  * sampling_rate = n.samples / data.record.duration
+  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
+  * value = (value - digital*minimum ) * gain + physical*minimum
+
+**Source**
+
+Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
+
+<a id='NeuroJ.eeg_import_ced-Tuple{String}' href='#NeuroJ.eeg_import_ced-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_ced`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_ced(file_name)
+```
+
+Load electrode positions from CED file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
+<a id='NeuroJ.eeg_import_locs-Tuple{String}' href='#NeuroJ.eeg_import_locs-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_locs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_locs(file_name)
+```
+
+Load electrode positions from LOCS file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
+<a id='NeuroJ.eeg_import_elc-Tuple{String}' href='#NeuroJ.eeg_import_elc-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_elc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_elc(file_name)
+```
+
+Load electrode positions from ELC file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
+<a id='NeuroJ.eeg_import_tsv-Tuple{String}' href='#NeuroJ.eeg_import_tsv-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_tsv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_tsv(file_name)
+```
+
+Load electrode positions from TSV file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
+<a id='NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_load_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_load_electrodes(eeg; file_name)
+```
+
+Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Accepted formats:
+
+  * CED
+  * LOCS
+  * ELC
+  * TSV
+
+Electrode locations:
+
+  * loc_theta       planar polar angle
+  * loc_radius      planar polar radius
+  * loc_x           spherical Cartesian x
+  * loc_y           spherical Cartesian y
+  * loc_z           spherical Cartesian z
+  * loc*radius*sph  spherical radius
+  * loc*theta*sph   spherical horizontal angle
+  * loc*phi*sph     spherical azimuth angle
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_load_electrodes!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_load_electrodes!(eeg; file_name)
+```
+
+Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
+
+  * CED
+  * LOCS
+  * ELC
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`
+
+<a id='NeuroJ.eeg_save-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_save`** &mdash; *Method*.
+
+
+
+```julia
+eeg_save(eeg; file_name, overwrite)
+```
+
+Save the `eeg` to `file_name` file (HDF5-based).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`: file name
+  * `overwrite::Bool=false`
+
+**Returns**
+
+  * `success::Bool`
+
+<a id='NeuroJ.eeg_load-Tuple{String}' href='#NeuroJ.eeg_load-Tuple{String}'>#</a>
+**`NeuroJ.eeg_load`** &mdash; *Method*.
+
+
+
+```julia
+eeg_load(file_name)
+```
+
+Load the `eeg` from `file_name` file (HDF5-based).
+
+**Arguments**
+
+  * `file_name::String`: file name
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_export_csv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_export_csv(eeg; file_name, header, overwrite)
+```
+
+Export EEG data as CSV.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`
+  * `header::Bool=false`: export header
+  * `components::Bool=false`: export components
+  * `overwrite::Bool=false`
+
+**Returns**
+
+  * `success::Bool`
+
+<a id='NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_save_electrodes(eeg; file_name, overwrite)
+```
+
+Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `file_name::String`
+  * `overwrite::Bool=false`
+
+**Returns**
+
+  * `success::Bool`
+
+
+<a id='EEG-edit'></a>
+
+<a id='EEG-edit-1'></a>
+
+## EEG edit
+
+<a id='NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_component(eeg; c, v)
+```
+
+Add component name `c` of value `v` to `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+  * `v::Any`: component value
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_component!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_component!(eeg; c, v)
+```
+
+Add component name `c` of value `v` to `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+  * `v::Any`: component value
+
+<a id='NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_list_components`** &mdash; *Method*.
+
+
+
+```julia
+eeg_list_components(eeg)
+```
+
+List `eeg` components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `components::Vector{Symbol}`
+
+<a id='NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_component(eeg, c)
+```
+
+Extract component `c` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+
+**Returns**
+
+  * `component::Any`
+
+<a id='NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_component(eeg; c)
+```
+
+Delete component `c` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_component!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_component!(eeg; c)
+```
+
+Delete component `c` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Symbol`: component name
+
+<a id='NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reset_components`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reset_components(eeg)
+```
+
+Remove all `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reset_components!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reset_components!(eeg)
+```
+
+Remove all `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_component_idx`** &mdash; *Method*.
+
+
+
+```julia
+eeg_component_idx(eeg, c)
+```
+
+Return index of `eeg` component.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c::Symbol`: component name
+
+**Return**
+
+  * `c_idx::Int64`
+
+<a id='NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_component_type`** &mdash; *Method*.
+
+
+
+```julia
+eeg_component_type(eeg, c)
+```
+
+Return type of `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c::Symbol`: component name
+
+**Return**
+
+  * `c_type::DataType`
+
+<a id='NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_component(eeg, c_old, c_new)
+```
+
+Return type of `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c_old::Symbol`: old component name
+  * `c_new::Symbol`: new component name
+
+**Return**
+
+  * `eeg_new:EEG`
+
+<a id='NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_component!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_component(eeg, c_old, c_new)
+```
+
+Return type of `eeg` components.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c_old::Symbol`: old component name
+  * `c_new::Symbol`: new component name
+
+<a id='NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_channel(eeg; channel)
+```
+
+Remove `channel` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_channel!(eeg; channel)
+```
+
+Remove `channel` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
+
+<a id='NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel(eeg; channel)
+```
+
+Keep `channels` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel!(eeg; channel)
+```
+
+Keep `channels` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+
+<a id='NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_get_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_get_channel(eeg; channel)
+```
+
+Return the `channel` index / name.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+
+**Returns**
+
+  * `channel_idx::Int64`
+
+<a id='NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_channel(eeg; channel, name)
+```
+
+Rename the `eeg` `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `name::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rename_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rename_channel!(eeg; channel, name)
+```
+
+Rename the `eeg` `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `name::String`
+
+<a id='NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_channel(eeg; channel)
+```
+
+Extract `channel` number or name.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+
+**Returns**
+
+  * `channel::Vector{Float64}`
+
+<a id='NeuroJ.eeg_history-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_history-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_history`** &mdash; *Method*.
+
+
+
+```julia
+eeg_history(eeg)
+```
+
+Show processing history.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_labels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_labels(eeg)
+```
+
+Return `eeg` labels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `labels::Vector{String}`
+
+<a id='NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_sr`** &mdash; *Method*.
+
+
+
+```julia
+eeg_sr(eeg)
+```
+
+Return `eeg` sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `sr::Int64`
+
+<a id='NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_n`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_n(eeg; type=:eeg)
+```
+
+Return number of `eeg` channels of `type`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
+
+**Returns**
+
+  * `channel_n::Int64`
+
+<a id='NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epoch_n`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_n(eeg)
+```
+
+Return number of `eeg` epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `epoch_n::Int64`
+
+<a id='NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_signal_len`** &mdash; *Method*.
+
+
+
+```julia
+eeg_signal_len(eeg)
+```
+
+Return length of `eeg` signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `signal_len::Int64`
+
+<a id='NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epoch_len`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_len(eeg)
+```
+
+Return length of `eeg` signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `epoch_len::Int64`
+
+<a id='NeuroJ.eeg_info-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_info-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_info`** &mdash; *Method*.
+
+
+
+```julia
+eeg_info(eeg)
+```
+
+Show info.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+```
+
+Splits `eeg` into epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+```
+
+Splits `eeg` into epochs.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch_n::Union{Int64, Nothing}`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
+  * `average::Bool`: average all epochs, return one averaged epoch
+
+<a id='NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_extract_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_extract_epoch(eeg; epoch)
+```
+
+Extract the `epoch` epoch.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Int64`: epoch index
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_trim`** &mdash; *Method*.
+
+
+
+```julia
+eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+```
+
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `len::Int64`: number of samples to remove
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_trim!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+```
+
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `len::Int64`: number of samples to remove
+  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
+  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
+  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+
+<a id='NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_header`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_header(eeg; field, value)
+```
+
+Change value of `eeg` `field` to `value`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `field::Symbol`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_header!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_header!(eeg; field, value)
+```
+
+Change value of `eeg` `field` to `value`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `field::Symbol`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_show_header`** &mdash; *Method*.
+
+
+
+```julia
+eeg_show_header(eeg)
+```
+
+Show keys and values of `eeg` header.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_epoch(eeg; epoch)
+```
+
+Remove `epoch` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_epoch!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_epoch!(eeg; epoch)
+```
+
+Remove `epoch` from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+
+<a id='NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_epoch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_epoch(eeg; epoch)
+```
+
+Keep `epoch` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_epoch!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_epoch!(eeg; epoch)
+```
+
+Keep `epoch` in the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+
+<a id='NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_detect_bad_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
+```
+
+Detect bad `eeg` epochs based on:
+
+  * flat channel(s)
+  * RMSE
+  * RMSD
+  * Euclidean distance
+  * peak-to-peak amplitude
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
+  * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
+
+**Returns**
+
+  * `bad_epochs_idx::Vector{Int64}`
+
+<a id='NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
+**`NeuroJ.eeg_add_labels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+```
+
+Add `labels` to `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `labels::Vector{String}`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
+**`NeuroJ.eeg_add_labels!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+```
+
+Add `labels` to `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `labels::Vector{String}`
+
+<a id='NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_channel(eeg; channel, field, value)
+```
+
+Edits `eeg` `channel` properties.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`
+  * `field::Any`
+  * `value::Any`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_channel!(eeg; channel, field, value)
+```
+
+Edit `eeg` `channel` properties.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`
+  * `field::Any`
+  * `value::Any`
+
+<a id='NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel_type`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel_type(eeg; type)
+```
+
+Keep `type` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:eeg`: type of channels to keep
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_keep_channel_type!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_keep_channel_type!(eeg)
+```
+
+Keep `type` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:eeg`: type of channels to keep
+
+<a id='NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_view_note`** &mdash; *Method*.
+
+
+
+```julia
+eeg_view_note(eeg)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_copy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_copy(eeg)
+```
+
+Make copy of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_copy::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_time`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_time(eeg; ts)
+```
+
+Edit `eeg` epochs time start.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ts::Real`: time start in seconds
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_time!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_time!(eeg; ts)
+```
+
+Edit `eeg` epochs time start.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ts::Real`: time start in seconds
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_note`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_note(eeg; note)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `note::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_note!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_note!(eeg; note)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `note::String`
+
+<a id='NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_note`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_note(eeg)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_delete_note!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_note!(eeg)
+```
+
+Return `eeg` note.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_replace_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_replace_channel(eeg; channel, signal)
+```
+
+Replace the `channel` index / name with `signal`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+  * `signal::Array{Float64, 3}
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_replace_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_replace_channel!(eeg; channel, signal)
+```
+
+Replace the `channel` index / name with `signal`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`: channel name
+  * `signal::Array{Float64, 3}
+
+<a id='NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_interpolate_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_interpolate_channel(eeg; channel, m, q)
+```
+
+Interpolate `eeg` channel using planar interpolation.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_interpolate_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_interpolate_channel(eeg; channel, m, q)
+```
+
+Interpolate `eeg` channel using planar interpolation.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+
+<a id='NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipy(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along y axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipy!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipy!(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along y axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipx`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipx(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along x axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipx!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipx!(eeg; planar, spherical)
+```
+
+Flip `eeg` channel locations along x axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipz`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipz(eeg)
+```
+
+Flip `eeg` channel locations along z axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_flipz!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_flipz!(eeg)
+```
+
+Flip `eeg` channel locations along z axis.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_type`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_type(eeg; channel, type)
+```
+
+Change the `eeg` `channel` type.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `type::String`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channel_type!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_type!(eeg; channel, new_name)
+```
+
+Change the `eeg` `channel` type.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `type::String`
+
+<a id='NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_electrode`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_electrode(eeg; <keyword arguments>)
+```
+
+Edit `eeg` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{String, Int64}`: channel number or name
+  * `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
+  * `theta::Union{Real, Nothing}`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}`: polar planar radius coordinate
+  * `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `name::String=""`: channel name
+  * `type::String=""`: channel type
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_edit_electrode!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_electrode!(eeg; <keyword arguments>)
+```
+
+Edit `eeg` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{String, Int64}`: channel number or name
+  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `name::String=""`: channel name
+  * `type::String=""`: channel type
+
+<a id='NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_electrode_loc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_electrode_loc(eeg; channel)
+```
+
+Return locations of the `eeg` `channel` electrode.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, String}`
+  * `output::Bool=true`: print output if true
+
+**Returns**
+
+Named tuple containing:
+
+  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+
+<a id='NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swapxy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swapxy(eeg; planar, spherical)
+```
+
+Swap `eeg` channel locations x and y axes.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_swapxy!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_swapxy!(eeg; planar, spherical)
+```
+
+Swap `eeg` channel locations x and y axes.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `planar::Bool=true`: modify planar coordinates
+  * `spherical::Bool=true`: modify spherical coordinates
+
+<a id='NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_sph2cart`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_sph2cart(eeg)
+```
+
+Convert `eeg` spherical locations to Cartesian.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_sph2cart!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_sph2cart!(eeg)
+```
+
+Convert `eeg` spherical locations to Cartesian.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_cart2sph`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_cart2sph(eeg)
+```
+
+Convert `eeg` Cartesian locations to spherical.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_loc_cart2sph!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_loc_cart2sph!(eeg)
+```
+
+Convert `eeg` Cartesian locations to spherical.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+
+<a id='EEG-process'></a>
+
+<a id='EEG-process-1'></a>
+
+## EEG process
+
+<a id='NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_ch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_ch(eeg; channel)
+```
+
+Reference the `eeg` to specific `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_ch!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_ch!(eeg; channel)
+```
+
+Reference the `eeg` to specific channel `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+
+<a id='NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_car`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_car(eeg)
+```
+
+Reference the `eeg` to common average reference.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_car!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_car!(eeg)
+```
+
+Reference the `eeg` to common average reference.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_derivative`** &mdash; *Method*.
+
+
+
+```julia
+eeg_derivative(eeg)
+```
+
+Return the derivative of the `eeg` with length same as the signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_derivative!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_derivative!(eeg)
+```
+
+Return the derivative of the `eeg` with length same as the signal.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_detrend`** &mdash; *Method*.
+
+
+
+```julia
+eeg_detrend(eeg; type)
+```
+
+Perform piecewise detrending of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol`, optional
+
+      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `:linear`: linear trend is subtracted from `signal`
+      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+      * `:poly`: polynomial of `order` is subtracted
+      * `:loess`: fit and subtract loess approximation
+      * `:hp`: use HP filter
+  * `offset::Real=0`: constant for :constant detrending
+  * `order::Int64=1`: polynomial fitting order
+  * `span::Float64=0.5`: smoothing of loess
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_detrend!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_detrend!(eeg; type)
+```
+
+Remove linear trend from the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol`, optional
+
+      * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
+      * `:linear`: linear trend is subtracted from `signal`
+      * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
+      * `:poly`: polynomial of `order` order is subtracted
+      * `:loess`: fit and subtract loess approximation
+      * `:hp`: use HP filter
+  * `offset::Real=0`: constant for :constant detrending
+  * `order::Int64=1`: polynomial fitting order
+  * `span::Float64`: smoothing of loess
+
+<a id='NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_taper`** &mdash; *Method*.
+
+
+
+```julia
+eeg_taper(eeg; taper)
+```
+
+Taper `eeg` with `taper`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `taper::Union{Vector{Real, Vector{ComplexF64}}``
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_taper!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_taper!(eeg; taper)
+```
+
+Taper `eeg` with `taper`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
+
+<a id='NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_demean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_demean(eeg)
+```
+
+Remove mean value (DC offset).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_demean!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_demean!(eeg)
+```
+
+Remove mean value (DC offset).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize`** &mdash; *Method*.
+
+
+
+```julia
+eeg_normalize(eeg; method)
+```
+
+Normalize each `eeg` channel.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `method::Symbol`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_normalize!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_normalize!(eeg; method)
+```
+
+Normalize each `eeg` channel.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `method::Symbol`
+
+<a id='NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_noise`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_noise(eeg)
+```
+
+Add random noise to the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_noise!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_noise!(eeg)
+```
+
+Add random noise to the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_filter`** &mdash; *Method*.
+
+
+
+```julia
+eeg_filter(eeg; <keyword arguments>)
+```
+
+Filter `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `fprototype::Symbol`: filter prototype:
+
+      * `:butterworth`
+      * `:chebyshev1`
+      * `:chebyshev2`
+      * `:elliptic`
+      * `:fir`
+      * `:iirnotch`
+      * `:remez`
+      * `:mavg`: moving average (with threshold)
+      * `:mmed`: moving median (with threshold)
+      * `:poly`: polynomial of `order` order
+  * `ftype::Symbol`: filter type:
+
+      * `:lp`: low pass
+      * `:hp`: high pass
+      * `:bp`: band pass
+      * `:bs`: band stop
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_filter!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_filter!(eeg; <keyword arguments>)
+```
+
+Filter `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `fprototype::Symbol`: filter prototype:
+
+      * `:butterworth`
+      * `:chebyshev1`
+      * `:chebyshev2`
+      * `:elliptic`
+      * `:fir`
+      * `:iirnotch`
+      * `:remez`
+      * `:mavg`: moving average (with threshold)
+      * `:mmed`: moving median (with threshold)
+      * `:poly`: polynomial of `order` order
+  * `ftype::Symbol`: filter type:
+
+      * `:lp`: low pass
+      * `:hp`: high pass
+      * `:bp`: band pass
+      * `:bs`: band stop
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
+  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
+  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+
+<a id='NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pca`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pca(eeg; n)
+```
+
+Calculate `n` first PCs for `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `n::Int64`: number of PCs
+
+**Returns**
+
+Named tuple containing:
+
+  * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
+  * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
+  * `pc_m::PCA{Float64}`: PC mean
+
+<a id='NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pca_reconstruct`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pca_reconstruct(eeg)
+```
+
+Reconstruct `eeg` signals using PCA components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pca_reconstruct!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pca_reconstruct!(eeg)
+```
+
+Reconstruct `eeg` signals using PCA components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ica`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ica(eeg; <keyword arguments>)
+```
+
+Calculate `n` first ICs for `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `n::Int64`: number of ICs
+  * `tol::Float64=1.0e-6`: tolerance for ICA
+  * `iter::Int64=100`: maximum number of iterations
+  * `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
+
+**Returns**
+
+Named tuple containing:
+
+  * `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
+  * `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
+
+<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_average`** &mdash; *Method*.
+
+
+
+```julia
+eeg_average(eeg)
+```
+
+Return the average signal of all `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_average!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_average!(eeg)
+```
+
+Return the average signal of all `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_average`** &mdash; *Method*.
+
+
+
+```julia
+eeg_average(eeg1, eeg2)
+```
+
+Return the average signal of all `eeg1` and `eeg2` channels.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ica_reconstruct`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ica_reconstruct(eeg; ica)
+```
+
+Reconstruct `eeg` signals using removal of `ica` ICA components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ica_reconstruct!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ica_reconstruct!(eeg; ica)
+```
+
+Reconstruct `eeg` signals using removal of `ica` ICA components.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+
+<a id='NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_invert_polarity`** &mdash; *Method*.
+
+
+
+```julia
+eeg_invert_polarity(eeg; channel)
+```
+
+Invert polarity of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`: channel to invert
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_invert_polarity!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_invert_polarity!(eeg; channel)
+```
+
+Invert polarity of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
+
+<a id='NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_resample`** &mdash; *Method*.
+
+
+
+```julia
+eeg_resample(eeg; new_sr)
+```
+
+Resample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_resample!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_resample!(eeg; new_sr)
+```
+
+Resample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+<a id='NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_upsample`** &mdash; *Method*.
+
+
+
+```julia
+eeg_upsample(eeg; new_sr)
+```
+
+Upsample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_upsample!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_upsample!(eeg; new_sr)
+```
+
+Upsample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_downsample`** &mdash; *Method*.
+
+
+
+```julia
+eeg_downsample(eeg; new_sr)
+```
+
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_downsample!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_downsample!(eeg; new_sr)
+```
+
+Downsample all channels of `eeg` to `new_sr` sampling frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `new_sr::Int64`: new sampling rate
+
+<a id='NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wdenoise`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wdenoise(eeg; wt)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wdenoise!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wdenoise!(eeg; wt)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+
+<a id='NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_a`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_a(eeg; type)
+```
+
+Reference the `eeg` to auricular channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_a!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_a!(eeg; type)
+```
+
+Reference the `eeg` to auricular channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+
+<a id='NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_m`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_m(eeg; type)
+```
+
+Reference the `eeg` to mastoid channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_m!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_m!(eeg; type)
+```
+
+Reference the `eeg` to mastoid channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+
+<a id='NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fftdenoise`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fftdenoise(eeg; pad, threshold)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: pad signal with `pad` zeros
+  * `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fftdenoise!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fftdenoise!(eeg; pad, threshold)
+```
+
+Perform wavelet denoising.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: pad signal with `pad` zeros
+  * `threshold::Int64=100`: PSD threshold for keeping frequency components
+
+<a id='NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_plap`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_plap(eeg; nn, weights)
+```
+
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `nn::Int64=4`: number of nearest electrodes
+  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+
+**Returns**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_reference_plap!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_reference_plap!(eeg; nn, weights)
+```
+
+Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `nn::Int64=4`: number of nearest electrodes
+  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+
+<a id='NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_zero`** &mdash; *Method*.
+
+
+
+```julia
+eeg_zero(eeg)
+```
+
+Zero `eeg` channels at the beginning and at the end.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_zero!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_zero!(eeg)
+```
+
+Zero `eeg` channel at the beginning and at the end.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wbp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wbp(eeg; pad, frq, ncyc, demean)
+```
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wbp!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wbp!(eeg; pad, frq, ncyc, demean)
+```
+
+Perform wavelet bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+  * `demean::Bool=true`: demean signal prior to analysis
+
+<a id='NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cbp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cbp(eeg; pad, frq, demean)
+```
+
+Perform convolution bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Real`: filter frequency
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cbp!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cbp!(eeg; pad, frq, ncyc, demean)
+```
+
+Perform convolution bandpass filtering of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `frq::Tuple{Real, Real}`: filter frequency
+  * `demean::Bool=true`: demean signal prior to analysis
+
+<a id='NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_denoise_wien`** &mdash; *Method*.
+
+
+
+```julia
+eeg_denoise_wien(eeg)
+```
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`
+
+<a id='NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_denoise_wien!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_denoise_wien!(eeg)
+```
+
+Perform Wiener deconvolution denoising of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+
+<a id='EEG-analyze'></a>
+
+<a id='EEG-analyze-1'></a>
+
+## EEG analyze
+
+<a id='NeuroJ.eeg_total_power' href='#NeuroJ.eeg_total_power'>#</a>
+**`NeuroJ.eeg_total_power`** &mdash; *Function*.
+
+
+
+```julia
+eeg_total_power(eeg, mt)
+```
+
+Calculate total power of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+  * `stp::Matrix{Float64}`: total power for each channel per epoch
+
+<a id='NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_band_power`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band_power(eeg; f, mt)
+```
+
+Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+  * `sbp::Matrix{Float64}`: band power for each channel per epoch
+
+<a id='NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cov(eeg; norm)
+```
+
+Calculate covariance matrix for all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize covariance
+
+**Returns**
+
+  * `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
+
+<a id='NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cor`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cor(eeg)
+```
+
+Calculate correlation coefficients between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
+
+<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_xcov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_xcov(eeg; lag, demean, norm)
+```
+
+Calculate cross-covariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize cross-covariance
+
+**Returns**
+
+Named tuple containing:
+
+  * `ccov::Matrix{Float64}`
+  * `lags::Vector{Float64}`
+
+<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_xcov`** &mdash; *Method*.
+
+
+
+```julia
+eeg_xcov(eeg1, eeg2; channel1, channel2, epoch1, epoch2, lag, demean, norm)
+```
+
+Calculate cross-covariance between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `lag::Int64=1`: lags range is `-lag:lag`
+  * `demean::Bool=false`: demean signal prior to analysis
+  * `norm::Bool=false`: normalize cross-covariance
+
+**Returns**
+
+Named tuple containing:
+
+  * `ccov::Array{Float64, 3}`
+  * `lags::Vector{Float64}`
+
+<a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_psd(eeg; norm, mt)
+```
+
+Calculate power spectrum density for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `psd_pow::Array{Float64, 3}`:powers
+  * `psd_frq::Array{Float64, 3}`: frequencies
+
+<a id='NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_stationarity`** &mdash; *Method*.
+
+
+
+```julia
+eeg_stationarity(eeg; window, method)
+```
+
+Calculate stationarity.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `window::Int64=10`: time window in samples
+  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert, :adf
+
+**Returns**
+
+  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
+
+<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mi`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mi(eeg)
+```
+
+Calculate mutual information between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mi`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mi(eeg1, eeg2)
+```
+
+Calculate mutual information between all channels of `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+  * `mi::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_entropy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_entropy(eeg)
+```
+
+Calculate entropy of all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `entropy::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_negentropy`** &mdash; *Method*.
+
+
+
+```julia
+eeg_negentropy(eeg)
+```
+
+Calculate negentropy of all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `ne::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_band-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_band`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band(eeg, band)
+```
+
+Return frequency limits for a `band` range.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `band::Symbol`: name of band range: :total, :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
+
+**Returns**
+
+  * `band_frequency::Tuple{Real, Real}`
+
+<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+
+**Returns**
+
+Named tuple containing:
+
+  * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
+  * `ic::Array{Float64, 3}`: imaginary part of coherence
+
+<a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_freqs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_freqs(eeg)
+```
+
+Return vector of frequencies and Nyquist frequency for `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `hz::Vector{Float64}`
+  * `nyquist::Float64`
+
+<a id='NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_difference`** &mdash; *Method*.
+
+
+
+```julia
+eeg_difference(eeg1, eeg2; n, method)
+```
+
+Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `n::Int64=3`: number of bootstraps
+  * `method::Symbol=:absdiff`
+
+      * `:absdiff`: maximum difference
+      * `:diff2int`: integrated area of the squared difference
+
+**Returns**
+
+Named tuple containing:
+
+  * `signals_statistic::Matrix{Float64}`
+  * `signals_statistic_single::Vector{Float64}`
+  * `p::Vector{Float64}`
+
+<a id='NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pick`** &mdash; *Method*.
+
+
+
+```julia
+eeg_picks(eeg; pick)
+```
+
+Return `pick` of electrodes for `eeg` electrodes.
+
+**Arguments**
+
+  * `pick::Vector{Symbol}`
+
+**Returns**
+
+  * `channels::Vector{Int64}`
+
+<a id='NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_epochs_stats`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epochs_stats(eeg)
+```
+
+Calculate `eeg` epochs statistics.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `e_mean::Vector(Float64)`: mean
+  * `e_median::Vector(Float64)`: median
+  * `e_std::Vector(Float64)`: standard deviation
+  * `e_var::Vector(Float64)`: variance
+  * `e_kurt::Vector(Float64)`: kurtosis
+  * `e_skew::Vector(Float64)`: skewness
+  * `e_mean_diff::Vector(Float64)`: mean diff value
+  * `e_median_diff::Vector(Float64)`: median diff value
+  * `e_max_dif::Vector(Float64)`: max difference
+  * `e_dev_mean::Vector(Float64)`: deviation from channel mean
+
+<a id='NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrogram(eeg; norm, mt, demean)
+```
+
+Return spectrogram of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `demean::Bool=true`: demean signal prior to analysis
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_pow::Array{Float64, 3}`
+  * `s_frq::Vector{Float64}`
+  * `s_t::Vector{Float64}`
+
+<a id='NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_spectrum`** &mdash; *Method*.
+
+
+
+```julia
+eeg_spectrum(eeg; pad, h)
+```
+
+Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64=0`: pad with `pad` zeros
+  * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
+
+**Returns**
+
+Named tuple containing:
+
+  * `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
+  * `amp::Array{Float64, 3}`: amplitudes
+  * `pow::Array{Float64, 3}`: powers
+  * `phase::Array{Float64, 3}: phase angles
+
+<a id='NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_s2t`** &mdash; *Method*.
+
+
+
+```julia
+eeg_s2t(eeg; t)
+```
+
+Convert time `t` in samples to seconds using `eeg` sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `t::Int64`: time in samples
+
+**Returns**
+
+  * `t_s::Float64`: time in seconds
+
+<a id='NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_t2s`** &mdash; *Method*.
+
+
+
+```julia
+eeg_t2s(eeg; t)
+```
+
+Convert time `t` in seconds to samples using `eeg` sampling rate.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `t::Real`: time in seconds
+
+**Returns**
+
+  * `t_s::Int64`: time in samples
+
+<a id='NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_channels_stats`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channels_stats(eeg)
+```
+
+Calculate `eeg` channels statistics.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `c_mean::Matrix(Float64)`: mean
+  * `c_median::Matrix(Float64)`: median
+  * `c_std::Matrix(Float64)`: standard deviation
+  * `c_var::Matrix(Float64)`: variance
+  * `c_kurt::Matrix(Float64)`: kurtosis
+  * `c_skew::Matrix(Float64)`: skewness
+  * `c_mean_diff::Matrix(Float64)`: mean diff value
+  * `c_median_diff::Matrix(Float64)`: median diff value
+  * `c_max_dif::Matrix(Float64)`: max difference
+  * `c_dev_mean::Matrix(Float64)`: deviation from channel mean
+
+<a id='NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_snr`** &mdash; *Method*.
+
+
+
+```julia
+eeg_snr(eeg)
+```
+
+Calculate SNR of `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `snr::Matrix(Float64)`: SNR for each channel per epoch
+
+<a id='NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_standardize`** &mdash; *Method*.
+
+
+
+```julia
+eeg_standardize(eeg)
+```
+
+Standardize `eeg` channels for ML.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `eeg_new::NeuroJ.EEG`: standardized EEG
+  * `scaler::Matrix{Float64}`: standardizing matrix
+
+<a id='NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_standardize!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_standardize!(eeg)
+```
+
+Standardize `eeg` channels for ML.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `scaler::Matrix{Float64}`: standardizing matrix
+
+<a id='NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fconv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fconv(eeg, kernel, norm)
+```
+
+Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
+  * `norm::Bool=false`: normalize kernel
+
+**Returns**
+
+  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+
+<a id='NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tconv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tconv(eeg; kernel)
+```
+
+Perform convolution in the time domain.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
+
+**Returns**
+
+  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+
+<a id='NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_dft`** &mdash; *Method*.
+
+
+
+```julia
+eeg_dft(eeg)
+```
+
+Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `sfft::Array{ComplexF64, 3}`: FFT
+  * `sf::Array{Float64, 3}`: sample frequencies
+
+<a id='NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_msci95`** &mdash; *Method*.
+
+
+
+```julia
+eeg_msci95(eeg; n::=3, method=:normal)
+```
+
+Calculates mean, std and 95% confidence interval for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_m::Matrix{Float64}`: mean
+  * `s_s::Matrix{Float64}`: standard deviation
+  * `s_u::Matrix{Float64}`: upper 95% CI
+  * `s_l::Matrix{Float64}`: lower 95% CI
+
+<a id='NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_mean(eeg1, eeg2)
+```
+
+Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2:NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_m::Matrix{Float64}`: mean by epochs
+  * `s_s::Matrix{Float64}`: std by epochs
+  * `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
+  * `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
+
+<a id='NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroJ.eeg_difference`** &mdash; *Method*.
+
+
+
+```julia
+eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
+```
+
+Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::Array{Float64, 3}`
+  * `eeg2:Array{Float64, 3}`
+  * `n::Int64`: number of bootstraps
+  * `method::Symbol[:absdiff, :diff2int]`
+
+      * `:absdiff`: maximum difference
+      * `:diff2int`: integrated area of the squared difference
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_stat::Matrix{Float64}`
+  * `s_stat_single::Vector{Float64}`
+  * `p::Vector{Float64}`
+
+<a id='NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_acov`** &mdash; *Method*.
+
+
+
+eeg_acov(eeg; lag=1, demean=false, norm=false)
+
+Calculate autocovariance of each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `lag::Int64`: lags range is `-lag:lag`
+  * `demean::Bool`: demean eeg prior to analysis
+  * `norm::Bool`: normalize autocovariance
+
+**Returns**
+
+Named tuple containing:
+
+  * `acov::Matrix{Float64}`
+  * `lags::Vector{Float64}`
+
+<a id='NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv(eeg; d)
+```
+
+Calculate temporal envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `t_env::Array{Float64, 3}`: temporal envelope
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv_mean(eeg; dims, d)
+```
+
+Calculate temporal envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: mean
+  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tenv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tenv_median(eeg; dims, d)
+```
+
+Calculate temporal envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `t_env_m::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: median
+  * `t_env_u::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI upper bound
+  * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv(eeg; d)
+```
+
+Calculate power (in dB) envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env::Array{Float64, 3}`: power spectrum envelope
+  * `p_env_frq::Vector{Float64}`: frequencies for each envelope
+
+<a id='NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv_mean(eeg; dims, d)
+```
+
+Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: mean
+  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
+  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
+  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
+
+<a id='NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_penv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_penv_median(eeg; dims, d)
+```
+
+Calculate power (in dB) envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
+  * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `p_env_m::Array{Float64, 3}`: power spectrum envelope: median
+  * `p_env_u::Array{Float64, 3}`: power spectrum envelope: 95% CI upper bound
+  * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
+  * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
+
+<a id='NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv(eeg; d, mt, t)
+```
+
+Calculate spectral envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env::Array{Float64, 3}`: spectral envelope
+  * `s_env_t::Vector{Float64}`: spectrogram time
+
+<a id='NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv_mean(eeg; dims, d, mt, t)
+```
+
+Calculate spectral envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env_m::Array{Float64, 3}`: spectral envelope: mean
+  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
+  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
+  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
+
+<a id='NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_senv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_senv_median(eeg; dims, d, mt)
+```
+
+Calculate spectral envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
+
+**Returns**
+
+Named tuple containing:
+
+  * `s_env_m::Array{Float64, 3}`: spectral envelope: median
+  * `s_env_u::Array{Float64, 3}`: spectral envelope: 95% CI upper bound
+  * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
+  * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
+
+<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+
+**Returns**
+
+Named tuple containing:
+
+  * `ispc::Array{Float64, 2}`: ISPC value
+  * `ispc_angle::Array{Float64, 2}`: ISPC angle
+  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
+  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
+  * `s1_phase::Array{Float64, 3}`: signal 1 phase
+  * `s2_phase::Array{Float64, 3}`: signal 2 phase
+
+<a id='NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_itpc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_itpc(eeg; channel)
+```
+
+Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `t::Int64`: time point (sample number) at which ITPC is calculated
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+
+**Returns**
+
+Named tuple containing:
+
+  * `itpc::Float64`: ITPC or wITPC value
+  * `itpcz::Float64`: Rayleigh's ITPC Z value
+  * `itpc_angle::Float64`: ITPC angle
+  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+
+<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pli`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pli(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+
+**Returns**
+
+Named tuple containing:
+
+  * `pli::Array{Float64, 2}`: PLI value
+  * `signal_diff::Array{Float64, 3}`: signal difference (signal2 - signal1)
+  * `phase_diff::Array{Float64, 3}`: phase difference (signal2 - signal1)
+  * `s1_phase::Array{Float64, 3}`: signal 1 phase
+  * `s2_phase::Array{Float64, 3}`: signal 2 phase
+
+<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_pli`** &mdash; *Method*.
+
+
+
+```julia
+eeg_pli(eeg)
+```
+
+Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `pli_m::Array{Float64, 3}`: PLI value matrices over epochs
+
+<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ispc(eeg)
+```
+
+Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `ispc_m::Array{Float64, 3}`: ISPC value matrices over epochs
+
+<a id='NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_aec`** &mdash; *Method*.
+
+
+
+```julia
+eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+```
+
+Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+
+**Returns**
+
+Named tuple containing:
+
+  * `aec::Float64`: power correlation value
+  * `aec_p::Float64`: power correlation p-value
+
+<a id='NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_ged`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ged(eeg1, eeg2)
+```
+
+Perform generalized eigendecomposition between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`: signal data to be analyzed
+  * `eeg2::NeuroJ.EEG`: original signal data
+
+**Returns**
+
+  * `sged::Array{Float64, 3}`
+  * `ress::Matrix{Float64}`
+  * `ress_normalized::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_frqinst`** &mdash; *Method*.
+
+
+
+```julia
+eeg_frqinst(eeg)
+```
+
+Calculate instantaneous frequency of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `frqinst::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_itpc_s`** &mdash; *Method*.
+
+
+
+```julia
+eeg_itpc_s(eeg; <keyword arguments>)
+```
+
+Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+
+**Returns**
+
+Named tuple containing:
+
+  * `itpc_s::Array{Float64, 3}`: spectrogram of ITPC values
+  * `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
+  * `itpc_frq::Vector{Float64}`: frequencies list
+
+<a id='NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wspectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wspectrogram(eeg; norm, mt, demean)
+```
+
+Return spectrogram of `eeg` using Morlet wavelet convolution.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool`=true: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_pow::Array{Float64, 4}`
+  * `w_frq::Matrix{Float64}`
+  * `w_t::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_tkeo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_tkeo(eeg)
+```
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+  * `tkeo::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_wspectrum`** &mdash; *Method*.
+
+
+
+```julia
+eeg_wspectrum(eeg; norm, mt, demean)
+```
+
+Return power spectrogrum of `eeg` using Morlet wavelet convolution.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool`=true: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_pow::Array{Float64, 4}`
+  * `w_frq::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fcoherence`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2, frq_lim)
+```
+
+Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
+
+**Returns**
+
+Named tuple containing:
+
+  * `c::Array{Float64, 3}`: coherence
+  * `msc::Array{Float64, 3}`: MSC
+  * `f::Vector{Float64}`: frequencies
+
+<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vartest(eeg)
+```
+
+Calculate variance F-test for all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `f::Array{Float64, 3}`
+  * `p::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vartest(eeg1, eeg2)
+```
+
+Calculate variance F-test for all channels of `eeg1` and `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+
+**Returns**
+
+Named tuple containing:
+
+  * `f::Array{Float64, 3}`
+  * `p::Array{Float64, 3}`
+
+<a id='NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_band_mpower`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band_mpower(eeg; f, mt)
+```
+
+Calculate mean and maximum band power and its frequency.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
+  * `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
+  * `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
+
+<a id='NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_rel_psd(eeg; norm, mt)
+```
+
+Calculate relative power spectrum density for each the `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+
+**Returns**
+
+Named tuple containing:
+
+  * `psd_pow::Array{Float64, 3}`:powers
+  * `psd_frq::Array{Float64, 3}`: frequencies
+
+<a id='NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_fbsplit`** &mdash; *Method*.
+
+
+
+```julia
+eeg_fbsplit(eeg; order)
+```
+
+Split EEG signal into frequency bands.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `order::Int64=8`: bandpass filter order
+
+**Returns**
+
+Named tuple containing:
+
+  * `band_names::Vector{Symbol}`
+  * `band_frq::Vector{Tuple{Real, Real}}`
+  * `signal_split::Array{Float64, 4}`
+
+<a id='NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_chdiff`** &mdash; *Method*.
+
+
+
+```julia
+eeg_chdiff(eeg1, eeg2; channel1, channel2)
+```
+
+Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
+
+**Arguments**
+
+  * `eeg1::NeuroJ.EEG`
+  * `eeg2::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+
+**Returns**
+
+  * `ch_diff::Matrix{Float64}`
+
+<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cps`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cps(eeg; norm)
+```
+
+Calculate cross power spectrum between all channels of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `norm::Bool=true`: normalize do dB
+
+**Returns**
+
+Named tuple containing:
+
+  * `cps_pw::Array{Float64, 4}`: cross power spectrum power
+  * `cps_ph::Array{Float64, 4}`: cross power spectrum phase (in radians)
+  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
+
+<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_cps`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cps(eeg1, eeg2; channel1, channel2, epoch1, epoch2, norm)
+```
+
+Calculate cross power spectrum between `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel1::Int64`
+  * `channel2::Int64`
+  * `epoch1::Int64`
+  * `epoch2::Int64`
+  * `norm::Bool=true`: normalize do dB
+
+**Returns**
+
+Named tuple containing:
+
+  * `cps_pw::Vector{Float64}`: cross power spectrum power
+  * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
+  * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
+
+
+<a id='EEG-plots'></a>
+
+<a id='EEG-plots-1'></a>
+
+## EEG plots
+
+<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+**`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal_scaled(t, signal; <keyword arguments>)
+```
+
+Plot scaled multi-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::AbstractArray`
+  * `labels::Vector{String}=[""]`: labels vector
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Channel"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_signal`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal(t, signal; <keyword arguments>)
+```
+
+Plot single-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Vector{<:Real}`
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+**`NeuroJ.plot_signal`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal(t, signal; <keyword arguments>)
+```
+
+Plot multi-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::AbstractArray`
+  * `labels::Vector{String}=[""]`: labels vector
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Channel"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channel or channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_details`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_details(eeg; <keyword arguments>)
+```
+
+Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Int64`: channel to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize the `signal` prior to calculations
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `head::Bool=true`: add head plot
+  * `hist::Symbol=:hist`: histogram type: :hist, :kd
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `pc::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component(eeg; <keyword arguments>)
+```
+
+Plot `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx(eeg; <keyword arguments>)
+```
+
+Plot indexed `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_avg(eeg; <keyword arguments>)
+```
+
+Plot indexed `eeg` external or embedded component: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot of indexed `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_psd(eeg; <keyword arguments>)
+```
+
+Plot PSD of indexed `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Int64`: component index to display, default is all components
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_psd_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_psd_avg(eeg; <keyword arguments>)
+```
+
+Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_psd_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_psd_butterfly(eeg; <keyword arguments>)
+```
+
+Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+**`NeuroJ.plot_signal_avg`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal_avg(t, signal; <keyword arguments>)
+```
+
+Plot `signal` channels: mean and ±95% CI.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Matrix{<:Real}`
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_avg(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channels: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_avg_details`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_avg_details(eeg; <keyword arguments>)
+```
+
+Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `hist::Symbol=:hist`: histogram type: :hist, :kd
+  * `head::Bool=true`: add head plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_avg(eeg; <keyword arguments>)
+```
+
+Plot `eeg` external or embedded component: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+**`NeuroJ.plot_signal_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal_butterfly(t, signal; <keyword arguments>)
+```
+
+Butterfly plot of `signal` channels.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `signal::Matrix{<:Real}`
+  * `labels::Vector{String}=[""]`: channel labels vector
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple`: y-axis limits, default (0, 0)
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot of `eeg` channels.
+
+**Arguments**
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
+```
+
+Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Int64=1`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `hist::Symbol=:hist`: histogram type: :hist, :kd
+  * `head::Bool=true`: add head plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot of `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_psd-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_psd`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd(signal; <keyword arguments>)
+```
+
+Plot `signal` channel power spectrum density.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_avg-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_psd_avg-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroJ.plot_psd_avg`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_avg(signal; <keyword arguments>)
+```
+
+Plot `signal` channels power spectrum density: mean and ±95% CI.
+
+**Arguments**
+
+  * `signal::Matrix{<:Real}`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `labels::Vector{String}=[""]`: channel labels vector
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_butterfly-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_psd_butterfly-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroJ.plot_psd_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_butterfly(signal; <keyword arguments>)
+```
+
+Butterfly plot of `signal` channels power spectrum density.
+
+**Arguments**
+
+  * `signal::Matrix{<:Real}`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `labels::Vector{String}=[""]`: channel labels vector
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channels power spectrum density.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Int64`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_avg(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channels power spectrum density: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `labels::Vector{String}=[""]`: channel labels vector
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_butterfly(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channels power spectrum density: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `labels::Vector{String}=[""]`: channel labels vector
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_psd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_psd(eeg; <keyword arguments>)
+```
+
+Plot PSD of `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Int64`: channel to display
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_psd_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_psd_avg(eeg; <keyword arguments>)
+```
+
+Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_psd_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_psd_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot PSD of `eeg` external or embedded component:.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+plot_spectrogram(signal; <keyword arguments>)
+```
+
+Plot spectrogram of `signal`.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `fs::Int64`: sampling frequency
+  * `offset::Real`: displayed segment offset in seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
+```
+
+Plots spectrogram of `eeg` channel(s).
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_spectrogram_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_spectrogram_avg(eeg; <keyword arguments>)
+```
+
+Plots spectrogram of `eeg` channel(s).
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
+  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_spectrogram(eeg; <keyword arguments>)
+```
+
+Plots spectrogram of `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `channel::Int64`: channel to display
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_spectrogram_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_spectrogram_avg(eeg; <keyword arguments>)
+```
+
+Plots spectrogram of `eeg` channel(s).
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
+  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_spectrogram(eeg; <keyword arguments>)
+```
+
+Plot spectrogram of indexed `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Int64`: component index to display, default is all components
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Times [s]`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_component_idx_spectrogram_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_idx_spectrogram_avg(eeg; <keyword arguments>)
+```
+
+Plot spectrogram of averaged indexed `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_electrodes(eeg; <keyword arguments>)
+```
+
+Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+  * `labels::Bool=true`: plot electrode labels
+  * `head::Bool`=true: plot head
+  * `head_labels::Bool=false`: plot head labels
+  * `small::Bool=false`: draws small plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}' href='#NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}'>#</a>
+**`NeuroJ.eeg_plot_matrix`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_matrix(eeg, m; <keyword arguments>)
+```
+
+Plot matrix `m` of `eeg` channels.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `m::Union{Matrix{<:Real}, Array{Float64, 3}}`: channels by channels matrix
+  * `epoch::Int64=1`: epoch number to display
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}' href='#NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroJ.eeg_plot_covmatrix`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_matrix(eeg, cov_m, lags; <keyword arguments>)
+```
+
+Plot covariance matrix `m` of `eeg` channels.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}`: covariance matrix
+  * `lags::Vector{<:Real}`: covariance lags
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
+  * `epoch::Int64=1`: epoch number to display
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_histogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_histogram-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+plot_histogram(signal; <keyword arguments>)
+```
+
+Plot histogram of `signal`.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
+  * `label::String=""`: channel label
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_histogram-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_histogram-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroJ.plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+plot_histogram(signal; <keyword arguments>)
+```
+
+Plot histogram of `signal`.
+
+**Arguments**
+
+  * `signal::Matrix{<:Real}`
+  * `type::Symbol`: type of histogram: :hist or :kd
+  * `labels::Vector{String}=[""]`
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_histogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_histogram(eeg; <keyword arguments>)
+```
+
+Plot `eeg` channel histograms.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `type::Symbol: type of histogram: :hist or :kd
+  * `epoch::Int64=1`: epoch number to display
+  * `channel::Int64`: channel to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
+  * `label::String=""`: channel label
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}' href='#NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}'>#</a>
+**`NeuroJ.plot_ica`** &mdash; *Method*.
+
+
+
+```julia
+plot_ica(t, ica; <keyword arguments>)
+```
+
+Plot `ica` components against time vector `t`.
+
+**Arguments**
+
+  * `t::Union{Vector{<:Real}, AbstractRange}`: the time vector
+  * `ica::Vector{Float64}`
+  * `label::String=""`: channel label
+  * `norm::Bool=true`: normalize the `ica` prior to calculations
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `title::String=""`: plot title
+  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits (-ylim:ylim)
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_topo(eeg; <keyword arguments>)
+```
+
+Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 second
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `cb::Bool=true`: draw color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_acomponent_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_acomponent_topo(eeg; <keyword arguments>)
+```
+
+Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Int64`: epoch to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 second
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_weights_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_weights_topo(eeg; <keyword arguments>)
+```
+
+Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `weights=Matrix{<:Real}`: weights to plot
+  * `head::Bool`=true: plot head
+  * `small::Bool=false`: draws small plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_mcomponent_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
+```
+
+Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `epoch::Int64`: epoch to display
+  * `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `cb::Bool=false`: draw color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_ica_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_ica_topo(eeg; <keyword arguments>)
+```
+
+Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Int64`: epoch to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 second
+  * `ic::Union{Vector{Int64}, AbstractRange}=0`: list of ICAs plot, default is all ICAs
+  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
+  * `cb::Bool=false`: draw color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_tile' href='#NeuroJ.eeg_plot_tile'>#</a>
+**`NeuroJ.eeg_plot_tile`** &mdash; *Function*.
+
+
+
+```julia
+eeg_plot_tile(p)
+```
+
+Plot vector of plots `p` as tiles.
+
+**Arguments**
+
+  * `p::Vector{Any}`: vector of plots
+  * `w::Int64=800`: single plot width (px)
+  * `h::Int64=800`: single plot height (px)
+  * `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
+  * `mono::Bool=false`: use color or grey palette
+
+**Returns**
+
+  * `p_tiled::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_bands-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_bands-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_bands`** &mdash; *Method*.
+
+
+
+```julia
+plot_bands(signal; <keyword arguments>)
+```
+
+Plot absolute/relative bands powers of a single-channel `signal`.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `fs::Int64`: sampling rate
+  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha](see `eeg_band()`)
+  * `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
+  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+  * `norm::Bool=true`: normalize powers to dB
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_bands`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_bands(eeg; <keyword arguments>)
+```
+
+Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
+  * `norm::Bool=true`: normalize powers to dB
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroJ.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroJ.eeg_plot_save`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_save(p; file_name::String)
+```
+
+Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
+
+**Arguments**
+
+  * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+  * `file_name::String`
+
+<a id='NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_channels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_channels(eeg; <keyword arguments>)
+```
+
+Plot values of `c` for selected channels of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
+  * `epoch::Int64`: number of epoch for which `c` should be plotted
+  * `xlabel::String="Channel"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_epochs`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_epochs(eeg; <keyword arguments>)
+```
+
+Plot values of `c` for selected epoch of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
+  * `xlabel::String="Epochs"`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_filter_response`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_filter_response(eeg; <keyword arguments>)
+```
+
+Plot filter response.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
+  * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
+  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `order::Int64`: filter order
+  * `rp::Real`: dB ripple in the passband
+  * `rs::Real`: dB attenuation in the stopband
+  * `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}' href='#NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroJ.eeg_plot_compose`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_compose(p; <keyword arguments>)
+```
+
+Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
+
+  * `(2, 2)`: 2 × 2 plots, regular layout
+  * `@layout [a{0.2w} b{0.8w};_ c{0.6}]`: complex layout using Plots.jl `@layout` macro
+
+**Arguments**
+
+  * `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
+  * `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for `p` vector plots
+
+**Returns**
+
+  * `pc::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_env`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_env(eeg; <keyword arguments>)
+```
+
+Plot envelope of `eeg` channels.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
+  * `average::Symbol`: averaging method: :no, :mean or :median
+  * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `epoch::Int64`: epoch number to display
+  * `channel::Int64`: channel to display
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_ispc(eeg1, eeg2; <keyword arguments>)
+```
+
+Plot ISPC `eeg1` and `eeg2` channels/epochs.
+
+**Arguments**
+
+  * `eeg1:NeuroJ.EEG`
+  * `eeg2:NeuroJ.EEG`
+  * `channel1::Int64`: channel to plot
+  * `channel2::Int64`: channel to plot
+  * `epoch1::Int64`: epoch to plot
+  * `epoch2::Int64`: epoch to plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_itpc(eeg; <keyword arguments>)
+```
+
+Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg:NeuroJ.EEG`
+  * `channel::Int64`: channel to plot
+  * `t::Int64`: time point to plot
+  * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_pli`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
+```
+
+Plot pli `eeg1` and `eeg2` channels/epochs.
+
+**Arguments**
+
+  * `eeg1:NeuroJ.EEG`
+  * `eeg2:NeuroJ.EEG`
+  * `channel1::Int64`: channel to plot
+  * `channel2::Int64`: channel to plot
+  * `epoch1::Int64`: epoch to plot
+  * `epoch2::Int64`: epoch to plot
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc_s`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_itpc_s(eeg; <keyword arguments>)
+```
+
+Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
+  * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String="ITPC spectrogram"`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_itpc_f`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_itpc_f(eeg; <keyword arguments>)
+```
+
+Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `channel::Int64`
+  * `f::Int64`: frequency to plot
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
+  * `z::Bool=false`: plot ITPCz instead of ITPC
+  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `xlabel::String="Time [s]"`: x-axis label
+  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_connections`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_connections(eeg; <keyword arguments>)
+```
+
+Plot connections between `eeg` electrodes.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `m::Matrix{<:Real}`: matrix of connections weights
+  * `threshold::Float64`: plot all connection above threshold
+  * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
+  * `labels::Bool=false`: plot electrode labels
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.plot_psd_3dw`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_3dw(signal; <keyword arguments>)
+```
+
+Plot 3-d waterfall plot of `signal` channels power spectrum density.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_3d`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_3d(eeg; <keyword arguments>)
+```
+
+Plot 3-d waterfall plot of `eeg` channels power spectrum density.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Int64`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `type::Symbol=:w`: plot type: :w waterfall, :s surface
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroJ.plot_psd_3ds`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd_3ds(signal; <keyword arguments>)
+```
+
+Plot 3-d surface plot of `signal` channels power spectrum density.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel="Channel"`: y-axis label
+  * `zlabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroJ.plot_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+plot_rel_psd(signal; <keyword arguments>)
+```
+
+Plot relative `signal` channel power spectrum density.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`
+  * `fs::Int64`: sampling frequency
+  * `norm::Bool=true`: normalize powers to dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `xlabel::String="Frequency [Hz]"`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+  * `ax::Symbol=:linlin`: type of axes scaling
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_electrode`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_electrode(eeg; <keyword arguments>)
+```
+
+Plot single `eeg` electrode. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Int64`: channel to display
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_electrodes3d`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_electrodes3d(eeg; <keyword arguments>)
+```
+
+Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc*x, :loc*y and :loc_z locations.
+
+**Arguments**
+
+  * `eeg:EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=false`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+
+**Returns**
+
+  * `fig::GLMakie.Figure`
+
+<a id='NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
+```
+
+Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `offset::Int64=0`: displayed segment offset in samples
+  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `mw::Bool=false`: if true use Morlet wavelet convolution
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
+  * `xlabel::String="Frequency [Hz]`: x-axis label
+  * `ylabel::String="Power [dB]"`: y-axis label
+  * `title::String=""`: plot title
+  * `plot_size::Int64=1000`: plot dimensions in px
+  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
+  * `labels::Bool=true`: add channel labels
+  * `mono::Bool=false`: use color or grey palette
+  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
+  * `ax::Symbol=:linlin`: type of axes scaling
+
+**Returns**
+
+  * `fig::GLMakie.Figure`
+
+
+<a id='Neurostimulation'></a>
+
+<a id='Neurostimulation-1'></a>
+
+## Neurostimulation
 
 <a id='NeuroJ.tes_dose-Tuple{Real, Real, Int64}' href='#NeuroJ.tes_dose-Tuple{Real, Real, Int64}'>#</a>
 **`NeuroJ.tes_dose`** &mdash; *Method*.
@@ -9221,4 +9255,18 @@ Converts `current`, `pad_area` and stimulation `duration` into `charge`, `curren
 **Source**
 
 Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
+
+
+<a id='NIRS'></a>
+
+<a id='NIRS-1'></a>
+
+## NIRS
+
+
+<a id='MRI'></a>
+
+<a id='MRI-1'></a>
+
+## MRI
 

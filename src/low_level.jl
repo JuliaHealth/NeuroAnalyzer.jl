@@ -1654,7 +1654,7 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
 
     if fprototype === :fir
         if window === nothing
-            @warn "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
             window = hanning(3 * floor(Int64, fs / cutoff[1]))
         end
         if ftype === :hp || ftype === :bp || ftype === :bs
@@ -2175,7 +2175,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
         pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
         size(pc_m)[2] < n_tmp && (n_tmp = size(pc_m)[2])
     end
-    n_tmp < n && @warn "Only $n_tmp PC components were generated."
+    n_tmp < n && @info "Only $n_tmp PC components were generated."
     n = n_tmp
     
     pc = zeros(n, size(signal, 2), epoch_n)

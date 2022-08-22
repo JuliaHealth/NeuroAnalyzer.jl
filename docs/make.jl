@@ -1,15 +1,15 @@
 println()
 println("Generating NeuroJ Markdown documentation..")
 println()
-println("Loading package: Documenter")
+@info "Loading package: Documenter"
 using Documenter
-println("Loading package: DocumenterMarkdown")
+@info "Loading package: DocumenterMarkdown"
 using DocumenterMarkdown
-println("Loading package: NeuroJ")
+@info "Loading package: NeuroJ"
 using NeuroJ
-println("Loading package: Plots")
+@info "Loading package: Plots"
 using Plots
-println("Loading package: GLMakie")
+@info "Loading package: GLMakie"
 using GLMakie
 println()
 

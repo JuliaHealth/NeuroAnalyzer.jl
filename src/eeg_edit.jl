@@ -1066,7 +1066,7 @@ function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:st
     eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
 
     if keep_epochs == false
-        @warn "This operation will remove epochs, to keep epochs use keep_epochs=true."
+        @info "This operation will remove epochs, to keep epochs use keep_epochs=true."
 
         eeg_new = deepcopy(eeg)
         eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg_new, epoch_n=1))
@@ -1130,7 +1130,7 @@ function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:s
     eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
     
     if keep_epochs == false
-        @warn "This operation will remove epochs, to keep epochs use keep_epochs=true."
+        @info "This operation will remove epochs, to keep epochs use keep_epochs=true."
         eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg, epoch_n=1))
         channel_n = eeg_channel_n(eeg)
         epoch_n = eeg_epoch_n(eeg)

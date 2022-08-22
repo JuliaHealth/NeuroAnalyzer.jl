@@ -31,6 +31,7 @@ using StatsFuns
 using StatsKit
 using StatsModels
 using StatsPlots
+using TOML
 using Wavelets
 
 mutable struct EEG
@@ -42,7 +43,7 @@ mutable struct EEG
 end
 
 if VERSION < v"1.7.0"
-    @warn("This version of NeuroJ requires Julia 1.7.0 or above.")
+    @error("This version of NeuroJ requires Julia 1.7.0 or above.")
 end
 
 const neuroj_ver = v"0.22.8"
@@ -186,10 +187,11 @@ export seg_cmp
 
 include("eeg_io.jl")
 export eeg_export_csv
-export eeg_import_ced
 export eeg_import_edf
-export eeg_import_elc
+export eeg_import_ced
 export eeg_import_locs
+export eeg_import_elc
+export eeg_import_tsv
 export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!

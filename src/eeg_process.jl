@@ -954,7 +954,7 @@ Upsample all channels of `eeg` to `new_sr` sampling frequency.
 """
 function eeg_upsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
-    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@warn "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@info "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
     
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -990,7 +990,7 @@ Upsample all channels of `eeg` to `new_sr` sampling frequency.
 """
 function eeg_upsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
-    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@warn "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     eeg.eeg_signals, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -1023,9 +1023,9 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 """
 function eeg_downsample(eeg::NeuroJ.EEG; new_sr::Int64)
 
-    new_sr < eeg_sr(eeg) && (@warn "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
+    new_sr < eeg_sr(eeg) && (@info "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
 
-    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@warn "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -1057,9 +1057,9 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 """
 function eeg_downsample!(eeg::NeuroJ.EEG; new_sr::Int64)
 
-    new_sr < eeg_sr(eeg) && (@warn "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
+    new_sr < eeg_sr(eeg) && (@info "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
 
-    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@warn "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && (@info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
     eeg.eeg_signals, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)

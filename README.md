@@ -164,7 +164,6 @@ EEG:
 - analysis, plots: brain topography
 - analysis, plots: connectome graph
 - analysis, plots: PSD plot line slope over frequencies (adjusted power)
-- analysis: add s_hspectrum() and s_wspectrum() for PSD plots
 - analysis: amplitude turbulence
 - analysis: ANOVA test for segments
 - analysis: beamforming, leakage correction
@@ -196,26 +195,27 @@ EEG:
 - edit: create EEG object
 - edit: events markers
 - edit: epoch by event markers
-- edit: rewrite epoching
+- edit: automated epoching (by markers)
 - edit: insert channel
+- edit: replace channel
 - edit: merge EEG objects
 - edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
 - edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
 - io: import from CSV
 - io: import from EDF+, BDF and other formats
-- io: more channel location formats
+- io: more channel location formats (SFP)
 - misc: reports in .md format
 - misc: update tutorial.md
 - plots: 3d head/brain plots
 - plots: add user-defined voltage scale for eeg signal plots
 - plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
+- plots: topoplots colorbar: :lin, -log, :-log10, :negative, :positive
 - plots: coherence spectrum (y: relative amplitude, x: frequencies)
 - plots: complex kernel convolution: plot magnitude and phase of the convoluted signal
-- plots: eeg_plot() meta function
 - plots: ITPC topoplot
 - plots: plot two EEG one over another for comparison
 - plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
-- plots: topographical maps (amplitude, spectrogram, component) at electrode locations
+- plots: ERP amplitude plots at electrode locations (eeg_plot_erp_topomap())
 - plots: topoplot of amplitude differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
