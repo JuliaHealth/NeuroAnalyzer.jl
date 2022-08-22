@@ -40,12 +40,23 @@ edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
-Load electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported):
+Load electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported) directly into EEG object:
 ```julia
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
+p = eeg_plot_electrode(edf, channel=1)
+eeg_plot_save(p, file_name="images/edf_electrode.png")
 p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
+```
+
+![edf electrode](images/edf_electrode.png)
+![edf electrodes](images/edf_electrodes.png)
+
+Edit electrode position:
+```julia
+eeg_electrode_loc(edf, channel=1)
+eeg_edit_electrode!(edf, channel=1, x=-1.0)
+eeg_plot_electrodes3d(edf)
 ```
 
 Load and preview electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported):
@@ -55,55 +66,48 @@ plot_electrodes(locs)
 plot_electrodes3d(locs)
 ```
 
-Edit electrode position:
-```julia
-eeg_electrode_loc(edf, channel=1)
-eeg_edit_electrode!(edf, channel=1, x=-1.0)
-eeg_plot_electrodes3d(edf)
-```
-
 Convert spherical to Cartesian coordinates:
 ```julia
-eeg_loc_sph2cart!(edf)
-eeg_loc_cart2sph!(edf)
+eeg_loc_sph2cart!(locs)
+plot_electrodes3d(locs)
+
+eeg_loc_cart2sph!(locs)
+plot_electrodes3d(locs)
 ```
 
 If necessary, flip or swap axes (frontal channels should be at the top):
 ```julia
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+eeg_loc_flipx!(locs)
+eeg_loc_flipy!(locs)
 
-eeg_loc_flipy!(edf)
-eeg_loc_flipy!(edf, planar=false)
-eeg_loc_flipy!(edf, spherical=false)
-eeg_loc_flipx!(edf, planar=false)
-eeg_loc_flipx!(edf, spherical=false)
+eeg_loc_flipy!(locs, planar=false)
+eeg_loc_flipy!(locs, spherical=false)
+eeg_loc_flipx!(locs, planar=false)
+eeg_loc_flipx!(locs, spherical=false)
 
-eeg_loc_flipz!(edf)
+eeg_loc_flipz!(locs)
 
-edf = eeg_loc_swapxy(edf);
+eeg_loc_swapxy!(locs);
 
-p = eeg_plot_electrode(edf, channel=1)
-p = eeg_plot_electrodes(edf, labels=true, selected=1)
-p = eeg_plot_electrodes(edf, selected=1:19)
+p = plot_electrodes(locs)
 eeg_plot_save(p, file_name="images/edf_electrodes_xy.png")
-p = eeg_plot_electrodes3d(edf, selected=1)
+p = plot_electrodes3d(locs)
 eeg_plot_save(p, file_name="images/edf_electrodes3d_xy.png")
 ```
 
 ![](images//edf_electrodes_xy.png)
 ![](images//edf_electrodes3d_xy.png)
 
-Finally, add electrode positions:
+Finally, add electrode positions to EEG object:
 ```julia
 eeg_add_electrodes!(edf, locs=locs)
 ```
 
-Save electrode positions (CED and LOCS format are supported)
+Save electrode positions (CED, LOCS and TSV format are supported)
 ```
 eeg_save_electrodes(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
+eeg_save_electrodes(locs, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
 ```
-
-![edf electrodes](images/edf_electrodes.png)
 
 Preview electrodes in 3D:
 ```julia
@@ -974,6 +978,6 @@ end
 # laptop:       3.123244 seconds (5.52 M allocations: 14.993 GiB, 5.78% gc time)
 
 # Julia 1.8.
-# workstation:  4.225906 seconds (5.72 M allocations: 15.000 GiB, 4.61% gc time)
+# workstation:  4.130034 seconds (5.73 M allocations: 15.000 GiB)
 # laptop:       3.037671 seconds (5.49 M allocations: 14.979 GiB, 5.03% gc time)
 ```

@@ -6827,10 +6827,11 @@ function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int
         end
     end
     if head_labels == true
-        GLMakie.text!(ax, "NAS", position=(0, 1, 0), textsize = font_size)
-        GLMakie.text!(ax, "IN", position=(0, -1, 0), textsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "NAS", position=(0, 1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "IN", position=(0, -1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
     end
     fig
 
@@ -7071,8 +7072,8 @@ function plot_electrodes(locs::DataFrame; labels::Bool=true, head_labels::Bool=t
     loc_x = zeros(length(locs[!, :labels]))
     loc_y = zeros(length(locs[!, :labels]))
     for idx in 1:length(locs[!, :labels])
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :radius][idx], 
-                                          locs[!, :theta][idx])
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], 
+                                          locs[!, :loc_theta][idx])
     end
     loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
@@ -7134,9 +7135,9 @@ function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool
 
     mono == true ? palette = :grays : palette = :darktest
 
-    loc_x = locs[!, :x]
-    loc_y = locs[!, :y]
-    loc_z = locs[!, :z]
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
+    loc_z = locs[!, :loc_z]
 
     loc_x, loc_y = _locnorm(loc_x, loc_y)
     loc_x = round.(loc_x, digits=2)
@@ -7163,11 +7164,11 @@ function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool
     end
 
     if head_labels == true
-        GLMakie.text!(ax, "NAS", position=(0, 1, 0), textsize = font_size)
-        GLMakie.text!(ax, "IN", position=(0, -1, 0), textsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "top", position=(0, 0, 1), textsize = font_size)
+        GLMakie.text!(ax, "NAS", position=(0, 1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "IN", position=(0, -1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
     end
     fig
 

@@ -102,10 +102,10 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     p = Plots.plot!(ear_r, fill=nothing, label="")
 
     if head_labels == true
-        p = Plots.plot!(annotation=(0, 1, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
-        p = Plots.plot!(annotation=(0, -1, Plots.text("NAS", pointsize=4, halign=:center, valign=:center)))
-        p = Plots.plot!(annotation=(-1, 0, Plots.text("LPA", pointsize=4, halign=:center, valign=:center, rotation=90)))
-        p = Plots.plot!(annotation=(1, 0, Plots.text("RPA", pointsize=4, halign=:center, valign=:center, rotation=-90)))
+        p = Plots.plot!(annotation=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
+        p = Plots.plot!(annotation=(0, -1.05, Plots.text("NAS", pointsize=4, halign=:center, valign=:center)))
+        p = Plots.plot!(annotation=(-1.05, 0, Plots.text("LPA", pointsize=4, halign=:center, valign=:center, rotation=90)))
+        p = Plots.plot!(annotation=(1.05, 0, Plots.text("RPA", pointsize=4, halign=:center, valign=:center, rotation=-90)))
     end
 
     if topo == true
@@ -311,4 +311,14 @@ function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
     z = xyz[:, 3]
 
     return x, y, z
+end
+
+function _free_gpumem(threshold::Real=0.95)
+    m = CUDA.MemoryInfo()
+    usedmem = m.total_bytes - m.free_bytes
+    totalmem = m.total_bytes
+    if usedmem / totalmem > threshold
+        # CUDA.reclaim()
+        GC.gc(true)
+    end
 end

@@ -19,10 +19,6 @@ function neuroj_version()
     end
 
     println("Imported packages:")
-    # required_packages = Vector{String}()
-    # for (key, value) in TOML.parsefile("Project.toml")["deps"]
-    #     push!(required_packages, key)
-    # end
     required_packages = [
         "ColorSchemes",
         "CSV",
@@ -53,11 +49,15 @@ function neuroj_version()
         "StatsModels",
         "StatsPlots",
         "Wavelets"]
-    versions = TOML.parsefile("Manifest.toml")["deps"]
-    for idx in 1:length(required_packages)
-        pkg = lpad(required_packages[idx], 25 - length(idx), " ")
-        pkg_ver = versions[required_packages[idx]][1]["version"]
-        println("$pkg $pkg_ver ")
+    if isfile("Manifest.toml")
+        versions = TOML.parsefile("Manifest.toml")["deps"]
+        for idx in 1:length(required_packages)
+            pkg = lpad(required_packages[idx], 25 - length(idx), " ")
+            pkg_ver = versions[required_packages[idx]][1]["version"]
+            println("$pkg $pkg_ver ")
+        end
+    else
+        @warn "Cannot find Manifest.toml file in $(pwd())"
     end
 end
 

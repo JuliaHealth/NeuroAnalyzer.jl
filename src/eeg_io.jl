@@ -256,16 +256,16 @@ function eeg_import_ced(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
 
-    "x" in colnames && (x = sensors[!, "x"])
-    "y" in colnames && (y = sensors[!, "y"])
-    "z" in colnames && (z = sensors[!, "z"])
-    "theta" in colnames && (theta = sensors[!, "theta"])
-    "radius" in colnames && (radius = sensors[!, "radius"])
-    "sph_radius" in colnames && (radius_sph = sensors[!, "sph_radius"])
-    "sph_theta" in colnames && (theta_sph = sensors[!, "sph_theta"])
-    "sph_phi" in colnames && (theta_sph = sensors[!, "sph_phi"])
+    "x" in colnames && (x = Float64.(sensors[!, "x"]))
+    "y" in colnames && (y = Float64.(sensors[!, "y"]))
+    "z" in colnames && (z = Float64.(sensors[!, "z"]))
+    "theta" in colnames && (theta = Float64.(sensors[!, "theta"]))
+    "radius" in colnames && (radius = Float64.(sensors[!, "radius"]))
+    "sph_radius" in colnames && (radius_sph = Float64.(sensors[!, "sph_radius"]))
+    "sph_theta" in colnames && (theta_sph = Float64.(sensors[!, "sph_theta"]))
+    "sph_phi" in colnames && (phi_sph = Float64.(sensors[!, "sph_phi"]))
 
-    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     return sensors
 end
@@ -301,10 +301,10 @@ function eeg_import_locs(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
 
-    theta = sensors[!, "theta"]
-    radius = sensors[!, "radius"]
+    theta = Float64.(sensors[!, "theta"])
+    radius = Float64.(sensors[!, "radius"])
 
-    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     return sensors
 end
@@ -361,7 +361,7 @@ function eeg_import_elc(file_name::String)
         idx2 += 1
     end
 
-    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     return sensors
 end
@@ -401,19 +401,19 @@ function eeg_import_tsv(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
     
-    "x" in colnames && (x = sensors[!, "x"])
-    "y" in colnames && (y = sensors[!, "y"])
-    "z" in colnames && (z = sensors[!, "z"])
-    "theta" in colnames && (theta = sensors[!, "theta"])
-    "radius" in colnames && (radius = sensors[!, "radius"])
-    "radius" in colnames && (radius_sph = sensors[!, "radius"])
+    "x" in colnames && (x = Float64.(sensors[!, "x"]))
+    "y" in colnames && (y = Float64.(sensors[!, "y"]))
+    "z" in colnames && (z = Float64.(sensors[!, "z"]))
+    "theta" in colnames && (theta = Float64.(sensors[!, "theta"]))
+    "radius" in colnames && (radius = Float64.(sensors[!, "radius"]))
+    "radius" in colnames && (radius_sph = Float64.(sensors[!, "radius"]))
     "radius_sph" in colnames && (radius_sph = sensors[!, "radius_sph"])
-    "theta" in colnames && (theta_sph = sensors[!, "theta"])
+    "theta" in colnames && (theta_sph = Float64.(sensors[!, "theta"]))
     "theta_sph" in colnames && (theta_sph = sensors[!, "theta_sph"])
     "phi" in colnames && (phi_sph = sensors[!, "phi"])
     "phi_sph" in colnames && (phi_sph = sensors[!, "phi_sph"])
 
-    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     return sensors
 end
@@ -450,11 +450,11 @@ function eeg_import_sfp(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
     
-    x = sensors[!, "x"]
-    y = sensors[!, "y"]
-    z = sensors[!, "z"]
+    x = Float64.(sensors[!, "x"])
+    y = Float64.(sensors[!, "y"])
+    z = Float64.(sensors[!, "z"])
 
-    sensors = DataFrame(:labels => labels, :theta => theta, :radius => radius, :x => x, :y => y, :z => z, :radius_sph => radius_sph, :theta_sph => theta_sph, :phi_sph => phi_sph)
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     return sensors
 end
@@ -511,16 +511,16 @@ function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
 
     f_labels = lowercase.(sensors[:, :labels])
 
-    loc_theta = float.(sensors[:, :theta])
-    loc_radius = float.(sensors[:, :radius])
+    loc_theta = float.(sensors[:, :loc_theta])
+    loc_radius = float.(sensors[:, :loc_radius])
 
-    loc_radius_sph = float.(sensors[:, :radius_sph])
-    loc_theta_sph = float.(sensors[:, :theta_sph])
-    loc_phi_sph = float.(sensors[:, :phi_sph])
+    loc_radius_sph = float.(sensors[:, :loc_radius_sph])
+    loc_theta_sph = float.(sensors[:, :loc_theta_sph])
+    loc_phi_sph = float.(sensors[:, :loc_phi_sph])
 
-    loc_x = float.(sensors[:, :x])
-    loc_y = float.(sensors[:, :y])
-    loc_z = float.(sensors[:, :z])
+    loc_x = float.(sensors[:, :loc_x])
+    loc_y = float.(sensors[:, :loc_y])
+    loc_z = float.(sensors[:, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
@@ -599,16 +599,16 @@ function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
 
     f_labels = lowercase.(sensors[:, :labels])
 
-    loc_theta = float.(sensors[:, :theta])
-    loc_radius = float.(sensors[:, :radius])
+    loc_theta = float.(sensors[:, :loc_theta])
+    loc_radius = float.(sensors[:, :loc_radius])
 
-    loc_radius_sph = float.(sensors[:, :radius_sph])
-    loc_theta_sph = float.(sensors[:, :theta_sph])
-    loc_phi_sph = float.(sensors[:, :phi_sph])
+    loc_radius_sph = float.(sensors[:, :loc_radius_sph])
+    loc_theta_sph = float.(sensors[:, :loc_theta_sph])
+    loc_phi_sph = float.(sensors[:, :loc_phi_sph])
 
-    loc_x = float.(sensors[:, :x])
-    loc_y = float.(sensors[:, :y])
-    loc_z = float.(sensors[:, :z])
+    loc_x = float.(sensors[:, :loc_x])
+    loc_y = float.(sensors[:, :loc_y])
+    loc_z = float.(sensors[:, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
@@ -752,7 +752,7 @@ end
 """
     eeg_save_electrodes(eeg; file_name, overwrite)
 
-Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
+Export EEG channel locations data, format is based on `file_name` extension (.ced, .locs or .tsv)
 
 # Arguments
 
@@ -783,15 +783,60 @@ function eeg_save_electrodes(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool
 
     if splitext(file_name)[2] == ".ced"
         df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
+        CSV.write(file_name, df, delim="\t", header=true)
+    elseif splitext(file_name)[2] == ".locs"
+        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=labels)
+        CSV.write(file_name, df, delim="\t", header=false)
+    elseif splitext(file_name)[2] == ".tsv"
+        df = DataFrame(labels=labels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
+        CSV.write(file_name, df, delim="\t", header=true)
+    else
+        throw(ArgumentError("file_name format must be .ced, .locs or .tsv."))
+    end
+end
+
+"""
+    eeg_save_electrodes(locs; file_name, overwrite)
+
+Export channel locations, format is based on `file_name` extension (.ced, .locs, .tsv)
+
+# Arguments
+
+- `locs::DataFrame`
+- `file_name::String`
+- `overwrite::Bool=false`
+
+# Returns
+
+- `success::Bool`
+"""
+function eeg_save_electrodes(locs::DataFrame; file_name::String, overwrite::Bool=false)
+
+    (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+
+    labels = locs[!, :labels]
+    channels = collect(1:length(labels))
+    theta = locs[!, :loc_theta]
+    radius = locs[!, :loc_radius]
+    x = locs[!, :loc_x]
+    y = locs[!, :loc_y]
+    z = locs[!, :loc_z]
+    radius_sph = locs[!, :loc_radius_sph]
+    theta_sph = locs[!, :loc_theta_sph]
+    phi_sph = locs[!, :loc_phi_sph]
+
+    if splitext(file_name)[2] == ".ced"
+        df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph, head=true)
         CSV.write(file_name, df, delim="\t")
     elseif splitext(file_name)[2] == ".locs"
         df = DataFrame(Number=channels, theta=theta, radius=radius, labels=labels)
         CSV.write(file_name, df, delim="\t", header=false)
+    elseif splitext(file_name)[2] == ".tsv"
+        df = DataFrame(labels=labels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
+        CSV.write(file_name, df, delim="\t", header=true)
     else
-        throw(ArgumentError("file_name format must be .ced or .locs."))
+        throw(ArgumentError("file_name format must be .ced, .locs or .tsv."))
     end
-    
-    return true
 end
 
 """
@@ -822,16 +867,16 @@ function eeg_add_electrodes(eeg::NeuroJ.EEG; locs::DataFrame)
 
     f_labels = lowercase.(locs[:, :labels])
 
-    loc_theta = float.(locs[:, :theta])
-    loc_radius = float.(locs[:, :radius])
+    loc_theta = float.(locs[:, :loc_theta])
+    loc_radius = float.(locs[:, :loc_radius])
 
-    loc_radius_sph = float.(locs[:, :radius_sph])
-    loc_theta_sph = float.(locs[:, :theta_sph])
-    loc_phi_sph = float.(locs[:, :phi_sph])
+    loc_radius_sph = float.(locs[:, :loc_radius_sph])
+    loc_theta_sph = float.(locs[:, :loc_theta_sph])
+    loc_phi_sph = float.(locs[:, :loc_phi_sph])
 
-    loc_x = float.(locs[:, :x])
-    loc_y = float.(locs[:, :y])
-    loc_z = float.(locs[:, :z])
+    loc_x = float.(locs[:, :loc_x])
+    loc_y = float.(locs[:, :loc_y])
+    loc_z = float.(locs[:, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
@@ -886,16 +931,16 @@ function eeg_add_electrodes!(eeg::NeuroJ.EEG; locs::DataFrame)
     
     f_labels = lowercase.(locs[:, :labels])
 
-    loc_theta = float.(locs[:, :theta])
-    loc_radius = float.(locs[:, :radius])
+    loc_theta = float.(locs[:, :loc_theta])
+    loc_radius = float.(locs[:, :loc_radius])
 
-    loc_radius_sph = float.(locs[:, :radius_sph])
-    loc_theta_sph = float.(locs[:, :theta_sph])
-    loc_phi_sph = float.(locs[:, :phi_sph])
+    loc_radius_sph = float.(locs[:, :loc_radius_sph])
+    loc_theta_sph = float.(locs[:, :loc_theta_sph])
+    loc_phi_sph = float.(locs[:, :loc_phi_sph])
 
-    loc_x = float.(locs[:, :x])
-    loc_y = float.(locs[:, :y])
-    loc_z = float.(locs[:, :z])
+    loc_x = float.(locs[:, :loc_x])
+    loc_y = float.(locs[:, :loc_y])
+    loc_z = float.(locs[:, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)

@@ -159,8 +159,9 @@ c, msc, ic = eeg_tcoherence(edf, edf)
 hz, nyq = eeg_freqs(edf)
 @test nyq == 128.0
 
-s_conv = eeg_fconv(edf, kernel=[1, 2, 3, 4])
-@test size(s_conv) == (19, 309760, 1)
+e10 = eeg_epochs(edf, epoch_len=2560)
+s_conv = eeg_fconv(e10, kernel=[1, 2, 3, 4])
+@test size(s_conv) == (19, 2560, 121)
 
 p, v, m = eeg_pca(edf, n=2)
 @test size(p) == (2, 309760, 1)
@@ -346,26 +347,19 @@ _, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1)
 
 ch1 = eeg_electrode_loc(edf, channel=1, output=false)
 @test ch1[1] == -18.0
-edf2 = eeg_loc_flipy(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[1] == 198.0
-edf2 = eeg_loc_flipx(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[1] == 18
-edf2 = eeg_loc_flipz(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[5] == 0.0349
-edf2 = eeg_edit_electrode(edf, channel=1, x=-9)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[3] == -9.0
-edf2 = eeg_loc_swapxy(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[1] == 72.0
-edf2 = eeg_loc_sph2cart(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[3] == -0.03
-edf2 = eeg_loc_cart2sph(edf)
-ch1 = eeg_electrode_loc(edf2, channel=1, output=false)
-@test ch1[6] == 18.0
+
+locs = eeg_import_ced("../locs/standard-10-20-cap19-elmiko.ced")
+locs2 = eeg_loc_flipx(locs)
+@test locs2[1, 2] == 198.0
+locs2 = eeg_loc_flipy(locs)
+@test locs2[1, 2] == 18.0
+locs2 = eeg_loc_flipz(locs)
+@test locs2[1, 2] == -18.0
+locs2 = eeg_loc_swapxy(locs)
+@test locs2[1, 2] == 72.0
+locs2 = eeg_loc_sph2cart(locs)
+@test locs2[1, 4] == -0.03
+locs2 = eeg_loc_cart2sph(locs)
+@test locs2[1, 8] == 18.0
 
 true

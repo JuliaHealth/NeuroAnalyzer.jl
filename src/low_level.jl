@@ -318,6 +318,7 @@ function fft0(x::AbstractArray, n::Int64=0)
     if CUDA.functional() && use_cuda
         cx = CuArray(x)
         pfft = Vector(fft(cx))
+        _free_gpumem()
     else
         pfft = fft(x)
     end
@@ -347,6 +348,7 @@ function ifft0(x::AbstractArray, n::Int64=0)
     if CUDA.functional() && use_cuda
         cx = CuArray(x)
         pifft = Vector(ifft(cx))
+        _free_gpumem()
     else
         pifft = ifft(x)
     end
@@ -1601,6 +1603,7 @@ function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{Com
 
     signal = Vector(signal)
     s_conv = conv(signal, kernel)
+
     half_kernel = floor(Int, length(kernel) / 2)
 
     # remove in- and out- edges
