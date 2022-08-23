@@ -53,16 +53,16 @@ const use_cuda = @load_preference("use_cuda", true)
 const plugins_path = @load_preference("plugins_path", "~/Documents/NeuroJ/plugins/")
 
 include("neuroj.jl")
+export neuroj_version
 export neuroj_plugins_reload
 export neuroj_plugins_list
 export neuroj_plugins_remove
 export neuroj_plugins_install
 export neuroj_plugins_update
-export neuroj_version
 export neuroj_use_cuda
 export neuroj_plugins_path
 
-neuroj_plugins_reload()
+# neuroj_plugins_reload()
 
 include("internal.jl")
 

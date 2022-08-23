@@ -255,4 +255,4 @@ If you've contributed, add your name below!
 
 ## License
 
-The program is licensed under GPL-2.0-only.
+The program is licensed under [GPL-2.0-only](LICENSE).
