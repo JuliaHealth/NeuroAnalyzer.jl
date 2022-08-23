@@ -1,12 +1,12 @@
 """
-    neuroj_version()
+    NeuroAnalyzer_version()
 
-Show NeuroJ and imported packages versions.
+Show NeuroAnalyzer and imported packages versions.
 """
-function neuroj_version()
+function NeuroAnalyzer_version()
 
     println("    Julia version: $VERSION")
-    println("   NeuroJ version: $neuroj_ver")
+    println("   NeuroAnalyzer version: $NeuroAnalyzer_ver")
     if CUDA.functional()
         println("     CUDA version: $(CUDA.version()) (use_cuda = $use_cuda)")
     else
@@ -63,11 +63,11 @@ function neuroj_version()
 end
 
 """
-    neuroj_plugins_reload()
+    NeuroAnalyzer_plugins_reload()
 
-Reload NeuroJ plugins.
+Reload NeuroAnalyzer plugins.
 """
-function neuroj_plugins_reload()
+function NeuroAnalyzer_plugins_reload()
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -82,11 +82,11 @@ function neuroj_plugins_reload()
 end
 
 """
-    neuroj_plugins_list()
+    NeuroAnalyzer_plugins_list()
 
-List NeuroJ plugins.
+List NeuroAnalyzer plugins.
 """
-function neuroj_plugins_list()
+function NeuroAnalyzer_plugins_list()
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -96,15 +96,15 @@ function neuroj_plugins_list()
 end
 
 """
-    neuroj_plugins_remove(plugin)
+    NeuroAnalyzer_plugins_remove(plugin)
 
-Remove NeuroJ `plugin`.
+Remove NeuroAnalyzer `plugin`.
 
 # Attributes
 
 - `plugin::String`: plugin name
 """
-function neuroj_plugins_remove(plugin::String)
+function NeuroAnalyzer_plugins_remove(plugin::String)
     @info "This will remove the whole $plugin directory, along with its file contents."
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
@@ -115,19 +115,19 @@ function neuroj_plugins_remove(plugin::String)
     catch err
         @error "Cannot remove $plugin directory."
     end
-    neuroj_plugins_reload()
+    NeuroAnalyzer_plugins_reload()
 end
 
 """
-    neuroj_plugins_install(plugin)
+    NeuroAnalyzer_plugins_install(plugin)
 
-Install NeuroJ `plugin`.
+Install NeuroAnalyzer `plugin`.
 
 # Attributes
 
 - `plugin::String`: plugin Git repository URL
 """
-function neuroj_plugins_install(plugin::String)
+function NeuroAnalyzer_plugins_install(plugin::String)
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     try
@@ -135,19 +135,19 @@ function neuroj_plugins_install(plugin::String)
     catch err
         @error "Cannot install $plugin."
     end
-    neuroj_plugins_reload()
+    NeuroAnalyzer_plugins_reload()
 end
 
 """
-    neuroj_plugins_update(plugin)
+    NeuroAnalyzer_plugins_update(plugin)
 
-Install NeuroJ `plugin`.
+Install NeuroAnalyzer `plugin`.
 
 # Attributes
 
 - `plugin::String`: plugin to update; if empty, update all
 """
-function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
+function NeuroAnalyzer_plugins_update(plugin::Union{String, Nothing}=nothing)
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -172,5 +172,5 @@ function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
         end
         cd(expanduser(plugins_path))
     end
-    neuroj_plugins_reload()
+    NeuroAnalyzer_plugins_reload()
 end

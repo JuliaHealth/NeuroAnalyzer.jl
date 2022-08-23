@@ -5,14 +5,14 @@ Calculate total power of the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
  
 - `stp::Matrix{Float64}`: total power for each channel per epoch
 """
-function eeg_total_power(eeg::NeuroJ.EEG, mt::Bool=false)
+function eeg_total_power(eeg::NeuroAnalyzer.EEG, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -38,7 +38,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -46,7 +46,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
 - `sbp::Matrix{Float64}`: band power for each channel per epoch
 """
-function eeg_band_power(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
+function eeg_band_power(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -77,14 +77,14 @@ Calculate covariance matrix for all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=true`: normalize covariance
 
 # Returns
 
 - `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
 """
-function eeg_cov(eeg::NeuroJ.EEG; norm::Bool=true)
+function eeg_cov(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -110,13 +110,13 @@ Calculate correlation coefficients between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
 """
-function eeg_cor(eeg::NeuroJ.EEG)
+function eeg_cor(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -139,7 +139,7 @@ Calculate cross-covariance of each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `lag::Int64=1`: lags range is `-lag:lag`
 - `demean::Bool=false`: demean signal prior to analysis
 - `norm::Bool=false`: normalize cross-covariance
@@ -150,7 +150,7 @@ Named tuple containing:
 - `ccov::Matrix{Float64}`
 - `lags::Vector{Float64}`
 """
-function eeg_xcov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -193,8 +193,8 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -209,7 +209,7 @@ Named tuple containing:
 - `ccov::Array{Float64, 3}`
 - `lags::Vector{Float64}`
 """
-function eeg_xcov(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -254,7 +254,7 @@ Calculate power spectrum density for each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -264,7 +264,7 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`:powers
 - `psd_frq::Array{Float64, 3}`: frequencies
 """
-function eeg_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false)
+function eeg_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -303,7 +303,7 @@ Calculate stationarity.
 
 - `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
 """
-function eeg_stationarity(eeg::NeuroJ.EEG; window::Int64=10, method::Symbol=:hilbert)
+function eeg_stationarity(eeg::NeuroAnalyzer.EEG; window::Int64=10, method::Symbol=:hilbert)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     method in [:mean, :var, :euclid, :hilbert, :adf] || throw(ArgumentError("Method must be must be :mean, :var, :euclid, :hilbert or :adf."))
@@ -393,13 +393,13 @@ Calculate mutual information between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `mi::Array{Float64, 3}`
 """
-function eeg_mi(eeg::NeuroJ.EEG)
+function eeg_mi(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -432,14 +432,14 @@ Calculate mutual information between all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `mi::Array{Float64, 3}`
 """
-function eeg_mi(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_mi(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -470,13 +470,13 @@ Calculate entropy of all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `entropy::Matrix{Float64}`
 """
-function eeg_entropy(eeg::NeuroJ.EEG)
+function eeg_entropy(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -501,13 +501,13 @@ Calculate negentropy of all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `ne::Matrix{Float64}`
 """
-function eeg_negentropy(eeg::NeuroJ.EEG)
+function eeg_negentropy(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -539,7 +539,7 @@ Return frequency limits for a `band` range.
 
 - `band_frequency::Tuple{Real, Real}`
 """
-function eeg_band(eeg::NeuroJ.EEG; band::Symbol)
+function eeg_band(eeg::NeuroAnalyzer.EEG; band::Symbol)
 
     band in [:total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
 
@@ -568,8 +568,8 @@ Calculate coherence (mean over time) and MSC (magnitude-squared coherence) betwe
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
@@ -582,7 +582,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `ic::Array{Float64, 3}`: imaginary part of coherence
 """
-function eeg_tcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
+function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -624,7 +624,7 @@ Return vector of frequencies and Nyquist frequency for `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -632,7 +632,7 @@ Named tuple containing:
 - `hz::Vector{Float64}`
 - `nyquist::Float64`
 """
-function eeg_freqs(eeg::NeuroJ.EEG)
+function eeg_freqs(eeg::NeuroAnalyzer.EEG)
 
     hz, nyq = s_freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
 
@@ -646,8 +646,8 @@ Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:absdiff`
     - `:absdiff`: maximum difference
@@ -660,7 +660,7 @@ Named tuple containing:
 - `signals_statistic_single::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function eeg_difference(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; n::Int64=3, method::Symbol=:absdiff)
+function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; n::Int64=3, method::Symbol=:absdiff)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -690,7 +690,7 @@ Return `pick` of electrodes for `eeg` electrodes.
 
 - `channels::Vector{Int64}`
 """
-function eeg_pick(eeg::NeuroJ.EEG; pick::Union{Symbol, Vector{Symbol}})
+function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
 
     length(eeg_labels(eeg)) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
 
@@ -781,7 +781,7 @@ Calculate `eeg` epochs statistics.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -797,7 +797,7 @@ Named tuple containing:
 - `e_max_dif::Vector(Float64)`: max difference
 - `e_dev_mean::Vector(Float64)`: deviation from channel mean
 """
-function eeg_epochs_stats(eeg::NeuroJ.EEG)
+function eeg_epochs_stats(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -837,7 +837,7 @@ Return spectrogram of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `demean::Bool=true`: demean signal prior to analysis
@@ -849,7 +849,7 @@ Named tuple containing:
 - `s_frq::Vector{Float64}`
 - `s_t::Vector{Float64}`
 """
-function eeg_spectrogram(eeg::NeuroJ.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
+function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -880,7 +880,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For 
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `pad::Int64=0`: pad with `pad` zeros
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 
@@ -892,7 +892,7 @@ Named tuple containing:
 - `pow::Array{Float64, 3}`: powers
 - `phase::Array{Float64, 3}: phase angles
 """
-function eeg_spectrum(eeg::NeuroJ.EEG; pad::Int64=0, h::Bool=false)
+function eeg_spectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, h::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -925,14 +925,14 @@ Convert time `t` in samples to seconds using `eeg` sampling rate.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `t::Int64`: time in samples
 
 # Returns
 
 - `t_s::Float64`: time in seconds
 """
-function eeg_s2t(eeg::NeuroJ.EEG; t::Int64)
+function eeg_s2t(eeg::NeuroAnalyzer.EEG; t::Int64)
     t_s = round(t / eeg_sr(eeg), digits=2)
     
     return t_s
@@ -945,14 +945,14 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `t::Real`: time in seconds
 
 # Returns
 
 - `t_s::Int64`: time in samples
 """
-function eeg_t2s(eeg::NeuroJ.EEG; t::Real)
+function eeg_t2s(eeg::NeuroAnalyzer.EEG; t::Real)
     t_s = floor(Int64, t * eeg_sr(eeg)) + 1
     
     return t_s
@@ -965,7 +965,7 @@ Calculate `eeg` channels statistics.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -981,7 +981,7 @@ Named tuple containing:
 - `c_max_dif::Matrix(Float64)`: max difference
 - `c_dev_mean::Matrix(Float64)`: deviation from channel mean
 """
-function eeg_channels_stats(eeg::NeuroJ.EEG)
+function eeg_channels_stats(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1025,13 +1025,13 @@ Calculate SNR of `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `snr::Matrix(Float64)`: SNR for each channel per epoch
 """
-function eeg_snr(eeg::NeuroJ.EEG)
+function eeg_snr(eeg::NeuroAnalyzer.EEG)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1054,14 +1054,14 @@ Standardize `eeg` channels for ML.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
-- `eeg_new::NeuroJ.EEG`: standardized EEG
+- `eeg_new::NeuroAnalyzer.EEG`: standardized EEG
 - `scaler::Matrix{Float64}`: standardizing matrix
 """
-function eeg_standardize(eeg::NeuroJ.EEG)
+function eeg_standardize(eeg::NeuroAnalyzer.EEG)
     
     epoch_n = eeg_epoch_n(eeg)
     ss = similar(eeg.eeg_signals)
@@ -1088,13 +1088,13 @@ Standardize `eeg` channels for ML.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `scaler::Matrix{Float64}`: standardizing matrix
 """
-function eeg_standardize!(eeg::NeuroJ.EEG)
+function eeg_standardize!(eeg::NeuroAnalyzer.EEG)
     ss, scaler = s_standardize(eeg.eeg_signals)
     eeg.eeg_signals = ss
     eeg_reset_components!(eeg)
@@ -1110,7 +1110,7 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 - `norm::Bool=false`: normalize kernel
 
@@ -1118,7 +1118,7 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
+function eeg_fconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1143,14 +1143,14 @@ Perform convolution in the time domain.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_tconv(eeg::NeuroJ.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
+function eeg_tconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1179,7 +1179,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -1187,7 +1187,7 @@ Named tuple containing:
 - `sfft::Array{ComplexF64, 3}`: FFT
 - `sf::Array{Float64, 3}`: sample frequencies
 """
-function eeg_dft(eeg::NeuroJ.EEG)
+function eeg_dft(eeg::NeuroAnalyzer.EEG)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1212,7 +1212,7 @@ Calculates mean, std and 95% confidence interval for each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `n::Int64`: number of bootstraps
 - `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
 
@@ -1224,7 +1224,7 @@ Named tuple containing:
 - `s_u::Matrix{Float64}`: upper 95% CI
 - `s_l::Matrix{Float64}`: lower 95% CI
 """
-function eeg_msci95(eeg::NeuroJ.EEG; n::Int64=3, method::Symbol=:normal)
+function eeg_msci95(eeg::NeuroAnalyzer.EEG; n::Int64=3, method::Symbol=:normal)
 
     method in [:normal, :boot] || throw(ArgumentError("method must be :normal or :boot."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
@@ -1251,8 +1251,8 @@ Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2:NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2:NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -1262,7 +1262,7 @@ Named tuple containing:
 - `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
 - `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
 """
-function eeg_mean(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_mean(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
     size(eeg1.eeg_signals) != size(eeg2.eeg_signals) && throw(ArgumentError("Both EEG signals must have the same size."))
 
@@ -1336,7 +1336,7 @@ Calculate autocovariance of each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `lag::Int64`: lags range is `-lag:lag`
 - `demean::Bool`: demean eeg prior to analysis
 - `norm::Bool`: normalize autocovariance
@@ -1347,7 +1347,7 @@ Named tuple containing:
 - `acov::Matrix{Float64}`
 - `lags::Vector{Float64}`
 """
-function eeg_acov(eeg::NeuroJ.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function eeg_acov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
 
@@ -1378,7 +1378,7 @@ Calculate temporal envelope of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -1387,7 +1387,7 @@ Named tuple containing:
 - `t_env::Array{Float64, 3}`: temporal envelope
 - `s_t::Vector{Float64}`: signal time
 """
-function eeg_tenv(eeg::NeuroJ.EEG; d::Int64=32)
+function eeg_tenv(eeg::NeuroAnalyzer.EEG; d::Int64=32)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1426,7 +1426,7 @@ Calculate temporal envelope of `eeg`: mean and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -1438,7 +1438,7 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function eeg_tenv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
+function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1489,7 +1489,7 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -1501,7 +1501,7 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function eeg_tenv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=32)
+function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1574,7 +1574,7 @@ Calculate power (in dB) envelope of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -1584,7 +1584,7 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function eeg_penv(eeg::NeuroJ.EEG; d::Int64=8, mt::Bool=false)
+function eeg_penv(eeg::NeuroAnalyzer.EEG; d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1626,7 +1626,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1639,7 +1639,7 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function eeg_penv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
+function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1716,7 +1716,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1729,7 +1729,7 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function eeg_penv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
+function eeg_penv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1806,7 +1806,7 @@ Calculate spectral envelope of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -1817,7 +1817,7 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function eeg_senv(eeg::NeuroJ.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function eeg_senv(eeg::NeuroAnalyzer.EEG; d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1888,7 +1888,7 @@ Calculate spectral envelope of `eeg`: mean and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -1902,7 +1902,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_mean(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1977,7 +1977,7 @@ Calculate spectral envelope of `eeg`: median and 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -1991,7 +1991,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function eeg_senv_median(eeg::NeuroJ.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function eeg_senv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -2066,8 +2066,8 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -2083,7 +2083,7 @@ Named tuple containing:
 - `s1_phase::Array{Float64, 3}`: signal 1 phase
 - `s2_phase::Array{Float64, 3}`: signal 2 phase
 """
-function eeg_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
+function eeg_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -2127,7 +2127,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Int64`
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
@@ -2140,7 +2140,7 @@ Named tuple containing:
 - `itpc_angle::Float64`: ITPC angle
 - `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 """
-function eeg_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     channel < 0 && throw(ArgumentError("channel must be > 0."))
@@ -2162,8 +2162,8 @@ Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -2178,7 +2178,7 @@ Named tuple containing:
 - `s1_phase::Array{Float64, 3}`: signal 1 phase
 - `s2_phase::Array{Float64, 3}`: signal 2 phase
 """
-function eeg_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
+function eeg_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -2221,13 +2221,13 @@ Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `pli_m::Array{Float64, 3}`: PLI value matrices over epochs
 """
-function eeg_pli(eeg::NeuroJ.EEG)
+function eeg_pli(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2262,13 +2262,13 @@ Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `ispc_m::Array{Float64, 3}`: ISPC value matrices over epochs
 """
-function eeg_ispc(eeg::NeuroJ.EEG)
+function eeg_ispc(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     channel_n = eeg_channel_n(eeg)
@@ -2303,8 +2303,8 @@ Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channe
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Int64`
 - `channel2::Int64`
 - `epoch1::Int64`
@@ -2316,7 +2316,7 @@ Named tuple containing:
 - `aec::Float64`: power correlation value
 - `aec_p::Float64`: power correlation p-value
 """
-function eeg_aec(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
+function eeg_aec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64)
 
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 must have the same epoch length."))
 
@@ -2362,8 +2362,8 @@ Perform generalized eigendecomposition between `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`: signal data to be analyzed
-- `eeg2::NeuroJ.EEG`: original signal data
+- `eeg1::NeuroAnalyzer.EEG`: signal data to be analyzed
+- `eeg2::NeuroAnalyzer.EEG`: original signal data
 
 # Returns
 
@@ -2371,7 +2371,7 @@ Perform generalized eigendecomposition between `eeg1` and `eeg2`.
 - `ress::Matrix{Float64}`
 - `ress_normalized::Matrix{Float64}`
 """
-function eeg_ged(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_ged(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
     size(eeg1.eeg_signals) == size(eeg2.eeg_signals) || throw(ArgumentError("eeg1 and eeg2 signal data must have the same size."))
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -2400,13 +2400,13 @@ Calculate instantaneous frequency of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `frqinst::Array{Float64, 3}`
 """
-function eeg_frqinst(eeg::NeuroJ.EEG)
+function eeg_frqinst(eeg::NeuroAnalyzer.EEG)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -2433,7 +2433,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `e
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Int64`
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
@@ -2447,7 +2447,7 @@ Named tuple containing:
 - `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
 - `itpc_frq::Vector{Float64}`: frequencies list
 """
-function eeg_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:log, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2499,7 +2499,7 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2516,7 +2516,7 @@ Named tuple containing:
 - `w_frq::Matrix{Float64}`
 - `w_t::Matrix{Float64}`
 """
-function eeg_wspectrogram(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
+function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2546,13 +2546,13 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `tkeo::Array{Float64, 3}`
 """
-function eeg_tkeo(eeg::NeuroJ.EEG)
+function eeg_tkeo(eeg::NeuroAnalyzer.EEG)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2576,7 +2576,7 @@ Return power spectrogrum of `eeg` using Morlet wavelet convolution.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2591,7 +2591,7 @@ Named tuple containing:
 - `w_pow::Array{Float64, 4}`
 - `w_frq::Matrix{Float64}`
 """
-function eeg_wspectrum(eeg::NeuroJ.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
+function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2619,8 +2619,8 @@ Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -2634,7 +2634,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
-function eeg_fcoherence(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+function eeg_fcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -2676,7 +2676,7 @@ Calculate variance F-test for all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -2684,7 +2684,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function eeg_vartest(eeg::NeuroJ.EEG)
+function eeg_vartest(eeg::NeuroAnalyzer.EEG)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -2720,8 +2720,8 @@ Calculate variance F-test for all channels of `eeg1` and `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 
 # Returns
 
@@ -2729,7 +2729,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function eeg_vartest(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG)
+function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
     channel_n1 = eeg_channel_n(eeg1)
     epoch_n1 = eeg_epoch_n(eeg1)
@@ -2763,7 +2763,7 @@ Calculate mean and maximum band power and its frequency.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -2774,7 +2774,7 @@ Named tuple containing:
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
 """
-function eeg_band_mpower(eeg::NeuroJ.EEG; f::Tuple{Real, Real}, mt::Bool=false)
+function eeg_band_mpower(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2807,7 +2807,7 @@ Calculate relative power spectrum density for each the `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
@@ -2818,7 +2818,7 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`:powers
 - `psd_frq::Array{Float64, 3}`: frequencies
 """
-function eeg_rel_psd(eeg::NeuroJ.EEG; norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2857,7 +2857,7 @@ Split EEG signal into frequency bands.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `order::Int64=8`: bandpass filter order
 
 # Returns
@@ -2867,7 +2867,7 @@ Named tuple containing:
 - `band_frq::Vector{Tuple{Real, Real}}`
 - `signal_split::Array{Float64, 4}`
 """
-function eeg_fbsplit(eeg::NeuroJ.EEG; order::Int64=8)
+function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; order::Int64=8)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2898,8 +2898,8 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 
 # Arguments
 
-- `eeg1::NeuroJ.EEG`
-- `eeg2::NeuroJ.EEG`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2::NeuroAnalyzer.EEG`
 - `channel1::Int64`
 - `channel2::Int64`
 
@@ -2907,7 +2907,7 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 
 - `ch_diff::Matrix{Float64}`
 """
-function eeg_chdiff(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64)
+function eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64)
 
     channel1 < 0 || channel2 < 0 && throw(ArgumentError("channel1/channel2 must be > 0."))
     channel1 > eeg_channel_n(eeg1) && throw(ArgumentError("channel1 must be ≤ $(eeg_channel_n(eeg1))."))
@@ -2931,7 +2931,7 @@ Calculate cross power spectrum between all channels of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=true`: normalize do dB
 
 # Returns
@@ -2941,7 +2941,7 @@ Named tuple containing:
 - `cps_ph::Array{Float64, 4}`: cross power spectrum phase (in radians)
 - `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 """
-function eeg_cps(eeg::NeuroJ.EEG; norm::Bool=true)
+function eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -2983,7 +2983,7 @@ Calculate cross power spectrum between `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel1::Int64`
 - `channel2::Int64`
 - `epoch1::Int64`
@@ -2997,7 +2997,7 @@ Named tuple containing:
 - `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
 - `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 """
-function eeg_cps(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, norm::Bool=true)
+function eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, norm::Bool=true)
 
     eeg_channel_n(eeg1, type=:eeg) < eeg_channel_n(eeg1, type=:all) && throw(ArgumentError("eeg1 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg_channel_n(eeg2, type=:eeg) < eeg_channel_n(eeg2, type=:all) && throw(ArgumentError("eeg2 contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))

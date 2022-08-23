@@ -1,7 +1,7 @@
 """
     eeg_import_edf(file_name; read_annotations, clean_labels)
 
-Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
+Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
@@ -462,7 +462,7 @@ end
 """
     eeg_load_electrodes(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Accepted formats:
 - CED
@@ -483,14 +483,14 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::NeuroJ.EEG; file_name::String)
+function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -554,7 +554,7 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Accepted formats:
 - CED
@@ -575,10 +575,10 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
 """
-function eeg_load_electrodes!(eeg::NeuroJ.EEG; file_name::String)
+function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
     
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -645,7 +645,7 @@ Save the `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`: file name
 - `overwrite::Bool=false`
 
@@ -653,7 +653,7 @@ Save the `eeg` to `file_name` file (HDF5-based).
 
 - `success::Bool`
 """
-function eeg_save(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
+function eeg_save(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
@@ -679,7 +679,7 @@ Load the `eeg` from `file_name` file (HDF5-based).
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
 function eeg_load(file_name::String)
 
@@ -697,7 +697,7 @@ Export EEG data as CSV.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
 - `header::Bool=false`: export header
 - `components::Bool=false`: export components
@@ -707,7 +707,7 @@ Export EEG data as CSV.
 
 - `success::Bool`
 """
-function eeg_export_csv(eeg::NeuroJ.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
+function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
     eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
@@ -756,7 +756,7 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
 - `overwrite::Bool=false`
 
@@ -764,7 +764,7 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
 - `success::Bool`
 """
-function eeg_save_electrodes(eeg::NeuroJ.EEG; file_name::String, overwrite::Bool=false)
+function eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
@@ -856,14 +856,14 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `locs::DataFrame`
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_add_electrodes(eeg::NeuroJ.EEG; locs::DataFrame)
+function eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 
     f_labels = lowercase.(locs[:, :labels])
 
@@ -910,7 +910,7 @@ end
 """
     eeg_add_electrodes!(eeg; locs)
 
-Load electrode positions from `locs` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Electrode locations:
 - loc_theta       planar polar angle
@@ -924,10 +924,10 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `locs::DataFrame`
 """
-function eeg_add_electrodes!(eeg::NeuroJ.EEG; locs::DataFrame)
+function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     
     f_labels = lowercase.(locs[:, :labels])
 

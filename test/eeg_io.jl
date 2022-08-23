@@ -1,4 +1,4 @@
-using NeuroJ
+using NeuroAnalyzer
 using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")
@@ -28,7 +28,7 @@ s = eeg_import_tsv("test.tsv")
 @test typeof(s) == DataFrame
 
 edf = eeg_load_electrodes(edf, file_name="standard-10-20-cap19-elmiko.ced")
-@test typeof(edf) == NeuroJ.EEG
+@test typeof(edf) == NeuroAnalyzer.EEG
 @test edf.eeg_header[:channel_locations] == true
 
 isfile("test.hdf5") && rm("test.hdf5")
@@ -37,7 +37,7 @@ isfile("test.hdf5") && rm("test.hdf5")
 
 @test eeg_load("test.hdf5") != false
 edf_new = eeg_load("test.hdf5")
-@test typeof(edf_new) == NeuroJ.EEG
+@test typeof(edf_new) == NeuroAnalyzer.EEG
 isfile("test.hdf5") && rm("test.hdf5")
 
 isfile("edf.csv") && rm("edf.csv")
@@ -57,6 +57,6 @@ isfile("test_out.locs") && rm("test_out.locs")
 
 locs = eeg_import_ced("standard-10-20-cap19-elmiko.ced")
 edf2 = eeg_add_electrodes(edf, locs=locs)
-@test typeof(edf2) == NeuroJ.EEG
+@test typeof(edf2) == NeuroAnalyzer.EEG
 
 true

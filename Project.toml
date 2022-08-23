@@ -1,4 +1,4 @@
-name = "NeuroJ"
+name = "NeuroAnalyzer"
 uuid = "b40dcafa-b65c-47ad-a230-3174ba5cadd1"
 authors = ["Adam Wysokiński <adam.wysokinski@umed.lodz.pl>"]
 version = "0.22.8"

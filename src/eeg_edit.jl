@@ -5,15 +5,15 @@ Add component name `c` of value `v` to `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Symbol`: component name
 - `v::Any`: component value
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_component(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+function eeg_add_component(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
 
     eeg_new = deepcopy(eeg)
     c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
@@ -31,11 +31,11 @@ Add component name `c` of value `v` to `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Symbol`: component name
 - `v::Any`: component value
 """
-function eeg_add_component!(eeg::NeuroJ.EEG; c::Symbol, v::Any)
+function eeg_add_component!(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
 
     c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component!() to remove it prior the operation."))
     push!(eeg.eeg_header[:components], c)
@@ -52,13 +52,13 @@ List `eeg` components.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `components::Vector{Symbol}`
 """
-function eeg_list_components(eeg::NeuroJ.EEG)
+function eeg_list_components(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:components]
 end
@@ -70,14 +70,14 @@ Extract component `c` of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Symbol`: component name
 
 # Returns
 
 - `component::Any`
 """
-function eeg_extract_component(eeg::NeuroJ.EEG; c::Symbol)
+function eeg_extract_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     
@@ -97,14 +97,14 @@ Delete component `c` of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Symbol`: component name
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_component(eeg::NeuroJ.EEG; c::Symbol)
+function eeg_delete_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     eeg_new = deepcopy(eeg)
     c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
@@ -125,10 +125,10 @@ Delete component `c` of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Symbol`: component name
 """
-function eeg_delete_component!(eeg::NeuroJ.EEG; c::Symbol)
+function eeg_delete_component!(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     
@@ -154,9 +154,9 @@ Remove all `eeg` components.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reset_components(eeg::NeuroJ.EEG)
+function eeg_reset_components(eeg::NeuroAnalyzer.EEG)
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:components] = []
@@ -174,7 +174,7 @@ Remove all `eeg` components.
 
 - `eeg:EEG`
 """
-function eeg_reset_components!(eeg::NeuroJ.EEG)
+function eeg_reset_components!(eeg::NeuroAnalyzer.EEG)
 
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
@@ -196,7 +196,7 @@ Return index of `eeg` component.
 
 - `c_idx::Int64`
 """
-function eeg_component_idx(eeg::NeuroJ.EEG; c::Symbol)
+function eeg_component_idx(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     c_idx = findfirst(isequal(c), eeg.eeg_header[:components])
@@ -218,7 +218,7 @@ Return type of `eeg` components.
 
 - `c_type::DataType`
 """
-function eeg_component_type(eeg::NeuroJ.EEG; c::Symbol)
+function eeg_component_type(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     c_idx = eeg_component_idx(eeg; c=c)
@@ -242,7 +242,7 @@ Return type of `eeg` components.
 
 - `eeg_new:EEG`
 """
-function eeg_rename_component(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
+function eeg_rename_component(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Symbol)
 
     c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
     c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
@@ -267,7 +267,7 @@ Return type of `eeg` components.
 - `c_old::Symbol`: old component name
 - `c_new::Symbol`: new component name
 """
-function eeg_rename_component!(eeg::NeuroJ.EEG; c_old::Symbol, c_new::Symbol)
+function eeg_rename_component!(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Symbol)
 
     c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
     c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
@@ -287,14 +287,14 @@ Remove `channel` from the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     channel_n = eeg_channel_n(eeg)
@@ -353,10 +353,10 @@ Remove `channel` from the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
 """
-function eeg_delete_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     channel_n = eeg_channel_n(eeg)
@@ -413,14 +413,14 @@ Keep `channels` in the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_keep_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_keep_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
 
@@ -482,10 +482,10 @@ Keep `channels` in the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 """
-function eeg_keep_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
 
@@ -546,14 +546,14 @@ Return the `channel` index / name.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel name
 
 # Returns
 
 - `channel_idx::Int64`
 """
-function eeg_get_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
     labels = eeg_labels(eeg)
     if typeof(channel) == String
@@ -584,15 +584,15 @@ Rename the `eeg` `channel`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 - `name::String`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_rename_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, name::String)
+function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, name::String)
 
     # create new dataset
     eeg_new = deepcopy(eeg)
@@ -631,11 +631,11 @@ Rename the `eeg` `channel`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 - `name::String`
 """
-function eeg_rename_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, name::String)
+function eeg_rename_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, name::String)
 
     labels = eeg_labels(eeg)
     
@@ -671,14 +671,14 @@ Extract `channel` number or name.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 
 # Returns
 
 - `channel::Vector{Float64}`
 """
-function eeg_extract_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String})
+function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
     labels = eeg_labels(eeg)
     if typeof(channel) == String
@@ -709,13 +709,13 @@ Show processing history.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_history(eeg::NeuroJ.EEG)
+function eeg_history(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:history]
 end
@@ -727,13 +727,13 @@ Return `eeg` labels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `labels::Vector{String}`
 """
-function eeg_labels(eeg::NeuroJ.EEG)
+function eeg_labels(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:labels]
 end
@@ -745,13 +745,13 @@ Return `eeg` sampling rate.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `sr::Int64`
 """
-function eeg_sr(eeg::NeuroJ.EEG)
+function eeg_sr(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:sampling_rate][1]
 end
@@ -763,14 +763,14 @@ Return number of `eeg` channels of `type`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
 
 # Returns
 
 - `channel_n::Int64`
 """
-function eeg_channel_n(eeg::NeuroJ.EEG; type::Symbol=:all)
+function eeg_channel_n(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 
     channel_n = 0
     for idx in 1:eeg.eeg_header[:channel_n]
@@ -788,13 +788,13 @@ Return number of `eeg` epochs.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `epoch_n::Int64`
 """
-function eeg_epoch_n(eeg::NeuroJ.EEG)
+function eeg_epoch_n(eeg::NeuroAnalyzer.EEG)
 
     epoch_n = eeg.eeg_header[:epoch_n]
 
@@ -808,13 +808,13 @@ Return length of `eeg` signal.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `signal_len::Int64`
 """
-function eeg_signal_len(eeg::NeuroJ.EEG)
+function eeg_signal_len(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:eeg_duration_samples]
 end
@@ -826,13 +826,13 @@ Return length of `eeg` signal.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
 - `epoch_len::Int64`
 """
-function eeg_epoch_len(eeg::NeuroJ.EEG)
+function eeg_epoch_len(eeg::NeuroAnalyzer.EEG)
 
     epoch_len = eeg.eeg_header[:epoch_duration_samples]
 
@@ -846,9 +846,9 @@ Show info.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_info(eeg::NeuroJ.EEG)
+function eeg_info(eeg::NeuroAnalyzer.EEG)
 
     println("          EEG file name: $(eeg.eeg_header[:eeg_filename])")
     println("          EEG size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
@@ -904,16 +904,16 @@ Splits `eeg` into epochs.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch_n::Union{Int64, Nothing}`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`: epoch length in samples
 - `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
     # unsplit epochs
     s_merged = reshape(eeg.eeg_signals,
@@ -963,12 +963,12 @@ Splits `eeg` into epochs.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch_n::Union{Int64, Nothing}`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`: epoch length in samples
 - `average::Bool`: average all epochs, return one averaged epoch
 """
-function eeg_epochs!(eeg::NeuroJ.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
     # unsplit epochs
     s_merged = reshape(eeg.eeg_signals,
@@ -1017,14 +1017,14 @@ Extract the `epoch` epoch.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Int64`: epoch index
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_extract_epoch(eeg::NeuroJ.EEG; epoch::Int64)
+function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
 
     if epoch < 1 || epoch > eeg_epoch_n(eeg)
         throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
@@ -1061,7 +1061,7 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 
 - `eeg:EEG`
 """
-function eeg_trim(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+function eeg_trim(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
     eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
 
@@ -1117,7 +1117,7 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 - `from::Symbol[:start, :end]`: trims from the signal start (default) or end
 - `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 """
-function eeg_trim!(eeg::NeuroJ.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
+function eeg_trim!(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
     eeg_len = eeg_signal_len(eeg)
     from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
@@ -1173,7 +1173,7 @@ Change value of `eeg` `field` to `value`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `field::Symbol`
 - `value::Any`
 
@@ -1181,7 +1181,7 @@ Change value of `eeg` `field` to `value`.
 
 - `eeg:EEG`
 """
-function eeg_edit_header(eeg::NeuroJ.EEG; field::Symbol, value::Any)
+function eeg_edit_header(eeg::NeuroAnalyzer.EEG; field::Symbol, value::Any)
 
     field === nothing && throw(ArgumentError("field cannot be empty."))
     value === nothing && throw(ArgumentError("value cannot be empty."))
@@ -1203,7 +1203,7 @@ Change value of `eeg` `field` to `value`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `field::Symbol`
 - `value::Any`
 
@@ -1211,7 +1211,7 @@ Change value of `eeg` `field` to `value`.
 
 - `eeg:EEG`
 """
-function eeg_edit_header!(eeg::NeuroJ.EEG; field::Symbol, value::Any)
+function eeg_edit_header!(eeg::NeuroAnalyzer.EEG; field::Symbol, value::Any)
 
     value === nothing && throw(ArgumentError("value cannot be empty."))
 
@@ -1231,9 +1231,9 @@ Show keys and values of `eeg` header.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_show_header(eeg::NeuroJ.EEG)
+function eeg_show_header(eeg::NeuroAnalyzer.EEG)
 
     for (key, value) in eeg.eeg_header
         println("$key: $value")
@@ -1247,14 +1247,14 @@ Remove `epoch` from the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_delete_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
 
@@ -1296,10 +1296,10 @@ Remove `epoch` from the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 """
-function eeg_delete_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_delete_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
 
@@ -1339,14 +1339,14 @@ Keep `epoch` in the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_keep_epoch(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_keep_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG contains only one epoch."))
 
@@ -1390,10 +1390,10 @@ Keep `epoch` in the `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 """
-function eeg_keep_epoch!(eeg::NeuroJ.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_keep_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG contains only one epoch."))
 
@@ -1440,7 +1440,7 @@ Detect bad `eeg` epochs based on:
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
 - `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
@@ -1448,7 +1448,7 @@ Detect bad `eeg` epochs based on:
 
 - `bad_epochs_idx::Vector{Int64}`
 """
-function eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
+function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -1487,20 +1487,20 @@ function eeg_detect_bad_epochs(eeg::NeuroJ.EEG; method::Vector{Symbol}=[:flat, :
 end
 
 """
-    eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+    eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 
 Add `labels` to `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `labels::Vector{String}`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+function eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     
@@ -1513,16 +1513,16 @@ function eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
 end
 
 """
-    eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+    eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 
 Add `labels` to `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `labels::Vector{String}`
 """
-function eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+function eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     eeg.eeg_header[:labels] = labels
@@ -1544,9 +1544,9 @@ Edits `eeg` `channel` properties.
 
 # Returns
 
-- `eeg_new::NeuroJ.EEG`
+- `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_edit_channel(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
+function eeg_edit_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, value::Any)
     
     field === nothing && throw(ArgumentError("field cannot be empty."))
     value === nothing && throw(ArgumentError("value cannot be empty."))
@@ -1576,7 +1576,7 @@ Edit `eeg` `channel` properties.
 - `field::Any`
 - `value::Any`
 """
-function eeg_edit_channel!(eeg::NeuroJ.EEG; channel::Int64, field::Any, value::Any)
+function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, value::Any)
     
     field === nothing && throw(ArgumentError("field cannot be empty."))
     value === nothing && throw(ArgumentError("value cannot be empty."))
@@ -1599,14 +1599,14 @@ Keep `type` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:eeg`: type of channels to keep
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_keep_channel_type(eeg::NeuroJ.EEG; type::Symbol=:eeg)
+function eeg_keep_channel_type(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
 
     string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
@@ -1627,10 +1627,10 @@ Keep `type` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:eeg`: type of channels to keep
 """
-function eeg_keep_channel_type!(eeg::NeuroJ.EEG; type::Symbol=:eeg)
+function eeg_keep_channel_type!(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
 
     string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
@@ -1650,9 +1650,9 @@ Return `eeg` note.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_view_note(eeg::NeuroJ.EEG)
+function eeg_view_note(eeg::NeuroAnalyzer.EEG)
 
     return eeg.eeg_header[:note]
 end
@@ -1664,13 +1664,13 @@ Make copy of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
-- `eeg_copy::NeuroJ.EEG`
+- `eeg_copy::NeuroAnalyzer.EEG`
 """
-function eeg_copy(eeg::NeuroJ.EEG)
+function eeg_copy(eeg::NeuroAnalyzer.EEG)
     
     return deepcopy(eeg)
 end
@@ -1682,14 +1682,14 @@ Edit `eeg` epochs time start.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `ts::Real`: time start in seconds
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs_time(eeg::NeuroJ.EEG; ts::Real)
+function eeg_epochs_time(eeg::NeuroAnalyzer.EEG; ts::Real)
 
     epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
@@ -1709,14 +1709,14 @@ Edit `eeg` epochs time start.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `ts::Real`: time start in seconds
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs_time!(eeg::NeuroJ.EEG; ts::Real)
+function eeg_epochs_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
 
     epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
@@ -1735,14 +1735,14 @@ Return `eeg` note.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `note::String`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_note(eeg::NeuroJ.EEG; note::String)
+function eeg_add_note(eeg::NeuroAnalyzer.EEG; note::String)
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:note] = note
@@ -1757,10 +1757,10 @@ Return `eeg` note.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `note::String`
 """
-function eeg_add_note!(eeg::NeuroJ.EEG; note::String)
+function eeg_add_note!(eeg::NeuroAnalyzer.EEG; note::String)
 
     eeg.eeg_header[:note] = note
     
@@ -1774,13 +1774,13 @@ Return `eeg` note.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_note(eeg::NeuroJ.EEG)
+function eeg_delete_note(eeg::NeuroAnalyzer.EEG)
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:note] = ""
@@ -1795,9 +1795,9 @@ Return `eeg` note.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_note!(eeg::NeuroJ.EEG)
+function eeg_delete_note!(eeg::NeuroAnalyzer.EEG)
 
     eeg.eeg_header[:note] = ""
     
@@ -1811,15 +1811,15 @@ Replace the `channel` index / name with `signal`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel name
 - `signal::Array{Float64, 3}
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_replace_channel(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+function eeg_replace_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
 
     channel_idx = nothing
@@ -1856,11 +1856,11 @@ Replace the `channel` index / name with `signal`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel name
 - `signal::Array{Float64, 3}
 """
-function eeg_replace_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
+function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
     labels = eeg_labels(eeg)
     channel_idx = nothing
@@ -1895,16 +1895,16 @@ Interpolate `eeg` channel using planar interpolation.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
 - `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
+function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
@@ -1990,12 +1990,12 @@ Interpolate `eeg` channel using planar interpolation.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
 - `q::Float64=1.0`: interpolation quality (0 to 1.0)
 """
-function eeg_interpolate_channel!(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
+function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
 
     eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, m=m, q=q).eeg_signals
     eeg_reset_components!(eeg)
@@ -2191,15 +2191,15 @@ Change the `eeg` `channel` type.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 - `type::String`
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_channel_type(eeg::NeuroJ.EEG; channel::Union{Int64, String}, type::String)
+function eeg_channel_type(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
     type = lowercase(type)
     labels = eeg_labels(eeg)
@@ -2241,11 +2241,11 @@ Change the `eeg` `channel` type.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 - `type::String`
 """
-function eeg_channel_type!(eeg::NeuroJ.EEG; channel::Union{Int64, String}, type::String)
+function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
     type = lowercase(type)
     labels = eeg_labels(eeg)
@@ -2283,7 +2283,7 @@ Edit `eeg` electrode.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{String, Int64}`: channel number or name
 - `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
@@ -2298,9 +2298,9 @@ Edit `eeg` electrode.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_edit_electrode(eeg::NeuroJ.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+function eeg_edit_electrode(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
     eeg_new = deepcopy(eeg)
     channel = _get_channel_idx(eeg_labels(eeg_new), channel)
@@ -2332,7 +2332,7 @@ Edit `eeg` electrode.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{String, Int64}`: channel number or name
 - `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
 - `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
@@ -2345,7 +2345,7 @@ Edit `eeg` electrode.
 - `name::String=""`: channel name
 - `type::String=""`: channel type
 """
-function eeg_edit_electrode!(eeg::NeuroJ.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
+function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
     channel = _get_channel_idx(eeg_labels(eeg), channel)
 
@@ -2376,7 +2376,7 @@ Return locations of the `eeg` `channel` electrode.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`
 - `output::Bool=true`: print output if true
 
@@ -2392,7 +2392,7 @@ Named tuple containing:
 - `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
 - `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
-function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String}, output::Bool=true)
+function eeg_electrode_loc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, output::Bool=true)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
@@ -2436,7 +2436,7 @@ Swap channel locations x and y axes.
 
 # Returns
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
 function eeg_loc_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 

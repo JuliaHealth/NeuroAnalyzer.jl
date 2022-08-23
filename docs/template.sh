@@ -1,11 +1,11 @@
-echo "# NeuroJ.jl Documentation"
+echo "# NeuroAnalyzer.jl Documentation"
 echo ""
 echo "This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/)."
 echo ""
-echo "## NeuroJ"
+echo "## NeuroAnalyzer"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/neuroj.jl | grep ^function | sed s/"function "//g
+cat ../src/NeuroAnalyzer.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
 echo "## Low-level functions"

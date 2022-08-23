@@ -1,12 +1,12 @@
-export neuroj_plugin_demo
+export NeuroAnalyzer_plugin_demo
 
 """
-    neuroj_plugin_demo()
+    NeuroAnalyzer_plugin_demo()
 
 Plugin example.
 """
-function neuroj_plugin_demo()
-    println("This is an example of NeuroJ plugin.")
+function NeuroAnalyzer_plugin_demo()
+    println("This is an example of NeuroAnalyzer plugin.")
     
     return nothing
 end

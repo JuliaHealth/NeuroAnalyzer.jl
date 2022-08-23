@@ -1,4 +1,4 @@
-using NeuroJ
+using NeuroAnalyzer
 using Plots
 using GLMakie
 using Test

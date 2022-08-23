@@ -1313,7 +1313,7 @@ Perform piecewise detrending of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol`, optional
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`

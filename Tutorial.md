@@ -1,6 +1,6 @@
 # Neuro.jl Tutorial
 
-## Start NeuroJ.jl
+## Start NeuroAnalyzer.jl
 
 For interactive processing it's best to use Pluto:
 ```julia
@@ -10,12 +10,12 @@ Pluto.run()
 
 Load package:
 ```julia
-using NeuroJ
+using NeuroAnalyzer
 ```
 
 Show version (for reproducibility):
 ```julia
-neuroj_version()
+NeuroAnalyzer_version()
 ```
 
 Get help:
@@ -949,13 +949,13 @@ eeg_component(edf, c=:epochs_mean)
 eeg_info(edf)
 ```
 
-# NeuroJ.jl Benchmarking
+# NeuroAnalyzer.jl Benchmarking
 
 ```julia
 using BenchmarkTools
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
-function neuroj_benchmark()
+function NeuroAnalyzer_benchmark()
     e10 = nothing
     e10 = eeg_reference_car(edf);
     e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf));
@@ -969,9 +969,9 @@ function neuroj_benchmark()
 end
 
 # run benchmark
-@benchmarkable neuroj_benchmark() evals=5 samples=1
+@benchmarkable NeuroAnalyzer_benchmark() evals=5 samples=1
 run(b)
-@time neuroj_benchmark();
+@time NeuroAnalyzer_benchmark();
 ```
 
 Results Julia 1.8.0: workstation (use_cuda=false):

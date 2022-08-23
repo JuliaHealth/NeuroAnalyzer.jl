@@ -1,14 +1,14 @@
-![neuroj](images/neuroj.png)
+![NeuroAnalyzer](images/neuroanalyzer.png)
 
 Welcome fellow researcher!
 
-NeuroJ.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
+NeuroAnalyzer.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
-NeuroJ.jl contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroJ.jl functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroJ.jl particularly useful for processing large amounts of research data.
+NeuroAnalyzer.jl contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer.jl functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer.jl particularly useful for processing large amounts of research data.
 
-NeuroJ.jl is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
+NeuroAnalyzer.jl is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 
-Currently NeuroJ.jl is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
+Currently NeuroAnalyzer.jl is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
@@ -16,30 +16,30 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 First, download [Julia](https://julialang.org/downloads/) 1.0 or later. 
 
-There are two branches of NeuroJ.jl:
-- [stable](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/master): released once per month, recommended for research tasks
-- [devel](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/branch/dev): a rolling release for NeuroJ.jl developers, not for production use
+There are two branches of NeuroAnalyzer.jl:
+- [stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master): released once per month, recommended for research tasks
+- [devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/dev): a rolling release for NeuroAnalyzer.jl developers, not for production use
 
-You can add NeuroJ.jl using Julia package manager, by typing:
+You can add NeuroAnalyzer.jl using Julia package manager, by typing:
 
 ```Julia
 using Pkg
 Pkg.update()
 Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 # for master branch:
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl#master")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#master")
 # for development branch:
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroJ.jl#devel")
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
 # activate the package
-using NeuroJ
+using NeuroAnalyzer
 # check if correctly installed
-neuroj_version()
+NeuroAnalyzer_version()
 ```
 
 Another option is to initialize a new Julia environment for the package:
 ```shell
-git clone https://codeberg.org/AdamWysokinski/NeuroJ.jl
-cd NeuroJ.jl
+git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
+cd NeuroAnalyzer.jl
 ```
 
 Next, start Julia and do the following:
@@ -51,14 +51,14 @@ Pkg.resolve()
 Pkg.instantiate()
 Pkg.update()
 # activate the package
-using NeuroJ
-# check if NeuroJ has been correctly installed
-neuroj_version()
+using NeuroAnalyzer
+# check if NeuroAnalyzer has been correctly installed
+NeuroAnalyzer_version()
 ```
 
 ## Requirements
 
-Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroJ.jl is only tested against it.
+Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroAnalyzer.jl is only tested against it.
 
 The following packages are required:
 - CSV
@@ -92,13 +92,13 @@ The following packages are required:
 - StatsPlots
 - Wavelets
 
-Wherever possible, NeuroJ.jl will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
+Wherever possible, NeuroAnalyzer.jl will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
 
 ## General remarks
 
-NeuroJ.jl functions operate on NeuroJ objects.
+NeuroAnalyzer.jl functions operate on NeuroAnalyzer objects.
 
-For EEG this is NeuroJ.EEG (EEG metadata header + time + epoched signals + components). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
+For EEG this is NeuroAnalyzer.EEG (EEG metadata header + time + epoched signals + components). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
 Functions name prefix:
 - `eeg_` functions taking EEG object as an argument
@@ -106,7 +106,7 @@ Functions name prefix:
 
 There are also low level functions operating on single-/multi-channel signal vector/matrix/array (`s_` and `s2_`).
 
-The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroJ.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array).
+The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroAnalyzer.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array).
 
 `eeg_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
@@ -123,33 +123,33 @@ end
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
-For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable `use_cuda` to false in the NeurojJ.jl file.
+For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable `use_cuda` to false in the NeuroAnalyzerJ.jl file.
 
 ## Documentation
 
-Complete NeuroJ.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Documentation.md).
+Complete NeuroAnalyzer.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md).
 
-Tutorial introducing NeuroJ.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Tutorial.md).
+Tutorial introducing NeuroAnalyzer.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md).
 
-Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Changelog.md).
+Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
 
 ## Plugins (extensions)
 
-Plugins are git repositories, default location is `~/Documents/NeuroJ/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeurojJ.jl file.
+Plugins are git repositories, default location is `~/Documents/NeuroAnalyzer/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeuroAnalyzerJ.jl file.
 
-Run `neuroj_reload_plugins()` to refresh plugins.
+Run `NeuroAnalyzer_reload_plugins()` to refresh plugins.
 
 ```julia
-neuroj_plugins_reload()
-neuroj_plugins_list()
-neuroj_plugins_add()
-neuroj_plugins_remove()
-neuroj_plugins_update()
+NeuroAnalyzer_plugins_reload()
+NeuroAnalyzer_plugins_list()
+NeuroAnalyzer_plugins_add()
+NeuroAnalyzer_plugins_remove()
+NeuroAnalyzer_plugins_update()
 ```
 
 ## Known bugs
 
-- ignore non-eeg channels for processing, analysis and plotting; currently NeuroJ does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
+- ignore non-eeg channels for processing, analysis and plotting; currently NeuroAnalyzer does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
 - check for wrong epoch number in plots
 
 ## What's next

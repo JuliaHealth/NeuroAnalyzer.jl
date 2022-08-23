@@ -14,21 +14,21 @@ _xticks(t::Vector{<:Real}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1]))
 
 _pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
 
-function _check_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     nothing
 end
 
-function _check_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
     nothing
 end
 
-function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64=0)
+function _select_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64=0)
     # select channels, default is all or def_chn
     def_chn > eeg_channel_n(eeg) && (def_chn = eeg_channel_n(eeg))
     def_chn == 0 && (def_chn = eeg_channel_n(eeg))
@@ -38,7 +38,7 @@ function _select_channels(eeg::NeuroJ.EEG, channel::Union{Int64, Vector{Int64}, 
     return channel
 end
 
-function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange}, def_ep::Int64=0)
+function _select_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange}, def_ep::Int64=0)
     # select epochs, default is all or def_ep
     def_ep > eeg_epoch_n(eeg) && (def_ep = eeg_epoch_n(eeg))
     def_ep == 0 && (def_ep = eeg_epoch_n(eeg))
@@ -48,7 +48,7 @@ function _select_epochs(eeg::NeuroJ.EEG, epoch::Union{Int64, Vector{Int64}, Abst
     return epoch
 end
 
-function _select_cidx(eeg::NeuroJ.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
+function _select_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
     c, _ = _get_component(eeg, c)
     # select channels, default is all or def_cidx
     def_cidx > size(c, 1) && (def_cidx = size(c, 1))
@@ -62,14 +62,14 @@ function _select_cidx(eeg::NeuroJ.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int
     return c_idx
 end
 
-function _get_component(eeg::NeuroJ.EEG, c::Symbol)
+function _get_component(eeg::NeuroAnalyzer.EEG, c::Symbol)
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c not found."))
     c_idx = findfirst(isequal(c), eeg.eeg_header[:components])
     c = eeg.eeg_components[c_idx]
     return (c=c, c_idx=c_idx)
 end
 
-function _len(eeg::NeuroJ.EEG, len::Int64, def_l::Int64)
+function _len(eeg::NeuroAnalyzer.EEG, len::Int64, def_l::Int64)
     # return default length: one epoch (if epoch_len_seconds < def_l) or def_l seconds
     if len == 0
         if eeg_epoch_len(eeg) > def_l * eeg_sr(eeg)
@@ -121,7 +121,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     return p
 end
 
-function _check_epochs(eeg::NeuroJ.EEG, epoch)
+function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch)
     epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
@@ -129,7 +129,7 @@ function _check_epochs(eeg::NeuroJ.EEG, epoch)
     nothing
 end
 
-function _get_epoch_markers(eeg::NeuroJ.EEG, offset, len)
+function _get_epoch_markers(eeg::NeuroAnalyzer.EEG, offset, len)
     # get epochs markers for len > epoch_len
     epoch_markers = Vector{Int64}[]
     if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
@@ -146,7 +146,7 @@ function _get_epoch_markers(eeg::NeuroJ.EEG, offset, len)
     return eeg_tmp, epoch_markers
 end
 
-function _get_t(eeg::NeuroJ.EEG, offset, len)
+function _get_t(eeg::NeuroAnalyzer.EEG, offset, len)
     t = collect(0:(1 / eeg_sr(eeg)):(len / eeg_sr(eeg)))
     t = t .+ (offset / eeg_sr(eeg))
     t = t[1:(end - 1)]
@@ -155,7 +155,7 @@ function _get_t(eeg::NeuroJ.EEG, offset, len)
     return t
 end
 
-function _check_offset_len(eeg::NeuroJ.EEG, offset, len)
+function _check_offset_len(eeg::NeuroAnalyzer.EEG, offset, len)
     (offset < 0 || offset > eeg_epoch_len(eeg)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg))."))
     (offset + len > eeg_epoch_len(eeg)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg))."))
     nothing
@@ -171,14 +171,14 @@ function _convert_t(t)
     return t_1, t_s1, t_2, t_s2
 end
 
-function _check_channels(eeg::NeuroJ.EEG, channel)
+function _check_channels(eeg::NeuroAnalyzer.EEG, channel)
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
     nothing
 end
 
-function _check_cidx(eeg::NeuroJ.EEG, c::Symbol, c_idx)
+function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx)
     c, _ = _get_component(eeg, c)
     for idx in 1:length(c_idx)
         (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
@@ -206,7 +206,7 @@ function _channel2channel_name(channel)
     return channel_name
 end
 
-function _t2epoch(eeg::NeuroJ.EEG, offset, len, epoch_tmp)
+function _t2epoch(eeg::NeuroAnalyzer.EEG, offset, len, epoch_tmp)
     if (1 + offset) > eeg_epoch_len(eeg)
         if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
             (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))

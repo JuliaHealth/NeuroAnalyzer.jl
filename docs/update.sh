@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo
-echo "Generating NeuroJ Markdown documentation.."
+echo "Generating NeuroAnalyzer Markdown documentation.."
 echo
 
 echo "Delete old data"

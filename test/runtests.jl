@@ -1,4 +1,4 @@
-using NeuroJ
+using NeuroAnalyzer
 using Test
 
 @testset "runtests.jl" begin

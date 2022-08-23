@@ -1,4 +1,4 @@
-using NeuroJ
+using NeuroAnalyzer
 using Test
 
 edf = eeg_import_edf("eeg-test-edf.edf")

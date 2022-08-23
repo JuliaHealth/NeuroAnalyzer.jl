@@ -1,9 +1,9 @@
-module NeuroJ
+module NeuroAnalyzer
 
-const neuroj_ver = v"0.22.8"
+const NeuroAnalyzer_ver = v"0.22.8"
 
 if VERSION < v"1.7.0"
-    @error("This version of NeuroJ requires Julia 1.7.0 or above.")
+    @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
 end
 
 using ColorSchemes
@@ -49,21 +49,21 @@ mutable struct EEG
 end
 
 # preferences
-const plugins_path = "~/Documents/NeuroJ/plugins/"
+const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
 const use_cuda = true
 
-include("neuroj.jl")
-export neuroj_version
-export neuroj_plugins_reload
-export neuroj_plugins_list
-export neuroj_plugins_remove
-export neuroj_plugins_install
-export neuroj_plugins_update
-export neuroj_use_cuda
-export neuroj_plugins_path
+include("NeuroAnalyzer.jl")
+export NeuroAnalyzer_version
+export NeuroAnalyzer_plugins_reload
+export NeuroAnalyzer_plugins_list
+export NeuroAnalyzer_plugins_remove
+export NeuroAnalyzer_plugins_install
+export NeuroAnalyzer_plugins_update
+export NeuroAnalyzer_use_cuda
+export NeuroAnalyzer_plugins_path
 
 # reload plugins
-neuroj_plugins_reload()
+NeuroAnalyzer_plugins_reload()
 
 include("internal.jl")
 

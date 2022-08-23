@@ -1,4 +1,4 @@
-# NeuroJ.jl major changes
+# NeuroAnalyzer.jl major changes
 
 ## v0.22.8 (01/08/2022)
 
@@ -13,6 +13,6 @@
 
 # Git commits
 
-[Master branch](https://codeberg.org/AdamWysokinski/NeuroJ.jl/commits/branch/master)
+[Master branch](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/commits/branch/master)
 
-[Dev branch](https://codeberg.org/AdamWysokinski/NeuroJ.jl/commits/branch/dev)
+[Dev branch](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/commits/branch/dev)

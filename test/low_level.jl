@@ -1,4 +1,4 @@
-using NeuroJ
+using NeuroAnalyzer
 using Test
 
 @test linspace(1, 10, 10) == 1.0:10.0

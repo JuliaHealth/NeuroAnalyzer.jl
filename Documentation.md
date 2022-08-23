@@ -1,93 +1,93 @@
 
-<a id='NeuroJ.jl-Documentation'></a>
+<a id='NeuroAnalyzer.jl-Documentation'></a>
 
-<a id='NeuroJ.jl-Documentation-1'></a>
+<a id='NeuroAnalyzer.jl-Documentation-1'></a>
 
-# NeuroJ.jl Documentation
+# NeuroAnalyzer.jl Documentation
 
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
 
 
-<a id='NeuroJ'></a>
+<a id='NeuroAnalyzer'></a>
 
-<a id='NeuroJ-1'></a>
+<a id='NeuroAnalyzer-1'></a>
 
-## NeuroJ
+## NeuroAnalyzer
 
-<a id='NeuroJ.neuroj_version-Tuple{}' href='#NeuroJ.neuroj_version-Tuple{}'>#</a>
-**`NeuroJ.neuroj_version`** &mdash; *Method*.
-
-
-
-```julia
-neuroj_version()
-```
-
-Show NeuroJ and imported packages versions.
-
-<a id='NeuroJ.neuroj_plugins_reload-Tuple{}' href='#NeuroJ.neuroj_plugins_reload-Tuple{}'>#</a>
-**`NeuroJ.neuroj_plugins_reload`** &mdash; *Method*.
+<a id='NeuroAnalyzer.NeuroAnalyzer_version-Tuple{}' href='#NeuroAnalyzer.NeuroAnalyzer_version-Tuple{}'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_version`** &mdash; *Method*.
 
 
 
 ```julia
-neuroj_plugins_reload()
+NeuroAnalyzer_version()
 ```
 
-Reload NeuroJ plugins.
+Show NeuroAnalyzer and imported packages versions.
 
-<a id='NeuroJ.neuroj_plugins_list-Tuple{}' href='#NeuroJ.neuroj_plugins_list-Tuple{}'>#</a>
-**`NeuroJ.neuroj_plugins_list`** &mdash; *Method*.
+<a id='NeuroAnalyzer.NeuroAnalyzer_plugins_reload-Tuple{}' href='#NeuroAnalyzer.NeuroAnalyzer_plugins_reload-Tuple{}'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_plugins_reload`** &mdash; *Method*.
 
 
 
 ```julia
-neuroj_plugins_list()
+NeuroAnalyzer_plugins_reload()
 ```
 
-List NeuroJ plugins.
+Reload NeuroAnalyzer plugins.
 
-<a id='NeuroJ.neuroj_plugins_remove-Tuple{String}' href='#NeuroJ.neuroj_plugins_remove-Tuple{String}'>#</a>
-**`NeuroJ.neuroj_plugins_remove`** &mdash; *Method*.
+<a id='NeuroAnalyzer.NeuroAnalyzer_plugins_list-Tuple{}' href='#NeuroAnalyzer.NeuroAnalyzer_plugins_list-Tuple{}'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_plugins_list`** &mdash; *Method*.
 
 
 
 ```julia
-neuroj_plugins_remove(plugin)
+NeuroAnalyzer_plugins_list()
 ```
 
-Remove NeuroJ `plugin`.
+List NeuroAnalyzer plugins.
+
+<a id='NeuroAnalyzer.NeuroAnalyzer_plugins_remove-Tuple{String}' href='#NeuroAnalyzer.NeuroAnalyzer_plugins_remove-Tuple{String}'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_plugins_remove`** &mdash; *Method*.
+
+
+
+```julia
+NeuroAnalyzer_plugins_remove(plugin)
+```
+
+Remove NeuroAnalyzer `plugin`.
 
 **Attributes**
 
   * `plugin::String`: plugin name
 
-<a id='NeuroJ.neuroj_plugins_install-Tuple{String}' href='#NeuroJ.neuroj_plugins_install-Tuple{String}'>#</a>
-**`NeuroJ.neuroj_plugins_install`** &mdash; *Method*.
+<a id='NeuroAnalyzer.NeuroAnalyzer_plugins_install-Tuple{String}' href='#NeuroAnalyzer.NeuroAnalyzer_plugins_install-Tuple{String}'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_plugins_install`** &mdash; *Method*.
 
 
 
 ```julia
-neuroj_plugins_install(plugin)
+NeuroAnalyzer_plugins_install(plugin)
 ```
 
-Install NeuroJ `plugin`.
+Install NeuroAnalyzer `plugin`.
 
 **Attributes**
 
   * `plugin::String`: plugin Git repository URL
 
-<a id='NeuroJ.neuroj_plugins_update' href='#NeuroJ.neuroj_plugins_update'>#</a>
-**`NeuroJ.neuroj_plugins_update`** &mdash; *Function*.
+<a id='NeuroAnalyzer.NeuroAnalyzer_plugins_update' href='#NeuroAnalyzer.NeuroAnalyzer_plugins_update'>#</a>
+**`NeuroAnalyzer.NeuroAnalyzer_plugins_update`** &mdash; *Function*.
 
 
 
 ```julia
-neuroj_plugins_update(plugin)
+NeuroAnalyzer_plugins_update(plugin)
 ```
 
-Install NeuroJ `plugin`.
+Install NeuroAnalyzer `plugin`.
 
 **Attributes**
 
@@ -100,8 +100,8 @@ Install NeuroJ `plugin`.
 
 ## Low-level functions
 
-<a id='NeuroJ.linspace-Tuple{Real, Real, Int64}' href='#NeuroJ.linspace-Tuple{Real, Real, Int64}'>#</a>
-**`NeuroJ.linspace`** &mdash; *Method*.
+<a id='NeuroAnalyzer.linspace-Tuple{Real, Real, Int64}' href='#NeuroAnalyzer.linspace-Tuple{Real, Real, Int64}'>#</a>
+**`NeuroAnalyzer.linspace`** &mdash; *Method*.
 
 
 
@@ -121,8 +121,8 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 
   * `range::Number`
 
-<a id='NeuroJ.logspace-Tuple{Real, Real, Int64}' href='#NeuroJ.logspace-Tuple{Real, Real, Int64}'>#</a>
-**`NeuroJ.logspace`** &mdash; *Method*.
+<a id='NeuroAnalyzer.logspace-Tuple{Real, Real, Int64}' href='#NeuroAnalyzer.logspace-Tuple{Real, Real, Int64}'>#</a>
+**`NeuroAnalyzer.logspace`** &mdash; *Method*.
 
 
 
@@ -142,8 +142,8 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 
   * `range::Number`
 
-<a id='NeuroJ.m_pad0-Tuple{Matrix{<:Number}}' href='#NeuroJ.m_pad0-Tuple{Matrix{<:Number}}'>#</a>
-**`NeuroJ.m_pad0`** &mdash; *Method*.
+<a id='NeuroAnalyzer.m_pad0-Tuple{Matrix{<:Number}}' href='#NeuroAnalyzer.m_pad0-Tuple{Matrix{<:Number}}'>#</a>
+**`NeuroAnalyzer.m_pad0`** &mdash; *Method*.
 
 
 
@@ -161,8 +161,8 @@ Pad the matrix `m` with zeros to make it square.
 
   * `m::Matrix{Number}`
 
-<a id='NeuroJ.vsearch-Tuple{Real, AbstractVector}' href='#NeuroJ.vsearch-Tuple{Real, AbstractVector}'>#</a>
-**`NeuroJ.vsearch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.vsearch-Tuple{Real, AbstractVector}' href='#NeuroAnalyzer.vsearch-Tuple{Real, AbstractVector}'>#</a>
+**`NeuroAnalyzer.vsearch`** &mdash; *Method*.
 
 
 
@@ -184,8 +184,8 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 -`y_dist::Real`
 
-<a id='NeuroJ.vsearch-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.vsearch-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroJ.vsearch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.vsearch`** &mdash; *Method*.
 
 
 
@@ -206,8 +206,8 @@ Return the positions of the `y` vector in the vector `x`.
   * `y_idx::Int64`
   * `y_dist::Real`
 
-<a id='NeuroJ.cart2pol-Tuple{Real, Real}' href='#NeuroJ.cart2pol-Tuple{Real, Real}'>#</a>
-**`NeuroJ.cart2pol`** &mdash; *Method*.
+<a id='NeuroAnalyzer.cart2pol-Tuple{Real, Real}' href='#NeuroAnalyzer.cart2pol-Tuple{Real, Real}'>#</a>
+**`NeuroAnalyzer.cart2pol`** &mdash; *Method*.
 
 
 
@@ -227,8 +227,8 @@ Convert cartographic coordinates `x` and `y` to polar.
   * `radius::Float64`
   * `theta::Float64`
 
-<a id='NeuroJ.pol2cart-Tuple{Real, Real}' href='#NeuroJ.pol2cart-Tuple{Real, Real}'>#</a>
-**`NeuroJ.pol2cart`** &mdash; *Method*.
+<a id='NeuroAnalyzer.pol2cart-Tuple{Real, Real}' href='#NeuroAnalyzer.pol2cart-Tuple{Real, Real}'>#</a>
+**`NeuroAnalyzer.pol2cart`** &mdash; *Method*.
 
 
 
@@ -248,8 +248,8 @@ Convert polar coordinates `radius` and `theta` to cartographic.
   * `x::Float64`
   * `y::Float64`
 
-<a id='NeuroJ.sph2cart-Tuple{Real, Real, Real}' href='#NeuroJ.sph2cart-Tuple{Real, Real, Real}'>#</a>
-**`NeuroJ.sph2cart`** &mdash; *Method*.
+<a id='NeuroAnalyzer.sph2cart-Tuple{Real, Real, Real}' href='#NeuroAnalyzer.sph2cart-Tuple{Real, Real, Real}'>#</a>
+**`NeuroAnalyzer.sph2cart`** &mdash; *Method*.
 
 
 
@@ -271,8 +271,8 @@ Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
   * `y::Float64`
   * `z::Float64`
 
-<a id='NeuroJ.cart2sph-Tuple{Real, Real, Real}' href='#NeuroJ.cart2sph-Tuple{Real, Real, Real}'>#</a>
-**`NeuroJ.cart2sph`** &mdash; *Method*.
+<a id='NeuroAnalyzer.cart2sph-Tuple{Real, Real, Real}' href='#NeuroAnalyzer.cart2sph-Tuple{Real, Real, Real}'>#</a>
+**`NeuroAnalyzer.cart2sph`** &mdash; *Method*.
 
 
 
@@ -294,8 +294,8 @@ Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
   * `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
   * `phi::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
-<a id='NeuroJ.generate_window-Tuple{Symbol, Int64}' href='#NeuroJ.generate_window-Tuple{Symbol, Int64}'>#</a>
-**`NeuroJ.generate_window`** &mdash; *Method*.
+<a id='NeuroAnalyzer.generate_window-Tuple{Symbol, Int64}' href='#NeuroAnalyzer.generate_window-Tuple{Symbol, Int64}'>#</a>
+**`NeuroAnalyzer.generate_window`** &mdash; *Method*.
 
 
 
@@ -324,8 +324,8 @@ Return the `n`-point long symmetric window `type`.
 
   * `w::Vector{Float64}`:: generated window
 
-<a id='NeuroJ.fft0' href='#NeuroJ.fft0'>#</a>
-**`NeuroJ.fft0`** &mdash; *Function*.
+<a id='NeuroAnalyzer.fft0' href='#NeuroAnalyzer.fft0'>#</a>
+**`NeuroAnalyzer.fft0`** &mdash; *Function*.
 
 
 
@@ -344,8 +344,8 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 
   * `fft0::Vector{ComplexF64}`
 
-<a id='NeuroJ.ifft0' href='#NeuroJ.ifft0'>#</a>
-**`NeuroJ.ifft0`** &mdash; *Function*.
+<a id='NeuroAnalyzer.ifft0' href='#NeuroAnalyzer.ifft0'>#</a>
+**`NeuroAnalyzer.ifft0`** &mdash; *Function*.
 
 
 
@@ -364,8 +364,8 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 
   * `ifft0::Vector{ComplexF64}`
 
-<a id='NeuroJ.nextpow2-Tuple{Int64}' href='#NeuroJ.nextpow2-Tuple{Int64}'>#</a>
-**`NeuroJ.nextpow2`** &mdash; *Method*.
+<a id='NeuroAnalyzer.nextpow2-Tuple{Int64}' href='#NeuroAnalyzer.nextpow2-Tuple{Int64}'>#</a>
+**`NeuroAnalyzer.nextpow2`** &mdash; *Method*.
 
 
 
@@ -383,8 +383,8 @@ Return the next power of 2 for given number `x`.
 
   * `nextpow::Int64`
 
-<a id='NeuroJ.vsplit' href='#NeuroJ.vsplit'>#</a>
-**`NeuroJ.vsplit`** &mdash; *Function*.
+<a id='NeuroAnalyzer.vsplit' href='#NeuroAnalyzer.vsplit'>#</a>
+**`NeuroAnalyzer.vsplit`** &mdash; *Function*.
 
 
 
@@ -403,8 +403,8 @@ Splits the vector `x` into `n`-long pieces.
 
   * `x::Vector{AbstractVector}`
 
-<a id='NeuroJ.s_rms-Tuple{AbstractVector}' href='#NeuroJ.s_rms-Tuple{AbstractVector}'>#</a>
-**`NeuroJ.s_rms`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_rms-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_rms-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_rms`** &mdash; *Method*.
 
 
 
@@ -422,8 +422,8 @@ Calculate Root Mean Square of `signal`.
 
   * rms::Float64`
 
-<a id='NeuroJ.generate_sine' href='#NeuroJ.generate_sine'>#</a>
-**`NeuroJ.generate_sine`** &mdash; *Function*.
+<a id='NeuroAnalyzer.generate_sine' href='#NeuroAnalyzer.generate_sine'>#</a>
+**`NeuroAnalyzer.generate_sine`** &mdash; *Function*.
 
 
 
@@ -444,8 +444,8 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
   * sine::Vector{Float64}`
 
-<a id='NeuroJ.s_freqs-Tuple{AbstractVector}' href='#NeuroJ.s_freqs-Tuple{AbstractVector}'>#</a>
-**`NeuroJ.s_freqs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_freqs-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_freqs-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_freqs`** &mdash; *Method*.
 
 
 
@@ -464,8 +464,8 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
   * `hz::Vector{Float64}`
   * `nyquist_freq::Float64`
 
-<a id='NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}' href='#NeuroJ.s_freqs-Tuple{Vector{Float64}, Real}'>#</a>
-**`NeuroJ.s_freqs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Real}' href='#NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Real}'>#</a>
+**`NeuroAnalyzer.s_freqs`** &mdash; *Method*.
 
 
 
@@ -485,8 +485,8 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
   * `hz::Vector{Float64`
   * `nyquist_freq::Float64`
 
-<a id='NeuroJ.m_sortperm-Tuple{Matrix}' href='#NeuroJ.m_sortperm-Tuple{Matrix}'>#</a>
-**`NeuroJ.m_sortperm`** &mdash; *Method*.
+<a id='NeuroAnalyzer.m_sortperm-Tuple{Matrix}' href='#NeuroAnalyzer.m_sortperm-Tuple{Matrix}'>#</a>
+**`NeuroAnalyzer.m_sortperm`** &mdash; *Method*.
 
 
 
@@ -506,8 +506,8 @@ Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims
 
   * `m_idx::Matrix{Int64}`
 
-<a id='NeuroJ.m_sort-Tuple{Matrix, Vector{Int64}}' href='#NeuroJ.m_sort-Tuple{Matrix, Vector{Int64}}'>#</a>
-**`NeuroJ.m_sort`** &mdash; *Method*.
+<a id='NeuroAnalyzer.m_sort-Tuple{Matrix, Vector{Int64}}' href='#NeuroAnalyzer.m_sort-Tuple{Matrix, Vector{Int64}}'>#</a>
+**`NeuroAnalyzer.m_sort`** &mdash; *Method*.
 
 
 
@@ -528,8 +528,8 @@ Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows 
 
   * `m_sorted::Matrix`
 
-<a id='NeuroJ.pad0' href='#NeuroJ.pad0'>#</a>
-**`NeuroJ.pad0`** &mdash; *Function*.
+<a id='NeuroAnalyzer.pad0' href='#NeuroAnalyzer.pad0'>#</a>
+**`NeuroAnalyzer.pad0`** &mdash; *Function*.
 
 
 
@@ -549,8 +549,8 @@ Pad the vector `x` with `n` zeros.
 
   * `v_pad::AbstractVector`
 
-<a id='NeuroJ.hz2rads-Tuple{Real}' href='#NeuroJ.hz2rads-Tuple{Real}'>#</a>
-**`NeuroJ.hz2rads`** &mdash; *Method*.
+<a id='NeuroAnalyzer.hz2rads-Tuple{Real}' href='#NeuroAnalyzer.hz2rads-Tuple{Real}'>#</a>
+**`NeuroAnalyzer.hz2rads`** &mdash; *Method*.
 
 
 
@@ -568,8 +568,8 @@ Convert frequency `f` in Hz to rad/s.
 
   * `f_rads::Float64`
 
-<a id='NeuroJ.rads2hz-Tuple{Real}' href='#NeuroJ.rads2hz-Tuple{Real}'>#</a>
-**`NeuroJ.rads2hz`** &mdash; *Method*.
+<a id='NeuroAnalyzer.rads2hz-Tuple{Real}' href='#NeuroAnalyzer.rads2hz-Tuple{Real}'>#</a>
+**`NeuroAnalyzer.rads2hz`** &mdash; *Method*.
 
 
 
@@ -587,8 +587,8 @@ Convert frequency `f` in rad/s to Hz.
 
   * `f_rads::Float64`
 
-<a id='NeuroJ.cmax-Tuple{Vector{ComplexF64}}' href='#NeuroJ.cmax-Tuple{Vector{ComplexF64}}'>#</a>
-**`NeuroJ.cmax`** &mdash; *Method*.
+<a id='NeuroAnalyzer.cmax-Tuple{Vector{ComplexF64}}' href='#NeuroAnalyzer.cmax-Tuple{Vector{ComplexF64}}'>#</a>
+**`NeuroAnalyzer.cmax`** &mdash; *Method*.
 
 
 
@@ -606,8 +606,8 @@ Return maximum value of the complex vector`x`.
 
   * `cmax::ComplexF64`
 
-<a id='NeuroJ.cmin-Tuple{Vector{ComplexF64}}' href='#NeuroJ.cmin-Tuple{Vector{ComplexF64}}'>#</a>
-**`NeuroJ.cmin`** &mdash; *Method*.
+<a id='NeuroAnalyzer.cmin-Tuple{Vector{ComplexF64}}' href='#NeuroAnalyzer.cmin-Tuple{Vector{ComplexF64}}'>#</a>
+**`NeuroAnalyzer.cmin`** &mdash; *Method*.
 
 
 
@@ -625,8 +625,8 @@ Return minimum value of the complex vector`x`.
 
   * `cmin::ComplexF64`
 
-<a id='NeuroJ.generate_sinc' href='#NeuroJ.generate_sinc'>#</a>
-**`NeuroJ.generate_sinc`** &mdash; *Function*.
+<a id='NeuroAnalyzer.generate_sinc' href='#NeuroAnalyzer.generate_sinc'>#</a>
+**`NeuroAnalyzer.generate_sinc`** &mdash; *Function*.
 
 
 
@@ -647,8 +647,8 @@ Generate normalized or unnormalized sinc function.
 
   * `sinc::Vector{Float64}`
 
-<a id='NeuroJ.generate_morlet' href='#NeuroJ.generate_morlet'>#</a>
-**`NeuroJ.generate_morlet`** &mdash; *Function*.
+<a id='NeuroAnalyzer.generate_morlet' href='#NeuroAnalyzer.generate_morlet'>#</a>
+**`NeuroAnalyzer.generate_morlet`** &mdash; *Function*.
 
 
 
@@ -670,8 +670,8 @@ Generate Morlet wavelet.
 
   * `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 
-<a id='NeuroJ.generate_gaussian' href='#NeuroJ.generate_gaussian'>#</a>
-**`NeuroJ.generate_gaussian`** &mdash; *Function*.
+<a id='NeuroAnalyzer.generate_gaussian' href='#NeuroAnalyzer.generate_gaussian'>#</a>
+**`NeuroAnalyzer.generate_gaussian`** &mdash; *Function*.
 
 
 
@@ -693,8 +693,8 @@ Generate Gaussian wave.
 
   * `gaussian::Vector{Float64}`
 
-<a id='NeuroJ.tuple_order' href='#NeuroJ.tuple_order'>#</a>
-**`NeuroJ.tuple_order`** &mdash; *Function*.
+<a id='NeuroAnalyzer.tuple_order' href='#NeuroAnalyzer.tuple_order'>#</a>
+**`NeuroAnalyzer.tuple_order`** &mdash; *Function*.
 
 
 
@@ -713,8 +713,8 @@ Order tuple elements in ascending or descending (rev=true) order.
 
   * `t::Tuple{Real, Real}`
 
-<a id='NeuroJ.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
-**`NeuroJ.s2_rmse`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s2_rmse`** &mdash; *Method*.
 
 
 
@@ -733,8 +733,8 @@ Calculate RMSE between `signal1` and `signal2`.
 
   * `r::Float64`
 
-<a id='NeuroJ.m_norm-Tuple{Array{Float64, 3}}' href='#NeuroJ.m_norm-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.m_norm`** &mdash; *Method*.
+<a id='NeuroAnalyzer.m_norm-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.m_norm-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.m_norm`** &mdash; *Method*.
 
 
 
@@ -752,8 +752,8 @@ Normalize matrix `m`.
 
   * `m_norm::Matrix{Float64}`
 
-<a id='NeuroJ.s_cov-Tuple{AbstractArray}' href='#NeuroJ.s_cov-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_cov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_cov-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cov-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_cov`** &mdash; *Method*.
 
 
 
@@ -770,8 +770,8 @@ Calculate covariance between all channels of the `signal`.
 
   * `cov_mat::Matrix{Float64}`
 
-<a id='NeuroJ.s2_cov-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_cov-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_cov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_cov-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_cov-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_cov`** &mdash; *Method*.
 
 
 
@@ -789,8 +789,8 @@ Calculate covariance between `signal1` and `signal2`.
 
   * `cov_mat::Matrix{Float64}`
 
-<a id='NeuroJ.s_dft-Tuple{AbstractArray}' href='#NeuroJ.s_dft-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_dft`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_dft-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_dft-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_dft`** &mdash; *Method*.
 
 
 
@@ -812,8 +812,8 @@ Named tuple containing:
   * `s_fft::Vector{ComplexF64}`
   * `s_sf::Vector{Float64}`
 
-<a id='NeuroJ.s_msci95-Tuple{Vector{Float64}}' href='#NeuroJ.s_msci95-Tuple{Vector{Float64}}'>#</a>
-**`NeuroJ.s_msci95`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_msci95-Tuple{Vector{Float64}}' href='#NeuroAnalyzer.s_msci95-Tuple{Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s_msci95`** &mdash; *Method*.
 
 
 
@@ -834,8 +834,8 @@ Calculate mean, std and 95% confidence interval for `signal`.
   * `s_u::Float64`: upper 95% CI
   * `s_l::Float64`: lower 95% CI
 
-<a id='NeuroJ.s_msci95-Tuple{AbstractArray}' href='#NeuroJ.s_msci95-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_msci95`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_msci95-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_msci95-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_msci95`** &mdash; *Method*.
 
 
 
@@ -858,8 +858,8 @@ Calculate mean, std and 95% confidence interval for each the `signal` channels.
   * `s_u::Vector{Float64}`: upper 95% CI
   * `s_l::Vector{Float64}`: lower 95% CI
 
-<a id='NeuroJ.s2_mean-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s2_mean-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
-**`NeuroJ.s2_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_mean-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s2_mean-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s2_mean`** &mdash; *Method*.
 
 
 
@@ -881,8 +881,8 @@ Calculate mean and 95% confidence interval for 2 signals.
   * `s_u::Float64`: upper 95% CI
   * `s_l::Float64`: lower 95% CI
 
-<a id='NeuroJ.s2_difference-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_difference-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_difference`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_difference-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_difference-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_difference`** &mdash; *Method*.
 
 
 
@@ -910,8 +910,8 @@ Named tuple containing:
   * `s_stat_single::Float64`
   * `p::Float64`
 
-<a id='NeuroJ.s_acov-Tuple{AbstractArray}' href='#NeuroJ.s_acov-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_acov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_acov-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_acov-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_acov`** &mdash; *Method*.
 
 
 
@@ -931,8 +931,8 @@ Calculate autocovariance of the `signal`.
   * `acov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroJ.s_xcov-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.s_xcov-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroJ.s_xcov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_xcov-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s_xcov-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_xcov`** &mdash; *Method*.
 
 
 
@@ -953,8 +953,8 @@ Calculate cross-covariance between `signal1` and `signal2`.
   * `ccov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroJ.s_spectrum-Tuple{AbstractArray}' href='#NeuroJ.s_spectrum-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_spectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_spectrum`** &mdash; *Method*.
 
 
 
@@ -978,8 +978,8 @@ Named tuple containing:
   * `s_powers::Vector{Float64}`
   * `s_phases::Vector{Float64}`
 
-<a id='NeuroJ.s_total_power-Tuple{AbstractArray}' href='#NeuroJ.s_total_power-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_total_power`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_total_power-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_total_power-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_total_power`** &mdash; *Method*.
 
 
 
@@ -999,8 +999,8 @@ Calculate `signal` total power.
 
   * `stp::Float64`: signal total power
 
-<a id='NeuroJ.s_band_power-Tuple{AbstractArray}' href='#NeuroJ.s_band_power-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_band_power`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_band_power-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_band_power-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_band_power`** &mdash; *Method*.
 
 
 
@@ -1020,8 +1020,8 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 
   * `sbp::Float64`: signal band power
 
-<a id='NeuroJ.s_taper-Tuple{AbstractArray}' href='#NeuroJ.s_taper-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_taper`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_taper-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_taper-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_taper`** &mdash; *Method*.
 
 
 
@@ -1040,8 +1040,8 @@ Taper the `signal` with `taper`.
 
   * `s_tapered::Vector{Union{Float64, ComplexF64}}`
 
-<a id='NeuroJ.s_detrend-Tuple{AbstractArray}' href='#NeuroJ.s_detrend-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_detrend`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detrend-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detrend-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_detrend`** &mdash; *Method*.
 
 
 
@@ -1053,7 +1053,7 @@ Perform piecewise detrending of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -1071,8 +1071,8 @@ Perform piecewise detrending of `eeg`.
 
   * `s_det::Vector{Float64}`
 
-<a id='NeuroJ.s_demean-Tuple{AbstractArray}' href='#NeuroJ.s_demean-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_demean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_demean-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_demean-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_demean`** &mdash; *Method*.
 
 
 
@@ -1090,8 +1090,8 @@ Remove mean value (DC offset) from the `signal`.
 
   * `s_demeaned::Vector{Float64}`
 
-<a id='NeuroJ.s_normalize_zscore-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_zscore-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_normalize_zscore`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_zscore-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_zscore-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_zscore`** &mdash; *Method*.
 
 
 
@@ -1109,8 +1109,8 @@ Normalize (by z-score) `signal`.
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroJ.s_normalize_minmax-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_minmax-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_normalize_minmax`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_minmax-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_minmax-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_minmax`** &mdash; *Method*.
 
 
 
@@ -1128,8 +1128,8 @@ Normalize `signal` in [-1, +1].
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroJ.s_normalize_max-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_max-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_normalize_max`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_max-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_max-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_max`** &mdash; *Method*.
 
 
 
@@ -1147,8 +1147,8 @@ Normalize `signal` in [0, +1].
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroJ.s_normalize_log-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_log-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_normalize_log`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_log-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_log-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_log`** &mdash; *Method*.
 
 
 
@@ -1166,8 +1166,8 @@ Normalize `signal` using log-transformation.
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroJ.s_add_noise-Tuple{AbstractArray}' href='#NeuroJ.s_add_noise-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_add_noise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_add_noise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_add_noise-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_add_noise`** &mdash; *Method*.
 
 
 
@@ -1185,8 +1185,8 @@ Adds random noise to the `signal`.
 
   * `s_noisy::Vector{Float64}`
 
-<a id='NeuroJ.s_resample-Tuple{AbstractArray}' href='#NeuroJ.s_resample-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_resample`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_resample-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_resample-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_resample`** &mdash; *Method*.
 
 
 
@@ -1207,8 +1207,8 @@ Resample `signal` to `new_sr` sampling frequency.
   * `s_resampled::Vector{Float64}`
   * `t_resampled::AbstractRange`
 
-<a id='NeuroJ.s_resample-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_resample-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_resample`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_resample-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_resample-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_resample`** &mdash; *Method*.
 
 
 
@@ -1229,8 +1229,8 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
   * `s_downsampled::Array{Float64, 3}`
   * `t_downsampled::AbstractRange`
 
-<a id='NeuroJ.s_derivative-Tuple{AbstractArray}' href='#NeuroJ.s_derivative-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_derivative`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_derivative-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_derivative-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_derivative`** &mdash; *Method*.
 
 
 
@@ -1240,8 +1240,8 @@ s_derivative(signal)
 
 Return derivative of `signal` of the same length.
 
-<a id='NeuroJ.s_tconv-Tuple{AbstractArray}' href='#NeuroJ.s_tconv-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_tconv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_tconv-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_tconv-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_tconv`** &mdash; *Method*.
 
 
 
@@ -1260,8 +1260,8 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
   * `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 
-<a id='NeuroJ.s_filter-Tuple{AbstractArray}' href='#NeuroJ.s_filter-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_filter`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_filter-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_filter-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_filter`** &mdash; *Method*.
 
 
 
@@ -1305,8 +1305,8 @@ Filter `signal`.
 
   * `s_filtered::Vector{Float64}`
 
-<a id='NeuroJ.s_psd-Tuple{AbstractArray}' href='#NeuroJ.s_psd-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_psd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_psd-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_psd`** &mdash; *Method*.
 
 
 
@@ -1330,8 +1330,8 @@ Named tuple containing:
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
 
-<a id='NeuroJ.s_psd-Tuple{Matrix{Float64}}' href='#NeuroJ.s_psd-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.s_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_psd-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.s_psd-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.s_psd`** &mdash; *Method*.
 
 
 
@@ -1355,8 +1355,8 @@ named tuple containing:
   * `psd_pow::Matrix{Float64}`
   * `psd_frq::Matrix{Float64}`
 
-<a id='NeuroJ.s_psd-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_psd-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_psd-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_psd-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_psd`** &mdash; *Method*.
 
 
 
@@ -1380,8 +1380,8 @@ Named tuple containing:
   * `psd_pow::Array{Float64, 3}`
   * `psd_frq::Array{Float64, 3}`
 
-<a id='NeuroJ.s_stationarity_hilbert-Tuple{AbstractArray}' href='#NeuroJ.s_stationarity_hilbert-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_stationarity_hilbert`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_stationarity_hilbert`** &mdash; *Method*.
 
 
 
@@ -1399,8 +1399,8 @@ Calculate phase stationarity using Hilbert transformation.
 
   * `phase_stationarity::Vector{Float64}`
 
-<a id='NeuroJ.s_stationarity_mean-Tuple{AbstractArray}' href='#NeuroJ.s_stationarity_mean-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_stationarity_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_stationarity_mean`** &mdash; *Method*.
 
 
 
@@ -1419,8 +1419,8 @@ Calculate mean stationarity.
 
   * `mean_stationarity::Vector{Float64}`
 
-<a id='NeuroJ.s_stationarity_var-Tuple{AbstractArray}' href='#NeuroJ.s_stationarity_var-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_stationarity_var`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_stationarity_var-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_var-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_stationarity_var`** &mdash; *Method*.
 
 
 
@@ -1439,8 +1439,8 @@ Calculate variance stationarity.
 
   * `var_stationarity::Vector{Float64}`
 
-<a id='NeuroJ.s_trim-Tuple{AbstractArray}' href='#NeuroJ.s_trim-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_trim`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_trim-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_trim-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_trim`** &mdash; *Method*.
 
 
 
@@ -1461,8 +1461,8 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
   * `s_trimmed::Vector{Float64}`
 
-<a id='NeuroJ.s2_mi-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_mi-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_mi`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_mi-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_mi-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_mi`** &mdash; *Method*.
 
 
 
@@ -1481,8 +1481,8 @@ Calculate mutual information between `signal1` and `signal2`.
 
   * `mi::Float64`
 
-<a id='NeuroJ.s_entropy-Tuple{AbstractArray}' href='#NeuroJ.s_entropy-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_entropy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_entropy-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_entropy-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_entropy`** &mdash; *Method*.
 
 
 
@@ -1500,8 +1500,8 @@ Calculate entropy of `signal`.
 
   * `ent::Float64`
 
-<a id='NeuroJ.s_negentropy-Tuple{AbstractArray}' href='#NeuroJ.s_negentropy-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_negentropy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_negentropy-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_negentropy-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_negentropy`** &mdash; *Method*.
 
 
 
@@ -1519,8 +1519,8 @@ Calculate negentropy of `signal`.
 
   * `ent::Float64`
 
-<a id='NeuroJ.s_average-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_average-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_average`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_average-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_average-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_average`** &mdash; *Method*.
 
 
 
@@ -1538,8 +1538,8 @@ Average all channels of `signal`.
 
   * `s_averaged::Array{Float64, 3}`
 
-<a id='NeuroJ.s2_average-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_average-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_average`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_average-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_average-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_average`** &mdash; *Method*.
 
 
 
@@ -1558,8 +1558,8 @@ Averages `signal1` and `signal2`.
 
   * `s_averaged::Vector{Float64}`
 
-<a id='NeuroJ.s2_tcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_tcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_tcoherence`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_tcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_tcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_tcoherence`** &mdash; *Method*.
 
 
 
@@ -1582,8 +1582,8 @@ Named tuple containing:
   * `msc::Vector{Float64}`: magnitude-squares coherence
   * `ic::Vector{Float64}`: imaginary part of coherence
 
-<a id='NeuroJ.s_pca-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_pca-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_pca`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_pca-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_pca-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_pca`** &mdash; *Method*.
 
 
 
@@ -1604,8 +1604,8 @@ Calculate `n` first PCs for `signal`.
   * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
   * `pc_m::PCA{Float64}`: PC mean
 
-<a id='NeuroJ.s_pca_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_pca_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_pca_reconstruct`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_pca_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_pca_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_pca_reconstruct`** &mdash; *Method*.
 
 
 
@@ -1625,8 +1625,8 @@ Reconstructs `signal` using PCA components.
 
   * `s_reconstructed::Array{Float64, 3}`
 
-<a id='NeuroJ.s_fconv-Tuple{AbstractArray}' href='#NeuroJ.s_fconv-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_fconv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_fconv-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_fconv-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_fconv`** &mdash; *Method*.
 
 
 
@@ -1646,8 +1646,8 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
   * `s_conv::Vector{ComplexF64}`
 
-<a id='NeuroJ.s_ica-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_ica-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_ica`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_ica-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_ica-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_ica`** &mdash; *Method*.
 
 
 
@@ -1670,8 +1670,8 @@ Calculate `n` first ICs for `signal`.
   * `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
   * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 
-<a id='NeuroJ.s_ica_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_ica_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_ica_reconstruct`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_ica_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_ica_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_ica_reconstruct`** &mdash; *Method*.
 
 
 
@@ -1692,8 +1692,8 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
   * `s_reconstructed::Array{Float64, 3}`
 
-<a id='NeuroJ.s_spectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_spectrogram-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_spectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_spectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_spectrogram`** &mdash; *Method*.
 
 
 
@@ -1719,8 +1719,8 @@ Named tuple containing:
   * `s_frq::Vector{Float64}`: frequencies
   * `s_t::Vector{Float64}`: time
 
-<a id='NeuroJ.s_detect_epoch_flat-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_detect_epoch_flat-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_detect_epoch_flat`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_epoch_flat-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_flat-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_detect_epoch_flat`** &mdash; *Method*.
 
 
 
@@ -1738,8 +1738,8 @@ Detect bad `signal` epochs based on: flat channel(s)
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroJ.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_detect_epoch_rmse`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_detect_epoch_rmse`** &mdash; *Method*.
 
 
 
@@ -1757,8 +1757,8 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroJ.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_detect_epoch_rmsd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_detect_epoch_rmsd`** &mdash; *Method*.
 
 
 
@@ -1776,8 +1776,8 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroJ.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_detect_epoch_euclid`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_detect_epoch_euclid`** &mdash; *Method*.
 
 
 
@@ -1795,8 +1795,8 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroJ.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}' href='#NeuroJ.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}'>#</a>
-**`NeuroJ.s_detect_epoch_p2p`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.s_detect_epoch_p2p`** &mdash; *Method*.
 
 
 
@@ -1814,8 +1814,8 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroJ.s_snr-Tuple{AbstractArray}' href='#NeuroJ.s_snr-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_snr`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_snr-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_snr-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_snr`** &mdash; *Method*.
 
 
 
@@ -1837,8 +1837,8 @@ Calculate SNR of `signal`.
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 
-<a id='NeuroJ.s_findpeaks-Tuple{AbstractArray}' href='#NeuroJ.s_findpeaks-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_findpeaks`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_findpeaks-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_findpeaks-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_findpeaks`** &mdash; *Method*.
 
 
 
@@ -1857,8 +1857,8 @@ Find peaks in `signal`.
 
   * `p_idx::Vector{Int64}`
 
-<a id='NeuroJ.s_wdenoise-Tuple{AbstractArray}' href='#NeuroJ.s_wdenoise-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_wdenoise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_wdenoise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wdenoise-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_wdenoise`** &mdash; *Method*.
 
 
 
@@ -1877,8 +1877,8 @@ Perform wavelet denoising.
 
   * `signal_denoised::Vector{Float64}`
 
-<a id='NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_ispc-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s_ispc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_ispc-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_ispc-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_ispc`** &mdash; *Method*.
 
 
 
@@ -1904,8 +1904,8 @@ Named tuple containing:
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroJ.s_itpc-Tuple{AbstractArray}' href='#NeuroJ.s_itpc-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_itpc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_itpc-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_itpc-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_itpc`** &mdash; *Method*.
 
 
 
@@ -1930,8 +1930,8 @@ Named tuple containing:
   * `itpc_angle::Float64`: ITPC angle
   * `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
-<a id='NeuroJ.s_pli-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_pli-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s_pli`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_pli-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_pli-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_pli`** &mdash; *Method*.
 
 
 
@@ -1956,8 +1956,8 @@ Named tuple containing:
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroJ.s_ged-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_ged-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s_ged`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_ged-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_ged-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_ged`** &mdash; *Method*.
 
 
 
@@ -1980,8 +1980,8 @@ Named tuple containing:
   * `ress::AbstractArray`
   * `ress_normalized::AbstractArray`: RESS normalized to -1..1
 
-<a id='NeuroJ.s_frqinst-Tuple{AbstractArray}' href='#NeuroJ.s_frqinst-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_frqinst`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_frqinst-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_frqinst-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_frqinst`** &mdash; *Method*.
 
 
 
@@ -2000,8 +2000,8 @@ Calculate instantaneous frequency `signal`.
 
   * `frqinst::Vector{Float64}`
 
-<a id='NeuroJ.s_hspectrum-Tuple{AbstractArray}' href='#NeuroJ.s_hspectrum-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_hspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_hspectrum`** &mdash; *Method*.
 
 
 
@@ -2025,8 +2025,8 @@ Named tuple containing:
   * `h_powers::Vector{Float64}`
   * `h_phases::Vector{Float64}`
 
-<a id='NeuroJ.t2f-Tuple{Real}' href='#NeuroJ.t2f-Tuple{Real}'>#</a>
-**`NeuroJ.t2f`** &mdash; *Method*.
+<a id='NeuroAnalyzer.t2f-Tuple{Real}' href='#NeuroAnalyzer.t2f-Tuple{Real}'>#</a>
+**`NeuroAnalyzer.t2f`** &mdash; *Method*.
 
 
 
@@ -2044,8 +2044,8 @@ Convert cycle length in ms `t` to frequency.
 
   * `f::Float64`: frequency in Hz
 
-<a id='NeuroJ.f2t-Tuple{Real}' href='#NeuroJ.f2t-Tuple{Real}'>#</a>
-**`NeuroJ.f2t`** &mdash; *Method*.
+<a id='NeuroAnalyzer.f2t-Tuple{Real}' href='#NeuroAnalyzer.f2t-Tuple{Real}'>#</a>
+**`NeuroAnalyzer.f2t`** &mdash; *Method*.
 
 
 
@@ -2063,8 +2063,8 @@ Convert frequency `f` to cycle length in ms.
 
   * `f::Float64`: cycle length in ms
 
-<a id='NeuroJ.s_wspectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_wspectrogram-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_wspectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_wspectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wspectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_wspectrogram`** &mdash; *Method*.
 
 
 
@@ -2095,8 +2095,8 @@ Named tuple containing:
   * `w_phases::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroJ.s_fftdenoise-Tuple{AbstractArray}' href='#NeuroJ.s_fftdenoise-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_fftdenoise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_fftdenoise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_fftdenoise-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_fftdenoise`** &mdash; *Method*.
 
 
 
@@ -2114,8 +2114,8 @@ Perform FFT denoising.
 
   * `signal_denoised::Vector{Float64}`
 
-<a id='NeuroJ.s_gfilter-Tuple{Vector{Float64}}' href='#NeuroJ.s_gfilter-Tuple{Vector{Float64}}'>#</a>
-**`NeuroJ.s_gfilter`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_gfilter-Tuple{Vector{Float64}}' href='#NeuroAnalyzer.s_gfilter-Tuple{Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s_gfilter`** &mdash; *Method*.
 
 
 
@@ -2138,8 +2138,8 @@ Named tuple containing:
 
   * `s_f::Vector{Float64}`
 
-<a id='NeuroJ.s_ghspectrogram-Tuple{AbstractArray}' href='#NeuroJ.s_ghspectrogram-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_ghspectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_ghspectrogram`** &mdash; *Method*.
 
 
 
@@ -2167,8 +2167,8 @@ Named tuple containing:
   * `h_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroJ.s_tkeo-Tuple{AbstractArray}' href='#NeuroJ.s_tkeo-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_tkeo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_tkeo-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_tkeo-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_tkeo`** &mdash; *Method*.
 
 
 
@@ -2186,8 +2186,8 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
   * `s_new::Vector{Float64}`
 
-<a id='NeuroJ.s_wspectrum-Tuple{AbstractArray}' href='#NeuroJ.s_wspectrum-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_wspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_wspectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wspectrum-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_wspectrum`** &mdash; *Method*.
 
 
 
@@ -2215,8 +2215,8 @@ Named tuple containing:
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroJ.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}' href='#NeuroJ.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}'>#</a>
-**`NeuroJ.a2_cmp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}' href='#NeuroAnalyzer.a2_cmp-Tuple{Array{<:Real, 3}, Array{<:Real, 3}}'>#</a>
+**`NeuroAnalyzer.a2_cmp`** &mdash; *Method*.
 
 
 
@@ -2240,8 +2240,8 @@ Named tuple containing:
   * `zmap::Array{Float64, 3}`: array of Z-values
   * `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
 
-<a id='NeuroJ.s_fcoherence-Tuple{AbstractArray}' href='#NeuroJ.s_fcoherence-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_fcoherence`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_fcoherence-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_fcoherence-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_fcoherence`** &mdash; *Method*.
 
 
 
@@ -2263,8 +2263,8 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
   * `msc::Array{Float64, 3}`: MSC
   * `f::Vector{Float64}`: frequencies
 
-<a id='NeuroJ.s2_fcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s2_fcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s2_fcoherence`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_fcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_fcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_fcoherence`** &mdash; *Method*.
 
 
 
@@ -2287,8 +2287,8 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
   * `msc::Array{Float64, 3}`: MSC
   * `f::Vector{Float64}`: frequencies
 
-<a id='NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.a2_l1-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.a2_l1`** &mdash; *Method*.
+<a id='NeuroAnalyzer.a2_l1-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.a2_l1-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.a2_l1`** &mdash; *Method*.
 
 
 
@@ -2307,8 +2307,8 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1
 
   * `l1::Float64`
 
-<a id='NeuroJ.a2_l2-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.a2_l2-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.a2_l2`** &mdash; *Method*.
+<a id='NeuroAnalyzer.a2_l2-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.a2_l2-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.a2_l2`** &mdash; *Method*.
 
 
 
@@ -2327,8 +2327,8 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2
 
   * `l2::Float64`
 
-<a id='NeuroJ.s_cums-Tuple{AbstractArray}' href='#NeuroJ.s_cums-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_cums`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_cums-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cums-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_cums`** &mdash; *Method*.
 
 
 
@@ -2346,8 +2346,8 @@ Calculate cumulative sum of the `signal`.
 
   * `signal_cs::Vector{Float64}`
 
-<a id='NeuroJ.s_cums-Tuple{Array{<:Real, 3}}' href='#NeuroJ.s_cums-Tuple{Array{<:Real, 3}}'>#</a>
-**`NeuroJ.s_cums`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_cums-Tuple{Array{<:Real, 3}}' href='#NeuroAnalyzer.s_cums-Tuple{Array{<:Real, 3}}'>#</a>
+**`NeuroAnalyzer.s_cums`** &mdash; *Method*.
 
 
 
@@ -2365,8 +2365,8 @@ Calculate cumulative sum of the `signal`.
 
   * `signal_cs::Array{Float64, 3}`
 
-<a id='NeuroJ.s_gfp-Tuple{AbstractVector}' href='#NeuroJ.s_gfp-Tuple{AbstractVector}'>#</a>
-**`NeuroJ.s_gfp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_gfp-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_gfp-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_gfp`** &mdash; *Method*.
 
 
 
@@ -2384,8 +2384,8 @@ Calculate GFP (Global Field Power) of the `signal`.
 
   * `gfp::Float64`
 
-<a id='NeuroJ.s_gfp_norm-Tuple{AbstractVector}' href='#NeuroJ.s_gfp_norm-Tuple{AbstractVector}'>#</a>
-**`NeuroJ.s_gfp_norm`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_gfp_norm-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_gfp_norm-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_gfp_norm`** &mdash; *Method*.
 
 
 
@@ -2403,8 +2403,8 @@ Calculate `signal` values normalized for GFP (Global Field Power) of that signal
 
   * `gfp_norm::Float64`
 
-<a id='NeuroJ.s2_diss-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.s2_diss-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroJ.s2_diss`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_diss-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_diss-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_diss`** &mdash; *Method*.
 
 
 
@@ -2426,8 +2426,8 @@ Named tuple containing:
   * `diss::Float64`: global dissimilarity
   * `c::Float64`: spatial correlation
 
-<a id='NeuroJ.generate_morlet_fwhm' href='#NeuroJ.generate_morlet_fwhm'>#</a>
-**`NeuroJ.generate_morlet_fwhm`** &mdash; *Function*.
+<a id='NeuroAnalyzer.generate_morlet_fwhm' href='#NeuroAnalyzer.generate_morlet_fwhm'>#</a>
+**`NeuroAnalyzer.generate_morlet_fwhm`** &mdash; *Function*.
 
 
 
@@ -2452,8 +2452,8 @@ Generate Morlet wavelet using Mike X Cohen formula.
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
 
-<a id='NeuroJ.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}' href='#NeuroJ.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}'>#</a>
-**`NeuroJ.f_nearest`** &mdash; *Method*.
+<a id='NeuroAnalyzer.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}' href='#NeuroAnalyzer.f_nearest-Tuple{Matrix{Tuple{Float64, Float64}}, Tuple{Float64, Float64}}'>#</a>
+**`NeuroAnalyzer.f_nearest`** &mdash; *Method*.
 
 
 
@@ -2472,8 +2472,8 @@ Find nearest position tuple `pos` in matrxi of positions `m`.
 
   * `pos::Tuple{Int64, Int64}`: row and column in m
 
-<a id='NeuroJ.s_band_mpower-Tuple{AbstractArray}' href='#NeuroJ.s_band_mpower-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_band_mpower`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_band_mpower-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_band_mpower-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_band_mpower`** &mdash; *Method*.
 
 
 
@@ -2497,8 +2497,8 @@ Named tuple containing:
   * `maxfrq::Float64`: frequency of maximum band power [Hz]
   * `maxbp::Float64`: power at maximum band frequency [dB]
 
-<a id='NeuroJ.s_rel_psd-Tuple{AbstractArray}' href='#NeuroJ.s_rel_psd-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_rel_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_rel_psd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_rel_psd-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_rel_psd`** &mdash; *Method*.
 
 
 
@@ -2523,8 +2523,8 @@ Named tuple containing:
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
 
-<a id='NeuroJ.s_wbp-Tuple{AbstractArray}' href='#NeuroJ.s_wbp-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_wbp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_wbp-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wbp-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_wbp`** &mdash; *Method*.
 
 
 
@@ -2547,8 +2547,8 @@ Perform wavelet bandpass filtering of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
-<a id='NeuroJ.s_normalize_gauss-Tuple{AbstractArray}' href='#NeuroJ.s_normalize_gauss-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_normalize_gauss`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_gauss-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_gauss-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_gauss`** &mdash; *Method*.
 
 
 
@@ -2566,8 +2566,8 @@ Normalize `signal` to Gaussian.
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroJ.s_cbp-Tuple{AbstractArray}' href='#NeuroJ.s_cbp-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_cbp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_cbp-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cbp-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_cbp`** &mdash; *Method*.
 
 
 
@@ -2590,8 +2590,8 @@ Perform convolution bandpass filtering of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
-<a id='NeuroJ.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}'>#</a>
-**`NeuroJ.s_specseg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s_specseg-Tuple{Matrix{Float64}, Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s_specseg`** &mdash; *Method*.
 
 
 
@@ -2618,8 +2618,8 @@ Named tuple containing:
   * `t_idx::Tuple{Real, Real}`: time indices
   * `f_idx::Tuple{Real, Real}`: frequency indices
 
-<a id='NeuroJ.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}' href='#NeuroJ.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}'>#</a>
-**`NeuroJ.s_specseg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.s_specseg`** &mdash; *Method*.
 
 
 
@@ -2646,8 +2646,8 @@ Named tuple containing:
   * `t_idx::Tuple{Real, Real}`: time indices
   * `f_idx::Tuple{Real, Real}`: frequency indices
 
-<a id='NeuroJ.s_denoise_wien-Tuple{AbstractArray}' href='#NeuroJ.s_denoise_wien-Tuple{AbstractArray}'>#</a>
-**`NeuroJ.s_denoise_wien`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_denoise_wien-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_denoise_wien-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_denoise_wien`** &mdash; *Method*.
 
 
 
@@ -2665,8 +2665,8 @@ Perform Wiener deconvolution denoising of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
-<a id='NeuroJ.s_cps-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_cps-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroJ.s_cps`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_cps-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_cps-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_cps`** &mdash; *Method*.
 
 
 
@@ -2698,8 +2698,8 @@ Named tuple containing:
 
 ## Statistic
 
-<a id='NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroJ.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.hildebrand_rule`** &mdash; *Method*.
+<a id='NeuroAnalyzer.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.hildebrand_rule`** &mdash; *Method*.
 
 
 
@@ -2717,8 +2717,8 @@ Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symm
 
   * `h::Float64`
 
-<a id='NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
-**`NeuroJ.jaccard_similarity`** &mdash; *Method*.
+<a id='NeuroAnalyzer.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroAnalyzer.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.jaccard_similarity`** &mdash; *Method*.
 
 
 
@@ -2736,8 +2736,8 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 
   * `j::Float64`
 
-<a id='NeuroJ.z_score-Tuple{Vector{<:Real}}' href='#NeuroJ.z_score-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.z_score`** &mdash; *Method*.
+<a id='NeuroAnalyzer.z_score-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.z_score-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.z_score`** &mdash; *Method*.
 
 
 
@@ -2755,8 +2755,8 @@ Calculate Z-scores for each value of the vector `x`.
 
   * `z_score::Vector{Float64}`
 
-<a id='NeuroJ.k_categories-Tuple{Int64}' href='#NeuroJ.k_categories-Tuple{Int64}'>#</a>
-**`NeuroJ.k_categories`** &mdash; *Method*.
+<a id='NeuroAnalyzer.k_categories-Tuple{Int64}' href='#NeuroAnalyzer.k_categories-Tuple{Int64}'>#</a>
+**`NeuroAnalyzer.k_categories`** &mdash; *Method*.
 
 
 
@@ -2777,8 +2777,8 @@ Named tuple containing:
   * `k1::Float64`: sqrt(n)
   * `k2::Float64`: 1 + 3.222 * log10(n)
 
-<a id='NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
-**`NeuroJ.effsize`** &mdash; *Method*.
+<a id='NeuroAnalyzer.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroAnalyzer.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.effsize`** &mdash; *Method*.
 
 
 
@@ -2800,8 +2800,8 @@ Named tuple containing:
   * `d::Float64`: Cohen's d
   * `g::Float64`: Hedges g
 
-<a id='NeuroJ.infcrit-Tuple{Any}' href='#NeuroJ.infcrit-Tuple{Any}'>#</a>
-**`NeuroJ.infcrit`** &mdash; *Method*.
+<a id='NeuroAnalyzer.infcrit-Tuple{Any}' href='#NeuroAnalyzer.infcrit-Tuple{Any}'>#</a>
+**`NeuroAnalyzer.infcrit`** &mdash; *Method*.
 
 
 
@@ -2822,8 +2822,8 @@ Named tuple containing:
   * `aic::Float64`
   * `bic::Float64`
 
-<a id='NeuroJ.grubbs-Tuple{Vector{<:Real}}' href='#NeuroJ.grubbs-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.grubbs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.grubbs-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.grubbs-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.grubbs`** &mdash; *Method*.
 
 
 
@@ -2845,8 +2845,8 @@ Named tuple containing:
 
   * `g::Bool`: true: outlier exists, false: there is no outlier
 
-<a id='NeuroJ.outlier_detect-Tuple{Vector{<:Real}}' href='#NeuroJ.outlier_detect-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.outlier_detect`** &mdash; *Method*.
+<a id='NeuroAnalyzer.outlier_detect-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.outlier_detect-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.outlier_detect`** &mdash; *Method*.
 
 
 
@@ -2865,8 +2865,8 @@ Detect outliers in `x`.
 
   * `o::Vector{Bool}`: index of outliers
 
-<a id='NeuroJ.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
-**`NeuroJ.seg_cmp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroAnalyzer.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.seg_cmp`** &mdash; *Method*.
 
 
 
@@ -2903,8 +2903,8 @@ Named tuple containing:
 
 ## EEG I/O
 
-<a id='NeuroJ.eeg_import_edf-Tuple{String}' href='#NeuroJ.eeg_import_edf-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_edf`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_edf-Tuple{String}' href='#NeuroAnalyzer.eeg_import_edf-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_edf`** &mdash; *Method*.
 
 
 
@@ -2912,7 +2912,7 @@ Named tuple containing:
 eeg_import_edf(file_name; read_annotations, clean_labels)
 ```
 
-Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
+Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
@@ -2934,8 +2934,8 @@ Load EDF/EDFPlus file and return and `NeuroJ.EEG` object.
 
 Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 
-<a id='NeuroJ.eeg_import_ced-Tuple{String}' href='#NeuroJ.eeg_import_ced-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_ced`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_ced-Tuple{String}' href='#NeuroAnalyzer.eeg_import_ced-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_ced`** &mdash; *Method*.
 
 
 
@@ -2953,8 +2953,8 @@ Load electrode positions from CED file.
 
   * `sensors::DataFrame`
 
-<a id='NeuroJ.eeg_import_locs-Tuple{String}' href='#NeuroJ.eeg_import_locs-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_locs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_locs-Tuple{String}' href='#NeuroAnalyzer.eeg_import_locs-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_locs`** &mdash; *Method*.
 
 
 
@@ -2972,8 +2972,8 @@ Load electrode positions from LOCS file.
 
   * `sensors::DataFrame`
 
-<a id='NeuroJ.eeg_import_elc-Tuple{String}' href='#NeuroJ.eeg_import_elc-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_elc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_elc-Tuple{String}' href='#NeuroAnalyzer.eeg_import_elc-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_elc`** &mdash; *Method*.
 
 
 
@@ -2991,8 +2991,8 @@ Load electrode positions from ELC file.
 
   * `sensors::DataFrame`
 
-<a id='NeuroJ.eeg_import_tsv-Tuple{String}' href='#NeuroJ.eeg_import_tsv-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_tsv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_tsv-Tuple{String}' href='#NeuroAnalyzer.eeg_import_tsv-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_tsv`** &mdash; *Method*.
 
 
 
@@ -3010,8 +3010,8 @@ Load electrode positions from TSV file.
 
   * `sensors::DataFrame`
 
-<a id='NeuroJ.eeg_import_sfp-Tuple{String}' href='#NeuroJ.eeg_import_sfp-Tuple{String}'>#</a>
-**`NeuroJ.eeg_import_sfp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_import_sfp-Tuple{String}' href='#NeuroAnalyzer.eeg_import_sfp-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_sfp`** &mdash; *Method*.
 
 
 
@@ -3029,8 +3029,8 @@ Load electrode positions from SFP file.
 
   * `sensors::DataFrame`
 
-<a id='NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_load_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_load_electrodes`** &mdash; *Method*.
 
 
 
@@ -3038,7 +3038,7 @@ Load electrode positions from SFP file.
 eeg_load_electrodes(eeg; file_name)
 ```
 
-Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Accepted formats:
 
@@ -3061,15 +3061,15 @@ Electrode locations:
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`
 
 **Returns**
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_load_electrodes!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_load_electrodes!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_load_electrodes!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_load_electrodes!`** &mdash; *Method*.
 
 
 
@@ -3077,7 +3077,7 @@ Electrode locations:
 eeg_load_electrodes!(eeg; file_name)
 ```
 
-Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Accepted formats:
 
@@ -3100,11 +3100,11 @@ Electrode locations:
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`
 
-<a id='NeuroJ.eeg_save-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_save`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_save-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_save-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_save`** &mdash; *Method*.
 
 
 
@@ -3116,7 +3116,7 @@ Save the `eeg` to `file_name` file (HDF5-based).
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`: file name
   * `overwrite::Bool=false`
 
@@ -3124,8 +3124,8 @@ Save the `eeg` to `file_name` file (HDF5-based).
 
   * `success::Bool`
 
-<a id='NeuroJ.eeg_load-Tuple{String}' href='#NeuroJ.eeg_load-Tuple{String}'>#</a>
-**`NeuroJ.eeg_load`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_load-Tuple{String}' href='#NeuroAnalyzer.eeg_load-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_load`** &mdash; *Method*.
 
 
 
@@ -3141,10 +3141,10 @@ Load the `eeg` from `file_name` file (HDF5-based).
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_export_csv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_export_csv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_export_csv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_export_csv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_export_csv`** &mdash; *Method*.
 
 
 
@@ -3156,7 +3156,7 @@ Export EEG data as CSV.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`
   * `header::Bool=false`: export header
   * `components::Bool=false`: export components
@@ -3166,8 +3166,8 @@ Export EEG data as CSV.
 
   * `success::Bool`
 
-<a id='NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_save_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_save_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_save_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_save_electrodes`** &mdash; *Method*.
 
 
 
@@ -3179,7 +3179,7 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`
   * `overwrite::Bool=false`
 
@@ -3187,8 +3187,8 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
   * `success::Bool`
 
-<a id='NeuroJ.eeg_save_electrodes-Tuple{DataFrame}' href='#NeuroJ.eeg_save_electrodes-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_save_electrodes-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_save_electrodes-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_save_electrodes`** &mdash; *Method*.
 
 
 
@@ -3208,8 +3208,8 @@ Export channel locations, format is based on `file_name` extension (.ced, .locs,
 
   * `success::Bool`
 
-<a id='NeuroJ.eeg_add_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_electrodes`** &mdash; *Method*.
 
 
 
@@ -3232,15 +3232,15 @@ Electrode locations:
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `locs::DataFrame`
 
 **Returns**
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_add_electrodes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_electrodes!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_electrodes!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_electrodes!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_electrodes!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_electrodes!`** &mdash; *Method*.
 
 
 
@@ -3248,7 +3248,7 @@ Electrode locations:
 eeg_add_electrodes!(eeg; locs)
 ```
 
-Load electrode positions from `locs` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Electrode locations:
 
@@ -3263,7 +3263,7 @@ Electrode locations:
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `locs::DataFrame`
 
 
@@ -3273,8 +3273,8 @@ Electrode locations:
 
 ## EEG edit
 
-<a id='NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_component`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_component`** &mdash; *Method*.
 
 
 
@@ -3286,16 +3286,16 @@ Add component name `c` of value `v` to `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
   * `v::Any`: component value
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_component!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_component!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_component!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_component!`** &mdash; *Method*.
 
 
 
@@ -3307,12 +3307,12 @@ Add component name `c` of value `v` to `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
   * `v::Any`: component value
 
-<a id='NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_list_components-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_list_components`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_list_components-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_list_components-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_list_components`** &mdash; *Method*.
 
 
 
@@ -3324,14 +3324,14 @@ List `eeg` components.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `components::Vector{Symbol}`
 
-<a id='NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_component`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_extract_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_extract_component`** &mdash; *Method*.
 
 
 
@@ -3343,15 +3343,15 @@ Extract component `c` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
 
 **Returns**
 
   * `component::Any`
 
-<a id='NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_component`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_component`** &mdash; *Method*.
 
 
 
@@ -3363,15 +3363,15 @@ Delete component `c` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_component!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_component!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_component!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_component!`** &mdash; *Method*.
 
 
 
@@ -3383,11 +3383,11 @@ Delete component `c` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
 
-<a id='NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reset_components`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reset_components-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reset_components-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reset_components`** &mdash; *Method*.
 
 
 
@@ -3403,10 +3403,10 @@ Remove all `eeg` components.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reset_components!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reset_components!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reset_components!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reset_components!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reset_components!`** &mdash; *Method*.
 
 
 
@@ -3420,8 +3420,8 @@ Remove all `eeg` components.
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_idx-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_component_idx`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_component_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_component_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_component_idx`** &mdash; *Method*.
 
 
 
@@ -3440,8 +3440,8 @@ Return index of `eeg` component.
 
   * `c_idx::Int64`
 
-<a id='NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_component_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_component_type`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_component_type-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_component_type-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_component_type`** &mdash; *Method*.
 
 
 
@@ -3460,8 +3460,8 @@ Return type of `eeg` components.
 
   * `c_type::DataType`
 
-<a id='NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_component`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_rename_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rename_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_rename_component`** &mdash; *Method*.
 
 
 
@@ -3481,8 +3481,8 @@ Return type of `eeg` components.
 
   * `eeg_new:EEG`
 
-<a id='NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_component!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_component!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_rename_component!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rename_component!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_rename_component!`** &mdash; *Method*.
 
 
 
@@ -3498,8 +3498,8 @@ Return type of `eeg` components.
   * `c_old::Symbol`: old component name
   * `c_new::Symbol`: new component name
 
-<a id='NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_channel`** &mdash; *Method*.
 
 
 
@@ -3511,15 +3511,15 @@ Remove `channel` from the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_channel!`** &mdash; *Method*.
 
 
 
@@ -3531,11 +3531,11 @@ Remove `channel` from the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
 
-<a id='NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_channel`** &mdash; *Method*.
 
 
 
@@ -3547,15 +3547,15 @@ Keep `channels` in the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_channel!`** &mdash; *Method*.
 
 
 
@@ -3567,11 +3567,11 @@ Keep `channels` in the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
 
-<a id='NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_get_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_get_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_get_channel`** &mdash; *Method*.
 
 
 
@@ -3583,15 +3583,15 @@ Return the `channel` index / name.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`: channel name
 
 **Returns**
 
   * `channel_idx::Int64`
 
-<a id='NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_rename_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rename_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_rename_channel`** &mdash; *Method*.
 
 
 
@@ -3603,16 +3603,16 @@ Rename the `eeg` `channel`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
   * `name::String`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rename_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rename_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_rename_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rename_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_rename_channel!`** &mdash; *Method*.
 
 
 
@@ -3624,12 +3624,12 @@ Rename the `eeg` `channel`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
   * `name::String`
 
-<a id='NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_extract_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_extract_channel`** &mdash; *Method*.
 
 
 
@@ -3641,15 +3641,15 @@ Extract `channel` number or name.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
 
 **Returns**
 
   * `channel::Vector{Float64}`
 
-<a id='NeuroJ.eeg_history-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_history-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_history`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_history-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_history-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_history`** &mdash; *Method*.
 
 
 
@@ -3661,14 +3661,14 @@ Show processing history.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_labels-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_labels`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_labels-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_labels-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_labels`** &mdash; *Method*.
 
 
 
@@ -3680,14 +3680,14 @@ Return `eeg` labels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `labels::Vector{String}`
 
-<a id='NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_sr-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_sr`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_sr-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_sr-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_sr`** &mdash; *Method*.
 
 
 
@@ -3699,14 +3699,14 @@ Return `eeg` sampling rate.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `sr::Int64`
 
-<a id='NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_n-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_n`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_channel_n-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channel_n-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_channel_n`** &mdash; *Method*.
 
 
 
@@ -3718,15 +3718,15 @@ Return number of `eeg` channels of `type`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
 
 **Returns**
 
   * `channel_n::Int64`
 
-<a id='NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_n-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epoch_n`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch_n-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_n-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_n`** &mdash; *Method*.
 
 
 
@@ -3738,14 +3738,14 @@ Return number of `eeg` epochs.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `epoch_n::Int64`
 
-<a id='NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_signal_len-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_signal_len`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_signal_len-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_signal_len-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_signal_len`** &mdash; *Method*.
 
 
 
@@ -3757,14 +3757,14 @@ Return length of `eeg` signal.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `signal_len::Int64`
 
-<a id='NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epoch_len-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epoch_len`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch_len-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_len-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_len`** &mdash; *Method*.
 
 
 
@@ -3776,14 +3776,14 @@ Return length of `eeg` signal.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `epoch_len::Int64`
 
-<a id='NeuroJ.eeg_info-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_info-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_info`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_info-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_info-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_info`** &mdash; *Method*.
 
 
 
@@ -3795,10 +3795,10 @@ Show info.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epochs`** &mdash; *Method*.
 
 
 
@@ -3810,17 +3810,17 @@ Splits `eeg` into epochs.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch_n::Union{Int64, Nothing}`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
   * `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epochs!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epochs!`** &mdash; *Method*.
 
 
 
@@ -3832,13 +3832,13 @@ Splits `eeg` into epochs.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch_n::Union{Int64, Nothing}`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
   * `average::Bool`: average all epochs, return one averaged epoch
 
-<a id='NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_extract_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_extract_epoch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_extract_epoch`** &mdash; *Method*.
 
 
 
@@ -3850,15 +3850,15 @@ Extract the `epoch` epoch.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Int64`: epoch index
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_trim`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_trim-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_trim-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_trim`** &mdash; *Method*.
 
 
 
@@ -3880,8 +3880,8 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_trim!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_trim!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_trim!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_trim!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_trim!`** &mdash; *Method*.
 
 
 
@@ -3899,8 +3899,8 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
   * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
   * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
-<a id='NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_header`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_header`** &mdash; *Method*.
 
 
 
@@ -3912,7 +3912,7 @@ Change value of `eeg` `field` to `value`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `field::Symbol`
   * `value::Any`
 
@@ -3920,8 +3920,8 @@ Change value of `eeg` `field` to `value`.
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_header!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_header!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_header!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_header!`** &mdash; *Method*.
 
 
 
@@ -3933,7 +3933,7 @@ Change value of `eeg` `field` to `value`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `field::Symbol`
   * `value::Any`
 
@@ -3941,8 +3941,8 @@ Change value of `eeg` `field` to `value`.
 
   * `eeg:EEG`
 
-<a id='NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_show_header-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_show_header`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_show_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_show_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_show_header`** &mdash; *Method*.
 
 
 
@@ -3954,10 +3954,10 @@ Show keys and values of `eeg` header.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_epoch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_epoch`** &mdash; *Method*.
 
 
 
@@ -3969,15 +3969,15 @@ Remove `epoch` from the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_epoch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_epoch!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_epoch!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_epoch!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_epoch!`** &mdash; *Method*.
 
 
 
@@ -3989,11 +3989,11 @@ Remove `epoch` from the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
 
-<a id='NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_epoch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_epoch`** &mdash; *Method*.
 
 
 
@@ -4005,15 +4005,15 @@ Keep `epoch` in the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_epoch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_epoch!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_epoch!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_epoch!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_epoch!`** &mdash; *Method*.
 
 
 
@@ -4025,11 +4025,11 @@ Keep `epoch` in the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
 
-<a id='NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detect_bad_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detect_bad_epochs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_detect_bad_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detect_bad_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_detect_bad_epochs`** &mdash; *Method*.
 
 
 
@@ -4047,7 +4047,7 @@ Detect bad `eeg` epochs based on:
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
   * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
@@ -4055,44 +4055,44 @@ Detect bad `eeg` epochs based on:
 
   * `bad_epochs_idx::Vector{Int64}`
 
-<a id='NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
-**`NeuroJ.eeg_add_labels`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}' href='#NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}'>#</a>
+**`NeuroAnalyzer.eeg_add_labels`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_labels(eeg::NeuroJ.EEG, labels::Vector{String})
+eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 ```
 
 Add `labels` to `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `labels::Vector{String}`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}' href='#NeuroJ.eeg_add_labels!-Tuple{NeuroJ.EEG, Vector{String}}'>#</a>
-**`NeuroJ.eeg_add_labels!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG, Vector{String}}' href='#NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG, Vector{String}}'>#</a>
+**`NeuroAnalyzer.eeg_add_labels!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_labels!(eeg::NeuroJ.EEG, labels::Vector{String})
+eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 ```
 
 Add `labels` to `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `labels::Vector{String}`
 
-<a id='NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_channel`** &mdash; *Method*.
 
 
 
@@ -4111,10 +4111,10 @@ Edits `eeg` `channel` properties.
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_channel!`** &mdash; *Method*.
 
 
 
@@ -4131,8 +4131,8 @@ Edit `eeg` `channel` properties.
   * `field::Any`
   * `value::Any`
 
-<a id='NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel_type`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_channel_type-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel_type-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_channel_type`** &mdash; *Method*.
 
 
 
@@ -4144,15 +4144,15 @@ Keep `type` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:eeg`: type of channels to keep
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_keep_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_keep_channel_type!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_keep_channel_type!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel_type!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_keep_channel_type!`** &mdash; *Method*.
 
 
 
@@ -4164,11 +4164,11 @@ Keep `type` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:eeg`: type of channels to keep
 
-<a id='NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_view_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_view_note`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_view_note-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_note-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_view_note`** &mdash; *Method*.
 
 
 
@@ -4180,10 +4180,10 @@ Return `eeg` note.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_copy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_copy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_copy-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_copy-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_copy`** &mdash; *Method*.
 
 
 
@@ -4195,14 +4195,14 @@ Make copy of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg_copy::NeuroJ.EEG`
+  * `eeg_copy::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_time`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epochs_time-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_time-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epochs_time`** &mdash; *Method*.
 
 
 
@@ -4214,15 +4214,15 @@ Edit `eeg` epochs time start.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `ts::Real`: time start in seconds
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_time!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_time!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epochs_time!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_time!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epochs_time!`** &mdash; *Method*.
 
 
 
@@ -4234,15 +4234,15 @@ Edit `eeg` epochs time start.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `ts::Real`: time start in seconds
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_note`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_note-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_note-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_note`** &mdash; *Method*.
 
 
 
@@ -4254,15 +4254,15 @@ Return `eeg` note.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `note::String`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_note!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_note!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_note!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_note!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_note!`** &mdash; *Method*.
 
 
 
@@ -4274,11 +4274,11 @@ Return `eeg` note.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `note::String`
 
-<a id='NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_note`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_note-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_note-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_note`** &mdash; *Method*.
 
 
 
@@ -4290,14 +4290,14 @@ Return `eeg` note.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_delete_note!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_delete_note!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_note!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_note!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_note!`** &mdash; *Method*.
 
 
 
@@ -4309,10 +4309,10 @@ Return `eeg` note.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_replace_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_replace_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_replace_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_replace_channel`** &mdash; *Method*.
 
 
 
@@ -4324,16 +4324,16 @@ Replace the `channel` index / name with `signal`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`: channel name
   * `signal::Array{Float64, 3}
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_replace_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_replace_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_replace_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_replace_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_replace_channel!`** &mdash; *Method*.
 
 
 
@@ -4345,12 +4345,12 @@ Replace the `channel` index / name with `signal`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`: channel name
   * `signal::Array{Float64, 3}
 
-<a id='NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_interpolate_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_interpolate_channel`** &mdash; *Method*.
 
 
 
@@ -4362,17 +4362,17 @@ Interpolate `eeg` channel using planar interpolation.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_interpolate_channel!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_interpolate_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_interpolate_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_interpolate_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_interpolate_channel!`** &mdash; *Method*.
 
 
 
@@ -4384,13 +4384,13 @@ Interpolate `eeg` channel using planar interpolation.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
-<a id='NeuroJ.eeg_loc_flipy-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipy-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipy-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipy-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipy`** &mdash; *Method*.
 
 
 
@@ -4410,8 +4410,8 @@ Flip channel locations along y axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipy!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipy!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipy!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipy!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipy!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipy!`** &mdash; *Method*.
 
 
 
@@ -4427,8 +4427,8 @@ Flip channel locations along y axis.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_flipx-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipx-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipx`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipx-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipx-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipx`** &mdash; *Method*.
 
 
 
@@ -4448,8 +4448,8 @@ Flip channel locations along x axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipx!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipx!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipx!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipx!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipx!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipx!`** &mdash; *Method*.
 
 
 
@@ -4465,8 +4465,8 @@ Flip channel locations along x axis.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_flipz-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipz-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipz`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipz-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipz-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipz`** &mdash; *Method*.
 
 
 
@@ -4484,8 +4484,8 @@ Flip channel locations along z axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipz!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipz!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_flipz!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_flipz!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipz!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_flipz!`** &mdash; *Method*.
 
 
 
@@ -4499,8 +4499,8 @@ Flip channel locations along z axis.
 
   * `locs::DataFrame`
 
-<a id='NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_type`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_channel_type-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channel_type-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_channel_type`** &mdash; *Method*.
 
 
 
@@ -4512,16 +4512,16 @@ Change the `eeg` `channel` type.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
   * `type::String`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channel_type!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_channel_type!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channel_type!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_channel_type!`** &mdash; *Method*.
 
 
 
@@ -4533,12 +4533,12 @@ Change the `eeg` `channel` type.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
   * `type::String`
 
-<a id='NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_electrode`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_electrode-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_electrode-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_electrode`** &mdash; *Method*.
 
 
 
@@ -4550,7 +4550,7 @@ Edit `eeg` electrode.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{String, Int64}`: channel number or name
   * `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
   * `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
@@ -4565,10 +4565,10 @@ Edit `eeg` electrode.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_edit_electrode!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_edit_electrode!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_edit_electrode!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_electrode!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_electrode!`** &mdash; *Method*.
 
 
 
@@ -4580,7 +4580,7 @@ Edit `eeg` electrode.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{String, Int64}`: channel number or name
   * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
   * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
@@ -4593,8 +4593,8 @@ Edit `eeg` electrode.
   * `name::String=""`: channel name
   * `type::String=""`: channel type
 
-<a id='NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_electrode_loc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_electrode_loc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_electrode_loc-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_electrode_loc-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_electrode_loc`** &mdash; *Method*.
 
 
 
@@ -4606,7 +4606,7 @@ Return locations of the `eeg` `channel` electrode.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, String}`
   * `output::Bool=true`: print output if true
 
@@ -4623,8 +4623,8 @@ Named tuple containing:
   * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
   * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
-<a id='NeuroJ.eeg_loc_swapxy-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_swapxy-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_swapxy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_swapxy-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_swapxy-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_swapxy`** &mdash; *Method*.
 
 
 
@@ -4642,10 +4642,10 @@ Swap channel locations x and y axes.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_loc_swapxy!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_swapxy!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_swapxy!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_swapxy!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_swapxy!`** &mdash; *Method*.
 
 
 
@@ -4661,8 +4661,8 @@ Swap channel locations x and y axes.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_sph2cart-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_sph2cart`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_sph2cart-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_sph2cart-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_sph2cart`** &mdash; *Method*.
 
 
 
@@ -4680,8 +4680,8 @@ Convert spherical locations to Cartesian.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_sph2cart!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_sph2cart!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_sph2cart!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_sph2cart!`** &mdash; *Method*.
 
 
 
@@ -4695,8 +4695,8 @@ Convert spherical locations to Cartesian.
 
   * `locs::DataFrame`
 
-<a id='NeuroJ.eeg_loc_cart2sph-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_cart2sph`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_cart2sph-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_cart2sph-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_cart2sph`** &mdash; *Method*.
 
 
 
@@ -4714,8 +4714,8 @@ Convert Cartesian locations to spherical.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{DataFrame}'>#</a>
-**`NeuroJ.eeg_loc_cart2sph!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_loc_cart2sph!-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_cart2sph!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.eeg_loc_cart2sph!`** &mdash; *Method*.
 
 
 
@@ -4736,8 +4736,8 @@ Convert Cartesian locations to spherical.
 
 ## EEG process
 
-<a id='NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_ch`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_ch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_ch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_ch`** &mdash; *Method*.
 
 
 
@@ -4749,15 +4749,15 @@ Reference the `eeg` to specific `channel`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_ch!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_ch!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_ch!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_ch!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_ch!`** &mdash; *Method*.
 
 
 
@@ -4769,11 +4769,11 @@ Reference the `eeg` to specific channel `channel`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 
-<a id='NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_car`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_car-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_car-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_car`** &mdash; *Method*.
 
 
 
@@ -4785,16 +4785,16 @@ Reference the `eeg` to common average reference.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
   * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_car!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_car!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_car!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_car!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_car!`** &mdash; *Method*.
 
 
 
@@ -4806,10 +4806,10 @@ Reference the `eeg` to common average reference.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_derivative`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_derivative`** &mdash; *Method*.
 
 
 
@@ -4821,14 +4821,14 @@ Return the derivative of the `eeg` with length same as the signal.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_derivative!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_derivative!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_derivative!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_derivative!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_derivative!`** &mdash; *Method*.
 
 
 
@@ -4840,10 +4840,10 @@ Return the derivative of the `eeg` with length same as the signal.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detrend`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_detrend`** &mdash; *Method*.
 
 
 
@@ -4855,7 +4855,7 @@ Perform piecewise detrending of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -4870,10 +4870,10 @@ Perform piecewise detrending of `eeg`.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_detrend!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_detrend!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_detrend!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detrend!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_detrend!`** &mdash; *Method*.
 
 
 
@@ -4885,7 +4885,7 @@ Remove linear trend from the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -4898,8 +4898,8 @@ Remove linear trend from the `eeg`.
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64`: smoothing of loess
 
-<a id='NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_taper`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_taper-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_taper-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_taper`** &mdash; *Method*.
 
 
 
@@ -4911,15 +4911,15 @@ Taper `eeg` with `taper`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `taper::Union{Vector{Real, Vector{ComplexF64}}``
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_taper!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_taper!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_taper!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_taper!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_taper!`** &mdash; *Method*.
 
 
 
@@ -4931,11 +4931,11 @@ Taper `eeg` with `taper`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
 
-<a id='NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_demean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_demean`** &mdash; *Method*.
 
 
 
@@ -4947,14 +4947,14 @@ Remove mean value (DC offset).
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_demean!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_demean!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_demean!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_demean!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_demean!`** &mdash; *Method*.
 
 
 
@@ -4966,10 +4966,10 @@ Remove mean value (DC offset).
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_normalize`** &mdash; *Method*.
 
 
 
@@ -4981,15 +4981,15 @@ Normalize each `eeg` channel.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `method::Symbol`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_normalize!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_normalize!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_normalize!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_normalize!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_normalize!`** &mdash; *Method*.
 
 
 
@@ -5001,11 +5001,11 @@ Normalize each `eeg` channel.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `method::Symbol`
 
-<a id='NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_noise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_noise`** &mdash; *Method*.
 
 
 
@@ -5017,14 +5017,14 @@ Add random noise to the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_noise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_add_noise!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_noise!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_noise!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_noise!`** &mdash; *Method*.
 
 
 
@@ -5036,10 +5036,10 @@ Add random noise to the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_filter`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_filter`** &mdash; *Method*.
 
 
 
@@ -5051,7 +5051,7 @@ Filter `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -5081,10 +5081,10 @@ Filter `eeg` channels.
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_filter!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_filter!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_filter!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_filter!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_filter!`** &mdash; *Method*.
 
 
 
@@ -5096,7 +5096,7 @@ Filter `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -5124,8 +5124,8 @@ Filter `eeg`.
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
   * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 
-<a id='NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pca-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pca`** &mdash; *Method*.
 
 
 
@@ -5137,7 +5137,7 @@ Calculate `n` first PCs for `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `n::Int64`: number of PCs
 
 **Returns**
@@ -5148,8 +5148,8 @@ Named tuple containing:
   * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
   * `pc_m::PCA{Float64}`: PC mean
 
-<a id='NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca_reconstruct`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pca_reconstruct-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca_reconstruct-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pca_reconstruct`** &mdash; *Method*.
 
 
 
@@ -5161,14 +5161,14 @@ Reconstruct `eeg` signals using PCA components.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pca_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pca_reconstruct!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pca_reconstruct!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca_reconstruct!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pca_reconstruct!`** &mdash; *Method*.
 
 
 
@@ -5180,10 +5180,10 @@ Reconstruct `eeg` signals using PCA components.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ica-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ica`** &mdash; *Method*.
 
 
 
@@ -5195,7 +5195,7 @@ Calculate `n` first ICs for `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `n::Int64`: number of ICs
   * `tol::Float64=1.0e-6`: tolerance for ICA
   * `iter::Int64=100`: maximum number of iterations
@@ -5208,8 +5208,8 @@ Named tuple containing:
   * `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
   * `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
 
-<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_average`** &mdash; *Method*.
 
 
 
@@ -5221,14 +5221,14 @@ Return the average signal of all `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_average!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_average!`** &mdash; *Method*.
 
 
 
@@ -5240,10 +5240,10 @@ Return the average signal of all `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_average-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_average`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_average`** &mdash; *Method*.
 
 
 
@@ -5255,15 +5255,15 @@ Return the average signal of all `eeg1` and `eeg2` channels.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica_reconstruct`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ica_reconstruct-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica_reconstruct-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ica_reconstruct`** &mdash; *Method*.
 
 
 
@@ -5275,15 +5275,15 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ica_reconstruct!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ica_reconstruct!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ica_reconstruct!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica_reconstruct!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ica_reconstruct!`** &mdash; *Method*.
 
 
 
@@ -5295,11 +5295,11 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
-<a id='NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_invert_polarity`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_invert_polarity-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_invert_polarity-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_invert_polarity`** &mdash; *Method*.
 
 
 
@@ -5311,15 +5311,15 @@ Invert polarity of `channel` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`: channel to invert
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_invert_polarity!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_invert_polarity!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_invert_polarity!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_invert_polarity!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_invert_polarity!`** &mdash; *Method*.
 
 
 
@@ -5331,11 +5331,11 @@ Invert polarity of `channel` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
 
-<a id='NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_resample`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_resample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_resample-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_resample`** &mdash; *Method*.
 
 
 
@@ -5347,15 +5347,15 @@ Resample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_resample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_resample!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_resample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_resample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_resample!`** &mdash; *Method*.
 
 
 
@@ -5367,11 +5367,11 @@ Resample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
-<a id='NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_upsample`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_upsample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_upsample-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_upsample`** &mdash; *Method*.
 
 
 
@@ -5383,15 +5383,15 @@ Upsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_upsample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_upsample!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_upsample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_upsample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_upsample!`** &mdash; *Method*.
 
 
 
@@ -5403,15 +5403,15 @@ Upsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_downsample`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_downsample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_downsample-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_downsample`** &mdash; *Method*.
 
 
 
@@ -5423,15 +5423,15 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_downsample!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_downsample!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_downsample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_downsample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_downsample!`** &mdash; *Method*.
 
 
 
@@ -5443,11 +5443,11 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
-<a id='NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wdenoise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wdenoise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wdenoise-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wdenoise`** &mdash; *Method*.
 
 
 
@@ -5459,15 +5459,15 @@ Perform wavelet denoising.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wdenoise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wdenoise!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wdenoise!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wdenoise!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wdenoise!`** &mdash; *Method*.
 
 
 
@@ -5479,11 +5479,11 @@ Perform wavelet denoising.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
 
-<a id='NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_a`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_a`** &mdash; *Method*.
 
 
 
@@ -5495,15 +5495,15 @@ Reference the `eeg` to auricular channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_a!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_a!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_a!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_a!`** &mdash; *Method*.
 
 
 
@@ -5515,11 +5515,11 @@ Reference the `eeg` to auricular channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
 
-<a id='NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_m`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_m`** &mdash; *Method*.
 
 
 
@@ -5531,15 +5531,15 @@ Reference the `eeg` to mastoid channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_m!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_m!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_m!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_m!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_m!`** &mdash; *Method*.
 
 
 
@@ -5551,11 +5551,11 @@ Reference the `eeg` to mastoid channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
 
-<a id='NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fftdenoise`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_fftdenoise`** &mdash; *Method*.
 
 
 
@@ -5567,16 +5567,16 @@ Perform wavelet denoising.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64=0`: pad signal with `pad` zeros
   * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fftdenoise!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fftdenoise!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_fftdenoise!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fftdenoise!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_fftdenoise!`** &mdash; *Method*.
 
 
 
@@ -5588,12 +5588,12 @@ Perform wavelet denoising.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64=0`: pad signal with `pad` zeros
   * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
-<a id='NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_plap`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_plap-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_plap-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_plap`** &mdash; *Method*.
 
 
 
@@ -5605,16 +5605,16 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: number of nearest electrodes
   * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_reference_plap!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_reference_plap!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_reference_plap!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_plap!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_reference_plap!`** &mdash; *Method*.
 
 
 
@@ -5626,12 +5626,12 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: number of nearest electrodes
   * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
 
-<a id='NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_zero`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_zero`** &mdash; *Method*.
 
 
 
@@ -5643,14 +5643,14 @@ Zero `eeg` channels at the beginning and at the end.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_zero!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_zero!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_zero!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_zero!`** &mdash; *Method*.
 
 
 
@@ -5662,10 +5662,10 @@ Zero `eeg` channel at the beginning and at the end.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wbp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wbp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wbp-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wbp`** &mdash; *Method*.
 
 
 
@@ -5677,7 +5677,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Real`: filter frequency
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -5685,10 +5685,10 @@ Perform wavelet bandpass filtering of the `eeg`.
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wbp!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wbp!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wbp!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wbp!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wbp!`** &mdash; *Method*.
 
 
 
@@ -5700,14 +5700,14 @@ Perform wavelet bandpass filtering of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Real`: filter frequency
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
   * `demean::Bool=true`: demean signal prior to analysis
 
-<a id='NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cbp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cbp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cbp-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cbp`** &mdash; *Method*.
 
 
 
@@ -5719,17 +5719,17 @@ Perform convolution bandpass filtering of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Real`: filter frequency
   * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cbp!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cbp!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cbp!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cbp!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cbp!`** &mdash; *Method*.
 
 
 
@@ -5741,13 +5741,13 @@ Perform convolution bandpass filtering of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Tuple{Real, Real}`: filter frequency
   * `demean::Bool=true`: demean signal prior to analysis
 
-<a id='NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_denoise_wien`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_denoise_wien-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_denoise_wien-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_denoise_wien`** &mdash; *Method*.
 
 
 
@@ -5759,10 +5759,10 @@ Perform Wiener deconvolution denoising of the `eeg`.
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`
+  * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_denoise_wien!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_denoise_wien!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_denoise_wien!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_denoise_wien!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_denoise_wien!`** &mdash; *Method*.
 
 
 
@@ -5774,7 +5774,7 @@ Perform Wiener deconvolution denoising of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 
 <a id='EEG-analyze'></a>
@@ -5783,8 +5783,8 @@ Perform Wiener deconvolution denoising of the `eeg`.
 
 ## EEG analyze
 
-<a id='NeuroJ.eeg_total_power' href='#NeuroJ.eeg_total_power'>#</a>
-**`NeuroJ.eeg_total_power`** &mdash; *Function*.
+<a id='NeuroAnalyzer.eeg_total_power' href='#NeuroAnalyzer.eeg_total_power'>#</a>
+**`NeuroAnalyzer.eeg_total_power`** &mdash; *Function*.
 
 
 
@@ -5796,15 +5796,15 @@ Calculate total power of the `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
   * `stp::Matrix{Float64}`: total power for each channel per epoch
 
-<a id='NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_power-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band_power`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_band_power-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_band_power-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_band_power`** &mdash; *Method*.
 
 
 
@@ -5816,7 +5816,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -5824,8 +5824,8 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 
   * `sbp::Matrix{Float64}`: band power for each channel per epoch
 
-<a id='NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cov-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cov-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cov`** &mdash; *Method*.
 
 
 
@@ -5837,15 +5837,15 @@ Calculate covariance matrix for all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=true`: normalize covariance
 
 **Returns**
 
   * `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
 
-<a id='NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cor-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cor`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cor-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cor-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cor`** &mdash; *Method*.
 
 
 
@@ -5857,14 +5857,14 @@ Calculate correlation coefficients between all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
 
-<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_xcov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_xcov`** &mdash; *Method*.
 
 
 
@@ -5876,7 +5876,7 @@ Calculate cross-covariance of each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean signal prior to analysis
   * `norm::Bool=false`: normalize cross-covariance
@@ -5888,8 +5888,8 @@ Named tuple containing:
   * `ccov::Matrix{Float64}`
   * `lags::Vector{Float64}`
 
-<a id='NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_xcov-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_xcov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_xcov`** &mdash; *Method*.
 
 
 
@@ -5901,8 +5901,8 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -5918,8 +5918,8 @@ Named tuple containing:
   * `ccov::Array{Float64, 3}`
   * `lags::Vector{Float64}`
 
-<a id='NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_psd`** &mdash; *Method*.
 
 
 
@@ -5931,7 +5931,7 @@ Calculate power spectrum density for each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -5942,8 +5942,8 @@ Named tuple containing:
   * `psd_pow::Array{Float64, 3}`:powers
   * `psd_frq::Array{Float64, 3}`: frequencies
 
-<a id='NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_stationarity-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_stationarity`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_stationarity-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_stationarity-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_stationarity`** &mdash; *Method*.
 
 
 
@@ -5963,8 +5963,8 @@ Calculate stationarity.
 
   * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
 
-<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mi`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_mi`** &mdash; *Method*.
 
 
 
@@ -5976,14 +5976,14 @@ Calculate mutual information between all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `mi::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mi-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mi`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_mi`** &mdash; *Method*.
 
 
 
@@ -5995,15 +5995,15 @@ Calculate mutual information between all channels of `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `mi::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_entropy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_entropy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_entropy-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_entropy-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_entropy`** &mdash; *Method*.
 
 
 
@@ -6015,14 +6015,14 @@ Calculate entropy of all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `entropy::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_negentropy-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_negentropy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_negentropy`** &mdash; *Method*.
 
 
 
@@ -6034,14 +6034,14 @@ Calculate negentropy of all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `ne::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_band-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_band-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_band-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_band`** &mdash; *Method*.
 
 
 
@@ -6060,8 +6060,8 @@ Return frequency limits for a `band` range.
 
   * `band_frequency::Tuple{Real, Real}`
 
-<a id='NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_tcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tcoherence`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tcoherence-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tcoherence-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tcoherence`** &mdash; *Method*.
 
 
 
@@ -6073,8 +6073,8 @@ Calculate coherence (mean over time) and MSC (magnitude-squared coherence) betwe
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
@@ -6088,8 +6088,8 @@ Named tuple containing:
   * `msc::Array{Float64, 3}`: MSC
   * `ic::Array{Float64, 3}`: imaginary part of coherence
 
-<a id='NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_freqs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_freqs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_freqs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_freqs-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_freqs`** &mdash; *Method*.
 
 
 
@@ -6101,7 +6101,7 @@ Return vector of frequencies and Nyquist frequency for `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -6110,8 +6110,8 @@ Named tuple containing:
   * `hz::Vector{Float64}`
   * `nyquist::Float64`
 
-<a id='NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_difference-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_difference`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_difference`** &mdash; *Method*.
 
 
 
@@ -6123,8 +6123,8 @@ Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `n::Int64=3`: number of bootstraps
   * `method::Symbol=:absdiff`
 
@@ -6139,8 +6139,8 @@ Named tuple containing:
   * `signals_statistic_single::Vector{Float64}`
   * `p::Vector{Float64}`
 
-<a id='NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pick-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pick`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pick-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pick-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pick`** &mdash; *Method*.
 
 
 
@@ -6158,8 +6158,8 @@ Return `pick` of electrodes for `eeg` electrodes.
 
   * `channels::Vector{Int64}`
 
-<a id='NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_epochs_stats-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_epochs_stats`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epochs_stats-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_stats-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epochs_stats`** &mdash; *Method*.
 
 
 
@@ -6171,7 +6171,7 @@ Calculate `eeg` epochs statistics.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -6188,8 +6188,8 @@ Named tuple containing:
   * `e_max_dif::Vector(Float64)`: max difference
   * `e_dev_mean::Vector(Float64)`: deviation from channel mean
 
-<a id='NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_spectrogram`** &mdash; *Method*.
 
 
 
@@ -6201,7 +6201,7 @@ Return spectrogram of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `demean::Bool=true`: demean signal prior to analysis
@@ -6214,8 +6214,8 @@ Named tuple containing:
   * `s_frq::Vector{Float64}`
   * `s_t::Vector{Float64}`
 
-<a id='NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_spectrum-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_spectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_spectrum-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_spectrum-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_spectrum`** &mdash; *Method*.
 
 
 
@@ -6227,7 +6227,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For 
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64=0`: pad with `pad` zeros
   * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 
@@ -6240,8 +6240,8 @@ Named tuple containing:
   * `pow::Array{Float64, 3}`: powers
   * `phase::Array{Float64, 3}: phase angles
 
-<a id='NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_s2t-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_s2t`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_s2t-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_s2t-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_s2t`** &mdash; *Method*.
 
 
 
@@ -6253,15 +6253,15 @@ Convert time `t` in samples to seconds using `eeg` sampling rate.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `t::Int64`: time in samples
 
 **Returns**
 
   * `t_s::Float64`: time in seconds
 
-<a id='NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_t2s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_t2s`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_t2s-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_t2s-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_t2s`** &mdash; *Method*.
 
 
 
@@ -6273,15 +6273,15 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `t::Real`: time in seconds
 
 **Returns**
 
   * `t_s::Int64`: time in samples
 
-<a id='NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channels_stats-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_channels_stats`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_channels_stats-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channels_stats-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_channels_stats`** &mdash; *Method*.
 
 
 
@@ -6293,7 +6293,7 @@ Calculate `eeg` channels statistics.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -6310,8 +6310,8 @@ Named tuple containing:
   * `c_max_dif::Matrix(Float64)`: max difference
   * `c_dev_mean::Matrix(Float64)`: deviation from channel mean
 
-<a id='NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_snr-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_snr`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_snr-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_snr-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_snr`** &mdash; *Method*.
 
 
 
@@ -6323,14 +6323,14 @@ Calculate SNR of `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `snr::Matrix(Float64)`: SNR for each channel per epoch
 
-<a id='NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_standardize`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_standardize-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_standardize-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_standardize`** &mdash; *Method*.
 
 
 
@@ -6342,15 +6342,15 @@ Standardize `eeg` channels for ML.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
-  * `eeg_new::NeuroJ.EEG`: standardized EEG
+  * `eeg_new::NeuroAnalyzer.EEG`: standardized EEG
   * `scaler::Matrix{Float64}`: standardizing matrix
 
-<a id='NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_standardize!-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_standardize!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_standardize!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_standardize!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_standardize!`** &mdash; *Method*.
 
 
 
@@ -6362,14 +6362,14 @@ Standardize `eeg` channels for ML.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `scaler::Matrix{Float64}`: standardizing matrix
 
-<a id='NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fconv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fconv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_fconv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fconv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_fconv`** &mdash; *Method*.
 
 
 
@@ -6381,7 +6381,7 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
   * `norm::Bool=false`: normalize kernel
 
@@ -6389,8 +6389,8 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
   * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 
-<a id='NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tconv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tconv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tconv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tconv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tconv`** &mdash; *Method*.
 
 
 
@@ -6402,15 +6402,15 @@ Perform convolution in the time domain.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
 
 **Returns**
 
   * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 
-<a id='NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_dft-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_dft`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_dft-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_dft-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_dft`** &mdash; *Method*.
 
 
 
@@ -6422,7 +6422,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -6431,8 +6431,8 @@ Named tuple containing:
   * `sfft::Array{ComplexF64, 3}`: FFT
   * `sf::Array{Float64, 3}`: sample frequencies
 
-<a id='NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_msci95-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_msci95`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_msci95`** &mdash; *Method*.
 
 
 
@@ -6444,7 +6444,7 @@ Calculates mean, std and 95% confidence interval for each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `n::Int64`: number of bootstraps
   * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
 
@@ -6457,8 +6457,8 @@ Named tuple containing:
   * `s_u::Matrix{Float64}`: upper 95% CI
   * `s_l::Matrix{Float64}`: lower 95% CI
 
-<a id='NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_mean-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_mean`** &mdash; *Method*.
 
 
 
@@ -6470,8 +6470,8 @@ Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2:NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -6482,8 +6482,8 @@ Named tuple containing:
   * `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
   * `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
 
-<a id='NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroJ.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
-**`NeuroJ.eeg_difference`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroAnalyzer.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+**`NeuroAnalyzer.eeg_difference`** &mdash; *Method*.
 
 
 
@@ -6511,8 +6511,8 @@ Named tuple containing:
   * `s_stat_single::Vector{Float64}`
   * `p::Vector{Float64}`
 
-<a id='NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_acov-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_acov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_acov-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_acov-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_acov`** &mdash; *Method*.
 
 
 
@@ -6522,7 +6522,7 @@ Calculate autocovariance of each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `lag::Int64`: lags range is `-lag:lag`
   * `demean::Bool`: demean eeg prior to analysis
   * `norm::Bool`: normalize autocovariance
@@ -6534,8 +6534,8 @@ Named tuple containing:
   * `acov::Matrix{Float64}`
   * `lags::Vector{Float64}`
 
-<a id='NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tenv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tenv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tenv`** &mdash; *Method*.
 
 
 
@@ -6547,7 +6547,7 @@ Calculate temporal envelope of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
@@ -6557,8 +6557,8 @@ Named tuple containing:
   * `t_env::Array{Float64, 3}`: temporal envelope
   * `s_t::Vector{Float64}`: signal time
 
-<a id='NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tenv_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tenv_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tenv_mean`** &mdash; *Method*.
 
 
 
@@ -6570,7 +6570,7 @@ Calculate temporal envelope of `eeg`: mean and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -6583,8 +6583,8 @@ Named tuple containing:
   * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
   * `s_t::Vector{Float64}`: signal time
 
-<a id='NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tenv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tenv_median`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tenv_median-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tenv_median-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tenv_median`** &mdash; *Method*.
 
 
 
@@ -6596,7 +6596,7 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -6609,8 +6609,8 @@ Named tuple containing:
   * `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
   * `s_t::Vector{Float64}`: signal time
 
-<a id='NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_penv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_penv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_penv`** &mdash; *Method*.
 
 
 
@@ -6622,7 +6622,7 @@ Calculate power (in dB) envelope of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -6633,8 +6633,8 @@ Named tuple containing:
   * `p_env::Array{Float64, 3}`: power spectrum envelope
   * `p_env_frq::Vector{Float64}`: frequencies for each envelope
 
-<a id='NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_penv_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_penv_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_penv_mean`** &mdash; *Method*.
 
 
 
@@ -6646,7 +6646,7 @@ Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -6660,8 +6660,8 @@ Named tuple containing:
   * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
   * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 
-<a id='NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_penv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_penv_median`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_penv_median-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_penv_median-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_penv_median`** &mdash; *Method*.
 
 
 
@@ -6673,7 +6673,7 @@ Calculate power (in dB) envelope of `eeg`: median and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -6687,8 +6687,8 @@ Named tuple containing:
   * `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
   * `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 
-<a id='NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_senv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_senv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_senv`** &mdash; *Method*.
 
 
 
@@ -6700,7 +6700,7 @@ Calculate spectral envelope of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -6712,8 +6712,8 @@ Named tuple containing:
   * `s_env::Array{Float64, 3}`: spectral envelope
   * `s_env_t::Vector{Float64}`: spectrogram time
 
-<a id='NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_mean-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_senv_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_senv_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_senv_mean`** &mdash; *Method*.
 
 
 
@@ -6725,7 +6725,7 @@ Calculate spectral envelope of `eeg`: mean and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -6740,8 +6740,8 @@ Named tuple containing:
   * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
   * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 
-<a id='NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_senv_median-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_senv_median`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_senv_median-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_senv_median-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_senv_median`** &mdash; *Method*.
 
 
 
@@ -6753,7 +6753,7 @@ Calculate spectral envelope of `eeg`: median and 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -6768,8 +6768,8 @@ Named tuple containing:
   * `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
   * `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 
-<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ispc`** &mdash; *Method*.
 
 
 
@@ -6781,8 +6781,8 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `ch
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -6799,8 +6799,8 @@ Named tuple containing:
   * `s1_phase::Array{Float64, 3}`: signal 1 phase
   * `s2_phase::Array{Float64, 3}`: signal 2 phase
 
-<a id='NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_itpc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_itpc-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_itpc-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_itpc`** &mdash; *Method*.
 
 
 
@@ -6812,7 +6812,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `t::Int64`: time point (sample number) at which ITPC is calculated
   * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
@@ -6826,8 +6826,8 @@ Named tuple containing:
   * `itpc_angle::Float64`: ITPC angle
   * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
 
-<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pli`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pli`** &mdash; *Method*.
 
 
 
@@ -6839,8 +6839,8 @@ Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -6856,8 +6856,8 @@ Named tuple containing:
   * `s1_phase::Array{Float64, 3}`: signal 1 phase
   * `s2_phase::Array{Float64, 3}`: signal 2 phase
 
-<a id='NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_pli-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_pli`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_pli`** &mdash; *Method*.
 
 
 
@@ -6869,14 +6869,14 @@ Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `pli_m::Array{Float64, 3}`: PLI value matrices over epochs
 
-<a id='NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_ispc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ispc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ispc-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ispc-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ispc`** &mdash; *Method*.
 
 
 
@@ -6888,14 +6888,14 @@ Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `ispc_m::Array{Float64, 3}`: ISPC value matrices over epochs
 
-<a id='NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_aec-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_aec`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_aec-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_aec-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_aec`** &mdash; *Method*.
 
 
 
@@ -6907,8 +6907,8 @@ Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channe
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
   * `epoch1::Int64`
@@ -6921,8 +6921,8 @@ Named tuple containing:
   * `aec::Float64`: power correlation value
   * `aec_p::Float64`: power correlation p-value
 
-<a id='NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_ged-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_ged`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_ged-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ged-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ged`** &mdash; *Method*.
 
 
 
@@ -6934,8 +6934,8 @@ Perform generalized eigendecomposition between `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`: signal data to be analyzed
-  * `eeg2::NeuroJ.EEG`: original signal data
+  * `eeg1::NeuroAnalyzer.EEG`: signal data to be analyzed
+  * `eeg2::NeuroAnalyzer.EEG`: original signal data
 
 **Returns**
 
@@ -6943,8 +6943,8 @@ Perform generalized eigendecomposition between `eeg1` and `eeg2`.
   * `ress::Matrix{Float64}`
   * `ress_normalized::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_frqinst-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_frqinst`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_frqinst-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_frqinst-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_frqinst`** &mdash; *Method*.
 
 
 
@@ -6956,14 +6956,14 @@ Calculate instantaneous frequency of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `frqinst::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_itpc_s`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_itpc_s-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_itpc_s-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_itpc_s`** &mdash; *Method*.
 
 
 
@@ -6975,7 +6975,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `e
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
@@ -6990,8 +6990,8 @@ Named tuple containing:
   * `itpc_z_s::Array{Float64, 3}`: spectrogram ITPCz values
   * `itpc_frq::Vector{Float64}`: frequencies list
 
-<a id='NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wspectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wspectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wspectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wspectrogram`** &mdash; *Method*.
 
 
 
@@ -7003,7 +7003,7 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool`=true: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -7021,8 +7021,8 @@ Named tuple containing:
   * `w_frq::Matrix{Float64}`
   * `w_t::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_tkeo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_tkeo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_tkeo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tkeo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_tkeo`** &mdash; *Method*.
 
 
 
@@ -7034,14 +7034,14 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
   * `tkeo::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_wspectrum-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_wspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_wspectrum-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wspectrum-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_wspectrum`** &mdash; *Method*.
 
 
 
@@ -7053,7 +7053,7 @@ Return power spectrogrum of `eeg` using Morlet wavelet convolution.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool`=true: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -7069,8 +7069,8 @@ Named tuple containing:
   * `w_pow::Array{Float64, 4}`
   * `w_frq::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_fcoherence-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fcoherence`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_fcoherence-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fcoherence-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_fcoherence`** &mdash; *Method*.
 
 
 
@@ -7082,8 +7082,8 @@ Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
   * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
@@ -7098,8 +7098,8 @@ Named tuple containing:
   * `msc::Array{Float64, 3}`: MSC
   * `f::Vector{Float64}`: frequencies
 
-<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_vartest-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_vartest-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_vartest`** &mdash; *Method*.
 
 
 
@@ -7111,7 +7111,7 @@ Calculate variance F-test for all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -7120,8 +7120,8 @@ Named tuple containing:
   * `f::Array{Float64, 3}`
   * `p::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_vartest-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_vartest`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_vartest-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_vartest-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_vartest`** &mdash; *Method*.
 
 
 
@@ -7133,8 +7133,8 @@ Calculate variance F-test for all channels of `eeg1` and `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -7143,8 +7143,8 @@ Named tuple containing:
   * `f::Array{Float64, 3}`
   * `p::Array{Float64, 3}`
 
-<a id='NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_band_mpower-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_band_mpower`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_band_mpower-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_band_mpower-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_band_mpower`** &mdash; *Method*.
 
 
 
@@ -7156,7 +7156,7 @@ Calculate mean and maximum band power and its frequency.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -7168,8 +7168,8 @@ Named tuple containing:
   * `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
   * `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
 
-<a id='NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_rel_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_rel_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_rel_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rel_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_rel_psd`** &mdash; *Method*.
 
 
 
@@ -7181,7 +7181,7 @@ Calculate relative power spectrum density for each the `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
@@ -7193,8 +7193,8 @@ Named tuple containing:
   * `psd_pow::Array{Float64, 3}`:powers
   * `psd_frq::Array{Float64, 3}`: frequencies
 
-<a id='NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_fbsplit-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_fbsplit`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_fbsplit-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fbsplit-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_fbsplit`** &mdash; *Method*.
 
 
 
@@ -7206,7 +7206,7 @@ Split EEG signal into frequency bands.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `order::Int64=8`: bandpass filter order
 
 **Returns**
@@ -7217,8 +7217,8 @@ Named tuple containing:
   * `band_frq::Vector{Tuple{Real, Real}}`
   * `signal_split::Array{Float64, 4}`
 
-<a id='NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_chdiff-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_chdiff`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_chdiff-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_chdiff-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_chdiff`** &mdash; *Method*.
 
 
 
@@ -7230,8 +7230,8 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 
 **Arguments**
 
-  * `eeg1::NeuroJ.EEG`
-  * `eeg2::NeuroJ.EEG`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
 
@@ -7239,8 +7239,8 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 
   * `ch_diff::Matrix{Float64}`
 
-<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cps`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cps-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cps-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cps`** &mdash; *Method*.
 
 
 
@@ -7252,7 +7252,7 @@ Calculate cross power spectrum between all channels of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=true`: normalize do dB
 
 **Returns**
@@ -7263,8 +7263,8 @@ Named tuple containing:
   * `cps_ph::Array{Float64, 4}`: cross power spectrum phase (in radians)
   * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 
-<a id='NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_cps-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_cps`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_cps-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cps-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_cps`** &mdash; *Method*.
 
 
 
@@ -7276,7 +7276,7 @@ Calculate cross power spectrum between `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
   * `epoch1::Int64`
@@ -7298,8 +7298,8 @@ Named tuple containing:
 
 ## EEG plots
 
-<a id='NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
-**`NeuroJ.plot_signal_scaled`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroAnalyzer.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+**`NeuroAnalyzer.plot_signal_scaled`** &mdash; *Method*.
 
 
 
@@ -7324,8 +7324,8 @@ Plot scaled multi-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_signal`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
 
 
 
@@ -7350,8 +7350,8 @@ Plot single-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroJ.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
-**`NeuroJ.plot_signal`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+**`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
 
 
 
@@ -7376,8 +7376,8 @@ Plot multi-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal`** &mdash; *Method*.
 
 
 
@@ -7389,7 +7389,7 @@ Plot `eeg` channel or channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
   * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
@@ -7405,8 +7405,8 @@ Plot `eeg` channel or channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_details`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_details`** &mdash; *Method*.
 
 
 
@@ -7418,7 +7418,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Int64`: channel to display
   * `offset::Int64=0`: displayed segment offset in samples
@@ -7440,8 +7440,8 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 
   * `pc::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component`** &mdash; *Method*.
 
 
 
@@ -7453,7 +7453,7 @@ Plot `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -7467,8 +7467,8 @@ Plot `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx`** &mdash; *Method*.
 
 
 
@@ -7480,7 +7480,7 @@ Plot indexed `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -7494,8 +7494,8 @@ Plot indexed `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_avg`** &mdash; *Method*.
 
 
 
@@ -7507,7 +7507,7 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -7521,8 +7521,8 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_butterfly`** &mdash; *Method*.
 
 
 
@@ -7534,7 +7534,7 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -7548,8 +7548,8 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_psd`** &mdash; *Method*.
 
 
 
@@ -7561,7 +7561,7 @@ Plot PSD of indexed `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Int64`: component index to display, default is all components
@@ -7577,8 +7577,8 @@ Plot PSD of indexed `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_psd_avg`** &mdash; *Method*.
 
 
 
@@ -7590,7 +7590,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -7607,8 +7607,8 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_psd_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly`** &mdash; *Method*.
 
 
 
@@ -7620,7 +7620,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -7636,8 +7636,8 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroJ.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
-**`NeuroJ.plot_signal_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroAnalyzer.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_signal_avg`** &mdash; *Method*.
 
 
 
@@ -7663,8 +7663,8 @@ Plot `signal` channels: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_avg`** &mdash; *Method*.
 
 
 
@@ -7676,7 +7676,7 @@ Plot `eeg` channels: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -7693,8 +7693,8 @@ Plot `eeg` channels: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_avg_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_avg_details`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_avg_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_avg_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_avg_details`** &mdash; *Method*.
 
 
 
@@ -7706,7 +7706,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -7729,8 +7729,8 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_avg`** &mdash; *Method*.
 
 
 
@@ -7742,7 +7742,7 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -7756,8 +7756,8 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroJ.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
-**`NeuroJ.plot_signal_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroAnalyzer.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_signal_butterfly`** &mdash; *Method*.
 
 
 
@@ -7784,8 +7784,8 @@ Butterfly plot of `signal` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_butterfly`** &mdash; *Method*.
 
 
 
@@ -7799,7 +7799,7 @@ Butterfly plot of `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -7816,8 +7816,8 @@ Butterfly plot of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_butterfly_details-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_butterfly_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_butterfly_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
 
 
 
@@ -7829,7 +7829,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Int64=1`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -7852,8 +7852,8 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_butterfly`** &mdash; *Method*.
 
 
 
@@ -7865,7 +7865,7 @@ Butterfly plot of `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -7880,8 +7880,8 @@ Butterfly plot of `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_psd-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_psd-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_psd`** &mdash; *Method*.
 
 
 
@@ -7911,8 +7911,8 @@ Plot `signal` channel power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd_avg-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_psd_avg-Tuple{Matrix{<:Real}}'>#</a>
-**`NeuroJ.plot_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_avg-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_psd_avg`** &mdash; *Method*.
 
 
 
@@ -7943,8 +7943,8 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd_butterfly-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_psd_butterfly-Tuple{Matrix{<:Real}}'>#</a>
-**`NeuroJ.plot_psd_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_butterfly-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_psd_butterfly-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_psd_butterfly`** &mdash; *Method*.
 
 
 
@@ -7975,8 +7975,8 @@ Butterfly plot of `signal` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_psd`** &mdash; *Method*.
 
 
 
@@ -7988,7 +7988,7 @@ Plot `eeg` channels power spectrum density.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Int64`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -8010,8 +8010,8 @@ Plot `eeg` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_psd_avg`** &mdash; *Method*.
 
 
 
@@ -8023,7 +8023,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -8045,8 +8045,8 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_psd_butterfly`** &mdash; *Method*.
 
 
 
@@ -8058,7 +8058,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -8080,8 +8080,8 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_psd`** &mdash; *Method*.
 
 
 
@@ -8093,7 +8093,7 @@ Plot PSD of `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Int64`: channel to display
@@ -8113,8 +8113,8 @@ Plot PSD of `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_psd_avg`** &mdash; *Method*.
 
 
 
@@ -8126,7 +8126,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -8146,8 +8146,8 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_psd_butterfly-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_psd_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_psd_butterfly`** &mdash; *Method*.
 
 
 
@@ -8159,7 +8159,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -8178,8 +8178,8 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_spectrogram-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_spectrogram-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_spectrogram`** &mdash; *Method*.
 
 
 
@@ -8209,8 +8209,8 @@ Plot spectrogram of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_spectrogram`** &mdash; *Method*.
 
 
 
@@ -8242,8 +8242,8 @@ Plots spectrogram of `eeg` channel(s).
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_spectrogram_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_spectrogram_avg`** &mdash; *Method*.
 
 
 
@@ -8275,8 +8275,8 @@ Plots spectrogram of `eeg` channel(s).
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_spectrogram`** &mdash; *Method*.
 
 
 
@@ -8307,8 +8307,8 @@ Plots spectrogram of `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_spectrogram_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_spectrogram_avg`** &mdash; *Method*.
 
 
 
@@ -8341,8 +8341,8 @@ Plots spectrogram of `eeg` channel(s).
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_spectrogram`** &mdash; *Method*.
 
 
 
@@ -8354,7 +8354,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Int64`: component index to display, default is all components
@@ -8373,8 +8373,8 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_component_idx_spectrogram_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg`** &mdash; *Method*.
 
 
 
@@ -8386,7 +8386,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -8405,8 +8405,8 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_electrodes`** &mdash; *Method*.
 
 
 
@@ -8432,8 +8432,8 @@ Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}' href='#NeuroJ.eeg_plot_matrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}'>#</a>
-**`NeuroJ.eeg_plot_matrix`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}' href='#NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_matrix`** &mdash; *Method*.
 
 
 
@@ -8455,8 +8455,8 @@ Plot matrix `m` of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}' href='#NeuroJ.eeg_plot_covmatrix-Tuple{NeuroJ.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}'>#</a>
-**`NeuroJ.eeg_plot_covmatrix`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}' href='#NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_covmatrix`** &mdash; *Method*.
 
 
 
@@ -8480,8 +8480,8 @@ Plot covariance matrix `m` of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_histogram-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_histogram-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_histogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_histogram-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_histogram-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_histogram`** &mdash; *Method*.
 
 
 
@@ -8506,8 +8506,8 @@ Plot histogram of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_histogram-Tuple{Matrix{<:Real}}' href='#NeuroJ.plot_histogram-Tuple{Matrix{<:Real}}'>#</a>
-**`NeuroJ.plot_histogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_histogram-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_histogram-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_histogram`** &mdash; *Method*.
 
 
 
@@ -8532,8 +8532,8 @@ Plot histogram of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_histogram-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_histogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_histogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_histogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_histogram`** &mdash; *Method*.
 
 
 
@@ -8545,7 +8545,7 @@ Plot `eeg` channel histograms.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `type::Symbol: type of histogram: :hist or :kd
   * `epoch::Int64=1`: epoch number to display
   * `channel::Int64`: channel to display
@@ -8562,8 +8562,8 @@ Plot `eeg` channel histograms.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}' href='#NeuroJ.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}'>#</a>
-**`NeuroJ.plot_ica`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}' href='#NeuroAnalyzer.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_ica`** &mdash; *Method*.
 
 
 
@@ -8590,8 +8590,8 @@ Plot `ica` components against time vector `t`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_topo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_topo`** &mdash; *Method*.
 
 
 
@@ -8603,7 +8603,7 @@ Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*thet
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 second
@@ -8618,8 +8618,8 @@ Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*thet
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_acomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_acomponent_topo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_acomponent_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_acomponent_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_acomponent_topo`** &mdash; *Method*.
 
 
 
@@ -8631,7 +8631,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
   * `offset::Int64=0`: displayed segment offset in samples
@@ -8646,8 +8646,8 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_weights_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_weights_topo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_weights_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_weights_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_weights_topo`** &mdash; *Method*.
 
 
 
@@ -8672,8 +8672,8 @@ Topographical plot `eeg` of weights values at electrodes locations. It uses pola
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_mcomponent_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_mcomponent_topo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_mcomponent_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_mcomponent_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_mcomponent_topo`** &mdash; *Method*.
 
 
 
@@ -8685,7 +8685,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `epoch::Int64`: epoch to display
   * `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
@@ -8699,8 +8699,8 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ica_topo-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_ica_topo`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_ica_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_ica_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_ica_topo`** &mdash; *Method*.
 
 
 
@@ -8712,7 +8712,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Int64`: epoch to display
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 second
@@ -8728,8 +8728,8 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_tile' href='#NeuroJ.eeg_plot_tile'>#</a>
-**`NeuroJ.eeg_plot_tile`** &mdash; *Function*.
+<a id='NeuroAnalyzer.eeg_plot_tile' href='#NeuroAnalyzer.eeg_plot_tile'>#</a>
+**`NeuroAnalyzer.eeg_plot_tile`** &mdash; *Function*.
 
 
 
@@ -8751,8 +8751,8 @@ Plot vector of plots `p` as tiles.
 
   * `p_tiled::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_bands-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_bands-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_bands`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_bands-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_bands-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_bands`** &mdash; *Method*.
 
 
 
@@ -8780,8 +8780,8 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_bands-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_bands`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_bands-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_bands-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_bands`** &mdash; *Method*.
 
 
 
@@ -8793,7 +8793,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
   * `offset::Int64=0`: displayed segment offset in samples
@@ -8811,8 +8811,8 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroJ.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
-**`NeuroJ.eeg_plot_save`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_save`** &mdash; *Method*.
 
 
 
@@ -8827,8 +8827,8 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
   * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
   * `file_name::String`
 
-<a id='NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_channels-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_channels`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_channels-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_channels-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_channels`** &mdash; *Method*.
 
 
 
@@ -8840,7 +8840,7 @@ Plot values of `c` for selected channels of `eeg`.
 
 **Arguments**
 
-  * `eeg:NeuroJ.EEG`
+  * `eeg:NeuroAnalyzer.EEG`
   * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
   * `epoch::Int64`: number of epoch for which `c` should be plotted
@@ -8854,8 +8854,8 @@ Plot values of `c` for selected channels of `eeg`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_epochs-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_epochs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_epochs`** &mdash; *Method*.
 
 
 
@@ -8867,7 +8867,7 @@ Plot values of `c` for selected epoch of `eeg`.
 
 **Arguments**
 
-  * `eeg:NeuroJ.EEG`
+  * `eeg:NeuroAnalyzer.EEG`
   * `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
   * `xlabel::String="Epochs"`: x-axis label
@@ -8880,8 +8880,8 @@ Plot values of `c` for selected epoch of `eeg`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_filter_response-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_filter_response`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_filter_response-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_filter_response-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_filter_response`** &mdash; *Method*.
 
 
 
@@ -8893,7 +8893,7 @@ Plot filter response.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
   * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
   * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
@@ -8908,8 +8908,8 @@ Plot filter response.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}' href='#NeuroJ.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}'>#</a>
-**`NeuroJ.eeg_plot_compose`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.eeg_plot_compose-Tuple{Vector{Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_compose`** &mdash; *Method*.
 
 
 
@@ -8933,8 +8933,8 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 
   * `pc::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_env-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_env`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_env-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_env-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_env`** &mdash; *Method*.
 
 
 
@@ -8946,7 +8946,7 @@ Plot envelope of `eeg` channels.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
   * `average::Symbol`: averaging method: :no, :mean or :median
   * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
@@ -8964,8 +8964,8 @@ Plot envelope of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_ispc-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_ispc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_ispc`** &mdash; *Method*.
 
 
 
@@ -8977,8 +8977,8 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
 **Arguments**
 
-  * `eeg1:NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
+  * `eeg1:NeuroAnalyzer.EEG`
+  * `eeg2:NeuroAnalyzer.EEG`
   * `channel1::Int64`: channel to plot
   * `channel2::Int64`: channel to plot
   * `epoch1::Int64`: epoch to plot
@@ -8990,8 +8990,8 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_itpc-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_itpc`** &mdash; *Method*.
 
 
 
@@ -9003,7 +9003,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
 **Arguments**
 
-  * `eeg:NeuroJ.EEG`
+  * `eeg:NeuroAnalyzer.EEG`
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
   * `z::Bool=false`: plot ITPCz instead of ITPC
@@ -9015,8 +9015,8 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}' href='#NeuroJ.eeg_plot_pli-Tuple{NeuroJ.EEG, NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_pli`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_pli`** &mdash; *Method*.
 
 
 
@@ -9028,8 +9028,8 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
 **Arguments**
 
-  * `eeg1:NeuroJ.EEG`
-  * `eeg2:NeuroJ.EEG`
+  * `eeg1:NeuroAnalyzer.EEG`
+  * `eeg2:NeuroAnalyzer.EEG`
   * `channel1::Int64`: channel to plot
   * `channel2::Int64`: channel to plot
   * `epoch1::Int64`: epoch to plot
@@ -9041,8 +9041,8 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_s-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc_s`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_itpc_s-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc_s-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_itpc_s`** &mdash; *Method*.
 
 
 
@@ -9054,7 +9054,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
@@ -9071,8 +9071,8 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_itpc_f-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_itpc_f`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_itpc_f-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc_f-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_itpc_f`** &mdash; *Method*.
 
 
 
@@ -9084,7 +9084,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `f::Int64`: frequency to plot
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -9102,8 +9102,8 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_connections-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_connections`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_connections`** &mdash; *Method*.
 
 
 
@@ -9127,8 +9127,8 @@ Plot connections between `eeg` electrodes.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_3dw`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_psd_3dw`** &mdash; *Method*.
 
 
 
@@ -9158,8 +9158,8 @@ Plot 3-d waterfall plot of `signal` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_3d-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_3d`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_psd_3d-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_3d-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_psd_3d`** &mdash; *Method*.
 
 
 
@@ -9171,7 +9171,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Int64`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -9193,8 +9193,8 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroJ.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroJ.plot_psd_3ds`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_psd_3ds`** &mdash; *Method*.
 
 
 
@@ -9224,8 +9224,8 @@ Plot 3-d surface plot of `signal` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroJ.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
-**`NeuroJ.plot_rel_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_rel_psd`** &mdash; *Method*.
 
 
 
@@ -9254,8 +9254,8 @@ Plot relative `signal` channel power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrode-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrode`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_electrode-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrode-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_electrode`** &mdash; *Method*.
 
 
 
@@ -9276,8 +9276,8 @@ Plot single `eeg` electrode. It uses polar :loc*radius and :loc*theta locations,
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_electrodes3d-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_electrodes3d`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_electrodes3d-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrodes3d-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_electrodes3d`** &mdash; *Method*.
 
 
 
@@ -9300,8 +9300,8 @@ Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc*x, :loc*y a
 
   * `fig::GLMakie.Figure`
 
-<a id='NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_plot_signal_psd_topomap-Tuple{NeuroJ.EEG}'>#</a>
-**`NeuroJ.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_signal_psd_topomap-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_topomap-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
 
 
 
@@ -9313,7 +9313,7 @@ Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locat
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`: EEG object
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
   * `offset::Int64=0`: displayed segment offset in samples
@@ -9336,8 +9336,8 @@ Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locat
 
   * `fig::GLMakie.Figure`
 
-<a id='NeuroJ.plot_electrodes-Tuple{DataFrame}' href='#NeuroJ.plot_electrodes-Tuple{DataFrame}'>#</a>
-**`NeuroJ.plot_electrodes`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_electrodes`** &mdash; *Method*.
 
 
 
@@ -9358,8 +9358,8 @@ Preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z loca
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroJ.plot_electrodes3d-Tuple{DataFrame}' href='#NeuroJ.plot_electrodes3d-Tuple{DataFrame}'>#</a>
-**`NeuroJ.plot_electrodes3d`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_electrodes3d`** &mdash; *Method*.
 
 
 
@@ -9387,8 +9387,8 @@ plot_electrodes3d(locs; <keyword arguments>)
 
 ## Neurostimulation
 
-<a id='NeuroJ.tes_dose-Tuple{Real, Real, Int64}' href='#NeuroJ.tes_dose-Tuple{Real, Real, Int64}'>#</a>
-**`NeuroJ.tes_dose`** &mdash; *Method*.
+<a id='NeuroAnalyzer.tes_dose-Tuple{Real, Real, Int64}' href='#NeuroAnalyzer.tes_dose-Tuple{Real, Real, Int64}'>#</a>
+**`NeuroAnalyzer.tes_dose`** &mdash; *Method*.
 
 
 

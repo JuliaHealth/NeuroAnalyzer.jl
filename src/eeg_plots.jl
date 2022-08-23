@@ -254,7 +254,7 @@ Plot `eeg` channel or channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
 - `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
@@ -270,7 +270,7 @@ Plot `eeg` channel or channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -377,7 +377,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Int64`: channel to display
 - `offset::Int64=0`: displayed segment offset in samples
@@ -399,7 +399,7 @@ Plot details of `eeg` channels: amplitude, histogram, power density, phase histo
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, mono::Bool=false, kwargs...)
+function eeg_plot_signal_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, mono::Bool=false, kwargs...)
 
     hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
@@ -512,7 +512,7 @@ Plot `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -526,7 +526,7 @@ Plot `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -576,7 +576,7 @@ Plot indexed `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -590,7 +590,7 @@ Plot indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -649,7 +649,7 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -663,7 +663,7 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -719,7 +719,7 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -733,7 +733,7 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -789,7 +789,7 @@ Plot PSD of indexed `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Int64`: component index to display, default is all components
@@ -805,7 +805,7 @@ Plot PSD of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_psd(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
@@ -860,7 +860,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -877,7 +877,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_idx_psd_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
     ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
@@ -947,7 +947,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -963,7 +963,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_psd_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
@@ -1104,7 +1104,7 @@ Plot `eeg` channels: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -1121,7 +1121,7 @@ Plot `eeg` channels: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function eeg_plot_signal_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg() channel must contain ≥ 2 channels."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -1220,7 +1220,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -1243,7 +1243,7 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_avg_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
+function eeg_plot_signal_avg_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg_details() channel must contain ≥ 2 channels."))
 
@@ -1375,7 +1375,7 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -1389,7 +1389,7 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -1514,7 +1514,7 @@ Butterfly plot of `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -1531,7 +1531,7 @@ Butterfly plot of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function eeg_plot_signal_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly() channel must contain ≥ 2 channels."))
 
@@ -1633,7 +1633,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Int64=1`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -1656,7 +1656,7 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_butterfly_details(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
+function eeg_plot_signal_butterfly_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly_details() channel must contain ≥ 2 channels."))
 
@@ -1789,7 +1789,7 @@ Butterfly plot of `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -1804,7 +1804,7 @@ Butterfly plot of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -2358,7 +2358,7 @@ Plot `eeg` channels power spectrum density.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Int64`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -2380,7 +2380,7 @@ Plot `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2501,7 +2501,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -2523,7 +2523,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2614,7 +2614,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -2636,7 +2636,7 @@ Plot `eeg` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_butterfly(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_signal_psd_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2725,7 +2725,7 @@ Plot PSD of `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Int64`: channel to display
@@ -2745,7 +2745,7 @@ Plot PSD of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_psd(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2805,7 +2805,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -2825,7 +2825,7 @@ Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_component_psd_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2884,7 +2884,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
@@ -2903,7 +2903,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_psd_butterfly(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_psd_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -3060,7 +3060,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3212,7 +3212,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram_avg(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3329,7 +3329,7 @@ Plots spectrogram of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3442,7 +3442,7 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3544,7 +3544,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Int64`: component index to display, default is all components
@@ -3563,7 +3563,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3657,7 +3657,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
@@ -3676,7 +3676,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroJ.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3762,7 +3762,7 @@ Plot `eeg` electrodes. It uses polar :loc_radius and :loc_theta locations, which
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
+function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -3899,7 +3899,7 @@ Plot matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_matrix(eeg::NeuroJ.EEG, m::Union{Matrix{<:Real}, Array{Float64, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
+function eeg_plot_matrix(eeg::NeuroAnalyzer.EEG, m::Union{Matrix{<:Real}, Array{Float64, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -3944,7 +3944,7 @@ Plot covariance matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_covmatrix(eeg::NeuroJ.EEG, cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}, lags::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)
+function eeg_plot_covmatrix(eeg::NeuroAnalyzer.EEG, cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}, lags::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -4102,7 +4102,7 @@ Plot `eeg` channel histograms.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `type::Symbol: type of histogram: :hist or :kd
 - `epoch::Int64=1`: epoch number to display
 - `channel::Int64`: channel to display
@@ -4119,7 +4119,7 @@ Plot `eeg` channel histograms.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_histogram(eeg::NeuroJ.EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_histogram(eeg::NeuroAnalyzer.EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
     len < 0 && throw(ArgumentError("len must be > 0."))
@@ -4218,7 +4218,7 @@ Plot topographical view of `eeg` signal. It uses polar :loc_radius and :loc_thet
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Union{Int64, AbstractRange}=1`: epochs to display
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 second
@@ -4233,7 +4233,7 @@ Plot topographical view of `eeg` signal. It uses polar :loc_radius and :loc_thet
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4389,7 +4389,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Int64`: epoch to display
 - `offset::Int64=0`: displayed segment offset in samples
@@ -4404,7 +4404,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{<:Real, 3}, Symbol}, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Array{<:Real, 3}, Symbol}, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4544,7 +4544,7 @@ Topographical plot `eeg` of weights values at electrodes locations. It uses pola
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:Real}, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
+function eeg_plot_weights_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, weights=Matrix{<:Real}, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -4623,7 +4623,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `epoch::Int64`: epoch to display
 - `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
@@ -4637,7 +4637,7 @@ Plot topographical view of `eeg` external or embedded component (matrix type: 1 
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix{<:Real}, Symbol}, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_mcomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Matrix{<:Real}, Symbol}, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4754,7 +4754,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Int64`: epoch to display
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 second
@@ -4770,7 +4770,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_ica_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
@@ -5050,7 +5050,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=1`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
 - `offset::Int64=0`: displayed segment offset in samples
@@ -5068,7 +5068,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_bands(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_bands(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (band === :all && (typeof(channel) != Int64 || length(channel) != 1)) && throw(ArgumentError("For band :all only one channel may be specified."))
     band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
@@ -5204,7 +5204,7 @@ Plot values of `c` for selected channels of `eeg`.
 
 # Arguments
 
-- `eeg:NeuroJ.EEG`
+- `eeg:NeuroAnalyzer.EEG`
 - `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
 - `epoch::Int64`: number of epoch for which `c` should be plotted
@@ -5218,7 +5218,7 @@ Plot values of `c` for selected channels of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_channels(eeg::NeuroJ.EEG; c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channel", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_channels(eeg::NeuroAnalyzer.EEG; c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channel", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     channel = _select_channels(eeg, channel, 0)
@@ -5260,7 +5260,7 @@ Plot values of `c` for selected epoch of `eeg`.
 
 # Arguments
 
-- `eeg:NeuroJ.EEG`
+- `eeg:NeuroAnalyzer.EEG`
 - `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
 - `xlabel::String="Epochs"`: x-axis label
@@ -5273,7 +5273,7 @@ Plot values of `c` for selected epoch of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_epochs(eeg::NeuroJ.EEG; c::Union{Vector{<:Real}, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_epochs(eeg::NeuroAnalyzer.EEG; c::Union{Vector{<:Real}, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     epoch = _select_epochs(eeg, epoch, 0)
     _check_epochs(eeg, epoch)
@@ -5314,7 +5314,7 @@ Plot filter response.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
 - `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
 - `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
@@ -5329,7 +5329,7 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::NeuroJ.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
+function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5609,7 +5609,7 @@ Plot envelope of `eeg` channels.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
 - `average::Symbol`: averaging method: :no, :mean or :median
 - `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
@@ -5627,7 +5627,7 @@ Plot envelope of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_env(eeg::NeuroJ.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, d::Int64=32, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, d::Int64=32, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5759,8 +5759,8 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
 # Arguments
 
-- `eeg1:NeuroJ.EEG`
-- `eeg2:NeuroJ.EEG`
+- `eeg1:NeuroAnalyzer.EEG`
+- `eeg2:NeuroAnalyzer.EEG`
 - `channel1::Int64`: channel to plot
 - `channel2::Int64`: channel to plot
 - `epoch1::Int64`: epoch to plot
@@ -5772,7 +5772,7 @@ Plot ISPC `eeg1` and `eeg2` channels/epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_ispc(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
+function eeg_plot_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5836,7 +5836,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
 # Arguments
 
-- `eeg:NeuroJ.EEG`
+- `eeg:NeuroAnalyzer.EEG`
 - `channel::Int64`: channel to plot
 - `t::Int64`: time point to plot
 - `z::Bool=false`: plot ITPCz instead of ITPC
@@ -5848,7 +5848,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc(eeg::NeuroJ.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, kwargs...)
+function eeg_plot_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5908,8 +5908,8 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
 # Arguments
 
-- `eeg1:NeuroJ.EEG`
-- `eeg2:NeuroJ.EEG`
+- `eeg1:NeuroAnalyzer.EEG`
+- `eeg2:NeuroAnalyzer.EEG`
 - `channel1::Int64`: channel to plot
 - `channel2::Int64`: channel to plot
 - `epoch1::Int64`: epoch to plot
@@ -5921,7 +5921,7 @@ Plot pli `eeg1` and `eeg2` channels/epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_pli(eeg1::NeuroJ.EEG, eeg2::NeuroJ.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
+function eeg_plot_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5983,7 +5983,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Int64`
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
@@ -6000,7 +6000,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_s(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
         title == "" && (title = "ITPC spectrogram\nchannel: $channel")
@@ -6036,7 +6036,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`
+- `eeg::NeuroAnalyzer.EEG`
 - `channel::Int64`
 - `f::Int64`: frequency to plot
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -6054,7 +6054,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_f(eeg::NeuroJ.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_f(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
         f < 0 && throw(ArgumentError("f must be > 0."))
@@ -6103,7 +6103,7 @@ Plot connections between `eeg` electrodes.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
+function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; m::Matrix{<:Real}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -6307,7 +6307,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Int64`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -6329,7 +6329,7 @@ Plot 3-d waterfall plot of `eeg` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_psd_3d(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, type::Symbol=:w, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_psd_3d(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, type::Symbol=:w, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -6687,7 +6687,7 @@ Plot single `eeg` electrode. It uses polar :loc_radius and :loc_theta locations,
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
+function eeg_plot_electrode(eeg::NeuroAnalyzer.EEG; channel::Int64, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -6748,7 +6748,7 @@ Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc_x, :loc_y a
 
 - `fig::GLMakie.Figure`
 """
-function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
+function eeg_plot_electrodes3d(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -6845,7 +6845,7 @@ Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locat
 
 # Arguments
 
-- `eeg::NeuroJ.EEG`: EEG object
+- `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
 - `offset::Int64=0`: displayed segment offset in samples
@@ -6868,7 +6868,7 @@ Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locat
 
 - `fig::GLMakie.Figure`
 """
-function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
+function eeg_plot_signal_psd_topomap(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
 
     # always normalize to dB
     norm = true

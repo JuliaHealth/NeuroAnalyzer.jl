@@ -8,8 +8,8 @@ using Plots
 using GLMakie
 @info "Loading package: DataFrames"
 using DataFrames
-@info "Loading package: NeuroJ"
-using NeuroJ
+@info "Loading package: NeuroAnalyzer"
+using NeuroAnalyzer
 println()
 
-makedocs(sitename="NeuroJ.jl", format=Markdown())
+makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
