@@ -25,6 +25,7 @@ using Pkg
 using Plots
 using Plots.PlotMeasures
 using Polynomials
+using Preferences
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -47,7 +48,9 @@ if VERSION < v"1.7.0"
 end
 
 const neuroj_ver = v"0.22.8"
-use_cuda::Bool = true
+
+const use_cuda = @load_preference("use_cuda", true)
+const plugins_path = @load_preference("plugins_path", "~/Documents/NeuroJ/plugins/")
 
 include("neuroj.jl")
 export neuroj_plugins_reload
@@ -56,6 +59,8 @@ export neuroj_plugins_remove
 export neuroj_plugins_install
 export neuroj_plugins_update
 export neuroj_version
+export neuroj_use_cuda
+export neuroj_plugins_path
 
 neuroj_plugins_reload()
 

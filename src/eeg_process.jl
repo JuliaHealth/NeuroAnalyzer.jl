@@ -1645,7 +1645,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 """
 function eeg_reference_plap(eeg::NeuroJ.EEG; nn::Int64=4, weights::Bool=true)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     channel_n = eeg_channel_n(eeg)

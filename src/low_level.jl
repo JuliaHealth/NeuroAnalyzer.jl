@@ -312,6 +312,7 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 """
 function fft0(x::AbstractArray, n::Int64=0)
 
+    @show use_cuda
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
@@ -1152,7 +1153,7 @@ Calculate cross-covariance between `signal1` and `signal2`.
 - `ccov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function s_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
@@ -1173,16 +1174,17 @@ function s_xcov(signal1::AbstractArray, signal2::AbstractArray; lag::Int64=1, de
     @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            s_sum = sum(s_demeaned1 .* s_demeaned2)
+            xcov[idx] = sum(s_demeaned1 .* s_demeaned2)
         elseif lags[idx] > 0
             # positive lag
-            s_sum = @views sum(s_demeaned1[(1 + lags[idx]):end] .* s_demeaned2[1:(end - lags[idx])])
+            xcov[idx] = @views sum(s_demeaned1[(1 + lags[idx]):end] .* s_demeaned2[1:(end - lags[idx])])
         elseif lags[idx] < 0
             # negative lag
-            s_sum = @views sum(s_demeaned1[1:(end - abs(lags[idx]))] .* s_demeaned2[(1 + abs(lags[idx])):end])
+            xcov[idx] = @views sum(s_demeaned1[1:(end - abs(lags[idx]))] .* s_demeaned2[(1 + abs(lags[idx])):end])
         end
-        xcov[idx] = norm == true ? s_sum / l : s_sum
     end
+    # xcov[idx] = norm == true ? s_sum / l : s_sum
+    norm == true && (xcov ./ l)
 
     return xcov, lags
 end

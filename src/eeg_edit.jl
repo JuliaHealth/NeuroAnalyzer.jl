@@ -1899,6 +1899,7 @@ Interpolate `eeg` channel using planar interpolation.
 - `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
 - `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
 - `q::Float64=1.0`: interpolation quality (0 to 1.0)
+
 # Returns
 
 - `eeg::NeuroJ.EEG`
@@ -1907,7 +1908,7 @@ function eeg_interpolate_channel(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{I
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
@@ -2369,7 +2370,7 @@ function eeg_edit_electrode!(eeg::NeuroJ.EEG; channel::Union{String, Int64}, x::
 end
 
 """
-    eeg_electrode_loc(eeg; channel)
+    eeg_electrode_loc(eeg; channel, output)
 
 Return locations of the `eeg` `channel` electrode.
 
@@ -2393,7 +2394,7 @@ Named tuple containing:
 """
 function eeg_electrode_loc(eeg::NeuroJ.EEG; channel::Union{Int64, String}, output::Bool=true)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     channel = _get_channel_idx(eeg_labels(eeg), channel)
 

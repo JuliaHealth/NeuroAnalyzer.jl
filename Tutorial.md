@@ -952,14 +952,14 @@ eeg_info(edf)
 # NeuroJ.jl Benchmarking
 
 ```julia
-edf = eeg_import_edf("test/eeg-test-edf.edf");
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
+using BenchmarkTools
 function eeg_benchmark(n::Int64)
+    edf = eeg_import_edf("test/eeg-test-edf.edf");
+    eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
     for idx in 1:n
         e10 = nothing
-        edf_new = nothing
-        edf_new = eeg_reference_car(edf)
-        e10 = eeg_epochs(edf_new, epoch_len=10*eeg_sr(edf_new))
+        e10 = eeg_reference_car(edf)
+        e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
         e10 = eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
         e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
@@ -970,14 +970,23 @@ function eeg_benchmark(n::Int64)
     end
 end
 
-@time eeg_benchmark(1);
-@time eeg_benchmark(1);
+# precompile
+eeg_benchmark(1);
+@benchmark eeg_benchmark(1)
+```
 
-# Julia 1.7.3
-# workstation:  1.546805 seconds (5.74 M allocations: 15.011 GiB, 13.36% gc time)
-# laptop:       3.123244 seconds (5.52 M allocations: 14.993 GiB, 5.78% gc time)
+Results Julia 1.8.0: workstation:
+```julia
+```
 
-# Julia 1.8.
-# workstation:  4.130034 seconds (5.73 M allocations: 15.000 GiB)
-# laptop:       3.037671 seconds (5.49 M allocations: 14.979 GiB, 5.03% gc time)
+Results Julia 1.8.0: laptop:
+```julia
+BenchmarkTools.Trial: 2 samples with 1 evaluation.
+Range (min … max):  4.288 s …    4.829 s  ┊ GC (min … max): 4.89% … 7.68%
+Time  (median):     4.559 s               ┊ GC (median):    6.37%
+Time  (mean ± σ):   4.559 s ± 382.531 ms  ┊ GC (mean ± σ):  6.37% ± 1.97%
+█                                                        █  
+█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+4.29 s         Histogram: frequency by time         4.83 s <
+Memory estimate: 15.17 GiB, allocs estimate: 5507959.
 ```

@@ -3764,7 +3764,7 @@ Plot `eeg` electrodes. It uses polar :loc_radius and :loc_theta locations, which
 """
 function eeg_plot_electrodes(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     mono == true ? palette = :grays : palette = :darktest
@@ -4240,7 +4240,7 @@ function eeg_plot_signal_topo(eeg::NeuroJ.EEG; epoch::Union{Int64, AbstractRange
     mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -4411,7 +4411,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Array{
     mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
     typeof(c) <: Array{<:Real, 3} || throw(ArgumentError("c type must be an array."))
@@ -4546,7 +4546,7 @@ Topographical plot `eeg` of weights values at electrodes locations. It uses pola
 """
 function eeg_plot_weights_topo(eeg::NeuroJ.EEG; epoch::Int64, weights=Matrix{<:Real}, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     mono == true ? palette = :grays : palette = :darktest
@@ -4644,7 +4644,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroJ.EEG; epoch::Int64, c::Union{Matrix
     mono == true ? palette = :grays : palette = :darktest
 
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -4773,7 +4773,7 @@ Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from th
 function eeg_plot_ica_topo(eeg::NeuroJ.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
 
@@ -6109,7 +6109,7 @@ function eeg_plot_connections(eeg::NeuroJ.EEG; m::Matrix{<:Real}, threshold::Flo
 
     threshold_type in [:eq, :geq, :leq, :g, :l] || throw(ArgumentError("threshold_type must be :eq, :geq, :leq, :g, :l."))
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     # select channels, default is all channels
@@ -6689,7 +6689,7 @@ Plot single `eeg` electrode. It uses polar :loc_radius and :loc_theta locations,
 """
 function eeg_plot_electrode(eeg::NeuroJ.EEG; channel::Int64, kwargs...)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     _check_channels(eeg, channel)
@@ -6750,7 +6750,7 @@ Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc_x, :loc_y a
 """
 function eeg_plot_electrodes3d(eeg::NeuroJ.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     mono == true ? palette = :grays : palette = :darktest
@@ -6877,7 +6877,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroJ.EEG; epoch::Union{Int64, Abstra
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() first."))
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     mono == true ? palette = :grays : palette = :darktest
