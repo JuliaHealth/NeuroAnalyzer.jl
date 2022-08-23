@@ -76,7 +76,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 # Arguments
 
 - `y::Real`
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 - `return_distance::Bool`
 
 # Returns
@@ -84,7 +84,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 - `y_idx::Int64`
 -` y_dist::Real`
 """
-function vsearch(y::Real, x::Vector{<:Real}; return_distance::Bool=false)
+function vsearch(y::Real, x::AbstractVector; return_distance::Bool=false)
 
     y_dist, y_idx = findmin(abs.(x .- y))
 
@@ -98,8 +98,8 @@ Return the positions of the `y` vector in the vector `x`.
 
 # Arguments
 
-- `x::Vector{<:Real}`
-- `y::Vector{<:Real}`
+- `x::AbstractVector`
+- `y::AbstractVector`
 - `return_distance::Bool`
 
 # Returns
@@ -107,7 +107,7 @@ Return the positions of the `y` vector in the vector `x`.
 - `y_idx::Int64`
 - `y_dist::Real`
 """
-function vsearch(y::Vector{<:Real}, x::Vector{<:Real}; return_distance=false)
+function vsearch(y::AbstractVector, x::AbstractVector; return_distance=false)
 
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
@@ -312,7 +312,6 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 """
 function fft0(x::AbstractArray, n::Int64=0)
 
-    @show use_cuda
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
@@ -382,14 +381,14 @@ Splits the vector `x` into `n`-long pieces.
 
 # Argument
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 - `n::Int64`
 
 # Returns
 
-- `x::Vector{Vector{<:Real}}`
+- `x::Vector{AbstractVector}`
 """
-function vsplit(x::Vector{<:Real}, n::Int64=1)
+function vsplit(x::AbstractVector, n::Int64=1)
 
     n < 0 && throw(ArgumentError("n must be positive."))
     length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
@@ -410,13 +409,13 @@ Calculate Root Mean Square of `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 
 # Returns
 
 - rms::Float64`
 """
-function s_rms(signal::Vector{<:Real})
+function s_rms(signal::AbstractVector)
 
     # rms = sqrt(mean(signal.^2))    
 
@@ -431,7 +430,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 # Arguments
 
 - `f::Real`: frequency
-- `t::Union{Vector{<:Real}, AbstractRange}`: time vector
+- `t::Union{AbstractVector, AbstractRange}`: time vector
 - `a::Real`: amplitude
 - `p::Real`: initial phase
 
@@ -439,7 +438,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
 - sine::Vector{Float64}`
 """
-function generate_sine(f::Real, t::Union{Vector{<:Real}, AbstractRange}, a::Real=1, p::Real=0)
+function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
 
     return @. a * sin(2 * pi * f * t + p)
 end
@@ -451,14 +450,14 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 # Arguments
 
-- `t::Vector{<:Real}, AbstractRange}`
+- `t::AbstractVector, AbstractRange}`
 
 # Returns
 
 - `hz::Vector{Float64}`
 - `nyquist_freq::Float64`
 """
-function s_freqs(t::Union{Vector{<:Real}, AbstractRange})
+function s_freqs(t::Union{AbstractVector, AbstractRange})
 
     typeof(t) <: AbstractRange && (t = collect(t))
 
@@ -583,13 +582,13 @@ Pad the vector `x` with `n` zeros.
 
 # Arguments
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 - `n::Int64`
 - `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 # Returns
 
-- `v_pad::Vector{<:Real}`
+- `v_pad::AbstractVector`
 """
 function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
 
@@ -1294,13 +1293,13 @@ Taper the `signal` with `taper`.
 # Arguments
 
 - `signal::AbstractArray`
-- `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
+- `taper::Union{AbstractVector, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
-function s_taper(signal::AbstractArray; taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function s_taper(signal::AbstractArray; taper::Union{AbstractVector, Vector{ComplexF64}})
 
     length(taper) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
     s_tapered = signal .* taper
@@ -1595,13 +1594,13 @@ Performs convolution in the time domain between `signal` and `kernel`.
 # Arguments
 
 - `signal::AbstractArray`
-- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+- `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function s_tconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
+function s_tconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}})
 
     signal = Vector(signal)
     s_conv = conv(signal, kernel)
@@ -1647,13 +1646,13 @@ Filter `signal`.
 - `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed 
+- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed 
 
 # Returns
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
 
@@ -2246,14 +2245,14 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 # Arguments
 
 - `signal::AbstractArray`
-- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+- `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 - `norm::Bool=false`: normalize kernel
 
 # Returns
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
+function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
@@ -2699,7 +2698,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 
 - `signal::AbstractArray`
 - `t::Int64`: time point (sample number) at which ITPC is calculated
-- `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+- `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
 
@@ -2709,7 +2708,7 @@ Named tuple containing:
 - `itpc_angle::Float64`: ITPC angle
 - `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function s_itpc(signal::AbstractArray; t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
+function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
 
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
     size(signal, 1) == 1 || throw(ArgumentError("signals must have 1 channel."))
@@ -3426,13 +3425,13 @@ Calculate GFP (Global Field Power) of the `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 
 # Returns
 
 - `gfp::Float64`
 """
-function s_gfp(signal::Vector{<:Real})
+function s_gfp(signal::AbstractVector)
     
     gfp = sum(signal.^2) / length(signal)
 
@@ -3446,13 +3445,13 @@ Calculate `signal` values normalized for GFP (Global Field Power) of that signal
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 
 # Returns
 
 - `gfp_norm::Float64`
 """
-function s_gfp_norm(signal::Vector{<:Real})
+function s_gfp_norm(signal::AbstractVector)
     
     gfp = s_gfp(signal)
     gfp_norm = signal ./ gfp
@@ -3467,8 +3466,8 @@ Calculate DISS (global dissimilarity) and spatial correlation between `signal1` 
 
 # Arguments
 
-- `signal1::Vector{<:Real}`
-- `signal2::Vector{<:Real}`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
@@ -3476,7 +3475,7 @@ Named tuple containing:
 - `diss::Float64`: global dissimilarity
 - `c::Float64`: spatial correlation
 """
-function s2_diss(signal1::Vector{<:Real}, signal2::Vector{<:Real})
+function s2_diss(signal1::AbstractVector, signal2::AbstractVector)
     
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
     gfp_norm1 = s_gfp_norm(signal1)

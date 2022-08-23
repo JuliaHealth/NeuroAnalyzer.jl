@@ -84,7 +84,6 @@ The following packages are required:
 - Pkg
 - Plots
 - Polynomials
-- Preferences
 - ScatteredInterpolation
 - [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
 - StatsFuns
@@ -124,7 +123,7 @@ end
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
-For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable to false using `neuroj_use_cuda(false)`. Preferences are stored in LocalPreference.toml.
+For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable `use_cuda` to false in the NeurojJ.jl file.
 
 ## Documentation
 
@@ -136,7 +135,7 @@ Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroJ.jl/src/master/Cha
 
 ## Plugins (extensions)
 
-Plugins are git repositories, default location is `~/Documents/NeuroJ/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To change the plugin location use `neuroj_plugins_path()`.
+Plugins are git repositories, default location is `~/Documents/NeuroJ/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeurojJ.jl file.
 
 Run `neuroj_reload_plugins()` to refresh plugins.
 

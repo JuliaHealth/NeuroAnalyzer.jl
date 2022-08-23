@@ -35,7 +35,7 @@ Show NeuroJ and imported packages versions.
 neuroj_plugins_reload()
 ```
 
-Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
+Reload NeuroJ plugins.
 
 <a id='NeuroJ.neuroj_plugins_list-Tuple{}' href='#NeuroJ.neuroj_plugins_list-Tuple{}'>#</a>
 **`NeuroJ.neuroj_plugins_list`** &mdash; *Method*.
@@ -46,7 +46,7 @@ Reload NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 neuroj_plugins_list()
 ```
 
-List NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
+List NeuroJ plugins.
 
 <a id='NeuroJ.neuroj_plugins_remove-Tuple{String}' href='#NeuroJ.neuroj_plugins_remove-Tuple{String}'>#</a>
 **`NeuroJ.neuroj_plugins_remove`** &mdash; *Method*.
@@ -57,7 +57,7 @@ List NeuroJ plugins. Plugins path is: `~/Documents/NeuroJ/plugins/`.
 neuroj_plugins_remove(plugin)
 ```
 
-Remove NeuroJ plugin.
+Remove NeuroJ `plugin`.
 
 **Attributes**
 
@@ -72,7 +72,7 @@ Remove NeuroJ plugin.
 neuroj_plugins_install(plugin)
 ```
 
-Install NeuroJ plugin.
+Install NeuroJ `plugin`.
 
 **Attributes**
 
@@ -87,7 +87,7 @@ Install NeuroJ plugin.
 neuroj_plugins_update(plugin)
 ```
 
-Install NeuroJ plugin.
+Install NeuroJ `plugin`.
 
 **Attributes**
 
@@ -161,7 +161,7 @@ Pad the matrix `m` with zeros to make it square.
 
   * `m::Matrix{Number}`
 
-<a id='NeuroJ.vsearch-Tuple{Real, Vector{<:Real}}' href='#NeuroJ.vsearch-Tuple{Real, Vector{<:Real}}'>#</a>
+<a id='NeuroJ.vsearch-Tuple{Real, AbstractVector}' href='#NeuroJ.vsearch-Tuple{Real, AbstractVector}'>#</a>
 **`NeuroJ.vsearch`** &mdash; *Method*.
 
 
@@ -175,7 +175,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 **Arguments**
 
   * `y::Real`
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
   * `return_distance::Bool`
 
 **Returns**
@@ -184,7 +184,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 -`y_dist::Real`
 
-<a id='NeuroJ.vsearch-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.vsearch-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+<a id='NeuroJ.vsearch-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.vsearch-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroJ.vsearch`** &mdash; *Method*.
 
 
@@ -197,8 +197,8 @@ Return the positions of the `y` vector in the vector `x`.
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
-  * `y::Vector{<:Real}`
+  * `x::AbstractVector`
+  * `y::AbstractVector`
   * `return_distance::Bool`
 
 **Returns**
@@ -396,14 +396,14 @@ Splits the vector `x` into `n`-long pieces.
 
 **Argument**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
   * `n::Int64`
 
 **Returns**
 
-  * `x::Vector{Vector{<:Real}}`
+  * `x::Vector{AbstractVector}`
 
-<a id='NeuroJ.s_rms-Tuple{Vector{<:Real}}' href='#NeuroJ.s_rms-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroJ.s_rms-Tuple{AbstractVector}' href='#NeuroJ.s_rms-Tuple{AbstractVector}'>#</a>
 **`NeuroJ.s_rms`** &mdash; *Method*.
 
 
@@ -416,7 +416,7 @@ Calculate Root Mean Square of `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
 
 **Returns**
 
@@ -436,7 +436,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 **Arguments**
 
   * `f::Real`: frequency
-  * `t::Union{Vector{<:Real}, AbstractRange}`: time vector
+  * `t::Union{AbstractVector, AbstractRange}`: time vector
   * `a::Real`: amplitude
   * `p::Real`: initial phase
 
@@ -444,7 +444,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 
   * sine::Vector{Float64}`
 
-<a id='NeuroJ.s_freqs-Tuple{Union{AbstractRange, Vector{<:Real}}}' href='#NeuroJ.s_freqs-Tuple{Union{AbstractRange, Vector{<:Real}}}'>#</a>
+<a id='NeuroJ.s_freqs-Tuple{AbstractVector}' href='#NeuroJ.s_freqs-Tuple{AbstractVector}'>#</a>
 **`NeuroJ.s_freqs`** &mdash; *Method*.
 
 
@@ -457,7 +457,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 
 **Arguments**
 
-  * `t::Vector{<:Real}, AbstractRange}`
+  * `t::AbstractVector, AbstractRange}`
 
 **Returns**
 
@@ -541,13 +541,13 @@ Pad the vector `x` with `n` zeros.
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
   * `n::Int64`
   * `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
 
 **Returns**
 
-  * `v_pad::Vector{<:Real}`
+  * `v_pad::AbstractVector`
 
 <a id='NeuroJ.hz2rads-Tuple{Real}' href='#NeuroJ.hz2rads-Tuple{Real}'>#</a>
 **`NeuroJ.hz2rads`** &mdash; *Method*.
@@ -931,7 +931,7 @@ Calculate autocovariance of the `signal`.
   * `acov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroJ.s_xcov-Tuple{AbstractArray, AbstractArray}' href='#NeuroJ.s_xcov-Tuple{AbstractArray, AbstractArray}'>#</a>
+<a id='NeuroJ.s_xcov-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.s_xcov-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroJ.s_xcov`** &mdash; *Method*.
 
 
@@ -1034,7 +1034,7 @@ Taper the `signal` with `taper`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
+  * `taper::Union{AbstractVector, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -1254,7 +1254,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+  * `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -1299,7 +1299,7 @@ Filter `signal`.
   * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
   * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
   * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed
+  * `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed
 
 **Returns**
 
@@ -1639,7 +1639,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`
+  * `kernel::Union{AbstractVector, Vector{ComplexF64}}`
   * `norm::Bool=false`: normalize kernel
 
 **Returns**
@@ -1919,7 +1919,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of 
 
   * `signal::AbstractArray`
   * `t::Int64`: time point (sample number) at which ITPC is calculated
-  * `w::Union{Vector{<:Real}, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+  * `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
 **Returns**
 
@@ -2365,7 +2365,7 @@ Calculate cumulative sum of the `signal`.
 
   * `signal_cs::Array{Float64, 3}`
 
-<a id='NeuroJ.s_gfp-Tuple{Vector{<:Real}}' href='#NeuroJ.s_gfp-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroJ.s_gfp-Tuple{AbstractVector}' href='#NeuroJ.s_gfp-Tuple{AbstractVector}'>#</a>
 **`NeuroJ.s_gfp`** &mdash; *Method*.
 
 
@@ -2378,13 +2378,13 @@ Calculate GFP (Global Field Power) of the `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
 
 **Returns**
 
   * `gfp::Float64`
 
-<a id='NeuroJ.s_gfp_norm-Tuple{Vector{<:Real}}' href='#NeuroJ.s_gfp_norm-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroJ.s_gfp_norm-Tuple{AbstractVector}' href='#NeuroJ.s_gfp_norm-Tuple{AbstractVector}'>#</a>
 **`NeuroJ.s_gfp_norm`** &mdash; *Method*.
 
 
@@ -2397,13 +2397,13 @@ Calculate `signal` values normalized for GFP (Global Field Power) of that signal
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
 
 **Returns**
 
   * `gfp_norm::Float64`
 
-<a id='NeuroJ.s2_diss-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroJ.s2_diss-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+<a id='NeuroJ.s2_diss-Tuple{AbstractVector, AbstractVector}' href='#NeuroJ.s2_diss-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroJ.s2_diss`** &mdash; *Method*.
 
 
@@ -2416,8 +2416,8 @@ Calculate DISS (global dissimilarity) and spatial correlation between `signal1` 
 
 **Arguments**
 
-  * `signal1::Vector{<:Real}`
-  * `signal2::Vector{<:Real}`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
@@ -3010,6 +3010,25 @@ Load electrode positions from TSV file.
 
   * `sensors::DataFrame`
 
+<a id='NeuroJ.eeg_import_sfp-Tuple{String}' href='#NeuroJ.eeg_import_sfp-Tuple{String}'>#</a>
+**`NeuroJ.eeg_import_sfp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_sfp(file_name)
+```
+
+Load electrode positions from SFP file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
 <a id='NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_load_electrodes-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_load_electrodes`** &mdash; *Method*.
 
@@ -3027,6 +3046,7 @@ Accepted formats:
   * LOCS
   * ELC
   * TSV
+  * SFP
 
 Electrode locations:
 
@@ -3057,11 +3077,26 @@ Electrode locations:
 eeg_load_electrodes!(eeg; file_name)
 ```
 
-Load electrode positions from `file_name` and set `eeg` metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. Accepted formats:
+Load electrode positions from `file_name` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Accepted formats:
 
   * CED
   * LOCS
   * ELC
+  * TSV
+  * SFP
+
+Electrode locations:
+
+  * loc_theta       planar polar angle
+  * loc_radius      planar polar radius
+  * loc_x           spherical Cartesian x
+  * loc_y           spherical Cartesian y
+  * loc_z           spherical Cartesian z
+  * loc*radius*sph  spherical radius
+  * loc*theta*sph   spherical horizontal angle
+  * loc*phi*sph     spherical azimuth angle
 
 **Arguments**
 
@@ -3140,7 +3175,7 @@ Export EEG data as CSV.
 eeg_save_electrodes(eeg; file_name, overwrite)
 ```
 
-Export EEG channel locations data, format is based on `file_name` extension (.ced or .locs)
+Export EEG channel locations data, format is based on `file_name` extension (.ced, .locs or .tsv)
 
 **Arguments**
 
@@ -3151,6 +3186,85 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 **Returns**
 
   * `success::Bool`
+
+<a id='NeuroJ.eeg_save_electrodes-Tuple{DataFrame}' href='#NeuroJ.eeg_save_electrodes-Tuple{DataFrame}'>#</a>
+**`NeuroJ.eeg_save_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_save_electrodes(locs; file_name, overwrite)
+```
+
+Export channel locations, format is based on `file_name` extension (.ced, .locs, .tsv)
+
+**Arguments**
+
+  * `locs::DataFrame`
+  * `file_name::String`
+  * `overwrite::Bool=false`
+
+**Returns**
+
+  * `success::Bool`
+
+<a id='NeuroJ.eeg_add_electrodes-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_electrodes-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_electrodes(eeg; locs)
+```
+
+Add electrode positions from `locs`. 
+
+Electrode locations:
+
+  * loc_theta       planar polar angle
+  * loc_radius      planar polar radius
+  * loc_x           spherical Cartesian x
+  * loc_y           spherical Cartesian y
+  * loc_z           spherical Cartesian z
+  * loc*radius*sph  spherical radius
+  * loc*theta*sph   spherical horizontal angle
+  * loc*phi*sph     spherical azimuth angle
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
+
+**Returns**
+
+  * `eeg:EEG`
+
+<a id='NeuroJ.eeg_add_electrodes!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_add_electrodes!-Tuple{NeuroJ.EEG}'>#</a>
+**`NeuroJ.eeg_add_electrodes!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_electrodes!(eeg; locs)
+```
+
+Load electrode positions from `locs` and return `NeuroJ.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Electrode locations:
+
+  * loc_theta       planar polar angle
+  * loc_radius      planar polar radius
+  * loc_x           spherical Cartesian x
+  * loc_y           spherical Cartesian y
+  * loc_z           spherical Cartesian z
+  * loc*radius*sph  spherical radius
+  * loc*theta*sph   spherical horizontal angle
+  * loc*phi*sph     spherical azimuth angle
+
+**Arguments**
+
+  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 
 <a id='EEG-edit'></a>
@@ -4275,102 +4389,102 @@ Interpolate `eeg` channel using planar interpolation.
   * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
   * `q::Float64=1.0`: interpolation quality (0 to 1.0)
 
-<a id='NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipy-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipy-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipy`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_flipy(eeg; planar, spherical)
+eeg_loc_flipy(locs; planar, spherical)
 ```
 
-Flip `eeg` channel locations along y axis.
+Flip channel locations along y axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipy!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipy!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipy!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipy!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_flipy!(eeg; planar, spherical)
+eeg_loc_flipy!(locs; planar, spherical)
 ```
 
-Flip `eeg` channel locations along y axis.
+Flip channel locations along y axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipx-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipx-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipx`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_flipx(eeg; planar, spherical)
+eeg_loc_flipx(locs; planar, spherical)
 ```
 
-Flip `eeg` channel locations along x axis.
+Flip channel locations along x axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipx!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipx!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipx!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipx!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_flipx!(eeg; planar, spherical)
+eeg_loc_flipx!(locs; planar, spherical)
 ```
 
-Flip `eeg` channel locations along x axis.
+Flip channel locations along x axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipz-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipz-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipz`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_flipz(eeg)
+eeg_loc_flipz(locs)
 ```
 
-Flip `eeg` channel locations along z axis.
+Flip channel locations along z axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_flipz!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_flipz!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_flipz!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_flipz!`** &mdash; *Method*.
 
 
@@ -4379,11 +4493,11 @@ Flip `eeg` channel locations along z axis.
 eeg_loc_flipz!(eeg)
 ```
 
-Flip `eeg` channel locations along z axis.
+Flip channel locations along z axis.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 <a id='NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_channel_type-Tuple{NeuroJ.EEG}'>#</a>
 **`NeuroJ.eeg_channel_type`** &mdash; *Method*.
@@ -4485,7 +4599,7 @@ Edit `eeg` electrode.
 
 
 ```julia
-eeg_electrode_loc(eeg; channel)
+eeg_electrode_loc(eeg; channel, output)
 ```
 
 Return locations of the `eeg` `channel` electrode.
@@ -4509,20 +4623,20 @@ Named tuple containing:
   * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
   * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
-<a id='NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_swapxy-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_swapxy-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_swapxy`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_swapxy(eeg; planar, spherical)
+eeg_loc_swapxy(locs; planar, spherical)
 ```
 
-Swap `eeg` channel locations x and y axes.
+Swap channel locations x and y axes.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
@@ -4530,90 +4644,90 @@ Swap `eeg` channel locations x and y axes.
 
   * `eeg::NeuroJ.EEG`
 
-<a id='NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_swapxy!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_swapxy!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_swapxy!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_swapxy!(eeg; planar, spherical)
+eeg_loc_swapxy!(locs; planar, spherical)
 ```
 
-Swap `eeg` channel locations x and y axes.
+Swap channel locations x and y axes.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_sph2cart-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_sph2cart-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_sph2cart`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_sph2cart(eeg)
+eeg_loc_sph2cart(locs)
 ```
 
-Convert `eeg` spherical locations to Cartesian.
+Convert spherical locations to Cartesian.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_sph2cart!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_sph2cart!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_sph2cart!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_sph2cart!(eeg)
+eeg_loc_sph2cart!(locs)
 ```
 
-Convert `eeg` spherical locations to Cartesian.
+Convert spherical locations to Cartesian.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
-<a id='NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_cart2sph-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_cart2sph-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_cart2sph`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_cart2sph(eeg)
+eeg_loc_cart2sph(locs)
 ```
 
-Convert `eeg` Cartesian locations to spherical.
+Convert Cartesian locations to spherical.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 **Returns**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs_new::DataFrame`
 
-<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{NeuroJ.EEG}'>#</a>
+<a id='NeuroJ.eeg_loc_cart2sph!-Tuple{DataFrame}' href='#NeuroJ.eeg_loc_cart2sph!-Tuple{DataFrame}'>#</a>
 **`NeuroJ.eeg_loc_cart2sph!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_loc_cart2sph!(eeg)
+eeg_loc_cart2sph!(locs)
 ```
 
-Convert `eeg` Cartesian locations to spherical.
+Convert Cartesian locations to spherical.
 
 **Arguments**
 
-  * `eeg::NeuroJ.EEG`
+  * `locs::DataFrame`
 
 
 <a id='EEG-process'></a>
@@ -9217,6 +9331,50 @@ Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locat
   * `mono::Bool=false`: use color or grey palette
   * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
   * `ax::Symbol=:linlin`: type of axes scaling
+
+**Returns**
+
+  * `fig::GLMakie.Figure`
+
+<a id='NeuroJ.plot_electrodes-Tuple{DataFrame}' href='#NeuroJ.plot_electrodes-Tuple{DataFrame}'>#</a>
+**`NeuroJ.plot_electrodes`** &mdash; *Method*.
+
+
+
+```julia
+plot_electrodes(locs; <keyword arguments>)
+```
+
+Preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z locations.
+
+**Arguments**
+
+  * `locs::DataFrame`
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroJ.plot_electrodes3d-Tuple{DataFrame}' href='#NeuroJ.plot_electrodes3d-Tuple{DataFrame}'>#</a>
+**`NeuroJ.plot_electrodes3d`** &mdash; *Method*.
+
+
+
+```julia
+plot_electrodes3d(locs; <keyword arguments>)
+```
+
+3D interactive preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z locations.
+
+**Arguments**
+
+  * `locs::DataFrame`
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
 
 **Returns**
 

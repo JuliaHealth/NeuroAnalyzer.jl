@@ -953,40 +953,42 @@ eeg_info(edf)
 
 ```julia
 using BenchmarkTools
-function eeg_benchmark(n::Int64)
-    edf = eeg_import_edf("test/eeg-test-edf.edf");
-    eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
-    for idx in 1:n
-        e10 = nothing
-        e10 = eeg_reference_car(edf)
-        e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
-        e10 = eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2)
-        e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8)
-        e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
-        tbp = eeg_total_power(e10)
-        ac = eeg_acov(e10, norm=false)
-        cc = eeg_xcov(e10, lag=10, demean=true)
-        mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
-    end
+edf = eeg_import_edf("test/eeg-test-edf.edf");
+eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
+function neuroj_benchmark()
+    e10 = nothing
+    e10 = eeg_reference_car(edf);
+    e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf));
+    e10 = eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
+    e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
+    e10 = eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
+    tbp = eeg_total_power(e10);
+    ac = eeg_acov(e10, norm=false);
+    cc = eeg_xcov(e10, lag=10, demean=true);
+    mconv = eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true));
 end
 
-# precompile
-eeg_benchmark(1);
-@benchmark eeg_benchmark(1)
+# run benchmark
+@benchmarkable neuroj_benchmark() evals=5 samples=1
+run(b)
+@time neuroj_benchmark();
 ```
 
-Results Julia 1.8.0: workstation:
-```julia
+Results Julia 1.8.0: workstation (use_cuda=false):
+```
+BenchmarkTools.Trial: 1 sample with 5 evaluations.
+ Single result which took 4.325 s (3.49% GC) to evaluate,
+ with a memory estimate of 15.19 GiB, over 5747676 allocations.
 ```
 
-Results Julia 1.8.0: laptop:
-```julia
-BenchmarkTools.Trial: 2 samples with 1 evaluation.
-Range (min … max):  4.288 s …    4.829 s  ┊ GC (min … max): 4.89% … 7.68%
-Time  (median):     4.559 s               ┊ GC (median):    6.37%
-Time  (mean ± σ):   4.559 s ± 382.531 ms  ┊ GC (mean ± σ):  6.37% ± 1.97%
-█                                                        █  
-█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-4.29 s         Histogram: frequency by time         4.83 s <
-Memory estimate: 15.17 GiB, allocs estimate: 5507959.
+Results Julia 1.8.0: workstation (use_cuda=true):
+```
+BenchmarkTools.Trial: 1 sample with 5 evaluations.
+ Single result which took 4.379 s (5.16% GC) to evaluate,
+ with a memory estimate of 15.00 GiB, over 5727636 allocations.
+```
+
+Results Julia 1.8.0: laptop (no CUDA):
+```
+
 ```

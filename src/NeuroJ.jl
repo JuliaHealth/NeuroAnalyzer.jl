@@ -1,5 +1,11 @@
 module NeuroJ
 
+const neuroj_ver = v"0.22.8"
+
+if VERSION < v"1.7.0"
+    @error("This version of NeuroJ requires Julia 1.7.0 or above.")
+end
+
 using ColorSchemes
 using CSV
 using CubicSplines
@@ -25,7 +31,6 @@ using Pkg
 using Plots
 using Plots.PlotMeasures
 using Polynomials
-using Preferences
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -43,14 +48,9 @@ mutable struct EEG
     eeg_components::Vector{Any}
 end
 
-if VERSION < v"1.7.0"
-    @error("This version of NeuroJ requires Julia 1.7.0 or above.")
-end
-
-const neuroj_ver = v"0.22.8"
-
-const use_cuda = @load_preference("use_cuda", true)
-const plugins_path = @load_preference("plugins_path", "~/Documents/NeuroJ/plugins/")
+# preferences
+const plugins_path = "~/Documents/NeuroJ/plugins/"
+const use_cuda = true
 
 include("neuroj.jl")
 export neuroj_version
@@ -62,7 +62,8 @@ export neuroj_plugins_update
 export neuroj_use_cuda
 export neuroj_plugins_path
 
-# neuroj_plugins_reload()
+# reload plugins
+neuroj_plugins_reload()
 
 include("internal.jl")
 

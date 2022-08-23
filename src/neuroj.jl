@@ -68,7 +68,6 @@ end
 Reload NeuroJ plugins.
 """
 function neuroj_plugins_reload()
-    plugins_path[end] == '/' || (plugins_path *= '/')
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -88,7 +87,6 @@ end
 List NeuroJ plugins.
 """
 function neuroj_plugins_list()
-    plugins_path[end] == '/' || (plugins_path *= '/')
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -107,7 +105,6 @@ Remove NeuroJ `plugin`.
 - `plugin::String`: plugin name
 """
 function neuroj_plugins_remove(plugin::String)
-    plugins_path[end] == '/' || (plugins_path *= '/')
     @info "This will remove the whole $plugin directory, along with its file contents."
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
@@ -131,7 +128,6 @@ Install NeuroJ `plugin`.
 - `plugin::String`: plugin Git repository URL
 """
 function neuroj_plugins_install(plugin::String)
-    plugins_path[end] == '/' || (plugins_path *= '/')
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     try
@@ -152,7 +148,6 @@ Install NeuroJ `plugin`.
 - `plugin::String`: plugin to update; if empty, update all
 """
 function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
-    plugins_path[end] == '/' || (plugins_path *= '/')
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -178,34 +173,4 @@ function neuroj_plugins_update(plugin::Union{String, Nothing}=nothing)
         cd(expanduser(plugins_path))
     end
     neuroj_plugins_reload()
-end
-
-"""
-    neuroj_use_cuda(use_cuda)
-
-Set `use_cuda` preference and store in LocalPreferences.toml.
-
-# Attributes
-
-- `use_cuda::Bool=true`
-"""
-function neuroj_use_cuda(use_cuda::Bool=true)
-    @set_preferences!("use_cuda" => use_cuda)
-    @info("Preference use_cuda set; restart your Julia session for this change to take effect!")
-end
-
-"""
-    neuroj_plugins_path(new_plugins_path)
-
-Set `new_plugins_path` preference and store in LocalPreferences.toml.
-
-# Attributes
-
-- `new_plugins_path::String`
-"""
-function neuroj_plugins_path(new_plugins_path::String)
-    new_plugins_path[end] == '/' || (new_plugins_path *= '/')
-    isdir(expanduser(new_plugins_path)) || throw(ArgumentError("Folder $new_plugins_path does not exist."))
-    @set_preferences!("plugins_path" => new_plugins_path)
-    @info("Preference plugins_path set; restart your Julia session for this change to take effect!")
 end

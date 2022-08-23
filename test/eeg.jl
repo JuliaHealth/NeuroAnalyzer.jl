@@ -342,7 +342,7 @@ edf2 = eeg_channel_type(edf, channel=1, type="eog")
 @test edf2.eeg_header[:channel_type][1] == "eog"
 edf2 = eeg_edit_electrode(edf, channel=1, x=2)
 @test edf2.eeg_header[:loc_x][1] == 2.0
-_, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1)
+_, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1, output=false)
 @test x == 2.0
 
 ch1 = eeg_electrode_loc(edf, channel=1, output=false)
