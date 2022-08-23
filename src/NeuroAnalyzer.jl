@@ -1,6 +1,6 @@
 module NeuroAnalyzer
 
-const NeuroAnalyzer_ver = v"0.22.8"
+const neuroanalyzer_ver = v"0.22.8"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
@@ -50,20 +50,20 @@ end
 
 # preferences
 const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
-const use_cuda = true
+const use_cuda = false
 
-include("NeuroAnalyzer.jl")
-export NeuroAnalyzer_version
-export NeuroAnalyzer_plugins_reload
-export NeuroAnalyzer_plugins_list
-export NeuroAnalyzer_plugins_remove
-export NeuroAnalyzer_plugins_install
-export NeuroAnalyzer_plugins_update
-export NeuroAnalyzer_use_cuda
-export NeuroAnalyzer_plugins_path
+include("neuroanalyzer.jl")
+export neuroanalyzer_version
+export neuroanalyzer_plugins_reload
+export neuroanalyzer_plugins_list
+export neuroanalyzer_plugins_remove
+export neuroanalyzer_plugins_install
+export neuroanalyzer_plugins_update
+export neuroanalyzer_use_cuda
+export neuroanalyzer_plugins_path
 
 # reload plugins
-NeuroAnalyzer_plugins_reload()
+neuroanalyzer_plugins_reload()
 
 include("internal.jl")
 

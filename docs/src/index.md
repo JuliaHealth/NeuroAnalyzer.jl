@@ -5,12 +5,6 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 ## NeuroAnalyzer
 
 ```@docs
-NeuroAnalyzer_version()
-NeuroAnalyzer_plugins_reload()
-NeuroAnalyzer_plugins_list()
-NeuroAnalyzer_plugins_remove(plugin::String)
-NeuroAnalyzer_plugins_install(plugin::String)
-NeuroAnalyzer_plugins_update(plugin::Union{String, Nothing}=nothing)
 ```
 
 ## Low-level functions

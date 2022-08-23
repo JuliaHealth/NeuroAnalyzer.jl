@@ -33,7 +33,7 @@ Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
 # activate the package
 using NeuroAnalyzer
 # check if correctly installed
-NeuroAnalyzer_version()
+neuroanalyzer_version()
 ```
 
 Another option is to initialize a new Julia environment for the package:
@@ -53,7 +53,7 @@ Pkg.update()
 # activate the package
 using NeuroAnalyzer
 # check if NeuroAnalyzer has been correctly installed
-NeuroAnalyzer_version()
+neuroanalyzer_version()
 ```
 
 ## Requirements
@@ -137,14 +137,14 @@ Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/mas
 
 Plugins are git repositories, default location is `~/Documents/NeuroAnalyzer/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeuroAnalyzerJ.jl file.
 
-Run `NeuroAnalyzer_reload_plugins()` to refresh plugins.
+Run `neuroanalyzer_reload_plugins()` to refresh plugins.
 
 ```julia
-NeuroAnalyzer_plugins_reload()
-NeuroAnalyzer_plugins_list()
-NeuroAnalyzer_plugins_add()
-NeuroAnalyzer_plugins_remove()
-NeuroAnalyzer_plugins_update()
+neuroanalyzer_plugins_reload()
+neuroanalyzer_plugins_list()
+neuroanalyzer_plugins_add()
+neuroanalyzer_plugins_remove()
+neuroanalyzer_plugins_update()
 ```
 
 ## Known bugs
