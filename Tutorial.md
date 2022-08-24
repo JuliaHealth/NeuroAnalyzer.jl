@@ -968,6 +968,7 @@ eeg_info(edf)
 # NeuroAnalyzer.jl benchmarking
 
 ```julia
+@time_imports using NeuroAnalyzer
 using BenchmarkTools
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
@@ -1000,8 +1001,8 @@ BenchmarkTools.Trial: 1 sample with 5 evaluations.
 Results Julia 1.8.0: workstation (use_cuda=true):
 ```
 BenchmarkTools.Trial: 1 sample with 5 evaluations.
- Single result which took 4.379 s (5.16% GC) to evaluate,
- with a memory estimate of 15.00 GiB, over 5727636 allocations.
+ Single result which took 4.208 s (6.80% GC) to evaluate,
+ with a memory estimate of 15.00 GiB, over 5724601 allocations.
 ```
 
 Results Julia 1.8.0: laptop (no CUDA):

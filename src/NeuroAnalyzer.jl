@@ -50,7 +50,7 @@ end
 
 # preferences
 const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
-const use_cuda = false
+const use_cuda = true
 
 include("neuroanalyzer.jl")
 export na_version
