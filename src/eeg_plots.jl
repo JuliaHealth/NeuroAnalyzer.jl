@@ -4326,7 +4326,7 @@ function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
         end
     end
 
-    s_interpolated = s_s_normalize_minmax(s_interpolated)
+    s_interpolated = s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4471,7 +4471,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
         end
     end
 
-    s_interpolated = s_s_normalize_minmax(s_interpolated)
+    s_interpolated = s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4692,7 +4692,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
         end
     end
 
-    s_interpolated = s_s_normalize_minmax(s_interpolated)
+    s_interpolated = s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4846,7 +4846,7 @@ function eeg_plot_ica_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, offset::Int64=0
             end
         end
 
-        s_interpolated = s_s_normalize_minmax(s_interpolated)
+        s_interpolated = s_normalize_minmax(s_interpolated)
 
         p = Plots.plot(grid=false,
                  framestyle=:none,
