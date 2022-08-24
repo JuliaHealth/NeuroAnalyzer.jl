@@ -3020,3 +3020,71 @@ function eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int
 
     return (cps_pw=cps_pw, cps_ph=cps_ph, cps_fq=cps_fq)
 end
+
+"""
+    eeg_phdiff(eeg; channel, pad, h)
+
+Calculate phase difference between each `eeg` channel and mean phase of `channel`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
+- `avg::Symbol=:phase`: method of averaging: `:phase` or `:signal`; for :signal `channel` signals are averaged prior to phase calculation; for :phase phase is calculated for each reference channel separately and then averaged
+- `pad::Int64=0`: pad signals with 0s
+- `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+
+# Returns
+ 
+- `ph_diff::Array{Float64, 3`
+"""
+function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+
+    avg in [:phase, :signal] || throw(ArgumentError("avg must be :phase or :signal."))
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    # select channels, default is all
+    channel == 0 && (channel = _select_channels(eeg, channel, 0))
+    _check_channels(eeg, channel)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    ph_diff = similar(eeg.eeg_signals)
+
+    if avg === :phase
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            Threads.@threads for channel_idx in 1:channel_n
+                ref_channels = setdiff(channel, channel_idx)
+                    ph_ref = zeros(length(ref_channels), size(eeg.eeg_signals, 2))
+                    for ref_idx in 1:length(ref_channels)
+                        s = @view eeg.eeg_signals[ref_channels[ref_idx], :, epoch_idx]
+                        if h
+                            _, _, _, ph = s_hspectrum(s, pad=pad)
+                        else
+                            _, _, _, ph = s_spectrum(s, pad=pad)
+                        end
+                        ph_ref[ref_idx, :] = ph
+                    end
+                    ph_ref = vec(mean(ph_ref, dims=1))
+                    s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                    if h
+                        _, _, _, ph = s_hspectrum(s, pad=pad)
+                    else
+                        _, _, _, ph = s_spectrum(s, pad=pad)
+                    end
+                    ph_diff[channel_idx, :, epoch_idx] = ph - ph_ref
+            end
+        end
+    else
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            Threads.@threads for channel_idx in 1:channel_n
+                ref_channels = setdiff(channel, channel_idx)
+                signal_m = vec(mean(eeg.eeg_signals[ref_channels, :, epoch_idx], dims=1))
+                s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+                ph_diff[channel_idx, :, epoch_idx] = s_phdiff(s, signal_m)
+            end
+        end
+    end
+
+    return ph_diff
+end

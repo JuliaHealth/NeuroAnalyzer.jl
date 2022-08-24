@@ -2,13 +2,13 @@
 
 Welcome fellow researcher!
 
-NeuroAnalyzer.jl is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
+NeuroAnalyzer (NA) is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
-NeuroAnalyzer.jl contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer.jl functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer.jl particularly useful for processing large amounts of research data.
+NeuroAnalyzer contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
 
-NeuroAnalyzer.jl is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
+NeuroAnalyzer is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 
-Currently NeuroAnalyzer.jl is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
+Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
@@ -16,11 +16,11 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 First, download [Julia](https://julialang.org/downloads/) 1.0 or later. 
 
-There are two branches of NeuroAnalyzer.jl:
+There are two branches of NeuroAnalyzer:
 - [stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master): released once per month, recommended for research tasks
-- [devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/dev): a rolling release for NeuroAnalyzer.jl developers, not for production use
+- [devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/dev): a rolling release for NeuroAnalyzer developers, not for production use
 
-You can add NeuroAnalyzer.jl using Julia package manager, by typing:
+You can add NeuroAnalyzer using Julia package manager, by typing:
 
 ```Julia
 using Pkg
@@ -33,7 +33,7 @@ Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
 # activate the package
 using NeuroAnalyzer
 # check if correctly installed
-neuroanalyzer_version()
+na_info()
 ```
 
 Another option is to initialize a new Julia environment for the package:
@@ -53,12 +53,12 @@ Pkg.update()
 # activate the package
 using NeuroAnalyzer
 # check if NeuroAnalyzer has been correctly installed
-neuroanalyzer_version()
+na_info()
 ```
 
 ## Requirements
 
-Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroAnalyzer.jl is only tested against it.
+Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroAnalyzer is only tested against it.
 
 The following packages are required:
 - CSV
@@ -92,11 +92,11 @@ The following packages are required:
 - StatsPlots
 - Wavelets
 
-Wherever possible, NeuroAnalyzer.jl will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
+Wherever possible, NeuroAnalyzer will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
 
 ## General remarks
 
-NeuroAnalyzer.jl functions operate on NeuroAnalyzer objects.
+NeuroAnalyzer functions operate on NeuroAnalyzer objects.
 
 For EEG this is NeuroAnalyzer.EEG (EEG metadata header + time + epoched signals + components). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
@@ -127,9 +127,9 @@ For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used auto
 
 ## Documentation
 
-Complete NeuroAnalyzer.jl documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md).
+Complete NeuroAnalyzer documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md).
 
-Tutorial introducing NeuroAnalyzer.jl functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md).
+Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md).
 
 Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
 
@@ -137,14 +137,14 @@ Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/mas
 
 Plugins are git repositories, default location is `~/Documents/NeuroAnalyzer/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeuroAnalyzerJ.jl file.
 
-Run `neuroanalyzer_reload_plugins()` to refresh plugins.
+Run `na_reload_plugins()` to refresh plugins.
 
 ```julia
-neuroanalyzer_plugins_reload()
-neuroanalyzer_plugins_list()
-neuroanalyzer_plugins_add()
-neuroanalyzer_plugins_remove()
-neuroanalyzer_plugins_update()
+na_plugins_reload()
+na_plugins_list()
+na_plugins_add()
+na_plugins_remove()
+na_plugins_update()
 ```
 
 ## Known bugs
@@ -159,6 +159,7 @@ The lists below are not complete and not in any particular order.
 General:
 - further performance optimizations
 - Pluto/Interact interface
+- Replace AbstractArray with AbstractVector where possible
 
 EEG:
 - analysis, plots: brain topography
@@ -203,7 +204,7 @@ EEG:
 - edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
 - edit: locs rotate
 - edit: concatenate many EEG files into larger one
-- io: ipmcomort from CSV
+- io: import from CSV
 - io: import from EDF+, BDF and other formats
 - misc: reports in .md format
 - misc: update tutorial.md

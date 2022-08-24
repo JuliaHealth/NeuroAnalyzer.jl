@@ -362,4 +362,6 @@ locs2 = eeg_loc_sph2cart(locs)
 locs2 = eeg_loc_cart2sph(locs)
 @test locs2[1, 8] == 18.0
 
+@test size(eeg_phdiff(edf)) == (19, 309760, 1)
+
 true

@@ -1,4 +1,4 @@
-# NeuroAnalyzer.jl major changes
+# NeuroAnalyzer major changes
 
 ## v0.22.8 (01/08/2022)
 

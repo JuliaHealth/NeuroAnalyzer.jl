@@ -128,6 +128,7 @@ s_specseg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tupl
 s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 s_denoise_wien(signal::AbstractArray)
 s_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
+s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
 ```
 
 ## Statistic
@@ -369,6 +370,7 @@ eeg_fbsplit(eeg::NeuroAnalyzer.EEG; order::Int64=8)
 eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64)
 eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, norm::Bool=true)
+eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 ```
 
 ## EEG plots

@@ -2613,6 +2613,30 @@ Named tuple containing:
   * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
   * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 
+<a id='NeuroAnalyzer.s_phdiff-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s_phdiff-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_phdiff`** &mdash; *Method*.
+
+
+
+```julia
+s_phdiff(signal1, signal2; pad, h)
+```
+
+Calculate phase difference between signals.
+
+**Arguments**
+
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
+  * `pad::Int64=0`: pad signals with 0s
+  * `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+
+**Returns**
+
+Named tuple containing:
+
+  * `ph_diff::Vector{Float64}`: phase differences in radians
+
 
 <a id='Statistic'></a>
 
@@ -7212,6 +7236,29 @@ Named tuple containing:
   * `cps_pw::Vector{Float64}`: cross power spectrum power
   * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
   * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
+
+<a id='NeuroAnalyzer.eeg_phdiff-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_phdiff-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_phdiff`** &mdash; *Method*.
+
+
+
+```julia
+eeg_phdiff(eeg; channel, pad, h)
+```
+
+Calculate phase difference between each `eeg` channel and mean phase of `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
+  * `avg::Symbol=:phase`: method of averaging: `:phase` or `:signal`; for :signal `channel` signals are averaged prior to phase calculation; for :phase phase is calculated for each reference channel separately and then averaged
+  * `pad::Int64=0`: pad signals with 0s
+  * `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+
+**Returns**
+
+  * `ph_diff::Array{Float64, 3`
 
 
 <a id='EEG-plots'></a>

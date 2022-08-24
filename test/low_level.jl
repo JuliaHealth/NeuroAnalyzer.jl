@@ -116,8 +116,8 @@ sp, sf, st = s_spectrogram(rand(2560), fs=256)
 segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
 @test size(segp) == (101, 11)
 @test size(s_denoise_wien(ones(2, 4, 1))) == (2, 4, 1)
-
 p, _, _ = s_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
+@test s_phdiff(ones(100), zeros(100)) == zeros(100)
 
 true

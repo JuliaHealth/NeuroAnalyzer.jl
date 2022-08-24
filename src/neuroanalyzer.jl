@@ -1,23 +1,23 @@
 """
-    neuroanalyzer_version()
+    na_info()
 
 Show NeuroAnalyzer and imported packages versions.
 """
-function neuroanalyzer_version()
+function na_info()
 
-    println("        Julia version: $VERSION")
-    println("NeuroAnalyzer version: $neuroanalyzer_ver")
+    println("NeuroAnalyzer: $na_ver")
+    println("        Julia: $VERSION")
     if CUDA.functional()
-        println("         CUDA version: $(CUDA.version()) (use_cuda = $use_cuda)")
+        println("         CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
     else
-        println("         CUDA version: CUDA not available (use_cuda = $use_cuda)")
+        println("         CUDA: CUDA not available (use_cuda = $use_cuda)")
     end
-    println("         Plugins path: $plugins_path")
-    println("              Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
+    println(" Plugins path: $plugins_path")
+    println("      Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
     end
-    pritntln()
+    println()
     println("Imported packages:")
     required_packages = [
         "ColorSchemes",
@@ -58,16 +58,16 @@ function neuroanalyzer_version()
             println("$pkg $pkg_ver ")
         end
     else
-        @warn "Manifest.toml file could not be found in $(pwd())"
+        @warn "Manifest.toml file could not be found in $(pwd()), "
     end
 end
 
 """
-    neuroanalyzer_plugins_reload()
+    na_plugins_reload()
 
 Reload NeuroAnalyzer plugins.
 """
-function neuroanalyzer_plugins_reload()
+function na_plugins_reload()
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -82,11 +82,11 @@ function neuroanalyzer_plugins_reload()
 end
 
 """
-    neuroanalyzer_plugins_list()
+    na_plugins_list()
 
 List NeuroAnalyzer plugins.
 """
-function neuroanalyzer_plugins_list()
+function na_plugins_list()
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -96,7 +96,7 @@ function neuroanalyzer_plugins_list()
 end
 
 """
-    neuroanalyzer_plugins_remove(plugin)
+    na_plugins_remove(plugin)
 
 Remove NeuroAnalyzer `plugin`.
 
@@ -104,7 +104,7 @@ Remove NeuroAnalyzer `plugin`.
 
 - `plugin::String`: plugin name
 """
-function neuroanalyzer_plugins_remove(plugin::String)
+function na_plugins_remove(plugin::String)
     @info "This will remove the whole $plugin directory, along with its file contents."
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
@@ -115,11 +115,11 @@ function neuroanalyzer_plugins_remove(plugin::String)
     catch err
         @error "Cannot remove $plugin directory."
     end
-    neuroanalyzer_plugins_reload()
+    na_plugins_reload()
 end
 
 """
-    neuroanalyzer_plugins_install(plugin)
+    na_plugins_install(plugin)
 
 Install NeuroAnalyzer `plugin`.
 
@@ -127,7 +127,7 @@ Install NeuroAnalyzer `plugin`.
 
 - `plugin::String`: plugin Git repository URL
 """
-function neuroanalyzer_plugins_install(plugin::String)
+function na_plugins_install(plugin::String)
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     try
@@ -135,11 +135,11 @@ function neuroanalyzer_plugins_install(plugin::String)
     catch err
         @error "Cannot install $plugin."
     end
-    neuroanalyzer_plugins_reload()
+    na_plugins_reload()
 end
 
 """
-    neuroanalyzer_plugins_update(plugin)
+    na_plugins_update(plugin)
 
 Install NeuroAnalyzer `plugin`.
 
@@ -147,7 +147,7 @@ Install NeuroAnalyzer `plugin`.
 
 - `plugin::String`: plugin to update; if empty, update all
 """
-function neuroanalyzer_plugins_update(plugin::Union{String, Nothing}=nothing)
+function na_plugins_update(plugin::Union{String, Nothing}=nothing)
     isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(expanduser(plugins_path))
     plugins = readdir(expanduser(plugins_path))
@@ -172,5 +172,5 @@ function neuroanalyzer_plugins_update(plugin::Union{String, Nothing}=nothing)
         end
         cd(expanduser(plugins_path))
     end
-    neuroanalyzer_plugins_reload()
+    na_plugins_reload()
 end

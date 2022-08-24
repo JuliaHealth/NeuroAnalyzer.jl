@@ -1,6 +1,6 @@
 module NeuroAnalyzer
 
-const neuroanalyzer_ver = v"0.22.8"
+const na_ver = v"0.22.8"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
@@ -53,17 +53,17 @@ const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
 const use_cuda = false
 
 include("neuroanalyzer.jl")
-export neuroanalyzer_version
-export neuroanalyzer_plugins_reload
-export neuroanalyzer_plugins_list
-export neuroanalyzer_plugins_remove
-export neuroanalyzer_plugins_install
-export neuroanalyzer_plugins_update
-export neuroanalyzer_use_cuda
-export neuroanalyzer_plugins_path
+export na_version
+export na_plugins_reload
+export na_plugins_list
+export na_plugins_remove
+export na_plugins_install
+export na_plugins_update
+export na_use_cuda
+export na_plugins_path
 
 # reload plugins
-neuroanalyzer_plugins_reload()
+na_plugins_reload()
 
 include("internal.jl")
 
@@ -179,6 +179,7 @@ export s_cbp
 export s_specseg
 export s_denoise_wien
 export s_cps
+export s_phdiff
 
 include("statistic.jl")
 export hildebrand_rule
@@ -400,6 +401,7 @@ export eeg_rel_psd
 export eeg_fbsplit
 export eeg_chdiff
 export eeg_cps
+export eeg_phdiff
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

@@ -3861,3 +3861,35 @@ function s_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::
 
     return (cps_pw=cps_pw, cps_ph=cps_ph, cps_fq=cps_fq)
 end
+
+"""
+    s_phdiff(signal1, signal2; pad, h)
+
+Calculate phase difference between signals.
+
+# Arguments
+
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
+- `pad::Int64=0`: pad signals with 0s
+- `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+
+# Returns
+
+Named tuple containing:
+- `ph_diff::Vector{Float64}`: phase differences in radians
+"""
+function s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
+
+    if h
+        _, _, _, ph1 = s_hspectrum(signal1)
+        _, _, _, ph2 = s_hspectrum(signal2)
+    else
+        _, _, _, ph1 = s_spectrum(signal1)
+        _, _, _, ph2 = s_spectrum(signal2)
+    end
+
+    ph_diff = round.(ph1 - ph2, digits=2)
+
+    return ph_diff
+end
