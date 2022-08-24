@@ -119,5 +119,12 @@ segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
 p, _, _ = s_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
 @test s_phdiff(ones(100), zeros(100)) == zeros(100)
+@test round.(s_normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
+@test round.(s_normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
+@test round.(s_normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]
+@test s_normalize_neg([1, 2, 3]) == [-2, -1, 0]
+@test s_normalize_pos([1, 2, 3]) == [2, 3, 4]
+@test s_normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
+@test s_normalize([1, 2, 3], method=:zscore) == s_normalize_zscore([1, 2, 3])
 
 true

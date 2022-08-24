@@ -180,6 +180,13 @@ export s_specseg
 export s_denoise_wien
 export s_cps
 export s_phdiff
+export s_normalize_log10
+export s_normalize_neglog
+export s_normalize_neglog10
+export s_normalize_neg
+export s_normalize_pos
+export s_normalize_perc
+export s_normalize
 
 include("statistic.jl")
 export hildebrand_rule

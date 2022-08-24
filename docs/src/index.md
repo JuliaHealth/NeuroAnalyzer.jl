@@ -129,6 +129,13 @@ s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; chann
 s_denoise_wien(signal::AbstractArray)
 s_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
 s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
+s_normalize_log10(signal::AbstractArray)
+s_normalize_neglog(signal::AbstractArray)
+s_normalize_neglog10(signal::AbstractArray)
+s_normalize_neg(signal::AbstractArray)
+s_normalize_pos(signal::AbstractArray)
+s_normalize_perc(signal::AbstractArray)
+s_normalize(signal::AbstractArray; method::Symbol)
 ```
 
 ## Statistic

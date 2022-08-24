@@ -2637,6 +2637,140 @@ Named tuple containing:
 
   * `ph_diff::Vector{Float64}`: phase differences in radians
 
+<a id='NeuroAnalyzer.s_normalize_log10-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_log10-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_log10`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_log10(signal)
+```
+
+Normalize `signal` using log10-transformation.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize_neglog-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_neglog-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_neglog`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_neglog(signal)
+```
+
+Normalize `signal` to using -log-transformation.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize_neglog10-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_neglog10-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_neglog10`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_neglog10(signal)
+```
+
+Normalize `signal` using -log10-transformation.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize_neg-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_neg-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_neg`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_neg(signal)
+```
+
+Normalize `signal` in [0, -∞].
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize_pos-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_pos-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_pos`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_pos(signal)
+```
+
+Normalize `signal` in [0, +∞].
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize_perc-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_perc-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_perc`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_perc(signal)
+```
+
+Normalize `signal` in percentages.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_normalize-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize(signal; method)
+```
+
+Normalize `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
+
 
 <a id='Statistic'></a>
 

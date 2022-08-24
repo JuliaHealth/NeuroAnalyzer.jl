@@ -3893,3 +3893,171 @@ function s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0
 
     return ph_diff
 end
+
+"""
+    s_normalize_log10(signal)
+
+Normalize `signal` using log10-transformation.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_log10(signal::AbstractArray)
+
+    m = abs(minimum(signal))
+    s_normalized = @. log10(1 + signal + m)
+
+    return s_normalized
+end
+
+"""
+    s_normalize_neglog(signal)
+
+Normalize `signal` to using -log-transformation.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_neglog(signal::AbstractArray)
+
+    s_normalized = @. -log(signal)
+
+    return s_normalized
+end
+
+"""
+    s_normalize_neglog10(signal)
+
+Normalize `signal` using -log10-transformation.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_neglog10(signal::AbstractArray)
+
+    s_normalized = @. -log10(signal)
+
+    return s_normalized
+end
+
+"""
+    s_normalize_neg(signal)
+
+Normalize `signal` in [0, -∞].
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_neg(signal::AbstractArray)
+
+    m = maximum(signal)
+    s_normalized = @. signal - m
+
+    return s_normalized
+end
+
+"""
+    s_normalize_pos(signal)
+
+Normalize `signal` in [0, +∞].
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_pos(signal::AbstractArray)
+
+    m = minimum(signal)
+    s_normalized = @. signal + abs(m)
+
+    return s_normalized
+end
+
+"""
+    s_normalize_perc(signal)
+
+Normalize `signal` in percentages.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_perc(signal::AbstractArray)
+
+    s_normalized = (signal .- minimum(signal)) ./ (maximum(signal) .- minimum(signal))
+    
+    return s_normalized
+end
+
+"""
+    s_normalize(signal; method)
+
+Normalize `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize(signal::AbstractArray; method::Symbol)
+
+    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin or :gauss."))
+
+    if method === :zscore
+        s_normalized = s_normalize_zscore(signal)
+    elseif method === :minmax
+        s_normalized = s_normalize_minmax(signal)
+    elseif method === :max
+        s_normalized = s_normalize_max(signal)
+    elseif method === :log
+        s_normalized = s_normalize_log(signal)
+    elseif method === :log10
+        s_normalized = s_normalize_log10(signal)
+    elseif method === :neglog
+        s_normalized = s_normalize_neglog(signal)
+    elseif method === :neglog10
+        s_normalized = s_normalize_neglog10(signal)
+    elseif method === :neg
+        s_normalized = s_normalize_neg(signal)
+    elseif method === :pos
+        s_normalized = s_normalize_pos(signal)
+    elseif method === :perc
+        s_normalized = s_normalize_perc(signal)
+    elseif method === :gauss
+        s_normalized = s_normalize_gauss(signal)
+    end
+
+    return s_normalized
+end
