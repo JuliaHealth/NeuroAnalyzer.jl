@@ -1052,7 +1052,7 @@ function plot_signal_avg(t::Union{Vector{<:Real}, AbstractRange}, signal::Matrix
     mono == true ? palette = :grays : palette = :darktest
 
     s_normalized = signal
-    norm == true && (s_normalized = normalize_zscore(signal))
+    norm == true && (s_normalized = s_normalize_zscore(signal))
     s_m, s_s, s_u, s_l = s_msci95(s_normalized)
 
     ylim == (0, 0) && (ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0)))
@@ -1190,7 +1190,7 @@ function eeg_plot_signal_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstrac
 
     # add epochs markers
     if norm == true
-        s_normalized = normalize_zscore(signal)
+        s_normalized = s_normalize_zscore(signal)
     else
         s_normalized = signal
     end
@@ -1318,7 +1318,7 @@ function eeg_plot_signal_avg_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64,
 
     # add epochs markers
     if norm == true
-        s_normalized = normalize_zscore(signal)
+        s_normalized = s_normalize_zscore(signal)
     else
         s_normalized = signal
     end
@@ -1463,7 +1463,7 @@ function plot_signal_butterfly(t::Union{Vector{<:Real}, AbstractRange}, signal::
     channel_n = size(signal, 1)
 
     if norm == true
-        s_normalized = normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
+        s_normalized = s_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
     else
         s_normalized = signal
     end
@@ -1603,7 +1603,7 @@ function eeg_plot_signal_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, A
 
     # add epochs markers
     if norm == true
-        s_normalized = normalize_zscore(signal)
+        s_normalized = s_normalize_zscore(signal)
     else
         s_normalized = signal
     end
@@ -1733,7 +1733,7 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroAnalyzer.EEG; epoch::Union{
 
     # add epochs markers
     if norm == true
-        s_normalized = normalize_zscore(signal)
+        s_normalized = s_normalize_zscore(signal)
     else
         s_normalized = signal
     end
@@ -4326,7 +4326,7 @@ function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
         end
     end
 
-    s_interpolated = s_normalize_minmax(s_interpolated)
+    s_interpolated = s_s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4471,7 +4471,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
         end
     end
 
-    s_interpolated = s_normalize_minmax(s_interpolated)
+    s_interpolated = s_s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4692,7 +4692,7 @@ function eeg_plot_mcomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
         end
     end
 
-    s_interpolated = s_normalize_minmax(s_interpolated)
+    s_interpolated = s_s_normalize_minmax(s_interpolated)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4846,7 +4846,7 @@ function eeg_plot_ica_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, offset::Int64=0
             end
         end
 
-        s_interpolated = s_normalize_minmax(s_interpolated)
+        s_interpolated = s_s_normalize_minmax(s_interpolated)
 
         p = Plots.plot(grid=false,
                  framestyle=:none,

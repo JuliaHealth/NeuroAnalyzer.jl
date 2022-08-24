@@ -630,7 +630,7 @@ eeg_plot_save(p, file_name="images/edf_avg.png")
 ```julia
 p = eeg_plot_signal_butterfly(edf)
 eeg_plot_save(p, file_name="images/edf_butterfly_simple.png")
-p = eeg_plot_signal_butterfly_details(edf)
+p = eeg_plot_signal_butterfly_details(edf, norm=true)
 eeg_plot_save(p, file_name="images/edf_butterfly.png")
 ```
 
@@ -774,7 +774,7 @@ eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 
 ![edf topo :power](images/edf_alpha_topo.png)
 
-Plot phase difference at time = 1s
+Plot phase difference at time = 1s (sample = 256 as fs = 256 Hz)
 ```julia
 pdiff = eeg_phdiff(edf)
 p = eeg_plot_mcomponent_topo(edf, epoch=1, c=pdiff[:, 256, :])
@@ -782,7 +782,7 @@ eeg_plot_save(p, file_name="images/edf_phdiff_topo.png")
 ```
 ![](images/edf_phdiff_topo.png)
 
-Plot amp difference at time = 1s
+Plot amp difference at time = 1s (sample = 256 as fs = 256 Hz)
 ```julia
 ampdiff = eeg_ampdiff(edf)
 p = eeg_plot_mcomponent_topo(edf, epoch=1, c=ampdiff[:, 256, :])
