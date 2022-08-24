@@ -217,9 +217,7 @@ EEG:
 - plots: plot two EEG one over another for comparison
 - plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plots: ERP amplitude plots at electrode locations (eeg_plot_erp_topomap())
-- plots: topoplot colorbar: :lin, -log, :-log10, :negative, :positive
-- plots: topoplot of amplitude differences between channel and the rest of the scalp
-- plots: topoplot of phase differences (-πrad..+πrad) between channel and the rest of the scalp
+- plots: topoplot colorbar: :lin, -log, :-log10, :negative, :positive, assymetric, non-scaled, -πrad..+πrad
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
 - process: custom reference (e.g. bipolar longitudinal/horizontal)
 - process: detect artifacts using TKEO

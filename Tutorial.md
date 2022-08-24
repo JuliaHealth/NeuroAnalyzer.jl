@@ -782,6 +782,14 @@ eeg_plot_save(p, file_name="images/edf_phdiff_topo.png")
 ```
 ![](images/edf_phdiff_topo.png)
 
+Plot amp difference at time = 1s
+```julia
+ampdiff = eeg_ampdiff(edf)
+p = eeg_plot_mcomponent_topo(edf, epoch=1, c=ampdiff[:, 256, :])
+eeg_plot_save(p, file_name="images/edf_ampdiff_topo.png")
+```
+![](images/edf_ampdiff_topo.png)
+
 Plot weights:
 ```julia
 w = (1:19) * 0.05

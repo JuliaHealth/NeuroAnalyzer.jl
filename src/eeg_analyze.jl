@@ -3036,7 +3036,7 @@ Calculate phase difference between each `eeg` channel and mean phase of `channel
 
 # Returns
  
-- `ph_diff::Array{Float64, 3`
+- `ph_diff::Array{Float64, 3}`
 """
 function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
@@ -3087,4 +3087,42 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     end
 
     return ph_diff
+end
+
+"""
+    eeg_ampdiff(eeg; channel)
+
+Calculate amplitude difference between each `eeg` channel and mean phase of `channel`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
+
+# Returns
+ 
+- `amp_diff::Array{Float64, 3}`
+"""
+function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+
+    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("eeg contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+
+    # select channels, default is all
+    channel == 0 && (channel = _select_channels(eeg, channel, 0))
+    _check_channels(eeg, channel)
+
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    amp_diff = similar(eeg.eeg_signals)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            ref_channels = setdiff(channel, channel_idx)
+            amp_ref = vec(mean(eeg.eeg_signals[ref_channels, :, epoch_idx], dims=1))
+            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
+            amp_diff[channel_idx, :, epoch_idx] = s - amp_ref
+        end
+    end
+
+    return amp_diff
 end

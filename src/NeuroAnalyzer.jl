@@ -402,6 +402,7 @@ export eeg_fbsplit
 export eeg_chdiff
 export eeg_cps
 export eeg_phdiff
+export eeg_ampdiff
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

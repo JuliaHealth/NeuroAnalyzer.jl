@@ -7258,7 +7258,27 @@ Calculate phase difference between each `eeg` channel and mean phase of `channel
 
 **Returns**
 
-  * `ph_diff::Array{Float64, 3`
+  * `ph_diff::Array{Float64, 3}`
+
+<a id='NeuroAnalyzer.eeg_ampdiff-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ampdiff-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_ampdiff`** &mdash; *Method*.
+
+
+
+```julia
+eeg_ampdiff(eeg; channel)
+```
+
+Calculate amplitude difference between each `eeg` channel and mean phase of `channel`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
+
+**Returns**
+
+  * `amp_diff::Array{Float64, 3}`
 
 
 <a id='EEG-plots'></a>
