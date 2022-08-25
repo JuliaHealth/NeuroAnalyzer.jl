@@ -1,0 +1,21 @@
+
+
+ channel label  waveform                               f         sf
+----------------------------------------------------------------------
+    1    F4     block          +800uV/-800uV          1Hz       200Hz
+    2    F3     triangle       +800uV/-800uV          3Hz       100Hz
+    3    X10    impulse        +0.8mV/-0.8mV          5Hz       200Hz
+    4    FP2    noise          +3200uV/-3200uV        -Hz       200Hz
+    5    P4     sine           +800uV/-800uV          1Hz        50Hz
+    6    C4     sine           +800uV/-800uV          2Hz       100Hz
+    7    P3     sine           +800uV/-800uV          3Hz       200Hz
+    8    C3     sine           +800uV/-800uV          4Hz       200Hz
+    9    X9     sine           +800uV/-800uV          8Hz       200Hz
+   10    FP1    sine           +800uV/-800uV         16Hz       200Hz
+   11    F8     sine           +800uV/-800uV         32Hz       200Hz
+   12    F7     triangle       +4mV/-4mV              5Hz       200Hz
+   13    DC01   sine square    +6V/-0V                5Hz       200Hz
+   14    DC04   DC             +100%                  -Hz        25Hz
+   15    DC03   DC             +60BPM                 -Hz        25Hz
+   16    DC02   DC             +16384                 -Hz        25Hz
+
