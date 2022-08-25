@@ -2469,8 +2469,8 @@ Perform wavelet bandpass filtering of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_normalize_gauss-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_gauss-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_normalize_gauss`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_normalize_gauss' href='#NeuroAnalyzer.s_normalize_gauss'>#</a>
+**`NeuroAnalyzer.s_normalize_gauss`** &mdash; *Function*.
 
 
 
@@ -2483,6 +2483,7 @@ Normalize `signal` to Gaussian.
 **Arguments**
 
   * `signal::AbstractArray`
+  * `dims::Int64=1`: dimension for cumsum()
 
 **Returns**
 
@@ -2765,7 +2766,7 @@ Normalize `signal`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss
+  * `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none
 
 **Returns**
 
@@ -8735,6 +8736,7 @@ Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*thet
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -8763,6 +8765,7 @@ Plot topographical view of `eeg` external or embedded component (array type: man
   * `cb_label::String="[A.U.]"`: color bar label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
+  * `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
   * `kwargs`: optional arguments for plot() function
 
 **Returns**

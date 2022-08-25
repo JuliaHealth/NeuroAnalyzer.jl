@@ -734,7 +734,7 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
 
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
-    return @. a * exp(-(t/s)^2 / 2)        # Gaussian
+    return @. a * exp(-(t/s)^2 / 2)     # Gaussian
 end
 
 """
@@ -2942,7 +2942,7 @@ function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
     gf = linspace(0, fs, length(s_r))
     gs = (gw * (2 * pi - 1)) / (4 * pi)     # normalized width
     gf .-= f                                # shifted frequencies
-    # g = @. exp(-0.5 * (gf / gs)^2)          # Gaussian
+    # g = @. exp(-0.5 * (gf / gs)^2)        # Gaussian
     g = @. exp((-gf^2 ) / 2 * gs^2)         # Gaussian
     g ./= abs(maximum(g))                   # gain-normalized
 
@@ -3530,15 +3530,16 @@ Normalize `signal` to Gaussian.
 # Arguments
 
 - `signal::AbstractArray`
+- `dims::Int64=1`: dimension for cumsum()
 
 # Returns
 
 - `s_normalized::Vector{Float64}`
 """
-function s_normalize_gauss(signal::AbstractArray)
+function s_normalize_gauss(signal::AbstractArray, dims::Int64=1)
 
     l = length(signal) + 1
-    return atanh.((tiedrank(cumsum(signal)) ./ l .- 0.5) .* 2)
+    return atanh.((tiedrank(cumsum(signal, dims=dims)) ./ l .- 0.5) .* 2)
 end
 
 """
@@ -3865,7 +3866,7 @@ function s_normalize_perc(signal::AbstractArray)
 
     m1 = minimum(signal)
     m2 = maximum(signal)
-    m = m2 .- m1
+    m = m2 - m1
     return (signal .- m1) ./ m
 end
 
@@ -3877,7 +3878,7 @@ Normalize `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss
+- `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none
 
 # Returns
 
@@ -3885,7 +3886,7 @@ Normalize `signal`.
 """
 function s_normalize(signal::AbstractArray; method::Symbol)
 
-    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin or :gauss."))
+    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin, :gauss or :none."))
 
     if method === :zscore
         return s_normalize_zscore(signal)
@@ -3909,5 +3910,7 @@ function s_normalize(signal::AbstractArray; method::Symbol)
         return s_normalize_perc(signal)
     elseif method === :gauss
         return s_normalize_gauss(signal)
+    elseif method === :none
+        return signal
     end
 end

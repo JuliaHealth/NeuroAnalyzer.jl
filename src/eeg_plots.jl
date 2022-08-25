@@ -4226,13 +4226,14 @@ Plot topographical view of `eeg` signal. It uses polar :loc_radius and :loc_thet
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, nmethod::Symbol=:minmax, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4324,8 +4325,8 @@ function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
             s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
     end
-
-    s_interpolated = s_normalize_minmax(s_interpolated)
+    
+    s_interpolated = s_normalize(s_interpolated, method=nmethod)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4348,7 +4349,6 @@ function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
               seriescolor=palette,
               colorbar=cb,
               colorbar_title=cb_label,
-              clims=(-1, 1),
               levels=10,
               linewidth=0)
     p = Plots.plot!(interpolated_x,
@@ -4359,7 +4359,6 @@ function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
               seriescolor=palette,
               colorbar=cb,
               colorbar_title=cb_label,
-              clims=(-1, 1),
               levels=5,
               linecolor=:black,
               linewidth=0.5)
@@ -4397,13 +4396,14 @@ Plot topographical view of `eeg` external or embedded component (array type: man
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Array{<:Real, 3}, Symbol}, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Array{<:Real, 3}, Symbol}, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", mono::Bool=false, nmethod::Symbol=:minmax, kwargs...)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
@@ -4470,7 +4470,7 @@ function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
         end
     end
 
-    s_interpolated = s_normalize_minmax(s_interpolated)
+    s_interpolated = s_normalize(s_interpolated, method=nmethod)
 
     p = Plots.plot(grid=false,
              framestyle=:none,
@@ -4492,7 +4492,6 @@ function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
               seriestype=:heatmap,
               seriescolor=palette,
               colorbar_title=cb_label,
-              clims=(-1, 1),
               levels=10,
               linewidth=0)
     p = Plots.plot!(interpolated_x,
@@ -4502,7 +4501,6 @@ function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union
               seriestype=:contour,
               seriescolor=palette,
               colorbar_title=cb_label,
-              clims=(-1, 1),
               levels=5,
               linecolor=:black,
               linewidth=0.5)
