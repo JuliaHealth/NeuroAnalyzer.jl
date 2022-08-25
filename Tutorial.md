@@ -972,7 +972,7 @@ eeg_info(edf)
 using BenchmarkTools
 edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
-function neuroanalyzer_benchmark()
+function na_benchmark()
     e10 = nothing
     e10 = eeg_reference_car(edf);
     e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf));
@@ -986,23 +986,23 @@ function neuroanalyzer_benchmark()
 end
 
 # run benchmark
-b = @benchmarkable neuroanalyzer_benchmark() evals=5 samples=1
+@time na_benchmark();
+b = @benchmarkable na_benchmark() evals=20 samples=1
 run(b)
-@time neuroanalyzer_benchmark();
-```
-
-Results Julia 1.8.0: workstation (use_cuda=false):
-```
-BenchmarkTools.Trial: 1 sample with 5 evaluations.
- Single result which took 4.325 s (3.49% GC) to evaluate,
- with a memory estimate of 15.19 GiB, over 5747676 allocations.
 ```
 
 Results Julia 1.8.0: workstation (use_cuda=true):
 ```
-BenchmarkTools.Trial: 1 sample with 5 evaluations.
- Single result which took 4.208 s (6.80% GC) to evaluate,
- with a memory estimate of 15.00 GiB, over 5724601 allocations.
+BenchmarkTools.Trial: 1 sample with 20 evaluations.
+ Single result which took 4.122 s (7.18% GC) to evaluate,
+ with a memory estimate of 15.00 GiB, over 5723079 allocations.
+```
+
+Results Julia 1.8.0: workstation (use_cuda=false):
+```
+BenchmarkTools.Trial: 1 sample with 20 evaluations.
+ Single result which took 4.082 s (6.26% GC) to evaluate,
+ with a memory estimate of 15.00 GiB, over 5723212 allocations.
 ```
 
 Results Julia 1.8.0: laptop (no CUDA):
