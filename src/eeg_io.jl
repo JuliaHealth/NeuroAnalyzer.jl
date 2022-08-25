@@ -39,15 +39,15 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     version == 0 && (eeg_filetype = "EDF")
     eeg_filetype !== "EDF" && throw(ArgumentError("File is not a EDF file."))
 
-    patient = rstrip(header[9:88])
-    recording = rstrip(header[89:168])
+    patient = strip(header[9:88])
+    recording = strip(header[89:168])
     recording_date = header[169:176]
     recording_time = header[177:184]
-    data_offset = parse(Int, rstrip(header[185:192]))
+    data_offset = parse(Int, strip(header[185:192]))
     reserved  = header[193:236]
-    data_records = parse(Int, rstrip(header[237:244]))
-    data_records_duration  = parse(Float64, rstrip(header[245:252]))
-    channel_n  = parse(Int, rstrip(header[253:256]))
+    data_records = parse(Int, strip(header[237:244]))
+    data_records_duration  = parse(Float64, strip(header[245:252]))
+    channel_n  = parse(Int, strip(header[253:256]))
 
     labels = Vector{String}(undef, channel_n)
     transducers = Vector{String}(undef, channel_n)
