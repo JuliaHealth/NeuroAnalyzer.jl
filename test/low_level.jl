@@ -110,7 +110,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 p, f = s_rel_psd(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
 @test s_wbp(ones(10), fs=10, frq=3) == zeros(10)
-@test round.(s_normalize_gauss([1, 0, 1]), digits=2) == [0.26, -0.55, 0.26]
+@test round.(s_normalize_gauss([1, 0, 1]), digits=2) == [-0.26, -0.26, 0.55]
 @test s_cbp(ones(100), fs=10, frq=1) == zeros(100)
 sp, sf, st = s_spectrogram(rand(2560), fs=256)
 segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))

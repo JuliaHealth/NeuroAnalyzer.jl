@@ -26,11 +26,9 @@ function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s = @view eeg.eeg_signals[channel, :, epoch_idx]
-        length(channel) == 1 ? reference_channel = mean(s, dims=2) : reference_channel = vec(mean(s, dims=1))
+        @views length(channel) == 1 ? reference_channel = mean(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(mean(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
         end
         length(channel) == 1 && (s_ref[channel, :, epoch_idx] = reference_channel)
     end
@@ -98,8 +96,7 @@ function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, excl
                 "o2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o2"), l))), :, :])
             end
             reference_channel = vec(mean(reference_channels, dims=1))
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
         end
     end
 
@@ -153,8 +150,7 @@ function eeg_derivative(eeg::NeuroAnalyzer.EEG)
     
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_der[channel_idx, :, epoch_idx] = s_derivative(s)
+            s_der[channel_idx, :, epoch_idx] = @views s_derivative(eeg.eeg_signals[channel_idx, :, epoch_idx])
         end
     end
 
@@ -220,8 +216,7 @@ function eeg_detrend(eeg::NeuroAnalyzer.EEG; type::Symbol=:linear, offset::Real=
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_det[channel_idx, :, epoch_idx] = s_detrend(s, type=type, offset=offset, order=order, span=span, fs=fs)
+            s_det[channel_idx, :, epoch_idx] = @views s_detrend(eeg.eeg_signals[channel_idx, :, epoch_idx], type=type, offset=offset, order=order, span=span, fs=fs)
         end
     end
 
@@ -286,8 +281,7 @@ function eeg_taper(eeg::NeuroAnalyzer.EEG; taper::Union{Vector{<:Real}, Vector{C
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_tap[channel_idx, :, epoch_idx] = s_taper(s, taper=taper)
+            s_tap[channel_idx, :, epoch_idx] = @views s_taper(eeg.eeg_signals[channel_idx, :, epoch_idx], taper=taper)
         end
     end
 
@@ -341,8 +335,7 @@ function eeg_demean(eeg::NeuroAnalyzer.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_demeaned[channel_idx, :, epoch_idx] = s_demean(s)
+            s_demeaned[channel_idx, :, epoch_idx] = @views s_demean(eeg.eeg_signals[channel_idx, :, epoch_idx])
         end
     end
 
@@ -389,7 +382,6 @@ Normalize each `eeg` channel.
 function eeg_normalize(eeg::NeuroAnalyzer.EEG; method::Symbol)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    method in [:zscore, :minmax, :max, :log, :gauss] || throw(ArgumentError("Method must be :zscore, :minmax, :max, :log or :gauss."))
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -397,18 +389,7 @@ function eeg_normalize(eeg::NeuroAnalyzer.EEG; method::Symbol)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            if method === :zscore
-                s_normalized[channel_idx, :, epoch_idx] = s_normalize_zscore(s)
-            elseif method === :minmax
-                s_normalized[channel_idx, :, epoch_idx] = s_normalize_minmax(s)
-            elseif method === :max
-                s_normalized[channel_idx, :, epoch_idx] = s_normalize_max(s)
-            elseif method === :log
-                s_normalized[channel_idx, :, epoch_idx] = s_normalize_log(s)
-            elseif method === :gauss
-                s_normalized[channel_idx, :, epoch_idx] = s_normalize_gauss(s)
-            end
+            s_normalized[channel_idx, :, epoch_idx] = @views s_normalize(eeg.eeg_signals[channel_idx, :, epoch_idx], method=method)
         end
     end
 
@@ -463,8 +444,7 @@ function eeg_add_noise(eeg::NeuroAnalyzer.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_noise[channel_idx, :, epoch_idx] = s_add_noise(s)
+            s_noise[channel_idx, :, epoch_idx] = @views s_add_noise(eeg.eeg_signals[channel_idx, :, epoch_idx])
         end
     end
 
@@ -540,8 +520,7 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ftype::Union{Sym
     
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_filtered[channel_idx, :, epoch_idx] = s_filter(s,
+            s_filtered[channel_idx, :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel_idx, :, epoch_idx],
                                                              fprototype=fprototype,
                                                              ftype=ftype,
                                                              cutoff=cutoff,
@@ -786,9 +765,7 @@ function eeg_average(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s1 = @view signal1[channel_idx, :, epoch_idx]
-            s2 = @view signal2[channel_idx, :, epoch_idx]
-            s_averaged[channel_idx, :, epoch_idx] = s2_average(s1, s2)
+            s_averaged[channel_idx, :, epoch_idx] = @views s2_average(signal1[channel_idx, :, epoch_idx], signal2[channel_idx, :, epoch_idx])
         end
     end
 
@@ -1100,8 +1077,7 @@ function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_denoised[channel_idx, :, epoch_idx] = s_wdenoise(s, wt=wt)
+            s_denoised[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
         end
     end
 
@@ -1131,8 +1107,7 @@ function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_denoised[channel_idx, :, epoch_idx] = s_wdenoise(s, wt=wt)
+            s_denoised[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
         end
     end
 
@@ -1181,8 +1156,7 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in 1:channel_n
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
@@ -1190,24 +1164,21 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a1[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
@@ -1215,24 +1186,21 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a1[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     end
@@ -1283,8 +1251,7 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in 1:channel_n
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
@@ -1292,24 +1259,21 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a1[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
@@ -1317,24 +1281,21 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a2[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(a1[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     end
@@ -1389,8 +1350,7 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in 1:channel_n
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
@@ -1398,24 +1358,21 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m1[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
@@ -1423,24 +1380,21 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m1[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     end
@@ -1491,8 +1445,7 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in 1:channel_n
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
@@ -1500,24 +1453,21 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m1[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
@@ -1525,24 +1475,21 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             Threads.@threads for channel_idx in central_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg_tmp, pick=:left)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m2[:, :, epoch_idx])
             Threads.@threads for channel_idx in left_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg_tmp, pick=:right)
         @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = vec(m1[:, :, epoch_idx])
             Threads.@threads for channel_idx in right_picks
-                s = @view eeg_tmp.eeg_signals[channel_idx, :, epoch_idx]
-                s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+                s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     end
@@ -1584,8 +1531,7 @@ function eeg_fftdenoise(eeg::NeuroAnalyzer.EEG; pad::Int64=0, threshold::Int64=1
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_denoised[channel_idx, :, epoch_idx] = s_fftdenoise(s, pad=pad, threshold=threshold)
+            s_denoised[channel_idx, :, epoch_idx] = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
         end
     end
 
@@ -1616,8 +1562,7 @@ function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; pad::Int64=0, threshold::Int64=
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_denoised[channel_idx, :, epoch_idx] = s_fftdenoise(s, pad=pad, threshold=threshold)
+            s_denoised[channel_idx, :, epoch_idx] = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
         end
     end
 
@@ -1685,8 +1630,7 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
                 end
                 reference_channel = vec(sum(g .* reference_channels, dims=1))
             end
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            s_ref[channel_idx, :, epoch_idx] = s .- reference_channel
+            s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
         end
     end
 
@@ -1791,8 +1735,7 @@ function eeg_wbp(eeg::NeuroAnalyzer.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6,
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_wbp(s, pad=pad, frq=frq, fs=fs, ncyc=ncyc, demean=demean)
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s_wbp(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, frq=frq, fs=fs, ncyc=ncyc, demean=demean)
         end
     end
 
@@ -1851,8 +1794,7 @@ function eeg_cbp(eeg::NeuroAnalyzer.EEG; pad::Int64=0, frq::Real, demean::Bool=t
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view eeg.eeg_signals[channel_idx, :, epoch_idx]
-            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_cbp(s, pad=pad, frq=frq, fs=fs, demean=demean)
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s_cbp(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, frq=frq, fs=fs, demean=demean)
         end
     end
 

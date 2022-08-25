@@ -1075,8 +1075,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Sym
         s_trimmed = zeros(channel_n, (size(eeg_new.eeg_signals, 2) - len), epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
-                s = @view eeg_new.eeg_signals[idx, :, epoch_idx]
-                s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
+                s_trimmed[idx, :, epoch_idx] = @views s_trim(eeg_new.eeg_signals[idx, :, epoch_idx], len=len, offset=offset, from=from)
             end
         end
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
@@ -1137,8 +1136,7 @@ function eeg_trim!(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Sy
         s_trimmed = zeros(channel_n, (size(eeg.eeg_signals, 2) - len), epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for idx in 1:channel_n
-                s = @view eeg.eeg_signals[idx, :, epoch_idx]
-                s_trimmed[idx, :, epoch_idx] = s_trim(s, len=len, offset=offset, from=from)
+                s_trimmed[idx, :, epoch_idx] = @views s_trim(eeg.eeg_signals[idx, :, epoch_idx], len=len, offset=offset, from=from)
             end
         end
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
@@ -1959,23 +1957,22 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     end
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for length_idx in 1:epoch_len
-            s_non_interpolated = @view eeg_tmp[:, length_idx, epoch_idx]
             s_interpolated_tmp = zeros(interpolation_factor, interpolation_factor)
-            m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
-            m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
-            m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
+            m === :shepard && (itp = @views ScatteredInterpolation.interpolate(Shepard(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
+            m === :mq && (itp = @views ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
+            m === :tp && (itp = @views ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
             for idx1 in 1:interpolation_factor
                 for idx2 in 1:interpolation_factor
-                    s_interpolated_tmp[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
+                    s_interpolated_tmp[idx1, idx2] = @views ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
                 end
             end
             for idx in 1:length(channel)
-                s_interpolated[idx, length_idx, epoch_idx] = s_interpolated_tmp[ch_pos[idx][1], ch_pos[idx][2]]
+                s_interpolated[idx, length_idx, epoch_idx] = @views s_interpolated_tmp[ch_pos[idx][1], ch_pos[idx][2]]
             end
         end
     end
     for idx in 1:length(channel)
-        eeg_new.eeg_signals[channel[idx], :, :] = s_interpolated[idx, :, :]
+        eeg_new.eeg_signals[channel[idx], :, :] = @views s_interpolated[idx, :, :]
     end
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, m=$m, q=$q)")

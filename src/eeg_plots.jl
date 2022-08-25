@@ -5,7 +5,7 @@ Plot scaled multi-channel `signal`.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`
+- `t::Union{AbstractVector, AbstractRange}`
 - `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: labels vector
 - `xlabel::String="Time [s]"`: x-axis label
@@ -18,7 +18,7 @@ Plot scaled multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
+function plot_signal_scaled(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -42,8 +42,7 @@ function plot_signal_scaled(t::Union{Vector{<:Real}, AbstractRange}, signal::Abs
     variances = var(signal, dims=2)
     mean_variance = mean(variances)
     for idx in 1:channel_n
-        s = @view signal[idx, :]
-        s_normalized[idx, :] = (s .- mean(s)) ./ mean_variance .+ (idx - 1)
+        s_normalized[idx, :] = @views (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
     end
 
     # plot channels
@@ -80,8 +79,8 @@ Plot single-channel `signal`.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`
-- `signal::Vector{<:Real}`
+- `t::Union{AbstractVector, AbstractRange}`
+- `signal::AbstractVector`
 - `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
@@ -93,7 +92,7 @@ Plot single-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::Vector{<:Real}; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", mono::Bool=false, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -139,7 +138,7 @@ Plot multi-channel `signal`.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`
+- `t::Union{AbstractVector, AbstractRange}`
 - `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: labels vector
 - `xlabel::String="Time [s]"`: x-axis label
@@ -152,7 +151,7 @@ Plot multi-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{Vector{<:Real}, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -1031,8 +1030,8 @@ Plot `signal` channels: mean and ±95% CI.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`
-- `signal::Matrix{<:Real}`
+- `t::Union{AbstractVector, AbstractRange}`
+- `signal::AbstractArray`
 - `norm::Bool=false`: normalize the `signal` prior to calculations
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Amplitude [μV]"`: y-axis label
@@ -1045,7 +1044,7 @@ Plot `signal` channels: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_avg(t::Union{Vector{<:Real}, AbstractRange}, signal::Matrix{<:Real}; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -1439,8 +1438,8 @@ Butterfly plot of `signal` channels.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`
-- `signal::Matrix{<:Real}`
+- `t::Union{AbstractVector, AbstractRange}`
+- `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: channel labels vector
 - `norm::Bool=false`: normalize the `signal` prior to calculations
 - `xlabel::String="Time [s]"`: x-axis label
@@ -1454,7 +1453,7 @@ Butterfly plot of `signal` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_butterfly(t::Union{Vector{<:Real}, AbstractRange}, signal::Matrix{<:Real}; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -1855,7 +1854,7 @@ Plot `signal` channel power spectrum density.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -1873,7 +1872,7 @@ Plot `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
@@ -2028,7 +2027,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 # Arguments
 
-- `signal::Matrix{<:Real}`
+- `signal::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -2047,7 +2046,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2158,7 +2157,7 @@ Butterfly plot of `signal` channels power spectrum density.
 
 # Arguments
 
-- `signal::Matrix{<:Real}`
+- `signal::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -2177,7 +2176,7 @@ Butterfly plot of `signal` channels power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::Matrix{<:Real}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
@@ -2961,7 +2960,7 @@ Plot spectrogram of `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `offset::Real`: displayed segment offset in seconds
 - `norm::Bool=true`: normalize powers to dB
@@ -2979,7 +2978,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(signal::Vector{<:Real}; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
+function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3890,7 +3889,7 @@ Plot matrix `m` of `eeg` channels.
 # Arguments
 
 - `eeg:EEG`
-- `m::Union{Matrix{<:Real}, Array{Float64, 3}}`: channels by channels matrix
+- `m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: channels by channels matrix
 - `epoch::Int64=1`: epoch number to display
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -3899,7 +3898,7 @@ Plot matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_matrix(eeg::NeuroAnalyzer.EEG, m::Union{Matrix{<:Real}, Array{Float64, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
+function eeg_plot_matrix(eeg::NeuroAnalyzer.EEG, m::Union{Matrix{<:Real}, Array{<:Real, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -3933,8 +3932,8 @@ Plot covariance matrix `m` of `eeg` channels.
 # Arguments
 
 - `eeg:EEG`
-- `cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}`: covariance matrix
-- `lags::Vector{<:Real}`: covariance lags
+- `cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: covariance matrix
+- `lags::AbstractVector`: covariance lags
 - `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
 - `epoch::Int64=1`: epoch number to display
 - `mono::Bool=false`: use color or grey palette
@@ -3944,7 +3943,7 @@ Plot covariance matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_covmatrix(eeg::NeuroAnalyzer.EEG, cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}, lags::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)
+function eeg_plot_covmatrix(eeg::NeuroAnalyzer.EEG, cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}, lags::AbstractVector; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)
 
     (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
@@ -3984,7 +3983,7 @@ Plot histogram of `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 - `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
 - `label::String=""`: channel label
 - `xlabel::String=""`: x-axis label
@@ -3997,7 +3996,7 @@ Plot histogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_histogram(signal::Vector{<:Real}; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     type in [:hist, :kd] || throw(ArgumentError("type must be :hist or :kd."))
 
@@ -4162,7 +4161,7 @@ Plot `ica` components against time vector `t`.
 
 # Arguments
 
-- `t::Union{Vector{<:Real}, AbstractRange}`: the time vector
+- `t::Union{AbstractVector, AbstractRange}`: the time vector
 - `ica::Vector{Float64}`
 - `label::String=""`: channel label
 - `norm::Bool=true`: normalize the `ica` prior to calculations
@@ -4177,7 +4176,7 @@ Plot `ica` components against time vector `t`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_ica(t::Union{Vector{<:Real}, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function plot_ica(t::Union{AbstractVector, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(t) <: AbstractRange && (t = float(collect(t)))
 
@@ -4951,7 +4950,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha] (see `eeg_band()`)
 - `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
@@ -4967,7 +4966,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_bands(signal::Vector{<:Real}; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Real, Real}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_bands(signal::AbstractVector; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Real, Real}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
@@ -5261,7 +5260,7 @@ Plot values of `c` for selected epoch of `eeg`.
 # Arguments
 
 - `eeg:NeuroAnalyzer.EEG`
-- `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
+- `c::Union{AbstractVector, Symbol}`: values to plot; if symbol, than use embedded component
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
 - `xlabel::String="Epochs"`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -5273,7 +5272,7 @@ Plot values of `c` for selected epoch of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_epochs(eeg::NeuroAnalyzer.EEG; c::Union{Vector{<:Real}, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_epochs(eeg::NeuroAnalyzer.EEG; c::Union{AbstractVector, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     epoch = _select_epochs(eeg, epoch, 0)
     _check_epochs(eeg, epoch)
@@ -5777,44 +5776,35 @@ function eeg_plot_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel
     mono == true ? palette = :grays : palette = :darktest
 
     ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = eeg_ispc(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
+    ispc = round.(ispc, digits=2)
 
-    ispc = ispc[1]
-    ispc = round(ispc, digits=2)
-    ispc_angle = ispc_angle[1]
-    signal_diff = signal_diff[1, :, 1]
-    phase_diff = phase_diff[1, :, 1]
-    s1_phase = s1_phase[1, :, 1]
-    s2_phase = s2_phase[1, :, 1]
-
-    signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
-    signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
     t = eeg1.eeg_epochs_time
 
-    p1 = Plots.plot(t, signal1, color=:black, lw=0.2)
-    p1 = Plots.plot!(t, signal2, color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+    p1 = @views Plots.plot(t, eeg1.eeg_signals[channel1, :, epoch1], color=:black, lw=0.2)
+    p1 = @views Plots.plot!(t, eeg2.eeg_signals[channel2, :, epoch2], color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
 
-    p2 = Plots.plot(t, signal_diff, color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+    p2 = @views Plots.plot(t, signal_diff[1, :, 1], color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
 
-    p3 = Plots.plot(t, s1_phase, color=:black, lw=0.2)
-    p3 = Plots.plot!(t, s2_phase, color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+    p3 = @views Plots.plot(t, s1_phase[1, :, 1], color=:black, lw=0.2)
+    p3 = @views Plots.plot!(t, s2_phase[1, :, 1], color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
 
-    p4 = Plots.plot(t, phase_diff, color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+    p4 = @views Plots.plot(t, phase_diff[1, :, 1], color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
 
-    p5 = Plots.plot([0, s1_phase[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
-    for idx in 2:length(phase_diff)
-        p5 = Plots.plot!([0, s1_phase[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    p5 = @views Plots.plot([0, s1_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p5 = @views Plots.plot!([0, s1_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
 
-    p5 = Plots.plot!([0, s2_phase[1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
-    for idx in 2:length(phase_diff)
-        p5 = Plots.plot!([0, s2_phase[idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
+    p5 = @views Plots.plot!([0, s2_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p5 = @views Plots.plot!([0, s2_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
     end
 
-    p6 = Plots.plot([0, phase_diff[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and ISPC = $ispc")
-    for idx in 2:length(phase_diff)
-        p6 = Plots.plot!([0, phase_diff[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    p6 = @views Plots.plot([0, phase_diff[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and ISPC = $(ispc[1])")
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p6 = @views Plots.plot!([0, phase_diff[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
-    p6 = Plots.plot!([0, ispc_angle], [0, ispc], lw=1, color=:red)
+    p6 = @views Plots.plot!([0, ispc_angle[1]], [0, ispc[1]], lw=1, color=:red)
     
     p = Plots.plot(p1, p2, p3, p4, p5, p6,
              layout=(3, 2),
@@ -5840,7 +5830,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 - `channel::Int64`: channel to plot
 - `t::Int64`: time point to plot
 - `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -5848,7 +5838,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, mono::Bool=false, kwargs...)
+function eeg_plot_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -5869,19 +5859,19 @@ function eeg_plot_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, z::Bool
 
     if z == false
         if w === nothing
-            p2 = Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc")
+            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc")
         else
-            p2 = Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPC at $t s = $itpc")
+            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPC at $t s = $itpc")
         end
     else
         if w === nothing
-            p2 = Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPCz at $t s = $itpcz")
+            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPCz at $t s = $itpcz")
         else
-            nothing && (p2 = Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPCz at $t s = $itpcz"))
+            nothing && (p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPCz at $t s = $itpcz"))
         end
     end
     for idx in 2:length(itpc_phases)
-        p2 = Plots.plot!([0, itpc_phases[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+        p2 = @views Plots.plot!([0, itpc_phases[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
     itpcz > 1 && (itpcz = 1)
     z == false && (p2 = Plots.plot!([0, itpc_angle], [0, itpc], lw=1, color=:red))
@@ -5926,41 +5916,33 @@ function eeg_plot_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1
     mono == true ? palette = :grays : palette = :darktest
 
     pli, signal_diff, phase_diff, s1_phase, s2_phase = eeg_pli(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
+    pli = round.(pli, digits=2)
 
-    pli = pli[1]
-    pli = round(pli, digits=2)
-    signal_diff = signal_diff[1, :, 1]
-    phase_diff = phase_diff[1, :, 1]
-    s1_phase = s1_phase[1, :, 1]
-    s2_phase = s2_phase[1, :, 1]
-
-    signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
-    signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
     t = eeg1.eeg_epochs_time
 
-    p1 = Plots.plot(t, signal1, color=:black, lw=0.2)
-    p1 = Plots.plot!(t, signal2, color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+    p1 = @views Plots.plot(t, eeg1.eeg_signals[channel1, :, epoch1], color=:black, lw=0.2)
+    p1 = @views Plots.plot!(t, eeg2.eeg_signals[channel2, :, epoch2], color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
 
-    p2 = Plots.plot(t, signal_diff, color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
+    p2 = @views Plots.plot(t, signal_diff[1, :, 1], color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
 
-    p3 = Plots.plot(t, s1_phase, color=:black, lw=0.2)
-    p3 = Plots.plot!(t, s2_phase, color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+    p3 = @views Plots.plot(t, s1_phase[1, :, 1], color=:black, lw=0.2)
+    p3 = @views Plots.plot!(t, s2_phase[1, :, 1], color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
 
-    p4 = Plots.plot(t, phase_diff, color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
+    p4 = @views Plots.plot(t, phase_diff[1, :, 1], color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
 
-    p5 = Plots.plot([0, s1_phase[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
-    for idx in 2:length(phase_diff)
-        p5 = Plots.plot!([0, s1_phase[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    p5 = @views Plots.plot([0, s1_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p5 = @views Plots.plot!([0, s1_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
 
-    p5 = Plots.plot!([0, s2_phase[1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
-    for idx in 2:length(phase_diff)
-        p5 = Plots.plot!([0, s2_phase[idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
+    p5 = @views Plots.plot!([0, s2_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p5 = @views Plots.plot!([0, s2_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
     end
 
-    p6 = Plots.plot([0, phase_diff[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and PLI = $pli")
-    for idx in 2:length(phase_diff)
-        p6 = Plots.plot!([0, phase_diff[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
+    p6 = @views Plots.plot([0, phase_diff[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and PLI = $(pli[1])")
+    @views for idx in 2:length(phase_diff[1, :, 1])
+        p6 = @views Plots.plot!([0, phase_diff[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
     end
     
     p = Plots.plot(p1, p2, p3, p4, p5, p6,
@@ -5989,7 +5971,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
 - `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String="ITPC spectrogram"`: plot title
@@ -6000,7 +5982,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
         title == "" && (title = "ITPC spectrogram\nchannel: $channel")
@@ -6043,7 +6025,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
 - `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -6054,7 +6036,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_itpc_f(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{Vector{<:Real}, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_itpc_f(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
         f < 0 && throw(ArgumentError("f must be > 0."))
@@ -6248,11 +6230,10 @@ function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     s_pow = zeros(channel_n, length(p_tmp))
     s_frq = zeros(length(f_tmp))
     for channel_idx in 1:channel_n
-        s = @view signal[channel_idx, :]
         if mw == false
-            s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
+            s_pow[channel_idx, :], s_frq = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
         else
-            s_pow[channel_idx, :], s_frq = s_wspectrum(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow[channel_idx, :], s_frq = @views s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
         end
     end
 
@@ -6469,11 +6450,10 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     s_pow = zeros(channel_n, length(p_tmp))
     s_frq = zeros(length(f_tmp))
     for channel_idx in 1:channel_n
-        s = @view signal[channel_idx, :]
         if mw == false
-                s_pow[channel_idx, :], s_frq = s_psd(s, fs=fs, norm=norm, mt=mt)
+                s_pow[channel_idx, :], s_frq = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
         else
-            s_pow[channel_idx, :], s_frq = s_wspectrum(s, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
+            s_pow[channel_idx, :], s_frq = @views s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
         end
     end
 
@@ -6508,7 +6488,7 @@ Plot relative `signal` channel power spectrum density.
 
 # Arguments
 
-- `signal::Vector{<:Real}`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -6525,7 +6505,7 @@ Plot relative `signal` channel power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_rel_psd(signal::Vector{<:Real}; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing, ax::Symbol=:linlin, kwargs...)
+function plot_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing, ax::Symbol=:linlin, kwargs...)
 
     ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
 
@@ -6970,7 +6950,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64,
     hidedecorations!(fig_axis, grid=true, ticks=true)
 
     for channel_idx in channel
-        s = signal[channel_idx, :, 1]
+        s = @view signal[channel_idx, :, 1]
         if ref === :abs
             p = plot_psd(s,
                          fs=fs,

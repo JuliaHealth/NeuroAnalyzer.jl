@@ -5965,7 +5965,7 @@ Calculate cross-covariance of each the `eeg` channels.
 
 Named tuple containing:
 
-  * `ccov::Matrix{Float64}`
+  * `xcov::Matrix{Float64}`
   * `lags::Vector{Float64}`
 
 <a id='NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
@@ -5995,7 +5995,7 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 
 Named tuple containing:
 
-  * `ccov::Array{Float64, 3}`
+  * `xcov::Array{Float64, 3}`
   * `lags::Vector{Float64}`
 
 <a id='NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -7421,7 +7421,7 @@ Calculate amplitude difference between each `eeg` channel and mean phase of `cha
 
 ## EEG plots
 
-<a id='NeuroAnalyzer.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroAnalyzer.plot_signal_scaled-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.plot_signal_scaled-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal_scaled-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal_scaled`** &mdash; *Method*.
 
 
@@ -7434,7 +7434,7 @@ Plot scaled multi-channel `signal`.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `t::Union{AbstractVector, AbstractRange}`
   * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: labels vector
   * `xlabel::String="Time [s]"`: x-axis label
@@ -7447,7 +7447,7 @@ Plot scaled multi-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}' href='#NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
 
 
@@ -7460,8 +7460,8 @@ Plot single-channel `signal`.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Vector{<:Real}`
+  * `t::Union{AbstractVector, AbstractRange}`
+  * `signal::AbstractVector`
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
@@ -7473,7 +7473,7 @@ Plot single-channel `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}' href='#NeuroAnalyzer.plot_signal-Tuple{Union{AbstractRange, Vector{<:Real}}, AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
 
 
@@ -7486,7 +7486,7 @@ Plot multi-channel `signal`.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`
+  * `t::Union{AbstractVector, AbstractRange}`
   * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: labels vector
   * `xlabel::String="Time [s]"`: x-axis label
@@ -7759,7 +7759,7 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroAnalyzer.plot_signal_avg-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_signal_avg-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal_avg-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal_avg`** &mdash; *Method*.
 
 
@@ -7772,8 +7772,8 @@ Plot `signal` channels: mean and ±95% CI.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Matrix{<:Real}`
+  * `t::Union{AbstractVector, AbstractRange}`
+  * `signal::AbstractArray`
   * `norm::Bool=false`: normalize the `signal` prior to calculations
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Amplitude [μV]"`: y-axis label
@@ -7879,7 +7879,7 @@ Plot `eeg` external or embedded component: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}' href='#NeuroAnalyzer.plot_signal_butterfly-Tuple{Union{AbstractRange, Vector{<:Real}}, Matrix{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_signal_butterfly-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal_butterfly-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal_butterfly`** &mdash; *Method*.
 
 
@@ -7892,8 +7892,8 @@ Butterfly plot of `signal` channels.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`
-  * `signal::Matrix{<:Real}`
+  * `t::Union{AbstractVector, AbstractRange}`
+  * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: channel labels vector
   * `norm::Bool=false`: normalize the `signal` prior to calculations
   * `xlabel::String="Time [s]"`: x-axis label
@@ -8003,7 +8003,7 @@ Butterfly plot of `eeg` external or embedded component.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_psd-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_psd-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_psd-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_psd`** &mdash; *Method*.
 
 
@@ -8016,7 +8016,7 @@ Plot `signal` channel power spectrum density.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -8034,7 +8034,7 @@ Plot `signal` channel power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd_avg-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{Matrix{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_psd_avg-Tuple{AbstractArray}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_psd_avg`** &mdash; *Method*.
 
 
@@ -8047,7 +8047,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
 **Arguments**
 
-  * `signal::Matrix{<:Real}`
+  * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -8066,7 +8066,7 @@ Plot `signal` channels power spectrum density: mean and ±95% CI.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd_butterfly-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_psd_butterfly-Tuple{Matrix{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_psd_butterfly-Tuple{AbstractArray}' href='#NeuroAnalyzer.plot_psd_butterfly-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_psd_butterfly`** &mdash; *Method*.
 
 
@@ -8079,7 +8079,7 @@ Butterfly plot of `signal` channels power spectrum density.
 
 **Arguments**
 
-  * `signal::Matrix{<:Real}`
+  * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
@@ -8301,7 +8301,7 @@ Butterfly plot PSD of `eeg` external or embedded component:.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_spectrogram-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_spectrogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_spectrogram`** &mdash; *Method*.
 
 
@@ -8314,7 +8314,7 @@ Plot spectrogram of `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling frequency
   * `offset::Real`: displayed segment offset in seconds
   * `norm::Bool=true`: normalize powers to dB
@@ -8555,7 +8555,7 @@ Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}' href='#NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}}'>#</a>
+<a id='NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}}' href='#NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}}'>#</a>
 **`NeuroAnalyzer.eeg_plot_matrix`** &mdash; *Method*.
 
 
@@ -8569,7 +8569,7 @@ Plot matrix `m` of `eeg` channels.
 **Arguments**
 
   * `eeg:EEG`
-  * `m::Union{Matrix{<:Real}, Array{Float64, 3}}`: channels by channels matrix
+  * `m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: channels by channels matrix
   * `epoch::Int64=1`: epoch number to display
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -8578,7 +8578,7 @@ Plot matrix `m` of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}' href='#NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{Float64, 3}, Matrix{<:Real}}, Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}, AbstractVector}' href='#NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}, AbstractVector}'>#</a>
 **`NeuroAnalyzer.eeg_plot_covmatrix`** &mdash; *Method*.
 
 
@@ -8592,8 +8592,8 @@ Plot covariance matrix `m` of `eeg` channels.
 **Arguments**
 
   * `eeg:EEG`
-  * `cov_m::Union{Matrix{<:Real}, Array{Float64, 3}}`: covariance matrix
-  * `lags::Vector{<:Real}`: covariance lags
+  * `cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: covariance matrix
+  * `lags::AbstractVector`: covariance lags
   * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
   * `epoch::Int64=1`: epoch number to display
   * `mono::Bool=false`: use color or grey palette
@@ -8603,7 +8603,7 @@ Plot covariance matrix `m` of `eeg` channels.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_histogram-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_histogram-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_histogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_histogram-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_histogram`** &mdash; *Method*.
 
 
@@ -8616,7 +8616,7 @@ Plot histogram of `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
   * `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
   * `label::String=""`: channel label
   * `xlabel::String=""`: x-axis label
@@ -8685,7 +8685,7 @@ Plot `eeg` channel histograms.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}' href='#NeuroAnalyzer.plot_ica-Tuple{Union{AbstractRange, Vector{<:Real}}, Vector{Float64}}'>#</a>
+<a id='NeuroAnalyzer.plot_ica-Tuple{AbstractVector, Vector{Float64}}' href='#NeuroAnalyzer.plot_ica-Tuple{AbstractVector, Vector{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_ica`** &mdash; *Method*.
 
 
@@ -8698,7 +8698,7 @@ Plot `ica` components against time vector `t`.
 
 **Arguments**
 
-  * `t::Union{Vector{<:Real}, AbstractRange}`: the time vector
+  * `t::Union{AbstractVector, AbstractRange}`: the time vector
   * `ica::Vector{Float64}`
   * `label::String=""`: channel label
   * `norm::Bool=true`: normalize the `ica` prior to calculations
@@ -8874,7 +8874,7 @@ Plot vector of plots `p` as tiles.
 
   * `p_tiled::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_bands-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_bands-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_bands-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_bands-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_bands`** &mdash; *Method*.
 
 
@@ -8887,7 +8887,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha](see `eeg_band()`)
   * `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
@@ -8991,7 +8991,7 @@ Plot values of `c` for selected epoch of `eeg`.
 **Arguments**
 
   * `eeg:NeuroAnalyzer.EEG`
-  * `c::Union{Vector{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `c::Union{AbstractVector, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
   * `xlabel::String="Epochs"`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -9130,7 +9130,7 @@ Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `chan
   * `channel::Int64`: channel to plot
   * `t::Int64`: time point to plot
   * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -9183,7 +9183,7 @@ Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
   * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String="ITPC spectrogram"`: plot title
@@ -9214,7 +9214,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
   * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
+  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -9347,7 +9347,7 @@ Plot 3-d surface plot of `signal` channels power spectrum density.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_rel_psd-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_rel_psd-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.plot_rel_psd-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_rel_psd-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.plot_rel_psd`** &mdash; *Method*.
 
 
@@ -9360,7 +9360,7 @@ Plot relative `signal` channel power spectrum density.
 
 **Arguments**
 
-  * `signal::Vector{<:Real}`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered periodogram

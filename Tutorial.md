@@ -1007,5 +1007,7 @@ BenchmarkTools.Trial: 1 sample with 5 evaluations.
 
 Results Julia 1.8.0: laptop (no CUDA):
 ```
-
+BenchmarkTools.Trial: 1 sample with 5 evaluations.
+ Single result which took 3.455 s (6.97% GC) to evaluate,
+ with a memory estimate of 14.98 GiB, over 5536724 allocations.
 ```

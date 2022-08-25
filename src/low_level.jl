@@ -57,15 +57,13 @@ function m_pad0(m::Matrix{<:Number})
 
     if nr > nc
         mp = repeat([0], nr, nr - nc)
-        mp = hcat(m, mp)
+        return hcat(m, mp)
     elseif nr < nc
         mp = repeat([0], nc - nr, nc)
-        mp = vcat(m, mp)
+        return vcat(m, mp)
     elseif nr == nc
-        mp = m
+        return m
     end
-
-    return mp
 end
 
 """
@@ -262,17 +260,17 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     even == true && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
     if type === :hann
-        w = @. 0.5 * (1 - cos.(2 * pi * t))
+        return @. 0.5 * (1 - cos.(2 * pi * t))
     elseif type === :bh
-        w = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
+        return @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
     elseif type === :bohman
-        w = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
+        return @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
     elseif type === :flat
-        w = @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
+        return @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
     elseif type === :bn
-        w = @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
+        return @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
     elseif type === :nutall
-        w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
+        return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
     elseif type === :triangle
         mod(n, 2) == 0 && (n += 1)
         w = zeros(n)
@@ -281,6 +279,7 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
         w .= w ./ maximum(w)
+        return w
     elseif type === :exp
         mod(n, 2) == 0 && (n += 1)
         w = ones(n)
@@ -289,11 +288,10 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         end
         w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
         w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
+        return w
     else
         throw(ArgumentError("Window type must be :hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp."))
     end
-
-    return w
 end
 
 """
@@ -316,14 +314,12 @@ function fft0(x::AbstractArray, n::Int64=0)
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional() && use_cuda
-        cx = CuArray(x)
-        pfft = Vector(fft(cx))
         _free_gpumem()
+        cx = CuArray(x)
+        return Vector(fft(cx))
     else
-        pfft = fft(x)
+        return fft(x)
     end
-
-    return pfft
 end
 
 """
@@ -346,14 +342,12 @@ function ifft0(x::AbstractArray, n::Int64=0)
     n > length(x) && (n -= length(x))
     n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional() && use_cuda
-        cx = CuArray(x)
-        pifft = Vector(ifft(cx))
         _free_gpumem()
+        cx = CuArray(x)
+        return Vector(ifft(cx))
     else
-        pifft = ifft(x)
+        return ifft(x)
     end
-
-    return pifft
 end
 
 """
@@ -561,14 +555,12 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
     if dims == 1
         @inbounds @simd for idx = 1:size(m, 2)
             # sort by columns
-            tmp = @view m[:, idx][m_idx]
-            m_sorted[:, idx] = tmp
+            m_sorted[:, idx] = @views m[:, idx][m_idx]
         end
     else
         @inbounds @simd for idx = 1:size(m, 1)
             # sort by rows
-            tmp = @view m[idx, :][m_idx]
-            m_sorted[idx, :] = tmp
+            m_sorted[idx, :] = @views m[idx, :][m_idx]
         end
     end
 
@@ -718,9 +710,7 @@ function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::
     t = -t:1/fs:t
     sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
-    m = sin_wave .* g
-    
-    return m
+    return sin_wave .* g
 end
 
 """
@@ -744,9 +734,7 @@ function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real
 
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
-    g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
-
-    return g
+    return @. a * exp(-(t/s)^2 / 2)        # Gaussian
 end
 
 """
@@ -788,9 +776,7 @@ Calculate RMSE between `signal1` and `signal2`.
 function s2_rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
 
     # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
-    r = sqrt(mean(signal2 - signal1)^2)
-
-    return r
+    return sqrt(mean(signal2 - signal1)^2)
 end
 
 """
@@ -808,9 +794,7 @@ Normalize matrix `m`.
 """
 function m_norm(m::Array{Float64, 3})
     
-    m_norm = m ./ (size(m, 2) - 1)
-    
-    return m_norm
+    return m ./ (size(m, 2) - 1)
 end
 
 """
@@ -1057,15 +1041,13 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
         # sample_idx = sample_idx[1:1000]
         @inbounds @simd for idx2 in 1:size(signal1, 1)
-            s = @view signals[sample_idx[idx2], :]
-            s_tmp1[idx2, :] = s'
+            s_tmp1[idx2, :] = @views signals[sample_idx[idx2], :]'
         end
         s1_mean = mean(s_tmp1, dims=1)
         s_tmp1 = zeros(size(signal1, 1), size(signal1, 2))
         sample_idx = rand(1:size(signals, 1), size(signals, 1))
         @inbounds @simd for idx2 in 1:size(signal1, 1)
-            s = @view signals[sample_idx[idx2], :]
-            s_tmp1[idx2, :] = s'
+            s_tmp1[idx2, :] = @views signals[sample_idx[idx2], :]'
         end
         s2_mean = mean(s_tmp1, dims=1)
         if method === :absdiff
@@ -1120,16 +1102,16 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
     @inbounds @simd for idx in eachindex(lags)
         if lags[idx] == 0
             # no lag
-            s_sum = sum(s_demeaned.^2)
+            acov[idx] = sum(s_demeaned.^2)
         elseif lags[idx] > 0
             # positive lag
-            s_sum = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])])
+            acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])])
         elseif lags[idx] < 0
             # negative lag
-            s_sum = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end])
+            acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end])
         end
-        acov[idx] = norm == true ? s_sum / l : s_sum
     end
+    norm == true && (acov ./ l)
 
     return acov, lags
 end
@@ -1160,11 +1142,8 @@ function s_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, 
     lags = collect(-lag:lag)
 
     if demean == true
-        s_demeaned1 = s_demean(signal1)
-        s_demeaned2 = s_demean(signal2)
-    else
-        s_demeaned1 = signal1
-        s_demeaned2 = signal2
+        signal1 = s_demean(signal1)
+        signal2 = s_demean(signal2)
     end
 
     xcov = zeros(length(lags))
@@ -1173,16 +1152,15 @@ function s_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, 
     @inbounds @simd for idx in 1:length(lags)
         if lags[idx] == 0
             # no lag
-            xcov[idx] = sum(s_demeaned1 .* s_demeaned2)
+            xcov[idx] = sum(signal1 .* signal2)
         elseif lags[idx] > 0
             # positive lag
-            xcov[idx] = @views sum(s_demeaned1[(1 + lags[idx]):end] .* s_demeaned2[1:(end - lags[idx])])
+            xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])])
         elseif lags[idx] < 0
             # negative lag
-            xcov[idx] = @views sum(s_demeaned1[1:(end - abs(lags[idx]))] .* s_demeaned2[(1 + abs(lags[idx])):end])
+            xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end])
         end
     end
-    # xcov[idx] = norm == true ? s_sum / l : s_sum
     norm == true && (xcov ./ l)
 
     return xcov, lags
@@ -1280,9 +1258,7 @@ function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt
 
     # dx: frequency resolution
     dx = psd_freq[2] - psd_freq[1]
-    sbp = simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
-
-    return sbp
+    return simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
 end
 
 """
@@ -1302,9 +1278,7 @@ Taper the `signal` with `taper`.
 function s_taper(signal::AbstractArray; taper::Union{AbstractVector, Vector{ComplexF64}})
 
     length(taper) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
-    s_tapered = signal .* taper
-
-    return s_tapered
+    return signal .* taper
 end
 
 """
@@ -1337,7 +1311,7 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         t = collect(1.0:1:length(signal))
         model = loess(t, signal, span=span)
         trend = Loess.predict(model, t)
-        s_det = signal .- trend
+        return signal .- trend
     elseif type === :poly
         t = collect(1:1:length(signal))        
         p = Polynomials.fit(t, signal, order)
@@ -1345,10 +1319,10 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         for idx in 1:length(signal)
             trend[idx] = p(t[idx])
         end
-        s_det = signal .- trend
+        return signal .- trend
     elseif type === :constant
         offset == 0 && (offset = mean(signal))
-        s_det = signal .- mean(signal)
+        return signal .- mean(signal)
     elseif type === :ls
         T = eltype(signal)
         N = size(signal, 1)
@@ -1361,16 +1335,14 @@ function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, 
         # do the matrix inverse for 2×2 matrix
         Rinv = inv(Array(R)) |> typeof(R)
         factor = Rinv * transpose(A)
-        s_det = signal .- A * (factor * signal)
+        return signal .- A * (factor * signal)
     elseif type === :linear
         trend = linspace(signal[1], signal[end], length(signal))
-        s_det = signal .- trend
+        return signal .- trend
     elseif type === :hp
         fs <= 0 && throw(ArgumentError("fs must be > 0."))
-        s_det = s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=1, fs=fs, order=8)
+        return s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=1, fs=fs, order=8)
     end
-
-    return s_det
 end
 
 """
@@ -1389,9 +1361,7 @@ Remove mean value (DC offset) from the `signal`.
 function s_demean(signal::AbstractArray)
 
     m = mean(signal)
-    s_demeaned = signal .- m
-
-    return s_demeaned
+    return signal .- m
 end
 
 """
@@ -1411,9 +1381,7 @@ function s_normalize_zscore(signal::AbstractArray)
 
     m = mean(signal)
     s = std(signal)
-    s_normalized = @. (signal - m) / s
-
-    return s_normalized
+    return @. (signal - m) / s
 end
 
 """
@@ -1434,9 +1402,7 @@ function s_normalize_minmax(signal::AbstractArray)
     mi = minimum(signal)
     mx = maximum(signal)
     mxi = mx - mi
-    s_normalized = @. (2 * (signal - mi) / mxi) - 1
-
-    return s_normalized
+    return @. (2 * (signal - mi) / mxi) - 1
 end
 
 """
@@ -1455,9 +1421,7 @@ Normalize `signal` in [0, +1].
 function s_normalize_max(signal::AbstractArray)
 
     mx = maximum(signal)
-    s_normalized = signal ./ mx
-
-    return s_normalized
+    return signal ./ mx
 end
 
 """
@@ -1476,9 +1440,7 @@ Normalize `signal` using log-transformation.
 function s_normalize_log(signal::AbstractArray)
 
     m = abs(minimum(signal))
-    s_normalized = @. log(1 + signal + m)
-
-    return s_normalized
+    return @. log(1 + signal + m)
 end
 
 """
@@ -1496,9 +1458,7 @@ Adds random noise to the `signal`.
 """
 function s_add_noise(signal::AbstractArray)
 
-    s_noise = signal .+ rand(length(signal))
-
-    return s_noise
+    return signal .+ rand(length(signal))
 end
 
 """
@@ -1565,8 +1525,7 @@ function s_resample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
     t_resampled = nothing
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view signal[channel_idx, :, epoch_idx]
-            s_resampled[channel_idx, :, epoch_idx], t_resampled = s_resample(s, t=t, new_sr=new_sr)
+            s_resampled[channel_idx, :, epoch_idx], t_resampled = @views s_resample(signal[channel_idx, :, epoch_idx], t=t, new_sr=new_sr)
         end
     end
 
@@ -1581,9 +1540,7 @@ Return derivative of `signal` of the same length.
 function s_derivative(signal::AbstractArray)
 
     s_der = diff(signal)
-    s_der = vcat(s_der, s_der[end])
-    
-    return s_der
+    return vcat(s_der, s_der[end])
 end
 
 """
@@ -1692,8 +1649,9 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         end
     end
 
+    signal = _reflect(signal)
+
     if fprototype === :mavg
-        signal = _reflect(signal)
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
         @inbounds @simd for idx in (1 + order):(length(signal) - order)
@@ -1705,13 +1663,10 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
                 s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
             end
         end
-        s_filtered = _chop(s_filtered)
-
-        return s_filtered
+        return _chop(s_filtered)
     end
 
     if fprototype === :mmed
-        signal = _reflect(signal)
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
         @inbounds @simd for idx in (1 + order):(length(signal) - order)
@@ -1723,30 +1678,22 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
                 s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
             end
         end
-        s_filtered = _chop(s_filtered)
-
-        return s_filtered
+        return _chop(s_filtered)
     end
 
     if fprototype === :poly
-        signal = _reflect(signal)
         t = collect(0:1/fs:(length(signal) - 1) / fs)        
         p = Polynomials.fit(t, signal, order)
         s_filtered = zeros(length(signal))
         @inbounds @simd for idx in 1:length(signal)
             s_filtered[idx] = p(t[idx])
         end
-        s_filtered = _chop(s_filtered)
-
-        return s_filtered
+        return _chop(s_filtered)
     end
 
     if fprototype === :conv
-        signal = _reflect(signal)
         s_filtered = s_tconv(signal, window)
-        s_filtered = _chop(s_filtered)
-
-        return s_filtered
+        return _chop(s_filtered)
     end
 
     if ftype === :lp
@@ -1793,15 +1740,10 @@ function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol
         flt = digitalfilter(responsetype, prototype)
     end
 
-    if fprototype !== :mavg && fprototype !== :mmed && fprototype !== :conv
-        signal = _reflect(signal)
-        dir === :twopass && (s_filtered = filtfilt(flt, signal))
-        dir === :onepass && (s_filtered = filt(flt, signal))
-        dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
-        s_filtered = _chop(s_filtered)
-    end
-
-    return s_filtered
+    dir === :twopass && (s_filtered = filtfilt(flt, signal))
+    dir === :onepass && (s_filtered = filt(flt, signal))
+    dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
+    return _chop(s_filtered)
 end
 
 """
@@ -1864,8 +1806,7 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
     psd_frq = zeros(channel_n, length(frq_tmp))
 
     @inbounds @simd for channel_idx in 1:channel_n
-        s = @view signal[channel_idx, :]
-        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = s_psd(s, fs=fs, norm=norm, mt=mt)
+        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
     end
     
     return (psd_pow=psd_pow, psd_frq=psd_frq)
@@ -1900,8 +1841,7 @@ function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view signal[channel_idx, :, epoch_idx]
-            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_psd(s, fs=fs, norm=norm, mt=mt)
+            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = @views s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
         end
     end
     
@@ -1923,9 +1863,7 @@ Calculate phase stationarity using Hilbert transformation.
 """
 function s_stationarity_hilbert(signal::AbstractArray)
     
-    phase_stationarity = diff(DSP.unwrap(angle.(hilbert(signal))))
-    
-    return phase_stationarity
+    return diff(DSP.unwrap(angle.(hilbert(signal))))
 end
 
 """
@@ -1946,9 +1884,7 @@ function s_stationarity_mean(signal::AbstractArray; window::Int64)
 
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
-    mean_stationarity = mean(signal, dims=1)
-
-    return mean_stationarity
+    return mean(signal, dims=1)
 end
 
 """
@@ -1969,9 +1905,7 @@ function s_stationarity_var(signal::AbstractArray; window::Int64)
 
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
-    var_stationarity = var(signal, dims=1)
-
-    return var_stationarity
+    return var(signal, dims=1)
 end
 
 """
@@ -2022,9 +1956,7 @@ Calculate mutual information between `signal1` and `signal2`.
 """
 function s2_mi(signal1::AbstractArray, signal2::AbstractArray)
 
-    mi = get_mutual_information(signal1, signal2)
-    
-    return mi
+    return get_mutual_information(signal1, signal2)
 end
 
 """
@@ -2051,9 +1983,7 @@ function s_entropy(signal::AbstractArray)
     hdat1 = h.weights ./ sum(h.weights)
 
     # convert histograms to probability values
-    ent = -sum(hdat1 .* log2.(hdat1 .+ eps()))    
-
-    return ent
+    return -sum(hdat1 .* log2.(hdat1 .+ eps()))    
 end
 
 """
@@ -2072,9 +2002,7 @@ Calculate negentropy of `signal`.
 function s_negentropy(signal::AbstractArray)
 
     s = s_demean(signal)
-    ne = 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)
-
-    return ne
+    return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)
 end
 
 """
@@ -2175,8 +2103,7 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     # check maximum n
     n_tmp = n
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s = @view signal[:, :, epoch_idx]
-        pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
+        pc_m = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
         size(pc_m)[2] < n_tmp && (n_tmp = size(pc_m)[2])
     end
     n_tmp < n && @info "Only $n_tmp PC components were generated."
@@ -2187,7 +2114,6 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
     pc_reconstructed = zeros(size(signal))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s = @view signal[:, :, epoch_idx]
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
         # eig_val_idx = sortperm(eig_val, rev=true)
@@ -2195,13 +2121,13 @@ function s_pca(signal::Array{Float64, 3}; n::Int64)
         # eig_vec = m_sort(eig_vec, eig_val_idx)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        pc_m = MultivariateStats.fit(PCA, s, maxoutdim=n)
+        pc_m = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
         v = MultivariateStats.principalvars(pc_m) ./ MultivariateStats.var(pc_m) * 100
 
         for idx in 1:n
             pc_var[idx, epoch_idx] = v[idx]
             # pc[idx, :, epoch_idx] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, epoch_idx] = MultivariateStats.predict(pc_m, s)[idx, :]
+            pc[idx, :, epoch_idx] = @views MultivariateStats.predict(pc_m, signal[:, :, epoch_idx])[idx, :]
         end
     end
 
@@ -2265,12 +2191,10 @@ function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{Com
     
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
-        s_conv = s_conv[half_kernel:(end - half_kernel)]
+        return s_conv[half_kernel:(end - half_kernel)]
     else
-        s_conv = s_conv[(half_kernel + 1):(end - half_kernel)]
+        return s_conv[(half_kernel + 1):(end - half_kernel)]
     end
-
-    return s_conv
 end
 
 """
@@ -2301,16 +2225,14 @@ function s_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::I
     ic_mw = zeros(channel_n, n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s = @view signal[:, :, epoch_idx]
-
-        f === :tanh && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
-        f === :gaus && (M = MultivariateStats.fit(ICA, s, n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
+        f === :tanh && (M = @views MultivariateStats.fit(ICA, signal[:, :, epoch_idx], n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
+        f === :gaus && (M = @views MultivariateStats.fit(ICA, signal[:, :, epoch_idx], n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
 
         n == size(signal, 1) && (mw = inv(M.W)')
         n < size(signal, 1) && (mw = pinv(M.W)')
 
         for idx in 1:n
-            ic[idx, :, epoch_idx] = MultivariateStats.predict(M, s)[idx, :]
+            ic[idx, :, epoch_idx] = @views MultivariateStats.predict(M, signal[:, :, epoch_idx])[idx, :]
         end
 
         ic_mw[:, :, epoch_idx] = mw
@@ -2422,16 +2344,12 @@ function s_detect_epoch_flat(signal::Array{Float64, 3})
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view signal[channel_idx, :, epoch_idx]
-            c_tmp_diff = abs.(diff(s))
             # add tolerance around zero μV
-            sum(c_tmp_diff) < eps() && (bad_epochs_score[epoch_idx] += 1)
+            @views sum(abs.(diff(signal[channel_idx, :, epoch_idx]))) < eps() && (bad_epochs_score[epoch_idx] += 1)
         end
     end
 
-    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
-
-    return bad_epochs_score
+    return round.(bad_epochs_score ./ channel_n, digits=1)
 end
 
 """
@@ -2464,9 +2382,7 @@ function s_detect_epoch_rmse(signal::Array{Float64, 3})
         end
     end
 
-    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
-
-    return bad_epochs_score
+    return round.(bad_epochs_score ./ channel_n, digits=1)
 end
 
 """
@@ -2499,9 +2415,7 @@ function s_detect_epoch_rmsd(signal::Array{Float64, 3})
         end
     end
 
-    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
-
-    return bad_epochs_score
+    return round.(bad_epochs_score ./ channel_n, digits=1)
 end
 
 """
@@ -2534,9 +2448,7 @@ function s_detect_epoch_euclid(signal::Array{Float64, 3})
         end
     end
 
-    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
-
-    return bad_epochs_score
+    return round.(bad_epochs_score ./ channel_n, digits=1)
 end
 
 """
@@ -2568,9 +2480,7 @@ function s_detect_epoch_p2p(signal::Array{Float64, 3})
         end
     end
 
-    bad_epochs_score = round.(bad_epochs_score ./ channel_n, digits=1)
-
-    return bad_epochs_score
+    return round.(bad_epochs_score ./ channel_n, digits=1)
 end
 
 """
@@ -2594,9 +2504,7 @@ function s_snr(signal::AbstractArray)
 
     # make signal positive
     signal .+= abs(minimum(signal))
-    snr = mean(signal) / std(signal)
-
-    return snr
+    return mean(signal) / std(signal)
 end
 
 """
@@ -2616,9 +2524,7 @@ Find peaks in `signal`.
 """
 function s_findpeaks(signal::AbstractArray; d::Int64=32)
     
-    p_idx, = findpeaks1d(signal, distance=d)
-    
-    return p_idx
+    return findpeaks1d(signal, distance=d)[1]
 end
 
 """
@@ -2648,9 +2554,7 @@ function s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
     wt === :coif4 && (wt = wavelet(WT.coif4))
     wt === :coif8 && (wt = wavelet(WT.coif8))
 
-    signal_denoised = denoise(signal, wt)
-
-    return signal_denoised
+    return denoise(signal, wt)
 end
 
 """
@@ -2822,9 +2726,7 @@ function s_frqinst(signal::AbstractArray; fs::Int64)
     fs < 0 && throw(ArgumentError("fs must be > 0."))
 
     _, _, _, h_phases = s_hspectrum(signal)
-    frqinst = 256 * s_derivative(h_phases) / (2*pi)
-
-    return frqinst
+    return 256 * s_derivative(h_phases) / (2*pi)
 end
 
 """
@@ -2876,9 +2778,7 @@ Convert cycle length in ms `t` to frequency.
 function t2f(t::Real)
 
     t < 0 && throw(ArgumentError("t must be > 0."))
-    f = round(1000 / t, digits=2)
-
-    return f
+    return round(1000 / t, digits=2)
 end
 
 """
@@ -2897,9 +2797,7 @@ Convert frequency `f` to cycle length in ms.
 function f2t(f::Real)
 
     f < 0 && throw(ArgumentError("t must be > 0."))
-    f = round(1000 / f, digits=2)
-    
-    return f
+    return round(1000 / f, digits=2)
 end
 
 """
@@ -3015,9 +2913,7 @@ function s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
     signal_idx = signal_psd .> threshold
     signal_psd .*= signal_idx
     signal_fft .*= signal_idx
-    signal_denoised = real.(ifft0(signal_fft))
-
-    return signal_denoised
+    return real.(ifft0(signal_fft))
 end
 
 """
@@ -3054,9 +2950,7 @@ function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
     s_f = 2 .* real.(ifft0(fft0(s_r).*g))
     
     # remove reflected part of the signal
-    s_f = _chop(s_f)
-
-    return s_f
+    return _chop(s_f)
 end
 
 """
@@ -3224,10 +3118,8 @@ function a2_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, per
     epoch_n = size(spec_all, 3)
     @inbounds @simd for perm_idx in 1:perm_n
         rand_idx = sample(1:epoch_n, epoch_n, replace=false)
-        rand_spec = spec_all[:, :, rand_idx]
-        a2 = @view rand_spec[:, :, (epoch_n ÷ 2 + 1):end]
-        a1 = @view rand_spec[:, :, 1:(epoch_n ÷ 2)]
-        perm_maps[:, :, perm_idx] = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
+        rand_spec = @view spec_all[:, :, rand_idx]
+        perm_maps[:, :, perm_idx] = @views dropdims(mean(rand_spec[:, :, (epoch_n ÷ 2 + 1):end], dims=3) .- mean(rand_spec[:, :, 1:(epoch_n ÷ 2)], dims=3), dims=3)
     end
     mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
     std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
@@ -3342,9 +3234,7 @@ function a2_l1(a1::AbstractArray, a2::AbstractArray)
 
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
 
-    l1 = sum(abs.(a1 .- a2))
-
-    return l1
+    return sum(abs.(a1 .- a2))
 end
 
 """
@@ -3365,9 +3255,7 @@ function a2_l2(a1::AbstractArray, a2::AbstractArray)
 
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
 
-    l2 = sqrt(sum((a1 .- a2).^2))
-
-    return l2
+    return sqrt(sum((a1 .- a2).^2))
 end
 
 """
@@ -3385,9 +3273,7 @@ Calculate cumulative sum of the `signal`.
 """
 function s_cums(signal::AbstractArray)
     
-    signal_cs = cumsum(signal)
-
-    return signal_cs
+    return cumsum(signal)
 end
 
 """
@@ -3410,8 +3296,7 @@ function s_cums(signal::Array{<:Real, 3})
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s = @view signal[channel_idx, :, epoch_idx]
-            signal_cs[channel_idx, :, epoch_idx] = s_cums(s)
+            signal_cs[channel_idx, :, epoch_idx] = @views s_cums(signal[channel_idx, :, epoch_idx])
         end
     end
 
@@ -3453,10 +3338,7 @@ Calculate `signal` values normalized for GFP (Global Field Power) of that signal
 """
 function s_gfp_norm(signal::AbstractVector)
     
-    gfp = s_gfp(signal)
-    gfp_norm = signal ./ gfp
-
-    return gfp_norm
+    return signal ./ s_gfp(signal)
 end
 
 """
@@ -3509,9 +3391,7 @@ Cohen MX. A better way to define and describe Morlet wavelets for time-frequency
 function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
 
     t = -t:1/fs:t
-    m = @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
-    
-    return m
+    return @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
 end
 
 """
@@ -3535,11 +3415,7 @@ function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64
             d[idx1, idx2] = euclidean(m[idx1, idx2], p)
         end
     end
-    r = findmin(d)[2][1]
-    c = findmin(d)[2][2]
-    pos = (r, c)
-
-    return pos
+    return (findmin(d)[2][1], findmin(d)[2][2])
 end
 
 """
@@ -3641,12 +3517,9 @@ function s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::
     demean == true && (signal = s_demean(signal))
 
     kernel = generate_morlet(fs, frq, 1, ncyc=ncyc, complex=true)
-    w_conv = s_fconv(signal, kernel=kernel, norm=true)
 
     # remove reflected part of the signal
-    signal_new = _chop(real.(w_conv))
-
-    return signal_new
+    return _chop(real.(s_fconv(signal, kernel=kernel, norm=true)))
 end
 
 """
@@ -3665,11 +3538,7 @@ Normalize `signal` to Gaussian.
 function s_normalize_gauss(signal::AbstractArray)
 
     l = length(signal) + 1
-    s_normalized = cumsum(signal)
-    s_normalized = (tiedrank(signal) ./ l .- 0.5) .* 2
-    s_normalized = atanh.(s_normalized)
-
-    return s_normalized
+    return atanh.((tiedrank(cumsum(signal)) ./ l .- 0.5) .* 2)
 end
 
 """
@@ -3704,12 +3573,9 @@ function s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean
     demean == true && (signal = s_demean(signal))
 
     kernel = generate_sine(frq, -1:1/fs:1)
-    w_conv = s_tconv(signal, kernel=kernel)
 
     # remove reflected part of the signal
-    signal_new = _chop(w_conv)
-
-    return signal_new
+    return _chop(s_tconv(signal, kernel=kernel))
 end
 
 """
@@ -3818,14 +3684,11 @@ function s_denoise_wien(signal::AbstractArray)
     signal_new = similar(signal)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s_m = mean(signal[:, :, epoch_idx], dims=1)'[:, 1]
-        s_m = _reflect(s_m)
-        noise = rand(Float64, size(s_m)) .* mean(s_m)
+        s_m = @views _reflect(mean(signal[:, :, epoch_idx], dims=1)'[:, 1])
+        m = mean(s_m)
+        noise = rand(Float64, size(s_m)) .* m
         Threads.@threads for channel_idx in 1:channel_n
-            s2 = @view signal[channel_idx, :, epoch_idx]
-            s2 = _reflect(s2)
-            signal_denoised = wiener(s2, s_m, noise)
-            signal_new[channel_idx, :, epoch_idx] = _chop(signal_denoised)
+            signal_new[channel_idx, :, epoch_idx] = @views _chop(wiener(_reflect(signal[channel_idx, :, epoch_idx]), s_m, noise))
         end
     end
 
@@ -3889,9 +3752,7 @@ function s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0
         _, _, _, ph2 = s_spectrum(signal2)
     end
 
-    ph_diff = round.(ph1 - ph2, digits=2)
-
-    return ph_diff
+    return round.(ph1 - ph2, digits=2)
 end
 
 """
@@ -3909,10 +3770,8 @@ Normalize `signal` using log10-transformation.
 """
 function s_normalize_log10(signal::AbstractArray)
 
-    m = abs(minimum(signal))
-    s_normalized = @. log10(1 + signal + m)
-
-    return s_normalized
+    m = 1 + abs(minimum(signal))
+    return @. log10(signal + m)
 end
 
 """
@@ -3930,9 +3789,7 @@ Normalize `signal` to using -log-transformation.
 """
 function s_normalize_neglog(signal::AbstractArray)
 
-    s_normalized = @. -log(signal)
-
-    return s_normalized
+    return @. -log(signal)
 end
 
 """
@@ -3950,9 +3807,7 @@ Normalize `signal` using -log10-transformation.
 """
 function s_normalize_neglog10(signal::AbstractArray)
 
-    s_normalized = @. -log10(signal)
-
-    return s_normalized
+    return @. -log10(signal)
 end
 
 """
@@ -3971,9 +3826,7 @@ Normalize `signal` in [0, -∞].
 function s_normalize_neg(signal::AbstractArray)
 
     m = maximum(signal)
-    s_normalized = @. signal - m
-
-    return s_normalized
+    return @. signal - m
 end
 
 """
@@ -3991,10 +3844,8 @@ Normalize `signal` in [0, +∞].
 """
 function s_normalize_pos(signal::AbstractArray)
 
-    m = minimum(signal)
-    s_normalized = @. signal + abs(m)
-
-    return s_normalized
+    m = abs(minimum(signal))
+    return @. signal + m
 end
 
 """
@@ -4012,9 +3863,10 @@ Normalize `signal` in percentages.
 """
 function s_normalize_perc(signal::AbstractArray)
 
-    s_normalized = (signal .- minimum(signal)) ./ (maximum(signal) .- minimum(signal))
-    
-    return s_normalized
+    m1 = minimum(signal)
+    m2 = maximum(signal)
+    m = m2 .- m1
+    return (signal .- m1) ./ m
 end
 
 """
@@ -4036,28 +3888,26 @@ function s_normalize(signal::AbstractArray; method::Symbol)
     method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin or :gauss."))
 
     if method === :zscore
-        s_normalized = s_normalize_zscore(signal)
+        return s_normalize_zscore(signal)
     elseif method === :minmax
-        s_normalized = s_normalize_minmax(signal)
+        return s_normalize_minmax(signal)
     elseif method === :max
-        s_normalized = s_normalize_max(signal)
+        return s_normalize_max(signal)
     elseif method === :log
-        s_normalized = s_normalize_log(signal)
+        return s_normalize_log(signal)
     elseif method === :log10
-        s_normalized = s_normalize_log10(signal)
+        return s_normalize_log10(signal)
     elseif method === :neglog
-        s_normalized = s_normalize_neglog(signal)
+        return s_normalize_neglog(signal)
     elseif method === :neglog10
-        s_normalized = s_normalize_neglog10(signal)
+        return s_normalize_neglog10(signal)
     elseif method === :neg
-        s_normalized = s_normalize_neg(signal)
+        return s_normalize_neg(signal)
     elseif method === :pos
-        s_normalized = s_normalize_pos(signal)
+        return s_normalize_pos(signal)
     elseif method === :perc
-        s_normalized = s_normalize_perc(signal)
+        return s_normalize_perc(signal)
     elseif method === :gauss
-        s_normalized = s_normalize_gauss(signal)
+        return s_normalize_gauss(signal)
     end
-
-    return s_normalized
 end
