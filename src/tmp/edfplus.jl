@@ -134,7 +134,6 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     end
 
     channels_1020 = ["fp1", "fpz", "fp2", "af9", "af7", "af5", "af3", "af1", "afz", "af2", "af4", "af6", "af8", "af10", "f9", "f7", "f5", "f3", "f1", "fz", "f2", "f4", "f6", "f8", "f10", "ft9", "ft7", "fc5", "fc3", "fc1", "fcz", "fc2", "fc4", "fc6", "ft8", "ft10", "t9", "t7", "c5", "c3", "c1", "cz", "c2", "c4", "c6", "t8", "t10", "tp9", "tp7", "cp5", "cp3", "cp1", "cpz", "cp2", "cp4", "cp6", "tp8", "tp10", "p9", "p7", "p5", "p3", "p1", "pz", "p2", "p4", "p6", "p8", "p10", "po9", "po7", "po5", "po3", "po1", "poz", "po2", "po4", "po6", "po8", "po10", "o1", "oz", "o2", "o9", "o10", "t3", "t5", "t4", "t6"]
-
     channel_type = repeat(["unknown"], channel_n)
     for idx in 1:channel_n
         in(lowercase(labels[idx]), channels_1020) && (channel_type[idx] = "eeg")
@@ -161,9 +160,9 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     end
 
     clean_labels == true && (labels = replace.(labels, "EEG " => ""))
-    clean_labels == true && (labels = replace.(labels, "MEG " => ""))
-    clean_labels == true && (labels = replace.(labels, "EOG " => ""))
-    clean_labels == true && (labels = replace.(labels, "ECG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "MEG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "EOG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "ECG " => ""))
     clean_labels == true && (labels = replace.(labels, "EDF " => ""))
     clean_labels == true && (labels = replace.(labels, " " => ""))
 
@@ -186,17 +185,13 @@ function eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_la
     end
     close(fid)
 
-    annotations = replace.(annotations, "\0" => "")
-
-    if "annotation" in channel_type
-        edf_has_annotations = true
+    if edf_has_annotations
+        eeg_signals = @views eeg_signals[1:(end - 1), :, 1]
         channel_n -= 1
-        annotation_channel = 0
-        for channel_idx in 1:channel_n + 1
-            channel_type[channel_idx] == "annotation" && (annotation_channel = channel_idx)
-        end
+        annotations = _a2df(annotations)
+    else
+        annotations = DataFrame(id=[""], time=[""], annotation=[""])
     end
-
 
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]

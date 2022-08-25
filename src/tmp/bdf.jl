@@ -131,9 +131,10 @@ function eeg_import_bdf(file_name::String; read_annotations::Bool=true, clean_la
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
+    channels_1020 = ["fp1", "fpz", "fp2", "af9", "af7", "af5", "af3", "af1", "afz", "af2", "af4", "af6", "af8", "af10", "f9", "f7", "f5", "f3", "f1", "fz", "f2", "f4", "f6", "f8", "f10", "ft9", "ft7", "fc5", "fc3", "fc1", "fcz", "fc2", "fc4", "fc6", "ft8", "ft10", "t9", "t7", "c5", "c3", "c1", "cz", "c2", "c4", "c6", "t8", "t10", "tp9", "tp7", "cp5", "cp3", "cp1", "cpz", "cp2", "cp4", "cp6", "tp8", "tp10", "p9", "p7", "p5", "p3", "p1", "pz", "p2", "p4", "p6", "p8", "p10", "po9", "po7", "po5", "po3", "po1", "poz", "po2", "po4", "po6", "po8", "po10", "o1", "oz", "o2", "o9", "o10", "t3", "t5", "t4", "t6"]
     channel_type = repeat(["unknown"], channel_n)
     for idx in 1:channel_n
-        occursin("eeg", lowercase(labels[idx])) && (channel_type[idx] = "eeg")
+        in(lowercase(labels[idx]), channels_1020) && (channel_type[idx] = "eeg")
         occursin("meg", lowercase(labels[idx])) && (channel_type[idx] = "meg")
         occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
@@ -142,15 +143,24 @@ function eeg_import_bdf(file_name::String; read_annotations::Bool=true, clean_la
         occursin("a2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
         occursin("m1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
         occursin("m2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
-        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "status")
-        occursin("trigger", lowercase(labels[idx])) && (channel_type[idx] = "status")
+        occursin("marker", lowercase(labels[idx])) && (channel_type[idx] = "marker")
+        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "marker")
         occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "annotation")
     end
 
+    bdf_has_annotations = false
+    if "annotation" in channel_type
+        bdf_has_annotations = true
+        annotation_channel = 0
+        for channel_idx in 1:channel_n
+            channel_type[channel_idx] == "annotation" && (annotation_channel = channel_idx)
+        end
+    end
+
     clean_labels == true && (labels = replace.(labels, "EEG " => ""))
-    clean_labels == true && (labels = replace.(labels, "MEG " => ""))
-    #clean_labels == true && (labels = replace.(labels, "EOG " => ""))
-    #clean_labels == true && (labels = replace.(labels, "ECG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "MEG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "EOG " => ""))
+    # clean_labels == true && (labels = replace.(labels, "ECG " => ""))
     clean_labels == true && (labels = replace.(labels, "BDF " => ""))
     clean_labels == true && (labels = replace.(labels, " " => ""))
 
@@ -159,35 +169,37 @@ function eeg_import_bdf(file_name::String; read_annotations::Bool=true, clean_la
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
+    annotations = repeat([""], data_records)
 
     for idx1 in 1:data_records
         for idx2 in 1:channel_n
             signal24 = zeros(UInt8, samples_per_datarecord[idx2] * 3)
             readbytes!(fid, signal24, samples_per_datarecord[idx2] * 3)
-            signal64 = Vector{Float64}()
-            for byte_idx in 1:3:length(signal24)
-                b1 = Int32(signal24[byte_idx]) << 8
-                b2 = Int32(signal24[byte_idx + 1]) << 16
-                b3 = -Int32(-signal24[byte_idx + 2]) << 24
-                push!(signal64, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+            if idx2 != annotation_channel
+                signal64 = Vector{Float64}()
+                for byte_idx in 1:3:length(signal24)
+                    b1 = Int32(signal24[byte_idx]) << 8
+                    b2 = Int32(signal24[byte_idx + 1]) << 16
+                    b3 = -Int32(-signal24[byte_idx + 2]) << 24
+                    push!(signal64, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
+                end
+                eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal64
+            else
+                annotations[idx1] = String(Char.(signal24))
             end
-            eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal64
         end
     end
 
-    #=
-    val1 = np.int16(bdf_dat[pos])
-    val2 = np.int16(bdf_dat[pos + 1])
-    val = val1 | (val2 << 8)
-    trig[rec * n_samps + samp] = val
-    status[rec * n_samps + samp] = np.int16(bdf_dat[pos + 2])
-    =#
-    
     # last channel is always status channel
-    status = eeg_signals[channel_n, :, 1]
-    channel_n -= 1
-
     close(fid)
+
+    if bdf_has_annotations
+        eeg_signals = @views eeg_signals[1:(end - 1), :, 1]
+        channel_n -= 1
+        annotations = _a2df(annotations)
+    else
+        annotations = DataFrame(id=[""], time=[""], annotation=[""])
+    end
 
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]

@@ -322,3 +322,21 @@ function _free_gpumem(threshold::Real=0.95)
         GC.gc(true)
     end
 end
+
+function _a2df(annotations::Vector{String})
+    # convert EDF/BDF annotations to DataFrame
+    annotations = replace.(annotations, "\0" => "")
+    annotations = replace.(annotations, "|" => "\x14")
+    a_id = Vector{String}()
+    a_time = Vector{String}()
+    a_desc = Vector{String}()
+    for ann_idx in 1:length(annotations)
+        s = split(annotations[ann_idx], "\x14")
+        if length(s) > 3
+            push!(a_id, strip(s[1]))
+            push!(a_time, strip(s[3]))
+            push!(a_desc, strip(s[4]))
+        end
+    end
+    return DataFrame(id=a_id, time=a_time, annotation=a_desc)
+end
