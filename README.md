@@ -160,6 +160,7 @@ General:
 - further performance optimizations
 - Pluto/Interact interface
 - Replace AbstractArray with AbstractVector where possible
+- better benchmarking module
 
 EEG:
 - analysis, plots: brain topography
