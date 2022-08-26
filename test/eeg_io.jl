@@ -1,6 +1,11 @@
 using NeuroAnalyzer
 using Test
 
+bdf = eeg_import_edf("eeg-test-bdf.bdf")
+@test typeof(bdf) == NeuroAnalyzer.EEG
+edf = eeg_import_edf("eeg-test-edfplus.edf")
+@test typeof(edf) == NeuroAnalyzer.EEG
+
 edf = eeg_import_edf("eeg-test-edf.edf")
 ecg = eeg_extract_channel(edf, channel=24)
 eeg_delete_channel!(edf, channel=24)

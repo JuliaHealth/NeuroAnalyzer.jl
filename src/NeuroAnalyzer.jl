@@ -46,6 +46,7 @@ mutable struct EEG
     eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
+    eeg_annotations::DataFrame
 end
 
 # preferences
@@ -202,6 +203,8 @@ export seg_cmp
 include("eeg_io.jl")
 export eeg_export_csv
 export eeg_import_edf
+export eeg_import_edfplus
+export eeg_import_bdf
 export eeg_import_ced
 export eeg_import_locs
 export eeg_import_elc

@@ -2990,15 +2990,14 @@ Named tuple containing:
 
 
 ```julia
-eeg_import_edf(file_name; read_annotations, clean_labels)
+eeg_import_edf(file_name; clean_labels)
 ```
 
-Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
+Load EDF file and return and `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `read_annotations::Bool=true`: read annotations from EDF+ file (currently not implemented)
   * `clean_labels::Bool=true`: only keep channel names in channel labels
 
 **Returns**
@@ -3230,7 +3229,7 @@ Load the `eeg` from `file_name` file (HDF5-based).
 
 
 ```julia
-eeg_export_csv(eeg; file_name, header, overwrite)
+eeg_export_csv(eeg; file_name, header, components, annotations, overwrite)
 ```
 
 Export EEG data as CSV.
@@ -3241,6 +3240,7 @@ Export EEG data as CSV.
   * `file_name::String`
   * `header::Bool=false`: export header
   * `components::Bool=false`: export components
+  * `annotations::Bool=false`: export annotations
   * `overwrite::Bool=false`
 
 **Returns**
@@ -3346,6 +3346,67 @@ Electrode locations:
 
   * `eeg::NeuroAnalyzer.EEG`
   * `locs::DataFrame`
+
+<a id='NeuroAnalyzer.eeg_import_edfplus-Tuple{String}' href='#NeuroAnalyzer.eeg_import_edfplus-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_edfplus`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_edfplus(file_name; clean_labels)
+```
+
+Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
+
+**Notes**
+
+  * sampling_rate = n.samples / data.record.duration
+  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
+  * value = (value - digital*minimum ) * gain + physical*minimum
+
+**Source**
+
+1. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
+2. https://www.edfplus.info/specs/
+
+<a id='NeuroAnalyzer.eeg_import_bdf-Tuple{String}' href='#NeuroAnalyzer.eeg_import_bdf-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_bdf`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_bdf(file_name; clean_labels)
+```
+
+Load BDF file and return and `NeuroAnalyzer.EEG` object.
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
+
+**Notes**
+
+  * sampling_rate = n.samples / data.record.duration
+  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
+  * value = (value - digital*minimum ) * gain + physical*minimum
+
+**Source**
+
+https://www.biosemi.com/faq/file_format.htm
 
 
 <a id='EEG-edit'></a>

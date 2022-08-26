@@ -851,9 +851,15 @@ Show info.
 function eeg_info(eeg::NeuroAnalyzer.EEG)
 
     println("          EEG file name: $(eeg.eeg_header[:eeg_filename])")
+    println("        EEG file format: $(eeg.eeg_header[:eeg_filetype])")
     println("          EEG size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
     println("   EEG memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
     println("     Sampling rate (Hz): $(eeg_sr(eeg))")
+    if eeg.eeg_header[:annotations] == false
+        println("            Annotations: no")
+    else
+        println("            Annotations: yes")
+    end
     println("Signal length (samples): $(eeg_signal_len(eeg))")
     println("Signal length (seconds): $(round(eeg.eeg_header[:eeg_duration_seconds], digits=2))")
     println("     Number of channels: $(eeg_channel_n(eeg))")
@@ -891,7 +897,7 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
     end
     println("               Channels:")
     for idx in 1:length(eeg.eeg_header[:labels])
-        println("                channel: $idx\tlabel: $(eeg.eeg_header[:labels][idx])\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
+        println("                channel: $idx\tlabel: $(rpad(eeg.eeg_header[:labels][idx], 16, " "))\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
     end
 
     nothing

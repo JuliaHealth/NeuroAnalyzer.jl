@@ -321,22 +321,63 @@ function _free_gpumem(threshold::Real=0.95)
         # CUDA.reclaim()
         GC.gc(true)
     end
-end
+end 
 
 function _a2df(annotations::Vector{String})
     # convert EDF/BDF annotations to DataFrame
+    annotations = replace.(annotations, "\x14\x14\0" => "|")
+    annotations = replace.(annotations, "\x14\x14" => "|")
+    annotations = replace.(annotations, "\x14" => "|")
     annotations = replace.(annotations, "\0" => "")
-    annotations = replace.(annotations, "|" => "\x14")
-    a_id = Vector{String}()
-    a_time = Vector{String}()
-    a_desc = Vector{String}()
+    a_onset = Vector{Float64}()
+    a_event = Vector{String}()
     for ann_idx in 1:length(annotations)
-        s = split(annotations[ann_idx], "\x14")
-        if length(s) > 3
-            push!(a_id, strip(s[1]))
-            push!(a_time, strip(s[3]))
-            push!(a_desc, strip(s[4]))
+        s = split(annotations[ann_idx], "|")
+        if length(s) > 2
+            push!(a_onset, parse(Float64, strip(s[2])))
+            push!(a_event, strip(s[3]))
         end
     end
-    return DataFrame(id=a_id, time=a_time, annotation=a_desc)
+    return DataFrame(onset=a_onset, event=a_event)
+end
+
+function _clean_labels(labels::Vector{String})
+    labels = replace.(labels, "EEG " => "")
+    labels = replace.(labels, "EDF " => "")
+    labels = replace.(labels, "BDF " => "")
+    return labels
+end
+
+function _has_annotations(channel_type::Vector{String})
+    if "annotations" in channel_type
+        annotations = true
+        for channel_idx in 1:length(channel_type)
+            channel_type[channel_idx] == "annotations" && (annotations_channel = channel_idx)
+        end
+    else
+        annotations = false
+        annotations_channel = 0
+    end
+    return annotations, annotations_channel
+end
+
+function _set_channel_types(labels::Vector{String})
+    channels_1020 = ["fp1", "fpz", "fp2", "af9", "af7", "af5", "af3", "af1", "afz", "af2", "af4", "af6", "af8", "af10", "f9", "f7", "f5", "f3", "f1", "fz", "f2", "f4", "f6", "f8", "f10", "ft9", "ft7", "fc5", "fc3", "fc1", "fcz", "fc2", "fc4", "fc6", "ft8", "ft10", "t9", "t7", "c5", "c3", "c1", "cz", "c2", "c4", "c6", "t8", "t10", "tp9", "tp7", "cp5", "cp3", "cp1", "cpz", "cp2", "cp4", "cp6", "tp8", "tp10", "p9", "p7", "p5", "p3", "p1", "pz", "p2", "p4", "p6", "p8", "p10", "po9", "po7", "po5", "po3", "po1", "poz", "po2", "po4", "po6", "po8", "po10", "o1", "oz", "o2", "o9", "o10", "t3", "t5", "t4", "t6"]
+    channel_type = repeat(["unknown"], length(labels))
+    for idx in 1:length(labels)
+        in(lowercase(labels[idx]), channels_1020) && (channel_type[idx] = "eeg")
+        occursin("meg", lowercase(labels[idx])) && (channel_type[idx] = "meg")
+        occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
+        occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
+        occursin("eog", lowercase(labels[idx])) && (channel_type[idx] = "eog")
+        occursin("a1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("a2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("m1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("m2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "events")
+        occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "annotations")
+        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "annotations")
+    end
+    return channel_type
 end

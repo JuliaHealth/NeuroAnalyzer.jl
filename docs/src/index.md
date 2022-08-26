@@ -155,7 +155,7 @@ seg_cmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::F
 ## EEG I/O
 
 ```@docs
-eeg_import_edf(file_name::String; read_annotations::Bool=true, clean_labels::Bool=true)
+eeg_import_edf(file_name::String; clean_labels::Bool=true)
 eeg_import_ced(file_name::String)
 eeg_import_locs(file_name::String)
 eeg_import_elc(file_name::String)
@@ -165,11 +165,13 @@ eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
 eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
 eeg_save(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
 eeg_load(file_name::String)
-eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, overwrite::Bool=false)
+eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, annotations::Bool=true, overwrite::Bool=false)
 eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
 eeg_save_electrodes(locs::DataFrame; file_name::String, overwrite::Bool=false)
 eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
+eeg_import_edfplus(file_name::String; clean_labels::Bool=true)
+eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 ```
 
 ## EEG edit

@@ -118,6 +118,7 @@ mutable struct EEG
     eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
+    eeg_markers::DataFrame
 end
 ```
 
@@ -187,7 +188,7 @@ EEG:
 - analysis: source localization
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - analysis: wavelets
-- edit: add/delete markers, view markers on plots
+- edit: add/delete events markers, view markers on plots
 - edit: automated channel rejection
 - edit: automated epoch rejection
 - edit: automated cleaning of artifacts
@@ -195,9 +196,7 @@ EEG:
 - edit: bad channel marking / rejection
 - edit: bad epoch marking / rejection
 - edit: create EEG object
-- edit: events markers
-- edit: epoch by event markers
-- edit: automated epoching (by markers)
+- edit: automated epoching by event markers
 - edit: insert channel
 - edit: replace channel
 - edit: merge EEG objects
@@ -206,9 +205,10 @@ EEG:
 - edit: locs rotate
 - edit: concatenate many EEG files into larger one
 - io: import from CSV
-- io: import from EDF+, BDF and other formats
+- io: more import formats
 - misc: reports in .md format
 - misc: update tutorial.md
+- plots: eeg_plot_signal*() separate plots for non-EEG/MEG channels (different units, ylim)
 - plots: 3d head/brain plots
 - plots: add user-defined voltage scale for eeg signal plots
 - plots: asymmetric color bars to highlight increase/decrease in activity in topoplots

@@ -187,7 +187,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
               ylims=ylim,
               yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[1], "\n\n"*string(ylim[2])]),
               bottom_margin=-10Plots.px,
-              size=(2400, 300))
+              size=(1600, 200))
     pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
     push!(p, pp)
     if channel_n > 2
@@ -206,7 +206,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
                       yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[idx], "\n\n"*string(ylim[2])]),
                       top_margin=-10Plots.px,
                       bottom_margin=-10Plots.px,
-                      size=(2400, 300))
+                      size=(1600, 150))
             pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
             push!(p, pp)
         end
@@ -225,22 +225,22 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
               yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[channel_n], "\n\n"*string(ylim[2])]),
               top_margin=-10Plots.px,
               bottom_margin=50Plots.px,
-              size=(2400, 200))
+              size=(1600, 200))
     pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
     push!(p, pp)
 
     p = Plots.plot(p...,
               layout=(size(p, 1), 1),
-              size=(2400, size(p, 1) * 200),
+              size=(1600, size(p, 1) * 150),
               left_margin=60Plots.px,
               right_margin=30Plots.px,
               grid=false,
               palette=palette,
-              titlefontsize=20,
-              xlabelfontsize=16,
-              ylabelfontsize=16,
-              xtickfontsize=16,
-              ytickfontsize=16;
+              titlefontsize=12,
+              xlabelfontsize=8,
+              ylabelfontsize=8,
+              xtickfontsize=6,
+              ytickfontsize=6;
               kwargs...)
 
     return p
