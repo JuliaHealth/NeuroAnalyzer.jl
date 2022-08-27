@@ -331,6 +331,7 @@ function _a2df(annotations::Vector{String})
     annotations = replace.(annotations, "\0" => "")
     a_onset = Vector{Float64}()
     a_event = Vector{String}()
+    # what about annotations containing event duration?
     for ann_idx in 1:length(annotations)
         s = split(annotations[ann_idx], "|")
         if length(s) > 2
@@ -362,18 +363,32 @@ function _has_annotations(channel_type::Vector{String})
 end
 
 function _set_channel_types(labels::Vector{String})
-    channels_1020 = ["fp1", "fpz", "fp2", "af9", "af7", "af5", "af3", "af1", "afz", "af2", "af4", "af6", "af8", "af10", "f9", "f7", "f5", "f3", "f1", "fz", "f2", "f4", "f6", "f8", "f10", "ft9", "ft7", "fc5", "fc3", "fc1", "fcz", "fc2", "fc4", "fc6", "ft8", "ft10", "t9", "t7", "c5", "c3", "c1", "cz", "c2", "c4", "c6", "t8", "t10", "tp9", "tp7", "cp5", "cp3", "cp1", "cpz", "cp2", "cp4", "cp6", "tp8", "tp10", "p9", "p7", "p5", "p3", "p1", "pz", "p2", "p4", "p6", "p8", "p10", "po9", "po7", "po5", "po3", "po1", "poz", "po2", "po4", "po6", "po8", "po10", "o1", "oz", "o2", "o9", "o10", "t3", "t5", "t4", "t6"]
+    eeg_channels = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "pg1", "pg2", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]
+    ref_channels = ["a1", "a2", "m1", "m2"]
     channel_type = repeat(["unknown"], length(labels))
     for idx in 1:length(labels)
-        in(lowercase(labels[idx]), channels_1020) && (channel_type[idx] = "eeg")
+        in(lowercase(labels[idx]), eeg_channels) && (channel_type[idx] = "eeg")
+        for idx2 in 1:length(eeg_channels)
+            occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eeg")
+        end
+        lowercase(labels[idx])[1] == "c" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "f" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "n" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "o" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "p" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "t" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == "i" && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1:2] == "af" && (channel_type[idx] = "eeg")
         occursin("meg", lowercase(labels[idx])) && (channel_type[idx] = "meg")
         occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("eog", lowercase(labels[idx])) && (channel_type[idx] = "eog")
-        occursin("a1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
-        occursin("a2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
-        occursin("m1", lowercase(labels[idx])) && (channel_type[idx] = "ref")
-        occursin("m2", lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        occursin("emg", lowercase(labels[idx])) && (channel_type[idx] = "emg")
+        occursin("temp", lowercase(labels[idx])) && (channel_type[idx] = "temp")
+        in(lowercase(labels[idx]), ref_channels) && (channel_type[idx] = "ref")
+        for idx2 in 1:length(ref_channels)
+            occursin(ref_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "ref")
+        end
         occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "events")
         occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "annotations")

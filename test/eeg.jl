@@ -363,5 +363,6 @@ locs2 = eeg_loc_cart2sph(locs)
 @test locs2[1, 8] == 18.0
 
 @test size(eeg_phdiff(edf)) == (19, 309760, 1)
+@test size(eeg_scale(edf, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)
 
 true

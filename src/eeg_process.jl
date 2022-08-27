@@ -1,5 +1,5 @@
 """
-    eeg_reference_ch(eeg; channel)
+    eeg_reference_ch(eeg; channel, med)
 
 Reference the `eeg` to specific `channel`.
 
@@ -7,12 +7,13 @@ Reference the `eeg` to specific `channel`.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -26,7 +27,11 @@ function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        @views length(channel) == 1 ? reference_channel = mean(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(mean(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
+        if med == false
+            @views length(channel) == 1 ? reference_channel = mean(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(mean(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
+        else
+            @views length(channel) == 1 ? reference_channel = median(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
+        end
         Threads.@threads for channel_idx in 1:channel_n
             s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
         end
@@ -37,13 +42,13 @@ function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "channel: $channel"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_ch(EEG, channel=$channel)")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_ch(EEG, channel=$channel), med=$med")
 
     return eeg_new
 end
 
 """
-    eeg_reference_ch!(eeg; channel)
+    eeg_reference_ch!(eeg; channel, med)
 
 Reference the `eeg` to specific channel `channel`.
 
@@ -51,18 +56,19 @@ Reference the `eeg` to specific channel `channel`.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_ch!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_reference_ch!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_ch(eeg, channel=channel).eeg_signals
+    eeg.eeg_signals = eeg_reference_ch(eeg, channel=channel, med=med).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_ch!(EEG, channel=$channel)")
+    push!(eeg.eeg_header[:history], "eeg_reference_ch!(EEG, channel=$channel, med=$med)")
 
     nothing
 end
 
 """
-    eeg_reference_car(eeg)
+    eeg_reference_car(eeg; exclude_fpo, exclude_current, med)
 
 Reference the `eeg` to common average reference.
 
@@ -71,12 +77,13 @@ Reference the `eeg` to common average reference.
 - `eeg::NeuroAnalyzer.EEG`
 - `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
 - `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+- `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false)
+function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false, med::Bool=false)
 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
@@ -95,7 +102,11 @@ function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, excl
                 "o1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o1"), l))), :, :])
                 "o2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o2"), l))), :, :])
             end
-            reference_channel = vec(mean(reference_channels, dims=1))
+            if med == false
+                reference_channel = vec(mean(reference_channels, dims=1))
+            else
+                reference_channel = vec(median(reference_channels, dims=1))
+            end
             s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
         end
     end
@@ -104,25 +115,28 @@ function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, excl
     eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "CAR"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current))")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
 
     return eeg_new
 end
 
 """
-    eeg_reference_car!(eeg)
+    eeg_reference_car!(eeg; exclude_fpo, exclude_current, med)
 
 Reference the `eeg` to common average reference.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+- `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+- `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_car!(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false)
+function eeg_reference_car!(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current).eeg_signals
+    eeg.eeg_signals = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current)")
+    push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med)")
 
     nothing
 end
@@ -1119,7 +1133,7 @@ function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
 end
 
 """
-    eeg_reference_a(eeg; type)
+    eeg_reference_a(eeg; type, med)
 
 Reference the `eeg` to auricular channels.
 
@@ -1127,12 +1141,13 @@ Reference the `eeg` to auricular channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+- `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
+function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=false)
 
     type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
     all(iszero, occursin.("a1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A1 channel."))
@@ -1162,7 +1177,11 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :i
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1184,7 +1203,11 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :c
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1212,13 +1235,13 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     push!(eeg_new.eeg_header[:labels], "A2")
     eeg_new.eeg_header[:reference] = "A ($type)"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_a(EEG, type=$type)")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_a(EEG, type=$type, med=$med)")
 
     return eeg_new
 end
 
 """
-    eeg_reference_a!(eeg; type)
+    eeg_reference_a!(eeg; type, med)
 
 Reference the `eeg` to auricular channels.
 
@@ -1226,8 +1249,9 @@ Reference the `eeg` to auricular channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+- `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
+function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=false)
 
     type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
     all(iszero, occursin.("a1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A1 channel."))
@@ -1249,7 +1273,11 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
 
     if type === :l
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1257,7 +1285,11 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :i
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1279,7 +1311,11 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :c
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1307,13 +1343,13 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
 
     eeg.eeg_header[:reference] = "A ($type)"
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_a!(EEG, type=$type)")
+    push!(eeg.eeg_header[:history], "eeg_reference_a!(EEG, type=$type, med=$med)")
 
     nothing
 end
 
 """
-    eeg_reference_m(eeg; type)
+    eeg_reference_m(eeg; type, med)
 
 Reference the `eeg` to mastoid channels.
 
@@ -1321,12 +1357,13 @@ Reference the `eeg` to mastoid channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+- `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
+function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=false)
 
     type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
     all(iszero, occursin.("m1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M1 channel."))
@@ -1348,7 +1385,11 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
 
     if type === :l
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1356,7 +1397,11 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :i
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1378,7 +1423,11 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :c
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1406,13 +1455,13 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     push!(eeg_new.eeg_header[:labels], "M2")
     eeg_new.eeg_header[:reference] = "M ($type)"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_m(EEG, type=$type)")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_m(EEG, type=$type, med=$med)")
 
     return eeg_new
 end
 
 """
-    eeg_reference_m!(eeg; type)
+    eeg_reference_m!(eeg; type, med)
 
 Reference the `eeg` to mastoid channels.
 
@@ -1420,8 +1469,9 @@ Reference the `eeg` to mastoid channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+- `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
+function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:lm, med::Bool=false)
 
     type in [:l, :i, :c] || throw(ArgumentError("type must be :l, :i, :c."))
     all(iszero, occursin.("m1", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M1 channel."))
@@ -1443,7 +1493,11 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
 
     if type === :l
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1451,7 +1505,11 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :i
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1473,7 +1531,11 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l)
     elseif type === :c
         central_picks = eeg_pick(eeg_tmp, pick=:central)
         @inbounds @simd for epoch_idx in 1:epoch_n
-            reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            if med == false
+                reference_channel = vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            else
+                reference_channel = vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+            end
             Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views eeg_tmp.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
             end
@@ -1583,12 +1645,13 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 - `eeg::NeuroAnalyzer.EEG`
 - `nn::Int64=4`: number of nearest electrodes
 - `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+- `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true)
+function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true, med::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
@@ -1622,7 +1685,11 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
         Threads.@threads for channel_idx in 1:channel_n
             reference_channels = @view eeg.eeg_signals[nn_idx[channel_idx, :], :, epoch_idx]
             if weights == false
-                reference_channel = vec(mean(reference_channels, dims=1))
+                if med == false
+                    reference_channel = vec(mean(reference_channels, dims=1))
+                else
+                    reference_channel = vec(median(reference_channels, dims=1))
+                end
             else
                 g = Vector{Float64}()
                 for idx1 in 1:nn
@@ -1638,7 +1705,7 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
     eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "PLAP ($nn)"
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_reference_plap(EEG, nn=$nn))")
+    push!(eeg_new.eeg_header[:history], "eeg_reference_plap(EEG, nn=$nn, med=$med))")
 
     return eeg_new
 end
@@ -1653,12 +1720,13 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 - `eeg::NeuroAnalyzer.EEG`
 - `nn::Int64=4`: number of nearest electrodes
 - `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+- `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true)
+function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights).eeg_signals
+    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights, med=med).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn)")
+    push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn, med=$med)")
 
     nothing
 end
@@ -1859,6 +1927,55 @@ function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_signals = s_denoise_wien(eeg.eeg_signals)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_denoise_wien!(EEG)")
+
+    nothing
+end
+
+"""
+    eeg_scale(eeg; channel, factor)
+
+Multiply `channel` signal by `factor`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64`: channel to invert
+- `factor::Real`: channel signal is multiplied by factor
+
+# Returns
+
+- `eeg_new::NeuroAnalyzer.EEG`
+"""
+function eeg_scale(eeg::NeuroAnalyzer.EEG; channel::Int64, factor::Real)
+
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals[channel, :, :] = @views eeg.eeg_signals[channel, :, :] .* factor
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_scale(EEG, channel=$channel)")
+
+    return eeg_new
+end
+
+"""
+    eeg_scale!(eeg; channel)
+
+Multiply `channel` signal by `factor`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64`: channel to invert
+- `factor::Real`: channel signal is multiplied by factor
+"""
+function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Int64, factor::Real)
+
+    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+
+    eeg.eeg_signals[channel, :, :] = @views eeg.eeg_signals[channel, :, :] .* factor
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_scale!(EEG, channel=$channel, factor=$factor)")
 
     nothing
 end

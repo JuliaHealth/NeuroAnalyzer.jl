@@ -4884,7 +4884,7 @@ Convert Cartesian locations to spherical.
 
 
 ```julia
-eeg_reference_ch(eeg; channel)
+eeg_reference_ch(eeg; channel, med)
 ```
 
 Reference the `eeg` to specific `channel`.
@@ -4893,6 +4893,7 @@ Reference the `eeg` to specific `channel`.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+  * `med::Bool=false`: use median instead of mean
 
 **Returns**
 
@@ -4904,7 +4905,7 @@ Reference the `eeg` to specific `channel`.
 
 
 ```julia
-eeg_reference_ch!(eeg; channel)
+eeg_reference_ch!(eeg; channel, med)
 ```
 
 Reference the `eeg` to specific channel `channel`.
@@ -4913,6 +4914,7 @@ Reference the `eeg` to specific channel `channel`.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+  * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_reference_car-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_car-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_reference_car`** &mdash; *Method*.
@@ -4920,7 +4922,7 @@ Reference the `eeg` to specific channel `channel`.
 
 
 ```julia
-eeg_reference_car(eeg)
+eeg_reference_car(eeg; exclude_fpo, exclude_current, med)
 ```
 
 Reference the `eeg` to common average reference.
@@ -4930,6 +4932,7 @@ Reference the `eeg` to common average reference.
   * `eeg::NeuroAnalyzer.EEG`
   * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
   * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+  * `med::Bool=false`: use median instead of mean
 
 **Returns**
 
@@ -4941,7 +4944,7 @@ Reference the `eeg` to common average reference.
 
 
 ```julia
-eeg_reference_car!(eeg)
+eeg_reference_car!(eeg; exclude_fpo, exclude_current, med)
 ```
 
 Reference the `eeg` to common average reference.
@@ -4949,6 +4952,9 @@ Reference the `eeg` to common average reference.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+  * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_derivative`** &mdash; *Method*.
@@ -5630,7 +5636,7 @@ Perform wavelet denoising.
 
 
 ```julia
-eeg_reference_a(eeg; type)
+eeg_reference_a(eeg; type, med)
 ```
 
 Reference the `eeg` to auricular channels.
@@ -5639,6 +5645,7 @@ Reference the `eeg` to auricular channels.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+  * `med::Bool=false`: use median instead of mean
 
 **Returns**
 
@@ -5650,7 +5657,7 @@ Reference the `eeg` to auricular channels.
 
 
 ```julia
-eeg_reference_a!(eeg; type)
+eeg_reference_a!(eeg; type, med)
 ```
 
 Reference the `eeg` to auricular channels.
@@ -5659,6 +5666,7 @@ Reference the `eeg` to auricular channels.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+  * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_reference_m`** &mdash; *Method*.
@@ -5666,7 +5674,7 @@ Reference the `eeg` to auricular channels.
 
 
 ```julia
-eeg_reference_m(eeg; type)
+eeg_reference_m(eeg; type, med)
 ```
 
 Reference the `eeg` to mastoid channels.
@@ -5675,6 +5683,7 @@ Reference the `eeg` to mastoid channels.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+  * `med::Bool=false`: use median instead of mean
 
 **Returns**
 
@@ -5686,7 +5695,7 @@ Reference the `eeg` to mastoid channels.
 
 
 ```julia
-eeg_reference_m!(eeg; type)
+eeg_reference_m!(eeg; type, med)
 ```
 
 Reference the `eeg` to mastoid channels.
@@ -5695,6 +5704,7 @@ Reference the `eeg` to mastoid channels.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
+  * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_fftdenoise`** &mdash; *Method*.
@@ -5750,6 +5760,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
   * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: number of nearest electrodes
   * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+  * `med::Bool=false`: use median instead of mean
 
 **Returns**
 
@@ -5771,6 +5782,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
   * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: number of nearest electrodes
   * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+  * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_zero`** &mdash; *Method*.
@@ -5917,6 +5929,44 @@ Perform Wiener deconvolution denoising of the `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_scale-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_scale-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_scale`** &mdash; *Method*.
+
+
+
+```julia
+eeg_scale(eeg; channel, factor)
+```
+
+Multiply `channel` signal by `factor`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64`: channel to invert
+  * `factor::Real`: channel signal is multiplied by factor
+
+**Returns**
+
+  * `eeg_new::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_scale!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_scale!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_scale!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_scale!(eeg; channel)
+```
+
+Multiply `channel` signal by `factor`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64`: channel to invert
+  * `factor::Real`: channel signal is multiplied by factor
 
 
 <a id='EEG-analyze'></a>

@@ -350,6 +350,8 @@ export eeg_cbp
 export eeg_cbp!
 export eeg_denoise_wien
 export eeg_denoise_wien!
+export eeg_scale
+export eeg_scale!
 
 include("eeg_analyze.jl")
 export eeg_total_power
