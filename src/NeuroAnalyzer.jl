@@ -295,6 +295,11 @@ export eeg_loc_sph2cart
 export eeg_loc_sph2cart!
 export eeg_loc_cart2sph
 export eeg_loc_cart2sph!
+export eeg_view_annotations
+export eeg_delete_annotation
+export eeg_delete_annotation!
+export eeg_add_annotation
+export eeg_add_annotation!
 
 include("eeg_process.jl")
 export eeg_reference_ch

@@ -4871,6 +4871,95 @@ Convert Cartesian locations to spherical.
 
   * `locs::DataFrame`
 
+<a id='NeuroAnalyzer.eeg_view_annotations-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_annotations-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_view_annotations`** &mdash; *Method*.
+
+
+
+```julia
+eeg_view_annotations(eeg)
+```
+
+Return `eeg` annotations.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_delete_annotation-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_annotation-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_annotation`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_annotation(eeg; n)
+```
+
+Delete `n`th annotation.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `n::Int64`: annotation number
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_delete_annotation!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_annotation!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_annotation!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_delete_annotation!(eeg; n)
+```
+
+Delete `n`th annotation.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `n::Int64`: annotation number
+
+<a id='NeuroAnalyzer.eeg_add_annotation-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_annotation-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_annotation`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_annotation(eeg; onset, event)
+```
+
+Add annotation.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `onset::Float64`: time in seconds
+  * `event::String`: event description
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_add_annotation!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_annotation!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_annotation!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_add_annotation!(eeg; onset, event)
+```
+
+Delete `n`th annotation.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `onset::Float64`: time onset in seconds
+  * `event::String`: event description
+
 
 <a id='EEG-process'></a>
 

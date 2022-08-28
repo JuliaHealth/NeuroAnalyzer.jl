@@ -18,14 +18,12 @@ function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{In
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
-    nothing
 end
 
 function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
-    nothing
 end
 
 function _select_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64=0)
@@ -126,7 +124,6 @@ function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch)
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
-    nothing
 end
 
 function _get_epoch_markers(eeg::NeuroAnalyzer.EEG, offset, len)
@@ -158,7 +155,6 @@ end
 function _check_offset_len(eeg::NeuroAnalyzer.EEG, offset, len)
     (offset < 0 || offset > eeg_epoch_len(eeg)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg))."))
     (offset + len > eeg_epoch_len(eeg)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg))."))
-    nothing
 end
 
 function _convert_t(t)
@@ -175,7 +171,6 @@ function _check_channels(eeg::NeuroAnalyzer.EEG, channel)
     for idx in 1:length(channel)
         (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
-    nothing
 end
 
 function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx)
@@ -183,7 +178,6 @@ function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx)
     for idx in 1:length(c_idx)
         (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
-    nothing
 end
 
 function _tuple_max(t::Tuple{Real, Real})

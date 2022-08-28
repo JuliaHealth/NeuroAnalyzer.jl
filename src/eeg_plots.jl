@@ -6805,8 +6805,8 @@ function eeg_plot_electrodes3d(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vec
         end
     end
     if head_labels == true
-        GLMakie.text!(ax, "NAS", position=(0, 1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "IN", position=(0, -1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
         GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
         GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
         GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
@@ -7132,7 +7132,6 @@ function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool
     fig = Figure(; resolution=(plot_size, plot_size))
     ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
     # hidedecorations!(ax, grid=true, ticks=true)
-
     GLMakie.scatter!(ax, loc_x, loc_y, loc_z, markersize=marker_size, color=:gray)
 
     if labels == true
@@ -7142,8 +7141,8 @@ function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool
     end
 
     if head_labels == true
-        GLMakie.text!(ax, "NAS", position=(0, 1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "IN", position=(0, -1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
         GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
         GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
         GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)

@@ -253,6 +253,11 @@ eeg_loc_sph2cart(locs::DataFrame)
 eeg_loc_sph2cart!(locs::DataFrame)
 eeg_loc_cart2sph(locs::DataFrame)
 eeg_loc_cart2sph!(locs::DataFrame)
+eeg_view_annotations(eeg::NeuroAnalyzer.EEG)
+eeg_delete_annotation(eeg::NeuroAnalyzer.EEG; n::Int64)
+eeg_delete_annotation!(eeg::NeuroAnalyzer.EEG; n::Int64)
+eeg_add_annotation(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
+eeg_add_annotation!(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
 ```
 
 ## EEG process

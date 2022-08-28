@@ -188,7 +188,7 @@ EEG:
 - analysis: source localization
 - analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
 - analysis: wavelets
-- edit: add/delete events markers, view markers on plots
+- edit: view/add/delete events/markers
 - edit: automated channel rejection
 - edit: automated epoch rejection
 - edit: automated cleaning of artifacts
@@ -208,9 +208,11 @@ EEG:
 - io: more import formats
 - misc: reports in .md format
 - misc: update tutorial.md
+- plots: show events/markers on plots
+- plots: show annotations on plots
 - plots: eeg_plot_signal*() separate plots for non-EEG/MEG channels (different units, ylim)
-- plots: 3d head/brain plots
 - plots: add user-defined voltage scale for eeg signal plots
+- plots: 3d head/brain plots
 - plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
 - plots: coherence spectrum (y: relative amplitude, x: frequencies)
 - plots: complex kernel convolution: plot magnitude and phase of the convoluted signal
@@ -219,9 +221,10 @@ EEG:
 - plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
 - plots: ERP amplitude plots at electrode locations (eeg_plot_erp_topomap())
 - plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
-- process: custom reference (e.g. bipolar longitudinal/horizontal)
+- process: custom referencing (e.g. bipolar longitudinal/horizontal)
 - process: detect artifacts using TKEO
-- process: more re-referencing methods: spherical Laplacian, REST
+- process: spherical Laplacian referencing
+- process: REST referencing
 - process: set baseline
 - trial: multi-trial data
 

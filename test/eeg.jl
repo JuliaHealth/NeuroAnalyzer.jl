@@ -365,4 +365,10 @@ locs2 = eeg_loc_cart2sph(locs)
 @test size(eeg_phdiff(edf)) == (19, 309760, 1)
 @test size(eeg_scale(edf, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)
 
+bdf = eeg_import_bdf("generator/test_generator.bdf")
+eeg_delete_annotation!(bdf, n=1)
+@test size(bdf.eeg_annotations) == (1, 2)
+eeg_add_annotation!(bdf, onset=-10, event="test")
+@test size(bdf.eeg_annotations) == (2, 2)
+
 true
