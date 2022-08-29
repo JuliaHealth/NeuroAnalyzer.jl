@@ -15,31 +15,29 @@ Reference the `eeg` to specific `channel`.
 """
 function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    _check_channels(eeg, channel)
 
-    channel_n = eeg_channel_n(eeg)
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     epoch_n = eeg_epoch_n(eeg)
-    s_ref = zeros(size(eeg.eeg_signals))
-
-    channel_list = collect(1:channel_n)
-    for channel_idx in 1:length(channel)
-        channel[channel_idx] in channel_list == false && throw(ArgumentError("channel does not match signal channels."))
-    end
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        if med == false
-            @views length(channel) == 1 ? reference_channel = mean(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(mean(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
-        else
-            @views length(channel) == 1 ? reference_channel = median(eeg.eeg_signals[channel, :, epoch_idx], dims=2) : reference_channel = vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
-        end
-        Threads.@threads for channel_idx in 1:channel_n
-            s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
-        end
-        length(channel) == 1 && (s_ref[channel, :, epoch_idx] = reference_channel)
-    end
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_ref
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        if length(channel) == 1
+            reference_channel = @views vec(eeg.eeg_signals[channel, :, epoch_idx])
+        else
+            if med == false
+                reference_channel = @views vec(mean(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
+            else
+                reference_channel = @views vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
+            end
+        end
+        Threads.@threads for channel_idx in channels
+            if channel_idx != channel
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] .-= reference_channel
+            end
+        end
+    end
+
     eeg_new.eeg_header[:reference] = "channel: $channel"
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_reference_ch(EEG, channel=$channel), med=$med")
@@ -73,8 +71,8 @@ Reference the `eeg` to common average reference.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
-- `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+- `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR calculation
+- `exclude_current::Bool=true`: exclude current electrode from CAR calculation
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -83,34 +81,42 @@ Reference the `eeg` to common average reference.
 """
 function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=false, med::Bool=false)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    s_ref = zeros(size(eeg.eeg_signals))
 
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            reference_channels = @view eeg.eeg_signals[:, :, epoch_idx]
-            exclude_current == true && (reference_channels = reference_channels[setdiff(1:end, (channel_idx)), :, :])
-            if exclude_fpo == true
-                l = lowercase.(eeg_labels(eeg))
-                "fp1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp1"), l))), :, :])
-                "fp2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp2"), l))), :, :])
-                "o1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o1"), l))), :, :])
-                "o2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o2"), l))), :, :])
-            end
+        reference_channels = @view eeg.eeg_signals[:, :, epoch_idx]
+        if exclude_fpo == true
+            l = lowercase.(eeg_labels(eeg))
+            "fp1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp1"), l))), :, :])
+            "fp2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("fp2"), l))), :, :])
+            "o1" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o1"), l))), :, :])
+            "o2" in l && (reference_channels = reference_channels[setdiff(1:end, (findfirst(isequal("o2"), l))), :, :])
+        end
+        if exclude_current == false
             if med == false
                 reference_channel = vec(mean(reference_channels, dims=1))
             else
                 reference_channel = vec(median(reference_channels, dims=1))
             end
-            s_ref[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
+        end
+        Threads.@threads for channel_idx in 1:channel_n
+            if exclude_current == false
+                reference_channels = reference_channels[setdiff(1:end, (channel_idx)), :, :]
+                if med == false
+                    reference_channel = vec(mean(reference_channels, dims=1))
+                else
+                    reference_channel = vec(median(reference_channels, dims=1))
+                end
+            end
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = eeg.eeg_signals[channel_idx, :, epoch_idx] .- reference_channel
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_ref
     eeg_new.eeg_header[:reference] = "CAR"
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_reference_car(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
@@ -138,64 +144,71 @@ function eeg_reference_car!(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exc
 end
 
 """
-    eeg_derivative(eeg)
+    eeg_derivative(eeg; channel)
 
 Return the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_derivative(eeg::NeuroAnalyzer.EEG)
+function eeg_derivative(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    s_der = zeros(size(eeg.eeg_signals))
     
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_der[channel_idx, :, epoch_idx] = @views s_derivative(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_derivative(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_der
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_derivative(EEG, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_derivative!(eeg)
+    eeg_derivative!(eeg; channel)
 
 Return the derivative of the `eeg` with length same as the signal.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 """
-function eeg_derivative!(eeg::NeuroAnalyzer.EEG)
+function eeg_derivative!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
     eeg.eeg_signals = eeg_derivative(eeg).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_derivative(EEG)")
+    push!(eeg.eeg_header[:history], "eeg_derivative!(EEG, channel=$channel)")
 end
 
 """
-    eeg_detrend(eeg; type)
+    eeg_detrend(eeg; channel, type, offset, order, span)
 
 Perform piecewise detrending of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `type::Symbol`, optional
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -211,39 +224,43 @@ Perform piecewise detrending of `eeg`.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_detrend(eeg::NeuroAnalyzer.EEG; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+function eeg_detrend(eeg::NeuroAnalyzer.EEG; channel::Int64=0, type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
 
     type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
-
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
-    s_det = zeros(size(eeg.eeg_signals))
 
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_det[channel_idx, :, epoch_idx] = @views s_detrend(eeg.eeg_signals[channel_idx, :, epoch_idx], type=type, offset=offset, order=order, span=span, fs=fs)
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_detrend(eeg.eeg_signals[channel_idx, :, epoch_idx], type=type, offset=offset, order=order, span=span, fs=fs)
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_det
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, type=$type, offset=$offset, order=$order, span=$span)")
+    push!(eeg_new.eeg_header[:history], "eeg_detrend(EEG, channel=$channel, type=$type, offset=$offset, order=$order, span=$span)")
 
     return eeg_new
 end
 
 """
-    eeg_detrend!(eeg; type)
+    eeg_detrend!(eeg; channel, type, offset, order, span)
 
 Remove linear trend from the `eeg`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `type::Symbol`, optional
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -257,29 +274,34 @@ Remove linear trend from the `eeg`.
 """
 function eeg_detrend!(eeg::NeuroAnalyzer.EEG; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
 
-    eeg.eeg_signals = eeg_detrend(eeg, type=type, offset=offset, order=order, span=span).eeg_signals
+    eeg.eeg_signals = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, span=span).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_detrend(EEG, type=$type, offset=$offset, order=$order, span=$span)")
+    push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, channel=$channel, type=$type, offset=$offset, order=$order, span=$span)")
 end
 
 """
-    eeg_taper(eeg; taper)
+    eeg_taper(eeg; channel, taper)
 
 Taper `eeg` with `taper`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `taper::Union{Vector{Real, Vector{ComplexF64}}``
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_taper(eeg::NeuroAnalyzer.EEG; taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function eeg_taper(eeg::NeuroAnalyzer.EEG; channel::Int64=0, taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
@@ -287,199 +309,222 @@ function eeg_taper(eeg::NeuroAnalyzer.EEG; taper::Union{Vector{<:Real}, Vector{C
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_tap[channel_idx, :, epoch_idx] = @views s_taper(eeg.eeg_signals[channel_idx, :, epoch_idx], taper=taper)
+            if channel_idx in channels
+                @views s_tap[channel_idx, :, epoch_idx] = s_taper(eeg.eeg_signals[channel_idx, :, epoch_idx], taper=taper)
+            else
+                @views s_tap[channel_idx, :, epoch_idx] = eeg.eeg_signals[channel_idx, :, epoch_idx]
+            end
         end
     end
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_tap
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
+    push!(eeg_new.eeg_header[:history], "eeg_taper(EEG, taper=$taper, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_taper!(eeg; taper)
+    eeg_taper!(eeg; channel, taper)
 
 Taper `eeg` with `taper`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
 """
 function eeg_taper!(eeg::NeuroAnalyzer.EEG; taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
-    eeg.eeg_signals = eeg_taper(eeg, taper=taper).eeg_signals
+    eeg.eeg_signals = eeg_taper(eeg, channel=channel, taper=taper).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_taper(EEG, taper=$taper)")
+    push!(eeg.eeg_header[:history], "eeg_taper!(EEG, taper=$taper)")
 end
 
 """
-    eeg_demean(eeg)
+    eeg_demean(eeg; channel)
 
 Remove mean value (DC offset).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_demean(eeg::NeuroAnalyzer.EEG)
+function eeg_demean(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    s_demeaned = zeros(size(eeg.eeg_signals))
 
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_demeaned[channel_idx, :, epoch_idx] = @views s_demean(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_demean(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_demeaned
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_demean(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_demean(EEG, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_demean!(eeg)
+    eeg_demean!(eeg; channel)
 
 Remove mean value (DC offset).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 """
-function eeg_demean!(eeg::NeuroAnalyzer.EEG)
+function eeg_demean!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
-    eeg.eeg_signals = eeg_demean(eeg).eeg_signals
+    eeg.eeg_signals = eeg_demean(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_demean(EEG)")
+    push!(eeg.eeg_header[:history], "eeg_demean!(EEG, channel=$channel)")
 end
 
 """
-    eeg_normalize(eeg; method)
+    eeg_normalize(eeg; channel, method)
 
 Normalize each `eeg` channel.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `method::Symbol`
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_normalize(eeg::NeuroAnalyzer.EEG; method::Symbol)
+function eeg_normalize(eeg::NeuroAnalyzer.EEG; channel::Int64=0, method::Symbol)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    s_normalized = zeros(size(eeg.eeg_signals))
 
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_normalized[channel_idx, :, epoch_idx] = @views s_normalize(eeg.eeg_signals[channel_idx, :, epoch_idx], method=method)
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_normalize(eeg.eeg_signals[channel_idx, :, epoch_idx], method=method)
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_normalized
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_normalize(EEG, method=$method)")
+    push!(eeg_new.eeg_header[:history], "eeg_normalize(EEG, channel=$channel, method=$method)")
 
     return eeg_new
 end
 
 """
-    eeg_normalize!(eeg; method)
+    eeg_normalize!(eeg; channel, method)
 
 Normalize each `eeg` channel.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 - `method::Symbol`
 """
-function eeg_normalize!(eeg::NeuroAnalyzer.EEG; method::Symbol)
+function eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, method::Symbol)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    eeg.eeg_signals = eeg_normalize(eeg, method=method).eeg_signals
+    eeg.eeg_signals = eeg_normalize(eeg, channel=channel, method=method).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize(EEG, method=$method)")
-    end
+    push!(eeg.eeg_header[:history], "eeg_normalize!(EEG, channel=$channel, method=$method)")
+end
 
 """
-    eeg_add_noise(eeg)
+    eeg_add_noise(eeg; channel)
 
 Add random noise to the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_noise(eeg::NeuroAnalyzer.EEG)
+function eeg_add_noise(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
-    s_noise = zeros(size(eeg.eeg_signals))
-
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_noise[channel_idx, :, epoch_idx] = @views s_add_noise(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            if channel_idx in channels
+                @views eeg_new.eeg_signals[channel_idx, :, epoch_idx] = s_add_noise(eeg.eeg_signals[channel_idx, :, epoch_idx])
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_noise
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_add_noise(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_add_noise(EEG, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_add_noise!(eeg)
+    eeg_add_noise!(eeg; channel)
 
 Add random noise to the `eeg` channels.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, process only this channel
 """
-function eeg_add_noise!(eeg::NeuroAnalyzer.EEG)
+function eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 
-    eeg.eeg_signals = eeg_add_noise(eeg).eeg_signals
+    eeg.eeg_signals = eeg_add_noise(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_add_noise(EEG)")
+    push!(eeg.eeg_header[:history], "eeg_add_noise!(EEG, channel=$channel)")
 end
 
 """
     eeg_filter(eeg; <keyword arguments>)
 
-Filter `eeg` channels.
+Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, filter only this channel
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -509,32 +554,27 @@ Filter `eeg` channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_filter(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
+    (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
+    if channel == 0
+        channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    else
+        channels = channel
+    end
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
-    s_filtered = zeros(size(eeg.eeg_signals))
     fs = eeg_sr(eeg)
     
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_filtered[channel_idx, :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel_idx, :, epoch_idx],
-                                                             fprototype=fprototype,
-                                                             ftype=ftype,
-                                                             cutoff=cutoff,
-                                                             fs=fs,
-                                                             order=order,
-                                                             rp=rp,
-                                                             rs=rs,
-                                                             bw=bw,
-                                                             dir=dir,
-                                                             t=t,
-                                                             window=window)
+            if channel_idx in channels
+                eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel_idx, :, epoch_idx], fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw, dir=dir, t=t, window=window)
+            end
         end
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_filtered
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_filter(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, t=$t, window=$window)")
 
@@ -544,11 +584,12 @@ end
 """
     eeg_filter!(eeg; <keyword arguments>)
 
-Filter `eeg`.
+Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Int64=0`: if specified, filter only this channel
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -574,22 +615,22 @@ Filter `eeg`.
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
-    s_filtered = eeg_filter(eeg,
-                            fprototype=fprototype,
-                            ftype=ftype,
-                            cutoff=cutoff,
-                            order=order,
-                            rp=rp,
-                            rs=rs,
-                            bw=bw,
-                            dir=dir,
-                            t=t,
-                            window=window).eeg_signals
-    eeg.eeg_signals = s_filtered
+    eeg.eeg_signals = eeg_filter(eeg,
+                                 channel=channel,
+                                 fprototype=fprototype,
+                                 ftype=ftype,
+                                 cutoff=cutoff,
+                                 order=order,
+                                 rp=rp,
+                                 rs=rs,
+                                 bw=bw,
+                                 dir=dir,
+                                 t=t,
+                                 window=window).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
+    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 end
 
 """

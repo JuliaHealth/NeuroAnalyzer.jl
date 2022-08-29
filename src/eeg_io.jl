@@ -672,7 +672,7 @@ function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_electrodes!(EEG, $file_name)")
-
+    nothing
  end
 
 """
@@ -743,7 +743,7 @@ Export EEG data as CSV.
 
 - `success::Bool`
 """
-function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, annotations::Bool=true, overwrite::Bool=false)
+function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, annotations::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
     eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
@@ -800,27 +800,24 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 - `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
 - `overwrite::Bool=false`
-
-# Returns
-
-- `success::Bool`
 """
 function eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before exporting."))
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = eeg_keep_channel(eeg, channel=channels)
 
-    labels = eeg_labels(eeg)
-    channels = collect(1:eeg_channel_n(eeg))
-    theta = eeg.eeg_header[:loc_theta]
-    radius = eeg.eeg_header[:loc_radius]
-    x = eeg.eeg_header[:loc_x]
-    y = eeg.eeg_header[:loc_y]
-    z = eeg.eeg_header[:loc_z]
-    radius_sph = eeg.eeg_header[:loc_radius_sph]
-    theta_sph = eeg.eeg_header[:loc_theta_sph]
-    phi_sph = eeg.eeg_header[:loc_phi_sph]
+    labels = eeg_labels(eeg_tmp)
+    channels = collect(1:eeg_channel_n(eeg_tmp))
+    theta = eeg_tmp.eeg_header[:loc_theta]
+    radius = eeg_tmp.eeg_header[:loc_radius]
+    x = eeg_tmp.eeg_header[:loc_x]
+    y = eeg_tmp.eeg_header[:loc_y]
+    z = eeg_tmp.eeg_header[:loc_z]
+    radius_sph = eeg_tmp.eeg_header[:loc_radius_sph]
+    theta_sph = eeg_tmp.eeg_header[:loc_theta_sph]
+    phi_sph = eeg_tmp.eeg_header[:loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
         df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
@@ -832,7 +829,7 @@ function eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrit
         df = DataFrame(labels=labels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     else
-        throw(ArgumentError("file_name format must be .ced, .locs or .tsv."))
+        throw(ArgumentError("$file_name format must be .ced, .locs or .tsv."))
     end
 end
 
@@ -1007,7 +1004,7 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_add_electrodes!(EEG, locs)")
-
+    nothing
  end
 
 """

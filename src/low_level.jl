@@ -301,14 +301,14 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 
 # Arguments
 
-- `x::AbstractArray`
+- `x::AbstractVector`
 - `n::Int64`
 
 # Returns
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractArray, n::Int64=0)
+function fft0(x::AbstractVector, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
@@ -329,14 +329,14 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 
 # Arguments
 
-- `x::AbstractArray`
+- `x::AbstractVector`
 - `n::Int64`
 
 # Returns
 
 - `ifft0::Vector{ComplexF64}`
 """
-function ifft0(x::AbstractArray, n::Int64=0)
+function ifft0(x::AbstractVector, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
@@ -582,7 +582,7 @@ Pad the vector `x` with `n` zeros.
 
 - `v_pad::AbstractVector`
 """
-function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
+function pad0(x::AbstractVector, n::Int64, sym::Bool=false)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
@@ -786,13 +786,13 @@ Normalize matrix `m`.
 
 # Arguments
 
-- `m::Matrix{Float64}`
+- `m::AbstractArray`
 
 # Returns
 
-- `m_norm::Matrix{Float64}`
+- `m_norm::AbstractArray`
 """
-function m_norm(m::Array{Float64, 3})
+function m_norm(m::AbstractArray)
     
     return m ./ (size(m, 2) - 1)
 end
@@ -804,14 +804,14 @@ Calculate covariance between all channels of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `norm::Bool`: normalize covariance
 
 # Returns
 
 - `cov_mat::Matrix{Float64}`
 """
-function s_cov(signal::AbstractArray; norm::Bool=false)
+function s_cov(signal::AbstractVector; norm::Bool=false)
 
     signal = signal'
     
@@ -831,15 +831,15 @@ Calculate covariance between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 - `norm::Bool`: normalize covariance
 
 # Returns
 
 - `cov_mat::Matrix{Float64}`
 """
-function s2_cov(signal1::AbstractArray, signal2::AbstractArray; norm::Bool=false)
+function s2_cov(signal1::AbstractVector, signal2::AbstractVector; norm::Bool=false)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same length."))
 
@@ -859,7 +859,7 @@ Return FFT and DFT sample frequencies for a DFT for the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 
 # Returns
@@ -868,7 +868,7 @@ Named tuple containing:
 - `s_fft::Vector{ComplexF64}`
 - `s_sf::Vector{Float64}`
 """
-function s_dft(signal::AbstractArray; fs::Int64, n::Int64=0)
+function s_dft(signal::AbstractVector; fs::Int64, n::Int64=0)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
@@ -1074,7 +1074,7 @@ Calculate autocovariance of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `lag::Int64=1`: lags range is `-lag:lag`
 - `demean::Bool=false`: demean `signal` prior to calculations
 - `norm::Bool=false`: normalize autocovariance
@@ -1084,7 +1084,7 @@ Calculate autocovariance of the `signal`.
 - `acov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function s_acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
 
@@ -1123,8 +1123,8 @@ Calculate cross-covariance between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 - `lag::Int64`: lags range is `-lag:lag`
 - `demean::Bool`: demean signal prior to analysis
 - `norm::Bool`: normalize cross-covariance
@@ -1173,7 +1173,7 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 # Returns
@@ -1184,7 +1184,7 @@ Named tuple containing:
 - `s_powers::Vector{Float64}`
 - `s_phases::Vector{Float64}`
 """
-function s_spectrum(signal::AbstractArray; pad::Int64=0)
+function s_spectrum(signal::AbstractVector; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
@@ -1208,7 +1208,7 @@ Calculate `signal` total power.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -1216,7 +1216,7 @@ Calculate `signal` total power.
 
 - `stp::Float64`: signal total power
 """
-function s_total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
+function s_total_power(signal::AbstractVector; fs::Int64, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
@@ -1236,7 +1236,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
@@ -1244,7 +1244,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 
 - `sbp::Float64`: signal band power
 """
-function s_band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
+function s_band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
@@ -1268,14 +1268,14 @@ Taper the `signal` with `taper`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `taper::Union{AbstractVector, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
-function s_taper(signal::AbstractArray; taper::Union{AbstractVector, Vector{ComplexF64}})
+function s_taper(signal::AbstractVector; taper::Union{AbstractVector, Vector{ComplexF64}})
 
     length(taper) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
     return signal .* taper
@@ -1287,7 +1287,7 @@ Perform piecewise detrending of `eeg`.
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `signal::AbstractVector`
 - `type::Symbol`, optional
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -1303,7 +1303,7 @@ Perform piecewise detrending of `eeg`.
 # Returns
 - `s_det::Vector{Float64}`
 """
-function s_detrend(signal::AbstractArray; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Real=0)
+function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Real=0)
 
     type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
 
@@ -1352,13 +1352,13 @@ Remove mean value (DC offset) from the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `s_demeaned::Vector{Float64}`
 """
-function s_demean(signal::AbstractArray)
+function s_demean(signal::AbstractVector)
 
     m = mean(signal)
     return signal .- m
@@ -1395,7 +1395,7 @@ Normalize `signal` in [-1, +1].
 
 # Returns
 
-- `s_normalized::Vector{Float64}`
+- `s_normalized::AbstractArray`
 """
 function s_normalize_minmax(signal::AbstractArray)
 
@@ -1416,7 +1416,7 @@ Normalize `signal` in [0, +1].
 
 # Returns
 
-- `s_normalized::Vector{Float64}`
+- `s_normalized::AbstractArray`
 """
 function s_normalize_max(signal::AbstractArray)
 
@@ -1435,7 +1435,7 @@ Normalize `signal` using log-transformation.
 
 # Returns
 
-- `s_normalized::Vector{Float64}`
+- `s_normalized::AbstractArray`
 """
 function s_normalize_log(signal::AbstractArray)
 
@@ -1454,7 +1454,7 @@ Adds random noise to the `signal`.
 
 # Returns
 
-- `s_noisy::Vector{Float64}`
+- `s_noisy::AbstractArray`
 """
 function s_add_noise(signal::AbstractArray)
 
@@ -1468,7 +1468,7 @@ Resample `signal` to `new_sr` sampling frequency.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `t::AbstractRange`: time
 - `new_sr::Int64`: new sampling rate
 
@@ -1477,7 +1477,7 @@ Resample `signal` to `new_sr` sampling frequency.
 - `s_resampled::Vector{Float64}`
 - `t_resampled::AbstractRange`
 """
-function s_resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
+function s_resample(signal::AbstractVector; t::AbstractRange, new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
 
@@ -1504,7 +1504,7 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `t::AbstractRange`
 - `new_sr::Int64`: new sampling rate
 
@@ -1513,7 +1513,7 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
 - `s_downsampled::Array{Float64, 3}`
 - `t_downsampled::AbstractRange`
 """
-function s_resample(signal::Array{Float64, 3}; t::AbstractRange, new_sr::Int64)
+function s_resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
 
@@ -1536,8 +1536,12 @@ end
     s_derivative(signal)
 
 Return derivative of `signal` of the same length.
+
+# Arguments
+
+- `signal::AbstractVector`
 """
-function s_derivative(signal::AbstractArray)
+function s_derivative(signal::AbstractVector)
 
     s_der = diff(signal)
     return vcat(s_der, s_der[end])
@@ -1550,14 +1554,14 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 
 # Returns
 
 - `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
-function s_tconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}})
+function s_tconv(signal::AbstractVector; kernel::Union{AbstractVector, Vector{ComplexF64}})
 
     signal = Vector(signal)
     s_conv = conv(signal, kernel)
@@ -1579,7 +1583,7 @@ Filter `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -1609,7 +1613,7 @@ Filter `signal`.
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractArray; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
+function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
 
@@ -1752,7 +1756,7 @@ end
 Calculate power spectrum density of the `signal`.
 
 # Arguments
-- `signal::AbstractArray`
+- `signal::Vector{Float64}`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1763,7 +1767,7 @@ Named tuple containing:
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
-function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
+function s_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     length(signal) < 4 * fs && (mt = true)
@@ -1818,7 +1822,7 @@ end
 Calculate power spectrum density of the `signal`.
 
 # Arguments
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1829,7 +1833,7 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`
 - `psd_frq::Array{Float64, 3}`
 """
-function s_psd(signal::Array{Float64, 3}; fs::Int64, norm::Bool=false, mt::Bool=false)
+function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     size(signal, 2) < 4 * fs && (mt = true)
@@ -1855,13 +1859,13 @@ Calculate phase stationarity using Hilbert transformation.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `phase_stationarity::Vector{Float64}`
 """
-function s_stationarity_hilbert(signal::AbstractArray)
+function s_stationarity_hilbert(signal::AbstractVector)
     
     return diff(DSP.unwrap(angle.(hilbert(signal))))
 end
@@ -1873,14 +1877,14 @@ Calculate mean stationarity.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `window::Int64`: time window in samples
 
 # Returns
 
 - `mean_stationarity::Vector{Float64}`
 """
-function s_stationarity_mean(signal::AbstractArray; window::Int64)
+function s_stationarity_mean(signal::AbstractVector; window::Int64)
 
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
@@ -1894,14 +1898,14 @@ Calculate variance stationarity.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `window::Int64`: time window in samples
 
 # Returns
 
 - `var_stationarity::Vector{Float64}`
 """
-function s_stationarity_var(signal::AbstractArray; window::Int64)
+function s_stationarity_var(signal::AbstractVector; window::Int64)
 
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
@@ -1915,7 +1919,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `len::Int64`: trimming length in samples
 - `offset::Int64`: offset from which trimming starts, only works for `from` = :start
 - `from::Symbol[:start, :end]
@@ -1924,7 +1928,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 - `s_trimmed::Vector{Float64}`
 """
-function s_trim(signal::AbstractArray; len::Int64, offset::Int64=1, from::Symbol=:start)
+function s_trim(signal::AbstractVector; len::Int64, offset::Int64=1, from::Symbol=:start)
 
     from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
     len < 1 && throw(ArgumentError("len must be ≥ 1."))
@@ -1947,14 +1951,14 @@ Calculate mutual information between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
 - `mi::Float64`
 """
-function s2_mi(signal1::AbstractArray, signal2::AbstractArray)
+function s2_mi(signal1::AbstractVector, signal2::AbstractVector)
 
     return get_mutual_information(signal1, signal2)
 end
@@ -1966,13 +1970,13 @@ Calculate entropy of `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `ent::Float64`
 """
-function s_entropy(signal::AbstractArray)
+function s_entropy(signal::AbstractVector)
 
     n = length(signal)
     maxmin_range = maximum(signal) - minimum(signal)
@@ -1993,13 +1997,13 @@ Calculate negentropy of `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `ent::Float64`
 """
-function s_negentropy(signal::AbstractArray)
+function s_negentropy(signal::AbstractVector)
 
     s = s_demean(signal)
     return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)
@@ -2012,13 +2016,13 @@ Average all channels of `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
-- `s_averaged::Array{Float64, 3}`
+- `s_averaged::AbstractArray`
 """
-function s_average(signal::Array{Float64, 3})
+function s_average(signal::AbstractArray)
 
     return mean(signal, dims=1)
 end
@@ -2049,8 +2053,8 @@ Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitud
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
@@ -2059,7 +2063,7 @@ Named tuple containing:
 - `msc::Vector{Float64}`: magnitude-squares coherence
 - `ic::Vector{Float64}`: imaginary part of coherence
 """
-function s2_tcoherence(signal1::AbstractArray, signal2::AbstractArray)
+function s2_tcoherence(signal1::AbstractVector, signal2::AbstractVector)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -2088,6 +2092,7 @@ Calculate `n` first PCs for `signal`.
 
 # Returns
 
+Named tuple containing:
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
 - `pc_m::PCA{Float64}`: PC mean
@@ -2131,7 +2136,7 @@ function s_pca(signal::AbstractArray; n::Int64)
         end
     end
 
-    return pc, pc_var, pc_m
+    return (pc=pc, pc_var=pc_var, pc_m=pc_m)
 end
 
 
@@ -2143,14 +2148,14 @@ Reconstructs `signal` using PCA components.
 # Arguments
 
 - `signal::AbstractArray`
-- `pc::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `pc::AbstractArray:`: IC(1)..IC(n) × epoch
 - `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
 
 # Returns
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function s_pca_reconstruct(signal::AbstractArray; pc::Array{Float64, 3}, pc_m::PCA{Float64})
+function s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pc_m::PCA{Float64})
 
     s_reconstructed = zeros(size(signal))
 
@@ -2170,7 +2175,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 - `norm::Bool=false`: normalize kernel
 
@@ -2178,7 +2183,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
+function s_fconv(signal::AbstractVector; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
@@ -2204,7 +2209,7 @@ Calculate `n` first ICs for `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `n::Int64`: number of PCs
 - `tol::Float64=1.0e-6`: tolerance for ICA
 - `iter::Int64=100`: maximum number of iterations
@@ -2215,7 +2220,7 @@ Calculate `n` first ICs for `signal`.
 - `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 - `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 """
-function s_ica(signal::Array{Float64, 3}; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
     f in [:tanh, :gaus] || throw(ArgumentError("f must be :tanh or :gaus."))
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
@@ -2248,16 +2253,16 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
-- `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
-- `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `signal::AbstractArray`
+- `ic::AbstractArray:`: IC(1)..IC(n) × epoch
+- `ic_mw::AbstractArray:`: IC(1)..IC(n) × epoch
 - `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function s_ica_reconstruct(signal::Array{Float64, 3}; ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
+function s_ica_reconstruct(signal::AbstractArray; ic::AbstractArray, ic_mw::AbstractArray, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(ic_v) <: AbstractRange && (ic_v = collect(ic_v))
     if typeof(ic_v) == Vector{Int64}
@@ -2288,7 +2293,7 @@ Calculate spectrogram of `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -2301,7 +2306,7 @@ Named tuple containing:
 - `s_frq::Vector{Float64}`: frequencies
 - `s_t::Vector{Float64}`: time
 """
-function s_spectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, mt::Bool=false, demean::Bool=true)
+function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, demean::Bool=true)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
 
@@ -2330,13 +2335,13 @@ Detect bad `signal` epochs based on: flat channel(s)
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
-function s_detect_epoch_flat(signal::Array{Float64, 3})
+function s_detect_epoch_flat(signal::AbstractArray)
     
     channel_n, _, epoch_n = size(signal)
 
@@ -2359,13 +2364,13 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
-function s_detect_epoch_rmse(signal::Array{Float64, 3})
+function s_detect_epoch_rmse(signal::AbstractArray)
     
     channel_n, _, epoch_n = size(signal)
 
@@ -2392,13 +2397,13 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
-function s_detect_epoch_rmsd(signal::Array{Float64, 3})
+function s_detect_epoch_rmsd(signal::AbstractArray)
     
     channel_n, _, epoch_n = size(signal)
 
@@ -2425,13 +2430,13 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
-function s_detect_epoch_euclid(signal::Array{Float64, 3})
+function s_detect_epoch_euclid(signal::AbstractArray)
     
     channel_n, _, epoch_n = size(signal)
 
@@ -2458,13 +2463,13 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 
 # Returns
 
 - `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 """
-function s_detect_epoch_p2p(signal::Array{Float64, 3})
+function s_detect_epoch_p2p(signal::AbstractArray)
     
     channel_n, _, epoch_n = size(signal)
 
@@ -2490,7 +2495,7 @@ Calculate SNR of `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
@@ -2500,7 +2505,7 @@ Calculate SNR of `signal`.
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
-function s_snr(signal::AbstractArray)
+function s_snr(signal::AbstractVector)
 
     # make signal positive
     signal .+= abs(minimum(signal))
@@ -2514,7 +2519,7 @@ Find peaks in `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `d::Int64=32`: distance between peeks in samples
 
 # Returns
@@ -2522,7 +2527,7 @@ Find peaks in `signal`.
 - `p_idx::Vector{Int64}`
 
 """
-function s_findpeaks(signal::AbstractArray; d::Int64=32)
+function s_findpeaks(signal::AbstractVector; d::Int64=32)
     
     return findpeaks1d(signal, distance=d)[1]
 end
@@ -2534,14 +2539,14 @@ Perform wavelet denoising.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 # Returns
 
 - `signal_denoised::Vector{Float64}`
 """
-function s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
+function s_wdenoise(signal::AbstractVector; wt::Symbol=:db4)
     
     wt in [:db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8"))
 
@@ -2564,8 +2569,8 @@ Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
@@ -2577,7 +2582,7 @@ Named tuple containing:
 - `s1_phase::Vector{Float64}`: signal 1 phase
 - `s2_phase::Vector{Float64}`: signal 2 phase
 """
-function s2_ispc(signal1::AbstractArray, signal2::AbstractArray)
+function s2_ispc(signal1::AbstractVector, signal2::AbstractVector)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -2644,8 +2649,8 @@ Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
@@ -2656,7 +2661,7 @@ Named tuple containing:
 - `s1_phase::Vector{Float64}`: signal 1 phase
 - `s2_phase::Vector{Float64}`: signal 2 phase
 """
-function s2_pli(signal1::AbstractArray, signal2::AbstractArray)
+function s2_pli(signal1::AbstractVector, signal2::AbstractVector)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -2684,9 +2689,9 @@ Perform generalized eigendecomposition between `signal1` and `signal2`.
 # Returns
 
 Named tuple containing:
-- `sged::AbstractArray`
-- `ress::AbstractArray`
-- `ress_normalized::AbstractArray`: RESS normalized to -1..1
+- `sged::Matrix{Float64}`
+- `ress::Vector{Float64}`
+- `ress_normalized::Vector{Float64}`: RESS normalized to -1..1
 """
 function s2_ged(signal1::AbstractArray, signal2::AbstractArray)
 
@@ -2714,14 +2719,14 @@ Calculate instantaneous frequency `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`
 
 # Returns
 
 - `frqinst::Vector{Float64}`
 """
-function s_frqinst(signal::AbstractArray; fs::Int64)
+function s_frqinst(signal::AbstractVector; fs::Int64)
 
     fs < 0 && throw(ArgumentError("fs must be > 0."))
 
@@ -2736,7 +2741,7 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 
 # Returns
@@ -2747,7 +2752,7 @@ Named tuple containing:
 - `h_powers::Vector{Float64}`
 - `h_phases::Vector{Float64}`
 """
-function s_hspectrum(signal::AbstractArray; pad::Int64=0)
+function s_hspectrum(signal::AbstractVector; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     h = hilbert(pad0(signal, pad))
@@ -2807,7 +2812,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2825,7 +2830,7 @@ Named tuple containing:
 - `w_phases::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
+function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
 
     pad > 0 && (signal = pad0(signal, pad))
     if typeof(ncyc) == Int64
@@ -2889,13 +2894,13 @@ function s_wspectrogram(signal::AbstractArray; pad::Int64=0, norm::Bool=true, fr
 end
 
 """
-   s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100) 
+   s_fftdenoise(signal; pad, threshold) 
 
 Perform FFT denoising.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 
@@ -2903,7 +2908,7 @@ Perform FFT denoising.
 
 - `signal_denoised::Vector{Float64}`
 """
-function s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100)
+function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Int64=100)
 
     signal_fft = fft0(signal, pad)
     signal_psd = real.(signal_fft .* conj.(signal_fft)) / length(signal)
@@ -2923,7 +2928,7 @@ Filter `signal` using Gaussian in the frequency domain.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
@@ -2933,7 +2938,7 @@ Filter `signal` using Gaussian in the frequency domain.
 Named tuple containing:
 - `s_f::Vector{Float64}`
 """
-function s_gfilter(signal::Vector{Float64}; fs::Int64, f::Real, gw::Real=5)
+function s_gfilter(signal::AbstractVector; fs::Int64, f::Real, gw::Real=5)
 
     # add reflected signal to reduce edge artifacts
     s_r = _reflect(signal)
@@ -2960,7 +2965,7 @@ Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2975,7 +2980,7 @@ Named tuple containing:
 - `h_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_ghspectrogram(signal::AbstractArray; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
+function s_ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
@@ -3011,13 +3016,13 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `s_new::Vector{Float64}`
 """
-function s_tkeo(signal::AbstractArray)
+function s_tkeo(signal::AbstractVector)
     tkeo = zeros(length(signal))
     tkeo[1] = signal[1]
     tkeo[end] = signal[end]
@@ -3035,7 +3040,7 @@ Calculate power spectrum of the `signal` using wavelet convolution.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -3050,7 +3055,7 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function s_wspectrum(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
@@ -3145,11 +3150,12 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 # Arguments
 
 - `signal::AbstractArray`
-- `fs::Int64`
+- `fs::Int64`: sampling rate
 - `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
 
+Named tuple containing:
 - `c::Array{Float64, 3}`: coherence
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
@@ -3169,9 +3175,8 @@ function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Rea
         c = c[:, :, idx1:idx2]
         f = f[idx1:idx2]
     end
-    msc = c.^2
 
-    return (c=c, msc=msc, f=f)
+    return (c=c, msc=c.^2, f=f)
 end
 
 """
@@ -3265,13 +3270,13 @@ Calculate cumulative sum of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 
 # Returns
 
 - `signal_cs::Vector{Float64}`
 """
-function s_cums(signal::AbstractArray)
+function s_cums(signal::AbstractVector)
     
     return cumsum(signal)
 end
@@ -3425,7 +3430,7 @@ Calculate mean and maximum band power and its frequency.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
@@ -3436,7 +3441,7 @@ Named tuple containing:
 - `maxfrq::Float64`: frequency of maximum band power [Hz]
 - `maxbp::Float64`: power at maximum band frequency [dB]
 """
-function s_band_mpower(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
+function s_band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
     mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
 
@@ -3456,7 +3461,7 @@ end
 Calculate relative power spectrum density of the `signal`.
 
 # Arguments
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -3468,7 +3473,7 @@ Named tuple containing:
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
-function s_rel_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     
@@ -3492,7 +3497,7 @@ Perform wavelet bandpass filtering of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate
@@ -3503,7 +3508,7 @@ Perform wavelet bandpass filtering of the `signal`.
 
 - `signal_new::Vector{Float64}`
 """
-function s_wbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
+function s_wbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 
     pad > 0 && (signal = pad0(signal, pad))
     # add reflected signal to reduce edge artifacts
@@ -3529,14 +3534,14 @@ Normalize `signal` to Gaussian.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `dims::Int64=1`: dimension for cumsum()
 
 # Returns
 
 - `s_normalized::Vector{Float64}`
 """
-function s_normalize_gauss(signal::AbstractArray, dims::Int64=1)
+function s_normalize_gauss(signal::AbstractVector, dims::Int64=1)
 
     l = length(signal) + 1
     return atanh.((tiedrank(cumsum(signal, dims=dims)) ./ l .- 0.5) .* 2)
@@ -3549,7 +3554,7 @@ Perform convolution bandpass filtering of the `signal`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate
@@ -3560,7 +3565,7 @@ Perform convolution bandpass filtering of the `signal`.
 
 - `signal_new::Vector{Float64}`
 """
-function s_cbp(signal::AbstractArray; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
+function s_cbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
 
     pad > 0 && (signal = pad0(signal, pad))
     # add reflected signal to reduce edge artifacts
@@ -3628,9 +3633,9 @@ Return spectrogram segment.
 
 # Arguments
 
-- `sp::Array{Float64, 4}`: spectrogram powers
-- `st::Vector{Float64}`: spectrogram time
-- `sf::Vector{Float64}`: spectrogram frequencies
+- `sp::AbstractArray`: spectrogram powers
+- `st::AbstractVector`: spectrogram time
+- `sf::AbstractVector`: spectrogram frequencies
 - `t::Tuple{Real, Real}`: time bounds
 - `f::Tuple{Real, Real}`: frequency bounds
 
@@ -3642,7 +3647,7 @@ Named tuple containing:
 - `t_idx::Tuple{Real, Real}`: time indices
 - `f_idx::Tuple{Real, Real}`: frequency indices
 """
-function s_specseg(sp::Array{Float64, 4}, st::Vector{Float64}, sf::Vector{Float64}; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
+function s_specseg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
 
     t = tuple_order(t)
     f = tuple_order(f)
@@ -3703,8 +3708,8 @@ Calculate cross power spectrum between `signal1` and `signal2`.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize do dB
 
@@ -3715,7 +3720,7 @@ Named tuple containing:
 - `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
 - `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 """
-function s2_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
+function s2_cps(signal1::AbstractVector, signal2::AbstractVector; fs::Int64, norm::Bool=true)
 
     s = hcat(signal1, signal2)'
     p = mt_cross_power_spectra(s, fs=fs)

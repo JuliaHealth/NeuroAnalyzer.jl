@@ -1878,16 +1878,16 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     typeof(channel) == Vector{Int64} && sort!(channel, rev=true)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    _check_channel(channels, channel)
+    _check_channels(channels, channel)
     eeg_tmp = eeg_keep_channel(eeg, channel=channels)
-    eeg_delete_channel!(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_delete_channel(eeg_tmp, channel=channel).eeg_signals
+    channel_n = size(eeg_tmp, 1)
     eeg_new = deepcopy(eeg)
 
     loc_x = zeros(channel_n)
     loc_y = zeros(channel_n)
     for idx in 1:channel_n
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
-                                          eeg.eeg_header[:loc_radius][idx])
+        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx], eeg.eeg_header[:loc_radius][idx])
     end
     loc_x = round.(loc_x, digits=2)
     loc_y = round.(loc_y, digits=2)

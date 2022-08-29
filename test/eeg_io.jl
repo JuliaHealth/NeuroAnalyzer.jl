@@ -1,5 +1,6 @@
 using NeuroAnalyzer
 using Test
+using DataFrames
 
 bdf = eeg_import_bdf("eeg-test-bdf.bdf")
 @test typeof(bdf) == NeuroAnalyzer.EEG
@@ -37,10 +38,9 @@ edf = eeg_load_electrodes(edf, file_name="standard-10-20-cap19-elmiko.ced")
 @test edf.eeg_header[:channel_locations] == true
 
 isfile("test.hdf5") && rm("test.hdf5")
-@test eeg_save(edf, file_name="test.hdf5", overwrite=true) == true
+eeg_save(edf, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
-@test eeg_load("test.hdf5") != false
 edf_new = eeg_load("test.hdf5")
 @test typeof(edf_new) == NeuroAnalyzer.EEG
 isfile("test.hdf5") && rm("test.hdf5")

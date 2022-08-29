@@ -6,13 +6,13 @@ If H < 0.2 then the vector `x` is symmetrical.
 
 # Arguments
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 
 # Returns
 
 - `h::Float64`
 """
-function hildebrand_rule(x::Vector{<:Real})
+function hildebrand_rule(x::AbstractVector)
 
     return (mean(x) - median(x)) ./ std(x)
 end
@@ -24,13 +24,14 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 
 # Arguments
 
-- `n::Int64`
+- `x::AbstractVector`
+- `y::AbstractVector`
 
 # Returns
 
 - `j::Float64`
 """
-function jaccard_similarity(x::Vector{<:Real}, y::Vector{<:Real})
+function jaccard_similarity(x::AbstractVector, y::AbstractVector)
 
     i = length(intersect(x, y))
     u = length(x) + length(y) - i
@@ -46,13 +47,13 @@ Calculate Z-scores for each value of the vector `x`.
 
 # Arguments
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 
 # Returns
 
 - `z_score::Vector{Float64}`
 """
-function z_score(x::Vector{<:Real})
+function z_score(x::AbstractVector)
 
     return (x .- mean(x)) ./ std(x)
 end
@@ -84,8 +85,8 @@ Calculate Cohen's d and Hedges g effect sizes.
 
 # Arguments
 
-- `x1::Vector{Float64}`
-- `x2::Vector{Float64}`
+- `x1::AbstractVector`
+- `x2::AbstractVector`
 
 # Returns
 
@@ -93,7 +94,7 @@ Named tuple containing:
 - `d::Float64`: Cohen's d
 - `g::Float64`: Hedges g
 """
-function effsize(x1::Vector{<:Real}, x2::Vector{<:Real})
+function effsize(x1::AbstractVector, x2::AbstractVector)
     d = (mean(x2) - mean(x1)) / sqrt((std(x1)^2 + std(x2)^2) / 2)
     g = (mean(x2) - mean(x1)) / sqrt((((length(x1) - 1) * (std(x1)^2)) + ((length(x2) - 1) * (std(x2)^2))) / (length(x1) + length(x2) - 2))
     return (cohen=d, hedges=g)
@@ -133,7 +134,7 @@ Perform Grubbs test for outlier in vector `x`.
 
 # Arguments
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 - `alpha::Float64=0.95`
 - `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
 
@@ -142,7 +143,7 @@ Perform Grubbs test for outlier in vector `x`.
 Named tuple containing:
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
-function grubbs(x::Vector{<:Real}; alpha::Float64=0.95, t::Int64=0)
+function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
 
     std(x) == 0 && throw(ArgumentError("Standard deviation of the input vector must not be 0."))
 
@@ -176,14 +177,14 @@ Detect outliers in `x`.
 
 # Arguments
 
-- `x::Vector{<:Real}`
+- `x::AbstractVector`
 - `method::Symbol=iqr`: methods: `:iqr` (interquartile range), `:z` (z-score) or `:g` (Grubbs test)
 
 # Returns
 
 - `o::Vector{Bool}`: index of outliers
 """
-function outlier_detect(x::Vector{<:Real}; method::Symbol=:iqr)
+function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
     method in [:iqr, :z, :g] || throw(ArgumentError("method must be :iqr, :z or :g."))
 
     o = zeros(Bool, length(x))
@@ -227,8 +228,8 @@ Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on
 
 # Arguments
 
-- `seg1::Array{Float64, 3}`
-- `seg2::Array{Float64, 3}`
+- `seg1::AbstractArray`
+- `seg2::AbstractArray`
 - `paired::Bool`
 - `alpha::Float64=0.05`: confidence level
 - `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
@@ -244,7 +245,7 @@ Named tuple containing:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_cmp(seg1::Array{Float64, 3}, seg2::Array{Float64, 3}; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto)
+function seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto)
 
     type in [:auto, :p, :np] || throw(ArgumentError("type must be :auto, :p or :np."))
     paired == true && size(seg1) != size(seg2) && throw(ArgumentError("For paired test both segments must have the same size."))
