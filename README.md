@@ -150,7 +150,6 @@ na_plugins_update()
 
 ## Known bugs
 
-- ignore non-eeg channels for processing, analysis and plotting; currently NeuroAnalyzer does not analyze/process/plot EEG containing non-eeg channels, you have to manually extract these to another EEG object 
 - check for wrong epoch number in plots
 
 ## What's next
@@ -208,6 +207,7 @@ EEG:
 - io: more import formats
 - misc: reports in .md format
 - misc: update tutorial.md
+- plots: simplify plotting functions (PSD, spectrogram, etc.) - remove epoch markers, plot one epoch
 - plots: show events/markers on plots
 - plots: show annotations on plots
 - plots: eeg_plot_signal*() separate plots for non-EEG/MEG channels (different units, ylim)

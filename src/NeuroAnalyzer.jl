@@ -105,7 +105,7 @@ export s_msci95
 export s2_mean
 export s2_difference
 export s_acov
-export s_xcov
+export s2_xcov
 export s_spectrum
 export s_total_power
 export s_band_power
@@ -147,10 +147,10 @@ export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
 export s_wdenoise
-export s_ispc
+export s2_ispc
 export s_itpc
-export s_pli
-export s_ged
+export s2_pli
+export s2_ged
 export s_frqinst
 export s_hspectrum
 export t2f
@@ -179,8 +179,8 @@ export s_normalize_gauss
 export s_cbp
 export s_specseg
 export s_denoise_wien
-export s_cps
-export s_phdiff
+export s2_cps
+export s2_phdiff
 export s_normalize_log10
 export s_normalize_neglog
 export s_normalize_neglog10
@@ -203,7 +203,6 @@ export seg_cmp
 include("eeg_io.jl")
 export eeg_export_csv
 export eeg_import_edf
-export eeg_import_edfplus
 export eeg_import_bdf
 export eeg_import_ced
 export eeg_import_locs
@@ -300,6 +299,7 @@ export eeg_delete_annotation
 export eeg_delete_annotation!
 export eeg_add_annotation
 export eeg_add_annotation!
+export eeg_channel_idx
 
 include("eeg_process.jl")
 export eeg_reference_ch

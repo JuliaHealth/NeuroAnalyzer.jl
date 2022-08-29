@@ -170,7 +170,6 @@ eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=f
 eeg_save_electrodes(locs::DataFrame; file_name::String, overwrite::Bool=false)
 eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
-eeg_import_edfplus(file_name::String; clean_labels::Bool=true)
 eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 ```
 

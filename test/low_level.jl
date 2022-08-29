@@ -37,7 +37,7 @@ using Test
 @test s2_mean(ones(4), zeros(4)) == (1.0, 0.0, 1.0, 1.0)
 @test length(s2_difference(ones(4), zeros(4))) == 3
 @test s_acov(ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
-@test s_xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
+@test s2_xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
 @test s_spectrum(ones(4)) == (s_fft = ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amplitudes = [2.0, 0.0, 0.0, 0.0], s_powers = [4.0, 0.0, 0.0, 0.0], s_phases = [0.0, 0.0, 0.0, 0.0])
 @test s_total_power(ones(4), fs=10) == 0.0
 @test s_band_power(ones(4), fs=10, f=(1,2)) == 0.0
@@ -84,10 +84,10 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test length(s_wdenoise(rand(100))) == 100
-@test s_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
+@test s2_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test s_itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-@test s_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
-@test length(s_ged(ones(10, 10), zeros(10, 10))) == 3
+@test s2_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
+@test length(s2_ged(ones(10, 10), zeros(10, 10))) == 3
 @test s_frqinst(ones(10), fs=10) == zeros(10)
 @test length(s_fftdenoise(rand(10))) == 10
 @test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
@@ -116,9 +116,9 @@ sp, sf, st = s_spectrogram(rand(2560), fs=256)
 segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
 @test size(segp) == (101, 11)
 @test size(s_denoise_wien(ones(2, 4, 1))) == (2, 4, 1)
-p, _, _ = s_cps(zeros(100), ones(100), fs=10)
+p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
-@test s_phdiff(ones(100), zeros(100)) == zeros(100)
+@test s2_phdiff(ones(100), zeros(100)) == zeros(100)
 @test round.(s_normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
 @test round.(s_normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
 @test round.(s_normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]

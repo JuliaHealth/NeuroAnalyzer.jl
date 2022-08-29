@@ -2993,7 +2993,7 @@ Named tuple containing:
 eeg_import_edf(file_name; clean_labels)
 ```
 
-Load EDF file and return and `NeuroAnalyzer.EEG` object.
+Load EDF/EDF+ file and return and `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
@@ -3012,7 +3012,9 @@ Load EDF file and return and `NeuroAnalyzer.EEG` object.
 
 **Source**
 
-Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
+1. Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3.
+2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
+3. https://www.edfplus.info/specs/
 
 <a id='NeuroAnalyzer.eeg_import_ced-Tuple{String}' href='#NeuroAnalyzer.eeg_import_ced-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_ced`** &mdash; *Method*.
@@ -3347,37 +3349,6 @@ Electrode locations:
   * `eeg::NeuroAnalyzer.EEG`
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_edfplus-Tuple{String}' href='#NeuroAnalyzer.eeg_import_edfplus-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_edfplus`** &mdash; *Method*.
-
-
-
-```julia
-eeg_import_edfplus(file_name; clean_labels)
-```
-
-Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
-
-**Arguments**
-
-  * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
-
-**Returns**
-
-  * `eeg:EEG`
-
-**Notes**
-
-  * sampling_rate = n.samples / data.record.duration
-  * gain = (physical*maximum - physical*minimum) / (digital*maximum - digital*minimum)
-  * value = (value - digital*minimum ) * gain + physical*minimum
-
-**Source**
-
-1. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
-2. https://www.edfplus.info/specs/
-
 <a id='NeuroAnalyzer.eeg_import_bdf-Tuple{String}' href='#NeuroAnalyzer.eeg_import_bdf-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_bdf`** &mdash; *Method*.
 
@@ -3387,7 +3358,7 @@ Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
 eeg_import_bdf(file_name; clean_labels)
 ```
 
-Load BDF file and return and `NeuroAnalyzer.EEG` object.
+Load BDF/BDF+ file and return and `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 

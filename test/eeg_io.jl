@@ -1,7 +1,7 @@
 using NeuroAnalyzer
 using Test
 
-bdf = eeg_import_edf("eeg-test-bdf.bdf")
+bdf = eeg_import_bdf("eeg-test-bdf.bdf")
 @test typeof(bdf) == NeuroAnalyzer.EEG
 edf = eeg_import_edf("eeg-test-edfplus.edf")
 @test typeof(edf) == NeuroAnalyzer.EEG
@@ -18,7 +18,7 @@ eeg_delete_channel!(edf, channel=18)
 a1 = eeg_extract_channel(edf, channel=17)
 eeg_delete_channel!(edf, channel=17)
 
-@test edf.eeg_header[:version] == 0
+@test edf.eeg_header[:eeg_filetype] == "EDF"
 @test edf.eeg_header[:channel_n] == 19
 @test edf.eeg_header[:channel_locations] == false
 @test edf.eeg_header[:channel_locations] == false

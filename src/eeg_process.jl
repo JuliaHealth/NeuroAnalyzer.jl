@@ -611,9 +611,10 @@ Named tuple containing:
 """
 function eeg_pca(eeg::NeuroAnalyzer.EEG; n::Int64)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
 
-    pc, pc_var, pc_m = s_pca(eeg.eeg_signals, n=n)
+    pc, pc_var, pc_m = s_pca(signal, n=n)
 
     return (pc=pc, pc_var=pc_var, pc_m=pc_m)
 end

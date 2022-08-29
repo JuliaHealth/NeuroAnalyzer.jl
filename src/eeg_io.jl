@@ -1,7 +1,7 @@
 """
     eeg_import_edf(file_name; clean_labels)
 
-Load EDF file and return and `NeuroAnalyzer.EEG` object.
+Load EDF/EDF+ file and return and `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
@@ -20,7 +20,9 @@ Load EDF file and return and `NeuroAnalyzer.EEG` object.
 
 # Source
 
-Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
+1. Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
+2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
+3. https://www.edfplus.info/specs/
 """
 function eeg_import_edf(file_name::String; clean_labels::Bool=true)
 
@@ -41,9 +43,9 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
     recording_date = header[169:176]
     recording_time = header[177:184]
     data_offset = parse(Int, strip(header[185:192]))
-    reserved  = strip(header[193:236])
-    reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet."))
-    reserved == "EDF+C" && throw(ArgumentError("Use eeg_import_edfplus() for EDF+C file."))
+    reserved = strip(header[193:236])
+    reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported."))
+    reserved == "EDF+C" && (eeg_filetype = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
     channel_n  = parse(Int, strip(header[253:256]))
@@ -132,43 +134,71 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
 
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
-    has_annotations = false
-    eeg_annotations = DataFrame(id=[""], time=[""], description=[""])
+    if eeg_filetype == "EDF"
+        has_annotations = false
+        eeg_annotations = DataFrame(id=[""], time=[""], description=[""])
+        annotations_channel = -1
+    else
+        has_annotations, annotations_channel = _has_annotations(channel_type)
+        annotations = repeat([""], data_records)
+    end
 
     fid = open(file_name)
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
-
     for idx1 in 1:data_records
         for idx2 in 1:channel_n
-            signal = zeros(UInt8, samples_per_datarecord[idx2] * 2);
-            readbytes!(fid, signal, samples_per_datarecord[idx2] * 2);
-            signal = map(ltoh, reinterpret(Int16, signal));
-            if channel_type[idx2] == "markers"
-                for idx3 in 1:length(signal)
-                    if signal[idx3] == digital_minimum[idx2]
-                        signal[idx3] = 0
+            signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
+            readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
+            if idx2 != annotations_channel
+                signal = map(ltoh, reinterpret(Int16, signal))
+                if channel_type[idx2] == "markers"
+                    for idx3 in 1:length(signal)
+                        if signal[idx3] == digital_minimum[idx2]
+                            signal[idx3] = 0
+                        else
+                            signal[idx3] = 1
+                        end
+                    end
+                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
+                elseif channel_type[idx2] == "events"
+                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
+                else
+                    if occursin("uV", physical_dimension[idx2]) 
+                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
+                    elseif occursin("mV", physical_dimension[idx2])
+                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
                     else
-                        signal[idx3] = 1
+                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
                     end
                 end
-                eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-            elseif channel_type[idx2] == "events"
-                eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
             else
-                if occursin("uV", physical_dimension[idx2]) 
-                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                elseif occursin("mV", physical_dimension[idx2])
-                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
-                else
-                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                end
+                annotations[idx1] = String(Char.(signal))
             end
         end
     end
-
     close(fid)
+
+    if has_annotations
+        eeg_signals = eeg_signals[1:(end - 1), :, :]
+        deleteat!(labels, channel_n)
+        deleteat!(channel_type, channel_n)
+        deleteat!(transducers, channel_n)
+        deleteat!(physical_dimension, channel_n)
+        deleteat!(physical_minimum, channel_n)
+        deleteat!(physical_maximum, channel_n)
+        deleteat!(digital_minimum, channel_n)
+        deleteat!(digital_maximum, channel_n)
+        deleteat!(prefiltering, channel_n)
+        deleteat!(samples_per_datarecord, channel_n)
+        deleteat!(gain, channel_n)
+        deleteat!(sampling_rate, channel_n)
+        channel_n -= 1
+        eeg_annotations = _a2df(annotations)
+    else
+        eeg_annotations = DataFrame(id=[""], time=[""], description=[""])
+    end
 
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]
@@ -177,7 +207,11 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    eeg_header = Dict(:eeg_filename => file_name,
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
                       :patient => string(patient),
@@ -977,265 +1011,9 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
  end
 
 """
-    eeg_import_edfplus(file_name; clean_labels)
-
-Load EDF/EDFPlus file and return and `NeuroAnalyzer.EEG` object.
-
-# Arguments
-
-- `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels
-
-# Returns
-
-- `eeg:EEG`
-
-# Notes
-
-- sampling_rate = n.samples / data.record.duration
-- gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-- value = (value - digital_minimum ) * gain + physical_minimum
-
-# Source
-
-1. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
-2. https://www.edfplus.info/specs/
-"""
-function eeg_import_edfplus(file_name::String; clean_labels::Bool=true)
-
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".edf" || throw(ArgumentError("File $file_name is not a EDF file."))
-
-    fid = open(file_name)
-
-    eeg_filetype = ""
-
-    header = zeros(UInt8, 256)
-    readbytes!(fid, header, 256)
-    header = String(Char.(header))
-
-    version = parse(Int, strip(header[1:8]))
-    version == 0 && (eeg_filetype = "EDF")
-    eeg_filetype !== "EDF" && throw(ArgumentError("File is not a EDF file."))
-
-    patient = strip(header[9:88])
-    recording = strip(header[89:168])
-    recording_date = header[169:176]
-    recording_time = header[177:184]
-    data_offset = parse(Int, strip(header[185:192]))
-    reserved = strip(header[193:236])
-    reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet."))
-    (reserved == "EDF+C" && eeg_filetype == "EDF") && (eeg_filetype = "EDF+")
-    data_records = parse(Int, strip(header[237:244]))
-    data_records_duration  = parse(Float64, strip(header[245:252]))
-    channel_n  = parse(Int, strip(header[253:256]))
-
-    labels = Vector{String}(undef, channel_n)
-    transducers = Vector{String}(undef, channel_n)
-    physical_dimension = Vector{String}(undef, channel_n)
-    physical_minimum = Vector{Float64}(undef, channel_n)
-    physical_maximum = Vector{Float64}(undef, channel_n)
-    digital_minimum = Vector{Float64}(undef, channel_n)
-    digital_maximum = Vector{Float64}(undef, channel_n)
-    prefiltering = Vector{String}(undef, channel_n)
-    samples_per_datarecord = Vector{Int64}(undef, channel_n)
-
-    header = zeros(UInt8, channel_n * 16)
-    readbytes!(fid, header, channel_n * 16)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        labels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
-    end
-
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
-
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
-    end
-
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
-    header = String(Char.(header))
-    for idx in 1:channel_n
-        samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
-    end
-
-    close(fid)
-
-    sampling_rate = Vector{Float64}(undef, channel_n)
-    gain = Vector{Float64}(undef, channel_n)
-    for idx in 1:channel_n
-        sampling_rate[idx] = samples_per_datarecord[idx] / data_records_duration
-        gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
-    end
-
-    clean_labels == true && (labels = _clean_labels(labels))
-    channel_type = _set_channel_types(labels)
-    has_annotations, annotations_channel = _has_annotations(channel_type)
-
-    fid = open(file_name)
-    header = zeros(UInt8, data_offset)
-    readbytes!(fid, header, data_offset)
-    eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
-    annotations = repeat([""], data_records)
-    for idx1 in 1:data_records
-        for idx2 in 1:channel_n
-            signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
-            readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
-            if idx2 != annotations_channel
-                signal = map(ltoh, reinterpret(Int16, signal))
-                # eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = @. (signal - digital_minimum[idx2]) * gain[idx2] + physical_minimum[idx2]
-                if channel_type[idx2] == "markers"
-                    for idx3 in 1:length(signal)
-                        if signal[idx3] == digital_minimum[idx2]
-                            signal[idx3] = 0
-                        else
-                            signal[idx3] = 1
-                        end
-                    end
-                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                elseif channel_type[idx2] == "events"
-                    eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
-                else
-                    if occursin("uV", physical_dimension[idx2]) 
-                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    elseif occursin("mV", physical_dimension[idx2])
-                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
-                    else
-                        eeg_signals[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    end
-                end
-            else
-                annotations[idx1] = String(Char.(signal))
-            end
-        end
-    end
-    close(fid)
-
-    if has_annotations
-        eeg_signals = eeg_signals[1:(end - 1), :, :]
-        deleteat!(labels, channel_n)
-        deleteat!(channel_type, channel_n)
-        deleteat!(transducers, channel_n)
-        deleteat!(physical_dimension, channel_n)
-        deleteat!(physical_minimum, channel_n)
-        deleteat!(physical_maximum, channel_n)
-        deleteat!(digital_minimum, channel_n)
-        deleteat!(digital_maximum, channel_n)
-        deleteat!(prefiltering, channel_n)
-        deleteat!(samples_per_datarecord, channel_n)
-        deleteat!(gain, channel_n)
-        deleteat!(sampling_rate, channel_n)
-        channel_n -= 1
-        eeg_annotations = _a2df(annotations)
-    else
-        eeg_annotations = DataFrame(id=[""], time=[""], description=[""])
-    end
-
-    eeg_duration_samples = size(eeg_signals, 2)
-    eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]
-    eeg_time = collect(0:(1 / sampling_rate[1]):eeg_duration_seconds)
-    eeg_time = eeg_time[1:end - 1]
-    sampling_rate = round.(Int64, sampling_rate)
-    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
-
-    eeg_header = Dict(:eeg_filename => file_name,
-                      :eeg_filesize_mb => eeg_filesize_mb,
-                      :eeg_filetype => eeg_filetype,
-                      :patient => string(patient),
-                      :recording => string(recording),
-                      :recording_date => recording_date,
-                      :recording_time => recording_time,
-                      :data_records => data_records,
-                      :data_records_duration => data_records_duration,
-                      :channel_n => channel_n,
-                      :channel_type => channel_type,
-                      :reference => "",
-                      :channel_locations => false,
-                      :loc_theta => zeros(channel_n),
-                      :loc_radius => zeros(channel_n),
-                      :loc_x => zeros(channel_n),
-                      :loc_y => zeros(channel_n),
-                      :loc_z => zeros(channel_n),
-                      :loc_radius_sph => zeros(channel_n),
-                      :loc_theta_sph => zeros(channel_n),
-                      :loc_phi_sph => zeros(channel_n),
-                      :history => String[],
-                      :components => Symbol[],
-                      :eeg_duration_samples => eeg_duration_samples,
-                      :eeg_duration_seconds => eeg_duration_seconds,
-                      :epoch_n => 1,
-                      :epoch_duration_samples => eeg_duration_samples,
-                      :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels,
-                      :transducers => transducers,
-                      :physical_dimension => physical_dimension,
-                      :physical_minimum => physical_minimum,
-                      :physical_maximum => physical_maximum,
-                      :digital_minimum => digital_minimum,
-                      :digital_maximum => digital_maximum,
-                      :prefiltering => prefiltering,
-                      :samples_per_datarecord => samples_per_datarecord,
-                      :sampling_rate => sampling_rate,
-                      :gain => gain,
-                      :note => "",
-                      :annotations => has_annotations)
-
-    eeg_components = Vector{Any}()
-    eeg_epochs_time = eeg_time
-
-    eeg = EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_annotations)
-
-    return eeg
-end
-
-"""
     eeg_import_bdf(file_name; clean_labels)
 
-Load BDF file and return and `NeuroAnalyzer.EEG` object.
+Load BDF/BDF+ file and return and `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
@@ -1259,20 +1037,16 @@ https://www.biosemi.com/faq/file_format.htm
 function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    splitext(file_name)[2] == ".bdf" || throw(ArgumentError("File $file_name is not a BDF file."))
-
-    fid = open(file_name)
 
     eeg_filetype = ""
-
+    fid = open(file_name)
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
 
-    version = Int(header[1])
-    version == 255 && (eeg_filetype = "BDF")
-    ftype = strip(header[3:9])
-    (eeg_filetype !== "BDF" && ftype !== "BIOSEMI") && throw(ArgumentError("File is not a BDF file."))
+    eeg_filetype = Int(header[1])
+    eeg_filetype == 255 && (eeg_filetype = "BDF")
+    (eeg_filetype !== "BDF" && strip(header[3:9]) !== "BIOSEMI") && throw(ArgumentError("File $file_name is not a BDF file."))
 
     patient = strip(header[10:89])
     recording = strip(header[90:169])
@@ -1281,6 +1055,7 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
     data_offset = parse(Int, strip(header[186:192]))
     reserved  = strip(header[193:236])
     reserved == "BDF+D" && throw(ArgumentError("BDF+D format (interrupted recordings) is not supported yet."))
+    reserved == "BDF+C" && (eeg_filetype = "BDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
     channel_n  = parse(Int, strip(header[253:256]))
@@ -1441,7 +1216,11 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
     sampling_rate = round.(Int64, sampling_rate)
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    eeg_header = Dict(:eeg_filename => file_name,
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
                       :patient => string(patient),

@@ -1117,7 +1117,7 @@ function s_acov(signal::AbstractArray; lag::Int64=1, demean::Bool=false, norm::B
 end
 
 """
-   s_xcov(signal1, signal2; lag=1, demean=false, norm=false)
+   s2_xcov(signal1, signal2; lag=1, demean=false, norm=false)
 
 Calculate cross-covariance between `signal1` and `signal2`.
 
@@ -1134,7 +1134,7 @@ Calculate cross-covariance between `signal1` and `signal2`.
 - `ccov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function s_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function s2_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
@@ -2083,7 +2083,7 @@ Calculate `n` first PCs for `signal`.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `n::Int64`: number of PCs
 
 # Returns
@@ -2092,7 +2092,7 @@ Calculate `n` first PCs for `signal`.
 - `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
 - `pc_m::PCA{Float64}`: PC mean
 """
-function s_pca(signal::Array{Float64, 3}; n::Int64)
+function s_pca(signal::AbstractArray; n::Int64)
 
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of PCs must be ≤ $(size(signal, 1))."))
@@ -2142,7 +2142,7 @@ Reconstructs `signal` using PCA components.
 
 # Arguments
 
-- `signal::Array{Float64, 3}`
+- `signal::AbstractArray`
 - `pc::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 - `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
 
@@ -2150,7 +2150,7 @@ Reconstructs `signal` using PCA components.
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function s_pca_reconstruct(signal::Array{Float64, 3}; pc::Array{Float64, 3}, pc_m::PCA{Float64})
+function s_pca_reconstruct(signal::AbstractArray; pc::Array{Float64, 3}, pc_m::PCA{Float64})
 
     s_reconstructed = zeros(size(signal))
 
@@ -2558,7 +2558,7 @@ function s_wdenoise(signal::AbstractArray; wt::Symbol=:db4)
 end
 
 """
-    s_ispc(signal1, signal2)
+    s2_ispc(signal1, signal2)
 
 Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 
@@ -2577,7 +2577,7 @@ Named tuple containing:
 - `s1_phase::Vector{Float64}`: signal 1 phase
 - `s2_phase::Vector{Float64}`: signal 2 phase
 """
-function s_ispc(signal1::AbstractArray, signal2::AbstractArray)
+function s2_ispc(signal1::AbstractArray, signal2::AbstractArray)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -2638,7 +2638,7 @@ function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothin
 end
 
 """
-    s_pli(signal1, signal2)
+    s2_pli(signal1, signal2)
 
 Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
 
@@ -2656,7 +2656,7 @@ Named tuple containing:
 - `s1_phase::Vector{Float64}`: signal 1 phase
 - `s2_phase::Vector{Float64}`: signal 2 phase
 """
-function s_pli(signal1::AbstractArray, signal2::AbstractArray)
+function s2_pli(signal1::AbstractArray, signal2::AbstractArray)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -2672,7 +2672,7 @@ function s_pli(signal1::AbstractArray, signal2::AbstractArray)
 end
 
 """
-    s_ged(signal1, signal2)
+    s2_ged(signal1, signal2)
 
 Perform generalized eigendecomposition between `signal1` and `signal2`.
 
@@ -2688,7 +2688,7 @@ Named tuple containing:
 - `ress::AbstractArray`
 - `ress_normalized::AbstractArray`: RESS normalized to -1..1
 """
-function s_ged(signal1::AbstractArray, signal2::AbstractArray)
+function s2_ged(signal1::AbstractArray, signal2::AbstractArray)
 
     size(signal1) == size(signal2) || throw(ArgumentError("signal1 and signal2 must have the same size."))
 
@@ -3697,7 +3697,7 @@ function s_denoise_wien(signal::AbstractArray)
 end
 
 """
-    s_cps(signal1, signal2; fs, norm)
+    s2_cps(signal1, signal2; fs, norm)
 
 Calculate cross power spectrum between `signal1` and `signal2`.
 
@@ -3715,7 +3715,7 @@ Named tuple containing:
 - `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
 - `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 """
-function s_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
+function s2_cps(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, norm::Bool=true)
 
     s = hcat(signal1, signal2)'
     p = mt_cross_power_spectra(s, fs=fs)
@@ -3743,7 +3743,7 @@ Calculate phase difference between signals.
 Named tuple containing:
 - `ph_diff::Vector{Float64}`: phase differences in radians
 """
-function s_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
+function s2_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
 
     if h
         _, _, _, ph1 = s_hspectrum(signal1)

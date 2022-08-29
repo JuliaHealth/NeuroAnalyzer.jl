@@ -746,7 +746,7 @@ Return number of `eeg` channels of `type`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
+- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
 
 # Returns
 
@@ -832,10 +832,11 @@ Show info.
 """
 function eeg_info(eeg::NeuroAnalyzer.EEG)
 
-    println("          EEG file name: $(eeg.eeg_header[:eeg_filename])")
-    println("        EEG file format: $(eeg.eeg_header[:eeg_filetype])")
-    println("          EEG size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
-    println("   EEG memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
+    println("            Signal type: $(uppercase(eeg.eeg_header[:signal_type]))")
+    println("              File name: $(eeg.eeg_header[:eeg_filename])")
+    println("            File format: $(eeg.eeg_header[:eeg_filetype])")
+    println("         File size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
+    println("       Memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
     println("     Sampling rate (Hz): $(eeg_sr(eeg))")
     if eeg.eeg_header[:annotations] == false
         println("            Annotations: no")
@@ -877,9 +878,9 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
     else
         println("             Components: no")
     end
-    println("               Channels:")
+    println("Channels:")
     for idx in 1:length(eeg.eeg_header[:labels])
-        println("                channel: $idx\tlabel: $(rpad(eeg.eeg_header[:labels][idx], 16, " "))\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
+        println("\tchannel: $idx\tlabel: $(rpad(eeg.eeg_header[:labels][idx], 16, " "))\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
     end
 end
 
@@ -1424,36 +1425,39 @@ Detect bad `eeg` epochs based on:
 """
 function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
 
     for idx in method
         idx in [:flat, :rmse, :rmsd, :euclid, :p2p] || throw(ArgumentError("method must be :flat, :rmse, :rmsd, :euclid, :p2p"))
     end
 
-    bad_epochs_idx = zeros(Int64, eeg_epoch_n(eeg))
+    bad_epochs_idx = zeros(Int64, epoch_n)
 
     if :flat in method
-        bad_epochs = s_detect_epoch_flat(eeg.eeg_signals)
+        bad_epochs = s_detect_epoch_flat(signal)
         bad_epochs_idx[bad_epochs .> ch_t] .= 1
     end
 
     if :rmse in method
-        bad_epochs = s_detect_epoch_rmse(eeg.eeg_signals)
+        bad_epochs = s_detect_epoch_rmse(signal)
         bad_epochs_idx[bad_epochs .> ch_t] .= 1
     end
 
     if :rmsd in method
-        bad_epochs = s_detect_epoch_rmsd(eeg.eeg_signals)
+        bad_epochs = s_detect_epoch_rmsd(signal)
         bad_epochs_idx[bad_epochs .> ch_t] .= 1
     end
 
     if :euclid in method
-        bad_epochs = s_detect_epoch_euclid(eeg.eeg_signals)
+        bad_epochs = s_detect_epoch_euclid(signal)
         bad_epochs_idx[bad_epochs .> ch_t] .= 1
     end
 
     if :p2p in method
-        bad_epochs = s_detect_epoch_p2p(eeg.eeg_signals)
+        bad_epochs = s_detect_epoch_p2p(signal)
         bad_epochs_idx[bad_epochs .> ch_t] .= 1
     end
 
@@ -1866,7 +1870,6 @@ Interpolate `eeg` channel using planar interpolation.
 """
 function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG)."))
     m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     for idx in 1:length(channel)
@@ -1874,12 +1877,15 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     end
     typeof(channel) == Vector{Int64} && sort!(channel, rev=true)
 
-    eeg_tmp = eeg_delete_channel(eeg, channel=channel).eeg_signals
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    _check_channel(channels, channel)
+    eeg_tmp = eeg_keep_channel(eeg, channel=channels)
+    eeg_delete_channel!(eeg, channel=channel).eeg_signals
     eeg_new = deepcopy(eeg)
 
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
-    for idx in 1:eeg_channel_n(eeg)
+    loc_x = zeros(channel_n)
+    loc_y = zeros(channel_n)
+    for idx in 1:channel_n
         loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx],
                                           eeg.eeg_header[:loc_radius][idx])
     end
@@ -2642,4 +2648,27 @@ function eeg_add_annotation!(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
     sort!(eeg.eeg_annotations)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_add_annotation!(EEG; onset=$onset, event=$event)")
+end
+
+"""
+    eeg_channel_idx(eeg; type=:eeg)
+
+Return index of `eeg` channels of `type`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+
+# Returns
+
+- `channel_n::Int64`
+"""
+function eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
+
+    channel_idx = Vector{Int64}()
+    for idx in 1:size(eeg.eeg_signals, 1)
+        eeg.eeg_header[:channel_type][idx] == string(type) && (push!(channel_idx, idx))
+    end
+    return channel_idx
 end
