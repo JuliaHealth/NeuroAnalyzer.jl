@@ -134,6 +134,12 @@ Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/Adam
 
 Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
 
+## Performance
+
+Due to the nature of Julia JIT (just-in-time compiler), first run of functions is slow. Also, due to modules precompilation, NA startup may take some time.
+
+Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchrmarking.md).
+
 ## Plugins (extensions)
 
 Plugins are git repositories, default location is `~/Documents/NeuroAnalyzer/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeuroAnalyzerJ.jl file.

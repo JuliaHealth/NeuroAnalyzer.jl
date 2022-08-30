@@ -1123,6 +1123,11 @@ Plot `eeg` channels: mean and ±95% CI.
 function eeg_plot_signal_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
 
     typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg() channel must contain ≥ 2 channels."))
+
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_copy = deepcopy(eeg)
+    eeg_keep_channel!(eeg, channel=channels)
+ 
     eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
     ylim = _tuple_max(ylim)
@@ -1208,6 +1213,8 @@ function eeg_plot_signal_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstrac
     end
 
     Plots.plot(p)
+
+    eeg = deepcopy(eeg_copy)
 
     return p
 end
@@ -2069,7 +2076,7 @@ function plot_psd_avg(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Boo
         s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
     end
     s_pow = s_pow[:, :, 1]
-    s_frq = s_frq[:, :, 1]
+    # s_frq = s_frq[:, :, 1]
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
 
     s_pow_m, s_pow_s, s_pow_u, s_pow_l = s_msci95(s_pow)
@@ -2199,7 +2206,7 @@ function plot_psd_butterfly(signal::AbstractArray; fs::Int64, norm::Bool=true, m
         s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
     end
     s_pow = s_pow[:, :, 1]
-    s_frq = s_frq[:, :, 1]
+    # s_frq = s_frq[:, :, 1]
     frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
 
     if labels == [""]
@@ -6229,9 +6236,9 @@ function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     s_frq = zeros(length(f_tmp))
     for channel_idx in 1:channel_n
         if mw == false
-            s_pow[channel_idx, :], s_frq = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
+            s_pow[channel_idx, :], s_frq = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
         else
-            s_pow[channel_idx, :], s_frq = @views s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow[channel_idx, :], s_frq = s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
         end
     end
 
@@ -6449,9 +6456,9 @@ function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::B
     s_frq = zeros(length(f_tmp))
     for channel_idx in 1:channel_n
         if mw == false
-                s_pow[channel_idx, :], s_frq = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
+                s_pow[channel_idx, :], s_frq = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
         else
-            s_pow[channel_idx, :], s_frq = @views s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
+            s_pow[channel_idx, :], s_frq = s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
         end
     end
 
@@ -6948,7 +6955,7 @@ function eeg_plot_signal_psd_topomap(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64,
     hidedecorations!(fig_axis, grid=true, ticks=true)
 
     for channel_idx in channel
-        s = @view signal[channel_idx, :, 1]
+        s = signal[channel_idx, :, 1]
         if ref === :abs
             p = plot_psd(s,
                          fs=fs,

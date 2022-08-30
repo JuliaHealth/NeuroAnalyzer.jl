@@ -1881,7 +1881,7 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     _check_channels(channels, channel)
     eeg_tmp = eeg_keep_channel(eeg, channel=channels)
     eeg_tmp = eeg_delete_channel(eeg_tmp, channel=channel).eeg_signals
-    channel_n = size(eeg_tmp, 1)
+    channel_n = eeg_channel_n(eeg)
     eeg_new = deepcopy(eeg)
 
     loc_x = zeros(channel_n)

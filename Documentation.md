@@ -655,7 +655,7 @@ Calculate RMSE between `signal1` and `signal2`.
 
   * `r::Float64`
 
-<a id='NeuroAnalyzer.m_norm-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.m_norm-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.m_norm-Tuple{AbstractArray}' href='#NeuroAnalyzer.m_norm-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.m_norm`** &mdash; *Method*.
 
 
@@ -668,13 +668,13 @@ Normalize matrix `m`.
 
 **Arguments**
 
-  * `m::Matrix{Float64}`
+  * `m::AbstractArray`
 
 **Returns**
 
-  * `m_norm::Matrix{Float64}`
+  * `m_norm::AbstractArray`
 
-<a id='NeuroAnalyzer.s_cov-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cov-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_cov-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_cov-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_cov`** &mdash; *Method*.
 
 
@@ -685,14 +685,14 @@ Calculate covariance between all channels of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `norm::Bool`: normalize covariance
 
 **Returns**
 
   * `cov_mat::Matrix{Float64}`
 
-<a id='NeuroAnalyzer.s2_cov-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_cov-Tuple{AbstractArray, AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s2_cov-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_cov-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s2_cov`** &mdash; *Method*.
 
 
@@ -703,15 +703,15 @@ Calculate covariance between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
   * `norm::Bool`: normalize covariance
 
 **Returns**
 
   * `cov_mat::Matrix{Float64}`
 
-<a id='NeuroAnalyzer.s_dft-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_dft-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_dft-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_dft-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_dft`** &mdash; *Method*.
 
 
@@ -724,7 +724,7 @@ Return FFT and DFT sample frequencies for a DFT for the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
 
 **Returns**
@@ -832,7 +832,7 @@ Named tuple containing:
   * `s_stat_single::Float64`
   * `p::Float64`
 
-<a id='NeuroAnalyzer.s_acov-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_acov-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_acov-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_acov-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_acov`** &mdash; *Method*.
 
 
@@ -843,7 +843,7 @@ Calculate autocovariance of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean `signal` prior to calculations
   * `norm::Bool=false`: normalize autocovariance
@@ -853,19 +853,19 @@ Calculate autocovariance of the `signal`.
   * `acov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroAnalyzer.s_xcov-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s_xcov-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroAnalyzer.s_xcov`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_xcov-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_xcov-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_xcov`** &mdash; *Method*.
 
 
 
-s_xcov(signal1, signal2; lag=1, demean=false, norm=false)
+s2_xcov(signal1, signal2; lag=1, demean=false, norm=false)
 
 Calculate cross-covariance between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
   * `lag::Int64`: lags range is `-lag:lag`
   * `demean::Bool`: demean signal prior to analysis
   * `norm::Bool`: normalize cross-covariance
@@ -875,7 +875,7 @@ Calculate cross-covariance between `signal1` and `signal2`.
   * `ccov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_spectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_spectrum-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_spectrum`** &mdash; *Method*.
 
 
@@ -888,7 +888,7 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 **Returns**
@@ -900,7 +900,7 @@ Named tuple containing:
   * `s_powers::Vector{Float64}`
   * `s_phases::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_total_power-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_total_power-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_total_power-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_total_power-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_total_power`** &mdash; *Method*.
 
 
@@ -913,7 +913,7 @@ Calculate `signal` total power.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -921,7 +921,7 @@ Calculate `signal` total power.
 
   * `stp::Float64`: signal total power
 
-<a id='NeuroAnalyzer.s_band_power-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_band_power-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_band_power-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_band_power-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_band_power`** &mdash; *Method*.
 
 
@@ -934,7 +934,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
@@ -942,7 +942,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 
   * `sbp::Float64`: signal band power
 
-<a id='NeuroAnalyzer.s_taper-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_taper-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_taper-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_taper-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_taper`** &mdash; *Method*.
 
 
@@ -955,14 +955,14 @@ Taper the `signal` with `taper`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `taper::Union{AbstractVector, Vector{ComplexF64}}`
 
 **Returns**
 
   * `s_tapered::Vector{Union{Float64, ComplexF64}}`
 
-<a id='NeuroAnalyzer.s_detrend-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detrend-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_detrend-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_detrend-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_detrend`** &mdash; *Method*.
 
 
@@ -975,7 +975,7 @@ Perform piecewise detrending of `eeg`.
 
 **Arguments**
 
-  * `eeg::NeuroAnalyzer.EEG`
+  * `signal::AbstractVector`
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -993,7 +993,7 @@ Perform piecewise detrending of `eeg`.
 
   * `s_det::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_demean-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_demean-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_demean-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_demean-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_demean`** &mdash; *Method*.
 
 
@@ -1006,7 +1006,7 @@ Remove mean value (DC offset) from the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
@@ -1048,7 +1048,7 @@ Normalize `signal` in [-1, +1].
 
 **Returns**
 
-  * `s_normalized::Vector{Float64}`
+  * `s_normalized::AbstractArray`
 
 <a id='NeuroAnalyzer.s_normalize_max-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_max-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_normalize_max`** &mdash; *Method*.
@@ -1067,7 +1067,7 @@ Normalize `signal` in [0, +1].
 
 **Returns**
 
-  * `s_normalized::Vector{Float64}`
+  * `s_normalized::AbstractArray`
 
 <a id='NeuroAnalyzer.s_normalize_log-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_log-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_normalize_log`** &mdash; *Method*.
@@ -1086,7 +1086,7 @@ Normalize `signal` using log-transformation.
 
 **Returns**
 
-  * `s_normalized::Vector{Float64}`
+  * `s_normalized::AbstractArray`
 
 <a id='NeuroAnalyzer.s_add_noise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_add_noise-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_add_noise`** &mdash; *Method*.
@@ -1105,9 +1105,9 @@ Adds random noise to the `signal`.
 
 **Returns**
 
-  * `s_noisy::Vector{Float64}`
+  * `s_noisy::AbstractArray`
 
-<a id='NeuroAnalyzer.s_resample-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_resample-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_resample-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_resample-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_resample`** &mdash; *Method*.
 
 
@@ -1120,7 +1120,7 @@ Resample `signal` to `new_sr` sampling frequency.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `t::AbstractRange`: time
   * `new_sr::Int64`: new sampling rate
 
@@ -1129,7 +1129,7 @@ Resample `signal` to `new_sr` sampling frequency.
   * `s_resampled::Vector{Float64}`
   * `t_resampled::AbstractRange`
 
-<a id='NeuroAnalyzer.s_resample-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_resample-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_resample-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_resample-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_resample`** &mdash; *Method*.
 
 
@@ -1142,7 +1142,7 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
   * `t::AbstractRange`
   * `new_sr::Int64`: new sampling rate
 
@@ -1151,7 +1151,7 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
   * `s_downsampled::Array{Float64, 3}`
   * `t_downsampled::AbstractRange`
 
-<a id='NeuroAnalyzer.s_derivative-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_derivative-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_derivative-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_derivative-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_derivative`** &mdash; *Method*.
 
 
@@ -1162,7 +1162,11 @@ s_derivative(signal)
 
 Return derivative of `signal` of the same length.
 
-<a id='NeuroAnalyzer.s_tconv-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_tconv-Tuple{AbstractArray}'>#</a>
+**Arguments**
+
+  * `signal::AbstractVector`
+
+<a id='NeuroAnalyzer.s_tconv-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_tconv-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_tconv`** &mdash; *Method*.
 
 
@@ -1175,14 +1179,14 @@ Performs convolution in the time domain between `signal` and `kernel`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 
 **Returns**
 
   * `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
 
-<a id='NeuroAnalyzer.s_filter-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_filter-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_filter-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_filter-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_filter`** &mdash; *Method*.
 
 
@@ -1195,7 +1199,7 @@ Filter `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -1227,7 +1231,7 @@ Filter `signal`.
 
   * `s_filtered::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_psd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_psd-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_psd-Tuple{Vector{Float64}}' href='#NeuroAnalyzer.s_psd-Tuple{Vector{Float64}}'>#</a>
 **`NeuroAnalyzer.s_psd`** &mdash; *Method*.
 
 
@@ -1240,7 +1244,7 @@ Calculate power spectrum density of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::Vector{Float64}`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1277,7 +1281,7 @@ named tuple containing:
   * `psd_pow::Matrix{Float64}`
   * `psd_frq::Matrix{Float64}`
 
-<a id='NeuroAnalyzer.s_psd-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_psd-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_psd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_psd-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_psd`** &mdash; *Method*.
 
 
@@ -1290,7 +1294,7 @@ Calculate power spectrum density of the `signal`.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -1302,7 +1306,7 @@ Named tuple containing:
   * `psd_pow::Array{Float64, 3}`
   * `psd_frq::Array{Float64, 3}`
 
-<a id='NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_stationarity_hilbert-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_stationarity_hilbert`** &mdash; *Method*.
 
 
@@ -1315,13 +1319,13 @@ Calculate phase stationarity using Hilbert transformation.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
   * `phase_stationarity::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_stationarity_mean-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_stationarity_mean`** &mdash; *Method*.
 
 
@@ -1334,14 +1338,14 @@ Calculate mean stationarity.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `window::Int64`: time window in samples
 
 **Returns**
 
   * `mean_stationarity::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_stationarity_var-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_stationarity_var-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_stationarity_var-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_stationarity_var-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_stationarity_var`** &mdash; *Method*.
 
 
@@ -1354,14 +1358,14 @@ Calculate variance stationarity.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `window::Int64`: time window in samples
 
 **Returns**
 
   * `var_stationarity::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_trim-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_trim-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_trim-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_trim-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_trim`** &mdash; *Method*.
 
 
@@ -1374,7 +1378,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `len::Int64`: trimming length in samples
   * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
   * `from::Symbol[:start, :end]
@@ -1383,7 +1387,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 
   * `s_trimmed::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s2_mi-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_mi-Tuple{AbstractArray, AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s2_mi-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_mi-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s2_mi`** &mdash; *Method*.
 
 
@@ -1396,14 +1400,14 @@ Calculate mutual information between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
   * `mi::Float64`
 
-<a id='NeuroAnalyzer.s_entropy-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_entropy-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_entropy-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_entropy-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_entropy`** &mdash; *Method*.
 
 
@@ -1416,13 +1420,13 @@ Calculate entropy of `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
   * `ent::Float64`
 
-<a id='NeuroAnalyzer.s_negentropy-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_negentropy-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_negentropy-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_negentropy-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_negentropy`** &mdash; *Method*.
 
 
@@ -1435,13 +1439,13 @@ Calculate negentropy of `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
   * `ent::Float64`
 
-<a id='NeuroAnalyzer.s_average-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_average-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_average-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_average-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_average`** &mdash; *Method*.
 
 
@@ -1454,11 +1458,11 @@ Average all channels of `signal`.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
-  * `s_averaged::Array{Float64, 3}`
+  * `s_averaged::AbstractArray`
 
 <a id='NeuroAnalyzer.s2_average-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_average-Tuple{AbstractArray, AbstractArray}'>#</a>
 **`NeuroAnalyzer.s2_average`** &mdash; *Method*.
@@ -1480,7 +1484,7 @@ Averages `signal1` and `signal2`.
 
   * `s_averaged::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s2_tcoherence-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_tcoherence-Tuple{AbstractArray, AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s2_tcoherence-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_tcoherence-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s2_tcoherence`** &mdash; *Method*.
 
 
@@ -1493,8 +1497,8 @@ Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitud
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
@@ -1504,7 +1508,7 @@ Named tuple containing:
   * `msc::Vector{Float64}`: magnitude-squares coherence
   * `ic::Vector{Float64}`: imaginary part of coherence
 
-<a id='NeuroAnalyzer.s_pca-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_pca-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_pca-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_pca-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_pca`** &mdash; *Method*.
 
 
@@ -1517,16 +1521,18 @@ Calculate `n` first PCs for `signal`.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
   * `n::Int64`: number of PCs
 
 **Returns**
+
+Named tuple containing:
 
   * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
   * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
   * `pc_m::PCA{Float64}`: PC mean
 
-<a id='NeuroAnalyzer.s_pca_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_pca_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_pca_reconstruct-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_pca_reconstruct-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_pca_reconstruct`** &mdash; *Method*.
 
 
@@ -1539,8 +1545,8 @@ Reconstructs `signal` using PCA components.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
-  * `pc::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `signal::AbstractArray`
+  * `pc::AbstractArray:`: IC(1)..IC(n) × epoch
   * `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
 
 **Returns**
@@ -1568,7 +1574,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
   * `s_conv::Vector{ComplexF64}`
 
-<a id='NeuroAnalyzer.s_ica-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_ica-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_ica-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ica-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_ica`** &mdash; *Method*.
 
 
@@ -1581,7 +1587,7 @@ Calculate `n` first ICs for `signal`.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
   * `n::Int64`: number of PCs
   * `tol::Float64=1.0e-6`: tolerance for ICA
   * `iter::Int64=100`: maximum number of iterations
@@ -1592,7 +1598,7 @@ Calculate `n` first ICs for `signal`.
   * `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
   * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 
-<a id='NeuroAnalyzer.s_ica_reconstruct-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_ica_reconstruct-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_ica_reconstruct-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ica_reconstruct-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_ica_reconstruct`** &mdash; *Method*.
 
 
@@ -1605,16 +1611,16 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
-  * `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
-  * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `signal::AbstractArray`
+  * `ic::AbstractArray:`: IC(1)..IC(n) × epoch
+  * `ic_mw::AbstractArray:`: IC(1)..IC(n) × epoch
   * `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 **Returns**
 
   * `s_reconstructed::Array{Float64, 3}`
 
-<a id='NeuroAnalyzer.s_spectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_spectrogram-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_spectrogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_spectrogram-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_spectrogram`** &mdash; *Method*.
 
 
@@ -1627,7 +1633,7 @@ Calculate spectrogram of `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -1641,7 +1647,7 @@ Named tuple containing:
   * `s_frq::Vector{Float64}`: frequencies
   * `s_t::Vector{Float64}`: time
 
-<a id='NeuroAnalyzer.s_detect_epoch_flat-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_flat-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_detect_epoch_flat-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_flat-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_detect_epoch_flat`** &mdash; *Method*.
 
 
@@ -1654,13 +1660,13 @@ Detect bad `signal` epochs based on: flat channel(s)
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroAnalyzer.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_rmse-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_detect_epoch_rmse-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_rmse-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_detect_epoch_rmse`** &mdash; *Method*.
 
 
@@ -1673,13 +1679,13 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_detect_epoch_rmsd`** &mdash; *Method*.
 
 
@@ -1692,13 +1698,13 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroAnalyzer.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_euclid-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_detect_epoch_euclid-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_euclid-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_detect_epoch_euclid`** &mdash; *Method*.
 
 
@@ -1711,13 +1717,13 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroAnalyzer.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}' href='#NeuroAnalyzer.s_detect_epoch_p2p-Tuple{Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.s_detect_epoch_p2p-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_p2p-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_detect_epoch_p2p`** &mdash; *Method*.
 
 
@@ -1730,13 +1736,13 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
 **Arguments**
 
-  * `signal::Array{Float64, 3}`
+  * `signal::AbstractArray`
 
 **Returns**
 
   * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
 
-<a id='NeuroAnalyzer.s_snr-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_snr-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_snr-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_snr-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_snr`** &mdash; *Method*.
 
 
@@ -1749,7 +1755,7 @@ Calculate SNR of `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
@@ -1759,7 +1765,7 @@ Calculate SNR of `signal`.
 
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 
-<a id='NeuroAnalyzer.s_findpeaks-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_findpeaks-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_findpeaks-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_findpeaks-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_findpeaks`** &mdash; *Method*.
 
 
@@ -1772,14 +1778,14 @@ Find peaks in `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `d::Int64=32`: distance between peeks in samples
 
 **Returns**
 
   * `p_idx::Vector{Int64}`
 
-<a id='NeuroAnalyzer.s_wdenoise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wdenoise-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_wdenoise-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wdenoise-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_wdenoise`** &mdash; *Method*.
 
 
@@ -1792,28 +1798,28 @@ Perform wavelet denoising.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
 
 **Returns**
 
   * `signal_denoised::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_ispc-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_ispc-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_ispc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_ispc-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_ispc-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_ispc`** &mdash; *Method*.
 
 
 
 ```julia
-s_ispc(signal1, signal2)
+s2_ispc(signal1, signal2)
 ```
 
 Calculate ISPC (Inter-Site-Phase Clustering) between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
@@ -1852,21 +1858,21 @@ Named tuple containing:
   * `itpc_angle::Float64`: ITPC angle
   * `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 
-<a id='NeuroAnalyzer.s_pli-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_pli-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_pli`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_pli-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_pli-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_pli`** &mdash; *Method*.
 
 
 
 ```julia
-s_pli(signal1, signal2)
+s2_pli(signal1, signal2)
 ```
 
 Calculate PLI (Phase-Lag Index) between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
@@ -1878,13 +1884,13 @@ Named tuple containing:
   * `s1_phase::Vector{Float64}`: signal 1 phase
   * `s2_phase::Vector{Float64}`: signal 2 phase
 
-<a id='NeuroAnalyzer.s_ged-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_ged-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_ged`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_ged-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s2_ged-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.s2_ged`** &mdash; *Method*.
 
 
 
 ```julia
-s_ged(signal1, signal2)
+s2_ged(signal1, signal2)
 ```
 
 Perform generalized eigendecomposition between `signal1` and `signal2`.
@@ -1898,11 +1904,11 @@ Perform generalized eigendecomposition between `signal1` and `signal2`.
 
 Named tuple containing:
 
-  * `sged::AbstractArray`
-  * `ress::AbstractArray`
-  * `ress_normalized::AbstractArray`: RESS normalized to -1..1
+  * `sged::Matrix{Float64}`
+  * `ress::Vector{Float64}`
+  * `ress_normalized::Vector{Float64}`: RESS normalized to -1..1
 
-<a id='NeuroAnalyzer.s_frqinst-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_frqinst-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_frqinst-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_frqinst-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_frqinst`** &mdash; *Method*.
 
 
@@ -1915,14 +1921,14 @@ Calculate instantaneous frequency `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`
 
 **Returns**
 
   * `frqinst::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_hspectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_hspectrum-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_hspectrum`** &mdash; *Method*.
 
 
@@ -1935,7 +1941,7 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64`: pad the `signal` with `pad` zeros
 
 **Returns**
@@ -1985,7 +1991,7 @@ Convert frequency `f` to cycle length in ms.
 
   * `f::Float64`: cycle length in ms
 
-<a id='NeuroAnalyzer.s_wspectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wspectrogram-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_wspectrogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wspectrogram-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_wspectrogram`** &mdash; *Method*.
 
 
@@ -1998,7 +2004,7 @@ Calculate spectrogram of the `signal` using wavelet convolution.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2017,18 +2023,18 @@ Named tuple containing:
   * `w_phases::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_fftdenoise-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_fftdenoise-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_fftdenoise-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_fftdenoise-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_fftdenoise`** &mdash; *Method*.
 
 
 
-s_fftdenoise(signal::AbstractArray; pad::Int64=0, threshold::Int64=100) 
+s_fftdenoise(signal; pad, threshold) 
 
 Perform FFT denoising.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64=0`: pad the `signal` with `pad` zeros
   * `threshold::Int64=100`: PSD threshold for keeping frequency components
 
@@ -2036,7 +2042,7 @@ Perform FFT denoising.
 
   * `signal_denoised::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_gfilter-Tuple{Vector{Float64}}' href='#NeuroAnalyzer.s_gfilter-Tuple{Vector{Float64}}'>#</a>
+<a id='NeuroAnalyzer.s_gfilter-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_gfilter-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_gfilter`** &mdash; *Method*.
 
 
@@ -2049,7 +2055,7 @@ Filter `signal` using Gaussian in the frequency domain.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `f::Real`: filter frequency
   * `gw::Real=5`: Gaussian width in Hz
@@ -2060,7 +2066,7 @@ Named tuple containing:
 
   * `s_f::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_ghspectrogram-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_ghspectrogram`** &mdash; *Method*.
 
 
@@ -2073,7 +2079,7 @@ Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2089,7 +2095,7 @@ Named tuple containing:
   * `h_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_tkeo-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_tkeo-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_tkeo-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_tkeo-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_tkeo`** &mdash; *Method*.
 
 
@@ -2102,7 +2108,7 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
@@ -2176,10 +2182,12 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 **Arguments**
 
   * `signal::AbstractArray`
-  * `fs::Int64`
+  * `fs::Int64`: sampling rate
   * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 **Returns**
+
+Named tuple containing:
 
   * `c::Array{Float64, 3}`: coherence
   * `msc::Array{Float64, 3}`: MSC
@@ -2249,7 +2257,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2
 
   * `l2::Float64`
 
-<a id='NeuroAnalyzer.s_cums-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cums-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_cums-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_cums-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_cums`** &mdash; *Method*.
 
 
@@ -2262,7 +2270,7 @@ Calculate cumulative sum of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
 
 **Returns**
 
@@ -2394,7 +2402,7 @@ Find nearest position tuple `pos` in matrxi of positions `m`.
 
   * `pos::Tuple{Int64, Int64}`: row and column in m
 
-<a id='NeuroAnalyzer.s_band_mpower-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_band_mpower-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_band_mpower-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_band_mpower-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_band_mpower`** &mdash; *Method*.
 
 
@@ -2407,7 +2415,7 @@ Calculate mean and maximum band power and its frequency.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
 
@@ -2419,7 +2427,7 @@ Named tuple containing:
   * `maxfrq::Float64`: frequency of maximum band power [Hz]
   * `maxbp::Float64`: power at maximum band frequency [dB]
 
-<a id='NeuroAnalyzer.s_rel_psd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_rel_psd-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_rel_psd-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_rel_psd-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_rel_psd`** &mdash; *Method*.
 
 
@@ -2432,7 +2440,7 @@ Calculate relative power spectrum density of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `norm::Bool`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -2445,7 +2453,7 @@ Named tuple containing:
   * `psd_pow::Vector{Float64}`
   * `psd_frq::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_wbp-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wbp-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_wbp-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wbp-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_wbp`** &mdash; *Method*.
 
 
@@ -2458,7 +2466,7 @@ Perform wavelet bandpass filtering of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Real`: filter frequency
   * `fs::Int64`: sampling rate
@@ -2482,14 +2490,14 @@ Normalize `signal` to Gaussian.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `dims::Int64=1`: dimension for cumsum()
 
 **Returns**
 
   * `s_normalized::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_cbp-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_cbp-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_cbp-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_cbp-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_cbp`** &mdash; *Method*.
 
 
@@ -2502,7 +2510,7 @@ Perform convolution bandpass filtering of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `frq::Real`: filter frequency
   * `fs::Int64`: sampling rate
@@ -2541,7 +2549,7 @@ Named tuple containing:
   * `t_idx::Tuple{Real, Real}`: time indices
   * `f_idx::Tuple{Real, Real}`: frequency indices
 
-<a id='NeuroAnalyzer.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s_specseg-Tuple{Array{Float64, 4}, Vector{Float64}, Vector{Float64}}'>#</a>
+<a id='NeuroAnalyzer.s_specseg-Tuple{AbstractArray, AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s_specseg-Tuple{AbstractArray, AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_specseg`** &mdash; *Method*.
 
 
@@ -2554,9 +2562,9 @@ Return spectrogram segment.
 
 **Arguments**
 
-  * `sp::Array{Float64, 4}`: spectrogram powers
-  * `st::Vector{Float64}`: spectrogram time
-  * `sf::Vector{Float64}`: spectrogram frequencies
+  * `sp::AbstractArray`: spectrogram powers
+  * `st::AbstractVector`: spectrogram time
+  * `sf::AbstractVector`: spectrogram frequencies
   * `t::Tuple{Real, Real}`: time bounds
   * `f::Tuple{Real, Real}`: frequency bounds
 
@@ -2588,21 +2596,21 @@ Perform Wiener deconvolution denoising of the `signal`.
 
   * `signal_new::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_cps-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.s_cps-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_cps`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_cps-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_cps-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_cps`** &mdash; *Method*.
 
 
 
 ```julia
-s_cps(signal1, signal2; fs, norm)
+s2_cps(signal1, signal2; fs, norm)
 ```
 
 Calculate cross power spectrum between `signal1` and `signal2`.
 
 **Arguments**
 
-  * `signal1::AbstractArray`
-  * `signal2::AbstractArray`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
   * `fs::Int64`: sampling rate
   * `norm::Bool=true`: normalize do dB
 
@@ -2614,8 +2622,8 @@ Named tuple containing:
   * `cps_ph::Vector{Float64}`: cross power spectrum phase (in radians)
   * `cps_fq::Vector{Float64}`: cross power spectrum frequencies
 
-<a id='NeuroAnalyzer.s_phdiff-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s_phdiff-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroAnalyzer.s_phdiff`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s2_phdiff-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_phdiff-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_phdiff`** &mdash; *Method*.
 
 
 
@@ -2779,7 +2787,7 @@ Normalize `signal`.
 
 ## Statistic
 
-<a id='NeuroAnalyzer.hildebrand_rule-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.hildebrand_rule-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}' href='#NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.hildebrand_rule`** &mdash; *Method*.
 
 
@@ -2792,13 +2800,13 @@ Calculate Hildebrand rule for vector `x`. If H < 0.2 then the vector `x` is symm
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
 
 **Returns**
 
   * `h::Float64`
 
-<a id='NeuroAnalyzer.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroAnalyzer.jaccard_similarity-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.jaccard_similarity-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.jaccard_similarity-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.jaccard_similarity`** &mdash; *Method*.
 
 
@@ -2811,13 +2819,14 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 
 **Arguments**
 
-  * `n::Int64`
+  * `x::AbstractVector`
+  * `y::AbstractVector`
 
 **Returns**
 
   * `j::Float64`
 
-<a id='NeuroAnalyzer.z_score-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.z_score-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.z_score-Tuple{AbstractVector}' href='#NeuroAnalyzer.z_score-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.z_score`** &mdash; *Method*.
 
 
@@ -2830,7 +2839,7 @@ Calculate Z-scores for each value of the vector `x`.
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
 
 **Returns**
 
@@ -2858,7 +2867,7 @@ Named tuple containing:
   * `k1::Float64`: sqrt(n)
   * `k2::Float64`: 1 + 3.222 * log10(n)
 
-<a id='NeuroAnalyzer.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}' href='#NeuroAnalyzer.effsize-Tuple{Vector{<:Real}, Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.effsize-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.effsize-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.effsize`** &mdash; *Method*.
 
 
@@ -2871,8 +2880,8 @@ Calculate Cohen's d and Hedges g effect sizes.
 
 **Arguments**
 
-  * `x1::Vector{Float64}`
-  * `x2::Vector{Float64}`
+  * `x1::AbstractVector`
+  * `x2::AbstractVector`
 
 **Returns**
 
@@ -2903,7 +2912,7 @@ Named tuple containing:
   * `aic::Float64`
   * `bic::Float64`
 
-<a id='NeuroAnalyzer.grubbs-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.grubbs-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.grubbs-Tuple{AbstractVector}' href='#NeuroAnalyzer.grubbs-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.grubbs`** &mdash; *Method*.
 
 
@@ -2916,7 +2925,7 @@ Perform Grubbs test for outlier in vector `x`.
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
   * `alpha::Float64=0.95`
   * `t::Int64=0`: test type: -1 test whether the minimum value is an outlier; 0 two-sided test; 1 test whether the maximum value is an outlier
 
@@ -2926,7 +2935,7 @@ Named tuple containing:
 
   * `g::Bool`: true: outlier exists, false: there is no outlier
 
-<a id='NeuroAnalyzer.outlier_detect-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.outlier_detect-Tuple{Vector{<:Real}}'>#</a>
+<a id='NeuroAnalyzer.outlier_detect-Tuple{AbstractVector}' href='#NeuroAnalyzer.outlier_detect-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.outlier_detect`** &mdash; *Method*.
 
 
@@ -2939,14 +2948,14 @@ Detect outliers in `x`.
 
 **Arguments**
 
-  * `x::Vector{<:Real}`
+  * `x::AbstractVector`
   * `method::Symbol=iqr`: methods: `:iqr` (interquartile range), `:z` (z-score) or `:g` (Grubbs test)
 
 **Returns**
 
   * `o::Vector{Bool}`: index of outliers
 
-<a id='NeuroAnalyzer.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroAnalyzer.seg_cmp-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.seg_cmp-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.seg_cmp-Tuple{AbstractArray, AbstractArray}'>#</a>
 **`NeuroAnalyzer.seg_cmp`** &mdash; *Method*.
 
 
@@ -2959,8 +2968,8 @@ Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on
 
 **Arguments**
 
-  * `seg1::Array{Float64, 3}`
-  * `seg2::Array{Float64, 3}`
+  * `seg1::AbstractArray`
+  * `seg2::AbstractArray`
   * `paired::Bool`
   * `alpha::Float64=0.05`: confidence level
   * `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
@@ -3265,10 +3274,6 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
   * `eeg::NeuroAnalyzer.EEG`
   * `file_name::String`
   * `overwrite::Bool=false`
-
-**Returns**
-
-  * `success::Bool`
 
 <a id='NeuroAnalyzer.eeg_save_electrodes-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_save_electrodes-Tuple{DataFrame}'>#</a>
 **`NeuroAnalyzer.eeg_save_electrodes`** &mdash; *Method*.
@@ -3832,7 +3837,7 @@ Return number of `eeg` channels of `type`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :ecg, :eog, :emg
+  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
 
 **Returns**
 
@@ -4931,6 +4936,26 @@ Delete `n`th annotation.
   * `onset::Float64`: time onset in seconds
   * `event::String`: event description
 
+<a id='NeuroAnalyzer.eeg_channel_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channel_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_channel_idx`** &mdash; *Method*.
+
+
+
+```julia
+eeg_channel_idx(eeg; type=:eeg)
+```
+
+Return index of `eeg` channels of `type`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+
+**Returns**
+
+  * `channel_n::Int64`
+
 
 <a id='EEG-process'></a>
 
@@ -4990,8 +5015,8 @@ Reference the `eeg` to common average reference.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
-  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR calculation
+  * `exclude_current::Bool=true`: exclude current electrode from CAR calculation
   * `med::Bool=false`: use median instead of mean
 
 **Returns**
@@ -5022,7 +5047,7 @@ Reference the `eeg` to common average reference.
 
 
 ```julia
-eeg_derivative(eeg)
+eeg_derivative(eeg; channel)
 ```
 
 Return the derivative of the `eeg` with length same as the signal.
@@ -5030,6 +5055,7 @@ Return the derivative of the `eeg` with length same as the signal.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 **Returns**
 
@@ -5041,7 +5067,7 @@ Return the derivative of the `eeg` with length same as the signal.
 
 
 ```julia
-eeg_derivative!(eeg)
+eeg_derivative!(eeg; channel)
 ```
 
 Return the derivative of the `eeg` with length same as the signal.
@@ -5049,6 +5075,7 @@ Return the derivative of the `eeg` with length same as the signal.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 <a id='NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_detrend`** &mdash; *Method*.
@@ -5056,7 +5083,7 @@ Return the derivative of the `eeg` with length same as the signal.
 
 
 ```julia
-eeg_detrend(eeg; type)
+eeg_detrend(eeg; channel, type, offset, order, span)
 ```
 
 Perform piecewise detrending of `eeg`.
@@ -5064,6 +5091,7 @@ Perform piecewise detrending of `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -5086,7 +5114,7 @@ Perform piecewise detrending of `eeg`.
 
 
 ```julia
-eeg_detrend!(eeg; type)
+eeg_detrend!(eeg; channel, type, offset, order, span)
 ```
 
 Remove linear trend from the `eeg`.
@@ -5094,6 +5122,7 @@ Remove linear trend from the `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `type::Symbol`, optional
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -5112,7 +5141,7 @@ Remove linear trend from the `eeg`.
 
 
 ```julia
-eeg_taper(eeg; taper)
+eeg_taper(eeg; channel, taper)
 ```
 
 Taper `eeg` with `taper`.
@@ -5120,6 +5149,7 @@ Taper `eeg` with `taper`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `taper::Union{Vector{Real, Vector{ComplexF64}}``
 
 **Returns**
@@ -5132,7 +5162,7 @@ Taper `eeg` with `taper`.
 
 
 ```julia
-eeg_taper!(eeg; taper)
+eeg_taper!(eeg; channel, taper)
 ```
 
 Taper `eeg` with `taper`.
@@ -5140,6 +5170,7 @@ Taper `eeg` with `taper`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
 
 <a id='NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -5148,7 +5179,7 @@ Taper `eeg` with `taper`.
 
 
 ```julia
-eeg_demean(eeg)
+eeg_demean(eeg; channel)
 ```
 
 Remove mean value (DC offset).
@@ -5156,6 +5187,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 **Returns**
 
@@ -5167,7 +5199,7 @@ Remove mean value (DC offset).
 
 
 ```julia
-eeg_demean!(eeg)
+eeg_demean!(eeg; channel)
 ```
 
 Remove mean value (DC offset).
@@ -5175,6 +5207,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 <a id='NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_normalize`** &mdash; *Method*.
@@ -5182,7 +5215,7 @@ Remove mean value (DC offset).
 
 
 ```julia
-eeg_normalize(eeg; method)
+eeg_normalize(eeg; channel, method)
 ```
 
 Normalize each `eeg` channel.
@@ -5190,6 +5223,7 @@ Normalize each `eeg` channel.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `method::Symbol`
 
 **Returns**
@@ -5202,7 +5236,7 @@ Normalize each `eeg` channel.
 
 
 ```julia
-eeg_normalize!(eeg; method)
+eeg_normalize!(eeg; channel, method)
 ```
 
 Normalize each `eeg` channel.
@@ -5210,6 +5244,7 @@ Normalize each `eeg` channel.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
   * `method::Symbol`
 
 <a id='NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -5218,7 +5253,7 @@ Normalize each `eeg` channel.
 
 
 ```julia
-eeg_add_noise(eeg)
+eeg_add_noise(eeg; channel)
 ```
 
 Add random noise to the `eeg` channels.
@@ -5226,6 +5261,7 @@ Add random noise to the `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 **Returns**
 
@@ -5237,7 +5273,7 @@ Add random noise to the `eeg` channels.
 
 
 ```julia
-eeg_add_noise!(eeg)
+eeg_add_noise!(eeg; channel)
 ```
 
 Add random noise to the `eeg` channels.
@@ -5245,6 +5281,7 @@ Add random noise to the `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, process only this channel
 
 <a id='NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_filter`** &mdash; *Method*.
@@ -5255,11 +5292,12 @@ Add random noise to the `eeg` channels.
 eeg_filter(eeg; <keyword arguments>)
 ```
 
-Filter `eeg` channels.
+Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, filter only this channel
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -5300,11 +5338,12 @@ Filter `eeg` channels.
 eeg_filter!(eeg; <keyword arguments>)
 ```
 
-Filter `eeg`.
+Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Int64=0`: if specified, filter only this channel
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -6085,7 +6124,7 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`
 eeg_cov(eeg; norm)
 ```
 
-Calculate covariance matrix for all channels of `eeg`.
+Calculate covariance matrix for all EEG/MEG channels of `eeg`.
 
 **Arguments**
 
@@ -6192,7 +6231,7 @@ Calculate power spectrum density for each the `eeg` channels.
 Named tuple containing:
 
   * `psd_pow::Array{Float64, 3}`:powers
-  * `psd_frq::Array{Float64, 3}`: frequencies
+  * `psd_frq::Vector{Float64}`: frequencies
 
 <a id='NeuroAnalyzer.eeg_stationarity-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_stationarity-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_stationarity`** &mdash; *Method*.
@@ -6681,7 +6720,7 @@ Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
 Named tuple containing:
 
   * `sfft::Array{ComplexF64, 3}`: FFT
-  * `sf::Array{Float64, 3}`: sample frequencies
+  * `sf::Vector{Float64}`: sample frequencies
 
 <a id='NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_msci95`** &mdash; *Method*.

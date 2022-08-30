@@ -301,14 +301,14 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractArray`
 - `n::Int64`
 
 # Returns
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractVector, n::Int64=0)
+function fft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
@@ -329,14 +329,14 @@ Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at th
 
 # Arguments
 
-- `x::AbstractVector`
+- `x::AbstractArray`
 - `n::Int64`
 
 # Returns
 
 - `ifft0::Vector{ComplexF64}`
 """
-function ifft0(x::AbstractVector, n::Int64=0)
+function ifft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
@@ -1810,7 +1810,7 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
     psd_frq = zeros(channel_n, length(frq_tmp))
 
     @inbounds @simd for channel_idx in 1:channel_n
-        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = @views s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
+        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
     end
     
     return (psd_pow=psd_pow, psd_frq=psd_frq)
@@ -1845,7 +1845,7 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = @views s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
+            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
         end
     end
     
@@ -2175,7 +2175,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `signal::AbstractArray`
 - `kernel::Union{AbstractVector, Vector{ComplexF64}}`
 - `norm::Bool=false`: normalize kernel
 
@@ -2183,7 +2183,7 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractVector; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
+function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
@@ -3040,7 +3040,7 @@ Calculate power spectrum of the `signal` using wavelet convolution.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `signal::AbstractArray`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -3055,7 +3055,7 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
