@@ -61,6 +61,8 @@ function eeg_reference_ch!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
     eeg.eeg_signals = eeg_reference_ch(eeg, channel=channel, med=med).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_ch!(EEG, channel=$channel, med=$med)")
+
+    return nothing
 end
 
 """
@@ -141,6 +143,8 @@ function eeg_reference_car!(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exc
     eeg.eeg_signals = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med)")
+
+    return nothing
 end
 
 """
@@ -198,6 +202,8 @@ function eeg_derivative!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
     eeg.eeg_signals = eeg_derivative(eeg).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_derivative!(EEG, channel=$channel)")
+
+    return nothing
 end
 
 """
@@ -277,6 +283,8 @@ function eeg_detrend!(eeg::NeuroAnalyzer.EEG; type::Symbol=:linear, offset::Real
     eeg.eeg_signals = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, span=span).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, channel=$channel, type=$type, offset=$offset, order=$order, span=$span)")
+
+    return nothing
 end
 
 """
@@ -341,6 +349,8 @@ function eeg_taper!(eeg::NeuroAnalyzer.EEG; taper::Union{Vector{<:Real}, Vector{
     eeg.eeg_signals = eeg_taper(eeg, channel=channel, taper=taper).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_taper!(EEG, taper=$taper)")
+
+    return nothing
 end
 
 """
@@ -398,6 +408,8 @@ function eeg_demean!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
     eeg.eeg_signals = eeg_demean(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_demean!(EEG, channel=$channel)")
+
+    return nothing
 end
 
 """
@@ -457,6 +469,8 @@ function eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, method::Symbol
     eeg.eeg_signals = eeg_normalize(eeg, channel=channel, method=method).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_normalize!(EEG, channel=$channel, method=$method)")
+
+    return nothing
 end
 
 """
@@ -514,6 +528,8 @@ function eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
     eeg.eeg_signals = eeg_add_noise(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_add_noise!(EEG, channel=$channel)")
+
+    return nothing
 end
 
 """
@@ -631,6 +647,8 @@ function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbo
                                  window=window).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_filter!(EEG, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
+
+    return nothing
 end
 
 """
@@ -704,6 +722,8 @@ function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_signals = eeg_pca_reconstruct(eeg).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_pca_reconstruct!(EEG)")
+
+    return nothing
 end
 
 """
@@ -774,6 +794,8 @@ function eeg_average!(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_signals = eeg_average(eeg).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_average!(EEG)")
+
+    return nothing
 end
 
 """
@@ -857,6 +879,8 @@ function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{I
     eeg.eeg_signals = eeg_ica_reconstruct(eeg, ica=ica).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica)")
+
+    return nothing
 end
 
 """
@@ -902,6 +926,8 @@ function eeg_invert_polarity!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vect
     eeg.eeg_signals[channel, :, :] = .- eeg.eeg_signals[channel, :, :]
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_invert_polarity!(EEG, channel=$channel)")
+
+    return nothing
 end
 
 """
@@ -941,6 +967,8 @@ function eeg_resample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     new_sr > eeg_sr(eeg) && eeg_upsample!(eeg, new_sr=new_sr)
     new_sr < eeg_sr(eeg) && eeg_downsample!(eeg, new_sr=new_sr)
+
+    return nothing
 end
 
 """
@@ -1008,6 +1036,8 @@ function eeg_upsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
     eeg.eeg_header[:sampling_rate] = repeat([new_sr], eeg.eeg_header[:channel_n])
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_upsample!(EEG, new_sr=$new_sr)")
+
+    return nothing
 end
 
 """
@@ -1075,6 +1105,8 @@ function eeg_downsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
     eeg.eeg_header[:sampling_rate] = repeat([new_sr], eeg.eeg_header[:channel_n])
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_downsample!(EEG, new_sr=$new_sr)")
+
+    return nothing
 end
 
 """
@@ -1138,6 +1170,8 @@ function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
     eeg.eeg_signals = s_denoised
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wdenoise!(EEG, wt=$wt)")
+
+    return nothing
 end
 
 """
@@ -1352,6 +1386,8 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fal
     eeg.eeg_header[:reference] = "A ($type)"
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_a!(EEG, type=$type, med=$med)")
+
+    return nothing
 end
 
 """
@@ -1570,6 +1606,8 @@ function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:lm, med::Bool=fa
     eeg.eeg_header[:reference] = "M ($type)"
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_m!(EEG, type=$type)")
+
+    return nothing
 end
 
 """
@@ -1635,6 +1673,8 @@ function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; pad::Int64=0, threshold::Int64=
     eeg.eeg_signals = s_denoised
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_fftdenoise!(EEG, pad=$pad, threshold=$threshold)")
+
+    return nothing
 end
 
 """
@@ -1729,6 +1769,8 @@ function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=
     eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights, med=med).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn, med=$med)")
+
+    return nothing
 end
 
 """
@@ -1772,6 +1814,8 @@ function eeg_zero!(eeg::NeuroAnalyzer.EEG)
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_zero(EEG)")
+
+    return nothing
 end
 
 """
@@ -1830,6 +1874,8 @@ function eeg_wbp!(eeg::NeuroAnalyzer.EEG; pad::Int64=0, frq::Real, ncyc::Int64=6
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wbp!(EEG, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
+
+    return nothing
 end
 
 """
@@ -1886,6 +1932,8 @@ function eeg_cbp!(eeg::NeuroAnalyzer.EEG; pad::Int64=0, frq::Real, demean::Bool=
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_cbp!(EEG, pad=$pad, frq=$frq, demean=$demean)")
+
+    return nothing
 end
 
 """
@@ -1921,6 +1969,8 @@ function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_signals = s_denoise_wien(eeg.eeg_signals)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_denoise_wien!(EEG)")
+
+    return nothing
 end
 
 """

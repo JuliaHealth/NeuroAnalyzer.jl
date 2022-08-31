@@ -17,14 +17,13 @@ function eeg_total_power(eeg::NeuroAnalyzer.EEG, mt::Bool=false)
     fs = eeg_sr(eeg)
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
-    channel_n = size(signal, 1)
+    channel_n = length(channels)
     epoch_n = size(signal, 3)
 
     stp = zeros(channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            stp[channel_idx, epoch_idx] = @views s_total_power(signal[channel_idx, :, epoch_idx], fs=fs, mt=mt)
+            @views stp[channel_idx, epoch_idx] = s_total_power(signal[channel_idx, :, epoch_idx], fs=fs, mt=mt)
         end
     end
 
@@ -56,14 +55,13 @@ function eeg_band_power(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=f
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
-    channel_n = size(signal, 1)
+    channel_n = length(channels)
     epoch_n = size(signal, 3)
 
     sbp = zeros(channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            sbp[channel_idx, epoch_idx] = @views s_band_power(signal[channel_idx, :, epoch_idx], fs=fs, f=f, mt=mt)
+            @views sbp[channel_idx, epoch_idx] = s_band_power(signal[channel_idx, :, epoch_idx], fs=fs, f=f, mt=mt)
         end
     end
 
@@ -78,7 +76,7 @@ Calculate covariance matrix for all EEG/MEG channels of `eeg`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `norm::Bool=true`: normalize covariance
+- `norm::Bool=true`: normalize matrix
 
 # Returns
 
@@ -92,9 +90,8 @@ function eeg_cov(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
     epoch_n = size(signal, 3)
 
     cov_mat = zeros(channel_n, channel_n, epoch_n)
-
     Threads.@threads for epoch_idx in 1:epoch_n
-        cov_mat[:, :, epoch_idx] = @views cov(signal[:, :, epoch_idx]')
+        @views cov_mat[:, :, epoch_idx] = cov(signal[:, :, epoch_idx]')
     end
 
     # normalize covariance matrix
@@ -104,19 +101,20 @@ function eeg_cov(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 end
 
 """
-    eeg_cor(eeg)
+    eeg_cor(eeg; norm)
 
 Calculate correlation coefficients between all channels of `eeg`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `norm::Bool=true`: normalize matrix
 
 # Returns
 
 - `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
 """
-function eeg_cor(eeg::NeuroAnalyzer.EEG)
+function eeg_cor(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
@@ -124,10 +122,12 @@ function eeg_cor(eeg::NeuroAnalyzer.EEG)
     epoch_n = size(signal, 3)
 
     cor_mat = zeros(channel_n, channel_n, epoch_n)
-
     Threads.@threads for epoch_idx in 1:epoch_n
         cor_mat[:, :, epoch_idx] = @views cor(signal[:, :, epoch_idx]')
     end
+
+    # normalize covariance matrix
+    norm == true && (cor_mat = m_norm(cor_mat))
 
     return cor_mat
 end
@@ -135,7 +135,7 @@ end
 """
     eeg_xcov(eeg; lag, demean, norm)
 
-Calculate cross-covariance of each the `eeg` channels.
+Calculate cross-covariance for all `eeg` channels.
 
 # Arguments
 
@@ -159,7 +159,6 @@ function eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm
 
     lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
     xcov = zeros(channel_n^2, length(lags), epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         xcov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
         Threads.@threads for channel_idx1 in 1:channel_n
@@ -177,7 +176,7 @@ function eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm
         end
     end
 
-    return (xcov=xcov, ccov_lags=lags)
+    return (xcov=xcov, lags=lags)
 end
 
 """
@@ -222,12 +221,11 @@ function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
-    xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
-
     signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
     signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
 
+    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
+    xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
     @inbounds @simd for epoch_idx in 1:length(epoch1)
         Threads.@threads for channel_idx in 1:length(channel1)
             xcov[channel_idx, :, epoch_idx], _ = @views s2_xcov(signal1[channel_idx, :, epoch_idx],
@@ -238,7 +236,7 @@ function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
         end
     end
 
-    return (xcov=xcov, ccov_lags=lags)
+    return (xcov=xcov, lags=lags)
 end
 
 """
@@ -268,7 +266,6 @@ function eeg_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false)
     
     _, psd_frq = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_frq), epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             psd_pow[channel_idx, :, epoch_idx], _ = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
@@ -393,7 +390,6 @@ function eeg_mi(eeg::NeuroAnalyzer.EEG)
     epoch_n = size(signal, 3)
 
     mi = zeros(channel_n, channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
             for channel_idx2 in 1:channel_idx1
@@ -437,7 +433,6 @@ function eeg_mi(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
     epoch_n = size(signal1, 3)
 
     mi = zeros(channel_n, channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
             for channel_idx2 in 1:channel_n
@@ -470,7 +465,6 @@ function eeg_entropy(eeg::NeuroAnalyzer.EEG)
     epoch_n = size(signal, 3)
 
     s_ent = zeros(channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s_ent[channel_idx, epoch_idx] = @views s_entropy(signal[channel_idx, :, epoch_idx])
@@ -501,7 +495,6 @@ function eeg_negentropy(eeg::NeuroAnalyzer.EEG)
     epoch_n = size(signal, 3)
 
     ne = zeros(channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             ne[channel_idx, epoch_idx] = @views s_negentropy(signal[channel_idx, :, epoch_idx])
@@ -591,14 +584,9 @@ function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     msc = zeros(length(channel1), eeg_epoch_len(eeg1), length(epoch1))
     ic = zeros(length(channel1), eeg_epoch_len(eeg1), length(epoch1))
 
-    signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
-    signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
-
-    size(signal1) == size(signal2) || throw(ArgumentError("Both EEG signals must have the same size."))
-
     @inbounds @simd for epoch_idx in 1:length(epoch1)
         Threads.@threads for channel_idx in 1:length(channel1)
-            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(signal1[channel1[channel_idx], :, epoch1[epoch_idx]], signal2[channel2[channel_idx], :, epoch2[epoch_idx]])
+            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]])
         end
     end
 
@@ -1050,19 +1038,17 @@ function eeg_standardize(eeg::NeuroAnalyzer.EEG)
     
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
-    channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
     ss = similar(signal)
     scaler = Vector{Any}()
 
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         @views push!(scaler, StatsBase.fit(ZScoreTransform, signal[:, :, epoch_idx], dims=2)) 
-        ss[:,:, epoch_idx] = @views StatsBase.transform(scaler[epoch_idx], signal[:, :, epoch_idx])
+        @views eeg_new.eeg_signals[channels,:, epoch_idx] = StatsBase.transform(scaler[epoch_idx], signal[:, :, epoch_idx])
     end
 
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = ss
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_standardize(EEG)")
 
@@ -1084,8 +1070,18 @@ Standardize `eeg` channels for ML.
 """
 function eeg_standardize!(eeg::NeuroAnalyzer.EEG)
 
-    ss, scaler = s_standardize(eeg.eeg_signals)
-    eeg.eeg_signals = ss
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
+    epoch_n = size(signal, 3)
+
+    ss = similar(signal)
+    scaler = Vector{Any}()
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        @views push!(scaler, StatsBase.fit(ZScoreTransform, signal[:, :, epoch_idx], dims=2)) 
+        @views eeg.eeg_signals[channels,:, epoch_idx] = StatsBase.transform(scaler[epoch_idx], signal[:, :, epoch_idx])
+    end
+
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_standardize!(EEG)")
 
@@ -1258,7 +1254,6 @@ Named tuple containing:
 """
 function eeg_mean(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 
-
     channels1 = eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))
     channels2 = eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))
     signal1 = @view eeg1.eeg_signals[channels1, :, :]
@@ -1349,18 +1344,16 @@ Named tuple containing:
 function eeg_acov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
-    lags = collect(-lag:lag)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    acov = zeros(channel_n, length(lags), epoch_n)
-
+    acov = zeros(channel_n, length(-lag:lag), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            acov[channel_idx, :, epoch_idx], lags = @views s_acov(signal[channel_idx, :, epoch_idx], lag=lag, demean=demean, norm=norm)
+            acov[channel_idx, :, epoch_idx], _ = @views s_acov(signal[channel_idx, :, epoch_idx], lag=lag, demean=demean, norm=norm)
         end
     end
 
@@ -2115,7 +2108,7 @@ function eeg_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
 end
 
 """
-    eeg_itpc(eeg; channel)
+    eeg_itpc(eeg; channel, t, w)
 
 Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
 
@@ -2481,7 +2474,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
 end
 
 """
-    eeg_wspectrogram(eeg; norm, mt, demean)
+    eeg_wspectrogram(eeg; pad, norm, frq_lim, frq_n, frq, ncyc, demean)
 
 Return spectrogram of `eeg` using Morlet wavelet convolution.
 
@@ -2521,10 +2514,7 @@ function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true,
         end
     end
 
-    w_frq = round.(w_frq, digits=2)
-    w_t = eeg.eeg_epochs_time
-
-    return (w_pow=w_pow, w_frq=w_frq, w_t=w_t)
+    return (w_pow=w_pow, w_frq=round.(w_frq, digits=2), w_t=eeg.eeg_epochs_time)
 end
 
 """
@@ -2558,7 +2548,7 @@ function eeg_tkeo(eeg::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_wspectrum(eeg; norm, mt, demean)
+    eeg_wspectrum(eeg; pad, norm, frq_lim, frq_n, frq, ncyc)
 
 Return power spectrogrum of `eeg` using Morlet wavelet convolution.
 
@@ -2680,7 +2670,6 @@ function eeg_vartest(eeg::NeuroAnalyzer.EEG)
 
     f = zeros(channel_n, channel_n, epoch_n)
     p = zeros(channel_n, channel_n, epoch_n)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
        Threads.@threads for channel_idx1 in 1:channel_n
            for channel_idx2 in 1:channel_idx1
@@ -2792,7 +2781,7 @@ function eeg_band_mpower(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=
 end
 
 """
-    eeg_rel_psd(eeg; norm, mt)
+    eeg_rel_psd(eeg; norm, mt, f)
 
 Calculate relative power spectrum density for each the `eeg` channels.
 
@@ -2824,13 +2813,11 @@ function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false, f
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    psd_len, _ = @views s_rel_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
-    psd_pow = zeros(channel_n, length(psd_len), epoch_n)
-    psd_frq = zeros(channel_n, length(psd_len), epoch_n)
-
+    psd_tmp, psd_frq = @views s_rel_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
+    psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         for channel_idx in 1:channel_n
-            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = @views s_rel_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt, f=f)
+            psd_pow[channel_idx, :, epoch_idx], _ = @views s_rel_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt, f=f)
         end
     end
 
@@ -2897,10 +2884,10 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 """
 function eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64)
 
-    channel1 < 0 || channel2 < 0 && throw(ArgumentError("channel1/channel2 must be > 0."))
+    channel1 < 0 || channel2 < 0 && throw(ArgumentError("channel1 and channel2 must be > 0."))
     channel1 > eeg_channel_n(eeg1) && throw(ArgumentError("channel1 must be ≤ $(eeg_channel_n(eeg1))."))
     channel2 > eeg_channel_n(eeg2) && throw(ArgumentError("channel2 must be ≤ $(eeg_channel_n(eeg2))."))
-    size(eeg1.eeg_signals[channel1, :, :]) == size(eeg2.eeg_signals[channel2, :, :]) || throw(ArgumentError("Both EEG channels must have the same size."))
+    size(eeg1.eeg_signals[channel1, :, :], 2) == size(eeg2.eeg_signals[channel2, :, :]) || throw(ArgumentError("Both EEG channels must have the same epoch length."))
 
     ch_diff = zeros(size(eeg1.eeg_signals[channel1, :, :]))
     @inbounds @simd for epoch_idx in 1:eeg_epoch_n(eeg1)
@@ -3034,10 +3021,9 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 
     # select channels, default is all
     channel == 0 && (channel = channels)
-    _check_channels(eeg, channel)
+    _check_channels(channels, channel)
 
     ph_diff = similar(signal)
-
     if avg === :phase
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for channel_idx in 1:channel_n
@@ -3076,7 +3062,7 @@ end
 """
     eeg_ampdiff(eeg; channel)
 
-Calculate amplitude difference between each `eeg` channel and mean phase of `channel`.
+Calculate amplitude difference between each `eeg` channel and mean amplitude of `channel`.
 
 # Arguments
 
@@ -3087,7 +3073,7 @@ Calculate amplitude difference between each `eeg` channel and mean phase of `cha
  
 - `amp_diff::Array{Float64, 3}`
 """
-function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
@@ -3096,10 +3082,9 @@ function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
 
     # select channels, default is all
     channel == 0 && (channel = channels)
-    _check_channels(eeg, channel)
+    _check_channels(channels, channel)
 
     amp_diff = similar(signal)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             ref_channels = setdiff(channel, channel_idx)

@@ -41,6 +41,8 @@ function eeg_add_component!(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
     push!(eeg.eeg_header[:components], c)
     push!(eeg.eeg_components, v)
     push!(eeg.eeg_header[:history], "eeg_add_component!(EEG, c=$c, v=$v)")
+
+    return nothing
 end
 
 """
@@ -135,6 +137,8 @@ function eeg_delete_component!(eeg::NeuroAnalyzer.EEG; c::Symbol)
             push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
         end
     end
+
+    return nothing
 end
 
 """
@@ -172,6 +176,8 @@ function eeg_reset_components!(eeg::NeuroAnalyzer.EEG)
 
     eeg.eeg_header[:components] = []
     eeg.eeg_components = []
+
+    return nothing
 end
 
 """
@@ -268,6 +274,8 @@ function eeg_rename_component!(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Sym
     eeg.eeg_header[:components][c_idx] = c_new
 
     push!(eeg.eeg_header[:history], "eeg_rename_component!(EEG, c_old=$c_old, c_new=$c_new)")
+
+    return nothing
 end
 
 """
@@ -392,6 +400,8 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_channel!(EEG, $channel)")
+
+    return nothing
 end
 
 """
@@ -523,6 +533,8 @@ function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_keep_channel!(EEG, channel=$channel)")
+
+    return nothing
 end
 
 """
@@ -644,6 +656,8 @@ function eeg_rename_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
     eeg.eeg_header[:labels] = labels
     
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, name=$name)")
+
+    return nothing
 end
 
 """
@@ -993,6 +1007,8 @@ function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=noth
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_epochs!(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
+
+    return nothing
 end
 
 """
@@ -1145,6 +1161,8 @@ function eeg_trim!(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Sy
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_trim!(EEG, len=$len, offset=$offset, from=$from, keep_epochs=$keep_epochs)")
+
+    return nothing
 end
 
 """
@@ -1201,6 +1219,8 @@ function eeg_edit_header!(eeg::NeuroAnalyzer.EEG; field::Symbol, value::Any)
     typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
     eeg.eeg_header[field] = value
     push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
+
+    return nothing
 end
 
 """
@@ -1307,6 +1327,8 @@ function eeg_delete_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{In
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_epoch!(EEG, $epoch)")
+
+    return nothing
 end
 
 """
@@ -1401,6 +1423,8 @@ function eeg_keep_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int6
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
+
+    return nothing
 end
 
 """
@@ -1505,7 +1529,9 @@ function eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     eeg.eeg_header[:labels] = labels
     push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
-    end
+
+    return nothing
+end
 
 """
     eeg_edit_channel(eeg; channel, field, value)
@@ -1564,6 +1590,8 @@ function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, v
     eeg.eeg_header[field][channel] = value
 
     push!(eeg.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")
+
+    return nothing
 end
 
 """
@@ -1613,6 +1641,8 @@ function eeg_keep_channel_type!(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
     push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
+
+    return nothing
 end
 
 """
@@ -1696,6 +1726,8 @@ function eeg_epochs_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg.eeg_epochs_time = new_epochs_time
     push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
+
+    return nothing
 end
 
 """
@@ -1733,7 +1765,9 @@ Return `eeg` note.
 function eeg_add_note!(eeg::NeuroAnalyzer.EEG; note::String)
 
     eeg.eeg_header[:note] = note
-    end
+
+    return nothing
+end
 
 """
     eeg_delete_note(eeg)
@@ -1768,7 +1802,9 @@ Return `eeg` note.
 function eeg_delete_note!(eeg::NeuroAnalyzer.EEG)
 
     eeg.eeg_header[:note] = ""
-    end
+
+    return nothing
+end
 
 """
     eeg_replace_channel(eeg; channel, signal)
@@ -1850,6 +1886,8 @@ function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Stri
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal=$signal")
+
+    return nothing
 end
 
 """
@@ -1965,6 +2003,8 @@ function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, 
     eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, m=m, q=q).eeg_signals
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, m=$m, q=$q)")
+
+    return nothing
 end
 
 """
@@ -2031,6 +2071,8 @@ function eeg_loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true
         spherical == true && (locs[!, :loc_y][idx] = -locs[!, :loc_y][idx])
     end
     eeg_loc_cart2sph!(locs)
+
+    return nothing
 end
 
 """
@@ -2097,6 +2139,8 @@ function eeg_loc_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true
         spherical == true && (locs[!, :loc_x][idx] = -locs[!, :loc_x][idx])
     end
     eeg_loc_cart2sph!(locs)
+
+    return nothing
 end
 
 """
@@ -2139,6 +2183,8 @@ function eeg_loc_flipz!(locs::DataFrame)
         locs[!, :loc_z][idx] = -locs[!, :loc_z][idx]
     end
     eeg_loc_cart2sph!(locs)
+
+    return nothing
 end
 
 """
@@ -2229,6 +2275,8 @@ function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}
     eeg_new.eeg_header[:channel_type] = types
     
     push!(eeg.eeg_header[:history], "eeg_channel_type!(EEG, channel=$channel, type=$type)")
+
+    return nothing
 end
 
 """
@@ -2320,6 +2368,8 @@ function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int6
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_edit_electrode(EEG; channel=$channel, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
+
+    return nothing
 end
 
 """
@@ -2434,6 +2484,8 @@ function eeg_loc_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=tru
         end
     end
     eeg_loc_cart2sph!(locs)
+
+    return nothing
 end
 
 """
@@ -2486,6 +2538,8 @@ function eeg_loc_sph2cart!(locs::DataFrame)
         locs[!, :loc_y][idx] = y
         locs[!, :loc_z][idx] = z
     end
+
+    return nothing
 end
 
 """
@@ -2540,6 +2594,8 @@ function eeg_loc_cart2sph!(locs::DataFrame)
         locs[!, :loc_theta_sph][idx] = t
         locs[!, :loc_phi_sph][idx] = p
     end
+
+    return nothing
 end
 
 """
@@ -2603,6 +2659,8 @@ function eeg_delete_annotation!(eeg::NeuroAnalyzer.EEG; n::Int64)
     size(eeg.eeg_annotations, 1) == 0 && (eeg.eeg_header[:annotations] = false)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_annotation!(EEG; n=$n)")
+
+    return nothing
 end
 
 """
@@ -2648,6 +2706,8 @@ function eeg_add_annotation!(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
     sort!(eeg.eeg_annotations)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_add_annotation!(EEG; onset=$onset, event=$event)")
+
+    return nothing
 end
 
 """

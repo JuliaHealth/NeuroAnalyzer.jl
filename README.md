@@ -138,7 +138,7 @@ Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/mas
 
 Due to the nature of Julia JIT (just-in-time compiler), first run of functions is slow. Also, due to modules precompilation, NA startup may take some time.
 
-Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchrmarking.md).
+Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md).
 
 ## Plugins (extensions)
 
@@ -153,6 +153,10 @@ na_plugins_add()
 na_plugins_remove()
 na_plugins_update()
 ```
+
+## Benchmarking
+
+Complete set of NA benchmarks is [here]()
 
 ## Known bugs
 
