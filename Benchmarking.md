@@ -2,7 +2,7 @@
 
 Set --threads according to your system:
 ```sh
-julia -q -O3 -g0 --threads 48 --cpu-target=native na_benchmarking.jl >> results.md
+julia -q -O3 -g0 --threads 48 --cpu-target=native benchmarks/na_benchmarking.jl >> benchmarks/results.md
 ```
 
 ## Results
