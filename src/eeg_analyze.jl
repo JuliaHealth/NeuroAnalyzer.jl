@@ -1110,8 +1110,8 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
+    @info "This will take a while.."
     s_convoluted = zeros(ComplexF64, size(signal))
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(signal[channel_idx, :, epoch_idx], kernel=kernel, norm=norm)
@@ -2507,7 +2507,7 @@ function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true,
     fs = eeg_sr(eeg)
     _, p_tmp, _, w_frq = s_wspectrogram(signal[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
     w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
-
+    @info "This will take a while.."
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             _, w_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
@@ -2580,7 +2580,7 @@ function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, fr
     p_tmp, f_tmp = @views s_wspectrum(signal[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     w_pow = zeros(length(p_tmp), channel_n, epoch_n)
     w_frq = zeros(length(f_tmp), epoch_n)
-
+    @info "This will take a while.."
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = @views s_wspectrum(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
@@ -2887,7 +2887,7 @@ function eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::
     channel1 < 0 || channel2 < 0 && throw(ArgumentError("channel1 and channel2 must be > 0."))
     channel1 > eeg_channel_n(eeg1) && throw(ArgumentError("channel1 must be ≤ $(eeg_channel_n(eeg1))."))
     channel2 > eeg_channel_n(eeg2) && throw(ArgumentError("channel2 must be ≤ $(eeg_channel_n(eeg2))."))
-    size(eeg1.eeg_signals[channel1, :, :], 2) == size(eeg2.eeg_signals[channel2, :, :]) || throw(ArgumentError("Both EEG channels must have the same epoch length."))
+    size(eeg1.eeg_signals[channel1, :, :]) == size(eeg2.eeg_signals[channel2, :, :]) || throw(ArgumentError("Both EEG channels must have the same epoch length."))
 
     ch_diff = zeros(size(eeg1.eeg_signals[channel1, :, :]))
     @inbounds @simd for epoch_idx in 1:eeg_epoch_n(eeg1)
@@ -2923,9 +2923,10 @@ function eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 
     fs = eeg_sr(eeg)
     
-    cps_pw_tmp, cps_ph_tmp, cps_fq = @views s_cps(signal[1, :, 1], signal[1, :, 1], fs=fs)
+    cps_pw_tmp, cps_ph_tmp, cps_fq = @views s2_cps(signal[1, :, 1], signal[1, :, 1], fs=fs)
     cps_pw = zeros(channel_n, channel_n, length(cps_pw_tmp), epoch_n)
     cps_ph = zeros(channel_n, channel_n, length(cps_ph_tmp), epoch_n)
+    @info "This will take a while.."
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
            for channel_idx2 in 1:channel_idx1

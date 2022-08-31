@@ -1218,7 +1218,11 @@ Calculate `signal` total power.
 function s_total_power(signal::AbstractVector; fs::Int64, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    psd = mt == true ? mt_pgram(signal, fs=fs) : welch_pgram(signal, 4*fs, fs=fs)
+    if mt == true
+        psd = mt_pgram(signal, fs=fs)
+    else
+        psd = welch_pgram(signal, 4*fs, fs=fs)
+    end
     psd_pow = power(psd)
     psd_pow[1] = psd_pow[2]
     # dx: frequency resolution
@@ -1249,7 +1253,11 @@ function s_band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, m
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
     f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-    psd = mt == true ? mt_pgram(signal, fs=fs) : welch_pgram(signal, 4*fs, fs=fs)
+    if mt == true
+        psd = mt_pgram(signal, fs=fs)
+    else
+        psd = welch_pgram(signal, 4*fs, fs=fs)
+    end
 
     psd_freq = Vector(psd.freq)
     f1_idx = vsearch(f[1], psd_freq)
@@ -1772,8 +1780,12 @@ function s_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     length(signal) < 4 * fs && (mt = true)
 
-    psd = mt == true ? psd = mt_pgram(signal, fs=fs) : psd = welch_pgram(signal, 4*fs, fs=fs)
-    
+    if mt == true
+        psd = mt_pgram(signal, fs=fs)
+    else
+        psd = welch_pgram(signal, 4*fs, fs=fs)
+    end
+
     psd_pow = power(psd)
     psd_pow[1] = psd_pow[2]
     norm == true && (psd_pow = pow2db.(psd_pow))
@@ -2313,8 +2325,11 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
     nfft = length(signal)
     interval = fs
     overlap = round(Int64, fs * 0.85)
-    spec = mt == true ? mt_spectrogram(signal, fs=fs) : spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-
+    if mt == true
+        spec = mt_spectrogram(signal, fs=fs)
+    else
+        spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    end    
     s_pow = spec.power
     norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
     s_t = collect(spec.time)
@@ -3438,7 +3453,11 @@ Named tuple containing:
 """
 function s_band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
-    psd = mt == true ? mt_pgram(signal, fs=fs) : welch_pgram(signal, 4*fs, fs=fs)
+    if mt == true
+        psd = mt_pgram(signal, fs=fs)
+    else
+        psd = welch_pgram(signal, 4*fs, fs=fs)
+    end
 
     psd_freq = Vector(psd.freq)
     f1_idx = vsearch(f[1], psd_freq)
@@ -3473,7 +3492,11 @@ function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     
     ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
-    psd = mt == true ? mt_pgram(signal, fs=fs) : welch_pgram(signal, 4*fs, fs=fs)
+    if mt == true
+        psd = mt_pgram(signal, fs=fs)
+    else
+        psd = welch_pgram(signal, 4*fs, fs=fs)
+    end
 
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))

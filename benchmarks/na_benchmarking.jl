@@ -1,3 +1,4 @@
+@info "Loading NeuroAnalyzer.jl"
 using NeuroAnalyzer
 # using BenchmarkTools
 
@@ -6,7 +7,7 @@ using NeuroAnalyzer
 b = @benchmarkable na_benchmark() evals=20 samples=1
 run(b)
 =#
-
+@info "Reporting system data"
 println("# NeuroAnalyzer benchmarks")
 println()
 println("CPU: $(Sys.cpu_info()[1].model) $(length(Sys.cpu_info()) ÷ 2) cores ($(round(Sys.cpu_info()[1].speed / 1024, digits=2)) GHz)")
@@ -14,6 +15,7 @@ println("RAM: $(round((Int64(Sys.free_memory())) / 1024^3, digits=1)) GB free / 
 println()
 na_info()
 
+@info "Benchmarking: eeg_io.jl"
 println()
 println("## IO")
 println()
@@ -31,6 +33,7 @@ edf = eeg_import_edf("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 e10 = eeg_epochs(edf, epoch_len=2560)
 
+@info "Benchmarking: eeg_process.jl"
 println()
 println("## PROCESS")
 println()
@@ -51,6 +54,7 @@ print(rpad("Filter HP", 24))
 eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 
+@info "Benchmarking: eeg_analyze.jl"
 println()
 println("## ANALYZE")
 println()
@@ -233,8 +237,8 @@ print(rpad("F-test", 24))
 eeg_vartest(e10, e10)
 @time eeg_vartest(e10, e10)
 print(rpad("Band power", 24))
-eeg_band_mpower(e10; f=(10, 20, mt))
-@time eeg_band_mpower(e10; f=(10, 20, mt))
+eeg_band_mpower(e10; f=(10, 20))
+@time eeg_band_mpower(e10; f=(10, 20))
 print(rpad("Relative PSD", 24))
 eeg_rel_psd(e10; f=(10, 20))
 @time eeg_rel_psd(e10; f=(10, 20))
@@ -242,8 +246,8 @@ print(rpad("Frequency band split", 24))
 eeg_fbsplit(e10)
 @time eeg_fbsplit(e10)
 print(rpad("Channel difference", 24))
-eeg_chdiff(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-@time eeg_chdiff(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+eeg_chdiff(e10, e10, channel1=1, channel2=2);
+@time eeg_chdiff(e10, e10, channel1=1, channel2=2);
 print(rpad("Cross power spectrum 1", 24))
 eeg_cps(e10);
 @time eeg_cps(e10);
@@ -254,6 +258,7 @@ print(rpad("Amplitude difference", 24))
 eeg_ampdiff(e10)
 @time eeg_ampdiff(e10)
 
+@info "Benchmarking: eeg_plots.jl"
 println()
 println("## PLOT")
 println()

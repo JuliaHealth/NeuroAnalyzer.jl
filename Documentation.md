@@ -927,7 +927,7 @@ Calculate `signal` total power.
 
 
 ```julia
-s_band_power(signal; fs, f)
+s_band_power(signal; fs, f, mt)
 ```
 
 Calculate `signal` power between `f[1]` and `f[2]`.
@@ -937,6 +937,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
   * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
+  * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
@@ -6129,7 +6130,7 @@ Calculate covariance matrix for all EEG/MEG channels of `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `norm::Bool=true`: normalize covariance
+  * `norm::Bool=true`: normalize matrix
 
 **Returns**
 
@@ -6141,7 +6142,7 @@ Calculate covariance matrix for all EEG/MEG channels of `eeg`.
 
 
 ```julia
-eeg_cor(eeg)
+eeg_cor(eeg; norm)
 ```
 
 Calculate correlation coefficients between all channels of `eeg`.
@@ -6149,6 +6150,7 @@ Calculate correlation coefficients between all channels of `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `norm::Bool=true`: normalize matrix
 
 **Returns**
 
@@ -6163,7 +6165,7 @@ Calculate correlation coefficients between all channels of `eeg`.
 eeg_xcov(eeg; lag, demean, norm)
 ```
 
-Calculate cross-covariance of each the `eeg` channels.
+Calculate cross-covariance for all `eeg` channels.
 
 **Arguments**
 
@@ -7096,7 +7098,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_itpc(eeg; channel)
+eeg_itpc(eeg; channel, t, w)
 ```
 
 Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
@@ -7287,7 +7289,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_wspectrogram(eeg; norm, mt, demean)
+eeg_wspectrogram(eeg; pad, norm, frq_lim, frq_n, frq, ncyc, demean)
 ```
 
 Return spectrogram of `eeg` using Morlet wavelet convolution.
@@ -7337,7 +7339,7 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 
 ```julia
-eeg_wspectrum(eeg; norm, mt, demean)
+eeg_wspectrum(eeg; pad, norm, frq_lim, frq_n, frq, ncyc)
 ```
 
 Return power spectrogrum of `eeg` using Morlet wavelet convolution.
@@ -7465,7 +7467,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_rel_psd(eeg; norm, mt)
+eeg_rel_psd(eeg; norm, mt, f)
 ```
 
 Calculate relative power spectrum density for each the `eeg` channels.
@@ -7614,7 +7616,7 @@ Calculate phase difference between each `eeg` channel and mean phase of `channel
 eeg_ampdiff(eeg; channel)
 ```
 
-Calculate amplitude difference between each `eeg` channel and mean phase of `channel`.
+Calculate amplitude difference between each `eeg` channel and mean amplitude of `channel`.
 
 **Arguments**
 

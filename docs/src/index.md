@@ -326,7 +326,7 @@ eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Int64, factor::Real)
 eeg_total_power(eeg::NeuroAnalyzer.EEG, mt::Bool=false)
 eeg_band_power(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=false)
 eeg_cov(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
-eeg_cor(eeg::NeuroAnalyzer.EEG)
+eeg_cor(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, lag::Int64=1, demean::Bool=false, norm::Bool=false)
 eeg_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false)
@@ -387,7 +387,7 @@ eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, ch
 eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, norm::Bool=true)
 eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
-eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0)
 ```
 
 ## EEG plots
