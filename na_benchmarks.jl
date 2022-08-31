@@ -1,5 +1,5 @@
 using NeuroAnalyzer
-using BenchmarkTools
+# using BenchmarkTools
 
 #=
 @time na_benchmark();
