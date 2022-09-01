@@ -671,9 +671,7 @@ Named tuple containing:
 function eeg_pca(eeg::NeuroAnalyzer.EEG; n::Int64)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    signal = @view eeg.eeg_signals[channels, :, :]
-
-    pc, pc_var, pc_m = s_pca(signal, n=n)
+    pc, pc_var, pc_m = @views s_pca(eeg.eeg_signals[channels, :, :], n=n)
 
     return (pc=pc, pc_var=pc_var, pc_m=pc_m)
 end
@@ -693,15 +691,15 @@ Reconstruct `eeg` signals using PCA components.
 """
 function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
     :pc in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc component. Perform eeg_pca(EEG) first."))
     :pc_m in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc_m component. Perform eeg_pca(EEG) first."))
+
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 
     eeg_new = deepcopy(eeg)
     pc_idx = findfirst(isequal(:pc), eeg.eeg_header[:components])
     pc_m_idx = findfirst(isequal(:pc_m), eeg.eeg_header[:components])
-    eeg_new.eeg_signals = s_pca_reconstruct(eeg_new.eeg_signals, pc=eeg_new.eeg_components[pc_idx], pc_m=eeg_new.eeg_components[pc_m_idx])
+    eeg_new.eeg_signals[channels, :, :] = @views s_pca_reconstruct(eeg.eeg_signals[channels, :, :], pc=eeg_new.eeg_components[pc_idx], pc_m=eeg_new.eeg_components[pc_m_idx])
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_pca_reconstruct(EEG)")
 
@@ -747,9 +745,8 @@ Named tuple containing:
 """
 function eeg_ica(eeg::NeuroAnalyzer.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
-    ic, ic_mw = s_ica(eeg.eeg_signals, n=n, tol=tol, iter=iter, f=f)
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    ic, ic_mw = @views s_ica(eeg.eeg_signals[channels, :, :], n=n, tol=tol, iter=iter, f=f)
 
     return (ic=ic, ic_mw=ic_mw)
 end
@@ -769,11 +766,10 @@ Return the average signal of all `eeg` channels.
 """
 function eeg_average(eeg::NeuroAnalyzer.EEG)
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     eeg_new = deepcopy(eeg)
     eeg_keep_channel!(eeg_new, channel=1)
-    eeg_new.eeg_signals = s_average(eeg.eeg_signals)
+    eeg_new.eeg_signals = s_average(eeg.eeg_signals[channels, :, :])
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_average(EEG)")
 
@@ -849,15 +845,15 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 """
 function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
+
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 
     eeg_new = deepcopy(eeg)
     ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
     ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
-    eeg_new.eeg_signals = s_ica_reconstruct(eeg_new.eeg_signals, ic=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
+    eeg_new.eeg_signals = @views s_ica_reconstruct(eeg_new.eeg_signals[channels, :, :], ic=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica)")
 
@@ -1125,19 +1121,17 @@ Perform wavelet denoising.
 """
 function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
 
-    eeg_new = deepcopy(eeg)
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
     s_denoised = similar(eeg.eeg_signals)
-
+    eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_denoised[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
         end
     end
 
-    eeg_new.eeg_signals = s_denoised
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_wdenoise(EEG, wt=$wt)")
 
@@ -1159,15 +1153,12 @@ function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
     channel_n = eeg_channel_(eeg)
     epoch_n = eeg_epoch_n(eeg)
 
-    s_denoised = similar(eeg.eeg_signals)
-
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_denoised[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
+            eeg.eeg_signals[channel_idx, :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], wt=wt)
         end
     end
 
-    eeg.eeg_signals = s_denoised
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_wdenoise!(EEG, wt=$wt)")
 
@@ -1182,7 +1173,7 @@ Reference the `eeg` to auricular channels.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+- `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels, A2 for right channels) or :c (contraletral, A1 for right channels, A2 for left channels)
 - `med::Bool=false`: use median instead of mean
 
 # Returns
@@ -1307,6 +1298,7 @@ function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fal
     a2 = eeg_extract_channel(eeg, channel=a2_idx)
     eeg_delete_channel!(eeg_tmp, channel=a2_idx)
     eeg_delete_channel!(eeg_tmp, channel=a1_idx)
+    
     eeg_channel_n(eeg_tmp, type=:eeg) < eeg_channel_n(eeg_tmp, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
 
     channel_n = eeg_channel_n(eeg_tmp)

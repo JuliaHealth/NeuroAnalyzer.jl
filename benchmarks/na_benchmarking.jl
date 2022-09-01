@@ -10,6 +10,12 @@ run(b)
 @info "Reporting system data"
 println("# NeuroAnalyzer benchmarks")
 println()
+if Sys.isunix() || Sys.isapple()
+    print("OS: ")
+    run(`uname -a`)
+elseif Sys.iswindows()
+    print("OS: Windows $(Sys.windows_version())")
+end
 println("CPU: $(Sys.cpu_info()[1].model) $(length(Sys.cpu_info()) ÷ 2) cores ($(round(Sys.cpu_info()[1].speed / 1024, digits=2)) GHz)")
 println("RAM: $(round((Int64(Sys.free_memory())) / 1024^3, digits=1)) GB free /  $(round((Int64(Sys.total_memory())) / 1024^3, digits=1)) GB")
 println()
