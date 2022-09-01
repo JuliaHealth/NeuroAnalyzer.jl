@@ -14,7 +14,7 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 ## Installation
 
-First, download [Julia](https://julialang.org/downloads/) 1.0 or later. 
+First, download [Julia](https://julialang.org/downloads/) 1.7 or later. 
 
 There are two branches of NeuroAnalyzer:
 - [stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master): released once per month, recommended for research tasks
@@ -98,7 +98,7 @@ Wherever possible, NeuroAnalyzer will be 100% Julia based. If required, external
 
 NeuroAnalyzer functions operate on NeuroAnalyzer objects.
 
-For EEG this is NeuroAnalyzer.EEG (EEG metadata header + time + epoched signals + components). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
+For EEG this is NeuroAnalyzer.EEG (EEG metadata header + time + epoched signals + components + annotations). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
 
 Functions name prefix:
 - `eeg_` functions taking EEG object as an argument
@@ -110,7 +110,7 @@ The majority of `eeg_` functions will process all channels and epochs of the inp
 
 `eeg_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
 
-EEG object (headers + time + epochs time + EEG signal + (optional) components) is stored in the EEG structure:
+EEG object (headers + time + epochs time + EEG signal + (optional) components + annotations) is stored in the EEG structure:
 ```julia
 mutable struct EEG
     eeg_header::Dict
@@ -118,7 +118,7 @@ mutable struct EEG
     eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
-    eeg_markers::DataFrame
+    eeg_annotations::DataFrame
 end
 ```
 
