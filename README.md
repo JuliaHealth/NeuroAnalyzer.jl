@@ -154,10 +154,6 @@ na_plugins_remove()
 na_plugins_update()
 ```
 
-## Benchmarking
-
-Complete set of NA benchmarks is [here]()
-
 ## Known bugs
 
 - check for wrong epoch number in plots
@@ -169,8 +165,6 @@ The lists below are not complete and not in any particular order.
 General:
 - further performance optimizations
 - Pluto/Interact interface
-- Replace AbstractArray with AbstractVector where possible
-- better benchmarking module
 
 EEG:
 - analysis, plots: brain topography

@@ -1,6 +1,6 @@
 module NeuroAnalyzer
 
-const na_ver = v"0.22.8"
+const na_ver = v"0.22.9"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")

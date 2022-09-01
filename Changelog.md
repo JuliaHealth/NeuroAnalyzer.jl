@@ -1,5 +1,17 @@
 # NeuroAnalyzer major changes
 
+## v0.22.9 (01/09/2022)
+
+- name changed to NeuroAnalyzer to comply with Julia package naming policy
+- import: EDF+, BDF and BDF+ with annotations
+- view/edit annotations
+- interactive 3D preview of electrodes
+- PSD topomap
+- edit electrode locations
+- automated processing of signal channels only (WIP)
+- benchmarking module (WIP)
+- many minor additions and fixes
+
 ## v0.22.8 (01/08/2022)
 
 - initial CUDA support
