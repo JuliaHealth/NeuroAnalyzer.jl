@@ -1,5 +1,3 @@
-@info "Loading NeuroAnalyzer.jl"
-using NeuroAnalyzer
 # using BenchmarkTools
 
 #=
@@ -8,7 +6,7 @@ b = @benchmarkable na_benchmark() evals=20 samples=1
 run(b)
 =#
 @info "Reporting system data"
-println("# NeuroAnalyzer benchmarks")
+println("# System info")
 println()
 if Sys.isunix() || Sys.isapple()
     print("OS: $(read(`uname -a`, String))")
@@ -16,42 +14,55 @@ elseif Sys.iswindows()
     print("OS: Windows $(Sys.windows_version())")
 end
 println("CPU: $(Sys.cpu_info()[1].model) $(length(Sys.cpu_info()) ÷ 2) cores ($(round(Sys.cpu_info()[1].speed / 1024, digits=2)) GHz)")
-println("RAM: $(round((Int64(Sys.free_memory())) / 1024^3, digits=1)) GB free /  $(round((Int64(Sys.total_memory())) / 1024^3, digits=1)) GB")
+println("RAM: $(round((Int64(Sys.free_memory())) / 1024^3, digits=1)) GB free / $(round((Int64(Sys.total_memory())) / 1024^3, digits=1)) GB")
+println()
+@info "Loading NeuroAnalyzer.jl"
+println("# Loading NeuroAnalyzer.jl")
+println()
+# @time_imports using NeuroAnalyzer
+@time using NeuroAnalyzer
+println()
+println("# NeuroAnalyzer info")
 println()
 na_info()
 
 @info "Benchmarking: eeg_io.jl"
 println()
-println("## IO")
+println("# IO")
 println()
 
 print(rpad("Import EDF+", 24))
-eeg_import_edf("test/eeg-test-edfplus.edf");
+eeg_import_edf("test/eeg-test-edfplus.edf")
 @time edf = eeg_import_edf("test/eeg-test-edfplus.edf");
 print(rpad("Import BDF+", 24))
-bdf = eeg_import_bdf("test/eeg-test-bdf.bdf");
+bdf = eeg_import_bdf("test/eeg-test-bdf.bdf")
 @time bdf = eeg_import_bdf("test/eeg-test-bdf.bdf");
 print(rpad("Import EDF", 24))
-edf = eeg_import_edf("test/eeg-test-edf.edf");
+edf = eeg_import_edf("test/eeg-test-edf.edf")
 @time edf = eeg_import_edf("test/eeg-test-edf.edf");
 
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
+eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
 e10 = eeg_epochs(edf, epoch_len=2560)
 
 @info "Benchmarking: eeg_process.jl"
 println()
-println("## PROCESS")
+println("# PROCESS")
 println()
 
+print(rpad("A referencing", 24))
+edf_am = eeg_import_edf("test/eeg-test-edf.edf")
+eeg_delete_channel!(edf_am, channel=[22, 23, 24])
+e10_am = eeg_epochs(edf_am, epoch_len=2560)
+eeg_reference_a(e10_am)
+@time eeg_reference_a(e10_am);
+print(rpad("M referencing", 24))
+eeg_edit_channel!(e10_am, channel=17, field=:labels, value="M1")
+eeg_edit_channel!(e10_am, channel=18, field=:labels, value="M2")
+eeg_reference_m(e10_am)
+@time eeg_reference_m(e10_am);
 print(rpad("CAR referencing", 24))
 eeg_reference_car(e10);
 @time eeg_reference_car(e10);
-print(rpad("A referencing", 24))
-eeg_reference_a(e10);
-@time eeg_reference_a(e10);
-print(rpad("M referencing", 24))
-eeg_reference_m(e10);
-@time eeg_reference_a(e10);
 print(rpad("Channel referencing", 24))
 eeg_reference_ch(e10, channel=1);
 @time eeg_reference_ch(e10, channel=1);
@@ -67,7 +78,7 @@ eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 
 @info "Benchmarking: eeg_analyze.jl"
 println()
-println("## ANALYZE")
+println("# ANALYZE")
 println()
 
 print(rpad("Total power", 24))
@@ -271,5 +282,5 @@ eeg_ampdiff(e10)
 
 @info "Benchmarking: eeg_plots.jl"
 println()
-println("## PLOT")
+println("# PLOT")
 println()
