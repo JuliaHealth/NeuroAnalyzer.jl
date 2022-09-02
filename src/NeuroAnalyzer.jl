@@ -42,8 +42,8 @@ using Wavelets
 
 mutable struct EEG
     eeg_header::Dict
-    eeg_time::Vector{Float64}
-    eeg_epochs_time::Vector{Float64}
+    eeg_time::Vector{Float16}
+    eeg_epochs_time::Vector{Float16}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
     eeg_annotations::DataFrame

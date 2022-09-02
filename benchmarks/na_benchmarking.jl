@@ -46,6 +46,12 @@ println()
 print(rpad("CAR referencing", 24))
 eeg_reference_car(e10);
 @time eeg_reference_car(e10);
+print(rpad("A referencing", 24))
+eeg_reference_a(e10);
+@time eeg_reference_a(e10);
+print(rpad("M referencing", 24))
+eeg_reference_m(e10);
+@time eeg_reference_a(e10);
 print(rpad("Channel referencing", 24))
 eeg_reference_ch(e10, channel=1);
 @time eeg_reference_ch(e10, channel=1);

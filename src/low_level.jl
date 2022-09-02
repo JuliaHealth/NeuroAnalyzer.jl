@@ -56,12 +56,10 @@ function m_pad0(m::Matrix{<:Number})
     nr, nc = size(m)
 
     if nr > nc
-        mp = repeat([0], nr, nr - nc)
-        return hcat(m, mp)
+        return hcat(m, repeat([0], nr, nr - nc))
     elseif nr < nc
-        mp = repeat([0], nc - nr, nc)
-        return vcat(m, mp)
-    elseif nr == nc
+        return vcat(m, repeat([0], nc - nr, nc))
+    else
         return m
     end
 end
@@ -312,13 +310,20 @@ function fft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
-    n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional() && use_cuda
-        _free_gpumem()
-        cx = CuArray(x)
+        # _free_gpumem()
+        if n == 0
+            cx = CuArray(x)
+        else
+            cx = CuArray(vcat(x, zeros(eltype(x), n)))
+        end
         return Vector(fft(cx))
     else
-        return fft(x)
+        if n == 0
+            return fft(x)
+        else
+            return fft(vcat(x, zeros(eltype(x), n)))
+        end
     end
 end
 
@@ -340,13 +345,20 @@ function ifft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
-    n != 0 && (x = vcat(x, zeros(eltype(x), n)))
     if CUDA.functional() && use_cuda
-        _free_gpumem()
-        cx = CuArray(x)
+        # _free_gpumem()
+        if n == 0
+            cx = CuArray(x)
+        else
+            cx = CuArray(vcat(x, zeros(eltype(x), n)))
+        end
         return Vector(ifft(cx))
     else
-        return ifft(x)
+        if n == 0
+            return ifft(x)
+        else
+            return ifft(vcat(x, zeros(eltype(x), n)))
+        end
     end
 end
 
@@ -2112,7 +2124,7 @@ function s_pca(signal::AbstractArray; n::Int64)
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of PCs must be ≤ $(size(signal, 1))."))
 
-    channel_n, _, epoch_n = size(signal)
+    epoch_n = size(signal, 3)
     pc_m = []
 
     # check maximum n
@@ -2167,12 +2179,10 @@ Reconstructs `signal` using PCA components.
 """
 function s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pc_m::PCA{Float64})
 
-    s_reconstructed = zeros(size(signal))
-
-    _, _, epoch_n = size(signal)
-
+    s_reconstructed = similar(signal)
+    epoch_n = size(signal, 3)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s_reconstructed[:, :, epoch_idx] = reconstruct(pc_m, pc[:, :, epoch_idx])
+        s_reconstructed[:, :, epoch_idx] = @views MultivariateStats.reconstruct(pc_m, pc[:, :, epoch_idx])
     end
 
     return s_reconstructed
@@ -2888,8 +2898,8 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
         # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(w_conv), imag.(w_conv), 2)
-        w_powers[frq_idx, :] = @. abs(w_conv[frq_idx, :])^2
-        w_phases[frq_idx, :] = @. angle(w_conv[frq_idx, :])
+        w_powers[frq_idx, :] = @views @fastmath @. abs(w_conv[frq_idx, :])^2
+        w_phases[frq_idx, :] = @views @. angle(w_conv[frq_idx, :])
     end
 
     # remove reflected part of the signal
