@@ -89,8 +89,8 @@ end
 function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo::Bool=false, kwargs...)
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
-    # - `loc_x::Vector{Float64}`: vector of x electrode position
-    # - `loc_y::Vector{Float64}`: vector of y electrode position
+    # - `loc_x::Vector{<:Real}`: vector of x electrode position
+    # - `loc_y::Vector{<:Real}`: vector of y electrode position
     # - `head_labels::Bool=true`: add text labels to the plot
     # - `topo::Bool=false`: if true, perform peripheral erasing for topo plots
     # - `kwargs`: optional arguments for plot() function
@@ -218,7 +218,7 @@ function _t2epoch(eeg::NeuroAnalyzer.EEG, offset, len, epoch_tmp)
     return epoch_tmp
 end
 
-function _fir_response(f::Vector{Float64}, w=range(0, stop=π, length=1024))
+function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
     # code based on Matti Pastell "FIR filter design with Julia"
     n = length(w)
     h = Array{ComplexF32}(undef, n)
@@ -233,7 +233,7 @@ function _fir_response(f::Vector{Float64}, w=range(0, stop=π, length=1024))
     return h
 end
 
-function _make_epochs(signal::Matrix{Float64}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
     (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
     (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
