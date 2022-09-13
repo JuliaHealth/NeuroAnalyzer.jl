@@ -273,7 +273,7 @@ eeg_chdiff(e10, e10, channel1=1, channel2=2);
 print(rpad("Cross power spectrum 1", 24))
 eeg_cps(e10);
 @time eeg_cps(e10);
-print(rpad("Cross power spectrum 1", 24))
+print(rpad("Cross power spectrum 2", 24))
 eeg_cps(e10);
 @time eeg_cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Amplitude difference", 24))
