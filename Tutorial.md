@@ -710,6 +710,16 @@ eeg_plot_save(p, file_name="images/edf_rel_psd.png")
 ```
 ![](images/edf_rel_psd.png)
 
+Plot phase of the convoluted signal:
+```julia
+mw = generate_morlet(256, 10, 32, complex=true)
+e10_tconv = eeg_tconv(e10, kernel=mw)
+pt = s_phases(e10_tconv)
+p = eeg_plot_component(e10, c=pt, epoch=1, channel=1:4)
+eeg_plot_save(p, file_name="images/e10_tconv_phases.png")
+```
+![](images/e10_tconv_phases.png)
+
 Plot PSD 3d waterfall:
 ```julia
 p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10)

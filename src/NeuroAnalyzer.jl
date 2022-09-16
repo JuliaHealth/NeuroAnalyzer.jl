@@ -189,6 +189,7 @@ export s_normalize_neg
 export s_normalize_pos
 export s_normalize_perc
 export s_normalize
+export s_phases
 
 include("statistic.jl")
 export hildebrand_rule

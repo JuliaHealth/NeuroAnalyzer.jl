@@ -598,9 +598,33 @@ function pad0(x::AbstractVector, n::Int64, sym::Bool=false)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
-    v_pad = sym == true ? vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : vcat(x, zeros(eltype(x), n))
+    return sym == true ? vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : vcat(x, zeros(eltype(x), n))
+end
 
-    return v_pad
+"""
+    pad0(x, n, sym)
+
+Pad the vector `x` with `n` zeros. Works only for two- and three-dimensional arrays.
+
+# Arguments
+
+- `x::AbstractArray`
+- `n::Int64`
+- `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
+
+# Returns
+
+- `v_pad::AbstractVector`
+"""
+function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
+
+    n < 0 && throw(ArgumentError("n must be ≥ 0."))
+
+    if length(size(x)) == 2
+        return sym == true ? hcat(zeros(eltype(x), size(x, 1), n), x, zeros(eltype(x), size(x, 1), n)) : hcat(x, zeros(eltype(x), size(x, 1), n))
+    elseif length(size(x)) == 3
+        return sym == true ? hcat(zeros(eltype(x), size(x, 1), n, size(x, 3)), x, zeros(eltype(x), size(x, 1), n, size(x, 3))) : hcat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)))
+    end
 end
 
 """
@@ -1184,7 +1208,7 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `signal::AbstractArray`
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 # Returns
@@ -1195,7 +1219,7 @@ Named tuple containing:
 - `s_powers::Vector{Float64}`
 - `s_phases::Vector{Float64}`
 """
-function s_spectrum(signal::AbstractVector; pad::Int64=0)
+function s_spectrum(signal::AbstractArray; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
@@ -2651,10 +2675,10 @@ function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothin
     
     s_phase = zeros(size(signal, 2), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        _, _, _, s_phase[:, epoch_idx] = s_hspectrum(signal[1, :, epoch_idx])
+        _, _, _, s_phase[:, epoch_idx] = @views s_hspectrum(signal[1, :, epoch_idx])
     end
  
-    itpc_phases = s_phase[t, :]
+    itpc_phases = @view s_phase[t, :]
     itpc = abs.(mean(exp.(1im .* itpc_phases .* w)))
     itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
     itpcz = epoch_n * itpc^2
@@ -2761,7 +2785,7 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `signal::AbstractArray`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 
 # Returns
@@ -2772,7 +2796,7 @@ Named tuple containing:
 - `h_powers::Vector{Float64}`
 - `h_phases::Vector{Float64}`
 """
-function s_hspectrum(signal::AbstractVector; pad::Int64=0)
+function s_hspectrum(signal::AbstractArray; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     h = hilbert(pad0(signal, pad))
@@ -3946,4 +3970,23 @@ function s_normalize(signal::AbstractArray; method::Symbol)
     elseif method === :none
         return signal
     end
+end
+
+"""
+    s_phases(signal; h, pad)
+
+Calculate phases of the `signal`.
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+Named tuple containing:
+- `phases::Vector{Float64}`
+"""
+function s_phases(signal::AbstractArray)
+
+    return angle.(signal)
 end

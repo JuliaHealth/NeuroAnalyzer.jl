@@ -55,7 +55,7 @@ function na_info()
         for idx in 1:length(required_packages)
             pkg = lpad(required_packages[idx], 25 - length(idx), " ")
             pkg_ver = versions[required_packages[idx]][1]["version"]
-            println("$pkg $pkg_ver ")
+            println("$pkg $pkg_ver")
         end
     else
         @warn "Manifest.toml file could not be found in $(pwd()), "

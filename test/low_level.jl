@@ -126,5 +126,6 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test s_normalize_pos([1, 2, 3]) == [2, 3, 4]
 @test s_normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
 @test s_normalize([1, 2, 3], method=:zscore) == s_normalize_zscore([1, 2, 3])
+@test s_phases(ones(ComplexF64, 10)) == zeros(10)
 
 true

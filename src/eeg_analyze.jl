@@ -2459,7 +2459,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     Threads.@threads for frq_idx in 1:frq_n
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
-        s_conv = zeros(1, epoch_len, epoch_n)
+        s_conv = zeros(Float32, 1, epoch_len, epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
             s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end

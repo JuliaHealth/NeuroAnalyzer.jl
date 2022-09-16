@@ -219,7 +219,6 @@ EEG:
 - plots: 3d head/brain plots
 - plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
 - plots: coherence spectrum (y: relative amplitude, x: frequencies)
-- plots: complex kernel convolution: plot magnitude and phase of the convoluted signal
 - plots: ITPC topoplot
 - plots: plot two EEG one over another for comparison
 - plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)

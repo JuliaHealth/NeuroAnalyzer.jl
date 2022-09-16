@@ -471,6 +471,27 @@ Pad the vector `x` with `n` zeros.
 
   * `v_pad::AbstractVector`
 
+<a id='NeuroAnalyzer.pad0' href='#NeuroAnalyzer.pad0'>#</a>
+**`NeuroAnalyzer.pad0`** &mdash; *Function*.
+
+
+
+```julia
+pad0(x, n, sym)
+```
+
+Pad the vector `x` with `n` zeros. Works only for two- and three-dimensional arrays.
+
+**Arguments**
+
+  * `x::AbstractArray`
+  * `n::Int64`
+  * `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
+
+**Returns**
+
+  * `v_pad::AbstractVector`
+
 <a id='NeuroAnalyzer.hz2rads-Tuple{Real}' href='#NeuroAnalyzer.hz2rads-Tuple{Real}'>#</a>
 **`NeuroAnalyzer.hz2rads`** &mdash; *Method*.
 
@@ -875,7 +896,7 @@ Calculate cross-covariance between `signal1` and `signal2`.
   * `ccov::Vector{Float64}`
   * `lags::Vector{Int64}`
 
-<a id='NeuroAnalyzer.s_spectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_spectrum-Tuple{AbstractVector}'>#</a>
+<a id='NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_spectrum-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_spectrum`** &mdash; *Method*.
 
 
@@ -888,7 +909,7 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 **Arguments**
 
-  * `signal::AbstractVector`
+  * `signal::AbstractArray`
   * `pad::Int64=0`: pad the `signal` with `pad` zeros
 
 **Returns**
@@ -1929,7 +1950,7 @@ Calculate instantaneous frequency `signal`.
 
   * `frqinst::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_hspectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_hspectrum-Tuple{AbstractVector}'>#</a>
+<a id='NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_hspectrum-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_hspectrum`** &mdash; *Method*.
 
 
@@ -1942,7 +1963,7 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 **Arguments**
 
-  * `signal::AbstractVector`
+  * `signal::AbstractArray`
   * `pad::Int64`: pad the `signal` with `pad` zeros
 
 **Returns**
@@ -2780,6 +2801,27 @@ Normalize `signal`.
 **Returns**
 
   * `s_normalized::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_phases-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_phases-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_phases`** &mdash; *Method*.
+
+
+
+```julia
+s_phases(signal; h, pad)
+```
+
+Calculate phases of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+Named tuple containing:
+
+  * `phases::Vector{Float64}`
 
 
 <a id='Statistic'></a>
@@ -5744,7 +5786,7 @@ Reference the `eeg` to auricular channels.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
+  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels, A2 for right channels) or :c (contraletral, A1 for right channels, A2 for left channels)
   * `med::Bool=false`: use median instead of mean
 
 **Returns**
