@@ -180,6 +180,7 @@ EEG:
 - analysis: EEG bands: medial vs left vs right channels within each band
 - analysis: FOOOF
 - analysis: Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
+- analysis: HRV of the ECG channel
 - analysis: ML/DL
 - analysis: multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
 - analysis: non-phase-locked part of the signal (= total - phase-locked)
@@ -230,7 +231,6 @@ EEG:
 - process: REST referencing
 - process: set baseline
 - trial: multi-trial data
-
 - ERPs
 - visual / auditory stimuli presentation module (via Raspberry Pi)
 - use eyetracker to detect eye movement and blink artifacts

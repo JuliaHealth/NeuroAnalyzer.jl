@@ -53,11 +53,11 @@ function plot_signal_scaled(t::Union{AbstractVector, AbstractRange}, signal::Abs
              ylims=(-0.5, channel_n-0.5),
              title=title,
              palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=8,
-             ytickfontsize=8;
+             titlefontsize=6,
+             xlabelfontsize=5,
+             ylabelfontsize=5,
+             xtickfontsize=4,
+             ytickfontsize=4;
              kwargs...)
     for idx in 1:channel_n
         p = Plots.plot!(t,
