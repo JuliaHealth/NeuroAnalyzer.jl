@@ -211,6 +211,7 @@ export eeg_import_locs
 export eeg_import_elc
 export eeg_import_tsv
 export eeg_import_sfp
+export eeg_import_csd
 export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!

@@ -934,6 +934,15 @@ eeg_plot_save(p, file_name="images/spec_seg_box.png")
 ![](images/spec_seg.png)
 ![](images/spec_seg_box.png)
 
+### Pipelines
+
+Pipelines are stored in `~/Documents/NeuroAnalyzer/pipelines`.
+
+```julia
+include(expanduser("~/Documents/NeuroAnalyzer/pipelines/test_pipeline.jl"))
+edf2 = test_pipeline(edf)
+```
+
 ### EEG Misc
 
 ```julia

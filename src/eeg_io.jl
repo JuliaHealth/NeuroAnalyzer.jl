@@ -498,6 +498,42 @@ function eeg_import_sfp(file_name::String)
 end
 
 """
+    eeg_import_csd(file_name)
+
+Load electrode positions from CSD file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `sensors::DataFrame`
+"""
+function eeg_import_csd(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
+    splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a csd file."))
+    sensors = CSV.read(file_name, skipto=3, delim=' ', ignorerepeated=true, DataFrame)
+
+    DataFrames.rename!(sensors, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
+    labels = lstrip.(sensors[!, "labels"])
+
+    x = Float64.(sensors[!, "x"])
+    y = Float64.(sensors[!, "y"])
+    z = Float64.(sensors[!, "z"])
+    radius = Float64.(sensors[!, "radius_sph"])
+    theta = Float64.(sensors[!, "theta_sph"])
+    theta_sph = Float64.(sensors[!, "theta_sph"])
+    phi_sph = Float64.(sensors[!, "phi_sph"])
+    radius_sph = Float64.(sensors[!, "radius_sph"])
+
+    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    return sensors
+end
+
+"""
     eeg_load_electrodes(eeg; file_name)
 
 Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
@@ -508,6 +544,7 @@ Accepted formats:
 - ELC
 - TSV
 - SFP
+- CSD
 
 Electrode locations:
 - loc_theta       planar polar angle
@@ -543,6 +580,8 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
         sensors = eeg_import_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
         sensors = eeg_import_sfp(file_name)
+    elseif splitext(file_name)[2] == ".csd"
+        sensors = eeg_import_csd(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end

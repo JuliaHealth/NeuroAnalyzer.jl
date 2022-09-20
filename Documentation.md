@@ -3163,6 +3163,25 @@ Load electrode positions from SFP file.
 
   * `sensors::DataFrame`
 
+<a id='NeuroAnalyzer.eeg_import_csd-Tuple{String}' href='#NeuroAnalyzer.eeg_import_csd-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_csd`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_csd(file_name)
+```
+
+Load electrode positions from CSD file.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `sensors::DataFrame`
+
 <a id='NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_load_electrodes`** &mdash; *Method*.
 
@@ -3181,6 +3200,7 @@ Accepted formats:
   * ELC
   * TSV
   * SFP
+  * CSD
 
 Electrode locations:
 

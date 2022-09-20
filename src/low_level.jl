@@ -1088,11 +1088,11 @@ function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=
         if method === :absdiff
             # statistic: maximum difference
             s_diff = s1_mean - s2_mean
-            s_stat[idx1] = maximum(abs.(s_diff))
+            @inbounds s_stat[idx1] = maximum(abs.(s_diff))
         else
             # statistic: integrated area of the squared difference
             s_diff_squared = (s1_mean - s2_mean).^2
-            s_stat[idx1] = simpson(s_diff_squared)
+            @inbounds s_stat[idx1] = simpson(s_diff_squared)
         end
     end
 
@@ -1134,17 +1134,13 @@ function s_acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::
     acov = zeros(length(lags))
     l = length(signal)
 
-    @inbounds @simd for idx in eachindex(lags)
-        if lags[idx] == 0
-            # no lag
-            acov[idx] = sum(s_demeaned.^2)
-        elseif lags[idx] > 0
-            # positive lag
-            acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])])
-        elseif lags[idx] < 0
-            # negative lag
-            acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end])
-        end
+    @simd for idx in eachindex(lags)
+        # no lag
+        @inbounds @fastmath lags[idx] == 0 && (acov[idx] = sum(s_demeaned.^2))
+        # positive lag
+        @inbounds @fastmath lags[idx] > 0 && (acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
+        # negative lag
+        @inbounds @fastmath lags[idx] < 0 && (acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
     end
     norm == true && (acov ./ l)
 
@@ -1184,17 +1180,13 @@ function s2_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1,
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    @inbounds @simd for idx in 1:length(lags)
-        if lags[idx] == 0
-            # no lag
-            xcov[idx] = sum(signal1 .* signal2)
-        elseif lags[idx] > 0
-            # positive lag
-            xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])])
-        elseif lags[idx] < 0
-            # negative lag
-            xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end])
-        end
+    @simd for idx in 1:length(lags)
+        # no lag
+        @inbounds @fastmath lags[idx] == 0 && (xcov[idx] = sum(signal1 .* signal2))
+        # positive lag
+        @inbounds @fastmath lags[idx] > 0 && (xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])]))
+        # negative lag
+        @inbounds @fastmath lags[idx] < 0 && (xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end]))
     end
     norm == true && (xcov ./ l)
 

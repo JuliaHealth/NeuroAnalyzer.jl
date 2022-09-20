@@ -32,6 +32,10 @@ s = eeg_import_elc("test.elc")
 @test typeof(s) == DataFrame
 s = eeg_import_tsv("test.tsv")
 @test typeof(s) == DataFrame
+s = eeg_import_sfp("test.sfp")
+@test typeof(s) == DataFrame
+s = eeg_import_csd("test.csd")
+@test typeof(s) == DataFrame
 
 edf = eeg_load_electrodes(edf, file_name="standard-10-20-cap19-elmiko.ced")
 @test typeof(edf) == NeuroAnalyzer.EEG
