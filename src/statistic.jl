@@ -13,7 +13,6 @@ If H < 0.2 then the vector `x` is symmetrical.
 - `h::Float64`
 """
 function hildebrand_rule(x::AbstractVector)
-
     return (mean(x) - median(x)) ./ std(x)
 end
 
@@ -74,7 +73,6 @@ Named tuple containing:
 - `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)
-
     return (k1=sqrt(n), k2=(1 + 3.222 * log10(n)))
 end
 
@@ -103,7 +101,7 @@ end
 """
     infcrit(m)
 
-Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression `model`.
+Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression model `m`.
 
 # Arguments
 
@@ -128,7 +126,7 @@ function infcrit(m)
 end
 
 """
-    grubbsx; alpha, t)
+    grubbs(x; alpha, t)
 
 Perform Grubbs test for outlier in vector `x`.
 
@@ -290,4 +288,249 @@ function seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::
     p = round(p, digits=4)
 
     return (tt=tt, t=(t, tn), c=c, df=df, p=p, seg1=seg1_avg, seg2=seg2_avg)
+end
+
+"""
+    binom_prob(p, r, n)
+
+Calculate probability of exactly `r` successes in `n` trials.
+
+# Arguments
+
+- `p::Float64`: proportion of successes
+- `r::Int64`: number of successes
+- `n::Int64`: number of trials
+
+# Returns
+
+- `binomp::Float64`: probability
+"""
+function binom_prob(p::Float64, r::Int64, n::Int64)
+    return binomial(n, r) * (p^r) * (1 - p)^(n - r)
+end
+
+"""
+    binom_stat(p, n)
+
+Calculate mean and standard deviation for probability `p`.
+
+# Arguments
+
+- `p::Float64`: proportion of successes
+- `n::Int64`: number of trials
+
+# Returns
+
+- `mean::Float64`
+- `std::Float64`
+"""
+function binom_stat(p::Float64, n::Int64)
+    return n * p, sqrt(n * p * (1 - p))
+end
+
+"""
+    cvar_mean(x)
+
+Calculate coefficient of variation for a mean.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `cvar::Float64`
+"""
+function cvar_mean(x::AbstractVector)
+    return std(x) / mean(x)
+end
+
+"""
+    cvar_median(x)
+
+Calculate coefficient of variation for a median.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `cvar::Float64`
+"""
+function cvar_median(x::AbstractVector)
+    return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
+end
+
+"""
+    cvar(se, s)
+
+Calculate coefficient of variation for statistic `s`.
+
+# Arguments
+
+- `se::Real`: standard error
+- `s::Real`: statistics, e.g. mean value
+
+# Returns
+
+- `cvar::Float64`
+"""
+function cvar(se::Real, s::Real)
+    return 100 * (se / s)
+end
+
+"""
+    effsize(p1, p2)
+
+Calculate effect size for two proportions `p1` and `p2`.
+
+# Arguments
+
+- `p1::Float64`: 1st proportion, e.g. 0.7
+- `p2::Float64`: 2nd proportion, e.g. 0.3
+
+# Returns
+
+- `e::Float64`
+"""
+function effsize(p1::Float64, p2::Float64)
+    p1 + p2 == 1.0 || throw(ArgumentError("Proportions must add to 1.0."))    
+    return 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
+end
+
+"""
+    meang(x)
+
+Calculate geometric mean.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `m::Float64`
+"""
+function meang(x::AbstractVector)
+    return exp(mean(log.(x[x .> 0])))
+end
+
+"""
+    meanh(x)
+
+Calculate harmonic mean.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `m::Float64`
+"""
+function meanh(x::AbstractVector)
+    return length(x) / sum(1 ./ x)
+end
+
+"""
+    meanw(x, w)
+
+Calculate weighted mean.
+
+# Arguments
+
+- `x::AbstractVector`
+- `w::AbstractVector`: weights
+
+# Returns
+
+- `m::Float64`
+"""
+function meanw(x::AbstractVector, w::AbstractVector)
+    length(x) == length(w) || throw(ArgumentError("Weights and values vectors must have the same length."))
+    return length(x) / sum(1 ./ x)
+end
+
+"""
+    moe(n)
+
+Calculate margin of error for given sample size `n`.
+
+# Arguments
+
+- `n::Int64`
+
+# Returns
+
+- `moe::Float64`
+"""
+function moe(n::Int64)
+    return 1 / sqrt(n)
+end
+
+"""
+    rng(x)
+
+Calculate range.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `r::Float64`
+"""
+function rng(x::AbstractVector)
+    return maximum(x) - minimum(x)
+end
+
+"""
+    se(x)
+
+Calculate standard error.
+
+# Arguments
+
+- `x::AbstractVector`
+
+# Returns
+
+- `se::Float64`
+"""
+function se(x::AbstractVector)
+    return std(x) / sqrt(length(x))
+end
+
+"""
+    pred_int(n)
+
+Calculates the prediction interval (95% CI adjusted for sample size)
+
+# Arguments
+
+- `n::Int64`: sample size
+
+# Returns
+
+- `pred_int::Tuple{Float64, Float64}`
+"""
+function pred_int(n::Int64)
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    if n > 0 && n < 21
+        return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
+    end
+    @warn "Result may not be accurate."
+    n > 20 && n <= 25 && return 2.10
+    n > 25 && n <= 30 && return 2.08
+    n > 31 && n <= 35 && return 2.06
+    n > 35 && n <= 40 && return 2.05
+    n > 41 && n <= 50 && return 2.03
+    n > 51 && n <= 60 && return 2.02
+    n > 61 && n <= 70 && return 2.01
+    n > 71 && n <= 80 && return 2.00
+    n > 81 && n <= 90 && return 2.00
+    n > 91 && n <= 100 && return 1.99
+    n > 100 && return 1.98
 end

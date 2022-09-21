@@ -514,7 +514,7 @@ function eeg_import_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a csd file."))
-    sensors = CSV.read(file_name, skipto=3, delim=' ', ignorerepeated=true, DataFrame)
+    sensors = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
 
     DataFrames.rename!(sensors, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
     labels = lstrip.(sensors[!, "labels"])

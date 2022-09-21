@@ -2248,7 +2248,7 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 a2_l1(a1, a2)
 ```
 
-Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) distance.
+Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) distance.
 
 **Arguments**
 
@@ -2268,7 +2268,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L1
 a2_l2(a1, a2)
 ```
 
-Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) distance.
+Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) distance.
 
 **Arguments**
 
@@ -2942,7 +2942,7 @@ Named tuple containing:
 infcrit(m)
 ```
 
-Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression `model`.
+Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criterion (BIC) for a linear regression model `m`.
 
 **Arguments**
 
@@ -2961,7 +2961,7 @@ Named tuple containing:
 
 
 ```julia
-grubbsx; alpha, t)
+grubbs(x; alpha, t)
 ```
 
 Perform Grubbs test for outlier in vector `x`.
@@ -3028,6 +3028,260 @@ Named tuple containing:
   * `p::Float64`: p-value
   * `seg1::Vector{Float64}`: averaged segment 1
   * `seg2::Vector{Float64}`: averaged segment 2
+
+<a id='NeuroAnalyzer.binom_prob-Tuple{Float64, Int64, Int64}' href='#NeuroAnalyzer.binom_prob-Tuple{Float64, Int64, Int64}'>#</a>
+**`NeuroAnalyzer.binom_prob`** &mdash; *Method*.
+
+
+
+```julia
+binom_prob(p, r, n)
+```
+
+Calculate probability of exactly `r` successes in `n` trials.
+
+**Arguments**
+
+  * `p::Float64`: proportion of successes
+  * `r::Int64`: number of successes
+  * `n::Int64`: number of trials
+
+**Returns**
+
+  * `binomp::Float64`: probability
+
+<a id='NeuroAnalyzer.binom_stat-Tuple{Float64, Int64}' href='#NeuroAnalyzer.binom_stat-Tuple{Float64, Int64}'>#</a>
+**`NeuroAnalyzer.binom_stat`** &mdash; *Method*.
+
+
+
+```julia
+binom_stat(p, n)
+```
+
+Calculate mean and standard deviation for probability `p`.
+
+**Arguments**
+
+  * `p::Float64`: proportion of successes
+  * `n::Int64`: number of trials
+
+**Returns**
+
+  * `mean::Float64`
+  * `std::Float64`
+
+<a id='NeuroAnalyzer.cvar_mean-Tuple{AbstractVector}' href='#NeuroAnalyzer.cvar_mean-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.cvar_mean`** &mdash; *Method*.
+
+
+
+```julia
+cvar_mean(x)
+```
+
+Calculate coefficient of variation for a mean.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `cvar::Float64`
+
+<a id='NeuroAnalyzer.cvar_median-Tuple{AbstractVector}' href='#NeuroAnalyzer.cvar_median-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.cvar_median`** &mdash; *Method*.
+
+
+
+```julia
+cvar_median(x)
+```
+
+Calculate coefficient of variation for a median.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `cvar::Float64`
+
+<a id='NeuroAnalyzer.cvar-Tuple{Real, Real}' href='#NeuroAnalyzer.cvar-Tuple{Real, Real}'>#</a>
+**`NeuroAnalyzer.cvar`** &mdash; *Method*.
+
+
+
+```julia
+cvar(se, s)
+```
+
+Calculate coefficient of variation for statistic `s`.
+
+**Arguments**
+
+  * `se::Real`: standard error
+  * `s::Real`: statistics, e.g. mean value
+
+**Returns**
+
+  * `cvar::Float64`
+
+<a id='NeuroAnalyzer.effsize-Tuple{Float64, Float64}' href='#NeuroAnalyzer.effsize-Tuple{Float64, Float64}'>#</a>
+**`NeuroAnalyzer.effsize`** &mdash; *Method*.
+
+
+
+```julia
+effsize(p1, p2)
+```
+
+Calculate effect size for two proportions `p1` and `p2`.
+
+**Arguments**
+
+  * `p1::Float64`: 1st proportion, e.g. 0.7
+  * `p2::Float64`: 2nd proportion, e.g. 0.3
+
+**Returns**
+
+  * `e::Float64`
+
+<a id='NeuroAnalyzer.meang-Tuple{AbstractVector}' href='#NeuroAnalyzer.meang-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.meang`** &mdash; *Method*.
+
+
+
+```julia
+meang(x)
+```
+
+Calculate geometric mean.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `m::Float64`
+
+<a id='NeuroAnalyzer.meanh-Tuple{AbstractVector}' href='#NeuroAnalyzer.meanh-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.meanh`** &mdash; *Method*.
+
+
+
+```julia
+meanh(x)
+```
+
+Calculate harmonic mean.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `m::Float64`
+
+<a id='NeuroAnalyzer.meanw-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.meanw-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.meanw`** &mdash; *Method*.
+
+
+
+```julia
+meanw(x, w)
+```
+
+Calculate weighted mean.
+
+**Arguments**
+
+  * `x::AbstractVector`
+  * `w::AbstractVector`: weights
+
+**Returns**
+
+  * `m::Float64`
+
+<a id='NeuroAnalyzer.moe-Tuple{Int64}' href='#NeuroAnalyzer.moe-Tuple{Int64}'>#</a>
+**`NeuroAnalyzer.moe`** &mdash; *Method*.
+
+
+
+```julia
+moe(n)
+```
+
+Calculate margin of error for given sample size `n`.
+
+**Arguments**
+
+  * `n::Int64`
+
+**Returns**
+
+  * `moe::Float64`
+
+<a id='NeuroAnalyzer.rng-Tuple{AbstractVector}' href='#NeuroAnalyzer.rng-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.rng`** &mdash; *Method*.
+
+
+
+```julia
+rng(x)
+```
+
+Calculate range.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `r::Float64`
+
+<a id='NeuroAnalyzer.se-Tuple{AbstractVector}' href='#NeuroAnalyzer.se-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.se`** &mdash; *Method*.
+
+
+
+```julia
+se(x)
+```
+
+Calculate standard error.
+
+**Arguments**
+
+  * `x::AbstractVector`
+
+**Returns**
+
+  * `se::Float64`
+
+<a id='NeuroAnalyzer.pred_int-Tuple{Int64}' href='#NeuroAnalyzer.pred_int-Tuple{Int64}'>#</a>
+**`NeuroAnalyzer.pred_int`** &mdash; *Method*.
+
+
+
+```julia
+pred_int(n)
+```
+
+Calculates the prediction interval (95% CI adjusted for sample size)
+
+**Arguments**
+
+  * `n::Int64`: sample size
+
+**Returns**
+
+  * `pred_int::Tuple{Float64, Float64}`
 
 
 <a id='EEG-I/O'></a>

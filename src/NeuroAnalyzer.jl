@@ -1,3 +1,5 @@
+__precompile__()
+
 module NeuroAnalyzer
 
 const na_ver = v"0.22.9"
@@ -201,6 +203,18 @@ export infcrit
 export grubbs
 export outlier_detect
 export seg_cmp
+export binom_prob
+export binom_stat
+export cvar_mean
+export cvar_median
+export cvar
+export meang
+export meanh
+export meanw
+export moe
+export rng
+export se
+export pred_int
 
 include("eeg_io.jl")
 export eeg_export_csv
