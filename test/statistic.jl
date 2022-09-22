@@ -34,5 +34,6 @@ _, t, c, df, p, _, _ = seg_cmp(ones(5,5,5), zeros(5,5,5), paired=true, type=:p)
 @test rng(1:5) == 4
 @test se(ones(5)) == 0.0
 @test pred_int(2) == 15.56
-
+@test sem_diff(ones(5), zeros(5)) == 0.0
+@test round.(prank([1,2,3]), digits=1) == [0.0, 0.1, 0.2]
 true

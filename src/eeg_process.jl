@@ -830,7 +830,7 @@ function eeg_average(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_ica_reconstruct(eeg; ica)
+    eeg_ica_reconstruct(eeg; ic)
 
 Reconstruct `eeg` signals using removal of `ica` ICA components.
 
@@ -843,7 +843,7 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ic::Union{Int64, Vector{Int64}, AbstractRange})
 
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
@@ -853,15 +853,15 @@ function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{In
     eeg_new = deepcopy(eeg)
     ica_a_idx = findfirst(isequal(:ica), eeg.eeg_header[:components])
     ica_mw_idx = findfirst(isequal(:ica_mw), eeg.eeg_header[:components])
-    eeg_new.eeg_signals = @views s_ica_reconstruct(eeg_new.eeg_signals[channels, :, :], ic=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ica)
+    eeg_new.eeg_signals = @views s_ica_reconstruct(eeg_new.eeg_signals[channels, :, :], ic=eeg_new.eeg_components[ica_a_idx], ic_mw=eeg_new.eeg_components[ica_mw_idx], ic_v=ic)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ica=$ica)")
+    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ic=$ic)")
 
     return eeg_new
 end
 
 """
-    eeg_ica_reconstruct!(eeg; ica)
+    eeg_ica_reconstruct!(eeg; ic)
 
 Reconstruct `eeg` signals using removal of `ica` ICA components.
 
@@ -870,11 +870,11 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 - `eeg::NeuroAnalyzer.EEG`
 - `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 """
-function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; ic::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg.eeg_signals = eeg_ica_reconstruct(eeg, ica=ica).eeg_signals
+    eeg.eeg_signals = eeg_ica_reconstruct(eeg, ic=ic).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ica=$ica)")
+    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ic=$ic)")
 
     return nothing
 end

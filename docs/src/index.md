@@ -165,6 +165,8 @@ moe(n::Int64)
 rng(x::AbstractVector)
 se(x::AbstractVector)
 pred_int(n::Int64)
+sem_diff(x::AbstractVector, y::AbstractVector)
+prank(x::AbstractVector)
 ```
 
 ## EEG I/O
@@ -304,8 +306,8 @@ eeg_ica(eeg::NeuroAnalyzer.EEG; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, 
 eeg_average(eeg::NeuroAnalyzer.EEG)
 eeg_average!(eeg::NeuroAnalyzer.EEG)
 eeg_average(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
-eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
-eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; ica::Union{Int64, Vector{Int64}, AbstractRange})
+eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; ic::Union{Int64, Vector{Int64}, AbstractRange})
+eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; ic::Union{Int64, Vector{Int64}, AbstractRange})
 eeg_invert_polarity(eeg::NeuroAnalyzer.EEG; channel::Int64)
 eeg_invert_polarity!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 eeg_resample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)

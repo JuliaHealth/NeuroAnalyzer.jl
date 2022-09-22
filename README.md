@@ -2,7 +2,7 @@
 
 Welcome fellow researcher!
 
-NeuroAnalyzer (NA) is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
+NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
 
 NeuroAnalyzer contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
 
@@ -136,7 +136,7 @@ Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/mas
 
 ## Performance
 
-Due to the nature of Julia JIT (just-in-time compiler), first run of functions is slow. Also, due to modules precompilation, NA startup may take some time.
+Due to the nature of Julia JIT (just-in-time compiler), first run of functions is slow. Also, due to modules precompilation, NeuroAnalyzer startup may take some time.
 
 Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md).
 
@@ -163,7 +163,7 @@ na_plugins_update()
 The lists below are not complete and not in any particular order.
 
 General:
-- further performance optimizations
+- more performance optimizations
 - Pluto/Interact interface
 
 EEG:
@@ -249,9 +249,13 @@ NSTIM
 - TES modelling
 - removal of TES artifacts from EEG
 
+## List of publications using NeuroAnalyzer
+
+If you have used NeuroAnalyzer in your research, please add references to your paper here.
+
 ## Contributors
 
-If you've contributed, add your name below!
+If you have contributed, please add your name below.
 
 [Adam Wysokiński](mailto:adam.wysokinski@umed.lodz.pl)
 

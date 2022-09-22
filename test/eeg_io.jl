@@ -4,6 +4,8 @@ using DataFrames
 
 bdf = eeg_import_bdf("eeg-test-bdf.bdf")
 @test typeof(bdf) == NeuroAnalyzer.EEG
+bdf = eeg_import_bdf("eeg-test-bdfplus.bdf")
+@test typeof(bdf) == NeuroAnalyzer.EEG
 edf = eeg_import_edf("eeg-test-edfplus.edf")
 @test typeof(edf) == NeuroAnalyzer.EEG
 

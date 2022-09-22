@@ -3281,7 +3281,46 @@ Calculates the prediction interval (95% CI adjusted for sample size)
 
 **Returns**
 
-  * `pred_int::Tuple{Float64, Float64}`
+  * `pred_int::Float64`
+
+<a id='NeuroAnalyzer.sem_diff-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.sem_diff-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.sem_diff`** &mdash; *Method*.
+
+
+
+```julia
+sem_diff(x::AbstractVector, y::AbstractVector)
+```
+
+Calculate SEM (standard error of the mean) for the difference of two means.
+
+**Arguments**
+
+  * `x::AbstractVector`
+  * `y::AbstractVector`
+
+**Returns**
+
+  * `sem::Float64`
+
+<a id='NeuroAnalyzer.prank-Tuple{AbstractVector}' href='#NeuroAnalyzer.prank-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.prank`** &mdash; *Method*.
+
+
+
+```julia
+prank(x)
+```
+
+Calculate percentile rank.
+
+**Arguments**
+
+  * `x::AbstractVector`: the vector to analyze
+
+**Returns**
+
+  * `prnk::Vector{Float64}`
 
 
 <a id='EEG-I/O'></a>
@@ -5832,7 +5871,7 @@ Return the average signal of all `eeg1` and `eeg2` channels.
 
 
 ```julia
-eeg_ica_reconstruct(eeg; ica)
+eeg_ica_reconstruct(eeg; ic)
 ```
 
 Reconstruct `eeg` signals using removal of `ica` ICA components.
@@ -5852,7 +5891,7 @@ Reconstruct `eeg` signals using removal of `ica` ICA components.
 
 
 ```julia
-eeg_ica_reconstruct!(eeg; ica)
+eeg_ica_reconstruct!(eeg; ic)
 ```
 
 Reconstruct `eeg` signals using removal of `ica` ICA components.

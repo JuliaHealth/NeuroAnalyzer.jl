@@ -215,6 +215,8 @@ export moe
 export rng
 export se
 export pred_int
+export sem_diff
+export prank
 
 include("eeg_io.jl")
 export eeg_export_csv

@@ -514,13 +514,11 @@ Calculates the prediction interval (95% CI adjusted for sample size)
 
 # Returns
 
-- `pred_int::Tuple{Float64, Float64}`
+- `pred_int::Float64`
 """
 function pred_int(n::Int64)
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    if n > 0 && n < 21
-        return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
-    end
+    (n > 0 && n < 21) && return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
     @warn "Result may not be accurate."
     n > 20 && n <= 25 && return 2.10
     n > 25 && n <= 30 && return 2.08
@@ -533,4 +531,47 @@ function pred_int(n::Int64)
     n > 81 && n <= 90 && return 2.00
     n > 91 && n <= 100 && return 1.99
     n > 100 && return 1.98
+end
+
+"""
+    sem_diff(x::AbstractVector, y::AbstractVector)
+
+Calculate SEM (standard error of the mean) for the difference of two means.
+
+# Arguments
+
+- `x::AbstractVector`
+- `y::AbstractVector`
+
+# Returns
+
+- `sem::Float64`
+"""
+function sem_diff(x::AbstractVector, y::AbstractVector)
+    length(x) == length(y) || throw(ArgumentError("Both vectors must have the same length."))
+    return sqrt((std(x)^2 / sqrt(length(x))) + (std(y)^2 / sqrt(length(y))))
+end
+
+"""
+    prank(x)
+
+Calculate percentile rank.
+
+# Arguments
+
+- `x::AbstractVector`: the vector to analyze
+
+# Returns
+
+- `prnk::Vector{Float64}`
+"""
+function prank(x::AbstractVector)
+    xorder = sortperm(x)
+    x = sort(x)
+    prnk = zeros(length(x))
+    for idx in eachindex(x)
+        percentile = length(x[x .< x[idx]]) / length(x) * 100
+        prnk[idx] = percentile / (100 * (length(x) + 1))
+    end
+    return prnk[xorder]
 end
