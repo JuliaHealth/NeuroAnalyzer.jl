@@ -51,6 +51,12 @@ mutable struct EEG
     eeg_annotations::DataFrame
 end
 
+mutable struct STUDY
+    study_header::Dict{Symbol, Any}
+    study_eeg::Vector{NeuroAnalyzer.EEG}
+    study_group::Vector{Symbol}
+end
+
 # preferences
 const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
 const use_cuda = false
@@ -439,6 +445,9 @@ export eeg_chdiff
 export eeg_cps
 export eeg_phdiff
 export eeg_ampdiff
+
+include("eeg_study.jl")
+export eeg_study_create
 
 include("eeg_plots.jl")
 export eeg_plot_acomponent_topo

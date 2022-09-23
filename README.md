@@ -56,6 +56,16 @@ using NeuroAnalyzer
 na_info()
 ```
 
+For interactive GUI, please use Pluto:
+```julia
+using Pkg
+Pkg.add("Pluto")
+Pkg.add("PlutoUI")
+using Pluto
+Pluto.run()
+```
+Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl).
+
 ## Requirements
 
 Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroAnalyzer is only tested against it.
@@ -122,6 +132,16 @@ mutable struct EEG
 end
 ```
 
+Study object is stored in the STUDY structure:
+```julia
+mutable struct STUDY
+    study_header::Dict{Symbol, Any}
+    study_eeg::Vector{NeuroAnalyzer.EEG}
+    study_group::Vector{Symbol}
+end
+```
+Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object inter- and intra- groups.
+
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
 For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable `use_cuda` to false in the NeuroAnalyzerJ.jl file.
@@ -165,6 +185,7 @@ The lists below are not complete and not in any particular order.
 General:
 - more performance optimizations
 - Pluto/Interact interface
+- GTK GUI
 
 EEG:
 - analysis, plots: brain topography
@@ -230,7 +251,7 @@ EEG:
 - process: spherical Laplacian referencing
 - process: REST referencing
 - process: set baseline
-- trial: multi-trial data
+- study: multi-trial data (eeg_study object: collection of EEG objects)
 - ERPs
 - visual / auditory stimuli presentation module (via Raspberry Pi)
 - use eyetracker to detect eye movement and blink artifacts

@@ -943,6 +943,17 @@ include(expanduser("~/Documents/NeuroAnalyzer/pipelines/test_pipeline.jl"))
 edf2 = test_pipeline(edf)
 ```
 
+### Study
+
+Create study object:
+```julia
+edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=4)
+edf2 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+edf3 = eeg_filter(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=12)
+my_study = eeg_study_create([edf1, edf2, edf3], [:g1, :g2, :g3])
+my_study.study_eeg[1].eeg_signals
+```
+
 ### EEG Misc
 
 ```julia
