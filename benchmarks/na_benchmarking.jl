@@ -171,7 +171,7 @@ eeg_standardize(e10);
 print(rpad("Frequency convolution", 24))
 eeg_fconv(e10, kernel=generate_morlet(256, 1, 24, complex=true));
 @time eeg_fconv(e10, kernel=generate_morlet(256, 1, 24, complex=true));
-print(rpad("Time covolution", 24))
+print(rpad("Time convolution", 24))
 eeg_tconv(e10, kernel=generate_morlet(256, 1, 24, complex=true));
 @time eeg_tconv(e10, kernel=generate_morlet(256, 1, 24, complex=true));
 print(rpad("DFT", 24))

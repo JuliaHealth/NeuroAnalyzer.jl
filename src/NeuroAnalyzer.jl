@@ -59,8 +59,9 @@ end
 
 # preferences
 const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
-const use_cuda = false
+const use_cuda = true
 FFTW.set_num_threads(Sys.CPU_THREADS)
+BLAS.set_num_threads(Sys.CPU_THREADS)
 
 include("neuroanalyzer.jl")
 export na_info
