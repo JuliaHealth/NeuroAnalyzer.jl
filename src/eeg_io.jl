@@ -1,4 +1,28 @@
 """
+    eeg_import(file_name; clean_labels)
+
+Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
+- EDF/EDF+
+- BDF/BDF+
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `clean_labels::Bool=true`: only keep channel names in channel labels
+
+# Returns
+
+- `eeg:EEG`
+"""
+function eeg_import(file_name::String; clean_labels::Bool=true)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    splitext(file_name)[2] == ".edf" && return eeg_import_edf(file_name, clean_labels=clean_labels)
+    splitext(file_name)[2] == ".bdf" && return eeg_import_bdf(file_name, clean_labels=clean_labels)
+end
+
+"""
     eeg_import_edf(file_name; clean_labels)
 
 Load EDF/EDF+ file and return and `NeuroAnalyzer.EEG` object.

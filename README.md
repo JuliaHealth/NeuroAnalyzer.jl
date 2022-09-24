@@ -25,7 +25,6 @@ You can add NeuroAnalyzer using Julia package manager, by typing:
 ```Julia
 using Pkg
 Pkg.update()
-Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
 # for master branch:
 Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#master")
 # for development branch:
@@ -40,13 +39,13 @@ Another option is to initialize a new Julia environment for the package:
 ```shell
 git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
 cd NeuroAnalyzer.jl
+julia --project
 ```
 
-Next, start Julia and do the following:
+Next, in Julia REPL do the following:
 ```Julia
 using Pkg
-Pkg.add(url="https://codeberg.org/AdamWysokinski/Simpson.jl")
-Pkg.activate(".")
+Pkg.activate(@__DIR__)
 Pkg.resolve()
 Pkg.instantiate()
 Pkg.update()
@@ -55,16 +54,6 @@ using NeuroAnalyzer
 # check if NeuroAnalyzer has been correctly installed
 na_info()
 ```
-
-For interactive GUI, please use Pluto:
-```julia
-using Pkg
-Pkg.add("Pluto")
-Pkg.add("PlutoUI")
-using Pluto
-Pluto.run()
-```
-Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl).
 
 ## Requirements
 
@@ -184,8 +173,8 @@ The lists below are not complete and not in any particular order.
 
 General:
 - more performance optimizations
-- Pluto/Interact interface
-- GTK GUI
+- Pluto/PlutoUI interface
+- distributed computing for pipelines
 
 EEG:
 - analysis, plots: brain topography

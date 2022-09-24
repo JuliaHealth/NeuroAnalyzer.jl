@@ -6,10 +6,12 @@ bdf = eeg_import_bdf("eeg-test-bdf.bdf")
 @test typeof(bdf) == NeuroAnalyzer.EEG
 bdf = eeg_import_bdf("eeg-test-bdfplus.bdf")
 @test typeof(bdf) == NeuroAnalyzer.EEG
+edf = eeg_import_edf("eeg-test-edf.edf")
+@test typeof(edf) == NeuroAnalyzer.EEG
 edf = eeg_import_edf("eeg-test-edfplus.edf")
 @test typeof(edf) == NeuroAnalyzer.EEG
 
-edf = eeg_import_edf("eeg-test-edf.edf")
+edf = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(edf, channel=24)
 eeg_delete_channel!(edf, channel=24)
 eog2 = eeg_extract_channel(edf, channel=23)

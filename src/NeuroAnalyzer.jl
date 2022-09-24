@@ -227,6 +227,7 @@ export prank
 
 include("eeg_io.jl")
 export eeg_export_csv
+export eeg_import
 export eeg_import_edf
 export eeg_import_bdf
 export eeg_import_ced

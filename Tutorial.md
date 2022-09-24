@@ -2,12 +2,6 @@
 
 ## Start NeuroAnalyzer.jl
 
-For interactive processing it's best to use Pluto:
-```julia
-import Pluto
-Pluto.run()
-```
-
 Load package:
 ```julia
 using NeuroAnalyzer
@@ -23,6 +17,17 @@ Get help:
 ?eeg_plot_signal
 ```
 
+For interactive GUI, use Pluto and PlutoUI:
+```julia
+using Pkg
+Pkg.add("Pluto")
+Pkg.add("PlutoUI")
+Pkg.add("Gtk")
+using Pluto
+Pluto.run()
+```
+Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl).
+
 ## EEG
 
 The tutorial is divided into five major steps of typical pipeline:
@@ -34,13 +39,13 @@ The tutorial is divided into five major steps of typical pipeline:
 
 ### EEG IO
 
-Load EDF file:
+Load EEG file (EDF/EDF+/BDF/BDF+ formats are supported):
 ```julia
-edf = eeg_import_edf("test/eeg-test-edf.edf");
+edf = eeg_import("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
-Load electrode positions (CED, LOCS, ELC, TSV and SFP formats are supported) directly into EEG object:
+Load electrode positions (CED/LOCS/ELC/TSV/SFP/CSD formats are supported) directly into EEG object:
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
 p = eeg_plot_electrode(edf, channel=1)
