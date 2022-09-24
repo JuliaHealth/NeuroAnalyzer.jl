@@ -172,6 +172,7 @@ prank(x::AbstractVector)
 ## EEG I/O
 
 ```@docs
+eeg_import(file_name::String; clean_labels::Bool=true)
 eeg_import_edf(file_name::String; clean_labels::Bool=true)
 eeg_import_ced(file_name::String)
 eeg_import_locs(file_name::String)

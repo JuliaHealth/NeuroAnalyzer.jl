@@ -3329,6 +3329,29 @@ Calculate percentile rank.
 
 ## EEG I/O
 
+<a id='NeuroAnalyzer.eeg_import-Tuple{String}' href='#NeuroAnalyzer.eeg_import-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import(file_name; clean_labels)
+```
+
+Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
+
+  * EDF/EDF+
+  * BDF/BDF+
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
+
 <a id='NeuroAnalyzer.eeg_import_edf-Tuple{String}' href='#NeuroAnalyzer.eeg_import_edf-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_edf`** &mdash; *Method*.
 

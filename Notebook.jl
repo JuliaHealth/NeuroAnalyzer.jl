@@ -81,13 +81,13 @@ eeg_reference_car!(edf)
 eeg_epochs!(edf, epoch_len=10*eeg_sr(edf))
 
 # ╔═╡ 32a12ecd-d939-4885-a768-4acfb1e7527a
-epoch_n = eeg_epoch_n(edf)
-
-# ╔═╡ ea68a90a-eb00-4bc9-a126-fef045a93092
-md"""
-epoch:
-$(@bind epoch Slider(1:epoch_n, show_value=true))
-$(@bind epoch_del Button("delete"))"""
+begin
+	epoch_n = eeg_epoch_n(edf)
+	md"""
+	$(@bind epoch Slider(1:epoch_n, show_value=true))
+	$(@bind epoch_del Button("X"))
+	"""
+end
 
 # ╔═╡ b18893e4-a8aa-44d0-9e28-ba76b0c351d8
 eeg_plot_signal(edf, scaled=true, epoch=epoch)
@@ -126,7 +126,6 @@ end
 # ╠═80c58c02-37e1-4839-8091-3ddb563ebf37
 # ╠═1028224e-38fd-4dde-861e-98d5eb2c85c9
 # ╠═32a12ecd-d939-4885-a768-4acfb1e7527a
-# ╠═ea68a90a-eb00-4bc9-a126-fef045a93092
 # ╠═b18893e4-a8aa-44d0-9e28-ba76b0c351d8
 # ╠═83f55252-55fb-4d88-8016-e53452d114b2
 # ╠═de92968e-54f2-4cfa-a9f8-79b85ca0b188
