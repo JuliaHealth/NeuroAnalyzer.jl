@@ -31,9 +31,6 @@ using NeuroAnalyzer
 # ╔═╡ b91df3a9-fb1d-4f3e-a462-2f7820ec6854
 using PlutoUI
 
-# ╔═╡ b1583955-b45d-468f-aef5-c11bf76d0384
-using Interact
-
 # ╔═╡ e5587167-7e88-4524-bb78-95c4bc11de2d
 using Gtk
 
@@ -136,7 +133,6 @@ end
 # ╠═ede1280a-1de5-4c77-ad6d-2a26603b6de6
 # ╠═6c53f862-ace6-4a18-ad8f-4cfd516d8027
 # ╠═b91df3a9-fb1d-4f3e-a462-2f7820ec6854
-# ╠═b1583955-b45d-468f-aef5-c11bf76d0384
 # ╠═04d52f0f-e04c-4263-8c26-4bcd4a3361c5
 # ╠═e5587167-7e88-4524-bb78-95c4bc11de2d
 # ╠═633c7cc2-dab8-47f6-8eab-0f18fbdbd6a4
