@@ -29,10 +29,11 @@ y = 1:100
 # ╔═╡ 9f14b304-6a93-4136-b554-0044971945e5
 @bind options confirm(
     PlutoUI.combine() do Child
-		md"""
-        Epoch idx: $(Child("idx", Slider(eachindex(y), show_value=true)))
-        Add to delete list: $(Child("del", CheckBox()))
-        """
+	md"""
+		Epoch idx: $(Child("idx", Slider(eachindex(y), show_value=true)))
+
+	
+		Add to delete list: $(Child("del", CheckBox()))"""
     end
 )
 
