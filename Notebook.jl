@@ -86,7 +86,7 @@ eeg_plot_signal(edf, scaled=true, epoch=epoch)
 		Epoch: $(Child("idx", NumberField(1:epoch_n)))
 
 	
-		Add to delete list: $(Child("del", CheckBox()))"""
+		Add to delete list: $(Child("del", CheckBox(default=false)))"""
     end
 )
 
@@ -96,19 +96,39 @@ epochs_to_delete = Vector{Int64}()
 # ╔═╡ 609aeaae-89b2-4b25-9a9b-60bd63b1f8fb
 begin
 	options.del && push!(epochs_to_delete, options.idx)
-	unique!(sort!(epochs_to_delete))
-	epochs_to_delete
+	unique!(sort!(epochs_to_delete));
 end
 
 # ╔═╡ 0aee665f-4979-4bd5-9ede-282edbe075c3
 md"""
 Delete selected epochs: $(@bind del_epochs confirm(CheckBox(default=false)))"""
 
-# ╔═╡ 0a313dce-8228-4a74-bb8a-08f889afc6a5
-del_epochs && eeg_delete_epoch!(edf, epoch=epochs_to_delete)
+# ╔═╡ 5b6677ce-f33d-411d-a663-7a4d0f93e9e7
+md"""
+Clear list of selected epochs: $(@bind clear_list confirm(CheckBox(default=false)))"""
 
-# ╔═╡ 233dc900-d389-4293-8bf2-42dd5b0904f4
-eeg_epoch_n(edf)
+# ╔═╡ 7b903fbf-41b7-4121-814e-91ef00d4b5ca
+begin
+	if clear_list && length(epochs_to_delete) > 0
+		for idx in length(epochs_to_delete):-1:1
+			deleteat!(epochs_to_delete, idx)
+		end
+	println("Epochs: $(eeg_epoch_n(edf))")
+	println("Epochs to delete: $(epochs_to_delete)")
+	end
+end
+
+# ╔═╡ 0a313dce-8228-4a74-bb8a-08f889afc6a5
+begin
+	if del_epochs && length(epochs_to_delete) > 0
+		eeg_delete_epoch!(edf, epoch=epochs_to_delete)
+		for idx in length(epochs_to_delete):-1:1
+			deleteat!(epochs_to_delete, idx)
+		end
+	println("Epochs: $(eeg_epoch_n(edf))")
+	println("Epochs to delete: $(epochs_to_delete)")
+	end
+end
 
 # ╔═╡ Cell order:
 # ╠═53358ed5-e464-4557-85bb-a609051b9963
@@ -130,10 +150,11 @@ eeg_epoch_n(edf)
 # ╠═15ca8e97-7d4f-4993-a13f-bb6fc9e12889
 # ╠═4b1d7251-7944-43ef-86c6-ede1ef3f7526
 # ╠═de3bba50-1c87-406e-8415-df9e70e695e6
-# ╟─b18893e4-a8aa-44d0-9e28-ba76b0c351d8
+# ╠═b18893e4-a8aa-44d0-9e28-ba76b0c351d8
 # ╟─32a12ecd-d939-4885-a768-4acfb1e7527a
-# ╠═1e72e2e7-bb85-4872-b373-af060b182633
+# ╟─1e72e2e7-bb85-4872-b373-af060b182633
 # ╠═609aeaae-89b2-4b25-9a9b-60bd63b1f8fb
 # ╠═0aee665f-4979-4bd5-9ede-282edbe075c3
+# ╠═5b6677ce-f33d-411d-a663-7a4d0f93e9e7
+# ╠═7b903fbf-41b7-4121-814e-91ef00d4b5ca
 # ╠═0a313dce-8228-4a74-bb8a-08f889afc6a5
-# ╠═233dc900-d389-4293-8bf2-42dd5b0904f4
