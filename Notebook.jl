@@ -1,6 +1,11 @@
 ### A Pluto.jl notebook ###
 # v0.19.9
 
+#> [frontmatter]
+#> title = "NeuroAnalyzer"
+#> date = "2022-09-25"
+#> description = "NeuroAnalyzer: example session"
+
 using Markdown
 using InteractiveUtils
 
@@ -35,24 +40,6 @@ using Gtk
 # ╔═╡ 53358ed5-e464-4557-85bb-a609051b9963
 cd(expanduser("~/Documents/Code/NeuroAnalyzer.jl"))		
 
-# ╔═╡ 81ca33a6-5311-48c3-8c91-32482b887760
-# ╠═╡ disabled = true
-#=╠═╡
-Pkg.update()
-  ╠═╡ =#
-
-# ╔═╡ ed3bb59b-f1cb-47ce-91fa-5adbd1db1fd5
-# ╠═╡ disabled = true
-#=╠═╡
-Pkg.resolve()
-  ╠═╡ =#
-
-# ╔═╡ 52051ec7-ff32-4414-928e-af9572420e94
-# ╠═╡ disabled = true
-#=╠═╡
-Pkg.instantiate()
-  ╠═╡ =#
-
 # ╔═╡ 04d52f0f-e04c-4263-8c26-4bcd4a3361c5
 na_info()
 
@@ -80,38 +67,53 @@ eeg_reference_car!(edf)
 # ╔═╡ 1028224e-38fd-4dde-861e-98d5eb2c85c9
 eeg_epochs!(edf, epoch_len=10*eeg_sr(edf))
 
-# ╔═╡ 32a12ecd-d939-4885-a768-4acfb1e7527a
-begin
-	epoch_n = eeg_epoch_n(edf)
-	md"""
-	$(@bind epoch Slider(1:epoch_n, show_value=true))
-	$(@bind epoch_del Button("X"))
-	"""
-end
+# ╔═╡ 15ca8e97-7d4f-4993-a13f-bb6fc9e12889
+# Check epochs visually, remove bad epochs 
+
+# ╔═╡ 4b1d7251-7944-43ef-86c6-ede1ef3f7526
+epoch_n = eeg_epoch_n(edf)
+
+# ╔═╡ de3bba50-1c87-406e-8415-df9e70e695e6
+@bind epoch Slider(1:epoch_n, show_value=true)
 
 # ╔═╡ b18893e4-a8aa-44d0-9e28-ba76b0c351d8
 eeg_plot_signal(edf, scaled=true, epoch=epoch)
 
-# ╔═╡ 83f55252-55fb-4d88-8016-e53452d114b2
-epoch_to_delete_ref = Ref{Int64}()
+# ╔═╡ 32a12ecd-d939-4885-a768-4acfb1e7527a
+@bind options confirm(
+    PlutoUI.combine() do Child
+	md"""
+		Epoch: $(Child("idx", NumberField(1:epoch_n)))
 
-# ╔═╡ de92968e-54f2-4cfa-a9f8-79b85ca0b188
-epoch_to_delete_ref[] = epoch
+	
+		Add to delete list: $(Child("del", CheckBox()))"""
+    end
+)
 
-# ╔═╡ 44e41c41-8141-459c-8372-d01ceb6496fe
-let	epoch_del
-	println(epoch_to_delete_ref[])
-	eeg_delete_epoch!(edf, epoch=epoch_to_delete_ref[])
-	epoch_n = eeg_epoch_n(edf)
+# ╔═╡ 1e72e2e7-bb85-4872-b373-af060b182633
+epochs_to_delete = Vector{Int64}()
+
+# ╔═╡ 609aeaae-89b2-4b25-9a9b-60bd63b1f8fb
+begin
+	options.del && push!(epochs_to_delete, options.idx)
+	unique!(sort!(epochs_to_delete))
+	epochs_to_delete
 end
+
+# ╔═╡ 0aee665f-4979-4bd5-9ede-282edbe075c3
+md"""
+Delete selected epochs: $(@bind del_epochs confirm(CheckBox(default=false)))"""
+
+# ╔═╡ 0a313dce-8228-4a74-bb8a-08f889afc6a5
+del_epochs && eeg_delete_epoch!(edf, epoch=epochs_to_delete)
+
+# ╔═╡ 233dc900-d389-4293-8bf2-42dd5b0904f4
+eeg_epoch_n(edf)
 
 # ╔═╡ Cell order:
 # ╠═53358ed5-e464-4557-85bb-a609051b9963
 # ╠═d82bea74-724e-4212-bbf3-e42e241572bb
-# ╠═81ca33a6-5311-48c3-8c91-32482b887760
 # ╠═ede1280a-1de5-4c77-ad6d-2a26603b6de6
-# ╠═ed3bb59b-f1cb-47ce-91fa-5adbd1db1fd5
-# ╠═52051ec7-ff32-4414-928e-af9572420e94
 # ╠═6c53f862-ace6-4a18-ad8f-4cfd516d8027
 # ╠═b91df3a9-fb1d-4f3e-a462-2f7820ec6854
 # ╠═b1583955-b45d-468f-aef5-c11bf76d0384
@@ -125,8 +127,13 @@ end
 # ╠═0ad7086d-d0cf-49bd-af89-059d976222dc
 # ╠═80c58c02-37e1-4839-8091-3ddb563ebf37
 # ╠═1028224e-38fd-4dde-861e-98d5eb2c85c9
-# ╠═32a12ecd-d939-4885-a768-4acfb1e7527a
-# ╠═b18893e4-a8aa-44d0-9e28-ba76b0c351d8
-# ╠═83f55252-55fb-4d88-8016-e53452d114b2
-# ╠═de92968e-54f2-4cfa-a9f8-79b85ca0b188
-# ╠═44e41c41-8141-459c-8372-d01ceb6496fe
+# ╠═15ca8e97-7d4f-4993-a13f-bb6fc9e12889
+# ╠═4b1d7251-7944-43ef-86c6-ede1ef3f7526
+# ╠═de3bba50-1c87-406e-8415-df9e70e695e6
+# ╟─b18893e4-a8aa-44d0-9e28-ba76b0c351d8
+# ╟─32a12ecd-d939-4885-a768-4acfb1e7527a
+# ╠═1e72e2e7-bb85-4872-b373-af060b182633
+# ╠═609aeaae-89b2-4b25-9a9b-60bd63b1f8fb
+# ╠═0aee665f-4979-4bd5-9ede-282edbe075c3
+# ╠═0a313dce-8228-4a74-bb8a-08f889afc6a5
+# ╠═233dc900-d389-4293-8bf2-42dd5b0904f4
