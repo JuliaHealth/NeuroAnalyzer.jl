@@ -174,6 +174,7 @@ The lists below are not complete and not in any particular order.
 General:
 - more performance optimizations
 - Pluto/PlutoUI interface
+- Term.jl interface
 - distributed computing for pipelines
 
 EEG:
