@@ -12,6 +12,8 @@ Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other 
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
+NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org)
+
 ## Installation
 
 First, download [Julia](https://julialang.org/downloads/) 1.7 or later. 
