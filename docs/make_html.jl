@@ -10,4 +10,4 @@ using DataFrames
 using NeuroAnalyzer
 println()
 
-makedocs(sitename="NeuroAnalyzer.jl", highlightsig=true)
+makedocs(sitename="NeuroAnalyzer.jl")

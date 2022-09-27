@@ -65,7 +65,7 @@ function m_pad0(m::Matrix{<:Number})
 end
 
 """
-    vsearch(y, x; return_distance=false)
+    vsearch(y, x; return_distance)
 
 Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
 
@@ -73,7 +73,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 - `y::Real`
 - `x::AbstractVector`
-- `return_distance::Bool`
+- `return_distance::Bool=false`
 
 # Returns
 
@@ -88,7 +88,7 @@ function vsearch(y::Real, x::AbstractVector; return_distance::Bool=false)
 end
 
 """
-    vsearch(y, x; return_distance=false)
+    vsearch(y, x; return_distance)
 
 Return the positions of the `y` vector in the vector `x`.
 
@@ -96,7 +96,7 @@ Return the positions of the `y` vector in the vector `x`.
 
 - `x::AbstractVector`
 - `y::AbstractVector`
-- `return_distance::Bool`
+- `return_distance::Bool=false`
 
 # Returns
 

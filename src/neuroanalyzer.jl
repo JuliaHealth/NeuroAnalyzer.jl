@@ -100,7 +100,7 @@ end
 
 Remove NeuroAnalyzer `plugin`.
 
-# Attributes
+# Arguments
 
 - `plugin::String`: plugin name
 """
@@ -123,7 +123,7 @@ end
 
 Install NeuroAnalyzer `plugin`.
 
-# Attributes
+# Arguments
 
 - `plugin::String`: plugin Git repository URL
 """
@@ -143,7 +143,7 @@ end
 
 Install NeuroAnalyzer `plugin`.
 
-# Attributes
+# Arguments
 
 - `plugin::String`: plugin to update; if empty, update all
 """
