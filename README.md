@@ -272,7 +272,7 @@ If you have contributed, please add your name below.
 
 [Adam Wysokiński](mailto:adam.wysokinski@umed.lodz.pl)
 
-![umed](images/umed.jpg)
+![umed](images/umed.png)
 
 ## License
 
