@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="neuroanalyzer_dark.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="237.23432"
+     inkscape:cy="48.436814"
+     inkscape:window-width="1920"
+     inkscape:window-height="1031"
+     inkscape:window-x="0"
+     inkscape:window-y="49"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g20"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-text-baseline="true" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g20"
+       inkscape:export-filename="/home/eb/Documents/Code/NeuroJ.jl/images/neuroj.png"
+       inkscape:export-xdpi="260.42001"
+       inkscape:export-ydpi="260.42001">
+      <rect
+         style="fill:none;stroke-width:0.516261"
+         id="rect25582"
+         width="81.821587"
+         height="10.875385"
+         x="32.871437"
+         y="25.292267"
+         inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/images/rect25582.png"
+         inkscape:export-xdpi="260.42001"
+         inkscape:export-ydpi="260.42001" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:11.6417px;line-height:0;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="37.446465"
+         y="33.368431"
+         id="text1838"
+         inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/images/rect25582.png"
+         inkscape:export-xdpi="260.42001"
+         inkscape:export-ydpi="260.42001"><tspan
+           sodipodi:role="line"
+           id="tspan1836"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.6417px;line-height:1.25;font-family:'Nimbus Sans Narrow';-inkscape-font-specification:'Nimbus Sans Narrow';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+           x="37.446465"
+           y="33.368431">NeuroAnalyzer<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;line-height:1.25;font-family:Hack;-inkscape-font-specification:Hack;fill:#ffffff;fill-opacity:1"
+   id="tspan1387">.jl</tspan></tspan></text>
+      <g
+         id="g2866">
+        <g
+           id="g2457"
+           transform="matrix(0.35623494,0,0,0.35623494,-16.055016,-7.3200295)">
+          <g
+             id="g2087-3"
+             transform="translate(87.729545,16.532568)"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37">
+            <g
+               id="g2077-6"
+               transform="translate(0,-0.05801487)">
+              <circle
+                 style="fill:#c03830;fill-opacity:1;stroke:none;stroke-width:0.186175;stroke-dasharray:0.186175, 0.37235;stroke-opacity:1"
+                 id="path848-3-7"
+                 cx="44.99506"
+                 cy="80.018478"
+                 r="5.7393637" />
+            </g>
+            <circle
+               style="fill:#d8655f;fill-opacity:1;stroke:none;stroke-width:0.132534;stroke-dasharray:0.132534, 0.265068"
+               id="circle1050-6-5"
+               cx="44.99506"
+               cy="80.018585"
+               r="4.0857353" />
+          </g>
+          <text
+             xml:space="preserve"
+             style="font-size:6.35px;line-height:1;font-family:sans-serif;stroke-width:1.09401"
+             x="130.60846"
+             y="98.229362"
+             id="text8267"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37"><tspan
+               sodipodi:role="line"
+               id="tspan8265"
+               style="font-size:6.35px;fill:#c03830;fill-opacity:1;stroke-width:1.09401"
+               x="130.60846"
+               y="98.229362">α</tspan></text>
+        </g>
+        <g
+           id="g2469"
+           transform="matrix(0.35623494,0,0,0.35623494,-16.055016,-7.3200295)">
+          <circle
+             style="fill:#3957bf;fill-opacity:1;stroke:none;stroke-width:0.186175;stroke-dasharray:0.186175, 0.37235;stroke-opacity:1"
+             id="path848-1-6"
+             cx="132.7281"
+             cy="108.41549"
+             r="5.7393637"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <circle
+             style="fill:#6a83e0;fill-opacity:1;stroke:none;stroke-width:0.132534;stroke-dasharray:0.132534, 0.265068"
+             id="circle1050-2-2"
+             cx="132.7281"
+             cy="108.47309"
+             r="4.0857353"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <text
+             xml:space="preserve"
+             style="font-size:6.35px;line-height:1;font-family:sans-serif;stroke-width:0.826337"
+             x="130.78404"
+             y="110.78446"
+             id="text8267-3-7"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37"><tspan
+               sodipodi:role="line"
+               id="tspan8265-6-5"
+               style="font-size:6.35px;fill:#3957bf;fill-opacity:1;stroke-width:0.826337"
+               x="130.78404"
+               y="110.78446">δ</tspan></text>
+        </g>
+      </g>
+      <g
+         id="g2852"
+         transform="translate(0.12185343)">
+        <g
+           id="g2463"
+           transform="matrix(0.35623494,0,0,0.35623494,-16.055016,-7.3200295)">
+          <circle
+             style="fill:#328b23;fill-opacity:1;stroke:none;stroke-width:0.186175;stroke-dasharray:0.186175, 0.37235;stroke-opacity:1"
+             id="path848-5-3"
+             cx="144.99597"
+             cy="96.50058"
+             r="5.7393637"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <circle
+             style="fill:#6dad5d;fill-opacity:1;stroke:none;stroke-width:0.132534;stroke-dasharray:0.132534, 0.265068"
+             id="circle1050-62-5"
+             cx="144.99597"
+             cy="96.500687"
+             r="4.0857353"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <text
+             xml:space="preserve"
+             style="font-size:6.35px;line-height:1;font-family:sans-serif;stroke-width:0.641602"
+             x="142.89998"
+             y="98.272568"
+             id="text8267-3"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37"><tspan
+               sodipodi:role="line"
+               id="tspan8265-6"
+               style="font-size:6.35px;fill:#328b23;fill-opacity:1;stroke-width:0.641602"
+               x="142.89998"
+               y="98.272568">β</tspan></text>
+        </g>
+        <g
+           id="g2475"
+           transform="matrix(0.35623494,0,0,0.35623494,-16.055016,-7.3200295)">
+          <circle
+             style="fill:#854fa0;fill-opacity:1;stroke:none;stroke-width:0.186175;stroke-dasharray:0.186175, 0.37235;stroke-opacity:1"
+             id="path848-9"
+             cx="144.99597"
+             cy="108.47298"
+             r="5.7393637"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <circle
+             style="fill:#ab7bc2;fill-opacity:1;stroke:none;stroke-width:0.132534;stroke-dasharray:0.132534, 0.265068"
+             id="circle1050-1"
+             cx="144.99597"
+             cy="108.47309"
+             r="4.0857353"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37" />
+          <text
+             xml:space="preserve"
+             style="font-size:6.4135px;line-height:1;font-family:sans-serif;stroke-width:0.802505"
+             x="143.03247"
+             y="110.89839"
+             id="text46456"
+             inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/logo.png"
+             inkscape:export-xdpi="848.37"
+             inkscape:export-ydpi="848.37"><tspan
+               sodipodi:role="line"
+               id="tspan46454"
+               style="font-size:6.4135px;fill:#854fa0;fill-opacity:1;stroke-width:0.802505"
+               x="143.03247"
+               y="110.89839">θ</tspan></text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
