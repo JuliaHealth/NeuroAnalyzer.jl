@@ -1,4 +1,10 @@
-![NeuroAnalyzer](images/neuroanalyzer.png)
+<div style="text-align: center;">
+<a href="http://neuroanalyzer.org">
+
+![](images/neuroanalyzer.png)
+
+</a> 
+</div>
 
 Welcome fellow researcher!
 
