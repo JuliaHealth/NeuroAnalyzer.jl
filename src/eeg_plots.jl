@@ -4957,7 +4957,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
 - `signal::AbstractVector`
 - `fs::Int64`: sampling rate
-- `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha] (see `eeg_band()`)
+- `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, :alpha]
 - `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
 - `type::Symbol`: plots absolute (:abs) or relative power (:rel)
 - `norm::Bool=true`: normalize powers to dB
@@ -5059,7 +5059,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+- `band:Vector{Symbols}=:all`: band name, e.g. :delta
 - `type::Symbol`: plots absolute (:abs) or relative power (:rel)
 - `norm::Bool=true`: normalize powers to dB
 - `xlabel::String=""`: x-axis label

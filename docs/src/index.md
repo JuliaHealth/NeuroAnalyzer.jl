@@ -1,3 +1,11 @@
+```@meta
+EditURL = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master/docs/src/index.md"
+```
+
+![](assets/neuroanalyzer.png)
+
+NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG data.
+
 # NeuroAnalyzer.jl Documentation
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
@@ -5,6 +13,12 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 ## NeuroAnalyzer
 
 ```@docs
+na_info()
+na_plugins_reload()
+na_plugins_list()
+na_plugins_remove(plugin::String)
+na_plugins_install(plugin::String)
+na_plugins_update(plugin::Union{String, Nothing}=nothing)
 ```
 
 ## Low-level functions

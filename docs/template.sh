@@ -5,7 +5,7 @@ echo ""
 echo "## NeuroAnalyzer"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/NeuroAnalyzer.jl | grep ^function | sed s/"function "//g
+cat ../src/neuroanalyzer.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
 echo "## Low-level functions"
