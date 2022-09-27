@@ -1,4 +1,5 @@
 ![](images/neuroanalyzer.png)
+
 Welcome fellow researcher!
 
 NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG data. Future versions will also process MEG and NIRS data and use MRI data for source localization techniques. Also, various methods for modelling non-invasive brain stimulation protocols (tDCS/tACS/tRNS/tPCS/TMS) will be included.
