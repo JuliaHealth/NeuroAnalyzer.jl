@@ -24,7 +24,7 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.8284271"
-     inkscape:cx="230.87037"
+     inkscape:cx="216.37468"
      inkscape:cy="48.436815"
      inkscape:window-width="1920"
      inkscape:window-height="1031"
@@ -46,7 +46,10 @@
        inkscape:export-xdpi="260.42001"
        inkscape:export-ydpi="260.42001">
       <g
-         id="g1707">
+         id="g1707"
+         inkscape:export-filename="/home/eb/Documents/Code/NeuroAnalyzer.jl/docs/src/assets/neuroanalyzer.png"
+         inkscape:export-xdpi="227.63826"
+         inkscape:export-ydpi="227.63826">
         <rect
            style="fill:none;stroke-width:0.516261"
            id="rect25582"
