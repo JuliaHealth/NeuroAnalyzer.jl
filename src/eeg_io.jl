@@ -741,7 +741,7 @@ function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
 """
     eeg_save(eeg; file_name, overwrite)
 
-Save the `eeg` to `file_name` file (HDF5-based).
+Save `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -769,7 +769,7 @@ end
 """
     eeg_load(file_name)
 
-Load the `eeg` from `file_name` file (HDF5-based).
+Load `eeg` from `file_name` file (HDF5-based).
 
 # Arguments
 

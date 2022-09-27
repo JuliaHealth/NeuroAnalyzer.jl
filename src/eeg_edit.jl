@@ -281,7 +281,7 @@ end
 """
     eeg_delete_channel(eeg; channel)
 
-Remove `channel` from the `eeg`.
+Remove `channel` from `eeg`.
 
 # Arguments
 
@@ -347,7 +347,7 @@ end
 """
     eeg_delete_channel!(eeg; channel)
 
-Remove `channel` from the `eeg`.
+Remove `channel` from `eeg`.
 
 # Arguments
 
@@ -407,7 +407,7 @@ end
 """
     eeg_keep_channel(eeg; channel)
 
-Keep `channels` in the `eeg`.
+Keep `channels` in `eeg`.
 
 # Arguments
 
@@ -476,7 +476,7 @@ end
 """
     eeg_keep_channel!(eeg; channel)
 
-Keep `channels` in the `eeg`.
+Keep `channels` in `eeg`.
 
 # Arguments
 
@@ -576,7 +576,7 @@ end
 """
     eeg_rename_channel(eeg; channel, name)
 
-Rename the `eeg` `channel`.
+Rename `eeg` `channel`.
 
 # Arguments
 
@@ -623,7 +623,7 @@ end
 """
     eeg_rename_channel!(eeg; channel, name)
 
-Rename the `eeg` `channel`.
+Rename `eeg` `channel`.
 
 # Arguments
 
@@ -1048,7 +1048,7 @@ end
 """
     eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
 
 # Arguments
 
@@ -1107,7 +1107,7 @@ end
 """
     eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
 
 # Arguments
 
@@ -1242,7 +1242,7 @@ end
 """
     eeg_delete_epoch(eeg; epoch)
 
-Remove `epoch` from the `eeg`.
+Remove `epoch` from `eeg`.
 
 # Arguments
 
@@ -1291,7 +1291,7 @@ end
 """
     eeg_delete_epoch!(eeg; epoch)
 
-Remove `epoch` from the `eeg`.
+Remove `epoch` from `eeg`.
 
 # Arguments
 
@@ -1334,7 +1334,7 @@ end
 """
     eeg_keep_epoch(eeg; epoch)
 
-Keep `epoch` in the `eeg`.
+Keep `epoch` in `eeg`.
 
 # Arguments
 
@@ -1385,7 +1385,7 @@ end
 """
     eeg_keep_epoch!(eeg; epoch)
 
-Keep `epoch` in the `eeg`.
+Keep `epoch` in `eeg`.
 
 # Arguments
 
@@ -2190,7 +2190,7 @@ end
 """
     eeg_channel_type(eeg; channel, type)
 
-Change the `eeg` `channel` type.
+Change `eeg` `channel` type.
 
 # Arguments
 
@@ -2240,7 +2240,7 @@ end
 """
     eeg_channel_type!(eeg; channel, new_name)
 
-Change the `eeg` `channel` type.
+Change `eeg` `channel` type.
 
 # Arguments
 
@@ -2375,7 +2375,7 @@ end
 """
     eeg_electrode_loc(eeg; channel, output)
 
-Return locations of the `eeg` `channel` electrode.
+Return locations of `eeg` `channel` electrode.
 
 # Arguments
 

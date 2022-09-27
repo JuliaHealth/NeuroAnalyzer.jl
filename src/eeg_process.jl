@@ -1,7 +1,7 @@
 """
     eeg_reference_ch(eeg; channel, med)
 
-Reference the `eeg` to specific `channel`.
+Reference `eeg` to specific `channel`.
 
 # Arguments
 
@@ -48,7 +48,7 @@ end
 """
     eeg_reference_ch!(eeg; channel, med)
 
-Reference the `eeg` to specific channel `channel`.
+Reference `eeg` to specific channel `channel`.
 
 # Arguments
 
@@ -68,7 +68,7 @@ end
 """
     eeg_reference_car(eeg; exclude_fpo, exclude_current, med)
 
-Reference the `eeg` to common average reference.
+Reference `eeg` to common average reference.
 
 # Arguments
 
@@ -129,7 +129,7 @@ end
 """
     eeg_reference_car!(eeg; exclude_fpo, exclude_current, med)
 
-Reference the `eeg` to common average reference.
+Reference `eeg` to common average reference.
 
 # Arguments
 
@@ -150,7 +150,7 @@ end
 """
     eeg_derivative(eeg; channel)
 
-Return the derivative of the `eeg` with length same as the signal.
+Return the derivative of `eeg` with length same as the signal.
 
 # Arguments
 
@@ -190,7 +190,7 @@ end
 """
     eeg_derivative!(eeg; channel)
 
-Return the derivative of the `eeg` with length same as the signal.
+Return the derivative of `eeg` with length same as the signal.
 
 # Arguments
 
@@ -261,7 +261,7 @@ end
 """
     eeg_detrend!(eeg; channel, type, offset, order, span)
 
-Remove linear trend from the `eeg`.
+Remove linear trend from `eeg`.
 
 # Arguments
 
@@ -476,7 +476,7 @@ end
 """
     eeg_add_noise(eeg; channel)
 
-Add random noise to the `eeg` channels.
+Add random noise to `eeg` channels.
 
 # Arguments
 
@@ -516,7 +516,7 @@ end
 """
     eeg_add_noise!(eeg; channel)
 
-Add random noise to the `eeg` channels.
+Add random noise to `eeg` channels.
 
 # Arguments
 
@@ -1168,7 +1168,7 @@ end
 """
     eeg_reference_a(eeg; type, med)
 
-Reference the `eeg` to auricular channels.
+Reference `eeg` to auricular channels.
 
 # Arguments
 
@@ -1276,7 +1276,7 @@ end
 """
     eeg_reference_a!(eeg; type, med)
 
-Reference the `eeg` to auricular channels.
+Reference `eeg` to auricular channels.
 
 # Arguments
 
@@ -1385,7 +1385,7 @@ end
 """
     eeg_reference_m(eeg; type, med)
 
-Reference the `eeg` to mastoid channels.
+Reference `eeg` to mastoid channels.
 
 # Arguments
 
@@ -1497,7 +1497,7 @@ end
 """
     eeg_reference_m!(eeg; type, med)
 
-Reference the `eeg` to mastoid channels.
+Reference `eeg` to mastoid channels.
 
 # Arguments
 
@@ -1672,7 +1672,7 @@ end
 """
     eeg_reference_plap(eeg; nn, weights)
 
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 # Arguments
 
@@ -1747,7 +1747,7 @@ end
 """
     eeg_reference_plap!(eeg; nn, weights)
 
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 # Arguments
 
@@ -1813,7 +1813,7 @@ end
 """
     eeg_wbp(eeg; pad, frq, ncyc, demean)
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform wavelet bandpass filtering of `eeg`.
 
 # Arguments
 
@@ -1850,7 +1850,7 @@ end
 """
     eeg_wbp!(eeg; pad, frq, ncyc, demean)
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform wavelet bandpass filtering of `eeg`.
 
 # Arguments
 
@@ -1873,7 +1873,7 @@ end
 """
     eeg_cbp(eeg; pad, frq, demean)
 
-Perform convolution bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of `eeg`.
 
 # Arguments
 
@@ -1909,7 +1909,7 @@ end
 """
     eeg_cbp!(eeg; pad, frq, ncyc, demean)
 
-Perform convolution bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of `eeg`.
 
 # Arguments
 
@@ -1931,7 +1931,7 @@ end
 """
     eeg_denoise_wien(eeg)
 
-Perform Wiener deconvolution denoising of the `eeg`.
+Perform Wiener deconvolution denoising of `eeg`.
 
 # Returns
 
@@ -1950,7 +1950,7 @@ end
 """
     eeg_denoise_wien!(eeg)
 
-Perform Wiener deconvolution denoising of the `eeg`.
+Perform Wiener deconvolution denoising of `eeg`.
 
 # Arguments
 

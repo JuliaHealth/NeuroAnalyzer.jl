@@ -1,4 +1,12 @@
 
+
+
+![](assets/neuroanalyzer.png)
+
+
+NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG data.
+
+
 <a id='NeuroAnalyzer.jl-Documentation'></a>
 
 <a id='NeuroAnalyzer.jl-Documentation-1'></a>
@@ -14,6 +22,84 @@ This documentation has been generated using [Documenter.jl](https://juliadocs.gi
 <a id='NeuroAnalyzer-1'></a>
 
 ## NeuroAnalyzer
+
+<a id='NeuroAnalyzer.na_info-Tuple{}' href='#NeuroAnalyzer.na_info-Tuple{}'>#</a>
+**`NeuroAnalyzer.na_info`** &mdash; *Method*.
+
+
+
+```julia
+na_info()
+```
+
+Show NeuroAnalyzer and imported packages versions.
+
+<a id='NeuroAnalyzer.na_plugins_reload-Tuple{}' href='#NeuroAnalyzer.na_plugins_reload-Tuple{}'>#</a>
+**`NeuroAnalyzer.na_plugins_reload`** &mdash; *Method*.
+
+
+
+```julia
+na_plugins_reload()
+```
+
+Reload NeuroAnalyzer plugins.
+
+<a id='NeuroAnalyzer.na_plugins_list-Tuple{}' href='#NeuroAnalyzer.na_plugins_list-Tuple{}'>#</a>
+**`NeuroAnalyzer.na_plugins_list`** &mdash; *Method*.
+
+
+
+```julia
+na_plugins_list()
+```
+
+List NeuroAnalyzer plugins.
+
+<a id='NeuroAnalyzer.na_plugins_remove-Tuple{String}' href='#NeuroAnalyzer.na_plugins_remove-Tuple{String}'>#</a>
+**`NeuroAnalyzer.na_plugins_remove`** &mdash; *Method*.
+
+
+
+```julia
+na_plugins_remove(plugin)
+```
+
+Remove NeuroAnalyzer `plugin`.
+
+**Arguments**
+
+  * `plugin::String`: plugin name
+
+<a id='NeuroAnalyzer.na_plugins_install-Tuple{String}' href='#NeuroAnalyzer.na_plugins_install-Tuple{String}'>#</a>
+**`NeuroAnalyzer.na_plugins_install`** &mdash; *Method*.
+
+
+
+```julia
+na_plugins_install(plugin)
+```
+
+Install NeuroAnalyzer `plugin`.
+
+**Arguments**
+
+  * `plugin::String`: plugin Git repository URL
+
+<a id='NeuroAnalyzer.na_plugins_update' href='#NeuroAnalyzer.na_plugins_update'>#</a>
+**`NeuroAnalyzer.na_plugins_update`** &mdash; *Function*.
+
+
+
+```julia
+na_plugins_update(plugin)
+```
+
+Install NeuroAnalyzer `plugin`.
+
+**Arguments**
+
+  * `plugin::String`: plugin to update; if empty, update all
 
 
 <a id='Low-level-functions'></a>
@@ -89,7 +175,7 @@ Pad the matrix `m` with zeros to make it square.
 
 
 ```julia
-vsearch(y, x; return_distance=false)
+vsearch(y, x; return_distance)
 ```
 
 Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
@@ -98,7 +184,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
   * `y::Real`
   * `x::AbstractVector`
-  * `return_distance::Bool`
+  * `return_distance::Bool=false`
 
 **Returns**
 
@@ -112,7 +198,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 
 
 ```julia
-vsearch(y, x; return_distance=false)
+vsearch(y, x; return_distance)
 ```
 
 Return the positions of the `y` vector in the vector `x`.
@@ -121,7 +207,7 @@ Return the positions of the `y` vector in the vector `x`.
 
   * `x::AbstractVector`
   * `y::AbstractVector`
-  * `return_distance::Bool`
+  * `return_distance::Bool=false`
 
 **Returns**
 
@@ -3582,7 +3668,7 @@ Electrode locations:
 eeg_save(eeg; file_name, overwrite)
 ```
 
-Save the `eeg` to `file_name` file (HDF5-based).
+Save `eeg` to `file_name` file (HDF5-based).
 
 **Arguments**
 
@@ -3603,7 +3689,7 @@ Save the `eeg` to `file_name` file (HDF5-based).
 eeg_load(file_name)
 ```
 
-Load the `eeg` from `file_name` file (HDF5-based).
+Load `eeg` from `file_name` file (HDF5-based).
 
 **Arguments**
 
@@ -4004,7 +4090,7 @@ Return type of `eeg` components.
 eeg_delete_channel(eeg; channel)
 ```
 
-Remove `channel` from the `eeg`.
+Remove `channel` from `eeg`.
 
 **Arguments**
 
@@ -4024,7 +4110,7 @@ Remove `channel` from the `eeg`.
 eeg_delete_channel!(eeg; channel)
 ```
 
-Remove `channel` from the `eeg`.
+Remove `channel` from `eeg`.
 
 **Arguments**
 
@@ -4040,7 +4126,7 @@ Remove `channel` from the `eeg`.
 eeg_keep_channel(eeg; channel)
 ```
 
-Keep `channels` in the `eeg`.
+Keep `channels` in `eeg`.
 
 **Arguments**
 
@@ -4060,7 +4146,7 @@ Keep `channels` in the `eeg`.
 eeg_keep_channel!(eeg; channel)
 ```
 
-Keep `channels` in the `eeg`.
+Keep `channels` in `eeg`.
 
 **Arguments**
 
@@ -4096,7 +4182,7 @@ Return the `channel` index / name.
 eeg_rename_channel(eeg; channel, name)
 ```
 
-Rename the `eeg` `channel`.
+Rename `eeg` `channel`.
 
 **Arguments**
 
@@ -4117,7 +4203,7 @@ Rename the `eeg` `channel`.
 eeg_rename_channel!(eeg; channel, name)
 ```
 
-Rename the `eeg` `channel`.
+Rename `eeg` `channel`.
 
 **Arguments**
 
@@ -4363,7 +4449,7 @@ Extract the `epoch` epoch.
 eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 ```
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
 
 **Arguments**
 
@@ -4386,7 +4472,7 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
 ```
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of the `eeg`.
+Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
 
 **Arguments**
 
@@ -4462,7 +4548,7 @@ Show keys and values of `eeg` header.
 eeg_delete_epoch(eeg; epoch)
 ```
 
-Remove `epoch` from the `eeg`.
+Remove `epoch` from `eeg`.
 
 **Arguments**
 
@@ -4482,7 +4568,7 @@ Remove `epoch` from the `eeg`.
 eeg_delete_epoch!(eeg; epoch)
 ```
 
-Remove `epoch` from the `eeg`.
+Remove `epoch` from `eeg`.
 
 **Arguments**
 
@@ -4498,7 +4584,7 @@ Remove `epoch` from the `eeg`.
 eeg_keep_epoch(eeg; epoch)
 ```
 
-Keep `epoch` in the `eeg`.
+Keep `epoch` in `eeg`.
 
 **Arguments**
 
@@ -4518,7 +4604,7 @@ Keep `epoch` in the `eeg`.
 eeg_keep_epoch!(eeg; epoch)
 ```
 
-Keep `epoch` in the `eeg`.
+Keep `epoch` in `eeg`.
 
 **Arguments**
 
@@ -5005,7 +5091,7 @@ Flip channel locations along z axis.
 eeg_channel_type(eeg; channel, type)
 ```
 
-Change the `eeg` `channel` type.
+Change `eeg` `channel` type.
 
 **Arguments**
 
@@ -5026,7 +5112,7 @@ Change the `eeg` `channel` type.
 eeg_channel_type!(eeg; channel, new_name)
 ```
 
-Change the `eeg` `channel` type.
+Change `eeg` `channel` type.
 
 **Arguments**
 
@@ -5099,7 +5185,7 @@ Edit `eeg` electrode.
 eeg_electrode_loc(eeg; channel, output)
 ```
 
-Return locations of the `eeg` `channel` electrode.
+Return locations of `eeg` `channel` electrode.
 
 **Arguments**
 
@@ -5351,7 +5437,7 @@ Return index of `eeg` channels of `type`.
 eeg_reference_ch(eeg; channel, med)
 ```
 
-Reference the `eeg` to specific `channel`.
+Reference `eeg` to specific `channel`.
 
 **Arguments**
 
@@ -5372,7 +5458,7 @@ Reference the `eeg` to specific `channel`.
 eeg_reference_ch!(eeg; channel, med)
 ```
 
-Reference the `eeg` to specific channel `channel`.
+Reference `eeg` to specific channel `channel`.
 
 **Arguments**
 
@@ -5389,7 +5475,7 @@ Reference the `eeg` to specific channel `channel`.
 eeg_reference_car(eeg; exclude_fpo, exclude_current, med)
 ```
 
-Reference the `eeg` to common average reference.
+Reference `eeg` to common average reference.
 
 **Arguments**
 
@@ -5411,7 +5497,7 @@ Reference the `eeg` to common average reference.
 eeg_reference_car!(eeg; exclude_fpo, exclude_current, med)
 ```
 
-Reference the `eeg` to common average reference.
+Reference `eeg` to common average reference.
 
 **Arguments**
 
@@ -5429,7 +5515,7 @@ Reference the `eeg` to common average reference.
 eeg_derivative(eeg; channel)
 ```
 
-Return the derivative of the `eeg` with length same as the signal.
+Return the derivative of `eeg` with length same as the signal.
 
 **Arguments**
 
@@ -5449,7 +5535,7 @@ Return the derivative of the `eeg` with length same as the signal.
 eeg_derivative!(eeg; channel)
 ```
 
-Return the derivative of the `eeg` with length same as the signal.
+Return the derivative of `eeg` with length same as the signal.
 
 **Arguments**
 
@@ -5496,7 +5582,7 @@ Perform piecewise detrending of `eeg`.
 eeg_detrend!(eeg; channel, type, offset, order, span)
 ```
 
-Remove linear trend from the `eeg`.
+Remove linear trend from `eeg`.
 
 **Arguments**
 
@@ -5635,7 +5721,7 @@ Normalize each `eeg` channel.
 eeg_add_noise(eeg; channel)
 ```
 
-Add random noise to the `eeg` channels.
+Add random noise to `eeg` channels.
 
 **Arguments**
 
@@ -5655,7 +5741,7 @@ Add random noise to the `eeg` channels.
 eeg_add_noise!(eeg; channel)
 ```
 
-Add random noise to the `eeg` channels.
+Add random noise to `eeg` channels.
 
 **Arguments**
 
@@ -6117,7 +6203,7 @@ Perform wavelet denoising.
 eeg_reference_a(eeg; type, med)
 ```
 
-Reference the `eeg` to auricular channels.
+Reference `eeg` to auricular channels.
 
 **Arguments**
 
@@ -6138,7 +6224,7 @@ Reference the `eeg` to auricular channels.
 eeg_reference_a!(eeg; type, med)
 ```
 
-Reference the `eeg` to auricular channels.
+Reference `eeg` to auricular channels.
 
 **Arguments**
 
@@ -6155,7 +6241,7 @@ Reference the `eeg` to auricular channels.
 eeg_reference_m(eeg; type, med)
 ```
 
-Reference the `eeg` to mastoid channels.
+Reference `eeg` to mastoid channels.
 
 **Arguments**
 
@@ -6176,7 +6262,7 @@ Reference the `eeg` to mastoid channels.
 eeg_reference_m!(eeg; type, med)
 ```
 
-Reference the `eeg` to mastoid channels.
+Reference `eeg` to mastoid channels.
 
 **Arguments**
 
@@ -6231,7 +6317,7 @@ Perform wavelet denoising.
 eeg_reference_plap(eeg; nn, weights)
 ```
 
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 
@@ -6253,7 +6339,7 @@ Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 eeg_reference_plap!(eeg; nn, weights)
 ```
 
-Reference the `eeg` using planar Laplacian (using `nn` adjacent electrodes).
+Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
 
 **Arguments**
 
@@ -6305,7 +6391,7 @@ Zero `eeg` channel at the beginning and at the end.
 eeg_wbp(eeg; pad, frq, ncyc, demean)
 ```
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform wavelet bandpass filtering of `eeg`.
 
 **Arguments**
 
@@ -6328,7 +6414,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 eeg_wbp!(eeg; pad, frq, ncyc, demean)
 ```
 
-Perform wavelet bandpass filtering of the `eeg`.
+Perform wavelet bandpass filtering of `eeg`.
 
 **Arguments**
 
@@ -6347,7 +6433,7 @@ Perform wavelet bandpass filtering of the `eeg`.
 eeg_cbp(eeg; pad, frq, demean)
 ```
 
-Perform convolution bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of `eeg`.
 
 **Arguments**
 
@@ -6369,7 +6455,7 @@ Perform convolution bandpass filtering of the `eeg`.
 eeg_cbp!(eeg; pad, frq, ncyc, demean)
 ```
 
-Perform convolution bandpass filtering of the `eeg`.
+Perform convolution bandpass filtering of `eeg`.
 
 **Arguments**
 
@@ -6387,7 +6473,7 @@ Perform convolution bandpass filtering of the `eeg`.
 eeg_denoise_wien(eeg)
 ```
 
-Perform Wiener deconvolution denoising of the `eeg`.
+Perform Wiener deconvolution denoising of `eeg`.
 
 **Returns**
 
@@ -6402,7 +6488,7 @@ Perform Wiener deconvolution denoising of the `eeg`.
 eeg_denoise_wien!(eeg)
 ```
 
-Perform Wiener deconvolution denoising of the `eeg`.
+Perform Wiener deconvolution denoising of `eeg`.
 
 **Arguments**
 
@@ -6462,7 +6548,7 @@ Multiply `channel` signal by `factor`.
 eeg_total_power(eeg, mt)
 ```
 
-Calculate total power of the `eeg`.
+Calculate total power of `eeg`.
 
 **Arguments**
 
@@ -6482,7 +6568,7 @@ Calculate total power of the `eeg`.
 eeg_band_power(eeg; f, mt)
 ```
 
-Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
+Calculate absolute band power between frequencies `f[1]` and `f[2]` of `eeg`.
 
 **Arguments**
 
@@ -6598,7 +6684,7 @@ Named tuple containing:
 eeg_psd(eeg; norm, mt)
 ```
 
-Calculate power spectrum density for each the `eeg` channels.
+Calculate power spectrum density for each `eeg` channels.
 
 **Arguments**
 
@@ -6894,7 +6980,7 @@ Named tuple containing:
 eeg_spectrum(eeg; pad, h)
 ```
 
-Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
+Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad` > 0 channels are padded with 0s.
 
 **Arguments**
 
@@ -7089,7 +7175,7 @@ Perform convolution in the time domain.
 eeg_dft(eeg)
 ```
 
-Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
+Returns FFT and DFT sample frequencies for a DFT for each `eeg` channels.
 
 **Arguments**
 
@@ -7111,7 +7197,7 @@ Named tuple containing:
 eeg_msci95(eeg; n::=3, method=:normal)
 ```
 
-Calculates mean, std and 95% confidence interval for each the `eeg` channels.
+Calculates mean, std and 95% confidence interval for each `eeg` channels.
 
 **Arguments**
 
@@ -7189,7 +7275,7 @@ Named tuple containing:
 
 eeg_acov(eeg; lag=1, demean=false, norm=false)
 
-Calculate autocovariance of each the `eeg` channels.
+Calculate autocovariance of each `eeg` channels.
 
 **Arguments**
 
@@ -7848,7 +7934,7 @@ Named tuple containing:
 eeg_rel_psd(eeg; norm, mt, f)
 ```
 
-Calculate relative power spectrum density for each the `eeg` channels.
+Calculate relative power spectrum density for each `eeg` channels.
 
 **Arguments**
 
@@ -9482,7 +9568,7 @@ Plot absolute/relative bands powers of a single-channel `signal`.
 
   * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
-  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, alpha](see `eeg_band()`)
+  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, :alpha]
   * `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
   * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
   * `norm::Bool=true`: normalize powers to dB
@@ -9514,7 +9600,7 @@ Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plo
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
   * `offset::Int64=0`: displayed segment offset in samples
   * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `band:Vector{Symbols}=:all`: band name, e.g. :delta (see `eeg_band()`)
+  * `band:Vector{Symbols}=:all`: band name, e.g. :delta
   * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
   * `norm::Bool=true`: normalize powers to dB
   * `xlabel::String=""`: x-axis label

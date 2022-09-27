@@ -1,7 +1,7 @@
 """
     eeg_total_power(eeg, mt)
 
-Calculate total power of the `eeg`.
+Calculate total power of `eeg`.
 
 # Arguments
 
@@ -33,7 +33,7 @@ end
 """
     eeg_band_power(eeg; f, mt)
 
-Calculate absolute band power between frequencies `f[1]` and `f[2]` of the `eeg`.
+Calculate absolute band power between frequencies `f[1]` and `f[2]` of `eeg`.
 
 # Arguments
 
@@ -242,7 +242,7 @@ end
 """
     eeg_psd(eeg; norm, mt)
 
-Calculate power spectrum density for each the `eeg` channels.
+Calculate power spectrum density for each `eeg` channels.
 
 # Arguments
 
@@ -853,7 +853,7 @@ end
 """
     eeg_spectrum(eeg; pad, h)
 
-Calculate FFT, amplitudes, powers and phases for each channel of the `eeg`. For `pad` > 0 channels are padded with 0s.
+Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad` > 0 channels are padded with 0s.
 
 # Arguments
 
@@ -1160,7 +1160,7 @@ end
 """
     eeg_dft(eeg)
 
-Returns FFT and DFT sample frequencies for a DFT for each the `eeg` channels.
+Returns FFT and DFT sample frequencies for a DFT for each `eeg` channels.
 
 # Arguments
 
@@ -1195,7 +1195,7 @@ end
 """
     eeg_msci95(eeg; n::=3, method=:normal)
 
-Calculates mean, std and 95% confidence interval for each the `eeg` channels.
+Calculates mean, std and 95% confidence interval for each `eeg` channels.
 
 # Arguments
 
@@ -1326,7 +1326,7 @@ end
 """
    eeg_acov(eeg; lag=1, demean=false, norm=false)
 
-Calculate autocovariance of each the `eeg` channels.
+Calculate autocovariance of each `eeg` channels.
 
 # Arguments
 
@@ -2783,7 +2783,7 @@ end
 """
     eeg_rel_psd(eeg; norm, mt, f)
 
-Calculate relative power spectrum density for each the `eeg` channels.
+Calculate relative power spectrum density for each `eeg` channels.
 
 # Arguments
 
