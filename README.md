@@ -139,11 +139,11 @@ For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used auto
 
 ## Documentation
 
-Complete NeuroAnalyzer documentation is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md).
+Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html).
 
-Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md).
+Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [neuroanalyzer.org](https://neuroanalyzer.org)
 
-Changelog is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
+Changelog and commit details are [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
 
 ## Performance
 
