@@ -27,10 +27,10 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="6.3927609"
-     inkscape:cx="503.77295"
+     inkscape:cx="497.43766"
      inkscape:cy="402.01723"
      inkscape:window-width="1920"
-     inkscape:window-height="1151"
+     inkscape:window-height="1031"
      inkscape:window-x="0"
      inkscape:window-y="49"
      inkscape:window-maximized="1"
@@ -42,7 +42,10 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g412">
+       id="g412"
+       inkscape:export-filename="/home/eb/Documents/Code/na_avatar.png"
+       inkscape:export-xdpi="542.95001"
+       inkscape:export-ydpi="542.95001">
       <rect
          style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.989709;stroke-dasharray:0.989709, 1.97942;stroke-opacity:1"
          id="rect2405"

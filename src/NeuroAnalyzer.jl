@@ -243,6 +243,7 @@ export eeg_save
 export eeg_save_electrodes
 export eeg_add_electrodes
 export eeg_add_electrodes!
+export eeg_import_digitrack
 
 include("eeg_edit.jl")
 export eeg_copy

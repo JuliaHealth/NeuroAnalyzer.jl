@@ -1329,3 +1329,149 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 
     return eeg
 end
+
+"""
+    eeg_import_digitrack(file_name; clean_labels)
+
+Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `clean_labels::Bool=true`: only keep channel names in channel labels
+
+# Returns
+
+- `eeg:EEG`
+
+# Notes
+"""
+function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    fid = open(file_name)
+
+    buffer = readline(fid)
+    occursin("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
+    eeg_filetype = "Digitrack"
+
+    patient = ""
+    recording = ""
+    buffer = replace(buffer, "Start time " => "")
+    recording_date = split(buffer, " ")[1]
+    recording_time = split(buffer, " ")[2]
+
+    buffer = readline(fid)
+    buffer = replace(buffer, "Sampling rate " => "")
+    buffer = replace(buffer, "," => ".")
+    sampling_rate = parse(Float64, replace(buffer, " Hz" => ""))
+
+    data_records = -1
+    data_records_duration  = -1
+
+    buffer = readline(fid)
+
+    channels = Vector{String}()
+    while buffer !=""
+        buffer = readline(fid)
+        push!(channels, buffer)
+    end
+    deleteat!(channels, length(channels))
+    channel_n  = length(channels)
+
+    labels = Vector{String}(undef, channel_n)
+    prefiltering = Vector{String}(undef, channel_n)
+    for idx in 1:channel_n
+        labels[idx] = split(channels[idx], "\t")[1]
+        prefiltering[idx] = split(channels[idx], "\t")[2]
+        prefiltering[idx] = prefiltering[idx][1:(length(prefiltering[idx]) - 1)]
+    end
+
+    transducers = repeat([""], channel_n)
+    physical_dimension = repeat([""], channel_n)
+    physical_minimum = repeat([-1.0], channel_n)
+    physical_maximum = repeat([-1.0], channel_n)
+    digital_minimum = repeat([-1.0], channel_n)
+    digital_maximum = repeat([-1.0], channel_n)
+    samples_per_datarecord = repeat([-1], channel_n)
+    gain = repeat([-1.0], channel_n)
+    sampling_rate = repeat([sampling_rate], channel_n)
+    
+    clean_labels == true && (labels = _clean_labels(labels))
+    channel_type = _set_channel_types(labels)
+    has_annotations, annotations_channel = _has_annotations(channel_type)
+
+    data = readlines(fid)
+
+    close(fid)
+
+    eeg_signals = zeros(channel_n, length(data), 1)
+    Threads.@threads for idx in 1:length(data)
+        signals = split(data[idx], "\t")
+        deleteat!(signals, length(signals))
+        signals = replace.(signals, "," => ".")
+        @inbounds eeg_signals[:, idx, 1] = parse.(Float64, signals)
+    end
+
+    eeg_annotations = DataFrame(id=[""], time=[""], description=[""])
+    eeg_duration_samples = size(eeg_signals, 2)
+    eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate[1]
+    eeg_time = collect(0:(1 / sampling_rate[1]):eeg_duration_seconds)
+    eeg_time = eeg_time[1:end - 1]
+    sampling_rate = round.(Int64, sampling_rate)
+    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
+
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
+                      :eeg_filesize_mb => eeg_filesize_mb,
+                      :eeg_filetype => eeg_filetype,
+                      :patient => string(patient),
+                      :recording => string(recording),
+                      :recording_date => recording_date,
+                      :recording_time => recording_time,
+                      :data_records => data_records,
+                      :data_records_duration => data_records_duration,
+                      :channel_n => channel_n,
+                      :channel_type => channel_type,
+                      :reference => "",
+                      :channel_locations => false,
+                      :loc_theta => zeros(channel_n),
+                      :loc_radius => zeros(channel_n),
+                      :loc_x => zeros(channel_n),
+                      :loc_y => zeros(channel_n),
+                      :loc_z => zeros(channel_n),
+                      :loc_radius_sph => zeros(channel_n),
+                      :loc_theta_sph => zeros(channel_n),
+                      :loc_phi_sph => zeros(channel_n),
+                      :history => String[],
+                      :components => Symbol[],
+                      :eeg_duration_samples => eeg_duration_samples,
+                      :eeg_duration_seconds => eeg_duration_seconds,
+                      :epoch_n => 1,
+                      :epoch_duration_samples => eeg_duration_samples,
+                      :epoch_duration_seconds => eeg_duration_seconds,
+                      :labels => labels,
+                      :transducers => transducers,
+                      :physical_dimension => physical_dimension,
+                      :physical_minimum => physical_minimum,
+                      :physical_maximum => physical_maximum,
+                      :digital_minimum => digital_minimum,
+                      :digital_maximum => digital_maximum,
+                      :prefiltering => prefiltering,
+                      :samples_per_datarecord => samples_per_datarecord,
+                      :sampling_rate => sampling_rate,
+                      :gain => gain,
+                      :note => "",
+                      :annotations => has_annotations)
+
+    eeg_components = Vector{Any}()
+    eeg_epochs_time = eeg_time
+
+    eeg = EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_annotations)
+
+    return eeg
+end
