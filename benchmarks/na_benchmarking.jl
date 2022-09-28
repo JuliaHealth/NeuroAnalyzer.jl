@@ -37,6 +37,9 @@ eeg_import_edf("test/eeg-test-edfplus.edf")
 print(rpad("Import BDF+", 24))
 bdf = eeg_import_bdf("test/eeg-test-bdf.bdf")
 @time bdf = eeg_import_bdf("test/eeg-test-bdf.bdf");
+print(rpad("Import Digitrack", 24))
+dt = eeg_import_digitrack("test/eeg-test-digitrack.txt")
+@time dt = eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import EDF", 24))
 edf = eeg_import_edf("test/eeg-test-edf.edf")
 @time edf = eeg_import_edf("test/eeg-test-edf.edf");
