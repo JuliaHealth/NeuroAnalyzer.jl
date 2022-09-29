@@ -120,7 +120,7 @@ This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future development
 
 Due to the nature of Julia JIT (just-in-time compiler), first run of functions is slow. Also, due to modules precompilation, NeuroAnalyzer startup may take some time.
 
-Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md).
+For testing performance between individual machines, a complete set of benchmarks is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md).
 
 ## Plugins (extensions)
 
