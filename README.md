@@ -60,41 +60,7 @@ na_info()
 
 ## Requirements
 
-Julia version ≥ 1.7.0 is required. Julia [current stable version](https://julialang.org/downloads/#current_stable_release) is recommended, as NeuroAnalyzer is only tested against it.
-
-The following packages are required:
-- CSV
-- CubicSplines
-- CUDA
-- DataFrames
-- Deconvolution
-- Distances
-- DSP
-- FFTW
-- FileIO
-- FindPeaks1D
-- Git
-- GLM
-- GLMakie
-- HypothesisTests
-- InformationMeasures
-- Interpolations
-- JLD2
-- LinearAlgebra
-- Loess
-- MultivariateStats
-- Pkg
-- Plots
-- Polynomials
-- ScatteredInterpolation
-- [Simpson](https://codeberg.org/AdamWysokinski/Simpson.jl)
-- StatsFuns
-- StatsKit
-- StatsModels
-- StatsPlots
-- Wavelets
-
-Wherever possible, NeuroAnalyzer will be 100% Julia based. If required, external open-source applications may be called for certain tasks.
+See [https://neuroanalyzer.org/requirements.html](https://neuroanalyzer.org/requirements.html) for more details.
 
 ## General remarks
 
@@ -142,9 +108,13 @@ For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used auto
 
 Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html).
 
-Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [neuroanalyzer.org](https://neuroanalyzer.org)
+Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [https://neuroanalyzer.org](https://neuroanalyzer.org)
 
-Changelog and commit details are [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Changelog.md).
+Changelog and commit details are available at [https://neuroanalyzer.org/changelog.htm](https://neuroanalyzer.org/changelog.html).
+
+## What's next
+
+This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future developments of NeuroAnalyzer is not complete and not in any particular order.
 
 ## Performance
 
@@ -154,118 +124,11 @@ Complete set of benchmarks is [here](https://codeberg.org/AdamWysokinski/NeuroAn
 
 ## Plugins (extensions)
 
-Plugins are git repositories, default location is `~/Documents/NeuroAnalyzer/plugins`. Each plugin must be in a separate folder, in `src/` subdirectory. To modify the plugins path, set the variable `plugins_path` in the NeuroAnalyzerJ.jl file.
-
-Run `na_reload_plugins()` to refresh plugins.
-
-```julia
-na_plugins_reload()
-na_plugins_list()
-na_plugins_add()
-na_plugins_remove()
-na_plugins_update()
-```
+See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
 
 ## Known bugs
 
-- check for wrong epoch number in plots
-
-## What's next
-
-The lists below are not complete and not in any particular order.
-
-General:
-- more performance optimizations
-- Pluto/PlutoUI interface
-- Term.jl interface
-- distributed computing for pipelines
-
-EEG:
-- analysis, plots: brain topography
-- analysis, plots: connectome graph
-- analysis, plots: PSD plot line slope over frequencies (adjusted power)
-- analysis: amplitude turbulence
-- analysis: ANOVA test for segments
-- analysis: beamforming, leakage correction
-- analysis: CDR: current density reconstruction (GCDR, CDR spectrum), activity within specified band
-- analysis: continuous wavelet transform (using ContinuousWavelets.jl)
-- analysis: cross-frequency phase-amplitude coupling
-- analysis: dipoles
-- analysis: EEG bands: medial vs left vs right channels within each band
-- analysis: FOOOF
-- analysis: Hilbert envelope computation → oscillatory envelopes → correlations → connectivity map
-- analysis: HRV of the ECG channel
-- analysis: ML/DL
-- analysis: multitaper: generate frequency-band-selective tapers to increase sensitivity, varying the length of time segments, varying the number of tapers and central frequency of the spectral representation of the tapers
-- analysis: non-phase-locked part of the signal (= total - phase-locked)
-- analysis: phase synchronization measurements: weighted PLI, phase coherence (PC), imaginary component of coherency (IC)
-- analysis: phase-amplitude cross-frequency coupling (PAC)
-- analysis: power envelope connectivity
-- analysis: probability maps: the local likelihood of belonging to a given population
-- analysis: signals/PSD comparison
-- analysis: source localization
-- analysis: tensor and other statistical maps (magnitude and direction, probabilistic regions, regions of high vs low variability)
-- analysis: wavelets
-- edit: view/add/delete events/markers
-- edit: automated channel rejection
-- edit: automated epoch rejection
-- edit: automated cleaning of artifacts
-- edit: automated DC line cleaning
-- edit: bad channel marking / rejection
-- edit: bad epoch marking / rejection
-- edit: create EEG object
-- edit: automated epoching by event markers
-- edit: insert channel
-- edit: replace channel
-- edit: merge EEG objects
-- edit: virtual channels (e.g. F3 + 2.5 × Fp1 - 3 × Cz / 4)
-- edit: add epochs flag to mark if signal has been split into epochs, use it for plotting
-- edit: locs rotate
-- edit: concatenate many EEG files into larger one
-- io: import from CSV
-- io: more import formats
-- misc: reports in .md format
-- misc: update tutorial.md
-- plots: simplify plotting functions (PSD, spectrogram, etc.) - remove epoch markers, plot one epoch
-- plots: show events/markers on plots
-- plots: show annotations on plots
-- plots: eeg_plot_signal*() separate plots for non-EEG/MEG channels (different units, ylim)
-- plots: add user-defined voltage scale for eeg signal plots
-- plots: 3d head/brain plots
-- plots: asymmetric color bars to highlight increase/decrease in activity in topoplots
-- plots: coherence spectrum (y: relative amplitude, x: frequencies)
-- plots: ITPC topoplot
-- plots: plot two EEG one over another for comparison
-- plots: PSD of multi channels signal like eeg_plot_signal(), using normalized power (a.u.)
-- plots: ERP amplitude plots at electrode locations (eeg_plot_erp_topomap())
-- plots: topoplot of which electrode at a given time exhibits statistically significant difference between two signals
-- process: custom referencing (e.g. bipolar longitudinal/horizontal)
-- process: detect artifacts using TKEO
-- process: spherical Laplacian referencing
-- process: REST referencing
-- process: set baseline
-- study: multi-trial data (eeg_study object: collection of EEG objects)
-- ERPs
-- visual / auditory stimuli presentation module (via Raspberry Pi)
-- use eyetracker to detect eye movement and blink artifacts
-- use 3D scanner for head mesh, e.g. [Polhemus](https://polhemus.com/scanning-digitizing/fastscan)
-- use 3D tracker for electrode locations, e.g. [Polhemus](https://polhemus.com/motion-tracking/all-trackers/g4)
-- AMD ROCm acceleration
-- IEEG/ECoG/MEG/SEEG
-
-NIRS
-- import and process data
-
-MRI
-- import and process data for EEG source localization
-
-NSTIM
-- TES modelling
-- removal of TES artifacts from EEG
-
-## List of publications using NeuroAnalyzer
-
-If you have used NeuroAnalyzer in your research, please add references to your paper here.
+List of reported bugs is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/issues?labels=70759).
 
 ## Contributors
 
