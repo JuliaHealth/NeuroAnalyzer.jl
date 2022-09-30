@@ -682,15 +682,23 @@ p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true)
 eeg_plot_save(p, file_name="images/edf_spec1.png")
 ```
 
+![spectrogram](images/edf_spec1.png)
+
 Plot spectrogram using wavelet convolution and variable number of Morlet-wavelet cycles:
 ```julia
 p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true, mw=true, ncyc=(2, 32))
 eeg_plot_save(p, file_name="images/edf_spec2.png")
 ```
 
-![edf topo :amp](images/edf_spec1.png)
+![spectrogram MW](images/edf_spec2.png)
 
-![edf topo :amp](images/edf_spec2.png)
+Plot spectrogram using STFT:
+```julia
+p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true, st=true)
+eeg_plot_save(p, file_name="images/edf_spec4.png")
+```
+
+![spectrogram ST](images/edf_spec4.png)
 
 Plot multi-channel spectrogram:
 ```julia
@@ -698,7 +706,7 @@ p = eeg_plot_signal_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=
 eeg_plot_save(p, file_name="images/edf_spec3.png")
 ```
 
-![edf topo :amp](images/edf_spec3.png)
+![edf mc-spectrogram](images/edf_spec3.png)
 
 Plot PSD, x and y axes are log10-scaled:
 ```julia

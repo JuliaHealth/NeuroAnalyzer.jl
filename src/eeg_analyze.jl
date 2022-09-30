@@ -809,7 +809,7 @@ function eeg_epochs_stats(eeg::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_spectrogram(eeg; norm, mt, demean)
+    eeg_spectrogram(eeg; norm, mt, st, demean)
 
 Return spectrogram of `eeg`.
 
@@ -818,6 +818,7 @@ Return spectrogram of `eeg`.
 - `eeg::NeuroAnalyzer.EEG`
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
@@ -827,19 +828,19 @@ Named tuple containing:
 - `s_frq::Vector{Float64}`
 - `s_t::Vector{Float64}`
 """
-function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; norm::Bool=true, mt::Bool=false, demean::Bool=true)
+function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; norm::Bool=true, mt::Bool=false, st::Bool=false, demean::Bool=true)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     fs = eeg_sr(eeg)
-    p_tmp, s_frq, s_t = @views s_spectrogram(signal[1, :, 1], fs=fs, norm=norm, mt=mt, demean=demean)
+    p_tmp, s_frq, s_t = @views s_spectrogram(signal[1, :, 1], fs=fs, norm=norm, mt=mt, st=st, demean=demean)
     s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt, demean=demean)
+            s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt, st=st, demean=demean)
         end
     end
 

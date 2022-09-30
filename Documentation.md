@@ -4,7 +4,7 @@
 ![](assets/neuroanalyzer.png)
 
 
-NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG data.
+[NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) is a [Julia](https://julialang.org) package for analyzing of EEG data.
 
 
 <a id='NeuroAnalyzer.jl-Documentation'></a>
@@ -1734,7 +1734,7 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 
 
 ```julia
-s_spectrogram(signal; fs, norm, mt, demean)
+s_spectrogram(signal; fs, norm, mt, st, demean)
 ```
 
 Calculate spectrogram of `signal`.
@@ -1745,6 +1745,7 @@ Calculate spectrogram of `signal`.
   * `fs::Int64`: sampling frequency
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
@@ -3848,6 +3849,28 @@ Load BDF/BDF+ file and return and `NeuroAnalyzer.EEG` object.
 **Source**
 
 https://www.biosemi.com/faq/file_format.htm
+
+<a id='NeuroAnalyzer.eeg_import_digitrack-Tuple{String}' href='#NeuroAnalyzer.eeg_import_digitrack-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_digitrack`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_digitrack(file_name; clean_labels)
+```
+
+Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
+
+**Notes**
 
 
 <a id='EEG-edit'></a>
@@ -6951,7 +6974,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_spectrogram(eeg; norm, mt, demean)
+eeg_spectrogram(eeg; norm, mt, st, demean)
 ```
 
 Return spectrogram of `eeg`.
@@ -6961,6 +6984,7 @@ Return spectrogram of `eeg`.
   * `eeg::NeuroAnalyzer.EEG`
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `demean::Bool=true`: demean signal prior to analysis
 
 **Returns**
@@ -8997,6 +9021,7 @@ Plot spectrogram of `signal`.
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label
@@ -9030,6 +9055,7 @@ Plots spectrogram of `eeg` channel(s).
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short-time Fourier transform spectrogram
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -9063,6 +9089,7 @@ Plots spectrogram of `eeg` channel(s).
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -9095,6 +9122,7 @@ Plots spectrogram of `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Frequency [Hz]`: x-axis label
@@ -9129,6 +9157,7 @@ Plots spectrogram of `eeg` channel(s).
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `xlabel::String="Time [s]"`: x-axis label
   * `ylabel::String="Frequency [Hz]"`: y-axis label
   * `title::String=""`: plot title
@@ -9161,6 +9190,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Times [s]`: x-axis label
@@ -9193,6 +9223,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
   * `norm::Bool=true`: normalize powers to dB
   * `mw::Bool=false`: if true use Morlet wavelet convolution
   * `mt::Bool=false`: if true use multi-tapered spectrogram
+  * `st::Bool=false`: if true use short time Fourier transform
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
   * `xlabel::String="Time [s]"`: x-axis label

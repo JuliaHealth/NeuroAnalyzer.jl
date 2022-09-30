@@ -5,7 +5,6 @@ EditURL = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/maste
 ![](assets/neuroanalyzer.png)
 
 [NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) is a [Julia](https://julialang.org) package for analyzing of EEG data.
-
 # NeuroAnalyzer.jl Documentation
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
@@ -99,7 +98,7 @@ s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pc_m::PCA{Float64})
 s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
 s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 s_ica_reconstruct(signal::AbstractArray; ic::AbstractArray, ic_mw::AbstractArray, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
-s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, demean::Bool=true)
+s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st=false, demean::Bool=true)
 s_detect_epoch_flat(signal::AbstractArray)
 s_detect_epoch_rmse(signal::AbstractArray)
 s_detect_epoch_rmsd(signal::AbstractArray)
@@ -204,6 +203,7 @@ eeg_save_electrodes(locs::DataFrame; file_name::String, overwrite::Bool=false)
 eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 eeg_import_bdf(file_name::String; clean_labels::Bool=true)
+eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
 ```
 
 ## EEG edit
@@ -455,13 +455,13 @@ eeg_plot_signal_psd_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
 eeg_plot_component_psd(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 eeg_plot_component_psd_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 eeg_plot_component_psd_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
-plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
-eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
-eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
-eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
-eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
+eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
 eeg_plot_matrix(eeg::NeuroAnalyzer.EEG, m::Union{Matrix{<:Real}, Array{<:Real, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
 eeg_plot_covmatrix(eeg::NeuroAnalyzer.EEG, cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}, lags::AbstractVector; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)

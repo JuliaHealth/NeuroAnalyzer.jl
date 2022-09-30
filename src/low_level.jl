@@ -2323,7 +2323,7 @@ function s_ica_reconstruct(signal::AbstractArray; ic::AbstractArray, ic_mw::Abst
 end
 
 """
-    s_spectrogram(signal; fs, norm, mt, demean)
+    s_spectrogram(signal; fs, norm, mt, st, demean)
 
 Calculate spectrogram of `signal`.
 
@@ -2333,6 +2333,7 @@ Calculate spectrogram of `signal`.
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
@@ -2342,8 +2343,9 @@ Named tuple containing:
 - `s_frq::Vector{Float64}`: frequencies
 - `s_t::Vector{Float64}`: time
 """
-function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, demean::Bool=true)
+function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false, demean::Bool=true)
 
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
     fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
 
     demean == true && (signal = s_demean(signal))
@@ -2351,6 +2353,16 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
     nfft = length(signal)
     interval = fs
     overlap = round(Int64, fs * 0.85)
+
+    if st == true
+        s_pow = abs.(stft(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+        norm == true && (s_pow = pow2db.(s_pow))
+        t = 0:1/fs:(length(signal) / fs)
+        s_t = linspace(t[1], t[end], size(s_pow, 2))
+        s_frq = linspace(0, fs/2, size(s_pow, 1))
+        return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
+    end
+
     if mt == true
         spec = mt_spectrogram(signal, fs=fs)
     else
@@ -2358,9 +2370,13 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
     end    
     s_pow = spec.power
     norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
-    s_t = collect(spec.time)
-    s_frq = Vector(spec.freq)
 
+    #s_t = collect(spec.time)
+    #s_frq = Vector(spec.freq)
+    t = 0:1/fs:(length(signal) / fs)
+    s_t = linspace(t[1], t[end], size(s_pow, 2))
+    s_frq = linspace(0, fs/2, size(s_pow, 1))
+    
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
 

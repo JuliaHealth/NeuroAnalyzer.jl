@@ -2973,6 +2973,7 @@ Plot spectrogram of `signal`.
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Time [s]"`: x-axis label
@@ -2985,7 +2986,7 @@ Plot spectrogram of `signal`.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
+function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
@@ -3001,16 +3002,24 @@ function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, nor
     mono == true ? palette = :grays : palette = :darktest
 
     if mw == false
-        if mt == false
-            spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-            spec_power = spec.power
+        if st == false
+            if mt == false
+                spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+                spec_power = spec.power
+            else
+                spec = mt_spectrogram(signal, fs=fs)
+                spec_power = spec.power
+            end
+            norm == true && (spec_power = pow2db.(spec_power))
+            spec_frq = spec.freq
+            t = collect(spec.time) .+ offset
         else
-            spec = mt_spectrogram(signal, fs=fs)
-            spec_power = spec.power
+            spec_power = abs.(stft(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+            norm == true && (spec_power = pow2db.(spec_power))
+            t = 0:1/fs:(length(signal) / fs)
+            t = linspace(t[1], t[end], size(spec_power, 2)) .+ offset
+            spec_frq = linspace(0, fs/2, size(spec_power, 1))
         end
-        norm == true && (spec_power = pow2db.(spec_power))
-        spec_frq = spec.freq
-        t = collect(spec.time) .+ offset
     else
         _, spec_power, _, spec_frq = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=norm)
         t = linspace(0, size(spec_power, 2)/fs, size(spec_power, 2)) .+ offset
@@ -3054,6 +3063,7 @@ Plots spectrogram of `eeg` channel(s).
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short-time Fourier transform spectrogram
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -3066,9 +3076,11 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 
@@ -3142,6 +3154,7 @@ function eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64,
                              norm=norm,
                              mw=mw,
                              mt=mt,
+                             st=st,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -3206,6 +3219,7 @@ Plots spectrogram of `eeg` channel(s).
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -3218,9 +3232,11 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
     _check_channels(eeg, channel)
@@ -3284,6 +3300,7 @@ function eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{In
                          norm=norm,
                          mw=mw,
                          mt=mt,
+                         st=st,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          frq_lim=frq_lim,
@@ -3323,6 +3340,7 @@ Plots spectrogram of `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Frequency [Hz]`: x-axis label
@@ -3335,9 +3353,11 @@ Plots spectrogram of `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
 
@@ -3383,6 +3403,7 @@ function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{F
                              norm=norm,
                              mw=mw,
                              mt=mt,
+                             st=st,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -3436,6 +3457,7 @@ Plots spectrogram of `eeg` channel(s).
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `xlabel::String="Time [s]"`: x-axis label
 - `ylabel::String="Frequency [Hz]"`: y-axis label
 - `title::String=""`: plot title
@@ -3448,9 +3470,11 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3518,6 +3542,7 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Arr
                          norm=norm,
                          mw=mw,
                          mt=mt,
+                         st=st,
                          xlabel=xlabel,
                          ylabel=ylabel,
                          frq_lim=frq_lim,
@@ -3557,6 +3582,7 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Times [s]`: x-axis label
@@ -3569,9 +3595,11 @@ Plot spectrogram of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3619,6 +3647,7 @@ function eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Arr
                              norm=norm,
                              mw=mw,
                              mt=mt,
+                             st=st,
                              xlabel=xlabel,
                              ylabel=ylabel,
                              frq_lim=frq_lim,
@@ -3670,6 +3699,7 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 - `norm::Bool=true`: normalize powers to dB
 - `mw::Bool=false`: if true use Morlet wavelet convolution
 - `mt::Bool=false`: if true use multi-tapered spectrogram
+- `st::Bool=false`: if true use short time Fourier transform
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="Time [s]"`: x-axis label
@@ -3682,9 +3712,11 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
+    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
+    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -3734,6 +3766,7 @@ function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union
                          norm=norm,
                          mw=mw,
                          mt=mt,
+                         st=st,
                          frq_lim=frq_lim,
                          ncyc=ncyc,
                          xlabel=xlabel,
