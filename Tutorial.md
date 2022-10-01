@@ -949,7 +949,7 @@ eeg_plot_save(p, file_name="images/spec_seg_box.png")
 
 ### Pipelines
 
-Pipelines are stored in `~/Documents/NeuroAnalyzer/pipelines`.
+Pipelines are stored in `~/NeuroAnalyzer/pipelines`.
 
 ```julia
 include("$(homedir())/NeuroAnalyzer/pipelines/test_pipeline.jl")
