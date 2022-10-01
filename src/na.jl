@@ -58,7 +58,7 @@ function na_info()
             println("$pkg $pkg_ver")
         end
     else
-        @warn "Manifest.toml file could not be found in $(pwd()), "
+        @warn "Manifest.toml file could not be found in $(pwd())."
     end
 end
 
@@ -68,14 +68,22 @@ end
 Reload NeuroAnalyzer plugins.
 """
 function na_plugins_reload()
-    isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    cd(expanduser(plugins_path))
-    plugins = readdir(expanduser(plugins_path))
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    cd(plugins_path)
+    plugins = readdir(plugins_path)
     for idx1 in 1:length(plugins)
-        plugin = readdir(plugins[idx1] * "/src/")
+        if Sys.isunix() || Sys.isapple()
+            plugin = readdir(plugins[idx1] * "/src/")
+        elseif Sys.iswindows()
+            plugin = readdir(plugins[idx1] * "\\src\\")
+        end
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
-                include(expanduser(plugins_path) * plugins[idx1] * "/src/" * plugin[idx2])
+                if Sys.isunix() || Sys.isapple() 
+                    include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
+                elseif Sys.iswindows()
+                    include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
+                end
             end
         end
     end
@@ -87,9 +95,9 @@ end
 List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
-    isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    cd(expanduser(plugins_path))
-    plugins = readdir(expanduser(plugins_path))
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    cd(plugins_path)
+    plugins = readdir(plugins_path)
     for idx in 1:length(plugins)
         println("$idx. $(replace(plugins[idx]))")
     end
@@ -106,9 +114,9 @@ Remove NeuroAnalyzer `plugin`.
 """
 function na_plugins_remove(plugin::String)
     @info "This will remove the whole $plugin directory, along with its file contents."
-    isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    cd(expanduser(plugins_path))
-    plugins = readdir(expanduser(plugins_path))
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    cd(plugins_path)
+    plugins = readdir(plugins_path)
     plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
     try
         rm(plugin, recursive=true)
@@ -128,8 +136,8 @@ Install NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin Git repository URL
 """
 function na_plugins_install(plugin::String)
-    isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    cd(expanduser(plugins_path))
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    cd(plugins_path)
     try
         run(`$(git()) clone $plugin`)
     catch err
@@ -148,9 +156,9 @@ Install NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin to update; if empty, update all
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
-    isdir(expanduser(plugins_path)) || throw(ArgumentError("Folder $plugins_path does not exist."))
-    cd(expanduser(plugins_path))
-    plugins = readdir(expanduser(plugins_path))
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    cd(plugins_path)
+    plugins = readdir(plugins_path)
     if plugin === nothing
         for idx in 1:length(plugins)
             cd(plugins[idx])
@@ -160,7 +168,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
             catch err
                 @error "Cannot update $(plugins[idx])."
             end
-            cd(expanduser(plugins_path))
+            cd(plugins_path)
         end
     else
         plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
@@ -170,7 +178,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
         catch err
             @error "Cannot update $plugin."
         end
-        cd(expanduser(plugins_path))
+        cd(plugins_path)
     end
     na_plugins_reload()
 end

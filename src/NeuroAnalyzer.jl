@@ -58,7 +58,13 @@ mutable struct STUDY
 end
 
 # preferences
-const plugins_path = "~/Documents/NeuroAnalyzer/plugins/"
+if Sys.isunix() || Sys.isapple()
+    const plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
+elseif Sys.iswindows()
+    const plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+end
+isdir(plugins_path) || mkdir(plugins_path)
+
 const use_cuda = false
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
