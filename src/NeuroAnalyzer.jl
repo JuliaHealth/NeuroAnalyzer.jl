@@ -63,7 +63,7 @@ const use_cuda = false
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
-include("neuroanalyzer.jl")
+include("na.jl")
 export na_info
 export na_plugins_reload
 export na_plugins_list
