@@ -6,7 +6,6 @@ NeuroAnalyzer is a [Julia](https://julialang.org) package for analyzing of EEG d
 
 NeuroAnalyzer contains a set of separate (high-level) functions, it does not have a graphical user interface (although one could built it upon these). NeuroAnalyzer functions can be combined into an analysis pipeline, i.e. a Julia script containing all steps of your analysis. This combined with processing power of Julia language and easiness of distributing calculations across computing cluster, will make NeuroAnalyzer particularly useful for processing large amounts of research data.
 
-NeuroAnalyzer is a non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 NeuroAnalyzer is a collaborative, non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 
 Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
