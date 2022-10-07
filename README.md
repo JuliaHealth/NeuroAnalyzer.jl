@@ -48,8 +48,9 @@ Next, in Julia REPL do the following:
 ```Julia
 using Pkg
 Pkg.activate(@__DIR__)
-Pkg.resolve()
 Pkg.instantiate()
+# if necessary:
+Pkg.resolve()
 Pkg.update()
 # activate the package
 using NeuroAnalyzer
@@ -101,7 +102,7 @@ Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
-For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is used automatically if compatible NVIDIA card and drivers are installed. To disable CUDA, set the variable `use_cuda` to false in the NeuroAnalyzerJ.jl file.
+CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda` in the NeuroAnalyzer preferences. Preferences are saved to `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
 
 ## Documentation
 

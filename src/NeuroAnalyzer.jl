@@ -33,6 +33,7 @@ using Pkg
 using Plots
 using Plots.PlotMeasures
 using Polynomials
+using Preferences
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -57,15 +58,7 @@ mutable struct STUDY
     study_group::Vector{Symbol}
 end
 
-# preferences
-if Sys.isunix() || Sys.isapple()
-    const plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
-elseif Sys.iswindows()
-    const plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
-end
-isdir(plugins_path) || mkdir(plugins_path)
 
-const use_cuda = false
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
@@ -76,8 +69,20 @@ export na_plugins_list
 export na_plugins_remove
 export na_plugins_install
 export na_plugins_update
-export na_use_cuda
-export na_plugins_path
+export na_set_cuda
+export na_set_plugins_path
+export na_set_prefs
+
+# preferences
+if Sys.isunix() || Sys.isapple()
+    def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
+elseif Sys.iswindows()
+    def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+end
+const use_cuda = @load_preference("use_cuda", false)
+const plugins_path = @load_preference("plugins_path", def_plugins_path)
+isdir(plugins_path) || mkdir(plugins_path)
+na_set_prefs(use_cuda, plugins_path)
 
 # reload plugins
 na_plugins_reload()

@@ -182,3 +182,51 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
     end
     na_plugins_reload()
 end
+
+"""
+    na_set_cuda(use_cuda)
+
+Change `use_cuda` preference.
+
+# Arguments
+
+- `use_cuda::Bool`: value
+"""
+function na_set_cuda(use_cuda::Bool)
+    @set_preferences!("use_cuda" => use_cuda)
+    @info("New option value set; restart your Julia session for this change to take effect!")
+end
+
+"""
+    na_set_plugins_path(p)
+
+Change `plugins_path` preference.
+
+# Arguments
+
+- `plugins_path::String`: value
+"""
+function na_set_plugins_path(plugins_path::String)
+    plugins_path = expanduser(plugins_path)
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    plugins_path[end] == '/' || (plugins_path *= '/')
+    @set_preferences!("plugins_path" => plugins_path)
+    @info("New option value set; restart your Julia session for this change to take effect!")
+end
+
+"""
+    na_set_prefs(use_cuda, plugins_path)
+
+Save NeuroAnalyzer preferences.
+
+# Arguments
+- `use_cuda::Bool`
+- `plugins_path::String`
+"""
+function na_set_prefs(use_cuda::Bool, plugins_path::String)
+    plugins_path = expanduser(plugins_path)
+    isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    plugins_path[end] == '/' || (plugins_path *= '/')
+    @set_preferences!("use_cuda" => use_cuda)
+    @set_preferences!("plugins_path" => plugins_path)
+end
