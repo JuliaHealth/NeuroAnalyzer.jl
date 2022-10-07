@@ -102,13 +102,13 @@ Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
-CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda` in the NeuroAnalyzer preferences. Preferences are saved to `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
+CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda` in the NeuroAnalyzer preferences. Preferences are saved to `LocalPreferences.toml` in the local NeuroAnalyzer folder or in `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
 
 ## Documentation
 
 Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html).
 
-Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [https://neuroanalyzer.org](https://neuroanalyzer.org)
+Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [https://neuroanalyzer.org#tutorials](https://neuroanalyzer.org)
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.htm](https://neuroanalyzer.org/changelog.html).
 
