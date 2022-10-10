@@ -8175,7 +8175,7 @@ Calculate virtual channel using `formula`, eg. "f4 / mean(fp1 + fp2)".
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `f::String": formula, e.g. "f4 / mean(fp1 + fp2)"; case of labels in the formula is ignored, all standard Julia math operators are available
+  * `f::String`: formula, e.g. `f="cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the EEG object
 
 **Returns**
 
