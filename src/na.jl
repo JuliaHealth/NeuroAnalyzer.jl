@@ -10,10 +10,10 @@ function na_info()
     if CUDA.functional()
         println("         CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
     else
-        println("         CUDA: CUDA not available (use_cuda = $use_cuda)")
+        println("         CUDA: not available (use_cuda = $use_cuda)")
     end
     println(" Plugins path: $plugins_path")
-    println("      Threads: $(Threads.nthreads()) [set using using the `JULIA_NUM_THREADS` environment variable]")
+    println("      Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or julia --threads command-line option]")
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
     end
