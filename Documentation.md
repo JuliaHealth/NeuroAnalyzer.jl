@@ -5490,6 +5490,26 @@ Return index of `eeg` channels of `type`.
 
   * `channel_n::Int64`
 
+<a id='NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_vch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vch(eeg; f)
+```
+
+Calculate virtual channel using formula `f`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the EEG object
+
+**Returns**
+
+  * `vc::Array{Float64, 3}`: single channel × time × epochs
+
 
 <a id='EEG-process'></a>
 
@@ -8160,26 +8180,6 @@ Calculate amplitude difference between each `eeg` channel and mean amplitude of 
 **Returns**
 
   * `amp_diff::Array{Float64, 3}`
-
-<a id='NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_vch`** &mdash; *Method*.
-
-
-
-```julia
-eeg_vch(eeg; f)
-```
-
-Calculate virtual channel using `formula`, eg. "f4 / mean(fp1 + fp2)".
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `f::String`: formula, e.g. `f="cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the EEG object
-
-**Returns**
-
-  * `vc::Array{Float64, 3}`: single channel × time × epochs
 
 
 <a id='EEG-plots'></a>

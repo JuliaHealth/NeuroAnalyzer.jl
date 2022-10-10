@@ -2732,3 +2732,38 @@ function eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
     end
     return channel_idx
 end
+
+"""
+    eeg_vch(eeg; f)
+
+Calculate virtual channel using formula `f`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the EEG object
+
+# Returns
+ 
+- `vc::Array{Float64, 3}`: single channel × time × epochs
+"""
+function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
+
+    epoch_n = eeg_epoch_n(eeg)
+    f = lowercase(f)
+    labels = lowercase.(eeg_labels(eeg))
+    vc = zeros(1, eeg_epoch_len(eeg), epoch_n)
+    Threads.@threads for epoch_idx in 1:epoch_n
+        f_tmp = f
+        for channel_idx in eachindex(labels)
+            occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(eeg.eeg_signals[channel_idx, :, epoch_idx])"))
+        end
+        try
+            @inbounds vc[1, :, epoch_idx] = eval(Meta.parse("@. " * f_tmp))
+        catch
+            @error "Formula is incorrect, check channel labels and operators."
+        end
+    end
+
+    return vc
+end

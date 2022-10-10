@@ -294,6 +294,7 @@ eeg_delete_annotation!(eeg::NeuroAnalyzer.EEG; n::Int64)
 eeg_add_annotation(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
 eeg_add_annotation!(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
 eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
+eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
 ```
 
 ## EEG process
@@ -424,7 +425,6 @@ eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
 eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, norm::Bool=true)
 eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0)
-eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
 ```
 
 ## EEG plots

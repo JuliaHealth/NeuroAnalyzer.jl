@@ -339,6 +339,7 @@ export eeg_delete_annotation!
 export eeg_add_annotation
 export eeg_add_annotation!
 export eeg_channel_idx
+export eeg_vch
 
 include("eeg_process.jl")
 export eeg_reference_ch
@@ -459,7 +460,6 @@ export eeg_chdiff
 export eeg_cps
 export eeg_phdiff
 export eeg_ampdiff
-export eeg_vch
 
 include("eeg_study.jl")
 export eeg_study_create
