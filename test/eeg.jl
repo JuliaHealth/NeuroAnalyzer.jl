@@ -371,4 +371,6 @@ eeg_delete_annotation!(bdf, n=1)
 eeg_add_annotation!(bdf, onset=-10, event="test")
 @test size(bdf.eeg_annotations) == (2, 2)
 
+@test size(eeg_vch(e10, f="fp1 + fp2")) == (1, 2560, 121)
+
 true

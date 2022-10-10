@@ -12,7 +12,9 @@ echo "Generate src/index.md"
 cat header.md > src/index.md
 ./template.sh >> src/index.md
 
-echo "Generate Documentation.md"
+echo
+
 julia make_md.jl
+
 cp build/index.md ../Documentation.md
 rm -rf build/

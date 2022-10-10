@@ -730,7 +730,7 @@ Return `eeg` labels.
 - `labels::Vector{String}`
 """
 function eeg_labels(eeg::NeuroAnalyzer.EEG)
-
+    length(eeg.eeg_header[:labels]) == 0 && throw(ArgumentError("EEG has no labels."))
     return eeg.eeg_header[:labels]
 end
 

@@ -426,6 +426,11 @@ edf_denoised = eeg_denoise_wien(edf)
 
 ### EEG Analyze
 
+Calculate virtual channel:
+```julia
+vc = eeg_vch(edf, f="mean(fp1 + fp2) / cz")
+```
+
 Channels stats:
 ```julia
 eeg_channels_stats(edf)

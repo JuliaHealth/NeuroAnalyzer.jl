@@ -101,6 +101,52 @@ Install NeuroAnalyzer `plugin`.
 
   * `plugin::String`: plugin to update; if empty, update all
 
+<a id='NeuroAnalyzer.na_set_cuda-Tuple{Bool}' href='#NeuroAnalyzer.na_set_cuda-Tuple{Bool}'>#</a>
+**`NeuroAnalyzer.na_set_cuda`** &mdash; *Method*.
+
+
+
+```julia
+na_set_cuda(use_cuda)
+```
+
+Change `use_cuda` preference.
+
+**Arguments**
+
+  * `use_cuda::Bool`: value
+
+<a id='NeuroAnalyzer.na_set_plugins_path-Tuple{String}' href='#NeuroAnalyzer.na_set_plugins_path-Tuple{String}'>#</a>
+**`NeuroAnalyzer.na_set_plugins_path`** &mdash; *Method*.
+
+
+
+```julia
+na_set_plugins_path(p)
+```
+
+Change `plugins_path` preference.
+
+**Arguments**
+
+  * `plugins_path::String`: value
+
+<a id='NeuroAnalyzer.na_set_prefs-Tuple{Bool, String}' href='#NeuroAnalyzer.na_set_prefs-Tuple{Bool, String}'>#</a>
+**`NeuroAnalyzer.na_set_prefs`** &mdash; *Method*.
+
+
+
+```julia
+na_set_prefs(use_cuda, plugins_path)
+```
+
+Save NeuroAnalyzer preferences.
+
+**Arguments**
+
+  * `use_cuda::Bool`
+  * `plugins_path::String`
+
 
 <a id='Low-level-functions'></a>
 
@@ -8114,6 +8160,26 @@ Calculate amplitude difference between each `eeg` channel and mean amplitude of 
 **Returns**
 
   * `amp_diff::Array{Float64, 3}`
+
+<a id='NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_vch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_vch`** &mdash; *Method*.
+
+
+
+```julia
+eeg_vch(eeg; f)
+```
+
+Calculate virtual channel using `formula`, eg. "f4 / mean(fp1 + fp2)".
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `f::String": formula, e.g. "f4 / mean(fp1 + fp2)"; case of labels in the formula is ignored, all standard Julia math operators are available
+
+**Returns**
+
+  * `vc::Array{Float64, 3}`: single channel × time × epochs
 
 
 <a id='EEG-plots'></a>

@@ -459,6 +459,7 @@ export eeg_chdiff
 export eeg_cps
 export eeg_phdiff
 export eeg_ampdiff
+export eeg_vch
 
 include("eeg_study.jl")
 export eeg_study_create

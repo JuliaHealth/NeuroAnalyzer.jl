@@ -12,7 +12,8 @@ rm -f src/index.md
 cat header.md > src/index.md
 ./template.sh >> src/index.md
 
-echo "Generate HTML documentation"
+echo
+
 julia make_html.jl
 
 mv build docs

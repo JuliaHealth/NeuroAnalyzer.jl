@@ -282,6 +282,9 @@ eeg_cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Amplitude difference", 24))
 eeg_ampdiff(e10)
 @time eeg_ampdiff(e10)
+print(rpad("Virtual channel", 24))
+eeg_vch(e10, f="fp1 + fp2")
+@time eeg_vch(e10, f="fp1 + fp2")
 
 @info "Benchmarking: eeg_plots.jl"
 println()
