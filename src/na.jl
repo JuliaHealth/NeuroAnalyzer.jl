@@ -13,7 +13,8 @@ function na_info()
         println("         CUDA: not available (use_cuda = $use_cuda)")
     end
     println(" Plugins path: $plugins_path")
-    println("      Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or julia --threads command-line option]")
+    println("      Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
+    Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance JULIA_NUM_THREADS ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
     end
