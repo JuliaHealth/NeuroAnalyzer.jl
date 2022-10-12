@@ -34,6 +34,7 @@ using Plots
 using Plots.PlotMeasures
 using Polynomials
 using Preferences
+using ProgressMeter
 using ScatteredInterpolation
 using Simpson
 using StatsFuns

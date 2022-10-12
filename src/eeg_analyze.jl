@@ -2454,21 +2454,30 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
     epoch_len = size(signal, 2)
 
-    itpc_s = zeros(length(frq_list), epoch_len)
-    itpc_z_s = zeros(length(frq_list), epoch_len)
-    epoch_n > 100 && @info "This will take a while.."
-    Threads.@threads for frq_idx in 1:frq_n
+    itpc_s = zeros(frq_n, epoch_len)
+    itpc_z_s = zeros(frq_n, epoch_len)
+
+    # initialize multi-treading progress bar
+    # to do: add verbose option
+    p = Progress(frq_n)
+    @info "Please wait"
+#    Threads.@threads for frq_idx in 1:frq_n
+    for frq_idx in 1:frq_n
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float32, 1, epoch_len, epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
+        Threads.@threads for epoch_idx in 1:epoch_n
+            @inbounds s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
+
         @inbounds @simd for t_idx in 1:epoch_len
             itpc, itpc_z, _, _ = s_itpc(s_conv, t=t_idx, w=w)
             itpc_s[frq_idx, t_idx] = itpc
             itpc_z_s[frq_idx, t_idx] = itpc_z
         end
+
+        # update progress bar
+        next!(p)
     end
 
     return (itpc_s=itpc_s, itpc_z_s=itpc_z_s, itpc_f=frq_list)

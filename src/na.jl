@@ -44,6 +44,7 @@ function na_info()
         "Plots",
         "Polynomials",
         "Preferences",
+        "ProgressMeter",
         "ScatteredInterpolation",
         "Simpson",
         "StatsFuns",
