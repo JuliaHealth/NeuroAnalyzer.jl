@@ -256,20 +256,20 @@ print(rpad("Frequency coherence", 24))
 eeg_fcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_fcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("F-test", 24))
-eeg_vartest(e10)
-@time eeg_vartest(e10)
+eeg_vartest(e10);
+@time eeg_vartest(e10);
 print(rpad("F-test", 24))
-eeg_vartest(e10, e10)
-@time eeg_vartest(e10, e10)
+eeg_vartest(e10, e10);
+@time eeg_vartest(e10, e10);
 print(rpad("Band power", 24))
-eeg_band_mpower(e10; f=(10, 20))
-@time eeg_band_mpower(e10; f=(10, 20))
+eeg_band_mpower(e10; f=(10, 20));
+@time eeg_band_mpower(e10; f=(10, 20));
 print(rpad("Relative PSD", 24))
-eeg_rel_psd(e10; f=(10, 20))
-@time eeg_rel_psd(e10; f=(10, 20))
+eeg_rel_psd(e10; f=(10, 20));
+@time eeg_rel_psd(e10; f=(10, 20));
 print(rpad("Frequency band split", 24))
-eeg_fbsplit(e10)
-@time eeg_fbsplit(e10)
+eeg_fbsplit(e10);
+@time eeg_fbsplit(e10);
 print(rpad("Channel difference", 24))
 eeg_chdiff(e10, e10, channel1=1, channel2=2);
 @time eeg_chdiff(e10, e10, channel1=1, channel2=2);
@@ -280,11 +280,11 @@ print(rpad("Cross power spectrum 2", 24))
 eeg_cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Amplitude difference", 24))
-eeg_ampdiff(e10)
-@time eeg_ampdiff(e10)
+eeg_ampdiff(e10);
+@time eeg_ampdiff(e10);
 print(rpad("Virtual channel", 24))
-eeg_vch(e10, f="fp1 + fp2")
-@time eeg_vch(e10, f="fp1 + fp2")
+eeg_vch(e10, f="fp1 + fp2");
+@time eeg_vch(e10, f="fp1 + fp2");
 
 @info "Benchmarking: eeg_plots.jl"
 println()

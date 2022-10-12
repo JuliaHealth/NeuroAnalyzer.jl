@@ -2457,17 +2457,15 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     itpc_s = zeros(frq_n, epoch_len)
     itpc_z_s = zeros(frq_n, epoch_len)
 
-    # initialize multi-treading progress bar
-    # to do: add verbose option
-    p = Progress(frq_n)
-    @info "Please wait"
-#    Threads.@threads for frq_idx in 1:frq_n
-    for frq_idx in 1:frq_n
+    # initialize progress bar
+    progress_bar == true && (p = Progress(frq_n, 1))
+
+    Threads.@threads for frq_idx in 1:frq_n
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float32, 1, epoch_len, epoch_n)
-        Threads.@threads for epoch_idx in 1:epoch_n
-            @inbounds s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
 
         @inbounds @simd for t_idx in 1:epoch_len
@@ -2477,7 +2475,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
         end
 
         # update progress bar
-        next!(p)
+        progress_bar == true && next!(p)
     end
 
     return (itpc_s=itpc_s, itpc_z_s=itpc_z_s, itpc_f=frq_list)
@@ -2517,11 +2515,17 @@ function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true,
     fs = eeg_sr(eeg)
     _, p_tmp, _, w_frq = s_wspectrogram(signal[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
     w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
-    @info "This will take a while.."
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n, 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             _, w_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
         end
+
+        # update progress bar
+        progress_bar == true && next!(p)
     end
 
     return (w_pow=w_pow, w_frq=round.(w_frq, digits=2), w_t=eeg.eeg_epochs_time)
@@ -2936,13 +2940,18 @@ function eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
     cps_pw_tmp, cps_ph_tmp, cps_fq = @views s2_cps(signal[1, :, 1], signal[1, :, 1], fs=fs)
     cps_pw = zeros(channel_n, channel_n, length(cps_pw_tmp), epoch_n)
     cps_ph = zeros(channel_n, channel_n, length(cps_ph_tmp), epoch_n)
-    @info "This will take a while.."
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n, 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
            for channel_idx2 in 1:channel_idx1
                 cps_pw[channel_idx1, channel_idx2, :, epoch_idx], cps_ph[channel_idx1, channel_idx2, :, epoch_idx], _ = @views s2_cps(signal[channel_idx1, :, epoch_idx], signal[channel_idx2, :, epoch_idx], fs=fs, norm=norm)
             end
         end
+        # update progress bar
+        progress_bar == true && next!(p)
     end
     @inbounds @simd for time_idx in 1:size(cps_pw, 3)
         Threads.@threads for epoch_idx in 1:epoch_n

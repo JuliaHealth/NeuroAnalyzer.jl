@@ -102,7 +102,15 @@ Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
 
-CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda` in the NeuroAnalyzer preferences. Preferences are saved to `LocalPreferences.toml` in the local NeuroAnalyzer folder or in `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
+## Preferences
+
+To modify the plugins path, use `na_set_plugins_path("/new/path/to/plugins")` to set the variable `plugins_path`.
+
+CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda`.
+
+Most NeuroAnalyzer function take less than one second to complete. Functions that take more than few seconds (e.g. `eeg_itpc_s()`) may optionally display progress bar. To disable the progress bar, use `na_set_progress_bar(false)` to set the variable `progress_bar`.
+
+Preferences are saved to `LocalPreferences.toml` in the local NeuroAnalyzer folder or in `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
 
 ## Documentation
 

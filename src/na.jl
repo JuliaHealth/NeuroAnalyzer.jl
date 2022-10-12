@@ -5,15 +5,16 @@ Show NeuroAnalyzer and imported packages versions.
 """
 function na_info()
 
-    println("NeuroAnalyzer: $na_ver")
-    println("        Julia: $VERSION")
+    println("    NeuroAnalyzer: $na_ver")
+    println("            Julia: $VERSION")
     if CUDA.functional()
-        println("         CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
+        println("             CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
     else
-        println("         CUDA: not available (use_cuda = $use_cuda)")
+        println("             CUDA: not available (use_cuda = $use_cuda)")
     end
-    println(" Plugins path: $plugins_path")
-    println("      Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
+    println("     Plugins path: $plugins_path")
+    println("Show progress bar: $progress_bar")
+    println("          Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
     Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance JULIA_NUM_THREADS ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
@@ -200,6 +201,20 @@ function na_set_cuda(use_cuda::Bool)
 end
 
 """
+    na_set_progress_bar(progress_bar)
+
+Change `progress_bar` preference.
+
+# Arguments
+
+- `progress_bar::Bool`: value
+"""
+function na_set_progress_bar(progress_bar::Bool)
+    @set_preferences!("progress_bar" => progress_bar)
+    @info("New option value set; restart your Julia session for this change to take effect!")
+end
+
+"""
     na_set_plugins_path(p)
 
 Change `plugins_path` preference.
@@ -217,18 +232,20 @@ function na_set_plugins_path(plugins_path::String)
 end
 
 """
-    na_set_prefs(use_cuda, plugins_path)
+    na_set_prefs(use_cuda, plugins_pathprogress_bar)
 
 Save NeuroAnalyzer preferences.
 
 # Arguments
 - `use_cuda::Bool`
 - `plugins_path::String`
+- `progress_bar::Bool`
 """
-function na_set_prefs(use_cuda::Bool, plugins_path::String)
+function na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool)
     plugins_path = expanduser(plugins_path)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     plugins_path[end] == '/' || (plugins_path *= '/')
     @set_preferences!("use_cuda" => use_cuda)
     @set_preferences!("plugins_path" => plugins_path)
+    @set_preferences!("progress_bar" => progress_bar)
 end

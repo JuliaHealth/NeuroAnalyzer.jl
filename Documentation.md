@@ -116,6 +116,21 @@ Change `use_cuda` preference.
 
   * `use_cuda::Bool`: value
 
+<a id='NeuroAnalyzer.na_set_progress_bar-Tuple{Bool}' href='#NeuroAnalyzer.na_set_progress_bar-Tuple{Bool}'>#</a>
+**`NeuroAnalyzer.na_set_progress_bar`** &mdash; *Method*.
+
+
+
+```julia
+na_set_progress_bar(progress_bar)
+```
+
+Change `progress_bar` preference.
+
+**Arguments**
+
+  * `progress_bar::Bool`: value
+
 <a id='NeuroAnalyzer.na_set_plugins_path-Tuple{String}' href='#NeuroAnalyzer.na_set_plugins_path-Tuple{String}'>#</a>
 **`NeuroAnalyzer.na_set_plugins_path`** &mdash; *Method*.
 
@@ -131,13 +146,13 @@ Change `plugins_path` preference.
 
   * `plugins_path::String`: value
 
-<a id='NeuroAnalyzer.na_set_prefs-Tuple{Bool, String}' href='#NeuroAnalyzer.na_set_prefs-Tuple{Bool, String}'>#</a>
+<a id='NeuroAnalyzer.na_set_prefs-Tuple{}' href='#NeuroAnalyzer.na_set_prefs-Tuple{}'>#</a>
 **`NeuroAnalyzer.na_set_prefs`** &mdash; *Method*.
 
 
 
 ```julia
-na_set_prefs(use_cuda, plugins_path)
+na_set_prefs(use_cuda, plugins_pathprogress_bar)
 ```
 
 Save NeuroAnalyzer preferences.
@@ -146,6 +161,7 @@ Save NeuroAnalyzer preferences.
 
   * `use_cuda::Bool`
   * `plugins_path::String`
+  * `progress_bar::Bool`
 
 
 <a id='Low-level-functions'></a>

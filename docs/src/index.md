@@ -19,8 +19,9 @@ na_plugins_remove(plugin::String)
 na_plugins_install(plugin::String)
 na_plugins_update(plugin::Union{String, Nothing}=nothing)
 na_set_cuda(use_cuda::Bool)
+na_set_progress_bar(progress_bar::Bool)
 na_set_plugins_path(plugins_path::String)
-na_set_prefs(use_cuda::Bool, plugins_path::String)
+na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool)
 ```
 
 ## Low-level functions

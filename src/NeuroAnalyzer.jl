@@ -59,7 +59,6 @@ mutable struct STUDY
     study_group::Vector{Symbol}
 end
 
-
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
@@ -71,6 +70,7 @@ export na_plugins_remove
 export na_plugins_install
 export na_plugins_update
 export na_set_cuda
+export na_set_progress_bar
 export na_set_plugins_path
 export na_set_prefs
 
@@ -81,9 +81,10 @@ elseif Sys.iswindows()
     def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
 end
 const use_cuda = @load_preference("use_cuda", false)
+const progress_bar = @load_preference("progress_bar", true)
 const plugins_path = @load_preference("plugins_path", def_plugins_path)
 isdir(plugins_path) || mkdir(plugins_path)
-na_set_prefs(use_cuda, plugins_path)
+na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar)
 
 # reload plugins
 na_plugins_reload()
