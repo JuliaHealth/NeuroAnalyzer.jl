@@ -43,6 +43,8 @@ using StatsModels
 using StatsPlots
 using TOML
 using Wavelets
+using WaveletsExt
+using ContinuousWavelets   
 
 mutable struct EEG
     eeg_header::Dict
@@ -113,6 +115,7 @@ export s_freqs
 export m_sortperm
 export m_sort
 export pad0
+export pad2
 export hz2rads
 export rads2hz
 export generate_sinc

@@ -376,7 +376,7 @@ Return the next power of 2 for given number `x`.
 - `nextpow::Int64`
 """
 function nextpow2(x::Int64)
-
+    # return nextpow(2, x)
     return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
 end
 
@@ -447,7 +447,7 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
 
     return @. a * sin(2 * pi * f * t + p)
-end
+ end
 
 """
     s_freqs(t)
@@ -625,6 +625,24 @@ function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
     elseif length(size(x)) == 3
         return sym == true ? hcat(zeros(eltype(x), size(x, 1), n, size(x, 3)), x, zeros(eltype(x), size(x, 1), n, size(x, 3))) : hcat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)))
     end
+end
+
+"""
+    pad2(x)
+
+Pad the vector / array `x` with zeros to the nearest power of 2 length.
+
+# Arguments
+
+- `x::Union{AbstractVector, AbstractArray}`
+
+# Returns
+
+- `v_pad::Union{AbstractVector, AbstractArray}`
+"""
+function pad2(x::Union{AbstractVector, AbstractArray})
+
+    return pad0(x, nextpow2(length(x)) - length(x))
 end
 
 """
@@ -2592,24 +2610,24 @@ Perform wavelet denoising.
 # Arguments
 
 - `signal::AbstractVector`
-- `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
+- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 
 # Returns
 
 - `signal_denoised::Vector{Float64}`
 """
-function s_wdenoise(signal::AbstractVector; wt::Symbol=:db4)
-    
-    wt in [:db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8"))
+function s_wdenoise(signal::AbstractVector; wt::T) where {T <: DiscreteWavelet}
 
-    wt === :db2 && (wt = wavelet(WT.db2))
-    wt === :db4 && (wt = wavelet(WT.db4))
-    wt === :db8 && (wt = wavelet(WT.db8))
-    wt === :db10 && (wt = wavelet(WT.db10))
-    wt === :haar && (wt = wavelet(WT.haar))
-    wt === :coif2 && (wt = wavelet(WT.coif2))
-    wt === :coif4 && (wt = wavelet(WT.coif4))
-    wt === :coif8 && (wt = wavelet(WT.coif8))
+    # wt in [:db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8] || throw(ArgumentError("wt must be :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8"))
+
+    # wt === :db2 && (wt = wavelet(WT.db2))
+    # wt === :db4 && (wt = wavelet(WT.db4))
+    # wt === :db8 && (wt = wavelet(WT.db8))
+    # wt === :db10 && (wt = wavelet(WT.db10))
+    # wt === :haar && (wt = wavelet(WT.haar))
+    # wt === :coif2 && (wt = wavelet(WT.coif2))
+    # wt === :coif4 && (wt = wavelet(WT.coif4))
+    # wt === :coif8 && (wt = wavelet(WT.coif8))
 
     return denoise(signal, wt)
 end
@@ -3011,7 +3029,7 @@ function s_gfilter(signal::AbstractVector; fs::Int64, f::Real, gw::Real=5)
 end
 
 """
-    s_ghspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, gw, demean)
+    s_ghspectrogram(signal; fs, norm, frq_lim, frq_n, frq, fs, demean)
 
 Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
 

@@ -8,6 +8,8 @@ using Plots
 using GLMakie
 @info "Loading package: DataFrames"
 using DataFrames
+@info "Loading package: Wavelets"
+using Wavelets
 @info "Loading package: NeuroAnalyzer"
 using NeuroAnalyzer
 println()

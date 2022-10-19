@@ -20,6 +20,7 @@ using Test
 @test m_sortperm([1 2; 4 6]) == [1 1; 2 2]
 @test m_sort([1 2; 4 6], [2, 1]) == [4 6; 1 2]
 @test length(pad0(ones(10), 10)) == 20
+@test length(pad2(ones(10))) == 16
 @test hz2rads(1) == 6.283185307179586
 @test rads2hz(1) == 1.5707963267948966
 @test cmax([1.0im, 2.0im]) == 0.0 + 2.0im

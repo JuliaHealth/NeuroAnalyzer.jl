@@ -1113,13 +1113,13 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
+- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 
 # Returns
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
+function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: DiscreteWavelet}
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -1146,9 +1146,9 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 """
-function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::Symbol=:db4)
+function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: DiscreteWavelet}
 
     channel_n = eeg_channel_(eeg)
     epoch_n = eeg_epoch_n(eeg)

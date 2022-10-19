@@ -52,7 +52,9 @@ function na_info()
         "StatsKit",
         "StatsModels",
         "StatsPlots",
-        "Wavelets"]
+        "Wavelets",
+        "WaveletsExt",
+        "ContinuousWavelets"]
     if isfile("Manifest.toml")
         versions = TOML.parsefile("Manifest.toml")["deps"]
         for idx in 1:length(required_packages)

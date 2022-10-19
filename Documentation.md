@@ -640,6 +640,25 @@ Pad the vector `x` with `n` zeros. Works only for two- and three-dimensional arr
 
   * `v_pad::AbstractVector`
 
+<a id='NeuroAnalyzer.pad2-Tuple{AbstractArray}' href='#NeuroAnalyzer.pad2-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.pad2`** &mdash; *Method*.
+
+
+
+```julia
+pad2(x)
+```
+
+Pad the vector / array `x` with zeros to the nearest power of 2 length.
+
+**Arguments**
+
+  * `x::Union{AbstractVector, AbstractArray}`
+
+**Returns**
+
+  * `v_pad::Union{AbstractVector, AbstractArray}`
+
 <a id='NeuroAnalyzer.hz2rads-Tuple{Real}' href='#NeuroAnalyzer.hz2rads-Tuple{Real}'>#</a>
 **`NeuroAnalyzer.hz2rads`** &mdash; *Method*.
 
@@ -1956,7 +1975,7 @@ Find peaks in `signal`.
 
   * `p_idx::Vector{Int64}`
 
-<a id='NeuroAnalyzer.s_wdenoise-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wdenoise-Tuple{AbstractVector}'>#</a>
+<a id='NeuroAnalyzer.s_wdenoise-Union{Tuple{AbstractVector}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.s_wdenoise-Union{Tuple{AbstractVector}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
 **`NeuroAnalyzer.s_wdenoise`** &mdash; *Method*.
 
 
@@ -1970,7 +1989,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `signal::AbstractVector`
-  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
+  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 
 **Returns**
 
@@ -2243,7 +2262,7 @@ Named tuple containing:
 
 
 ```julia
-s_ghspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, gw, demean)
+s_ghspectrogram(signal; fs, norm, frq_lim, frq_n, frq, fs, demean)
 ```
 
 Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
@@ -6263,7 +6282,7 @@ Downsample all channels of `eeg` to `new_sr` sampling frequency.
   * `eeg::NeuroAnalyzer.EEG`
   * `new_sr::Int64`: new sampling rate
 
-<a id='NeuroAnalyzer.eeg_wdenoise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wdenoise-Tuple{NeuroAnalyzer.EEG}'>#</a>
+<a id='NeuroAnalyzer.eeg_wdenoise-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.eeg_wdenoise-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
 **`NeuroAnalyzer.eeg_wdenoise`** &mdash; *Method*.
 
 
@@ -6277,13 +6296,13 @@ Perform wavelet denoising.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `wt::Symbol=:db4`: wavelet type: :db2, :db4, :db8, :db10, :haar, :coif2, :coif4, :coif8
+  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 
 **Returns**
 
   * `eeg_new::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_wdenoise!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wdenoise!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+<a id='NeuroAnalyzer.eeg_wdenoise!-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.eeg_wdenoise!-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
 **`NeuroAnalyzer.eeg_wdenoise!`** &mdash; *Method*.
 
 
@@ -6297,7 +6316,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `wt::Symbol=:db4`: wavelet type: db2, db4, db8, db10, haar
+  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
 
 <a id='NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_reference_a`** &mdash; *Method*.
