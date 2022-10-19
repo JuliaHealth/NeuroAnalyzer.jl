@@ -62,7 +62,7 @@ p, f = s_psd(ones(10), fs=10)
 @test s_stationarity_var(ones(10), window=1) == [0.0;;]
 @test s_trim(ones(10), offset=1, len=5) == ones(5)
 @test s2_mi(ones(10), ones(10)) == 0.0
-@test s_entropy([1, 2, 3]) == 1.5849625007211552
+@test s_entropy([1, 2, 3]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)
 @test s_negentropy([1, 2, 3]) == -0.16602396751648252
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
@@ -128,5 +128,8 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test s_normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
 @test s_normalize([1, 2, 3], method=:zscore) == s_normalize_zscore([1, 2, 3])
 @test s_phases(ones(ComplexF64, 10)) == zeros(10)
+@test length(s_cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
+@test size(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
+@test length(s_idwt(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
 
 true

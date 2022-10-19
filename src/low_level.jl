@@ -2031,6 +2031,8 @@ Calculate entropy of `signal`.
 # Returns
 
 - `ent::Float64`
+- `sent::Float64`: Shanon entropy
+- `leent::Float64`: log energy entropy
 """
 function s_entropy(signal::AbstractVector)
 
@@ -2043,7 +2045,9 @@ function s_entropy(signal::AbstractVector)
     hdat1 = h.weights ./ sum(h.weights)
 
     # convert histograms to probability values
-    return -sum(hdat1 .* log2.(hdat1 .+ eps()))    
+    return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
+            sent=coefentropy(float.(signal), ShannonEntropy()),
+            leent=coefentropy(float.(signal), LogEnergyEntropy()))
 end
 
 """
@@ -2062,7 +2066,7 @@ Calculate negentropy of `signal`.
 function s_negentropy(signal::AbstractVector)
 
     s = s_demean(signal)
-    return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)
+    return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)[1]
 end
 
 """
@@ -2610,7 +2614,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `signal::AbstractVector`
-- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`
 
 # Returns
 
@@ -4016,4 +4020,119 @@ Named tuple containing:
 function s_phases(signal::AbstractArray)
 
     return angle.(signal)
+end
+
+"""
+    s_cwtspectrogram(signal; wt, pad, norm, frq_lim, fs, demean)
+
+Calculate spectrogram of the `signal` using continuous wavelet transformation (CWT).
+
+# Arguments
+
+- `signal::AbstractVector`
+- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `fs::Int64`: sampling rate
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `demean::Bool`=true: demean signal prior to analysis
+
+# Returns
+
+Named tuple containing:
+- `h_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}`
+"""
+function s_cwtspectrogram(signal::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, demean::Bool=true) where {T <: CWT}
+
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    frq_lim = tuple_order(frq_lim)
+    frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+
+    demean == true && (signal = s_demean(signal))
+
+    h_powers = abs.(ContinuousWavelets.cwt(signal, wt)')
+    frq_list = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(signal), wt)[1])
+    frq_list[1] = 0
+    frq_list[1] < frq_lim[1] && throw(ArgumentError("Lower frequency bound must be ≥ $(frq_list[1])."))
+    frq_list[end] < frq_lim[2] && throw(ArgumentError("Upper frequency bound must be ≤ $(frq_list[end])."))
+    frq_list = frq_list[vsearch(frq_lim[1], frq_list):vsearch(frq_lim[2], frq_list)]
+    h_powers = h_powers[vsearch(frq_lim[1], frq_list):vsearch(frq_lim[2], frq_list), :]
+
+    norm == true && (h_powers = pow2db.(h_powers))
+
+    return (h_powers=h_powers, frq_list=frq_list)
+end
+
+"""
+    s_dwt(signal; wt, type, l)
+
+Perform discrete wavelet transformation (DWT) of the `signal`.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+
+# Returns
+
+- `dwt_c::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+"""
+function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+    type in [:sdwt, :acdwt] || throw(ArgumentError("type must be :sdwt or :acdwt"))
+    l < 0 && throw(ArgumentError("l must be ≥ 0."))
+    l > maxtransformlevels(signal) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(signal))."))
+
+    if l == 0
+        l = maxtransformlevels(signal)
+        @info "Calculating DWT using maximum level: $l."
+    end
+
+    if type === :sdwt
+        dwt_coefs = sdwt(signal, wt, l)
+    elseif type === :acdwt
+        dwt_coefs = acdwt(signal, wt, l)
+    end
+
+    dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
+    dwt_c[1, :] = @view dwt_coefs[:, 1]
+    @inbounds, @simd for idx in 2:(l + 1)
+        dwt_c[idx, :] = @views dwt_coefs[:, (end - idx + 2)]
+    end
+
+    return dwt_c
+end
+
+"""
+    s_idwt(dwt_coefs; wt, type)
+
+Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
+
+# Arguments
+
+- `dwt_coefs::AbstractArray`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+
+# Returns
+
+- `signal::Vector{Float64}`: reconstructed signal
+"""
+function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
+    type in [:sdwt, :acdwt] || throw(ArgumentError("type must be :sdwt or :acdwt"))
+
+    # reconstruct array DWT coefficients as returned by Wavelets.jl functions
+    dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
+    dwt_c[:, 1] = @view dwt_coefs[1, :]
+    @inbounds @simd for idx in 2:size(dwt_coefs, 1)
+        dwt_c[:, idx] = @views dwt_coefs[(end - idx + 2), :]
+    end
+
+    if type === :sdwt
+        return isdwt(dwt_c, wt)
+    elseif type === :acdwt
+        return iacdwt(dwt_c, wt)
+    end
 end

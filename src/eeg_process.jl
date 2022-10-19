@@ -1113,7 +1113,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -1146,7 +1146,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 """
 function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: DiscreteWavelet}
 

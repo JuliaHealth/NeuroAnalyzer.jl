@@ -215,6 +215,8 @@ export s_normalize_pos
 export s_normalize_perc
 export s_normalize
 export s_phases
+export s_cwtspectrogram
+export s_dwt
 
 include("statistic.jl")
 export hildebrand_rule
