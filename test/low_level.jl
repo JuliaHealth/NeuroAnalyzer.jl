@@ -1,5 +1,7 @@
 using NeuroAnalyzer
 using Test
+using Wavelets
+using ContinuousWavelets
 
 @test linspace(1, 10, 10) == 1.0:10.0
 @test logspace(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
@@ -131,5 +133,6 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test length(s_cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
 @test size(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
 @test length(s_idwt(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
+@test round.(s_normalize_invroot([1, 2, 3]), digits=2) == [1.0, 1.0, 0.0]
 
 true

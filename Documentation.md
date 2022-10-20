@@ -1614,6 +1614,8 @@ Calculate entropy of `signal`.
 **Returns**
 
   * `ent::Float64`
+  * `sent::Float64`: Shanon entropy
+  * `leent::Float64`: log energy entropy
 
 <a id='NeuroAnalyzer.s_negentropy-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_negentropy-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_negentropy`** &mdash; *Method*.
@@ -1989,7 +1991,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `signal::AbstractVector`
-  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`
 
 **Returns**
 
@@ -2964,7 +2966,7 @@ Normalize `signal`.
 **Arguments**
 
   * `signal::AbstractArray`
-  * `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none
+  * `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none
 
 **Returns**
 
@@ -2990,6 +2992,95 @@ Calculate phases of the `signal`.
 Named tuple containing:
 
   * `phases::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_cwtspectrogram-Union{Tuple{AbstractVector}, Tuple{T}} where T<:CWT' href='#NeuroAnalyzer.s_cwtspectrogram-Union{Tuple{AbstractVector}, Tuple{T}} where T<:CWT'>#</a>
+**`NeuroAnalyzer.s_cwtspectrogram`** &mdash; *Method*.
+
+
+
+```julia
+s_cwtspectrogram(signal; wt, pad, norm, frq_lim, fs, demean)
+```
+
+Calculate spectrogram of the `signal` using continuous wavelet transformation (CWT).
+
+**Arguments**
+
+  * `signal::AbstractVector`
+  * `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `demean::Bool`=true: demean signal prior to analysis
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_dwt-Union{Tuple{AbstractVector}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.s_dwt-Union{Tuple{AbstractVector}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
+**`NeuroAnalyzer.s_dwt`** &mdash; *Method*.
+
+
+
+```julia
+s_dwt(signal; wt, type, l)
+```
+
+Perform discrete wavelet transformation (DWT) of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractVector`
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+  * `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+  * `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+
+**Returns**
+
+  * `dwt_c::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+
+<a id='NeuroAnalyzer.s_idwt-Union{Tuple{AbstractArray}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.s_idwt-Union{Tuple{AbstractArray}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
+**`NeuroAnalyzer.s_idwt`** &mdash; *Method*.
+
+
+
+```julia
+s_idwt(dwt_coefs; wt, type)
+```
+
+Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
+
+**Arguments**
+
+  * `dwt_coefs::AbstractArray`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+  * `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+
+**Returns**
+
+  * `signal::Vector{Float64}`: reconstructed signal
+
+<a id='NeuroAnalyzer.s_normalize_invroot-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_normalize_invroot-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_normalize_invroot`** &mdash; *Method*.
+
+
+
+```julia
+s_normalize_invroot(signal)
+```
+
+Normalize `signal` in inverse root (1/sqrt(x)).
+
+**Arguments**
+
+  * `signal::AbstractArray`
+
+**Returns**
+
+  * `s_normalized::Vector{Float64}`
 
 
 <a id='Statistic'></a>
@@ -6296,7 +6387,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 **Returns**
 
@@ -6316,7 +6407,7 @@ Perform wavelet denoising.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `wt<:DiscreteWavelet`: wavelet, e.g. `wt = wavelet(WT.haar)`
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 <a id='NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_reference_a`** &mdash; *Method*.
@@ -8215,6 +8306,28 @@ Calculate amplitude difference between each `eeg` channel and mean amplitude of 
 **Returns**
 
   * `amp_diff::Array{Float64, 3}`
+
+<a id='NeuroAnalyzer.eeg_dwt-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.eeg_dwt-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
+**`NeuroAnalyzer.eeg_dwt`** &mdash; *Method*.
+
+
+
+```julia
+eeg_dwt(eeg; wt, type, l)
+```
+
+Perform discrete wavelet transformation (DWT) of each `eeg` channel.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+  * `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+  * `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+
+**Returns**
+
+  * `dwt_c::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 
 
 <a id='EEG-plots'></a>

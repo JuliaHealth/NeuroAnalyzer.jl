@@ -8,6 +8,8 @@ using GLMakie
 using DataFrames
 @info "Loading package: Wavelets"
 using Wavelets
+@info "Loading package: ContinuousWavelets"
+using ContinuousWavelets
 @info "Loading package: NeuroAnalyzer"
 using NeuroAnalyzer
 println()

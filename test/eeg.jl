@@ -1,5 +1,6 @@
 using NeuroAnalyzer
 using Test
+using Wavelets
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 ecg = eeg_extract_channel(edf, channel=24)
@@ -372,5 +373,7 @@ eeg_add_annotation!(bdf, onset=-10, event="test")
 @test size(bdf.eeg_annotations) == (2, 2)
 
 @test size(eeg_vch(e10, f="fp1 + fp2")) == (1, 2560, 121)
+
+@test size(eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt)) == (19, 10, 2560, 121)
 
 true

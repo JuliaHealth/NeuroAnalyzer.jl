@@ -3966,7 +3966,7 @@ Normalize `signal`.
 # Arguments
 
 - `signal::AbstractArray`
-- `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none
+- `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none
 
 # Returns
 
@@ -3974,7 +3974,7 @@ Normalize `signal`.
 """
 function s_normalize(signal::AbstractArray; method::Symbol)
 
-    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin, :gauss or :none."))
+    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin, :gauss, :invroot or :none."))
 
     if method === :zscore
         return s_normalize_zscore(signal)
@@ -3998,6 +3998,10 @@ function s_normalize(signal::AbstractArray; method::Symbol)
         return s_normalize_perc(signal)
     elseif method === :gauss
         return s_normalize_gauss(signal)
+    elseif method === :gauss
+        return s_normalize_gauss(signal)
+    elseif method === :invroot
+        return s_normalize_invroot(signal)
     elseif method === :none
         return signal
     end
@@ -4098,7 +4102,7 @@ function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T
 
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
     dwt_c[1, :] = @view dwt_coefs[:, 1]
-    @inbounds, @simd for idx in 2:(l + 1)
+    @inbounds @simd for idx in 2:(l + 1)
         dwt_c[idx, :] = @views dwt_coefs[:, (end - idx + 2)]
     end
 
@@ -4135,4 +4139,23 @@ function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: Discr
     elseif type === :acdwt
         return iacdwt(dwt_c, wt)
     end
+end
+
+"""
+    s_normalize_invroot(signal)
+
+Normalize `signal` in inverse root (1/sqrt(x)).
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::Vector{Float64}`
+"""
+function s_normalize_invroot(signal::AbstractArray)
+
+    # make signal > 0
+    return 1 ./ (sqrt.(signal .+ abs(minimum(signal)) .+ eps()))
 end

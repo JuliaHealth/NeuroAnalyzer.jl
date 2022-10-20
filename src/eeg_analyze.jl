@@ -3115,3 +3115,40 @@ function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
 
     return amp_diff
 end
+
+"""
+    eeg_dwt(eeg; wt, type, l)
+
+Perform discrete wavelet transformation (DWT) of each `eeg` channel.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+
+# Returns
+ 
+- `dwt_c::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+"""
+function eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+
+    if l == 0
+        l = maxtransformlevels(eeg.eeg_signals[1, :, 1])
+        @info "Calculating DWT using maximum level: $l."
+    end
+
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    dwt_c = zeros(channel_n, (l + 1), size(signal, 2), epoch_n)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            dwt_c[channel_idx, :, :, epoch_idx] = @views s_dwt(signal[channel_idx, :, epoch_idx], wt=wt, type=type, l=l)
+        end
+    end
+
+    return dwt_c
+end

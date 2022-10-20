@@ -47,6 +47,31 @@ edf = eeg_import_edf("test/eeg-test-edf.edf")
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
 e10 = eeg_epochs(edf, epoch_len=2560)
 
+@info "Benchmarking: eeg_edit.jl"
+println()
+println("# EDIT")
+println()
+
+e10_tmp = deepcopy(e10)
+print(rpad("Delete channel", 24))
+eeg_delete_channel(e10_tmp, channel=1);
+@time eeg_delete_channel(e10_tmp, channel=1);
+e10_tmp = deepcopy(e10)
+print(rpad("Keep channel", 24))
+eeg_keep_channel(e10_tmp, channel=1);
+@time eeg_keep_channel(e10_tmp, channel=1);
+e10_tmp = deepcopy(e10)
+print(rpad("Delete epoch", 24))
+eeg_delete_epoch(e10_tmp, epoch=1);
+@time eeg_delete_epoch(e10_tmp, epoch=1);
+e10_tmp = deepcopy(e10)
+print(rpad("Keep epoch", 24))
+eeg_keep_epoch(e10_tmp, epoch=1);
+@time eeg_keep_epoch(e10_tmp, epoch=1);
+print(rpad("Virtual channel", 24))
+eeg_vch(e10, f="fp1 + fp2");
+@time eeg_vch(e10, f="fp1 + fp2");
+
 @info "Benchmarking: eeg_process.jl"
 println()
 println("# PROCESS")
@@ -282,9 +307,9 @@ eeg_cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Amplitude difference", 24))
 eeg_ampdiff(e10);
 @time eeg_ampdiff(e10);
-print(rpad("Virtual channel", 24))
-eeg_vch(e10, f="fp1 + fp2");
-@time eeg_vch(e10, f="fp1 + fp2");
+print(rpad("DWT", 24))
+eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
+@time eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
 
 @info "Benchmarking: eeg_plots.jl"
 println()
