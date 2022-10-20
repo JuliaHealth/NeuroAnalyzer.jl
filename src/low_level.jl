@@ -4127,7 +4127,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
     type in [:sdwt, :acdwt] || throw(ArgumentError("type must be :sdwt or :acdwt"))
 
-    # reconstruct array DWT coefficients as returned by Wavelets.jl functions
+    # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
     dwt_c[:, 1] = @view dwt_coefs[1, :]
     @inbounds @simd for idx in 2:size(dwt_coefs, 1)
@@ -4158,4 +4158,55 @@ function s_normalize_invroot(signal::AbstractArray)
 
     # make signal > 0
     return 1 ./ (sqrt.(signal .+ abs(minimum(signal)) .+ eps()))
+end
+
+"""
+    s_cwt(signal; wt, type, l)
+
+Perform continuous wavelet transformation (CWT) of the `signal`.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+
+# Returns
+
+- `cwt_c::Array{Float64, 2}`: CWT coefficients (by rows)
+"""
+function s_cwt(signal::AbstractVector; wt::T) where {T <: CWT}
+    cwt_coefs = abs.(ContinuousWavelets.cwt(signal, wt))
+    cwt_c = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))
+    for idx in 1:size(cwt_coefs, 2)
+        cwt_c[idx, :] = @views cwt_coefs[:, idx]
+    end
+    return cwt_c
+end
+
+"""
+    s_icwt(dwt_coefs; wt, type)
+
+Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
+
+# Arguments
+
+- `cwt_coefs::AbstractArray`: CWT coefficients (by rows)
+- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+- `type::Symbol=df`: inverse style type: NaiveDelta (:nd), PenroseDelta (:pd) or DualFrames (:df)
+
+# Returns
+
+- `signal::Vector{Float64}`: reconstructed signal
+"""
+function s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
+    type in [:nd, :pd, :df] || throw(ArgumentError("type be :nd, :pd or :df"))
+
+    # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
+    cwt_c = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))
+    for idx in 1:size(cwt_coefs, 2)
+        cwt_c[idx, :] = @views cwt_coefs[:, idx]
+    end
+    type === :nd && return ContinuousWavelets.icwt(cwt_c, wt, NaiveDelta())
+    type === :pd && return ContinuousWavelets.icwt(cwt_c, wt, PenroseDelta())
+    type === :df && return ContinuousWavelets.icwt(cwt_c, wt, DualFrames())
 end

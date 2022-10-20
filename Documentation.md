@@ -3082,6 +3082,47 @@ Normalize `signal` in inverse root (1/sqrt(x)).
 
   * `s_normalized::Vector{Float64}`
 
+<a id='NeuroAnalyzer.s_cwt-Union{Tuple{AbstractVector}, Tuple{T}} where T<:CWT' href='#NeuroAnalyzer.s_cwt-Union{Tuple{AbstractVector}, Tuple{T}} where T<:CWT'>#</a>
+**`NeuroAnalyzer.s_cwt`** &mdash; *Method*.
+
+
+
+```julia
+s_cwt(signal; wt, type, l)
+```
+
+Perform continuous wavelet transformation (CWT) of the `signal`.
+
+**Arguments**
+
+  * `signal::AbstractVector`
+  * `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+
+**Returns**
+
+  * `cwt_c::Array{Float64, 2}`: CWT coefficients (by rows)
+
+<a id='NeuroAnalyzer.s_icwt-Union{Tuple{AbstractArray}, Tuple{T}} where T<:CWT' href='#NeuroAnalyzer.s_icwt-Union{Tuple{AbstractArray}, Tuple{T}} where T<:CWT'>#</a>
+**`NeuroAnalyzer.s_icwt`** &mdash; *Method*.
+
+
+
+```julia
+s_icwt(dwt_coefs; wt, type)
+```
+
+Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
+
+**Arguments**
+
+  * `cwt_coefs::AbstractArray`: CWT coefficients (by rows)
+  * `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+  * `type::Symbol=df`: inverse style type: NaiveDelta (:nd), PenroseDelta (:pd) or DualFrames (:df)
+
+**Returns**
+
+  * `signal::Vector{Float64}`: reconstructed signal
+
 
 <a id='Statistic'></a>
 
@@ -8328,6 +8369,26 @@ Perform discrete wavelet transformation (DWT) of each `eeg` channel.
 **Returns**
 
   * `dwt_c::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+
+<a id='NeuroAnalyzer.eeg_cwt-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:CWT' href='#NeuroAnalyzer.eeg_cwt-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:CWT'>#</a>
+**`NeuroAnalyzer.eeg_cwt`** &mdash; *Method*.
+
+
+
+```julia
+eeg_cwt(eeg; wt)
+```
+
+Perform continuous wavelet transformation (CWT) of each `eeg` channel.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+
+**Returns**
+
+  * `cwt_c::Array{Float64, 4}`: CWT coefficients (by rows)
 
 
 <a id='EEG-plots'></a>

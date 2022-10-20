@@ -3152,3 +3152,34 @@ function eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where 
 
     return dwt_c
 end
+
+"""
+    eeg_cwt(eeg; wt)
+
+Perform continuous wavelet transformation (CWT) of each `eeg` channel.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
+
+# Returns
+ 
+- `cwt_c::Array{Float64, 4}`: CWT coefficients (by rows)
+"""
+function eeg_cwt(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: CWT}
+
+    l = size(ContinuousWavelets.cwt(eeg.eeg_signals[1, :, 1], wt), 2)
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    cwt_c = zeros(channel_n, l, size(signal, 2), epoch_n)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            cwt_c[channel_idx, :, :, epoch_idx] = @views s_cwt(signal[channel_idx, :, epoch_idx], wt=wt)
+        end
+    end
+
+    return cwt_c
+end

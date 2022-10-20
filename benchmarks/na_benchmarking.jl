@@ -310,6 +310,9 @@ eeg_ampdiff(e10);
 print(rpad("DWT", 24))
 eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
 @time eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
+print(rpad("CWT", 24))
+eeg_dwt(e10, wt=wavelet(Morlet(π), β=2));
+@time eeg_dwt(e10, wt=wavelet(Morlet(π), β=2));
 
 @info "Benchmarking: eeg_plots.jl"
 println()

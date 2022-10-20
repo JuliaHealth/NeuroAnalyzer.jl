@@ -219,6 +219,8 @@ export s_cwtspectrogram
 export s_dwt
 export s_idwt
 export s_normalize_invroot
+export s_cwt
+export s_icwt
 
 include("statistic.jl")
 export hildebrand_rule
@@ -470,6 +472,7 @@ export eeg_cps
 export eeg_phdiff
 export eeg_ampdiff
 export eeg_dwt
+export eeg_cwt
 
 include("eeg_study.jl")
 export eeg_study_create

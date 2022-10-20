@@ -160,6 +160,8 @@ s_cwtspectrogram(signal::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_
 s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
 s_normalize_invroot(signal::AbstractArray)
+s_cwt(signal::AbstractVector; wt::T) where {T <: CWT}
+s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
 ```
 
 ## Statistic
@@ -432,6 +434,7 @@ eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, chann
 eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0)
 eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+eeg_cwt(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: CWT}
 ```
 
 ## EEG plots
