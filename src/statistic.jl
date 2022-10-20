@@ -255,12 +255,15 @@ function seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::
     pks = pvalue(ks)
     if (pks < alpha && type === :auto) || type === :p
         if paired == true
+            verbose == true && @info "Using one sample T-test."
             tt = OneSampleTTest(seg1_avg, seg2_avg)
         else
             pf = pvalue(VarianceFTest(seg1_avg, seg2_avg))
             if pf < alpha
+                verbose == true && @info "Using equal variance two samples T-test."
                 tt = EqualVarianceTTest(seg1_avg, seg2_avg)
             else
+                verbose == true && @info "Using unequal variance two samples T-test."
                 tt = UnequalVarianceTTest(seg1_avg, seg2_avg)
             end
         end
@@ -270,11 +273,13 @@ function seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::
         tn = "t"
     elseif (pks >= alpha && type === :auto) || type === :np
         if paired == true
+            verbose == true && @info "Using signed rank test."
             tt = SignedRankTest(seg1_avg, seg2_avg)
             t = round(tt.W, digits=2)
             df = tt.n - 1
             tn = "W"
         else
+            verbose == true && @info "Using Mann-Whitney U test."
             tt = MannWhitneyUTest(seg1_avg, seg2_avg)
             t = round(tt.U, digits=2)
             df = 2 * size(seg1, 3) - 2
@@ -395,7 +400,7 @@ Calculate effect size for two proportions `p1` and `p2`.
 - `e::Float64`
 """
 function effsize(p1::Float64, p2::Float64)
-    p1 + p2 == 1.0 || throw(ArgumentError("Proportions must add to 1.0."))    
+    p1 + p2 == 1.0 || throw(ArgumentError("Proportions must add to 1.0."))
     return 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
 end
 

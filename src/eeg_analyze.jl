@@ -455,7 +455,10 @@ Calculate entropy of all channels of `eeg`.
 
 # Returns
 
-- `entropy::Matrix{Float64}`
+Named tuple containing:
+- `ent::Array{Float64, 2}`
+- `sent::Array{Float64, 2}`: Shanon entropy
+- `leent::Array{Float64, 2}`: log energy entropy
 """
 function eeg_entropy(eeg::NeuroAnalyzer.EEG)
 
@@ -464,14 +467,16 @@ function eeg_entropy(eeg::NeuroAnalyzer.EEG)
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    s_ent = zeros(channel_n, epoch_n)
+    ent = zeros(channel_n, epoch_n)
+    sent = zeros(channel_n, epoch_n)
+    leent = zeros(channel_n, epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_ent[channel_idx, epoch_idx] = @views s_entropy(signal[channel_idx, :, epoch_idx])
+            ent[channel_idx, epoch_idx], sent[channel_idx, epoch_idx], leent[channel_idx, epoch_idx] = @views s_entropy(signal[channel_idx, :, epoch_idx])
         end
     end
 
-    return s_ent
+    return (ent=ent, sent=sent, leent=leent)
 end
 
 """
@@ -1111,7 +1116,7 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    @info "This will take a while.."
+    verbose == true && @info "This will take a while.."
     s_convoluted = zeros(ComplexF64, size(signal))
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
@@ -1402,7 +1407,7 @@ function eeg_tenv(eeg::NeuroAnalyzer.EEG; d::Int64=32)
                     @error "CubicSpline error."
                 end
             else
-                @info "Less than 5 peaks detected, using Loess."
+                verbose == true && @info "Less than 5 peaks detected, using Loess."
                 model = loess(s_t[p_idx], s[p_idx], span=0.5)
                 t_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
             end
@@ -1519,7 +1524,7 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
                 try
                     t_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
@@ -1541,7 +1546,7 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
                 try
                     t_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
@@ -1601,7 +1606,7 @@ function eeg_penv(eeg::NeuroAnalyzer.EEG; d::Int64=8, mt::Bool=false)
                 try
                     p_env[channel_idx, :, epoch_idx] = model(frq)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             else
                 p_env[channel_idx, :, epoch_idx] = psd_pow
@@ -1658,7 +1663,7 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool
                 try
                     p_env_m[:, epoch_idx] = model(s_f)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
@@ -1681,7 +1686,7 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool
                 try
                     p_env_m[:, channel_idx] = model(s_f)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
@@ -1746,7 +1751,7 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bo
                 try
                     p_env_m[:, epoch_idx] = model(s_f)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
@@ -1769,7 +1774,7 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bo
                 try
                     p_env_m[:, channel_idx] = model(s_f)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
@@ -1859,7 +1864,7 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; d::Int64=2, mt::Bool=false, t::Union{R
                 try
                     s_env[channel_idx, :, epoch_idx] = model(sp_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             else
                 s_env[channel_idx, :, epoch_idx] = f_idx
@@ -1917,7 +1922,7 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool
                 try
                     s_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
@@ -1940,7 +1945,7 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool
                 try
                     s_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = std(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
@@ -2006,7 +2011,7 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bo
                 try
                     s_env_m[:, epoch_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
@@ -2029,7 +2034,7 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bo
                 try
                     s_env_m[:, channel_idx] = model(s_t)
                 catch
-                    @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
                 end
             end
             s = iqr(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
@@ -2399,7 +2404,7 @@ function eeg_frqinst(eeg::NeuroAnalyzer.EEG)
     frqinst = similar(signal)
     fs = eeg_sr(eeg)
 
-    @info "eeg_frqinst() uses Hilbert transform, the signal should be narrowband for best results."
+    verbose == true && @info "eeg_frqinst() uses Hilbert transform, the signal should be narrowband for best results."
 
     Threads.@threads for epoch_idx in 1:epoch_n
        @inbounds @simd  for channel_idx in 1:channel_n
@@ -2594,7 +2599,7 @@ function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, fr
     p_tmp, f_tmp = @views s_wspectrum(signal[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     w_pow = zeros(length(p_tmp), channel_n, epoch_n)
     w_frq = zeros(length(f_tmp), epoch_n)
-    @info "This will take a while.."
+    verbose == true && @info "This will take a while.."
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = @views s_wspectrum(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
@@ -3136,7 +3141,7 @@ function eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where 
 
     if l == 0
         l = maxtransformlevels(eeg.eeg_signals[1, :, 1])
-        @info "Calculating DWT using maximum level: $l."
+        verbose == true && @info "Calculating DWT using maximum level: $l."
     end
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))

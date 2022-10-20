@@ -17,9 +17,9 @@ uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 version = "1.2.1"
 
 [[deps.AbstractTrees]]
-git-tree-sha1 = "5c0b629df8a5566a06f5fef5100b53ea56e465a0"
+git-tree-sha1 = "52b3b436f8f73133d7bc3a6c71ee7ed6ab2ab754"
 uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
-version = "0.4.2"
+version = "0.4.3"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra"]
@@ -727,9 +727,9 @@ version = "1.2.5"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "3cdd8948c55d8b53b5323f23c9581555dc2e30e1"
+git-tree-sha1 = "a97d47758e933cd5fe5ea181d178936a9fc60427"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.5.0"
+version = "1.5.1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]

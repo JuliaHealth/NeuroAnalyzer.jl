@@ -104,13 +104,23 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 ## Preferences
 
+Certain NeuroAnalyzer functionalities are controlled using preferences. Julia session needs to be restarted to use new preferences. Preferences are saved to `LocalPreferences.toml` in the local NeuroAnalyzer folder or in `~/.julia/environments/v*/LocalPreferences.toml`.
+
+Some functions produce information messages. To suppress these messages, use `na_set_verbose(false)` to set the variable `verbose`.
+
 To modify the plugins path, use `na_set_plugins_path("/new/path/to/plugins")` to set the variable `plugins_path`.
 
 CUDA is disabled by default. For some low-level operations (e.g. FFT and IFFT) CUDA acceleration is may be used if compatible NVIDIA card and drivers are installed. To enable CUDA, use `na_set_cuda(true)` to set the variable `use_cuda`.
 
 Most NeuroAnalyzer function take less than one second to complete. Functions that take more than few seconds (e.g. `eeg_itpc_s()`) may optionally display progress bar. To disable the progress bar, use `na_set_progress_bar(false)` to set the variable `progress_bar`.
 
-Preferences are saved to `LocalPreferences.toml` in the local NeuroAnalyzer folder or in `~/.julia/environments/v*/LocalPreferences.toml`. Julia session needs to be restarted to use new preferences.
+Below is the list of NeuroAnalyzer preferences and corresponding functions:
+- `verbose` : `na_set_verbose(true|false)`
+- `plugins_path` : `na_set_plugins_path("/new/path/to/plugins")`
+- `use_cuda` : `na_set_cuda(true|false)`
+- `progress_bar` : `na_set_progress_bar(true|false)`
+
+All preferences may also be set using `na_set_prefs(use_cuda=true|false, plugins_path="/new/path/to/plugins", progress_bar=true|false, verbose=true|false)`.
 
 ## Documentation
 

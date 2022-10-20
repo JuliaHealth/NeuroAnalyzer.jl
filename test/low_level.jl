@@ -86,7 +86,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
-@test length(s_wdenoise(rand(100))) == 100
+@test length(s_wdenoise(rand(100), wt=wavelet(WT.haar))) == 100
 @test s2_ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test s_itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 @test s2_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
@@ -133,7 +133,7 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test length(s_cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
 @test size(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
 @test length(s_idwt(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
-@test round.(s_normalize_invroot([1, 2, 3]), digits=2) == [1.0, 1.0, 0.0]
+@test round.(s_normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
 @test size(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
 @test length(s_icwt(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
 

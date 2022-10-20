@@ -21,7 +21,8 @@ na_plugins_update(plugin::Union{String, Nothing}=nothing)
 na_set_cuda(use_cuda::Bool)
 na_set_progress_bar(progress_bar::Bool)
 na_set_plugins_path(plugins_path::String)
-na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool)
+na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool, verbose::Bool)
+na_set_verbose(verbose::Bool)
 ```
 
 ## Low-level functions

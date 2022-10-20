@@ -163,6 +163,21 @@ Save NeuroAnalyzer preferences.
   * `plugins_path::String`
   * `progress_bar::Bool`
 
+<a id='NeuroAnalyzer.na_set_verbose-Tuple{Bool}' href='#NeuroAnalyzer.na_set_verbose-Tuple{Bool}'>#</a>
+**`NeuroAnalyzer.na_set_verbose`** &mdash; *Method*.
+
+
+
+```julia
+na_set_verbose(verbose)
+```
+
+Change `verbose` preference.
+
+**Arguments**
+
+  * `verbose::Bool`: value
+
 
 <a id='Low-level-functions'></a>
 
@@ -7032,7 +7047,11 @@ Calculate entropy of all channels of `eeg`.
 
 **Returns**
 
-  * `entropy::Matrix{Float64}`
+Named tuple containing:
+
+  * `ent::Array{Float64, 2}`
+  * `sent::Array{Float64, 2}`: Shanon entropy
+  * `leent::Array{Float64, 2}`: log energy entropy
 
 <a id='NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_negentropy`** &mdash; *Method*.

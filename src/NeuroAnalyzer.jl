@@ -75,6 +75,7 @@ export na_set_cuda
 export na_set_progress_bar
 export na_set_plugins_path
 export na_set_prefs
+export na_set_verbose
 
 # preferences
 if Sys.isunix() || Sys.isapple()
@@ -85,8 +86,9 @@ end
 const use_cuda = @load_preference("use_cuda", false)
 const progress_bar = @load_preference("progress_bar", true)
 const plugins_path = @load_preference("plugins_path", def_plugins_path)
+const verbose = @load_preference("verbose", true)
 isdir(plugins_path) || mkdir(plugins_path)
-na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar)
+na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
 
 # reload plugins
 na_plugins_reload()

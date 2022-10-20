@@ -1919,7 +1919,7 @@ function plot_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mw::Bool=f
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(s_frq,
@@ -1980,7 +1980,7 @@ function plot_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mw::Bool=f
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false
@@ -2117,7 +2117,7 @@ function plot_psd_avg(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Boo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(xaxis=:log10,
@@ -2239,7 +2239,7 @@ function plot_psd_butterfly(signal::AbstractArray; fs::Int64, norm::Bool=true, m
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         p = Plots.plot(xaxis=:log10,
@@ -2306,7 +2306,7 @@ function plot_psd_butterfly(signal::AbstractArray; fs::Int64, norm::Bool=true, m
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
         if norm == false
@@ -5224,7 +5224,7 @@ function eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; fi
 
     ext = splitext(file_name)[2]
     ext in [".png", ".pdf", ".jpg", ".tiff"] || throw(ArgumentError("Fiel format must be: .png, .pdf, .tiff or .jpg"))
-    isfile(file_name) && @info "File $file_name will be overwritten."
+    (isfile(file_name) && verbose == true) && @info "File $file_name will be overwritten."
     if typeof(p) == Plots.Plot{Plots.GRBackend}
         savefig(p, file_name)
     else
@@ -5393,7 +5393,7 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
     fprototype === :butterworth && (prototype = Butterworth(order))
     if fprototype === :fir
         if window === nothing
-            @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            verbose == true && @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
             window = hanning(3 * floor(Int64, fs / cutoff[1]))
         end
         if ftype === :hp || ftype === :bp || ftype === :bs
@@ -6581,7 +6581,7 @@ function plot_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         p = Plots.plot(s_frq,
@@ -6642,7 +6642,7 @@ function plot_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            @info "Lower frequency bound truncated to 0.1 Hz"
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         if norm == false

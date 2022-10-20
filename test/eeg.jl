@@ -147,7 +147,7 @@ m = eeg_mi(edf, edf)
 @test size(m) == (19, 19, 1)
 
 e = eeg_entropy(edf)
-@test size(e) == (19, 1)
+@test length(e) == 3
 e = eeg_negentropy(edf)
 @test size(e) == (19, 1)
 

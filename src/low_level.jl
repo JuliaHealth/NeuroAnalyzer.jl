@@ -1673,7 +1673,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
 
     if fprototype === :fir
         if window === nothing
-            @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
+            verbose == true && @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
             window = hanning(3 * floor(Int64, fs / cutoff[1]))
         end
         if ftype === :hp || ftype === :bp || ftype === :bs
@@ -2171,7 +2171,7 @@ function s_pca(signal::AbstractArray; n::Int64)
         pc_m = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
         size(pc_m)[2] < n_tmp && (n_tmp = size(pc_m)[2])
     end
-    n_tmp < n && @info "Only $n_tmp PC components were generated."
+    (n_tmp < n && verbose == true) && @info "Only $n_tmp PC components were generated."
     n = n_tmp
     
     pc = zeros(n, size(signal, 2), epoch_n)
@@ -4091,7 +4091,7 @@ function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T
 
     if l == 0
         l = maxtransformlevels(signal)
-        @info "Calculating DWT using maximum level: $l."
+        verbose == true && @info "Calculating DWT using maximum level: $l."
     end
 
     if type === :sdwt
