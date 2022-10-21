@@ -165,7 +165,7 @@ s_cwt(signal::AbstractVector; wt::T) where {T <: CWT}
 s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
 ```
 
-## Statistic
+## statistics
 
 ```@docs
 hildebrand_rule(x::AbstractVector)
@@ -173,7 +173,7 @@ jaccard_similarity(x::AbstractVector, y::AbstractVector)
 z_score(x::AbstractVector)
 k_categories(n::Int64)
 effsize(x1::AbstractVector, x2::AbstractVector)
-infcrit(m)
+infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
 grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
 outlier_detect(x::AbstractVector; method::Symbol=:iqr)
 seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto)
@@ -192,6 +192,7 @@ se(x::AbstractVector)
 pred_int(n::Int64)
 sem_diff(x::AbstractVector, y::AbstractVector)
 prank(x::AbstractVector)
+linreg(x::AbstractVector, y::AbstractVector)
 ```
 
 ## EEG I/O
@@ -436,6 +437,7 @@ eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Abstract
 eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0)
 eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 eeg_cwt(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: CWT}
+eeg_psdslope(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false)
 ```
 
 ## EEG plots

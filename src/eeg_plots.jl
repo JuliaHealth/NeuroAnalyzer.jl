@@ -2990,7 +2990,7 @@ function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, nor
 
     (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
 
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0 Hz."))
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
@@ -5402,16 +5402,16 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         prototype = FIRWindow(window)
     end
     if fprototype === :chebyshev1
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Chebyshev1(order, rs)
     end
     if fprototype === :chebyshev2
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Chebyshev2(order, rp)
     end
     if fprototype === :elliptic
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
 
@@ -6077,7 +6077,7 @@ Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of
 function eeg_plot_itpc_f(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
-        f < 0 && throw(ArgumentError("f must be > 0."))
+    f < 0 && throw(ArgumentError("f must be ≥ 0."))
     f > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("f must be ≤ $(eeg_sr(eeg) ÷ 2)."))
 
     itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq, w=w)

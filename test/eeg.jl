@@ -377,4 +377,7 @@ eeg_add_annotation!(bdf, onset=-10, event="test")
 @test size(eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt)) == (19, 10, 2560, 121)
 @test size(eeg_cwt(e10, wt=wavelet(Morlet(π), β=2))) == (19, 33, 2560, 121)
 
+_, _, f = eeg_psdslope(edf)
+@test length(f) == 513
+
 true

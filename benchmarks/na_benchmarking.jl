@@ -313,6 +313,9 @@ eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
 print(rpad("CWT", 24))
 eeg_dwt(e10, wt=wavelet(Morlet(π), β=2));
 @time eeg_dwt(e10, wt=wavelet(Morlet(π), β=2));
+print(rpad("PSD slope", 24))
+eeg_psdslope(e10);
+@time eeg_psdslope(e10);
 
 @info "Benchmarking: eeg_plots.jl"
 println()

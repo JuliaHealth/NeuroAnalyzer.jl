@@ -594,6 +594,17 @@ Amplitude Envelope Correlation:
 aec, aec_p = eeg_aec(e10, e10, channel1=3, channel2=4, epoch1=10, epoch2=10)
 ```
 
+Perform discrete wavelet transform (DWT) and continuous wavelet transform (CWT):
+```julia
+dwt_c = eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt)
+cwt_c = eeg_cwt(e10, wt=wavelet(Morlet(π), β=2))
+```
+
+Calculate PSD slope of the alpha band:
+```julia
+f, psd_slope, frq = eeg_psdslope(eeg, f=(8, 14), norm=true, mt=false)
+```
+
 ### EEG Plots
 
 Plot multi-channel:

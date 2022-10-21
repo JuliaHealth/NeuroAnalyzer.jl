@@ -10,6 +10,8 @@ using DataFrames
 using Wavelets
 @info "Loading package: ContinuousWavelets"
 using ContinuousWavelets
+@info "Loading package: StatsModels"
+using StatsModels
 @info "Loading package: NeuroAnalyzer"
 using NeuroAnalyzer
 println()

@@ -14,10 +14,10 @@ echo "\`\`\`@docs"
 cat ../src/low_level.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
-echo "## Statistic"
+echo "## statistics"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/statistic.jl | grep ^function | sed s/"function "//g
+cat ../src/statistics.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
 echo "## EEG I/O"

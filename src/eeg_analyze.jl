@@ -50,8 +50,8 @@ function eeg_band_power(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=f
     fs = eeg_sr(eeg)
     length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
     f = tuple_order(f)
-    f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
@@ -2778,8 +2778,8 @@ function eeg_band_mpower(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}, mt::Bool=
     fs = eeg_sr(eeg)
     length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
     f = tuple_order(f)
-    f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
@@ -2823,8 +2823,8 @@ function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; norm::Bool=false, mt::Bool=false, f
     if f !== nothing
         length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
         f = tuple_order(f)
-        f[1] <= 0 && throw(ArgumentError("Lower frequency bound must be be > 0."))
-        f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+        f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
+        f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
     end
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
@@ -3187,4 +3187,54 @@ function eeg_cwt(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: CWT}
     end
 
     return cwt_c
+end
+
+"""
+    eeg_psdslope(eeg; f, norm, mt)
+
+Calculate PSD linear fit and slope.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `f::Union{Real, Real}=(0, 0)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+
+# Returns
+
+Named tuple containing:
+- `lf::Array{Float64, 3}`: linear fit
+- `psd_slope::Array{Float64, 2}`: slopes of each linear fit
+- `frq::Vector{Float64}`: range of frequencies for the linear fits
+"""
+function eeg_psdslope(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false)
+
+    fs = eeg_sr(eeg)
+    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
+    f == (0, 0) && (f = (0, fs/2))
+    f = tuple_order(f)
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 0."))
+    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
+
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    signal = @view eeg.eeg_signals[channels, :, :]
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+
+    _, frq = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
+    f1_idx = vsearch(f[1], frq)
+    f2_idx = vsearch(f[2], frq)
+    lf = zeros(channel_n, length(frq[f1_idx:f2_idx]), epoch_n)
+    psd_slope = zeros(channel_n, epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            pow, _ = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
+            _, _, _, _, _, _, lf[channel_idx, :, epoch_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
+            psd_slope[channel_idx, epoch_idx] = lf[channel_idx, 2, epoch_idx] - lf[channel_idx, 1, epoch_idx]
+        end
+    end
+
+    return (lf=lf, psd_slope=psd_slope, frq=frq[f1_idx:f2_idx])
 end

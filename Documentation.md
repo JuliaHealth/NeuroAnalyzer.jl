@@ -3139,11 +3139,11 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
   * `signal::Vector{Float64}`: reconstructed signal
 
 
-<a id='Statistic'></a>
+<a id='statistics'></a>
 
-<a id='Statistic-1'></a>
+<a id='statistics-1'></a>
 
-## Statistic
+## statistics
 
 <a id='NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}' href='#NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.hildebrand_rule`** &mdash; *Method*.
@@ -3248,7 +3248,7 @@ Named tuple containing:
   * `d::Float64`: Cohen's d
   * `g::Float64`: Hedges g
 
-<a id='NeuroAnalyzer.infcrit-Tuple{Any}' href='#NeuroAnalyzer.infcrit-Tuple{Any}'>#</a>
+<a id='NeuroAnalyzer.infcrit-Tuple{T} where T<:StatsModels.TableRegressionModel' href='#NeuroAnalyzer.infcrit-Tuple{T} where T<:StatsModels.TableRegressionModel'>#</a>
 **`NeuroAnalyzer.infcrit`** &mdash; *Method*.
 
 
@@ -3636,6 +3636,36 @@ Calculate percentile rank.
 **Returns**
 
   * `prnk::Vector{Float64}`
+
+<a id='NeuroAnalyzer.linreg-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.linreg-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.linreg`** &mdash; *Method*.
+
+
+
+```julia
+linreg(x, y)
+```
+
+Linear regression between `x` and `y`.
+
+**Arguments**
+
+  * `x::AbstractVector`
+  * `y::AbstractVector`
+
+**Notes**
+
+To predict, use: `new*x = DataFrame(x = [3.5, 7]); predict(lr, new*x)
+
+**Returns**
+
+  * `lr::StatsModels.TableRegressionModel`: model
+  * `radj::Flpoat64`: R^2
+  * `c::Vector{Float64}`: coefficients
+  * `se::Vector{Float64}`: standard error for coefficients
+  * `aic::Float64`:: Akaike’s Information Criterion (AIC)
+  * `bic::Float64`:: Bayesian Information Criterion (BIC)
+  * `lf::Vector{Float64}`: linear fit (plot(x, lf))
 
 
 <a id='EEG-I/O'></a>
@@ -8408,6 +8438,32 @@ Perform continuous wavelet transformation (CWT) of each `eeg` channel.
 **Returns**
 
   * `cwt_c::Array{Float64, 4}`: CWT coefficients (by rows)
+
+<a id='NeuroAnalyzer.eeg_psdslope-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_psdslope-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_psdslope`** &mdash; *Method*.
+
+
+
+```julia
+eeg_psdslope(eeg; f, norm, mt)
+```
+
+Calculate PSD linear fit and slope.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `f::Union{Real, Real}=(0, 0)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
+  * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+
+**Returns**
+
+Named tuple containing:
+
+  * `lf::Array{Float64, 3}`: linear fit
+  * `psd_slope::Array{Float64, 2}`: slopes of each linear fit
+  * `frq::Vector{Float64}`: range of frequencies for the linear fits
 
 
 <a id='EEG-plots'></a>

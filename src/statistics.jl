@@ -113,9 +113,7 @@ Named tuple containing:
 - `aic::Float64`
 - `bic::Float64`
 """
-function infcrit(m)
-
-    typeof(m) <: StatsModels.TableRegressionModel || throw(ArgumentError("Argument must be a regression model."))
+function infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
 
     k = length(coef(m)) - 1
     n = length(MultivariateStats.predict(m))
@@ -579,4 +577,41 @@ function prank(x::AbstractVector)
         prnk[idx] = percentile / (100 * (length(x) + 1))
     end
     return prnk[xorder]
+end
+
+"""
+    linreg(x, y)
+
+Linear regression between `x` and `y`.
+
+# Arguments
+
+- `x::AbstractVector`
+- `y::AbstractVector`
+
+# Notes
+
+To predict, use: `new_x = DataFrame(x = [3.5, 7]); predict(lr, new_x)
+
+# Returns
+
+- `lr::StatsModels.TableRegressionModel`: model
+- `radj::Flpoat64`: R^2
+- `c::Vector{Float64}`: coefficients
+- `se::Vector{Float64}`: standard error for coefficients
+- `aic::Float64`:: Akaike’s Information Criterion (AIC)
+- `bic::Float64`:: Bayesian Information Criterion (BIC)
+- `lf::Vector{Float64}`: linear fit (plot(x, lf))
+"""
+function linreg(x::AbstractVector, y::AbstractVector)
+
+    df = DataFrame(:x => x, :y => y)
+    lr = lm(@formula(y ~ x), df)
+    radj = r2(lr)
+    c = coef(lr)
+    se = stderror(lr)
+    aic, bic = infcrit(lr)
+    lf = MultivariateStats.predict(lr)
+
+    return lr, radj, c, se, aic, bic, lf
 end

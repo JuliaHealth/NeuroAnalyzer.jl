@@ -1685,7 +1685,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
     order < 1 && throw(ArgumentError("order must be > 1."))
     window !== nothing && length(window) > length(signal) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
     (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
-    (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs < 1 && throw(ArgumentError("fs must be > 0.")))
+    (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs <= 0 && throw(ArgumentError("fs must be > 0.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
     ((order < 2 && fprototype !== :poly && fprototype !== :remez) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
     (window !== nothing && length(window) != (2 * order + 1) && (fprototype === :mavg || fprototype === :mmed)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
@@ -1773,16 +1773,16 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         prototype = FIRWindow(window)
     end
     if fprototype === :chebyshev1
-        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be > 0 and ≤ $(fs / 2)."))
+        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev1(order, rs)
     end
     if fprototype === :chebyshev2
-        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be > 0 and ≤ $(fs / 2)."))
+        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev2(order, rp)
     end
     if fprototype === :elliptic
-        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :elliptic filter rs must be > 0 and ≤ $(fs / 2)."))
-        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be > 0 and ≤ $(fs / 2)."))
+        (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(fs / 2)."))
+        (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
 
@@ -2856,7 +2856,7 @@ Convert cycle length in ms `t` to frequency.
 """
 function t2f(t::Real)
 
-    t < 0 && throw(ArgumentError("t must be > 0."))
+    t <= 0 && throw(ArgumentError("t must be > 0."))
     return round(1000 / t, digits=2)
 end
 
@@ -2875,7 +2875,7 @@ Convert frequency `f` to cycle length in ms.
 """
 function f2t(f::Real)
 
-    f < 0 && throw(ArgumentError("t must be > 0."))
+    f <= 0 && throw(ArgumentError("f must be > 0."))
     return round(1000 / f, digits=2)
 end
 
@@ -3236,7 +3236,7 @@ Named tuple containing:
 """
 function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    fs < 0 && throw(ArgumentError("fs must be > 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
     c = mt_coherence(signal, fs=fs)
     f = Vector(c.freq)
     c = c.coherence
@@ -3274,7 +3274,7 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
-    fs < 0 && throw(ArgumentError("fs must be > 0."))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
 
     signal = hcat(signal1, signal2)'
     c = mt_coherence(signal, fs=fs)

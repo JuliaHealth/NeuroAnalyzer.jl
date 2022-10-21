@@ -224,7 +224,7 @@ export s_normalize_invroot
 export s_cwt
 export s_icwt
 
-include("statistic.jl")
+include("statistics.jl")
 export hildebrand_rule
 export jaccard_similarity
 export z_score
@@ -248,6 +248,7 @@ export se
 export pred_int
 export sem_diff
 export prank
+export linreg
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -475,6 +476,7 @@ export eeg_phdiff
 export eeg_ampdiff
 export eeg_dwt
 export eeg_cwt
+export eeg_psdslope
 
 include("eeg_study.jl")
 export eeg_study_create
