@@ -76,6 +76,7 @@ export na_set_progress_bar
 export na_set_plugins_path
 export na_set_prefs
 export na_set_verbose
+export na_version
 
 # preferences
 if Sys.isunix() || Sys.isapple()

@@ -3204,7 +3204,7 @@ Calculate PSD linear fit and slope.
 # Returns
 
 Named tuple containing:
-- `lf::Array{Float64, 3}`: linear fit
+- `lf::Array{Float64, 3}`: linear fit for each channel and epoch
 - `psd_slope::Array{Float64, 2}`: slopes of each linear fit
 - `frq::Vector{Float64}`: range of frequencies for the linear fits
 """

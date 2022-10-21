@@ -239,6 +239,7 @@ end
 Save NeuroAnalyzer preferences.
 
 # Arguments
+
 - `use_cuda::Bool`
 - `plugins_path::String`
 - `progress_bar::Bool`
@@ -265,4 +266,17 @@ Change `verbose` preference.
 function na_set_verbose(verbose::Bool)
     @set_preferences!("verbose" => progress_bar)
     @info("New option value set; restart your Julia session for this change to take effect!")
+end
+
+"""
+    na_version()
+
+Convert NeuroAnalyzer version to string.
+
+# Returns
+
+- `na_ver::String`
+"""
+function na_version()
+    return string(Int(na_ver.major)) * "." * string(Int(na_ver.minor)) * "." * string(Int(na_ver.patch))
 end
