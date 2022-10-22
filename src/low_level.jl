@@ -1671,14 +1671,14 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
 
-    if fprototype === :irrnotch
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez]
         ftype != nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
-        cutoff != 0 && throw(ArgumentError("Use bw instead of cutoff to provide bandwidth for :irrnotch filter."))
-        bw = -1 && throw(ArgumentError("bw must be specified for :irrnotch filter."))
+        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
+        bw = -1 && throw(ArgumentError("bw must be specified."))
     end
 
-    if fprototype === :remez
-        cutoff == 0 && bw == -1 throw(ArgumentError("bw and cutoff must be specified for :remez filter."))
+    if fprototype in [:irrnotch, :remez]
+        bw == -1 throw(ArgumentError("bw must be specified."))
     end
 
     if fprototype === :fir
