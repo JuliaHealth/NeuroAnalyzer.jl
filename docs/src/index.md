@@ -23,6 +23,7 @@ na_set_progress_bar(progress_bar::Bool)
 na_set_plugins_path(plugins_path::String)
 na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool, verbose::Bool)
 na_set_verbose(verbose::Bool)
+na_version()
 ```
 
 ## Low-level functions
@@ -85,7 +86,7 @@ s_resample(signal::AbstractVector; t::AbstractRange, new_sr::Int64)
 s_resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
 s_derivative(signal::AbstractVector)
 s_tconv(signal::AbstractVector; kernel::Union{AbstractVector, Vector{ComplexF64}})
-s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
+s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 s_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
 s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
 s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
@@ -326,8 +327,8 @@ eeg_normalize(eeg::NeuroAnalyzer.EEG; channel::Int64=0, method::Symbol)
 eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, method::Symbol)
 eeg_add_noise(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
 eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Int64=0)
-eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
-eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 eeg_pca(eeg::NeuroAnalyzer.EEG; n::Int64)
 eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG)
 eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG)
@@ -438,6 +439,9 @@ eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Abstrac
 eeg_dwt(eeg::NeuroAnalyzer.EEG; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 eeg_cwt(eeg::NeuroAnalyzer.EEG; wt::T) where {T <: CWT}
 eeg_psdslope(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false)
+eeg_henv(eeg::NeuroAnalyzer.EEG; d::Int64=32)
+eeg_henv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
+eeg_henv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
 ```
 
 ## EEG plots

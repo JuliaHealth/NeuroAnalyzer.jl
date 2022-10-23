@@ -5647,7 +5647,7 @@ Plot envelope of `eeg` channels.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
+- `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time), :hamp (Hilbert spectrum amplitude)
 - `average::Symbol`: averaging method: :no, :mean or :median
 - `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `epoch::Int64`: epoch number to display
@@ -5668,13 +5668,15 @@ function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no,
 
     mono == true ? palette = :grays : palette = :darktest
 
-    type in [:amp, :pow, :spec] || throw(ArgumentError("type must be :amp, :pow or :spec."))
+    type in [:amp, :pow, :spec, :hamp] || throw(ArgumentError("type must be :amp, :pow, :spec or :hamp."))
 
     type === :amp && (d = 32)
+    type === :hamp && (d = 8)
     type === :pow && (d = 8)
     type === :spec && (d = 8)
 
     type === :amp && (type = :amplitude)
+    type === :hamp && (type = :hamplitude)
     type === :pow && (type = :power)
     type === :spec && (type = :spectrogram)
 
@@ -5696,14 +5698,17 @@ function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no,
 
     if average === :no
         type === :amplitude && ((e, t) = eeg_tenv(eeg, d=d))
+        type === :hamplitude && ((e, t) = eeg_henv(eeg, d=d))
         type === :power && ((e, t) = eeg_penv(eeg, d=d))
         type === :spectrogram && ((e, t) = eeg_senv(eeg, d=d))
     elseif average === :mean
         type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_mean(eeg, dims=dims, d=d))
+        type === :hamplitude && ((e, e_u, e_l, t) = eeg_henv_mean(eeg, dims=dims, d=d))
         type === :power && ((e, e_u, e_l, t) = eeg_penv_mean(eeg, dims=dims, d=d))
         type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_mean(eeg, dims=dims, d=d))
     elseif average === :median
         type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_median(eeg, dims=dims, d=d))
+        type === :hamplitude && ((e, e_u, e_l, t) = eeg_henv_median(eeg, dims=dims, d=d))
         type === :power && ((e, e_u, e_l, t) = eeg_penv_median(eeg, dims=dims, d=d))
         type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_median(eeg, dims=dims, d=d))
     end
@@ -5713,6 +5718,18 @@ function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no,
     (type === :amplitude && y_lim == (0,0)) && (y_lim = (-200, 200))
     type === :amplitude && (x_lim = _xlims(t))
     type === :amplitude && (x_ticks = _xticks(t))
+
+    type === :hamplitude && (xlabel == "" && (xlabel = "Time [s]"))
+    type === :hamplitude && (ylabel == "" && (ylabel = "Amplitude"))
+    if type === :hamplitude && y_lim == (0,0)
+        if average === :no
+            y_lim = (minimum(e[channel, :, epoch]) - 0.1 * minimum(e[channel, :, epoch]), maximum(e[channel, :, epoch]) + 0.1 * maximum(e[channel, :, epoch]))
+        else
+            y_lim = (minimum(e_l) - 0.1 * minimum(e_l), maximum(e_u) + 0.1 * maximum(e_u))
+        end
+    end
+    type === :hamplitude && (x_lim = _xlims(t))
+    type === :hamplitude && (x_ticks = _xticks(t))
 
     type === :power && (xlabel == "" && (xlabel = "Frequency [Hz]"))
     type === :power && (t = linspace(t[1], t[end], length(t)))
@@ -5733,55 +5750,71 @@ function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no,
     if dims == 1
         e = e[:, epoch]
         average !== :no && (e_u = e_u[:, epoch]; e_l = e_l[:, epoch])
-        title == "" && (title = "Envelope: $type\n[averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
+        if type === :hamplitude
+            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
+        else
+            title == "" && (title = "Envelope: $type\n[$average of averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
     elseif dims == 2
         e = e[:, channel]
         e_u = e_u[:, channel]
         e_l = e_l[:, channel]
-        title == "" && (title = "Envelope: $type\n[$average averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
+        if type === :hamplitude
+            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
+        else
+            title == "" && (title = "Envelope: $type\n[$average of averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
+        end
     elseif dims == 3
-        title == "" && (title = "Envelope: $type\n[$average averaged channels and epochs, time window: $t_s1:$t_s2]")
+        if type === :hamplitude
+            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged channels and epochs, time window: $t_s1:$t_s2]")
+        else
+            title == "" && (title = "Envelope: $type\n[$average of averaged channels and epochs, time window: $t_s1:$t_s2]")
+        end
     else
         e = e[channel, :, epoch]
-        title == "" && (title = "Envelope: $type\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+        if type === :hamplitude
+            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+        else
+            title == "" && (title = "Envelope: $type\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
     end
 
     p = Plots.plot(t,
-             e,
-             label="",
-             legend=false,
-             title=title,
-             xlabel=xlabel,
-             xlims=x_lim,
-             xticks=x_ticks,
-             ylabel=ylabel,
-             ylims=y_lim,
-             yguidefontrotation=0,
-             linewidth=0.5,
-             color=:black,
-             grid=true,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             palette=palette;
-             kwargs...)
+                   e,
+                   label="",
+                   legend=false,
+                   title=title,
+                   xlabel=xlabel,
+                   xlims=x_lim,
+                   xticks=x_ticks,
+                   ylabel=ylabel,
+                   ylims=y_lim,
+                   yguidefontrotation=0,
+                   linewidth=0.5,
+                   color=:black,
+                   grid=true,
+                   titlefontsize=8,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=4,
+                   ytickfontsize=4,
+                   palette=palette;
+                   kwargs...)
     if average !== :no
         p = Plots.plot!(t,
-                  e_u,
-                  fillrange=e_l,
-                  fillalpha=0.35, 
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  linewidth=0.5)
+                        e_u,
+                        fillrange=e_l,
+                        fillalpha=0.35, 
+                        label=false,
+                        t=:line,
+                        c=:grey,
+                        linewidth=0.5)
         p = Plots.plot!(t,
-                  e_l,
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  lw=0.5)
+                        e_l,
+                        label=false,
+                        t=:line,
+                        c=:grey,
+                        lw=0.5)
     end
 
     Plots.plot(p)

@@ -241,6 +241,15 @@ eeg_senv_mean(e10, dims=1);
 print(rpad("Spectral envelope 3", 24))
 eeg_senv_median(e10, dims=1);
 @time eeg_senv_median(e10, dims=1);
+print(rpad("Hilbert amplitude envelope 1", 24))
+eeg_henv(e10);
+@time eeg_tenv(e10);
+print(rpad("Hilbert amplitude envelope 2", 24))
+eeg_henv_mean(e10, dims=1);
+@time eeg_tenv_mean(e10, dims=1);
+print(rpad("Hilbert amplitude envelope 3", 24))
+eeg_henv_median(e10, dims=1);
+@time eeg_tenv_median(e10, dims=1);
 print(rpad("ISPC 1", 24))
 eeg_ispc(e10);
 @time eeg_ispc(e10);

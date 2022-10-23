@@ -478,6 +478,9 @@ export eeg_ampdiff
 export eeg_dwt
 export eeg_cwt
 export eeg_psdslope
+export eeg_henv
+export eeg_henv_mean
+export eeg_henv_median
 
 include("eeg_study.jl")
 export eeg_study_create

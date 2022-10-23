@@ -1670,15 +1670,16 @@ Filter `signal`.
 function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 
     fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
-
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez]
-        ftype != nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
-        bw = -1 && throw(ArgumentError("bw must be specified."))
+        bw != -1 && throw(ArgumentError("bw must not be specified."))
     end
-
+    if fprototype === :iirnotch
+        ftype != nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
+    end
     if fprototype in [:irrnotch, :remez]
-        bw == -1 throw(ArgumentError("bw must be specified."))
+        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
+        bw == -1 && throw(ArgumentError("bw must be specified."))
     end
 
     if fprototype === :fir

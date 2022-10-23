@@ -178,6 +178,21 @@ Change `verbose` preference.
 
   * `verbose::Bool`: value
 
+<a id='NeuroAnalyzer.na_version-Tuple{}' href='#NeuroAnalyzer.na_version-Tuple{}'>#</a>
+**`NeuroAnalyzer.na_version`** &mdash; *Method*.
+
+
+
+```julia
+na_version()
+```
+
+Convert NeuroAnalyzer version to string.
+
+**Returns**
+
+  * `na_ver::String`
+
 
 <a id='Low-level-functions'></a>
 
@@ -1422,7 +1437,7 @@ Filter `signal`.
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
   * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
@@ -6082,7 +6097,7 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
   * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
@@ -6128,7 +6143,7 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
       * `:hp`: high pass
       * `:bp`: band pass
       * `:bs`: band stop
-  * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
+  * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
   * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
@@ -7298,7 +7313,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad
 
 Named tuple containing:
 
-  * `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
+  * `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
   * `amp::Array{Float64, 3}`: amplitudes
   * `pow::Array{Float64, 3}`: powers
   * `phase::Array{Float64, 3}: phase angles
@@ -8461,9 +8476,84 @@ Calculate PSD linear fit and slope.
 
 Named tuple containing:
 
-  * `lf::Array{Float64, 3}`: linear fit
+  * `lf::Array{Float64, 3}`: linear fit for each channel and epoch
   * `psd_slope::Array{Float64, 2}`: slopes of each linear fit
   * `frq::Vector{Float64}`: range of frequencies for the linear fits
+
+<a id='NeuroAnalyzer.eeg_henv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_henv-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_henv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_henv(eeg; d)
+```
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_env::Array{Float64, 3}`: Hilbert spectrum amplitude envelope
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroAnalyzer.eeg_henv_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_henv_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_henv_mean`** &mdash; *Method*.
+
+
+
+```julia
+eeg_henv_mean(eeg; dims, d)
+```
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`: mean and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_env_m::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: mean
+  * `h_env_u::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
+  * `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
+
+<a id='NeuroAnalyzer.eeg_henv_median-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_henv_median-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_henv_median`** &mdash; *Method*.
+
+
+
+```julia
+eeg_henv_median(eeg; dims, d)
+```
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`: median and 95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+  * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+**Returns**
+
+Named tuple containing:
+
+  * `h_env_m::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: median
+  * `h_env_u::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
+  * `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+  * `s_t::Vector{Float64}`: signal time
 
 
 <a id='EEG-plots'></a>
@@ -10130,7 +10220,7 @@ Plot envelope of `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time)
+  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time), :hamp (Hilbert spectrum amplitude)
   * `average::Symbol`: averaging method: :no, :mean or :median
   * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `epoch::Int64`: epoch number to display

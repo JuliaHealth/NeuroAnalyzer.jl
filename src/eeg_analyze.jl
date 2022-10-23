@@ -870,7 +870,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad
 # Returns
 
 Named tuple containing:
-- `fft::Array{ComplexF64, 3}`: Fourier or Hilbert components
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
 - `amp::Array{Float64, 3}`: amplitudes
 - `pow::Array{Float64, 3}`: powers
 - `phase::Array{Float64, 3}: phase angles
@@ -882,22 +882,22 @@ function eeg_spectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, h::Bool=false)
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    s_fft = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_amplitudes = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_powers = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_phases = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
+    s_c = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
+    s_amp = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
+    s_pow = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
+    s_ph = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             if h == false
-                s_fft[channel_idx, :, epoch_idx], s_amplitudes[channel_idx, :, epoch_idx], s_powers[channel_idx, :, epoch_idx], s_phases[channel_idx, :, epoch_idx] = @views s_spectrum(signal[channel_idx, :, epoch_idx], pad=pad)
+                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_ph[channel_idx, :, epoch_idx] = @views s_spectrum(signal[channel_idx, :, epoch_idx], pad=pad)
             else
-                s_fft[channel_idx, :, epoch_idx], s_amplitudes[channel_idx, :, epoch_idx], s_powers[channel_idx, :, epoch_idx], s_phases[channel_idx, :, epoch_idx] = @views s_hspectrum(signal[channel_idx, :, epoch_idx], pad=pad)
+                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_ph[channel_idx, :, epoch_idx] = @views s_hspectrum(signal[channel_idx, :, epoch_idx], pad=pad)
             end
         end
     end
 
-    return (fft=s_fft, amp=s_amplitudes, pow=s_powers, phase=s_phases)
+    return (c=s_c, amp=s_amp, pow=s_pow, phase=s_ph)
 end
 
 """
@@ -1116,12 +1116,17 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    verbose == true && @info "This will take a while.."
     s_convoluted = zeros(ComplexF64, size(signal))
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n, 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(signal[channel_idx, :, epoch_idx], kernel=kernel, norm=norm)
         end
+        # update progress bar
+        progress_bar == true && next!(p)
     end
 
     return s_convoluted
@@ -1439,12 +1444,18 @@ Named tuple containing:
 """
 function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
     
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_a, s_t = eeg_tenv(eeg, d=d)
+    channel_n = size(s_a, 1)
+    epoch_n = size(s_a, 3)
 
     if dims == 1
         t_env_m = zeros(length(s_t), epoch_n)
@@ -1502,12 +1513,18 @@ Named tuple containing:
 """
 function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
     
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_a, s_t = eeg_tenv(eeg, d=d)
+    channel_n = size(s_a, 1)
+    epoch_n = size(s_a, 3)
 
     if dims == 1
         t_env_m = zeros(length(s_t), epoch_n)
@@ -1640,12 +1657,18 @@ Named tuple containing:
 """
 function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_p, s_f = eeg_psd(eeg, norm=true, mt=mt)
+    channel_n = size(s_p, 1)
+    epoch_n = size(s_p, 3)
 
     if dims == 1
         p_env_m = zeros(length(s_f), epoch_n)
@@ -1728,12 +1751,18 @@ Named tuple containing:
 """
 function eeg_penv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=8, mt::Bool=false)
     
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_p, s_f = eeg_psd(eeg, norm=true, mt=mt)
+    channel_n = size(s_p, 1)
+    epoch_n = size(s_p, 3)
 
     if dims == 1
         p_env_m = zeros(length(s_f), epoch_n)
@@ -1899,12 +1928,18 @@ Named tuple containing:
 """
 function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_p, s_t = eeg_senv(eeg, d=d, mt=mt, t=t)
+    channel_n = size(s_p, 1)
+    epoch_n = size(s_p, 3)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
@@ -1988,12 +2023,18 @@ Named tuple containing:
 """
 function eeg_senv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-
-    (channel_n == 1 || epoch_n == 1) && throw(ArgumentError("Number of channels and/or number of epochs must be ≥ 2."))
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
 
     s_p, s_t = eeg_senv(eeg, d=d, mt=mt, t=t)
+    channel_n = size(s_p, 1)
+    epoch_n = size(s_p, 3)
 
     if dims == 1
         s_env_m = zeros(length(s_t), epoch_n)
@@ -2599,11 +2640,16 @@ function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, fr
     p_tmp, f_tmp = @views s_wspectrum(signal[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     w_pow = zeros(length(p_tmp), channel_n, epoch_n)
     w_frq = zeros(length(f_tmp), epoch_n)
-    verbose == true && @info "This will take a while.."
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n, 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = @views s_wspectrum(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
         end
+        # update progress bar
+        progress_bar == true && next!(p)
     end
 
     return (w_pow=w_pow, w_frq=w_frq)
@@ -3237,4 +3283,213 @@ function eeg_psdslope(eeg::NeuroAnalyzer.EEG; f::Tuple{Real, Real}=(0, 0), norm:
     end
 
     return (lf=lf, psd_slope=psd_slope, frq=frq[f1_idx:f2_idx])
+end
+
+"""
+    eeg_henv(eeg; d)
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+# Returns
+
+Named tuple containing:
+- `h_env::Array{Float64, 3}`: Hilbert spectrum amplitude envelope
+- `s_t::Vector{Float64}`: signal time
+"""
+function eeg_henv(eeg::NeuroAnalyzer.EEG; d::Int64=32)
+    
+    _, signal, _, _ = eeg_spectrum(eeg, h=true)
+    channel_n = size(signal, 1)
+    epoch_n = size(signal, 3)
+    h_env = similar(signal)
+    s_t = eeg.eeg_epochs_time
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s = @view signal[channel_idx, :, epoch_idx]
+            p_idx = s_findpeaks(s, d=d)
+            pushfirst!(p_idx, 1)
+            push!(p_idx, length(s))
+            if length(p_idx) > 4
+                model = CubicSpline(s_t[p_idx], s[p_idx])
+                try
+                    h_env[channel_idx, :, epoch_idx] = model(s_t)
+                catch
+                    @error "CubicSpline error."
+                end
+            else
+                verbose == true && @info "Less than 5 peaks detected, using Loess."
+                model = loess(s_t[p_idx], s[p_idx], span=0.5)
+                h_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
+            end
+            h_env[channel_idx, 1, epoch_idx] = h_env[channel_idx, 2, epoch_idx]
+        end
+    end
+    
+    return (h_env=h_env, s_t=s_t)
+end
+
+"""
+    eeg_henv_mean(eeg; dims, d)
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`: mean and 95% CI.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+# Returns
+
+Named tuple containing:
+- `h_env_m::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: mean
+- `h_env_u::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
+- `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+- `s_t::Vector{Float64}`: signal time
+"""
+function eeg_henv_mean(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
+    
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
+
+    s_a, s_t = eeg_henv(eeg, d=d)
+    channel_n = size(s_a, 1)
+    epoch_n = size(s_a, 3)
+
+    if dims == 1
+        h_env_m = zeros(length(s_t), epoch_n)
+        h_env_u = zeros(length(s_t), epoch_n)
+        h_env_l = zeros(length(s_t), epoch_n)
+
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            h_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
+            s = std(h_env_m[:, epoch_idx]) / sqrt(length(h_env_m[:, epoch_idx]))
+            h_env_u[:, epoch_idx] = @. h_env_m[:, epoch_idx] + 1.96 * s
+            h_env_l[:, epoch_idx] = @. h_env_m[:, epoch_idx] - 1.96 * s
+        end
+    elseif dims == 2
+        h_env_m = zeros(length(s_t), channel_n)
+        h_env_u = zeros(length(s_t), channel_n)
+        h_env_l = zeros(length(s_t), channel_n)
+
+        @inbounds @simd for channel_idx in 1:channel_n
+            h_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
+            s = std(h_env_m[:, channel_idx]) / sqrt(length(h_env_m[:, channel_idx]))
+            h_env_u[:, channel_idx] = @. h_env_m[:, channel_idx] + 1.96 * s
+            h_env_l[:, channel_idx] = @. h_env_m[:, channel_idx] - 1.96 * s
+        end
+    else
+        h_env_m, h_env_u, h_env_l, _ = eeg_henv_mean(eeg, dims=1, d=d)
+        h_env_m = mean(h_env_m, dims=2)
+        h_env_u = mean(h_env_u, dims=2)
+        h_env_l = mean(h_env_l, dims=2)
+        h_env_m = reshape(h_env_m, size(h_env_m, 1))
+        h_env_u = reshape(h_env_u, size(h_env_u, 1))
+        h_env_l = reshape(h_env_l, size(h_env_l, 1))
+    end
+
+    return (h_env_m=h_env_m, h_env_u=h_env_u, h_env_l=h_env_l, s_t=s_t)
+end
+
+"""
+    eeg_henv_median(eeg; dims, d)
+
+Calculate Hilbert spectrum amplitude envelope of `eeg`: median and 95% CI.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
+
+# Returns
+
+Named tuple containing:
+- `h_env_m::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: median
+- `h_env_u::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI upper bound
+- `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
+- `s_t::Vector{Float64}`: signal time
+"""
+function eeg_henv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
+    
+    if dims == 1
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+    elseif dims == 2
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    elseif dims == 3
+        eeg_channel_n(eeg) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("Number of epochs must be ≥ 2."))
+    end
+
+    s_a, s_t = eeg_henv(eeg, d=d)
+    channel_n = size(s_a, 1)
+    epoch_n = size(s_a, 3)
+
+    if dims == 1
+        h_env_m = zeros(length(s_t), epoch_n)
+        h_env_u = zeros(length(s_t), epoch_n)
+        h_env_l = zeros(length(s_t), epoch_n)
+
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            h_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
+            t_idx = s_findpeaks(h_env_m[:, epoch_idx], d=d)
+            pushfirst!(t_idx, 1)
+            push!(t_idx, length(h_env_m[:, epoch_idx]))
+            if length(t_idx) > 4
+                model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
+                try
+                    h_env_m[:, epoch_idx] = model(s_t)
+                catch
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                end
+            end
+            s = iqr(h_env_m[:, epoch_idx]) / sqrt(length(h_env_m[:, epoch_idx]))
+            h_env_u[:, epoch_idx] = @. h_env_m[:, epoch_idx] + 1.96 * s
+            h_env_l[:, epoch_idx] = @. h_env_m[:, epoch_idx] - 1.96 * s
+        end
+    elseif dims == 2
+        h_env_m = zeros(length(s_t), channel_n)
+        h_env_u = zeros(length(s_t), channel_n)
+        h_env_l = zeros(length(s_t), channel_n)
+
+        @inbounds @simd for channel_idx in 1:channel_n
+            h_env_m[:, idx] = median(s_a[channel_idx, :, :], dims=2)
+            t_idx = s_findpeaks(h_env_m[:, channel_idx], d=d)
+            pushfirst!(t_idx, 1)
+            push!(t_idx, length(h_env_m[:, channel_idx]))
+            if length(t_idx) > 4
+                model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
+                try
+                    h_env_m[:, channel_idx] = model(s_t)
+                catch
+                    verbose == true && @info "CubicSpline could not be calculated, using non-smoothed variant instead."
+                end
+            end
+            s = iqr(h_env_m[:, channel_idx]) / sqrt(length(h_env_m[:, channel_idx]))
+            h_env_u[:, channel_idx] = @. h_env_m[:, channel_idx] + 1.96 * s
+            h_env_l[:, channel_idx] = @. h_env_m[:, channel_idx] - 1.96 * s
+        end
+    else
+        h_env_m, h_env_u, h_env_l, _ = eeg_henv_median(eeg, dims=1, d=d)
+        h_env_m = median(h_env_m, dims=2)
+        h_env_u = median(h_env_u, dims=2)
+        h_env_l = median(h_env_l, dims=2)
+        h_env_m = reshape(h_env_m, size(h_env_m, 1))
+        h_env_u = reshape(h_env_u, size(h_env_u, 1))
+        h_env_l = reshape(h_env_l, size(h_env_l, 1))
+    end
+
+    return (h_env_m=h_env_m, h_env_u=h_env_u, h_env_l=h_env_l, s_t=s_t)
 end

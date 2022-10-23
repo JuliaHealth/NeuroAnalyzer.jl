@@ -885,6 +885,9 @@ eeg_plot_save(p, file_name="images/e10_spec.png")
 
 p = eeg_plot_env(e10, type=:spec, average=:median, epoch=1, channel=1, dims=3, frq_lim=(0,10))
 eeg_plot_save(p, file_name="images/e10_senv.png")
+
+p = eeg_plot_env(e10, type=:hamp, average=:median, epoch=1, channel=1, dims=3)
+eeg_plot_save(p, file_name="images/e10_henv.png")
 ```
 
 ![e10 power](images/e10_psd.png)
@@ -894,6 +897,8 @@ eeg_plot_save(p, file_name="images/e10_senv.png")
 ![e10 spectrogram](images/e10_spec.png)
 
 ![e10 spectrogram envelope mean](images/e10_senv.png)
+
+![e10 Hilbert spectrum amplitude median](images/e10_henv.png)
 
 ISPC:
 ```julia

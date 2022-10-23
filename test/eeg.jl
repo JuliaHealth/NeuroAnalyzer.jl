@@ -380,4 +380,8 @@ eeg_add_annotation!(bdf, onset=-10, event="test")
 _, _, f = eeg_psdslope(edf)
 @test length(f) == 513
 
+@test size(eeg_henv(e10)[1]) == (19, 2560, 121)
+@test size(eeg_henv_mean(e10, dims=1)[1]) == (2560, 121)
+@test size(eeg_henv_median(e10, dims=1)[1]) == (2560, 121)
+
 true
