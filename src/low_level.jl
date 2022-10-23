@@ -311,7 +311,8 @@ function fft0(x::AbstractArray, n::Int64=0)
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     if CUDA.functional() && use_cuda
-        # _free_gpumem()
+        _free_gpumem()
+        CUDA.memory_status()
         if n == 0
             cx = CuArray(x)
         else
@@ -1233,6 +1234,7 @@ function s_spectrum(signal::AbstractArray; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
+    # s_fft = fft(signal)
 
     # normalize
     s_fft ./= length(signal)

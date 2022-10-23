@@ -189,7 +189,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
 end
 
 """
-    na_set_cuda(use_cuda)
+    na_set_use_cuda(use_cuda)
 
 Change `use_cuda` preference.
 
@@ -197,7 +197,7 @@ Change `use_cuda` preference.
 
 - `use_cuda::Bool`: value
 """
-function na_set_cuda(use_cuda::Bool)
+function na_set_use_cuda(use_cuda::Bool)
     @set_preferences!("use_cuda" => use_cuda)
     @info("New option value set; restart your Julia session for this change to take effect!")
 end
