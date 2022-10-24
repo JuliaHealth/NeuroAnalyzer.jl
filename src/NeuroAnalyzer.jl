@@ -234,7 +234,8 @@ export effsize
 export infcrit
 export grubbs
 export outlier_detect
-export seg_cmp
+export seg_mean
+export seg2_mean
 export binom_prob
 export binom_stat
 export cvar_mean
@@ -250,6 +251,8 @@ export pred_int
 export sem_diff
 export prank
 export linreg
+export s2_cmp
+export s2_cor
 
 include("eeg_io.jl")
 export eeg_export_csv

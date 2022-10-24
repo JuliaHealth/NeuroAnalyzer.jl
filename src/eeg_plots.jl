@@ -6148,6 +6148,7 @@ Plot connections between `eeg` electrodes.
 - `m::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Float64`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
+- `weights::Bool=true`: weight line widths and alpha based on connection value
 - `labels::Bool=false`: plot electrode labels
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -6156,7 +6157,7 @@ Plot connections between `eeg` electrodes.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; m::Matrix{<:Real}, threshold::Float64, threshold_type::Symbol=:g, labels::Bool=true, mono::Bool=false, kwargs...)
+function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; m::Matrix{<:Real}, threshold::Float64, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, mono::Bool=false, kwargs...)
 
     mono == true ? palette = :grays : palette = :darktest
 
@@ -6205,43 +6206,71 @@ function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; m::Matrix{<:Real}, thresho
         end
         p = Plots.plot!()
     end
+
     # for some reason head is enlarged for channel > 1
+    #=
     eeg_tmp = eeg_keep_channel(eeg, channel=1)
     loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
     loc_y[1], loc_x[1] = pol2cart(eeg_tmp.eeg_header[:loc_radius][1], 
                                   eeg_tmp.eeg_header[:loc_theta][1])
-    hd = _draw_head(p, loc_x, loc_x, head_labels=false)
+    =#
+
+    hd = _draw_head(p, head_labels=false)
     Plots.plot!(hd)
 
+    #=
     loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
     loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
     for idx in 1:eeg_channel_n(eeg, type=:eeg)
         loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
                                           eeg.eeg_header[:loc_theta][idx])
     end
+    =#
+
+    m = s_normalize_max(m)
 
     for idx1 in 1:size(m, 1)
         for idx2 in 1:size(m, 1)
             if threshold_type === :g
                 if m[idx1, idx2] > threshold
-                    Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    if weights == true
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
+                    else
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
                 end
             elseif threshold_type === :l
                 if m[idx1, idx2] < threshold
-                    Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    if weights == true
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
+                    else
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
                 end
             elseif threshold_type === :eq
                 if m[idx1, idx2] == threshold
-                    Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    if weights == true
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
+                    else
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
                 end
             elseif threshold_type === :leq
                 if m[idx1, idx2] <= threshold
-                    Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    if weights == true
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
+                    else
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
                 end
             elseif threshold_type === :geq
                 if m[idx1, idx2] >= threshold
-                    Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    if weights == true
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
+                    else
+                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
                 end
             end
         end

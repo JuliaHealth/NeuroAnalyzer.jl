@@ -904,10 +904,10 @@ ISPC:
 ```julia
 p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 eeg_plot_save(p, file_name="images/e10_ispc.png")
-m = eeg_ispc(e10, epoch=1)
+m = eeg_ispc(e10)
 p = eeg_plot_matrix(e10, m[:, :, 1])
 eeg_plot_save(p, file_name="images/e10_ispc_m.png")
-p = eeg_plot_connections(edf, m=m, threshold=0.8, threshold_type=:geq)
+p = eeg_plot_connections(edf, m=m[:, :, 1], threshold=0.90, threshold_type=:geq)
 eeg_plot_save(p, file_name="images/e10_ispc_connections.png")
 ```
 
@@ -945,6 +945,21 @@ eeg_plot_save(p, file_name="images/e10_pli_m.png")
 
 ![e10 PLI matrix](images/e10_pli_m.png)
 
+Connections based on Hilbert transform amplitude envelope:
+```julia
+h, t = eeg_henv(edf)
+m = zeros(size(h, 1), size(h, 1))
+for idx1 in 1:size(h, 1)
+    for idx2 in 1:size(h, 1)
+        c = s2_cor(h[idx1, :, 1], h[idx2, :, 1])
+        m[idx1, idx2] = c.r
+    end
+end
+p = eeg_plot_connections(edf, m=m, threshold=0.2, threshold_type=:geq)
+eeg_plot_save(p, file_name="images/h_connections.png")
+```
+![](images/h_connections.png)
+
 ### Statistics
 
 Generate spectrogram segments:
@@ -958,9 +973,11 @@ p = plot!(segs1, lc=:black, fill=nothing, label=false)
 p = plot!(segs2, lc=:white, fill=nothing, label=false)
 eeg_plot_save(p, file_name="images/spec_seg.png")
 
-tt, t, c, df, p, s1, s2, = seg_cmp(segp1, segp2, paired=true, type=:p);
-println("segment 1: mean $(round(mean(s1), digits=2)), sd $(round(std(s1), digits=2))")
-println("segment 2: mean $(round(mean(s2), digits=2)), sd $(round(std(s2), digits=2))")
+segp1 = seg_mean(segp1)
+segp2 = seg_mean(segp2)
+tt, t, c, df, p = s2_cmp(segp1, segp2, paired=true, type=:p);
+println("segment 1: mean $(round(mean(segp1), digits=2)), sd $(round(std(segp1), digits=2))")
+println("segment 2: mean $(round(mean(segp2), digits=2)), sd $(round(std(segp2), digits=2))")
 println("test statistic $(t[2]): $(t[1]) (df = $df), p: $p")
 p = boxplot([s1, s2], xticks=([1, 2], ["segment 1", "segment 2"]), legend=false, outliers=false)
 eeg_plot_save(p, file_name="images/spec_seg_box.png")

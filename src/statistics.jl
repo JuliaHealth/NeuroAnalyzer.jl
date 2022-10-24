@@ -218,79 +218,45 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
 end
 
 """
-    seg_tcmp(seg1, seg2, paired)
+    seg_mean(seg)
 
-Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
+Calculate mean of a segment (e.g. spectrogram).
+
+# Arguments
+
+- `seg::AbstractArray`
+
+# Returns
+
+- `seg::Vector{Float64}`: averaged segment
+"""
+function seg_mean(seg::AbstractArray)
+
+    return reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
+end
+
+"""
+    seg2_mean(seg1, seg2)
+
+Calculate mean of two segments (e.g. spectrograms).
 
 # Arguments
 
 - `seg1::AbstractArray`
 - `seg2::AbstractArray`
-- `paired::Bool`
-- `alpha::Float64=0.05`: confidence level
-- `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
 
 # Returns
 
 Named tuple containing:
-- `tt`: test results
-- `t::Tuple{Float64, String}`: test value and name
-- `c::Tuple{Float64, Float64}`: test value confidence interval
-- `df::Int64`: degrees of freedom
-- `p::Float64`: p-value
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg_cmp(seg1::AbstractArray, seg2::AbstractArray; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto)
-
-    type in [:auto, :p, :np] || throw(ArgumentError("type must be :auto, :p or :np."))
-    paired == true && size(seg1) != size(seg2) && throw(ArgumentError("For paired test both segments must have the same size."))
+function seg2_mean(seg1::AbstractArray, seg2::AbstractArray)
 
     seg1_avg = reshape(mean(mean(seg1, dims=1), dims=2), size(seg1, 3))
     seg2_avg = reshape(mean(mean(seg2, dims=1), dims=2), size(seg2, 3))
 
-    ks = ApproximateTwoSampleKSTest(seg1_avg, seg2_avg)
-    pks = pvalue(ks)
-    if (pks < alpha && type === :auto) || type === :p
-        if paired == true
-            verbose == true && @info "Using one sample T-test."
-            tt = OneSampleTTest(seg1_avg, seg2_avg)
-        else
-            pf = pvalue(VarianceFTest(seg1_avg, seg2_avg))
-            if pf < alpha
-                verbose == true && @info "Using equal variance two samples T-test."
-                tt = EqualVarianceTTest(seg1_avg, seg2_avg)
-            else
-                verbose == true && @info "Using unequal variance two samples T-test."
-                tt = UnequalVarianceTTest(seg1_avg, seg2_avg)
-            end
-        end
-        df = tt.df
-        t = round(tt.t, digits=2)
-        c = round.(confint(tt, level=(1 - alpha)), digits=2)
-        tn = "t"
-    elseif (pks >= alpha && type === :auto) || type === :np
-        if paired == true
-            verbose == true && @info "Using signed rank test."
-            tt = SignedRankTest(seg1_avg, seg2_avg)
-            t = round(tt.W, digits=2)
-            df = tt.n - 1
-            tn = "W"
-        else
-            verbose == true && @info "Using Mann-Whitney U test."
-            tt = MannWhitneyUTest(seg1_avg, seg2_avg)
-            t = round(tt.U, digits=2)
-            df = 2 * size(seg1, 3) - 2
-            tn = "U"
-        end
-        c = NaN
-    end
-
-    p = pvalue(tt)
-    p < eps() && (p = 0.0001)
-    p = round(p, digits=4)
-
-    return (tt=tt, t=(t, tn), c=c, df=df, p=p, seg1=seg1_avg, seg2=seg2_avg)
+    return (seg1=seg1_avg, seg2=seg2_avg)
 end
 
 """
@@ -595,6 +561,7 @@ To predict, use: `new_x = DataFrame(x = [3.5, 7]); predict(lr, new_x)
 
 # Returns
 
+Named tuple containing:
 - `lr::StatsModels.TableRegressionModel`: model
 - `radj::Flpoat64`: R^2
 - `c::Vector{Float64}`: coefficients
@@ -613,5 +580,112 @@ function linreg(x::AbstractVector, y::AbstractVector)
     aic, bic = infcrit(lr)
     lf = MultivariateStats.predict(lr)
 
-    return lr, radj, c, se, aic, bic, lf
+    return (lr=lr, radj=radj, c=c, se=se, aic=aic, bic=bic, lf=lf)
+end
+
+"""
+    s2_cmp(seg1, seg2, paired, alpha, type, exact)
+
+Compare two vectors; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
+
+# Arguments
+
+- `s1::AbstractVector`
+- `s2::AbstractVector`
+- `paired::Bool`
+- `alpha::Float64=0.05`: confidence level
+- `type::Symbol=:auto`: choose test automatically (:auto), parametric (:p) or non-parametric (:np)
+- `exact::Bool=false`: if true, use exact Wilcoxon test
+
+# Returns
+
+Named tuple containing:
+- `t`: test results
+- `ts::Tuple{Float64, String}`: test statistics
+- `tc::Tuple{Float64, Float64}`: test statistics confidence interval
+- `df::Int64`: degrees of freedom
+- `p::Float64`: p-value
+"""
+function s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false)
+
+    type in [:auto, :p, :np] || throw(ArgumentError("type must be :auto, :p or :np."))
+    paired == true && size(s1) != size(s2) && throw(ArgumentError("For paired test both segments must have the same size."))
+
+    ks = ApproximateTwoSampleKSTest(s1, s2)
+    pks = pvalue(ks)
+    if (pks < alpha && type === :auto) || type === :p
+        if paired == true
+            verbose == true && @info "Using one sample T-test."
+            t = OneSampleTTest(s1, s2)
+        else
+            pf = pvalue(VarianceFTest(s1, s2))
+            if pf < alpha
+                verbose == true && @info "Using equal variance two samples T-test."
+                t = EqualVarianceTTest(s1, s2)
+            else
+                verbose == true && @info "Using unequal variance two samples T-test."
+                t = UnequalVarianceTTest(s1, s2)
+            end
+        end
+        df = t.df
+        ts = t.t
+        tc = confint(t, level=(1 - alpha))
+        tn = "t"
+    elseif (pks >= alpha && type === :auto) || type === :np
+        if paired == true
+            if exact == false
+                verbose == true && @info "Using signed rank (Wilcoxon) test."
+                t = SignedRankTest(s1, s2)
+            else
+                verbose == true && @info "Using exact signed rank (Wilcoxon) test."
+                t = ExactSignedRankTest(s1, s2)
+            end
+            ts = t.W
+            df = t.n - 1
+            tn = "W"
+        else
+            verbose == true && @info "Using Mann-Whitney U test."
+            t = MannWhitneyUTest(s1, s2)
+            ts = t.U
+            df = length(s1) + length(s2) - 2
+            tn = "U"
+        end
+        tc = NaN
+    end
+
+    p = pvalue(t)
+    p < eps() && (p = eps())
+
+    return (t=t, ts=(ts, tn), tc=tc, df=df, p=p)
+end
+
+"""
+    s2_cor(seg1, seg2)
+
+Calculate correlation between two vectors.
+
+# Arguments
+
+- `s1::AbstractVector`
+- `s2::AbstractVector`
+
+# Returns
+
+Named tuple containing:
+- `t::CorrelationTest{Float64}`
+- `r::Float64`: correlation coefficient
+- `rc::Tuple{Float64, Float64}`: correlation coefficient confidence interval
+- `tt::Tuple{Float64, String}`: t-statistics
+- `df::Int64`: degrees of freedom
+- `p::Float64`: p-value
+"""
+function s2_cor(s1::AbstractVector, s2::AbstractVector)
+
+    length(s1) == length(s2) || throw(ArgumentError("Both vectors must have the same length."))
+    t = CorrelationTest(s1, s2)
+    p = pvalue(t)
+    p < eps() && (p = eps())
+    df = length(s1) + length(s2) - 2
+
+    return (t=t, r=t.r, rc=confint(t), ts=(t.t, "t"), df=df, p=p)
 end

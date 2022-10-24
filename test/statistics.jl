@@ -18,8 +18,12 @@ m = lm(@formula(y ~ x), df)
 @test grubbs([1, 2, 3, 4, 5]) == false
 @test outlier_detect(ones(10)) == zeros(10)
 
-_, t, c, df, p, _, _ = seg_cmp(ones(5,5,5), zeros(5,5,5), paired=true, type=:p)
+@test seg_mean(ones(5,5,5)) == ones(5)
+@test seg2_mean(ones(5,5,5), ones(5, 5, 5)) == (seg1=ones(5), seg2=ones(5))
+_, _, _, df, _ = s2_cmp(ones(5), zeros(5), paired=true, type=:p)
 @test df == 4
+_, _, _, _, df, _ = s2_cor(ones(5), zeros(5))
+@test df == 8
 
 @test round(binom_prob(0.5, 6, 10), digits=2) == 0.21
 @test binom_stat(1.0, 10) == (10.0, 0.0)
@@ -36,4 +40,8 @@ _, t, c, df, p, _, _ = seg_cmp(ones(5,5,5), zeros(5,5,5), paired=true, type=:p)
 @test pred_int(2) == 15.56
 @test sem_diff(ones(5), zeros(5)) == 0.0
 @test round.(prank([1,2,3]), digits=1) == [0.0, 0.1, 0.2]
+
+_, _, c, _, _, _, _ = linreg(ones(100), zeros(100))
+@test c == [0.0, 0.0]
+
 true

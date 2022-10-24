@@ -101,13 +101,13 @@ Install NeuroAnalyzer `plugin`.
 
   * `plugin::String`: plugin to update; if empty, update all
 
-<a id='NeuroAnalyzer.na_set_cuda-Tuple{Bool}' href='#NeuroAnalyzer.na_set_cuda-Tuple{Bool}'>#</a>
-**`NeuroAnalyzer.na_set_cuda`** &mdash; *Method*.
+<a id='NeuroAnalyzer.na_set_use_cuda-Tuple{Bool}' href='#NeuroAnalyzer.na_set_use_cuda-Tuple{Bool}'>#</a>
+**`NeuroAnalyzer.na_set_use_cuda`** &mdash; *Method*.
 
 
 
 ```julia
-na_set_cuda(use_cuda)
+na_set_use_cuda(use_cuda)
 ```
 
 Change `use_cuda` preference.
@@ -3328,34 +3328,45 @@ Detect outliers in `x`.
 
   * `o::Vector{Bool}`: index of outliers
 
-<a id='NeuroAnalyzer.seg_cmp-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.seg_cmp-Tuple{AbstractArray, AbstractArray}'>#</a>
-**`NeuroAnalyzer.seg_cmp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.seg_mean-Tuple{AbstractArray}' href='#NeuroAnalyzer.seg_mean-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.seg_mean`** &mdash; *Method*.
 
 
 
 ```julia
-seg_tcmp(seg1, seg2, paired)
+seg_mean(seg)
 ```
 
-Compare two segments; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
+Calculate mean of a segment (e.g. spectrogram).
+
+**Arguments**
+
+  * `seg::AbstractArray`
+
+**Returns**
+
+  * `seg::Vector{Float64}`: averaged segment
+
+<a id='NeuroAnalyzer.seg2_mean-Tuple{AbstractArray, AbstractArray}' href='#NeuroAnalyzer.seg2_mean-Tuple{AbstractArray, AbstractArray}'>#</a>
+**`NeuroAnalyzer.seg2_mean`** &mdash; *Method*.
+
+
+
+```julia
+seg2_mean(seg1, seg2)
+```
+
+Calculate mean of two segments (e.g. spectrograms).
 
 **Arguments**
 
   * `seg1::AbstractArray`
   * `seg2::AbstractArray`
-  * `paired::Bool`
-  * `alpha::Float64=0.05`: confidence level
-  * `type::Symbol=:auto`: choose test automatically (:auto, :p for parametric and :np for non-parametric)
 
 **Returns**
 
 Named tuple containing:
 
-  * `tt`: test results
-  * `t::Tuple{Float64, String}`: test value and name
-  * `c::Tuple{Float64, Float64}`: test value confidence interval
-  * `df::Int64`: degrees of freedom
-  * `p::Float64`: p-value
   * `seg1::Vector{Float64}`: averaged segment 1
   * `seg2::Vector{Float64}`: averaged segment 2
 
@@ -3674,6 +3685,8 @@ To predict, use: `new*x = DataFrame(x = [3.5, 7]); predict(lr, new*x)
 
 **Returns**
 
+Named tuple containing:
+
   * `lr::StatsModels.TableRegressionModel`: model
   * `radj::Flpoat64`: R^2
   * `c::Vector{Float64}`: coefficients
@@ -3681,6 +3694,63 @@ To predict, use: `new*x = DataFrame(x = [3.5, 7]); predict(lr, new*x)
   * `aic::Float64`:: Akaike’s Information Criterion (AIC)
   * `bic::Float64`:: Bayesian Information Criterion (BIC)
   * `lf::Vector{Float64}`: linear fit (plot(x, lf))
+
+<a id='NeuroAnalyzer.s2_cmp-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_cmp-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_cmp`** &mdash; *Method*.
+
+
+
+```julia
+s2_cmp(seg1, seg2, paired, alpha, type, exact)
+```
+
+Compare two vectors; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
+
+**Arguments**
+
+  * `s1::AbstractVector`
+  * `s2::AbstractVector`
+  * `paired::Bool`
+  * `alpha::Float64=0.05`: confidence level
+  * `type::Symbol=:auto`: choose test automatically (:auto), parametric (:p) or non-parametric (:np)
+  * `exact::Bool=false`: if true, use exact Wilcoxon test
+
+**Returns**
+
+Named tuple containing:
+
+  * `t`: test results
+  * `ts::Tuple{Float64, String}`: test statistics
+  * `tc::Tuple{Float64, Float64}`: test statistics confidence interval
+  * `df::Int64`: degrees of freedom
+  * `p::Float64`: p-value
+
+<a id='NeuroAnalyzer.s2_cor-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_cor-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.s2_cor`** &mdash; *Method*.
+
+
+
+```julia
+s2_cor(seg1, seg2)
+```
+
+Calculate correlation between two vectors.
+
+**Arguments**
+
+  * `s1::AbstractVector`
+  * `s2::AbstractVector`
+
+**Returns**
+
+Named tuple containing:
+
+  * `t::CorrelationTest{Float64}`
+  * `r::Float64`: correlation coefficient
+  * `rc::Tuple{Float64, Float64}`: correlation coefficient confidence interval
+  * `tt::Tuple{Float64, String}`: t-statistics
+  * `df::Int64`: degrees of freedom
+  * `p::Float64`: p-value
 
 
 <a id='EEG-I/O'></a>
@@ -10392,6 +10462,7 @@ Plot connections between `eeg` electrodes.
   * `m::Matrix{<:Real}`: matrix of connections weights
   * `threshold::Float64`: plot all connection above threshold
   * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
+  * `weights::Bool=true`: weight line widths and alpha based on connection value
   * `labels::Bool=false`: plot electrode labels
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
