@@ -4,9 +4,6 @@
 ![](assets/neuroanalyzer.png)
 
 
-[NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) is a [Julia](https://julialang.org) package for analyzing of EEG data.
-
-
 <a id='NeuroAnalyzer.jl-Documentation'></a>
 
 <a id='NeuroAnalyzer.jl-Documentation-1'></a>

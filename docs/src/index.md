@@ -3,8 +3,6 @@ EditURL = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/maste
 ```
 
 ![](assets/neuroanalyzer.png)
-
-[NeuroAnalyzer.jl](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl) is a [Julia](https://julialang.org) package for analyzing of EEG data.
 # NeuroAnalyzer.jl Documentation
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
