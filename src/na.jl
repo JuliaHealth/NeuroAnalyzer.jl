@@ -217,7 +217,7 @@ function na_set_progress_bar(progress_bar::Bool)
 end
 
 """
-    na_set_plugins_path(p)
+    na_set_plugins_path(plugins_path)
 
 Change `plugins_path` preference.
 
@@ -234,7 +234,7 @@ function na_set_plugins_path(plugins_path::String)
 end
 
 """
-    na_set_prefs(use_cuda, plugins_pathprogress_bar)
+    na_set_prefs(use_cuda, plugins_path, progress_bar, verbose)
 
 Save NeuroAnalyzer preferences.
 
@@ -243,6 +243,7 @@ Save NeuroAnalyzer preferences.
 - `use_cuda::Bool`
 - `plugins_path::String`
 - `progress_bar::Bool`
+- `verbose::Bool`
 """
 function na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool, verbose::Bool)
     plugins_path = expanduser(plugins_path)
