@@ -125,7 +125,7 @@ function na_plugins_remove(plugin::String)
     plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
     try
         rm(plugin, recursive=true)
-    catch err
+    catch
         @error "Cannot remove $plugin directory."
     end
     na_plugins_reload()
@@ -145,7 +145,7 @@ function na_plugins_install(plugin::String)
     cd(plugins_path)
     try
         run(`$(git()) clone $plugin`)
-    catch err
+    catch
         @error "Cannot install $plugin."
     end
     na_plugins_reload()
@@ -170,7 +170,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
             println(plugins[idx])
             try
                 run(`$(git()) pull`)
-            catch err
+            catch
                 @error "Cannot update $(plugins[idx])."
             end
             cd(plugins_path)
@@ -180,7 +180,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
         cd(plugin)
         try
             run(`$(git()) pull`)
-        catch err
+        catch
             @error "Cannot update $plugin."
         end
         cd(plugins_path)
