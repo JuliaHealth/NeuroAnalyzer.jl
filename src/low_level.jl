@@ -1236,11 +1236,11 @@ function s_spectrum(signal::AbstractArray; pad::Int64=0)
     s_fft = fft0(signal, pad)
 
     # amplitudes
-    s_amplitudes = @. 2 * abs(s_fft / (length(signal) + pad))
+    s_amplitudes = @. 2 * abs(s_fft) / length(signal)
     # power
     s_powers = s_amplitudes.^2
     # phases
-    s_phases = angle.(s_fft);
+    s_phases = angle.(s_fft)
 
     return (s_fft=s_fft, s_amplitudes=s_amplitudes, s_powers=s_powers, s_phases=s_phases)
 end
@@ -2994,8 +2994,8 @@ Perform FFT denoising.
 """
 function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Int64=100)
 
-    s_fft = fft0(signal, pad) / (length(signal) + pad)
-    s_psd = abs2.(s_fft)
+    s_fft = fft0(signal, pad) ./ length(signal)
+    s_psd = @. 2 * abs2(s_fft)
 
     # zero frequencies
     signal_idx = s_psd .> threshold
