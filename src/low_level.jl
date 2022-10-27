@@ -1677,7 +1677,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         bw != -1 && throw(ArgumentError("bw must not be specified."))
     end
     if fprototype === :iirnotch
-        ftype != nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
+        ftype !== nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
     end
     if fprototype in [:irrnotch, :remez]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
