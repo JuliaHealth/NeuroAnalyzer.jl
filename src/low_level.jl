@@ -1234,16 +1234,13 @@ function s_spectrum(signal::AbstractArray; pad::Int64=0)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
-    # s_fft = fft(signal)
 
-    # normalize
-    s_fft ./= length(signal)
     # amplitudes
-    s_amplitudes = @. 2 * abs(s_fft)
+    s_amplitudes = @. 2 * abs(s_fft / (length(signal) + pad))
     # power
     s_powers = s_amplitudes.^2
     # phases
-    s_phases = angle.(s_fft)
+    s_phases = angle.(s_fft);
 
     return (s_fft=s_fft, s_amplitudes=s_amplitudes, s_powers=s_powers, s_phases=s_phases)
 end
@@ -2997,15 +2994,14 @@ Perform FFT denoising.
 """
 function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Int64=100)
 
-    signal_fft = fft0(signal, pad)
-    signal_psd = real.(signal_fft .* conj.(signal_fft)) / length(signal)
-    # signal_psd = abs2.(signal_fft) / length(signal)
+    s_fft = fft0(signal, pad) / (length(signal) + pad)
+    s_psd = abs2.(s_fft)
 
     # zero frequencies
-    signal_idx = signal_psd .> threshold
-    signal_psd .*= signal_idx
-    signal_fft .*= signal_idx
-    return real.(ifft0(signal_fft))
+    signal_idx = s_psd .> threshold
+    s_psd .*= signal_idx
+    s_fft .*= signal_idx
+    return real.(ifft0(s_fft))
 end
 
 """
