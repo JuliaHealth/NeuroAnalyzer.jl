@@ -14,10 +14,11 @@ function na_info()
     end
     println("     Plugins path: $plugins_path")
     println("Show progress bar: $progress_bar")
+    println("          Verbose: $verbose")
     println("          Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
-    Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance JULIA_NUM_THREADS ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
+    Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
-        @info "Environment variable JULIA_COPY_STACKS is set to 1, multi-threading may not work correctly"
+        @info "Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly"
     end
     println()
     println("Imported packages:")
@@ -199,7 +200,7 @@ Change `use_cuda` preference.
 """
 function na_set_use_cuda(use_cuda::Bool)
     @set_preferences!("use_cuda" => use_cuda)
-    @info("New option value set; restart your Julia session for this change to take effect!")
+    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -213,7 +214,7 @@ Change `progress_bar` preference.
 """
 function na_set_progress_bar(progress_bar::Bool)
     @set_preferences!("progress_bar" => progress_bar)
-    @info("New option value set; restart your Julia session for this change to take effect!")
+    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -230,7 +231,7 @@ function na_set_plugins_path(plugins_path::String)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     plugins_path[end] == '/' || (plugins_path *= '/')
     @set_preferences!("plugins_path" => plugins_path)
-    @info("New option value set; restart your Julia session for this change to take effect!")
+    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -266,7 +267,7 @@ Change `verbose` preference.
 """
 function na_set_verbose(verbose::Bool)
     @set_preferences!("verbose" => verbose)
-    @info("New option value set; restart your Julia session for this change to take effect!")
+    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """

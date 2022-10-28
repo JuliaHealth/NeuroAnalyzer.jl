@@ -311,7 +311,7 @@ function fft0(x::AbstractArray, n::Int64=0)
     n < 0 && throw(ArgumentError("Pad must be positive."))
     n > length(x) && (n -= length(x))
     if CUDA.functional() && use_cuda
-        _free_gpumem()
+        # _free_gpumem()
         CUDA.memory_status()
         if n == 0
             cx = CuArray(x)
