@@ -41,7 +41,7 @@ using ContinuousWavelets
 @test length(s2_difference(ones(4), zeros(4))) == 3
 @test s_acov(ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
 @test s2_xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
-@test s_spectrum(ones(4)) == (s_fft = ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amplitudes = [2.0, 0.0, 0.0, 0.0], s_powers = [4.0, 0.0, 0.0, 0.0], s_phases = [0.0, 0.0, 0.0, 0.0])
+@test s_spectrum(ones(4)) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amp = [1.0, 0.0], s_pow = [1.0, 0.0], s_pha = [0.0, 0.0, 0.0, 0.0])
 @test s_total_power(ones(4), fs=10) == 0.0
 @test s_band_power(ones(4), fs=10, f=(1,2)) == 0.0
 @test s_taper(ones(10), taper=zeros(10)) == zeros(10)
@@ -92,7 +92,8 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s2_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test length(s2_ged(ones(10, 10), zeros(10, 10))) == 3
 @test s_frqinst(ones(10), fs=10) == zeros(10)
-@test length(s_fftdenoise(rand(10))) == 10
+s, _ = s_fftdenoise(rand(10))
+@test length(s) == 10
 @test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
 @test s_tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
 @test length(s_wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4

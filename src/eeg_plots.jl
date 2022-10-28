@@ -513,9 +513,10 @@ Plot `eeg` external or embedded component.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `xlabel::String="Time [s]"`: x-axis label
+- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -525,11 +526,83 @@ Plot `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
+    _check_epochs(eeg, epoch)
 
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
+
+    if length(channel) == 1
+        channel_name = labels
+        labels = [""]
+        signal = vec(c)
+    else
+        channel_name = _channel2channel_name(channel)
+    end
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
+
+    c = c[channel, :, epoch]
+
+    p = plot_signal(x,
+                    c,
+                    labels=labels,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    title=title,
+                    mono=mono;
+                    kwargs...)
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component_avg(eeg; <keyword arguments>)
+
+Plot `eeg` external or embedded component: mean and ±95% CI.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
     _check_epochs(eeg, epoch)
 
@@ -540,9 +613,16 @@ function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, 
     labels = eeg_labels(eeg)[channel]
 
     # get time vector
-    t = eeg.eeg_epochs_time
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
     if length(channel) == 1
         channel_name = labels
         labels = [""]
@@ -550,18 +630,100 @@ function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, 
     else
         channel_name = _channel2channel_name(channel)
     end
-    title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
 
     c = c[channel, :, epoch]
 
-    p = plot_signal(t,
-                    c,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title,
-                    mono=mono;
-                    kwargs...)
+    p = plot_signal_avg(x,
+                        c,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title,
+                        mono=mono;
+                        kwargs...)
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_component_butterfly(eeg; <keyword arguments>)
+
+Butterfly plot of `eeg` external or embedded component.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+- `norm::Bool=false`: normalize the `signal` prior to calculations
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_component_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
+
+    _check_epochs(eeg, epoch)
+
+    # select channels, default is all up to 20 channels
+    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    _check_channels(eeg, channel)
+
+    labels = eeg_labels(eeg)[channel]
+
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
+
+    if length(channel) == 1
+        channel_name = labels
+        labels = [""]
+        signal = vec(c)
+    else
+        channel_name = _channel2channel_name(channel)
+    end
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
+    c = c[channel, :, epoch]
+
+    p = plot_signal_butterfly(x,
+                              c,
+                              norm=norm,
+                              labels=labels,
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              mono=mono;
+                              kwargs...)
 
     Plots.plot(p)
 
@@ -577,9 +739,10 @@ Plot indexed `eeg` external or embedded component.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String="Time [s]"`: x-axis label
+- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -589,7 +752,7 @@ Plot indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -615,19 +778,31 @@ function eeg_plot_component_idx(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 
         push!(labels, string(c_idx[idx]))
     end
 
-    # get time vector
-    t = eeg.eeg_epochs_time
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
     if length(c_idx) == 1
         labels = [""]
         signal = vec(c)
     end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal(t,
+    p = plot_signal(x,
                     c,
                     labels=labels,
                     xlabel=xlabel,
@@ -650,9 +825,10 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String="Time [s]"`: x-axis label
+- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -662,7 +838,7 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -685,19 +861,31 @@ function eeg_plot_component_idx_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float
         push!(labels, string(c_idx[idx]))
     end
 
-    # get time vector
-    t = eeg.eeg_epochs_time
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
     if length(c_idx) == 1
         labels = [""]
         signal = vec(c)
     end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal_avg(t,
+    p = plot_signal_avg(x,
                         c,
                         labels=labels,
                         xlabel=xlabel,
@@ -720,9 +908,10 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String="Time [s]"`: x-axis label
+- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -732,7 +921,7 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_idx_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_component_idx_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
 
@@ -755,19 +944,31 @@ function eeg_plot_component_idx_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array
         push!(labels, string(c_idx[idx]))
     end
 
-    # get time vector
-    t = eeg.eeg_epochs_time
+    # get X-axis values
+    if x === nothing
+        # X is the time vector
+        x = eeg.eeg_epochs_time
+        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
+        xlabel == "" && (xlabel = "Time [s]")
+    else
+        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
+    end
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
     if length(c_idx) == 1
         labels = [""]
         signal = vec(c)
     end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+
+    if x == eeg.eeg_epochs_time
+        t_1, t_s1, t_2, t_s2 = _convert_t(x)
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
+    else
+        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
+    end
 
     c = c[c_idx, :, epoch]
 
-    p = plot_signal_butterfly(t,
+    p = plot_signal_butterfly(x,
                               c,
                               labels=labels,
                               xlabel=xlabel,
@@ -1375,70 +1576,6 @@ function eeg_plot_signal_avg_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64,
 end
 
 """
-    eeg_plot_component_avg(eeg; <keyword arguments>)
-
-Plot `eeg` external or embedded component: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    _check_epochs(eeg, epoch)
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[channel, :, epoch]
-
-    p = plot_signal_avg(t,
-                        c,
-                        labels=labels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        mono=mono;
-                        kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
     plot_signal_butterfly(t, signal; <keyword arguments>)
 
 Butterfly plot of `signal` channels.
@@ -1782,72 +1919,6 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroAnalyzer.EEG; epoch::Union{
         l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
         p = Plots.plot(p, ht_a, psd, ht_p, s, layout=l)
     end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_butterfly(eeg; <keyword arguments>)
-
-Butterfly plot of `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    _check_epochs(eeg, epoch)
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[channel, :, epoch]
-
-    p = plot_signal_butterfly(t,
-                              c,
-                              norm=norm,
-                              labels=labels,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              mono=mono;
-                              kwargs...)
 
     Plots.plot(p)
 

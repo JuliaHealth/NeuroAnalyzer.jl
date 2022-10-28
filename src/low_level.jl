@@ -504,7 +504,7 @@ function s_freqs(signal::Vector{Float64}, fs::Real)
     # Nyquist frequency
     nyquist_freq = fs / 2
     # frequency array
-    hz = linspace(0, nyquist_freq, floor(Int64, length(signal) / 2) + 1)
+    hz = linspace(0, nyquist_freq, floor(Int64, length(signal) / 2))
 
     return hz, nyquist_freq
 end
@@ -1221,28 +1221,32 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
 - `signal::AbstractArray`
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
+- `norm::Bool=false`: normalize do dB
 
 # Returns
 
 Named tuple containing:
 - `s_fft::Vector{ComplexF64}`
-- `s_amplitudes::Vector{Float64}`
-- `s_powers::Vector{Float64}`
-- `s_phases::Vector{Float64}`
+- `s_amp::Vector{Float64}`
+- `s_pow::Vector{Float64}`
+- `s_pha::Vector{Float64}`
 """
-function s_spectrum(signal::AbstractArray; pad::Int64=0)
+function s_spectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=false)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
 
     # amplitudes
-    s_amplitudes = @. 2 * abs(s_fft) / length(signal)
+    s_amp = abs.(s_fft) ./ length(signal)       # normalize
+    s_amp = s_amp[1:(length(s_amp) ÷ 2)]        # remove negative frequencies
+    s_amp[2:end] .*= 2                          # double positive frequencies
     # power
-    s_powers = s_amplitudes.^2
+    s_pow = s_amp.^2
+    norm == true && (s_pow = pow2db.(s_pow))
     # phases
-    s_phases = angle.(s_fft)
+    s_pha = angle.(s_fft)
 
-    return (s_fft=s_fft, s_amplitudes=s_amplitudes, s_powers=s_powers, s_phases=s_phases)
+    return (s_fft=s_fft, s_amp=s_amp, s_pow=s_pow, s_pha=s_pha)
 end
 
 """
@@ -1822,7 +1826,7 @@ Calculate power spectrum density of the `signal`.
 # Arguments
 - `signal::Vector{Float64}`
 - `fs::Int64`: sampling rate
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
@@ -1857,12 +1861,12 @@ Calculate power spectrum density of the `signal`.
 # Arguments
 - `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
-named tuple containing:
+Named tuple containing:
 - `psd_pow::Matrix{Float64}`
 - `psd_frq::Matrix{Float64}`
 """
@@ -1890,7 +1894,7 @@ Calculate power spectrum density of the `signal`.
 # Arguments
 - `signal::AbstractArray`
 - `fs::Int64`: sampling rate
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
@@ -2827,28 +2831,30 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
 - `signal::AbstractArray`
 - `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool=true`: normalize do dB
 
 # Returns
 
 Named tuple containing:
 - `h::Vector(ComplexF64}`: Hilbert components
-- `h_amplitudes::Vector{Float64}`
-- `h_powers::Vector{Float64}`
-- `h_phases::Vector{Float64}`
+- `h_amp::Vector{Float64}`
+- `h_pow::Vector{Float64}`
+- `h_pha::Vector{Float64}`
 """
-function s_hspectrum(signal::AbstractArray; pad::Int64=0)
+function s_hspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true)
 
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     h = hilbert(pad0(signal, pad))
 
     # amplitudes
-    h_amplitudes = @. abs(h)
+    h_amp = @. abs(h)
     # power
-    h_powers = h_amplitudes.^2
+    h_pow = h_amp.^2
+    norm == true && (h_pow = pow2db.(h_pow))
     # phases
-    h_phases = angle.(h)
+    h_pha = angle.(h)
 
-    return (h=h, h_amplitudes=h_amplitudes, h_powers=h_powers, h_phases=h_phases)
+    return (h=h, h_amp=h_amp, h_pow=h_pow, h_pha=h_pha)
 end
 
 """
@@ -2986,22 +2992,26 @@ Perform FFT denoising.
 
 - `signal::AbstractVector`
 - `pad::Int64=0`: pad the `signal` with `pad` zeros
-- `threshold::Int64=100`: PSD threshold for keeping frequency components
+- `threshold::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
 
-- `signal_denoised::Vector{Float64}`
+Named tuple containing:
+- `s_denoised::Vector{Float64}`
+- `frq_idx::BitVector`: index of components zeroed
 """
-function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Int64=100)
+function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
 
-    s_fft = fft0(signal, pad) ./ length(signal)
-    s_psd = @. 2 * abs2(s_fft)
+    s_fft = fft0(signal, pad)
+    s_pow = (real.(s_fft .* conj.(s_fft))) ./ length(signal)
+    
+    threshold == 0 && (threshold = mean(s_pow))
+    
+    # zero frequencies with power above threshold
+    frq_idx = s_pow .> threshold
+    s_fft[frq_idx] .= Complex(0, 0)
 
-    # zero frequencies
-    signal_idx = s_psd .> threshold
-    s_psd .*= signal_idx
-    s_fft .*= signal_idx
-    return real.(ifft0(s_fft))
+    return (s_denoised=real.(ifft0(s_fft)), frq_idx=frq_idx)
 end
 
 """
@@ -3551,7 +3561,7 @@ Calculate relative power spectrum density of the `signal`.
 # Arguments
 - `signal::AbstractVector`
 - `fs::Int64`: sampling rate
-- `norm::Bool`: normalize do dB
+- `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 

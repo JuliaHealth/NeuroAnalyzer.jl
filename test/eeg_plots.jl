@@ -106,19 +106,20 @@ eeg_add_component!(e10, c=:epochs_var, v=e[4])
 p = eeg_plot_epochs(e10, c=:epochs_var)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-_, a, pow, ph = eeg_spectrum(e10)
-p = eeg_plot_component(e10, c=pow, epoch=10, channel=1)
+_, amp, pow, pha = eeg_spectrum(e10, norm=true)
+hz, _ = eeg_freqs(e10)
+p = eeg_plot_component(e10, c=pow, x=hz, epoch=10, channel=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_component_avg(e10, c=pow, epoch=10, channel=1:4)
+p = eeg_plot_component_avg(e10, c=pow, x=hz, epoch=10, channel=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_component_butterfly(e10, c=pow, epoch=10, channel=1:4)
+p = eeg_plot_component_butterfly(e10, c=pow, x=hz, epoch=10, channel=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_component_idx(e10, c=pow, epoch=10, c_idx=1:5)
+p = eeg_plot_component_idx(e10, c=pow, x=hz, epoch=10, c_idx=1:5)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_component_idx_avg(e10, c=pow, epoch=10, c_idx=1:5)
+p = eeg_plot_component_idx_avg(e10, c=pow, x=hz, epoch=10, c_idx=1:5)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_component_idx_butterfly(e10, c=pow, epoch=10, c_idx=1:5)
+p = eeg_plot_component_idx_butterfly(e10, c=pow, x=hz, epoch=10, c_idx=1:5)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 s = eeg_tconv(e10, kernel=generate_window(:hann, 128))

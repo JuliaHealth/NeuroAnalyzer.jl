@@ -1627,7 +1627,7 @@ function eeg_fftdenoise(eeg::NeuroAnalyzer.EEG; pad::Int64=0, threshold::Int64=1
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_denoised[channel_idx, :, epoch_idx] = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
+            s_denoised[channel_idx, :, epoch_idx], _ = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
         end
     end
 
@@ -1658,7 +1658,7 @@ function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; pad::Int64=0, threshold::Int64=
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_denoised[channel_idx, :, epoch_idx] = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
+            s_denoised[channel_idx, :, epoch_idx], _ = @views s_fftdenoise(eeg.eeg_signals[channel_idx, :, epoch_idx], pad=pad, threshold=threshold)
         end
     end
 

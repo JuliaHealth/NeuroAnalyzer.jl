@@ -214,7 +214,7 @@ e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
 f, a, p, ph = eeg_spectrum(e)
-@test size(p) == (19, 2560, 1)
+@test size(p) == (19, 1280, 1)
 
 e = eeg_copy(edf)
 i, iw = eeg_ica(e, tol=1.0, n=10)

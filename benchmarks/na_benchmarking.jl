@@ -1,10 +1,13 @@
 # using BenchmarkTools
+using Wavelets
+using ContinuousWavelets
 
 #=
 @time na_benchmark();
 b = @benchmarkable na_benchmark() evals=20 samples=1
 run(b)
 =#
+
 @info "Reporting system data"
 println("# System info")
 println()

@@ -866,6 +866,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad
 - `eeg::NeuroAnalyzer.EEG`
 - `pad::Int64=0`: pad with `pad` zeros
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
+- `norm::Bool=false`: normalize do dB
 
 # Returns
 
@@ -873,31 +874,39 @@ Named tuple containing:
 - `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
 - `amp::Array{Float64, 3}`: amplitudes
 - `pow::Array{Float64, 3}`: powers
-- `phase::Array{Float64, 3}: phase angles
+- `pha::Array{Float64, 3}: phase angles
 """
-function eeg_spectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, h::Bool=false)
+function eeg_spectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, h::Bool=false, norm::Bool=false)
 
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
+    fft_size = eeg_epoch_len(eeg) + pad
 
-    s_c = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_amp = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_pow = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
-    s_ph = zeros(channel_n, eeg_epoch_len(eeg) + pad, epoch_n)
+    if h == false
+        s_c = zeros(ComplexF64, channel_n, fft_size, epoch_n)
+        s_amp = zeros(channel_n, fft_size ÷ 2, epoch_n)
+        s_pow = zeros(channel_n, fft_size ÷ 2, epoch_n)
+        s_pha = zeros(channel_n, fft_size, epoch_n)
+    else
+        s_c = zeros(ComplexF64, channel_n, fft_size, epoch_n)
+        s_amp = zeros(channel_n, fft_size, epoch_n)
+        s_pow = zeros(channel_n, fft_size, epoch_n)
+        s_pha = zeros(channel_n, fft_size, epoch_n)
+    end        
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             if h == false
-                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_ph[channel_idx, :, epoch_idx] = @views s_spectrum(signal[channel_idx, :, epoch_idx], pad=pad)
+                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_pha[channel_idx, :, epoch_idx] = @views s_spectrum(signal[channel_idx, :, epoch_idx], pad=pad, norm=norm)
             else
-                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_ph[channel_idx, :, epoch_idx] = @views s_hspectrum(signal[channel_idx, :, epoch_idx], pad=pad)
+                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_pha[channel_idx, :, epoch_idx] = @views s_hspectrum(signal[channel_idx, :, epoch_idx], pad=pad, norm=norm)
             end
         end
     end
 
-    return (c=s_c, amp=s_amp, pow=s_pow, phase=s_ph)
+    return (c=s_c, amp=s_amp, pow=s_pow, pha=s_pha)
 end
 
 """

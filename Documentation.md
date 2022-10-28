@@ -134,7 +134,7 @@ Change `progress_bar` preference.
 
 
 ```julia
-na_set_plugins_path(p)
+na_set_plugins_path(plugins_path)
 ```
 
 Change `plugins_path` preference.
@@ -149,7 +149,7 @@ Change `plugins_path` preference.
 
 
 ```julia
-na_set_prefs(use_cuda, plugins_pathprogress_bar)
+na_set_prefs(use_cuda, plugins_path, progress_bar, verbose)
 ```
 
 Save NeuroAnalyzer preferences.
@@ -159,6 +159,7 @@ Save NeuroAnalyzer preferences.
   * `use_cuda::Bool`
   * `plugins_path::String`
   * `progress_bar::Bool`
+  * `verbose::Bool`
 
 <a id='NeuroAnalyzer.na_set_verbose-Tuple{Bool}' href='#NeuroAnalyzer.na_set_verbose-Tuple{Bool}'>#</a>
 **`NeuroAnalyzer.na_set_verbose`** &mdash; *Method*.
@@ -1105,15 +1106,16 @@ Calculate FFT, amplitudes, powers and phases of the `signal`.
 
   * `signal::AbstractArray`
   * `pad::Int64=0`: pad the `signal` with `pad` zeros
+  * `norm::Bool=false`: normalize do dB
 
 **Returns**
 
 Named tuple containing:
 
   * `s_fft::Vector{ComplexF64}`
-  * `s_amplitudes::Vector{Float64}`
-  * `s_powers::Vector{Float64}`
-  * `s_phases::Vector{Float64}`
+  * `s_amp::Vector{Float64}`
+  * `s_pow::Vector{Float64}`
+  * `s_pha::Vector{Float64}`
 
 <a id='NeuroAnalyzer.s_total_power-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_total_power-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_total_power`** &mdash; *Method*.
@@ -1462,7 +1464,7 @@ Calculate power spectrum density of the `signal`.
 
   * `signal::Vector{Float64}`
   * `fs::Int64`: sampling rate
-  * `norm::Bool`: normalize do dB
+  * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
@@ -1487,12 +1489,12 @@ Calculate power spectrum density of the `signal`.
 
   * `signal::Matrix{Float64}`
   * `fs::Int64`: sampling rate
-  * `norm::Bool`: normalize do dB
+  * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
 
-named tuple containing:
+Named tuple containing:
 
   * `psd_pow::Matrix{Float64}`
   * `psd_frq::Matrix{Float64}`
@@ -1512,7 +1514,7 @@ Calculate power spectrum density of the `signal`.
 
   * `signal::AbstractArray`
   * `fs::Int64`: sampling rate
-  * `norm::Bool`: normalize do dB
+  * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
@@ -2162,15 +2164,16 @@ Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
 
   * `signal::AbstractArray`
   * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool=true`: normalize do dB
 
 **Returns**
 
 Named tuple containing:
 
   * `h::Vector(ComplexF64}`: Hilbert components
-  * `h_amplitudes::Vector{Float64}`
-  * `h_powers::Vector{Float64}`
-  * `h_phases::Vector{Float64}`
+  * `h_amp::Vector{Float64}`
+  * `h_pow::Vector{Float64}`
+  * `h_pha::Vector{Float64}`
 
 <a id='NeuroAnalyzer.t2f-Tuple{Real}' href='#NeuroAnalyzer.t2f-Tuple{Real}'>#</a>
 **`NeuroAnalyzer.t2f`** &mdash; *Method*.
@@ -2255,11 +2258,14 @@ Perform FFT denoising.
 
   * `signal::AbstractVector`
   * `pad::Int64=0`: pad the `signal` with `pad` zeros
-  * `threshold::Int64=100`: PSD threshold for keeping frequency components
+  * `threshold::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 **Returns**
 
-  * `signal_denoised::Vector{Float64}`
+Named tuple containing:
+
+  * `s_denoised::Vector{Float64}`
+  * `frq_idx::BitVector`: index of components zeroed
 
 <a id='NeuroAnalyzer.s_gfilter-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_gfilter-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_gfilter`** &mdash; *Method*.
@@ -2661,7 +2667,7 @@ Calculate relative power spectrum density of the `signal`.
 
   * `signal::AbstractVector`
   * `fs::Int64`: sampling rate
-  * `norm::Bool`: normalize do dB
+  * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
@@ -7375,6 +7381,7 @@ Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad
   * `eeg::NeuroAnalyzer.EEG`
   * `pad::Int64=0`: pad with `pad` zeros
   * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
+  * `norm::Bool=false`: normalize do dB
 
 **Returns**
 
@@ -7383,7 +7390,7 @@ Named tuple containing:
   * `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
   * `amp::Array{Float64, 3}`: amplitudes
   * `pow::Array{Float64, 3}`: powers
-  * `phase::Array{Float64, 3}: phase angles
+  * `pha::Array{Float64, 3}: phase angles
 
 <a id='NeuroAnalyzer.eeg_s2t-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_s2t-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_s2t`** &mdash; *Method*.
@@ -8786,9 +8793,67 @@ Plot `eeg` external or embedded component.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
   * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `xlabel::String="Time [s]"`: x-axis label
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_avg(eeg; <keyword arguments>)
+```
+
+Plot `eeg` external or embedded component: mean and ±95% CI.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_component_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_component_butterfly(eeg; <keyword arguments>)
+```
+
+Butterfly plot of `eeg` external or embedded component.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
+  * `epoch::Int64`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `norm::Bool=false`: normalize the `signal` prior to calculations
+  * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -8813,9 +8878,10 @@ Plot indexed `eeg` external or embedded component.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
+  * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -8840,9 +8906,10 @@ Plot indexed `eeg` external or embedded component: mean and ±95% CI.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
+  * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -8867,9 +8934,10 @@ Butterfly plot of indexed `eeg` external or embedded component.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
   * `epoch::Int64`: epoch to display
   * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String="Time [s]"`: x-axis label
+  * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
@@ -9060,33 +9128,6 @@ Plot details of averaged `eeg` channels: amplitude, histogram, power density, ph
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
 <a id='NeuroAnalyzer.plot_signal_butterfly-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal_butterfly-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal_butterfly`** &mdash; *Method*.
 
@@ -9176,34 +9217,6 @@ Plot details butterfly plot of `eeg` channels: amplitude, histogram, power densi
   * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `hist::Symbol=:hist`: histogram type: :hist, :kd
   * `head::Bool=true`: add head plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
