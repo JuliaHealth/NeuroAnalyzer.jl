@@ -49,16 +49,16 @@ Pad the matrix `m` with zeros to make it square.
 
 # Returns
 
-- `m::Matrix{Number}`
+- `m::Matrix{<:Number}`
 """
 function m_pad0(m::Matrix{<:Number})
 
     nr, nc = size(m)
 
     if nr > nc
-        return hcat(m, repeat([0], nr, nr - nc))
+        return hcat(m, repeat(zeros(eltype(m), 1), nr, nr - nc))
     elseif nr < nc
-        return vcat(m, repeat([0], nc - nr, nc))
+        return vcat(m, repeat(zeros(eltype(m), 1), nc - nr, nc))
     else
         return m
     end
@@ -78,7 +78,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 # Returns
 
 - `y_idx::Int64`
--` y_dist::Real`
+- `y_dist::Real`
 """
 function vsearch(y::Real, x::AbstractVector; return_distance::Bool=false)
 
