@@ -1,4 +1,4 @@
-echo "# NeuroAnalyzer.jl Documentation"
+echo "# NeuroAnalyzer.jl documentation"
 echo ""
 echo "This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/)."
 echo ""
