@@ -1,6 +1,6 @@
 # NeuroAnalyzer benchmarking
 
-Set JULIA_NUM_THREADS and --threads according to your system:
+Set `JULIA_NUM_THREADS` and/or `--threads` according to your system:
 ```sh
 julia -O3 -g0 --threads 24 --cpu-target=native benchmarks/na_benchmarking.jl > benchmarks/results.txt
 ```
