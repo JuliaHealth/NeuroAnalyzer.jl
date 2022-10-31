@@ -28,6 +28,15 @@ Pluto.run()
 ```
 Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl).
 
+For non-interactive GUI, use Jupyter:
+```julia
+using Pkg
+Pkg.add("IJulia")
+using IJulia
+notebook()
+```
+Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl), example Jupyter notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.ipynb).
+
 ## EEG
 
 The tutorial is divided into five major steps of typical pipeline:
