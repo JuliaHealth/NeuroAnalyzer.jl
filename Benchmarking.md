@@ -8,6 +8,5 @@ julia -O3 -g0 --threads 24 --cpu-target=native benchmarks/na_benchmarking.jl > b
 ## Results
 
 Here are some results:
-- [Lenovo T14](benchmarks/t14.md)
-- [Threadripper 3960X, NVIDIA Quadro P2200, CUDA enabled](benchmarks/3960x_cuda.md) (48 threads)
-- [Threadripper 3960X, CUDA disabled](benchmarks/3960x_nocuda.md) (24 threads)
+- [Lenovo T14](benchmarks/t14.txt)
+- [Threadripper 3960X, CUDA disabled](benchmarks/3960x_nocuda.txt) (24 threads)
