@@ -2,7 +2,7 @@ __precompile__()
 
 module NeuroAnalyzer
 
-const na_ver = v"0.22.10"
+const na_ver = v"0.22.11"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
@@ -563,4 +563,4 @@ export plot_electrodes3d
 include("nstim.jl")
 export tes_dose
 
-end
+end # NeuroAnalyzer
