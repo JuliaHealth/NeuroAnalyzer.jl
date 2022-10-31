@@ -16,7 +16,7 @@ function na_info()
     println("Show progress bar: $progress_bar")
     println("          Verbose: $verbose")
     println("          Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` environment variable or Julia --threads command-line option]")
-    Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
+    Threads.nthreads() < length(Sys.cpu_info()) || @info "For best performance, `JULIA_NUM_THREADS` ($(Threads.nthreads())) should be less than number of CPU threads ($(length(Sys.cpu_info())))."
     if "JULIA_COPY_STACKS" in keys(ENV) && ENV["JULIA_COPY_STACKS"] == "1"
         @info "Environment variable `JULIA_COPY_STACKS` is set to 1, multi-threading may not work correctly"
     end

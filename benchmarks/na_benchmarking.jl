@@ -35,19 +35,19 @@ println("# IO")
 println()
 
 print(rpad("Import EDF+", 32))
-eeg_import_edf("test/eeg-test-edfplus.edf")
+eeg_import_edf("test/eeg-test-edfplus.edf");
 @time edf = eeg_import_edf("test/eeg-test-edfplus.edf");
 print(rpad("Import BDF+", 32))
-bdf = eeg_import_bdf("test/eeg-test-bdf.bdf")
-@time bdf = eeg_import_bdf("test/eeg-test-bdf.bdf");
+eeg_import_bdf("test/eeg-test-bdf.bdf");
+@time eeg_import_bdf("test/eeg-test-bdf.bdf");
 print(rpad("Import Digitrack", 32))
-dt = eeg_import_digitrack("test/eeg-test-digitrack.txt")
-@time dt = eeg_import_digitrack("test/eeg-test-digitrack.txt");
+eeg_import_digitrack("test/eeg-test-digitrack.txt");
+@time eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import EDF", 32))
-edf = eeg_import_edf("test/eeg-test-edf.edf")
+edf = eeg_import_edf("test/eeg-test-edf.edf");
 @time edf = eeg_import_edf("test/eeg-test-edf.edf");
 
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 32])
+eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
 e10 = eeg_epochs(edf, epoch_len=2560)
 
 @info "Benchmarking: eeg_edit.jl"
@@ -82,7 +82,7 @@ println()
 
 print(rpad("A referencing", 32))
 edf_am = eeg_import_edf("test/eeg-test-edf.edf")
-eeg_delete_channel!(edf_am, channel=[22, 23, 32])
+eeg_delete_channel!(edf_am, channel=[22, 23, 24])
 e10_am = eeg_epochs(edf_am, epoch_len=2560)
 eeg_reference_a(e10_am)
 @time eeg_reference_a(e10_am);
@@ -328,8 +328,3 @@ eeg_cwt(e10, wt=wavelet(Morlet(π), β=2));
 print(rpad("PSD slope", 32))
 eeg_psdslope(e10);
 @time eeg_psdslope(e10);
-
-@info "Benchmarking: eeg_plots.jl"
-println()
-println("# PLOT")
-println()
