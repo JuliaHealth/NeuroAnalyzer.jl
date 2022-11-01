@@ -1,7 +1,7 @@
 """
     eeg_study_create(eeg, group)
 
-description
+Create EEG study object.
 
 # Arguments
 
