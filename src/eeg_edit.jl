@@ -329,7 +329,6 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
                 deleteat!(eeg_new.eeg_header[:digital_maximum], idx2)
                 deleteat!(eeg_new.eeg_header[:prefiltering], idx2)
                 deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg_new.eeg_header[:sampling_rate], idx2)
                 deleteat!(eeg_new.eeg_header[:gain], idx2)
             end
         end 
@@ -389,7 +388,6 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
                 deleteat!(eeg.eeg_header[:digital_maximum], idx2)
                 deleteat!(eeg.eeg_header[:prefiltering], idx2)
                 deleteat!(eeg.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg.eeg_header[:sampling_rate], idx2)
                 deleteat!(eeg.eeg_header[:gain], idx2)
             end
         end 
@@ -458,7 +456,6 @@ function eeg_keep_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
                 deleteat!(eeg_new.eeg_header[:digital_maximum], idx2)
                 deleteat!(eeg_new.eeg_header[:prefiltering], idx2)
                 deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg_new.eeg_header[:sampling_rate], idx2)
                 deleteat!(eeg_new.eeg_header[:gain], idx2)
             end
         end
@@ -522,7 +519,6 @@ function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
                 deleteat!(eeg.eeg_header[:digital_maximum], idx2)
                 deleteat!(eeg.eeg_header[:prefiltering], idx2)
                 deleteat!(eeg.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg.eeg_header[:sampling_rate], idx2)
                 deleteat!(eeg.eeg_header[:gain], idx2)
             end
         end
@@ -749,7 +745,7 @@ Return `eeg` sampling rate.
 """
 function eeg_sr(eeg::NeuroAnalyzer.EEG)
 
-    return eeg.eeg_header[:sampling_rate][1]
+    return eeg.eeg_header[:sampling_rate]
 end
 
 """
@@ -852,10 +848,10 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
     println("         File size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
     println("       Memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
     println("     Sampling rate (Hz): $(eeg_sr(eeg))")
-    if eeg.eeg_header[:annotations] == false
-        println("            Annotations: no")
+    if eeg.eeg_header[:markers] == false
+        println("            markers: no")
     else
-        println("            Annotations: yes")
+        println("            markers: yes")
     end
     println("Signal length (samples): $(eeg_signal_len(eeg))")
     println("Signal length (seconds): $(round(eeg.eeg_header[:eeg_duration_seconds], digits=2))")
@@ -930,10 +926,10 @@ function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothi
     # create new dataset
     epoch_n = size(s_split, 3)
     epoch_duration_samples = size(s_split, 2)
-    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate][1]
+    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate]
     eeg_duration_samples = size(s_split, 2) * size(s_split, 3)
-    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
-    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
+    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
+    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_split
@@ -985,10 +981,10 @@ function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=noth
     # create new dataset
     epoch_n = size(s_split, 3)
     epoch_duration_samples = size(s_split, 2)
-    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate][1]
+    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate]
     eeg_duration_samples = size(s_split, 2) * size(s_split, 3)
-    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate][1]
-    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate][1]):epoch_duration_seconds)
+    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
+    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
     eeg.eeg_signals = s_split
     eeg.eeg_time = eeg_time
@@ -2599,113 +2595,133 @@ function eeg_loc_cart2sph!(locs::DataFrame)
 end
 
 """
-    eeg_view_annotations(eeg)
+    eeg_view_markers(eeg)
 
-Return `eeg` annotations.
+Return `eeg` markers.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_view_annotations(eeg::NeuroAnalyzer.EEG)
-    eeg.eeg_header[:annotations] == true || throw(ArgumentError("EEG has no annotations."))
-    for annotation_idx in 1:size(eeg.eeg_annotations, 1)
-        println("onset [s]: $(rpad(eeg.eeg_annotations[!, :onset][annotation_idx], 8, " ")) event: $(eeg.eeg_annotations[!, :event][annotation_idx])")
+function eeg_view_markers(eeg::NeuroAnalyzer.EEG)
+    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
+    for marker_idx in 1:size(eeg.eeg_markers, 1)
+        println("ID: $(rpad(("'" * eeg.eeg_markers[!, :id][marker_idx] * "'"), 24, " ")) start [sample]: $(rpad(eeg.eeg_markers[!, :start][marker_idx], 8, " ")) length [samples]: $(rpad(eeg.eeg_markers[!, :length][marker_idx], 8, " ")) description: $(rpad(("'" * eeg.eeg_markers[!, :description][marker_idx] * "'"), 24, " ")) channel: $(eeg.eeg_markers[!, :channel][marker_idx])")
     end
 end
 
 """
-    eeg_delete_annotation(eeg; n)
+    eeg_delete_marker(eeg; n)
 
-Delete `n`th annotation.
+Delete `n`th marker.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `n::Int64`: annotation number
+- `n::Int64`: marker number
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_delete_annotation(eeg::NeuroAnalyzer.EEG; n::Int64)
+function eeg_delete_marker(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_header[:annotations] == true || throw(ArgumentError("EEG has no annotations."))
-    nn = size(eeg_new.eeg_annotations, 1)
+    eeg_new.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
+    nn = size(eeg_new.eeg_markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    deleteat!(eeg_new.eeg_annotations, n)
-    size(eeg_new.eeg_annotations, 1) == 0 && (eeg_new.eeg_header[:annotations] = false)
+    deleteat!(eeg_new.eeg_markers, n)
+    size(eeg_new.eeg_markers, 1) == 0 && (eeg_new.eeg_header[:markers] = false)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_delete_annotation(EEG; n=$n)")
+    push!(eeg_new.eeg_header[:history], "eeg_delete_marker(EEG; n=$n)")
     
     return eeg_new
 end
 
 """
-    eeg_delete_annotation!(eeg; n)
+    eeg_delete_marker!(eeg; n)
 
-Delete `n`th annotation.
+Delete `n`th marker.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `n::Int64`: annotation number
+- `n::Int64`: marker number
 """
-function eeg_delete_annotation!(eeg::NeuroAnalyzer.EEG; n::Int64)
-    eeg.eeg_header[:annotations] == true || throw(ArgumentError("EEG has no annotations."))
-    nn = size(eeg.eeg_annotations, 1)
+function eeg_delete_marker!(eeg::NeuroAnalyzer.EEG; n::Int64)
+    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
+    nn = size(eeg.eeg_markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    deleteat!(eeg.eeg_annotations, n)
-    size(eeg.eeg_annotations, 1) == 0 && (eeg.eeg_header[:annotations] = false)
+    deleteat!(eeg.eeg_markers, n)
+    size(eeg.eeg_markers, 1) == 0 && (eeg.eeg_header[:markers] = false)
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_delete_annotation!(EEG; n=$n)")
+    push!(eeg.eeg_header[:history], "eeg_delete_marker!(EEG; n=$n)")
 
     return nothing
 end
 
 """
-    eeg_add_annotation(eeg; onset, event)
+    eeg_add_marker(eeg; id, start, len, desc)
 
-Add annotation.
+Add marker.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `onset::Float64`: time in seconds
-- `event::String`: event description
+- `id::String`: marker ID
+- `start::Int64`: marker time in samples
+- `len::Int64`: marker length in samples
+- `desc::String`: marker description
+- `channel::Int64`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_annotation(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
+function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+
+    start < 1 && throw(ArgumentError("Marker start must be > 0."))
+    len < 1 && throw(ArgumentError("Marker length must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_header[:annotations] = true
-    append!(eeg_new.eeg_annotations, DataFrame(:onset => Float64(onset), :event => event ))
-    sort!(eeg_new.eeg_annotations)
+    eeg_new.eeg_header[:markers] = true
+    append!(eeg_new.eeg_markers, DataFrame(:id => id, :start => start, :length => len, :description => desc, :channel => channel))
+    sort!(eeg_new.eeg_markers)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_add_annotation(EEG; onset=$onset, event=$event)")
+    push!(eeg_new.eeg_header[:history], "eeg_add_marker(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
 
     return eeg_new
 end
 
 """
-    eeg_add_annotation!(eeg; onset, event)
+    eeg_add_marker!(eeg; id, start, len, desc)
 
-Delete `n`th annotation.
+Add marker.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `onset::Float64`: time onset in seconds
-- `event::String`: event description
+- `id::String`: marker ID
+- `start::Int64`: marker time in samples
+- `len::Int64`: marker length in samples
+- `desc::String`: marker description
+- `channel::Int64`: channel number, if 0 then marker is related to all channels
 """
-function eeg_add_annotation!(eeg::NeuroAnalyzer.EEG; onset::Real, event::String)
-    eeg.eeg_header[:annotations] = true
-    append!(eeg.eeg_annotations, DataFrame(:onset => Float64(onset), :event => event ))
-    sort!(eeg.eeg_annotations)
+function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+
+    start < 1 && throw(ArgumentError("Marker start must be > 0."))
+    len < 1 && throw(ArgumentError("Marker length must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+
+    eeg.eeg_header[:markers] = true
+    append!(eeg.eeg_markers, DataFrame(:id => id, :start => start, :length => len, :description => desc, :channel => channel))
+    sort!(eeg.eeg_markers)
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_add_annotation!(EEG; onset=$onset, event=$event)")
+    push!(eeg.eeg_header[:history], "eeg_add_marker!(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
 
     return nothing
 end
@@ -2766,4 +2782,75 @@ function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
     end
 
     return vc
+end
+
+"""
+    eeg_edit_marker(eeg; n, id, start, len, desc)
+
+Edit `n`th marker.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64`: marker number
+- `id::String`: marker ID
+- `start::Int64`: marker time in samples
+- `len::Int64`: marker length in samples
+- `desc::String`: marker description
+- `channel::Int64`: channel number, if 0 then marker is related to all channels
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_edit_marker(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+
+    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
+    start < 1 && throw(ArgumentError("Marker start must be > 0."))
+    len < 1 && throw(ArgumentError("Marker length must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+
+    nn = size(eeg.eeg_markers, 1)
+    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_markers[n, :] = Dict(:id => id, :start => start, :length => len, :description => desc, :channel => channel)
+     eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_edit_marker(EEG; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
+
+    return eeg_new
+end
+
+"""
+    eeg_edit_marker!(eeg; n, id, start, len, desc)
+
+Edit `n`th marker.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64`: marker number
+- `id::String`: marker ID
+- `start::Int64`: marker time in samples
+- `len::Int64`: marker length in samples
+- `desc::String`: marker description
+- `channel::Int64`: channel number, if 0 then marker is related to all channels
+"""
+function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+
+    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
+    start < 1 && throw(ArgumentError("Marker start must be > 0."))
+    len < 1 && throw(ArgumentError("Marker length must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+
+    nn = size(eeg.eeg_markers, 1)
+    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
+    eeg.eeg_markers[n, :] = Dict(:id => id, :start => start, :length => len, :description => desc, :channel => channel)
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_edit_marker!(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
+
+    return nothing
 end

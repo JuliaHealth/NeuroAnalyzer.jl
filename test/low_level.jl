@@ -137,5 +137,7 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test round.(s_normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
 @test size(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
 @test length(s_icwt(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
+@test t2s(1, 256) == 256
+@test s2t(256, 256) == 1.0
 
 true

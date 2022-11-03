@@ -48,11 +48,11 @@ using ContinuousWavelets
 
 mutable struct EEG
     eeg_header::Dict
-    eeg_time::Vector{Float32}
-    eeg_epochs_time::Vector{Float32}
+    eeg_time::Vector{Float64}
+    eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
-    eeg_annotations::DataFrame
+    eeg_markers::DataFrame
 end
 
 mutable struct STUDY
@@ -224,6 +224,8 @@ export s_idwt
 export s_normalize_invroot
 export s_cwt
 export s_icwt
+export t2s
+export s2t
 
 include("statistics.jl")
 export hildebrand_rule
@@ -273,6 +275,7 @@ export eeg_save_electrodes
 export eeg_add_electrodes
 export eeg_add_electrodes!
 export eeg_import_digitrack
+export eeg_import_bv
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -351,13 +354,15 @@ export eeg_loc_sph2cart
 export eeg_loc_sph2cart!
 export eeg_loc_cart2sph
 export eeg_loc_cart2sph!
-export eeg_view_annotations
-export eeg_delete_annotation
-export eeg_delete_annotation!
-export eeg_add_annotation
-export eeg_add_annotation!
+export eeg_view_markers
+export eeg_delete_marker
+export eeg_delete_marker!
+export eeg_add_marker
+export eeg_add_marker!
 export eeg_channel_idx
 export eeg_vch
+export eeg_edit_marker
+export eeg_edit_marker!
 
 include("eeg_process.jl")
 export eeg_reference_ch

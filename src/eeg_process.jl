@@ -570,7 +570,7 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     (channel < 0 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))"))
     if channel == 0
@@ -631,7 +631,7 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
 - `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
 """
-function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg.eeg_signals = eeg_filter(eeg,
                                  channel=channel,
@@ -985,7 +985,7 @@ function eeg_upsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
     
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
+    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     t_upsampled = collect(t_upsampled)
@@ -1021,7 +1021,7 @@ function eeg_upsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
 
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
+    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     eeg.eeg_signals, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     eeg.eeg_time = collect(t_upsampled)
@@ -1056,7 +1056,7 @@ function eeg_downsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
 
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
+    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     t_downsampled = collect(t_downsampled)
@@ -1090,7 +1090,7 @@ function eeg_downsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
 
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate][1]):eeg.eeg_time[end]
+    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     eeg.eeg_signals, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
 
     eeg.eeg_time = collect(t_downsampled)

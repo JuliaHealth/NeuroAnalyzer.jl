@@ -12,6 +12,8 @@ edf = eeg_import_edf("eeg-test-edfplus.edf")
 @test typeof(edf) == NeuroAnalyzer.EEG
 dt = eeg_import_digitrack("eeg-test-digitrack.txt")
 @test typeof(dt) == NeuroAnalyzer.EEG
+bv = eeg_import_bv("eeg-test-bv.vhdr")
+@test typeof(bv) == NeuroAnalyzer.EEG
 
 edf = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(edf, channel=24)

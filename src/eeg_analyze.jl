@@ -2518,7 +2518,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     Threads.@threads for frq_idx in 1:frq_n
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
-        s_conv = zeros(Float32, 1, epoch_len, epoch_n)
+        s_conv = zeros(Float64, 1, epoch_len, epoch_n)
         @inbounds @simd for epoch_idx in 1:epoch_n
             s_conv[1, :, epoch_idx] = @views conv(signal[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
@@ -2549,7 +2549,6 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-- `fs::Int64`: sampling rate
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
 - `demean::Bool`=true: demean signal prior to analysis
 
@@ -2629,7 +2628,6 @@ Return power spectrogrum of `eeg` using Morlet wavelet convolution.
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-- `fs::Int64`: sampling rate
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 
 # Returns

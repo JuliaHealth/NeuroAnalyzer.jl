@@ -490,14 +490,14 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 # Arguments
 
 - `signal::Vector{Float64}`
-- `fs::Real`
+- `fs::Int64`
 
 # Returns
 
 - `hz::Vector{Float64`
 - `nyquist_freq::Float64`
 """
-function s_freqs(signal::Vector{Float64}, fs::Real)
+function s_freqs(signal::Vector{Float64}, fs::Int64)
 
     fs < 0 && throw(ArgumentError("Sampling rate must be >0 Hz."))
 
@@ -1355,12 +1355,12 @@ Perform piecewise detrending of `eeg`.
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64=0.5`: smoothing of loess
-- `fs::Real=0`: sampling frequency
+- `fs::Int64=0`: sampling frequency
 
 # Returns
 - `s_det::Vector{Float64}`
 """
-function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Real=0)
+function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Int64=0)
 
     type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
 
@@ -4228,4 +4228,48 @@ function s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
     type === :nd && return ContinuousWavelets.icwt(cwt_c, wt, NaiveDelta())
     type === :pd && return ContinuousWavelets.icwt(cwt_c, wt, PenroseDelta())
     type === :df && return ContinuousWavelets.icwt(cwt_c, wt, DualFrames())
+end
+
+"""
+    t2s(t, fs)
+
+Convert time to sample number.
+
+# Arguments
+
+- `t::Real`: time in s
+- `fs::Int64`: sampling rate
+
+# Returns
+
+- `s::Int6464`: sample number
+"""
+function t2s(t::Real, fs::Int64)
+
+    t < 0 && throw(ArgumentError("t must be ≥ 0."))
+    if t == 0
+        return 1
+    else
+        return round(Int64, t * fs)
+    end
+end
+
+"""
+    s2t(s, fs)
+
+Convert sample number to time.
+
+# Arguments
+
+- `t::Int64`: sample number
+- `fs::Int64`: sampling rate
+
+# Returns
+
+- `t::Float64`: time in s
+"""
+function s2t(s::Int64, fs::Int64)
+
+    s < 0 && throw(ArgumentError("s must be > 0."))
+    return s / fs
 end

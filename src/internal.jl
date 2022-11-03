@@ -12,7 +12,8 @@ _xlims(t::Vector{<:Real}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
 
 _xticks(t::Vector{<:Real}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
 
-_pl(x) = ((length(collect(x)) > 1) && return "s") || return ""
+_pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
+_pl(x::Real) = x > 1 ? "s" : ""
 
 function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in 1:length(channel)
@@ -324,23 +325,23 @@ function _free_gpumem(threshold::Real=0.95)
     end
 end 
 
-function _a2df(annotations::Vector{String})
-    # convert EDF/BDF annotations to DataFrame
-    annotations = replace.(annotations, "\x14\x14\0" => "|")
-    annotations = replace.(annotations, "\x14\x14" => "|")
-    annotations = replace.(annotations, "\x14" => "|")
-    annotations = replace.(annotations, "\0" => "")
-    a_onset = Vector{Float64}()
+function _m2df(markers::Vector{String})
+    # convert EDF/BDF markers to DataFrame
+    markers = replace.(markers, "\x14\x14\0" => "|")
+    markers = replace.(markers, "\x14\x14" => "|")
+    markers = replace.(markers, "\x14" => "|")
+    markers = replace.(markers, "\0" => "")
+    a_start = Vector{Float64}()
     a_event = Vector{String}()
-    # what about annotations containing event duration?
-    for ann_idx in 1:length(annotations)
-        s = split(annotations[ann_idx], "|")
+    # what about markers containing event duration?
+    for ann_idx in 1:length(markers)
+        s = split(markers[ann_idx], "|")
         if length(s) > 2
-            push!(a_onset, parse(Float64, strip(s[2])))
+            push!(a_start, parse(Float64, strip(s[2])))
             push!(a_event, strip(s[3]))
         end
     end
-    return DataFrame(onset=a_onset, event=a_event)
+    return DataFrame(:id => repeat([""], length(a_event)), :start => a_start, :length => zeros(Int64, length(a_event)), :description => a_event, :channel => zeros(Int64, length(a_event)))
 end
 
 function _clean_labels(labels::Vector{String})
@@ -350,17 +351,17 @@ function _clean_labels(labels::Vector{String})
     return labels
 end
 
-function _has_annotations(channel_type::Vector{String})
-    if "annotations" in channel_type
-        annotations = true
+function _has_markers(channel_type::Vector{String})
+    if "markers" in channel_type
+        markers = true
         for channel_idx in 1:length(channel_type)
-            channel_type[channel_idx] == "annotations" && (annotations_channel = channel_idx)
+            channel_type[channel_idx] == "markers" && (markers_channel = channel_idx)
         end
     else
-        annotations = false
-        annotations_channel = 0
+        markers = false
+        markers_channel = 0
     end
-    return annotations, annotations_channel
+    return markers, markers_channel
 end
 
 function _set_channel_types(labels::Vector{String})
@@ -395,9 +396,13 @@ function _set_channel_types(labels::Vector{String})
             occursin(ref_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "ref")
         end
         occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("marker", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("markers", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "events")
-        occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "annotations")
-        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "annotations")
+        occursin("events", lowercase(labels[idx])) && (channel_type[idx] = "events")
+        occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "markers")
     end
     return channel_type
 end

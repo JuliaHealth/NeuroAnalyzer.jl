@@ -280,6 +280,11 @@ Interpolate channel (slow for long signals):
 edf_new = eeg_interpolate_channel(edf, channel=1)
 ```
 
+View markers:
+```julia
+eeg_view_markers(edf)
+```
+
 ### EEG Process
 
 Any analysis data (e.g. ICA, PCA) can be stored within the EEG object (see `eeg_add_component()`, `eeg_delete_component()`, `eeg_rename_component()`, `eeg_component_type()`) for later use (see `eeg_extract_component()`). Note: any function that changes EEG signal data (e.g. channel removal, filtering) resets embedded components (see `eeg_reset_components()`.
@@ -383,10 +388,8 @@ eeg_filter!(edf, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5)
 
 Normalize:
 ```julia
-eeg_norm_zscore(edf)
-eeg_norm_minmax(edf)
-eeg_norm_zscore!(edf)
-eeg_norm_minmax!(edf)
+eeg_normalize!(edf, method=:zscore)
+eeg_normalize!(edf, method=:minmax)
 ```
 
 Remove DC:
@@ -397,9 +400,7 @@ eeg_demean!(edf)
 
 Taper:
 ```julia
-h = hann(edf.eeg_header[:epoch_duration_samples])
-eeg_taper(edf, taper=h)
-eeg_taper!(edf, taper=h)
+eeg_taper!(edf, taper=hann(eeg_epoch_len(edf)))
 ```
 
 Calculate signal derivative:
@@ -430,7 +431,7 @@ eeg_fconv!(e10, kernel=mw)
 
 Denoising using Wiener deconvolution:
 ```julia
-edf_denoised = eeg_denoise_wien(edf)
+eeg_denoise_wien(edf)
 ```
 
 ### EEG Analyze

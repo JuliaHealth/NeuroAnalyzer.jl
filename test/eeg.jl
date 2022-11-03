@@ -126,7 +126,7 @@ acov_m, _ = eeg_acov(edf)
 xcov_m, _ = eeg_xcov(edf)
 @test size(xcov_m) == (361, 3, 1)
 
-p, f = eeg_psd(edf1)
+p, f = eeg_psd(edf)
 @test size(p, 1) == 19
 
 p = eeg_stationarity(edf, method=:mean)
@@ -367,10 +367,11 @@ locs2 = eeg_loc_cart2sph(locs)
 @test size(eeg_scale(edf, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)
 
 bdf = eeg_import_bdf("eeg-test-bdfplus.bdf")
-eeg_delete_annotation!(bdf, n=1)
-@test size(bdf.eeg_annotations) == (1, 2)
-eeg_add_annotation!(bdf, onset=-10, event="test")
-@test size(bdf.eeg_annotations) == (2, 2)
+eeg_delete_marker!(bdf, n=1)
+@test size(bdf.eeg_markers) == (1, 5)
+eeg_add_marker!(bdf, id="event", start=1, len=1, desc="test", channel=0)
+@test size(bdf.eeg_markers) == (2, 5)
+eeg_edit_marker!(bdf, n=2, id="event2", start=1, len=1, desc="test2", channel=0)
 
 @test size(eeg_vch(e10, f="fp1 + fp2")) == (1, 2560, 121)
 

@@ -4,11 +4,11 @@
 ![](assets/neuroanalyzer.png)
 
 
-<a id='NeuroAnalyzer.jl-Documentation'></a>
+<a id='NeuroAnalyzer.jl-documentation'></a>
 
-<a id='NeuroAnalyzer.jl-Documentation-1'></a>
+<a id='NeuroAnalyzer.jl-documentation-1'></a>
 
-# NeuroAnalyzer.jl Documentation
+# NeuroAnalyzer.jl documentation
 
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
@@ -257,7 +257,7 @@ Pad the matrix `m` with zeros to make it square.
 
 **Returns**
 
-  * `m::Matrix{Number}`
+  * `m::Matrix{<:Number}`
 
 <a id='NeuroAnalyzer.vsearch-Tuple{Real, AbstractVector}' href='#NeuroAnalyzer.vsearch-Tuple{Real, AbstractVector}'>#</a>
 **`NeuroAnalyzer.vsearch`** &mdash; *Method*.
@@ -279,8 +279,7 @@ Return the positions of the `y` value in the vector `x` and the difference betwe
 **Returns**
 
   * `y_idx::Int64`
-
--`y_dist::Real`
+  * `y_dist::Real`
 
 <a id='NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.vsearch`** &mdash; *Method*.
@@ -562,7 +561,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
   * `hz::Vector{Float64}`
   * `nyquist_freq::Float64`
 
-<a id='NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Real}' href='#NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Real}'>#</a>
+<a id='NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Int64}' href='#NeuroAnalyzer.s_freqs-Tuple{Vector{Float64}, Int64}'>#</a>
 **`NeuroAnalyzer.s_freqs`** &mdash; *Method*.
 
 
@@ -576,7 +575,7 @@ Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
 **Arguments**
 
   * `signal::Vector{Float64}`
-  * `fs::Real`
+  * `fs::Int64`
 
 **Returns**
 
@@ -1205,7 +1204,7 @@ Perform piecewise detrending of `eeg`.
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
   * `span::Float64=0.5`: smoothing of loess
-  * `fs::Real=0`: sampling frequency
+  * `fs::Int64=0`: sampling frequency
 
 **Returns**
 
@@ -3156,6 +3155,46 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 
   * `signal::Vector{Float64}`: reconstructed signal
 
+<a id='NeuroAnalyzer.t2s-Tuple{Real, Int64}' href='#NeuroAnalyzer.t2s-Tuple{Real, Int64}'>#</a>
+**`NeuroAnalyzer.t2s`** &mdash; *Method*.
+
+
+
+```julia
+t2s(t, fs)
+```
+
+Convert time to sample number.
+
+**Arguments**
+
+  * `t::Real`: time in s
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `s::Int6464`: sample number
+
+<a id='NeuroAnalyzer.s2t-Tuple{Int64, Int64}' href='#NeuroAnalyzer.s2t-Tuple{Int64, Int64}'>#</a>
+**`NeuroAnalyzer.s2t`** &mdash; *Method*.
+
+
+
+```julia
+s2t(s, fs)
+```
+
+Convert sample number to time.
+
+**Arguments**
+
+  * `t::Int64`: sample number
+  * `fs::Int64`: sampling rate
+
+**Returns**
+
+  * `t::Float64`: time in s
+
 
 <a id='statistics'></a>
 
@@ -3775,6 +3814,7 @@ Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
 
   * EDF/EDF+
   * BDF/BDF+
+  * BrainVision
 
 **Arguments**
 
@@ -4052,7 +4092,7 @@ Load `eeg` from `file_name` file (HDF5-based).
 
 
 ```julia
-eeg_export_csv(eeg; file_name, header, components, annotations, overwrite)
+eeg_export_csv(eeg; file_name, header, components, markers, overwrite)
 ```
 
 Export EEG data as CSV.
@@ -4063,7 +4103,7 @@ Export EEG data as CSV.
   * `file_name::String`
   * `header::Bool=false`: export header
   * `components::Bool=false`: export components
-  * `annotations::Bool=false`: export annotations
+  * `markers::Bool=false`: export markers
   * `overwrite::Bool=false`
 
 **Returns**
@@ -4217,6 +4257,26 @@ Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
   * `eeg:EEG`
 
 **Notes**
+
+<a id='NeuroAnalyzer.eeg_import_bv-Tuple{String}' href='#NeuroAnalyzer.eeg_import_bv-Tuple{String}'>#</a>
+**`NeuroAnalyzer.eeg_import_bv`** &mdash; *Method*.
+
+
+
+```julia
+eeg_import_bv(file_name; clean_labels)
+```
+
+Load BrainVision BVCDF file and return and `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
+
+**Arguments**
+
+  * `file_name::String`: name of the file to load, should point to .vhdr file.
+  * `clean_labels::Bool=true`: only keep channel names in channel labels
+
+**Returns**
+
+  * `eeg:EEG`
 
 
 <a id='EEG-edit'></a>
@@ -5681,94 +5741,100 @@ Convert Cartesian locations to spherical.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_view_annotations-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_annotations-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_view_annotations`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_view_markers-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_markers-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_view_markers`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_view_annotations(eeg)
+eeg_view_markers(eeg)
 ```
 
-Return `eeg` annotations.
+Return `eeg` markers.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_delete_annotation-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_annotation-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_delete_annotation`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_marker-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_marker-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_marker`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_delete_annotation(eeg; n)
+eeg_delete_marker(eeg; n)
 ```
 
-Delete `n`th annotation.
+Delete `n`th marker.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `n::Int64`: annotation number
+  * `n::Int64`: marker number
 
 **Returns**
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_delete_annotation!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_annotation!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_delete_annotation!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_delete_marker!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_delete_marker!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_delete_marker!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_delete_annotation!(eeg; n)
+eeg_delete_marker!(eeg; n)
 ```
 
-Delete `n`th annotation.
+Delete `n`th marker.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `n::Int64`: annotation number
+  * `n::Int64`: marker number
 
-<a id='NeuroAnalyzer.eeg_add_annotation-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_annotation-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_add_annotation`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_marker-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_marker-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_marker`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_annotation(eeg; onset, event)
+eeg_add_marker(eeg; id, start, len, desc)
 ```
 
-Add annotation.
+Add marker.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `onset::Float64`: time in seconds
-  * `event::String`: event description
+  * `id::String`: marker ID
+  * `start::Int64`: marker time in samples
+  * `len::Int64`: marker length in samples
+  * `desc::String`: marker description
+  * `channel::Int64`: channel number, if 0 then marker is related to all channels
 
 **Returns**
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_add_annotation!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_annotation!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_add_annotation!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_add_marker!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_marker!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_add_marker!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_annotation!(eeg; onset, event)
+eeg_add_marker!(eeg; id, start, len, desc)
 ```
 
-Delete `n`th annotation.
+Add marker.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `onset::Float64`: time onset in seconds
-  * `event::String`: event description
+  * `id::String`: marker ID
+  * `start::Int64`: marker time in samples
+  * `len::Int64`: marker length in samples
+  * `desc::String`: marker description
+  * `channel::Int64`: channel number, if 0 then marker is related to all channels
 
 <a id='NeuroAnalyzer.eeg_channel_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_channel_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_channel_idx`** &mdash; *Method*.
@@ -5809,6 +5875,52 @@ Calculate virtual channel using formula `f`.
 **Returns**
 
   * `vc::Array{Float64, 3}`: single channel × time × epochs
+
+<a id='NeuroAnalyzer.eeg_edit_marker-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_marker-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_marker`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_marker(eeg; n, id, start, len, desc)
+```
+
+Edit `n`th marker.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `n::Int64`: marker number
+  * `id::String`: marker ID
+  * `start::Int64`: marker time in samples
+  * `len::Int64`: marker length in samples
+  * `desc::String`: marker description
+  * `channel::Int64`: channel number, if 0 then marker is related to all channels
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_edit_marker!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_marker!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_edit_marker!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_edit_marker!(eeg; n, id, start, len, desc)
+```
+
+Edit `n`th marker.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `n::Int64`: marker number
+  * `id::String`: marker ID
+  * `start::Int64`: marker time in samples
+  * `len::Int64`: marker length in samples
+  * `desc::String`: marker description
+  * `channel::Int64`: channel number, if 0 then marker is related to all channels
 
 
 <a id='EEG-process'></a>
@@ -8161,7 +8273,6 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-  * `fs::Int64`: sampling rate
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
   * `demean::Bool`=true: demean signal prior to analysis
 
@@ -8211,7 +8322,6 @@ Return power spectrogrum of `eeg` using Morlet wavelet convolution.
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
   * `frq_n::Int64`: number of frequencies
   * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-  * `fs::Int64`: sampling rate
   * `ncyc::Int64=6`: number of cycles for Morlet wavelet
 
 **Returns**
