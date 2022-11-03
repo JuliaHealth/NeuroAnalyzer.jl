@@ -34,6 +34,9 @@ println()
 println("# IO")
 println()
 
+print(rpad("Import EDF", 32))
+edf = eeg_import_edf("test/eeg-test-edf.edf");
+@time edf = eeg_import_edf("test/eeg-test-edf.edf");
 print(rpad("Import EDF+", 32))
 eeg_import_edf("test/eeg-test-edfplus.edf");
 @time edf = eeg_import_edf("test/eeg-test-edfplus.edf");
@@ -43,9 +46,9 @@ eeg_import_bdf("test/eeg-test-bdf.bdf");
 print(rpad("Import Digitrack", 32))
 eeg_import_digitrack("test/eeg-test-digitrack.txt");
 @time eeg_import_digitrack("test/eeg-test-digitrack.txt");
-print(rpad("Import EDF", 32))
-edf = eeg_import_edf("test/eeg-test-edf.edf");
-@time edf = eeg_import_edf("test/eeg-test-edf.edf");
+print(rpad("Import BrainVision", 32))
+eeg_import_edf("test/eeg-test-bv.vhdr");
+@time eeg_import_edf("test/eeg-test-bv.vhdr");
 
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
 e10 = eeg_epochs(edf, epoch_len=2560)
