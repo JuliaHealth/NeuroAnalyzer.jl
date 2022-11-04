@@ -20,11 +20,13 @@ Plot scaled multi-channel `signal`.
 """
 function plot_signal_scaled(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
 
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
+    # typeof(t) <: AbstractRange && (t = float(collect(t)))
 
     channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
+    signal = reverse(signal, dims = 1)
+    # also, reverse colors if palette is not mono
     if mono == true
         palette = :grays
         channel_color = Vector{Symbol}()
@@ -35,36 +37,42 @@ function plot_signal_scaled(t::Union{AbstractVector, AbstractRange}, signal::Abs
         palette = :darktest
         channel_color = channel_n:-1:1
     end
-    signal = reverse(signal[:, :], dims = 1)
 
     # normalize and shift so all channels are visible
-    s_normalized = zeros(size(signal))
-    variances = var(signal, dims=2)
-    mean_variance = mean(variances)
+    # s_normalized = zeros(size(signal))
+    # variances = var(signal, dims=2)
+    # mean_variance = mean(variances)
     for idx in 1:channel_n
-        s_normalized[idx, :] = @views (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
+        # s_normalized[idx, :] = @views (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
+        signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .+ (idx - 1)
     end
 
     # plot channels
     p = Plots.plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=_xlims(t),
-             xticks=_xticks(t),
-             ylims=(-0.5, channel_n-0.5),
-             title=title,
-             palette=palette,
-             titlefontsize=6,
-             xlabelfontsize=5,
-             ylabelfontsize=5,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_xticks(t),
+                   ylims=(-1, channel_n),
+                   title=title,
+                   palette=palette,
+                   size = (1200, 800),
+                   titlefontsize=6,
+                   xlabelfontsize=5,
+                   ylabelfontsize=8,
+                   xtickfontsize=4,
+                   ytickfontsize=4;
+                   kwargs...)
+    # plot zero line
+    p = Plots.hline!(collect((channel_n - 1):-1:0),
+                     color=:grey,
+                     lw=0.5,
+                     legend=false)
     for idx in 1:channel_n
-        p = Plots.plot!(t,
-                  s_normalized[idx, 1:length(t)],
-                  linewidth=0.5,
-                  label="",
-                  color=channel_color[idx])
+        p = @views Plots.plot!(t,
+                               signal[idx, 1:length(t)],
+                               linewidth=1,
+                               label="",
+                               color=channel_color[idx])
     end
 
     p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
@@ -188,7 +196,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
               yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[1], "\n\n"*string(ylim[2])]),
               bottom_margin=-10Plots.px,
               size=(1600, 200))
-    pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+    pp = Plots.plot!((length(t), 0),
+                     seriestype=:hline,
+                     linewidth=0.5,
+                     linealpha=0.5,
+                     linecolor=:gray,
+                     label="")
     push!(p, pp)
     if channel_n > 2
         for idx in 2:(channel_n - 1)
@@ -207,7 +220,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
                       top_margin=-10Plots.px,
                       bottom_margin=-10Plots.px,
                       size=(1600, 150))
-            pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+            pp = Plots.plot!((length(t), 0),
+                             seriestype=:hline,
+                             linewidth=0.5,
+                             linealpha=0.5,
+                             linecolor=:gray,
+                             label="")
             push!(p, pp)
         end
     end
@@ -226,7 +244,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractAr
               top_margin=-10Plots.px,
               bottom_margin=50Plots.px,
               size=(1600, 200))
-    pp = Plots.plot!((length(t), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
+    pp = Plots.plot!((length(t), 0),
+                     seriestype=:hline,
+                     linewidth=0.5,
+                     linealpha=0.5,
+                     linecolor=:gray,
+                     label="")
     push!(p, pp)
 
     p = Plots.plot(p...,
@@ -256,7 +279,7 @@ Plot `eeg` channel or channels.
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epochs to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
+- `scaled::Bool=true`: if true than scale signals before plotting so all signals will fit the plot
 - `offset::Int64=0`: displayed segment offset in samples
 - `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
 - `xlabel::String="Time [s]"`: x-axis label
@@ -269,7 +292,7 @@ Plot `eeg` channel or channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=false, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_signal(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=true, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
 

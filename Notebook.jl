@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.14
 
 #> [frontmatter]
 #> title = "NeuroAnalyzer"
@@ -23,6 +23,7 @@ end
 using Pkg
 
 # ╔═╡ ede1280a-1de5-4c77-ad6d-2a26603b6de6
+# ╠═╡ show_logs = false
 Pkg.activate(@__DIR__)
 
 # ╔═╡ 6c53f862-ace6-4a18-ad8f-4cfd516d8027
@@ -44,37 +45,37 @@ na_info()
 file_name = open_dialog("Select file EEG file to open")
 
 # ╔═╡ b0aebf11-9d67-4f74-a008-ef03162cc39c
-edf = eeg_import_edf(file_name);
+eeg = eeg_import(file_name);
 
 # ╔═╡ eeddafd4-7018-41c6-999a-91d85863c511
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
+# eeg_delete_channel!(eeg, channel=[17, 18, 22, 23, 24])
 
 # ╔═╡ 938f2be0-819a-4c80-806e-e88f691d77d9
-eeg_filter!(edf, fprototype=:iirnotch, cutoff=50, bw=2)
+eeg_filter!(eeg, fprototype=:iirnotch, cutoff=50, bw=8)
 
 # ╔═╡ 0a73c09f-d93d-4422-a090-4225f0819c58
-eeg_filter!(edf, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
+eeg_filter!(eeg, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8)
 
 # ╔═╡ 0ad7086d-d0cf-49bd-af89-059d976222dc
-eeg_filter!(edf, fprototype=:butterworth, ftype=:lp, cutoff=45, order=8)
+eeg_filter!(eeg, fprototype=:butterworth, ftype=:lp, cutoff=45, order=8)
 
 # ╔═╡ 80c58c02-37e1-4839-8091-3ddb563ebf37
-eeg_reference_car!(edf)
+eeg_reference_car!(eeg)
 
 # ╔═╡ 1028224e-38fd-4dde-861e-98d5eb2c85c9
-eeg_epochs!(edf, epoch_len=10*eeg_sr(edf))
+eeg_epochs!(eeg, epoch_len=10*eeg_sr(eeg))
 
 # ╔═╡ 15ca8e97-7d4f-4993-a13f-bb6fc9e12889
 # Check epochs visually, remove bad epochs 
 
 # ╔═╡ 4b1d7251-7944-43ef-86c6-ede1ef3f7526
-epoch_n = eeg_epoch_n(edf)
+epoch_n = eeg_epoch_n(eeg)
 
 # ╔═╡ de3bba50-1c87-406e-8415-df9e70e695e6
 @bind epoch Slider(1:epoch_n, show_value=true)
 
 # ╔═╡ b18893e4-a8aa-44d0-9e28-ba76b0c351d8
-eeg_plot_signal(edf, scaled=true, epoch=epoch)
+eeg_plot_signal(eeg, channel=1:24, epoch=epoch)
 
 # ╔═╡ 32a12ecd-d939-4885-a768-4acfb1e7527a
 @bind options confirm(
@@ -110,7 +111,7 @@ begin
 		for idx in length(epochs_to_delete):-1:1
 			deleteat!(epochs_to_delete, idx)
 		end
-	println("Epochs: $(eeg_epoch_n(edf))")
+	println("Epochs: $(eeg_epoch_n(eeg))")
 	println("Epochs to delete: $(epochs_to_delete)")
 	end
 end
@@ -118,11 +119,11 @@ end
 # ╔═╡ 0a313dce-8228-4a74-bb8a-08f889afc6a5
 begin
 	if del_epochs && length(epochs_to_delete) > 0
-		eeg_delete_epoch!(edf, epoch=epochs_to_delete)
+		eeg_delete_epoch!(eeg, epoch=epochs_to_delete)
 		for idx in length(epochs_to_delete):-1:1
 			deleteat!(epochs_to_delete, idx)
 		end
-	println("Epochs: $(eeg_epoch_n(edf))")
+	println("Epochs: $(eeg_epoch_n(eeg))")
 	println("Epochs to delete: $(epochs_to_delete)")
 	end
 end
@@ -148,7 +149,7 @@ end
 # ╠═de3bba50-1c87-406e-8415-df9e70e695e6
 # ╠═b18893e4-a8aa-44d0-9e28-ba76b0c351d8
 # ╟─32a12ecd-d939-4885-a768-4acfb1e7527a
-# ╟─1e72e2e7-bb85-4872-b373-af060b182633
+# ╠═1e72e2e7-bb85-4872-b373-af060b182633
 # ╠═609aeaae-89b2-4b25-9a9b-60bd63b1f8fb
 # ╠═0aee665f-4979-4bd5-9ede-282edbe075c3
 # ╠═5b6677ce-f33d-411d-a663-7a4d0f93e9e7

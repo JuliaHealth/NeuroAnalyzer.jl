@@ -278,7 +278,7 @@ Remove linear trend from `eeg`.
 - `order::Int64=1`: polynomial fitting order
 - `span::Float64`: smoothing of loess
 """
-function eeg_detrend!(eeg::NeuroAnalyzer.EEG; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
+function eeg_detrend!(eeg::NeuroAnalyzer.EEG; channel::Int64=0, type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5)
 
     eeg.eeg_signals = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, span=span).eeg_signals
     eeg_reset_components!(eeg)

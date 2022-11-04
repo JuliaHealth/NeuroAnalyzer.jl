@@ -3993,7 +3993,7 @@ Normalize `signal`.
 """
 function s_normalize(signal::AbstractArray; method::Symbol)
 
-    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :absmin, :gauss, :invroot or :none."))
+    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot or :none."))
 
     if method === :zscore
         return s_normalize_zscore(signal)
@@ -4015,8 +4015,6 @@ function s_normalize(signal::AbstractArray; method::Symbol)
         return s_normalize_pos(signal)
     elseif method === :perc
         return s_normalize_perc(signal)
-    elseif method === :gauss
-        return s_normalize_gauss(signal)
     elseif method === :gauss
         return s_normalize_gauss(signal)
     elseif method === :invroot

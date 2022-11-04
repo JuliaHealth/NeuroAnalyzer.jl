@@ -35,20 +35,20 @@ Pkg.add("IJulia")
 using IJulia
 notebook()
 ```
-Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl), example Jupyter notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.ipynb).
+Example Jupyter notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.ipynb).
 
 ## EEG
 
 The tutorial is divided into five major steps of typical pipeline:
 1. import EEG data, electrode positions
 2. edit EEG (e.g. rename labels, trim signal, detect and remove/interpolate bad channels, divide into epochs)
-3. process EEG (rereference, filter)
+3. process EEG (re-reference, filter)
 4. analyze
 5. plot
 
 ### EEG IO
 
-Load EEG file (EDF/EDF+/BDF/BDF+ formats are supported):
+Load EEG file (EDF/EDF+/BDF/BDF+/DigiTrack/BrainVision formats are supported):
 ```julia
 edf = eeg_import("test/eeg-test-edf.edf");
 eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
@@ -215,6 +215,7 @@ Delete channels (epochs and channels may be specified using number, range or vec
 edf = eeg_delete_channel(edf, channel=1)
 edf = eeg_delete_channel(edf, channel=10:18)
 edf = eeg_delete_channel(edf, channel=[1, 5, 9])
+edf = eeg_delete_channel(edf, channel=[1:5; 9; 10]) # note the use of ; if range is specified
 ```
 
 Keep channel:
