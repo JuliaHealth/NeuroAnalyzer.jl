@@ -1764,14 +1764,15 @@ function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Stri
 end
 
 """
-    eeg_interpolate_channel(eeg; channel, m, q)
+    eeg_interpolate_channel(eeg; channel, epoch, m, q)
 
-Interpolate `eeg` channel using planar interpolation.
+Interpolate channel(s) using planar interpolation.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `interpolation_factor::Int64=100`: interpolation quality
 
@@ -1779,7 +1780,7 @@ Interpolate `eeg` channel using planar interpolation.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
+function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
@@ -1788,6 +1789,7 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
 
     eeg_new = deepcopy(eeg)
     _check_channels(eeg, channel)
+    _check_epochs(eeg, epoch)
 
     loc_x1 = eeg.eeg_locs[!, :loc_x]
     loc_y1 = eeg.eeg_locs[!, :loc_y]
@@ -1797,53 +1799,54 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     loc_y2 = eeg.eeg_locs[!, :loc_y]
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 
-    epoch_n = eeg_epoch_n(eeg)
+    epoch_n = length(epoch)
     epoch_len = eeg_epoch_len(eeg)
 
     s_interpolated = zeros(Float64, length(channel), epoch_len, epoch_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n, 1))
+    progress_bar == true && (p = Progress(epoch_n * epoch_len, 1))
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:length(epoch)
         @inbounds @simd for length_idx in 1:epoch_len
-            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch_idx], loc_x2, loc_y2, interpolation_factor, imethod, :none)
+            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], loc_x2, loc_y2, interpolation_factor, imethod, :none)
             for channel_idx in 1:length(channel)
                 x_idx = vsearch(loc_x1[channel[channel_idx]], x)
                 y_idx = vsearch(loc_y1[channel[channel_idx]], y)
                 s_interpolated[channel_idx, length_idx, epoch_idx] = s_tmp[x_idx, y_idx]
             end
-        end
 
-        # update progress bar
-        progress_bar == true && next!(p)
+            # update progress bar
+            progress_bar == true && next!(p)
+        end
     end
 
-    eeg_new.eeg_signals[channel, :, :] = s_interpolated
+    eeg_new.eeg_signals[channel, :, epoch] = s_interpolated
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, imethod=$imethod, interpolation_factor=$interpolation_factor)")
+    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return eeg_new
 end
 
 """
-    eeg_interpolate_channel!(eeg; channel, imethod, interpolation_factor)
+    eeg_interpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
 
 Interpolate `eeg` channel using planar interpolation.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+- `channel::Union{Int64, Vector{Int64}, Abstractrange}`: channel number(s) to interpolate
+- `epoch::Union{Int64, Vector{Int64}, Abstractrange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `interpolation_factor::Int64=100`: interpolation quality
 """
 function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, interpolation_factor::Int64=100)
 
-    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
+    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, imethod=$imethod, interpolation_factor=$interpolation_factor)")
+    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return nothing
 end

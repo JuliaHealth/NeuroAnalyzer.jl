@@ -1,7 +1,7 @@
 """
     eeg_total_power(eeg, mt)
 
-Calculate total power of `eeg`.
+Calculate total power.
 
 # Arguments
 
@@ -1128,14 +1128,15 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; kernel::Union{Vector{<:Real}, Vector{
     s_convoluted = zeros(ComplexF64, size(signal))
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n, 1))
+    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(signal[channel_idx, :, epoch_idx], kernel=kernel, norm=norm)
+            
+            # update progress bar
+            progress_bar == true && next!(p)
         end
-        # update progress bar
-        progress_bar == true && next!(p)
     end
 
     return s_convoluted
@@ -2571,15 +2572,15 @@ function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true,
     w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n, 1))
+    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             _, w_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
-        end
 
-        # update progress bar
-        progress_bar == true && next!(p)
+            # update progress bar
+            progress_bar == true && next!(p)
+        end
     end
 
     return (w_pow=w_pow, w_frq=round.(w_frq, digits=2), w_t=eeg.eeg_epochs_time)
@@ -2649,14 +2650,15 @@ function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; pad::Int64=0, norm::Bool=true, fr
     w_frq = zeros(length(f_tmp), epoch_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n, 1))
+    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = @views s_wspectrum(signal[channel_idx, :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+
+            # update progress bar
+            progress_bar == true && next!(p)
         end
-        # update progress bar
-        progress_bar == true && next!(p)
     end
 
     return (w_pow=w_pow, w_frq=w_frq)
@@ -3000,16 +3002,17 @@ function eeg_cps(eeg::NeuroAnalyzer.EEG; norm::Bool=true)
     cps_ph = zeros(channel_n, channel_n, length(cps_ph_tmp), epoch_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n, 1))
+    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx1 in 1:channel_n
            for channel_idx2 in 1:channel_idx1
                 cps_pw[channel_idx1, channel_idx2, :, epoch_idx], cps_ph[channel_idx1, channel_idx2, :, epoch_idx], _ = @views s2_cps(signal[channel_idx1, :, epoch_idx], signal[channel_idx2, :, epoch_idx], fs=fs, norm=norm)
             end
-        end
+
         # update progress bar
         progress_bar == true && next!(p)
+        end
     end
     @inbounds @simd for time_idx in 1:size(cps_pw, 3)
         Threads.@threads for epoch_idx in 1:epoch_n

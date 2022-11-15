@@ -67,18 +67,18 @@ end
 """
     vsearch(y, x; return_distance)
 
-Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
+Return the positions of the `y` value in the vector `x`.
 
 # Arguments
 
-- `y::Real`
-- `x::AbstractVector`
-- `return_distance::Bool=false`
+- `y::Real`: value of interest
+- `x::AbstractVector`: vector to search within
+- `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
 
 # Returns
 
 - `y_idx::Int64`
-- `y_dist::Real`
+- `y_dist::Real`: the difference between `y` and `x[y_idx]`
 """
 function vsearch(y::Real, x::AbstractVector; return_distance::Bool=false)
 
@@ -94,14 +94,14 @@ Return the positions of the `y` vector in the vector `x`.
 
 # Arguments
 
-- `x::AbstractVector`
-- `y::AbstractVector`
-- `return_distance::Bool=false`
+- `y::AbstractVector`: vector of interest
+- `x::AbstractVector`: vector to search within
+- `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
 
 # Returns
 
 - `y_idx::Int64`
-- `y_dist::Real`
+- `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
 """
 function vsearch(y::AbstractVector, x::AbstractVector; return_distance=false)
 
@@ -120,7 +120,7 @@ end
 """
     cart2pol(x, y)
 
-Convert cartographic coordinates `x` and `y` to polar.
+Convert cartographic coordinates to polar.
 
 # Arguments
 
@@ -149,7 +149,7 @@ end
 """
     pol2cart(radius, theta)
 
-Convert polar coordinates `radius` and `theta` to cartographic.
+Convert polar coordinates to cartographic.
 
 # Arguments
 
@@ -173,7 +173,7 @@ end
 """
     sph2cart(radius, theta, phi)
 
-Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+Convert spherical coordinates to cartographic.
 
 # Arguments
 
@@ -202,7 +202,7 @@ end
 """
     cart2sph(x, y, z)
 
-Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+Convert spherical coordinates to cartographic.
 
 # Arguments
 
