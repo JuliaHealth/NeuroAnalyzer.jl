@@ -181,8 +181,7 @@ Detect outliers in `x`.
 - `o::Vector{Bool}`: index of outliers
 """
 function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
-    method in [:iqr, :z, :g] || throw(ArgumentError("method must be :iqr, :z or :g."))
-
+    _check_var(method, [:iqr, :z, :g], "method")
     o = zeros(Bool, length(x))
     
     if method === :iqr
@@ -608,7 +607,7 @@ Named tuple containing:
 """
 function s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false)
 
-    type in [:auto, :p, :np] || throw(ArgumentError("type must be :auto, :p or :np."))
+    _check_var(type, [:auto, :p, :np], "type")
     paired == true && size(s1) != size(s2) && throw(ArgumentError("For paired test both segments must have the same size."))
 
     ks = ApproximateTwoSampleKSTest(s1, s2)

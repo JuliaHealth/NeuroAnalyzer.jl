@@ -85,7 +85,8 @@ function na_plugins_reload()
         end
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
-                if Sys.isunix() || Sys.isapple() 
+                if Sys.isunix() || Sys.isapple()
+                    verbose == true && @info "Loading plugin: $(plugin[idx2])"
                     include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
                 elseif Sys.iswindows()
                     include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
@@ -119,7 +120,7 @@ Remove NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin name
 """
 function na_plugins_remove(plugin::String)
-    @info "This will remove the whole $plugin directory, along with its file contents."
+    verbose == true && @info "This will remove the whole $plugin directory, along with its file contents."
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(plugins_path)
     plugins = readdir(plugins_path)

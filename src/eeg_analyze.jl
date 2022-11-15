@@ -147,8 +147,8 @@ Calculate cross-covariance for all `eeg` channels.
 # Returns
 
 Named tuple containing:
-- `xcov::Matrix{Float64}`
-- `lags::Vector{Float64}`
+- `xcov::Matrix{Float64}`: ch1-ch1, ch1-ch2, ch1-ch3, etc.
+- `lags::Vector{Float64}`: lags in ms
 """
 function eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -157,7 +157,7 @@ function eeg_xcov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
 
-    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
+    lags = 1/eeg_sr(eeg) .* collect(-lag:lag) .* 1000
     xcov = zeros(channel_n^2, length(lags), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         xcov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
@@ -200,7 +200,7 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 
 Named tuple containing:
 - `xcov::Array{Float64, 3}`
-- `lags::Vector{Float64}`
+- `lags::Vector{Float64}`: lags in ms
 """
 function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -224,7 +224,7 @@ function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
     signal1 = @view eeg1.eeg_signals[channel1, :, epoch1]
     signal2 = @view eeg2.eeg_signals[channel2, :, epoch2]
 
-    lags = (eeg1.eeg_time[2] - eeg1.eeg_time[1]) .* collect(-lag:lag)
+    lags = 1/eeg_sr(eeg1) .* collect(-lag:lag) .* 1000
     xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
     @inbounds @simd for epoch_idx in 1:length(epoch1)
         Threads.@threads for channel_idx in 1:length(channel1)
@@ -1359,7 +1359,7 @@ Calculate autocovariance of each `eeg` channels.
 
 Named tuple containing:
 - `acov::Matrix{Float64}`
-- `lags::Vector{Float64}`
+- `lags::Vector{Float64}`: lags in ms
 """
 function eeg_acov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
@@ -1377,7 +1377,7 @@ function eeg_acov(eeg::NeuroAnalyzer.EEG; lag::Int64=1, demean::Bool=false, norm
         end
     end
 
-    lags = (eeg.eeg_time[2] - eeg.eeg_time[1]) .* collect(-lag:lag)
+    lags = 1/eeg_sr(eeg) .* collect(-lag:lag) .* 1000
 
     return (acov=acov, acov_lags=lags)
 end
@@ -3472,7 +3472,7 @@ function eeg_henv_median(eeg::NeuroAnalyzer.EEG; dims::Int64, d::Int64=32)
         h_env_l = zeros(length(s_t), channel_n)
 
         @inbounds @simd for channel_idx in 1:channel_n
-            h_env_m[:, idx] = median(s_a[channel_idx, :, :], dims=2)
+            h_env_m[:, channel_idx] = median(s_a[channel_idx, :, :], dims=2)
             t_idx = s_findpeaks(h_env_m[:, channel_idx], d=d)
             pushfirst!(t_idx, 1)
             push!(t_idx, length(h_env_m[:, channel_idx]))

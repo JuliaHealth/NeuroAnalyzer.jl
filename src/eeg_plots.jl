@@ -1,1248 +1,120 @@
 """
-    plot_signal_scaled(t, signal; <keyword arguments>)
+    eeg_plot_save(p; file_name::String)
 
-Plot scaled multi-channel `signal`.
+Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`
-- `signal::AbstractArray`
-- `labels::Vector{String}=[""]`: labels vector
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Channel"`: y-axis label
+- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+- `file_name::String`
+"""
+function eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
+
+    ext = splitext(file_name)[2]
+    _check_var(ext, [".png", ".pdf", ".jpg", ".tiff"], "File format")
+    (isfile(file_name) && verbose == true) && @info "File $file_name will be overwritten."
+    if typeof(p) == Plots.Plot{Plots.GRBackend}
+        savefig(p, file_name)
+    else
+        save(file_name, p)
+    end
+
+    nothing
+end
+
+"""
+    plot_signal(t, signal; <keyword arguments>)
+
+Plot amplitude of single- or multi-channel `signal`.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::Union{AbstractVector, AbstractArray}`: data to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `scale::Bool=true`: draw scale
+- `units::String="μV"`: units of the scale
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_scaled(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{AbstractVector, AbstractArray}; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", kwargs...)
 
-    # typeof(t) <: AbstractRange && (t = float(collect(t)))
-
+    # convert single-channel signal to single-row matrix
+    ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
     channel_n = size(signal, 1)
 
     # reverse so 1st channel is on top
-    signal = reverse(signal, dims = 1)
+    signal = @views reverse(signal[:, 1:length(t)], dims = 1)
     # also, reverse colors if palette is not mono
     if mono == true
-        palette = :grays
+        pal = :grays
         channel_color = Vector{Symbol}()
         for idx in 1:channel_n
             push!(channel_color, :black)
         end
     else
-        palette = :darktest
+        pal = :darktest
         channel_color = channel_n:-1:1
     end
 
+    # get range of the original signal for the scale
+    range = _get_range(signal)
+
     # normalize and shift so all channels are visible
-    # s_normalized = zeros(size(signal))
-    # variances = var(signal, dims=2)
-    # mean_variance = mean(variances)
+    # each channel is between -1.0 and +1.0
     for idx in 1:channel_n
-        # s_normalized[idx, :] = @views (signal[idx, :] .- mean(signal[idx, :])) ./ mean_variance .+ (idx - 1)
-        signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .+ (idx - 1)
+        # scale by 0.5 so maxima do not overlap
+        signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
     end
 
-    # plot channels
+    # prepare plot
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
-                   xticks=_xticks(t),
+                   xticks=_ticks(t),
                    ylims=(-1, channel_n),
                    title=title,
-                   palette=palette,
-                   size = (1200, 800),
-                   titlefontsize=6,
-                   xlabelfontsize=5,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   bottom_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
                    ylabelfontsize=8,
-                   xtickfontsize=4,
-                   ytickfontsize=4;
+                   xtickfontsize=6,
+                   ytickfontsize=6;
                    kwargs...)
+    
     # plot zero line
     p = Plots.hline!(collect((channel_n - 1):-1:0),
                      color=:grey,
                      lw=0.5,
-                     legend=false)
+                     labels="")
+
+    # plot channels
     for idx in 1:channel_n
         p = @views Plots.plot!(t,
-                               signal[idx, 1:length(t)],
+                               signal[idx, :],
                                linewidth=1,
                                label="",
                                color=channel_color[idx])
     end
 
+    # plot labels
     p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
 
-    return p
-end
-
-"""
-    plot_signal(t, signal; <keyword arguments>)
-
-Plot single-channel `signal`.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`
-- `signal::AbstractVector`
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; ylim::Tuple{Real, Real}=(0, 0), xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
-
-    ylim == (0, 0) && (ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0)))
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    hl = Plots.plot((size(signal, 2), 0), seriestype=:hline, linewidth=0.5, linealpha=0.5, linecolor=:gray, label="")
-    p = Plots.plot!(t,
-              signal[1:length(t)],
-              color=:black,
-              label="",
-              legend=false,
-              title=title,
-              xlabel=xlabel,
-              xlims=_xlims(t),
-              xticks=_xticks(t),
-              ylabel=ylabel,
-              ylims=ylim,
-              yguidefontrotation=0,
-              yticks=[ylim[1], 0, ylim[2]],
-              palette=palette,
-              linewidth=0.5,
-              grid=false,
-              titlefontsize=8,
-              xlabelfontsize=6,
-              ylabelfontsize=6,
-              xtickfontsize=4,
-              ytickfontsize=4;
-              kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_signal(t, signal; <keyword arguments>)
-
-Plot multi-channel `signal`.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`
-- `signal::AbstractArray`
-- `labels::Vector{String}=[""]`: labels vector
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Channel"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="Channel", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
-
-    channel_n = size(signal, 1)
-
-    ylim = extrema(signal[:, 1:length(t)])
-    (abs(ylim[1]) >= 1 || abs(ylim[2]) >= 1) && (ylim = (floor(ylim[1]), ceil(ylim[2])))
-    (abs(ylim[1]) >=10 || abs(ylim[2]) >= 10) && (ylim = (floor(ylim[1], digits=-1), ceil(ylim[2], digits=-1)))
-    (abs(ylim[1]) >=100 || abs(ylim[2]) >= 100) && (ylim = (floor(ylim[1], digits=-2), ceil(ylim[2], digits=-2)))
-
-    p = []
-    if mono == true
-        palette = :grays
-        channel_color = Vector{Symbol}()
-        for idx in 1:channel_n
-            push!(channel_color, :black)
-        end
-    else
-        palette = :darktest
-        channel_color = 1:channel_n
+    # draw scale
+    if scale == true
+        p = Plots.plot!([t[1], t[1]], [(channel_n - 1.5), (channel_n - 0.5)], color=:red, linewidth=5, label="")
+        p = Plots.plot!(annotation=(t[1], (channel_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
-
-    pp = Plots.plot(t,
-              signal[1, 1:length(t)],
-              linewidth=0.5,
-              label="",
-              color=channel_color[1],
-              title=title,
-              xaxis=false,
-              xticks=false,
-              xlabel="",
-              xlims=_xlims(t),
-              ylims=ylim,
-              yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[1], "\n\n"*string(ylim[2])]),
-              bottom_margin=-10Plots.px,
-              size=(1600, 200))
-    pp = Plots.plot!((length(t), 0),
-                     seriestype=:hline,
-                     linewidth=0.5,
-                     linealpha=0.5,
-                     linecolor=:gray,
-                     label="")
-    push!(p, pp)
-    if channel_n > 2
-        for idx in 2:(channel_n - 1)
-            pp = Plots.plot(t,
-                      signal[idx, 1:length(t)],
-                      linewidth=0.5,
-                      label="",
-                      color=channel_color[idx],
-                      title="",
-                      xaxis=false,
-                      xticks=false,
-                      xlabel="",
-                      xlims=_xlims(t),
-                      ylims=ylim,
-                      yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[idx], "\n\n"*string(ylim[2])]),
-                      top_margin=-10Plots.px,
-                      bottom_margin=-10Plots.px,
-                      size=(1600, 150))
-            pp = Plots.plot!((length(t), 0),
-                             seriestype=:hline,
-                             linewidth=0.5,
-                             linealpha=0.5,
-                             linecolor=:gray,
-                             label="")
-            push!(p, pp)
-        end
-    end
-    pp = Plots.plot(t,
-              signal[channel_n, 1:length(t)],
-              linewidth=0.5,
-              label="",
-              color=channel_color[end],
-              title="",
-              xaxis=true,
-              xticks=_xticks(t),
-              xlabel=xlabel,
-              xlims=_xlims(t),
-              ylims=ylim,
-              yticks=([ylim[1], 0, ylim[2]], [string(ylim[1])*"\n\n", labels[channel_n], "\n\n"*string(ylim[2])]),
-              top_margin=-10Plots.px,
-              bottom_margin=50Plots.px,
-              size=(1600, 200))
-    pp = Plots.plot!((length(t), 0),
-                     seriestype=:hline,
-                     linewidth=0.5,
-                     linealpha=0.5,
-                     linecolor=:gray,
-                     label="")
-    push!(p, pp)
-
-    p = Plots.plot(p...,
-              layout=(size(p, 1), 1),
-              size=(1600, size(p, 1) * 150),
-              left_margin=60Plots.px,
-              right_margin=30Plots.px,
-              grid=false,
-              palette=palette,
-              titlefontsize=12,
-              xlabelfontsize=8,
-              ylabelfontsize=8,
-              xtickfontsize=6,
-              ytickfontsize=6;
-              kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_signal(eeg; <keyword arguments>)
-
-Plot `eeg` channel or channels.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epochs to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `scaled::Bool=true`: if true than scale signals before plotting so all signals will fit the plot
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, scaled::Bool=true, offset::Int64=0, len::Int64=0, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # select channels, default is all up to 10 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 10))
-    _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    if length(channel) == 1
-        ylabel = "Amplitude [μV]"
-        channel_name = labels
-        labels = [""]
-        signal = vec(signal)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    length(channel) == 1 && (title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
-    length(channel) != 1 && (title == "" && (title = "Amplitude [μV]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]"))
-
-    scaled == false && (p = plot_signal(t,
-                                        signal,
-                                        labels=labels,
-                                        xlabel=xlabel,
-                                        ylabel=ylabel,
-                                        title=title,
-                                        mono=mono;
-                                        kwargs...))
-    scaled == true && (p = plot_signal_scaled(t,
-                                              signal,
-                                              labels=labels,
-                                              xlabel=xlabel,
-                                              ylabel=ylabel,
-                                              title=title,
-                                              mono=mono;
-                                              kwargs...))
-    # add epochs markers
-    if length(channel) == 1 && scaled == true
-        if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-            p = vline!(epoch_markers,
-                       linestyle=:dash,
-                       linewidth=0.2,
-                       linecolor=:black,
-                       label="")
-            if typeof(signal) == Vector{Float64}
-                for idx in 1:length(epoch_markers)
-                    p = Plots.plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
-                end
-            else
-                for idx in 1:length(epoch_markers)
-                    p = Plots.plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
-                end
-            end
-        end
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_signal_details(eeg; <keyword arguments>)
-
-Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Int64`: channel to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=true`: normalize the `signal` prior to calculations
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `head::Bool=true`: add head plot
-- `hist::Symbol=:hist`: histogram type: :hist, :kd
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `pc::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], xlabel::String="Time [s]", ylabel::String="", title::String="", head::Bool=true, hist::Symbol=:hist, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, mono::Bool=false, kwargs...)
-
-    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-    _check_channels(eeg, channel)
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    ylabel = "Amplitude [μV]"
-    channel_name = labels
-    labels = [""]
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-    signal = vec(signal)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_signal(t,
-                    signal,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title,
-                    mono=mono;
-                    kwargs...)
-
-    # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        if typeof(signal) == Vector{Float64}
-            for idx in 1:length(epoch_markers)
-                p = Plots.plot!(annotation=((epoch_markers[idx] - (length(signal) / eeg_sr(eeg) / 40)), maximum(ceil.(abs.(signal))), Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:left, valign=:top)))
-            end
-        else
-            for idx in 1:length(epoch_markers)
-                p = Plots.plot!(annotation=((epoch_markers[idx] - (size(signal, 2) / eeg_sr(eeg) / 40)), length(channel)-0.5, Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=6, halign=:left, valign=:top)))
-            end
-        end
-    end
-
-    # cannot plot electrodes without locations
-    eeg.eeg_header[:channel_locations] == false && (head = false)
-    psd = eeg_plot_signal_psd(eeg, channel=channel, len=len, offset=offset, frq_lim=frq_lim, title="PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mw=mw, mt=mt, frq_lim=frq_lim, ncyc=ncyc, title="Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", mono=mono)
-    ht_a = eeg_plot_histogram(eeg, channel=channel, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_hspectrum(signal)
-    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
-    if head == true
-        hd = eeg_plot_electrode(eeg, channel=channel, title="Channel: $channel\nLabel: $channel_name")
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
-        pc = eeg_plot_compose([p, ht_a, psd, ht_p, s, hd], layout=l)
-    else
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
-        pc = eeg_plot_compose([p, ht_a, psd, ht_p, s], layout=l)
-    end
-
-    Plots.plot(pc)
-
-    return pc
-end
-
-"""
-    eeg_plot_component(eeg; <keyword arguments>)
-
-Plot `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-    _check_epochs(eeg, epoch)
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-
-    c = c[channel, :, epoch]
-
-    p = plot_signal(x,
-                    c,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title,
-                    mono=mono;
-                    kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_avg(eeg; <keyword arguments>)
-
-Plot `eeg` external or embedded component: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-
-    c = c[channel, :, epoch]
-
-    p = plot_signal_avg(x,
-                        c,
-                        labels=labels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        mono=mono;
-                        kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_butterfly(eeg; <keyword arguments>)
-
-Butterfly plot of `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component\n[channel: $channel_name, epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-    c = c[channel, :, epoch]
-
-    p = plot_signal_butterfly(x,
-                              c,
-                              norm=norm,
-                              labels=labels,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              mono=mono;
-                              kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx(eeg; <keyword arguments>)
-
-Plot indexed `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all up to 20
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 20))
-        _check_cidx(eeg, c, c_idx)
-    else
-        if c_idx == 0
-            size(c, 1) > 20 && (c_idx = 1:20)
-            size(c, 1) <= 20 && (c_idx = 1:size(c, 1))
-        end
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-    length(c_idx) == 1 && (c_idx = c_idx[1])
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_signal(x,
-                    c,
-                    labels=labels,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    title=title,
-                    mono=mono;
-                    kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_avg(eeg; <keyword arguments>)
-
-Plot indexed `eeg` external or embedded component: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 0))
-        _check_cidx(eeg, c, c_idx)
-    else
-        c_idx == 0 && (c_idx = 1:size(c, 1))
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_signal_avg(x,
-                        c,
-                        labels=labels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        mono=mono;
-                        kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_butterfly(eeg; <keyword arguments>)
-
-Butterfly plot of indexed `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 0))
-        _check_cidx(eeg, c, c_idx)
-    else
-        c_idx == 0 && (c_idx = 1:size(c, 1))
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get X-axis values
-    if x === nothing
-        # X is the time vector
-        x = eeg.eeg_epochs_time
-        size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match the size of EEG epochs ($(size(eeg.eeg_signals))), maybe you need to specify values for the X-axis (default is epoch time)."))
-        xlabel == "" && (xlabel = "Time [s]")
-    else
-        size(c, 2) == length(x) || throw(ArgumentError("Size of c ($(size(c))) does not match the length of X-values ($(length(x)))."))
-    end
-
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-
-    if x == eeg.eeg_epochs_time
-        t_1, t_s1, t_2, t_s2 = _convert_t(x)
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0"))\n[epoch: $epoch, range: $(x[1]):$(x[end])]")
-    end
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_signal_butterfly(x,
-                              c,
-                              labels=labels,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              mono=mono;
-                              kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_psd(eeg; <keyword arguments>)
-
-Plot PSD of indexed `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `c_idx::Int64`: component index to display, default is all components
-- `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_psd(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    (c_idx < 1 || c_idx > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0")) PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_psd(c,
-                 fs=fs,
-                 labels=labels,
-                 norm=norm,
-                 frq_lim=frq_lim,
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 mono=mono;
-                 kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_psd_avg(eeg; <keyword arguments>)
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_psd_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all up to 20
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 20))
-        _check_cidx(eeg, c, c_idx)
-    else
-        if c_idx == 0
-            size(c, 1) > 20 && (c_idx = 1:20)
-            size(c, 1) <= 20 && (c_idx = 1:size(c, 1))
-        end
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0")) PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_psd_avg(c,
-                     fs=fs,
-                     labels=labels,
-                     norm=norm,
-                     frq_lim=frq_lim,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     mono=mono,
-                     ax=ax;
-                     kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_psd_butterfly(eeg; <keyword arguments>)
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_psd_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all up to 20
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 20))
-        _check_cidx(eeg, c, c_idx)
-    else
-        if c_idx == 0
-            size(c, 1) > 20 && (c_idx = 1:20)
-            size(c, 1) <= 20 && (c_idx = 1:size(c, 1))
-        end
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0")) PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[c_idx, :, epoch]
-
-    p = plot_psd_butterfly(c,
-                           fs=fs,
-                           labels=labels,
-                           norm=norm,
-                           frq_lim=frq_lim,
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           title=title,
-                           mono=mono;
-                           kwargs...)
-
-    Plots.plot(p)
 
     return p
 end
@@ -1250,350 +122,94 @@ end
 """
     plot_signal_avg(t, signal; <keyword arguments>)
 
-Plot `signal` channels: mean and ±95% CI.
+Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`
-- `signal::AbstractArray`
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::AbstractArray`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `mono::Bool=false`: use color or grey palette
+- `scale::Bool=true`: draw scale
+- `units::String="μV"`: units of the scale
+- `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="default", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
 
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
+    pal = mono == true ? :grays : :darktest
 
-    mono == true ? palette = :grays : palette = :darktest
+    # get range of the original signal for the scale
+    range = _get_range(signal)
 
-    s_normalized = signal
-    norm == true && (s_normalized = s_normalize_zscore(signal))
-    s_m, s_s, s_u, s_l = s_msci95(s_normalized)
+    # get mean and 95%CI
+    s_m, _, s_u, s_l = s_msci95(signal)
 
-    ylim == (0, 0) && (ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0)))
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
+    # get limits
+    if norm != true
+        ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0))
+        ylim = _tuple_max(ylim)
+        yticks = [ylim[1], 0, ylim[2]]
+    else
+        s_m = s_normalize(s_m, method=:minmax)
+        s_u = s_normalize(s_u, method=:minmax)
+        s_l = s_normalize(s_l, method=:minmax)
+        ylim = (-1.0, 1.0)
+        yticks = [0]
+    end
 
-    # plot channel
+    # prepare plot
     p = Plots.plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=_xlims(t),
-             xticks=_xticks(t),
-             ylims=ylim,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+    # plot upper 95% CI
     p = Plots.plot!(t,
-              s_u[1:length(t)],
-              fillrange=s_l,
-              fillalpha=0.35, 
-              label=false,
-              t=:line,
-              c=:grey,
-              linewidth=0.5)
+                    s_u,
+                    fillrange=s_l,
+                    fillalpha=0.35, 
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot lower 95% CI
     p = Plots.plot!(t,
-              s_l[1:length(t)],
-              label=false,
-              t=:line,
-              c=:grey,
-              lw=0.5)
+                    s_l,
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot mean
     p = Plots.plot!(t,
-              s_m[1:length(t)],
-              linewidth=0.5,
-              label=false,
-              t=:line, 
-              c=:black)
+                    s_m,
+                    label=false,
+                    t=:line,
+                    c=:black,
+                    lw=0.5)
 
-    return p
-end
-
-"""
-    eeg_plot_signal_avg(eeg; <keyword arguments>)
-
-Plot `eeg` channels: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
-
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg() channel must contain ≥ 2 channels."))
-
-    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    eeg_copy = deepcopy(eeg)
-    eeg_keep_channel!(eeg, channel=channels)
- 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+    # draw scale
+    if norm == true && scale == true
+        p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
+        p = Plots.plot!(annotation=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signal\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_signal_avg(t,
-                        signal,
-                        norm=norm,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        ylim=ylim,
-                        mono=mono;
-                        kwargs...)
-
-    # add epochs markers
-    if norm == true
-        s_normalized = s_normalize_zscore(signal)
-    else
-        s_normalized = signal
-    end
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
-    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
-    ylim = _tuple_max(ylim)
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
-        end
-    end
-
-    Plots.plot(p)
-
-    eeg = deepcopy(eeg_copy)
-
-    return p
-end
-
-"""
-    eeg_plot_avg_details(eeg; <keyword arguments>)
-
-Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `hist::Symbol=:hist`: histogram type: :hist, :kd
-- `head::Bool=true`: add head plot
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_avg_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
-
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_avg_details() channel must contain ≥ 2 channels."))
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signals\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_signal_avg(t,
-                        signal,
-                        norm=norm,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        ylim=ylim,
-                        mono=mono;
-                        kwargs...)
-
-    # add epochs markers
-    if norm == true
-        s_normalized = s_normalize_zscore(signal)
-    else
-        s_normalized = signal
-    end
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
-    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
-    ylim = _tuple_max(ylim)
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
-        end
-    end
-
-    # cannot plot electrodes without locations
-    eeg.eeg_header[:channel_locations] == false && (head = false)
-    eeg_avg = eeg_average(eeg)
-    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=true, mt=mt, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mw=mw, mt=mt, frq_lim=frq_lim, ncyc=ncyc, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false, mono=mono)
-    ht_a = eeg_plot_histogram(eeg_avg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_hspectrum(s_normalized_m)
-    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
-    if head == true
-        if collect(channel[1]:channel[end]) == channel
-            channel_list = string(channel[1]) * ":" * string(channel[end])
-        else
-            channel_list = "" 
-            for idx in 1:(length(channel) - 1)
-                channel_list *= string(channel[idx])
-                channel_list *= ", "
-            end
-            channel_list *= string(channel[end])
-        end
-        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels\n$channel_list", mono=mono)
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
-        p = Plots.plot(p, ht_a, psd, ht_p, s, hd, layout=l)
-    else
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
-        p = Plots.plot(p, ht_a, psd, ht_p, s, layout=l)
-    end
-
-    Plots.plot(p)
 
     return p
 end
@@ -1605,185 +221,214 @@ Butterfly plot of `signal` channels.
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`
-- `signal::AbstractArray`
-- `labels::Vector{String}=[""]`: channel labels vector
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::AbstractArray`: data to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `ylim::Tuple`: y-axis limits, default (0, 0)
+- `scale::Bool=true`: draw scale
+- `units::String="μV"`: units of the scale
 - `mono::Bool=false`: use color or grey palette
+- `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
 
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
+    pal = mono == true ? :grays : :darktest
 
-    mono == true ? palette = :grays : palette = :darktest
+    # get range of the original signal for the scale
+    range = _get_range(signal)
 
     channel_n = size(signal, 1)
 
-    if norm == true
-        s_normalized = s_normalize_zscore(reshape(signal, size(signal, 1), size(signal, 2), 1))
+    # get limits
+    if norm != true
+        ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0))
+        ylim = _tuple_max(ylim)
+        yticks = [ylim[1], 0, ylim[2]]
     else
-        s_normalized = signal
+        signal = s_normalize(signal, method=:minmax)
+        ylim = (-1.0, 1.0)
+        yticks = [0]
     end
 
-    ylim == (0, 0) && (ylim = (floor(minimum(s_normalized), digits=0), ceil(maximum(s_normalized), digits=0)))
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    if labels == [""]
-        labels = Vector{String}(undef, channel_n)
-        for idx in 1:channel_n
-            labels[idx] = ""
-        end
-    end
+    # channel labels
+    labels == [""] && (labels = repeat([""], channel_n))
     
     # plot channels
     p = Plots.plot(xlabel=xlabel,
-             ylabel=ylabel,
-             xlims=_xlims(t),
-             xticks=_xticks(t),
-             ylims=ylim,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
     for idx in 1:channel_n
         p = Plots.plot!(t,
-                  s_normalized[idx, 1:length(t)],
-                  t=:line,
-                  linecolor=idx,
-                  linewidth=0.1,
-                  label=labels[idx])
+                        signal[idx, :],
+                        t=:line,
+                        linecolor=idx,
+                        linewidth=0.5,
+                        label=labels[idx],
+                        legend=true)
+    end
+    
+    # draw scale
+    if norm == true && scale == true
+        p = Plots.plot!([t[1], t[1]], [-1, 1], color=:red, linewidth=5, label=false)
+        p = Plots.plot!(annotation=(t[1], 0, Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
 end
 
 """
-    eeg_plot_signal_butterfly(eeg; <keyword arguments>)
+    eeg_plot(eeg; <keyword arguments>)
 
-Butterfly plot of `eeg` channels.
-
-# Arguments
+Plot signal.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+- `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is no label
+- `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
+- `emarkers::Bool`: draw epoch markers if available
+- `markers::Bool`: draw markers if available
+- `scale::Bool=true`: draw scale
+- `units::String="μV"`: units of the scale
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
+function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly() channel must contain ≥ 2 channels."))
+    _check_var(type, [:normal, :butterfly, :mean], "type")
+    _check_segment(eeg, segment[1], segment[2])
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
     if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
         _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+        if eeg_epoch_n(eeg) == 1
+            epoch = 0
+        else
+            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+            if typeof(epoch) == Int64
+                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
+            else
+                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
+            end
+            epoch = 0
+        end
     end
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    # do not show epoch markers if there are no epochs
+    eeg_epoch_n(eeg) == 1 && (emarkers = false)
+    if emarkers == true
+        epoch_markers = _get_epoch_markers(eeg)
+    end
+
+    # select channels, default is all channels
+    channel == 0 && (channel = _select_channels(eeg, channel))
     _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
     labels = eeg_labels(eeg)[channel]
+    length(channel) == 1 && (labels = [labels])
 
     # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
+    if segment[2] <= eeg_epoch_len(eeg)
+        signal = eeg.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        t = _get_t(eeg_tmp, offset, len)
+        signal = eeg_epochs(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
+    t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
-    _check_offset_len(eeg_tmp, offset, len)
+    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    epoch = _t2epoch(eeg, segment[1], segment[2])
 
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signals\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_signal_butterfly(t,
-                              signal,
-                              offset=offset,
-                              labels=labels,
-                              norm=norm,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              ylim=ylim,
-                              mono=mono;
-                              kwargs...)
+    if type === :normal
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channel$(_pl(length(channel))) $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal(t,
+                        signal,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title,
+                        scale=scale,
+                        units=units,
+                        mono=mono;
+                        kwargs...)
+    elseif type === :butterfly
+        size(signal, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channels $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal_butterfly(t,
+                                  signal,
+                                  labels=labels,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  scale=scale,
+                                  units=units,
+                                  norm=norm,
+                                  mono=mono;
+                                  kwargs...)
+    elseif type === :mean
+        size(signal, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Averaged channels $(_channel2channel_name(channel)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal_avg(t,
+                            signal,
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            title=title,
+                            scale=scale,
+                            units=units,
+                            norm=norm,
+                            mono=mono;
+                            kwargs...)
+    end
 
     # add epochs markers
-    if norm == true
-        s_normalized = s_normalize_zscore(signal)
-    else
-        s_normalized = signal
+    # TODO: draw epoch numbers
+    if emarkers == true
+        p = Plots.vline!(epoch_markers,
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         linecolor=:blue,
+                         label="")
     end
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
-    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
-    ylim = _tuple_max(ylim)
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+
+    # plot markers if available
+    # TODO: draw markers length
+    if markers == true && eeg.eeg_header[:markers] == true
+        markers_pos = eeg.eeg_markers[!, :start] ./ eeg_sr(eeg)
+        markers_desc = eeg.eeg_markers[!, :description]
+        p = Plots.vline!(markers_pos,
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         linecolor=:black,
+                         label=false)
+        for idx in 1:length(markers_desc)
+            p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
 
@@ -1793,154 +438,141 @@ function eeg_plot_signal_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, A
 end
 
 """
-    eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
+    eeg_plot(eeg, c; <keyword arguments>)
 
-Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+Plot embedded or external component.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Int64=1`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=false`: normalize the `signal` prior to calculations
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `hist::Symbol=:hist`: histogram type: :hist, :kd
-- `head::Bool=true`: add head plot
+- `c::Union{Symbol, AbstractArray}`: component to plot
+- `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is no label
+- `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
+- `emarkers::Bool`: draw epoch markers if available
+- `markers::Bool`: draw markers if available
+- `scale::Bool=true`: draw scale
+- `units::String=""`: units of the scale
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_butterfly_details(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, norm::Bool=false, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), hist::Symbol=:hist, head::Bool=true, mono::Bool=false, kwargs...)
+function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_butterfly_details() channel must contain ≥ 2 channels."))
+    _check_var(type, [:normal, :butterfly, :mean], "type")
+    _check_segment(eeg, segment[1], segment[2])
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-    hist in [:hist, :kd] || throw(ArgumentError("hist must be :hist or :kd."))
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    ylim = _tuple_max(ylim)
-    ylim = tuple_order(ylim)
-
-    epoch_tmp = epoch
     if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
         _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+        if eeg_epoch_n(eeg) == 1
+            epoch = 0
+        else
+            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+            if typeof(epoch) == Int64
+                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
+            else
+                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
+            end
+            epoch = 0
+        end
     end
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
+    # do not show epoch markers if there are no epochs
+    eeg_epoch_n(eeg) == 1 && (emarkers = false)
+    if emarkers == true
+        epoch_markers = _get_epoch_markers(eeg)
+    end
 
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
+    # select component channels, default is all channels
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
+    labels = _gen_clabels(c)[c_idx]
 
     # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
+    if segment[2] <= eeg_epoch_len(eeg)
+        signal = c[c_idx, segment[1]:segment[2], 1]
     else
-        t = _get_t(eeg_tmp, offset, len)
+        signal = _make_epochs(c, epoch_n=1)[c_idx, segment[1]:segment[2], 1]
     end
+    t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
-    _check_offset_len(eeg_tmp, offset, len)
+    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    epoch = _t2epoch(eeg, segment[1], segment[2])
 
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Signals\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_signal_butterfly(t,
-                              signal,
-                              offset=offset,
-                              labels=[""],
-                              norm=norm,
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              ylim=ylim,
-                              mono=mono;
-                              kwargs...)
+    if type === :normal
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal(t,
+                        signal,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        title=title,
+                        scale=scale,
+                        units=units,
+                        mono=mono;
+                        kwargs...)
+    elseif type === :butterfly
+        size(signal, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal_butterfly(t,
+                                  signal,
+                                  labels=labels,
+                                  xlabel=xlabel,
+                                  ylabel=ylabel,
+                                  title=title,
+                                  scale=scale,
+                                  units=units,
+                                  norm=norm,
+                                  mono=mono;
+                                  kwargs...)
+    elseif type === :mean
+        size(signal, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_signal_avg(t,
+                            signal,
+                            labels=labels,
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            title=title,
+                            scale=scale,
+                            units=units,
+                            norm=norm,
+                            mono=mono;
+                            kwargs...)
+    end
 
     # add epochs markers
-    if norm == true
-        s_normalized = s_normalize_zscore(signal)
-    else
-        s_normalized = signal
-    end
-    s_normalized_m, s_normalized_s, s_normalized_u, s_normalized_l = s_msci95(s_normalized)
-    ylim = (floor(minimum(s_normalized_l), digits=0), ceil(maximum(s_normalized_u), digits=0))
-    ylim = _tuple_max(ylim)
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), ylim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
-        end
+    # TODO: draw epoch numbers
+    if emarkers == true
+        p = Plots.vline!(epoch_markers,
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         linecolor=:blue,
+                         label="")
     end
 
-    # cannot plot electrodes without locations
-    eeg.eeg_header[:channel_locations] == false && (head = false)
-    psd = eeg_plot_signal_psd_avg(eeg_tmp, channel=channel, len=len, offset=offset, title="PSD averaged\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", norm=norm, mt=mt, legend=false, ylabel="Power [dB]")
-    s = eeg_plot_signal_spectrogram(eeg, channel=channel, len=len, offset=offset, mw=mw, mt=mt, frq_lim=frq_lim, ncyc=ncyc, title="Channels spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]", legend=false, mono=mono)
-    ht_a = eeg_plot_histogram(eeg, channel=1, len=len, offset=offset, type=hist, labels=[""], legend=false, title="Signal\nhistogram", mono=mono)
-    _, _, _, s_phase = s_hspectrum(s_normalized_m)
-    ht_p = plot_histogram(rad2deg.(s_phase), offset=offset, len=len, type=:kd, labels=[""], legend=false, title="Phase\nhistogram", xticks=[-180, 0, 180], linecolor=:black, mono=mono)
-    if head == true
-        if collect(channel[1]:channel[end]) == channel
-            channel_list = string(channel[1]) * ":" * string(channel[end])
-        else
-            channel_list = "" 
-            for idx in 1:(length(channel) - 1)
-                channel_list *= string(channel[idx])
-                channel_list *= ", "
-            end
-            channel_list *= string(channel[end])
+    # plot markers if available
+    # TODO: draw markers length
+    if markers == true && eeg.eeg_header[:markers] == true
+        markers_pos = eeg.eeg_markers[!, :start] ./ eeg_sr(eeg)
+        markers_desc = eeg.eeg_markers[!, :description]
+        p = Plots.vline!(markers_pos,
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         linecolor=:black,
+                         label=false)
+        for idx in 1:length(markers_desc)
+            p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
         end
-        hd = eeg_plot_electrodes(eeg, labels=false, selected=channel, small=true, title="Channels\n$channel_list", mono=mono)
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} f{0.2w}]
-        p = Plots.plot(p, ht_a, psd, ht_p, s, hd, layout=l)
-    else
-        l = @layout [a{0.33h} b{0.2w}; c{0.33h} d{0.2w}; e{0.33h} _]
-        p = Plots.plot(p, ht_a, psd, ht_p, s, layout=l)
     end
 
     Plots.plot(p)
@@ -1949,1220 +581,972 @@ function eeg_plot_signal_butterfly_details(eeg::NeuroAnalyzer.EEG; epoch::Union{
 end
 
 """
-    plot_psd(signal; <keyword arguments>)
+    plot_psd(s_frq, s_pow; <keyword arguments>)
 
-Plot `signal` channel power spectrum density.
+Plot PSD (power spectrum density).
 
 # Arguments
 
-- `signal::AbstractVector`
-- `fs::Int64`: sampling frequency
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Vector{Float64}`: powers
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+    length(s_pow) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-
-    if mw == false
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    else
-        s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-    end
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
+    pal = mono == true ? :grays : :darktest
 
     if ax === :linlin
-        p = Plots.plot(s_frq,
-                 s_pow,
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 legend=false,
-                 t=:line,
-                 c=:black,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
-        p = Plots.plot(s_frq,
-                 s_pow,
-                 xaxis=:log10,
-                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 legend=false,
-                 t=:line,
-                 c=:black,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
     elseif ax === :linlog
-        if norm == false
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     yaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        else
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        end
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
-        if norm == false
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xaxis=:log10,
-                     yaxis=:log10,
-                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        else
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        end
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = norm == false ? :log10 : :identity
     end
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   legend=false,
+                   xlims=frq_lim,
+                   title=title,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6)
+
+    # plot powers
+    p = Plots.plot!(s_frq,
+                    s_pow,
+                    xticks=xticks,
+                    xscale=xscale,
+                    yscale=yscale;
+                    kwargs...)
 
     return p
 end
 
 """
-    plot_psd_avg(signal; <keyword arguments>)
+    plot_psd_avg(s_frq, s_pow; <keyword arguments>)
 
-Plot `signal` channels power spectrum density: mean and ±95% CI.
+Plot PSD mean and ±95% CI of averaged channels.
 
 # Arguments
 
-- `signal::AbstractArray`
-- `fs::Int64`: sampling rate
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `labels::Vector{String}=[""]`: channel labels vector
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 3}`: powers
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_avg(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
-    mono == true ? palette = :grays : palette = :darktest
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax,[:linlin, :loglin, :linlog, :loglog], "ax")
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > s_frq[end]) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(s_frq[end])."))
 
-    norm == true && (ylabel = "Power [dB]")
+    pal = mono == true ? :grays : :darktest
 
-    channel_n = size(signal, 1)
-    signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    if mw == false
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    else
-        s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-    end
-    s_pow = s_pow[:, :, 1]
-    # s_frq = s_frq[:, :, 1]
-    frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
+    # get mean and 95%CI
+    s_m, _, s_u, s_l = s_msci95(s_pow)
 
-    s_pow_m, s_pow_s, s_pow_u, s_pow_l = s_msci95(s_pow)
-    s_frq = s_frq[1, :]
-
-    # plot channels
     if ax === :linlin
-        p = Plots.plot(xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
-        p = Plots.plot!(s_frq,
-                  s_pow_u,
-                  fillrange=s_pow_l,
-                  fillalpha=0.35,
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  lw=0.5)
-        p = Plots.plot!(s_frq,
-                  s_pow_l,
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  lw=0.5)
-        p = Plots.plot!(s_frq,
-                  s_pow_m,
-                  label=false,
-                  t=:line,
-                  c=:black)
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = :identity
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
-        p = Plots.plot(xaxis=:log10,
-                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
-        p = Plots.plot!(s_frq,
-                  s_pow_u,
-                  fillrange=s_pow_l,
-                  fillalpha=0.35,
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  lw=0.5)
-        p = Plots.plot!(s_frq,
-                  s_pow_l,
-                  label=false,
-                  t=:line,
-                  c=:grey,
-                  lw=0.5)
-        p = Plots.plot!(s_frq,
-                  s_pow_m,
-                  label=false,
-                  t=:line,
-                  c=:black)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
+    elseif ax === :linlog
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = norm == false ? :log10 : :identity
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = norm == false ? :log10 : :identity
     end
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   legend=false,
+                   xlims=frq_lim,
+                   xticks=xticks,
+                   xscale=xscale,
+                   yscale=yscale,
+                   title=title,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+
+    # plot upper 95% CI
+    p = Plots.plot!(s_frq,
+                    s_u,
+                    fillrange=s_l,
+                    fillalpha=0.35, 
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot lower 95% CI
+    p = Plots.plot!(s_frq,
+                    s_l,
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot mean
+    p = Plots.plot!(s_frq,
+                    s_m,
+                    label=false,
+                    t=:line,
+                    c=:black,
+                    lw=0.5)
 
     return p
 end
 
 """
-    plot_psd_butterfly(signal; <keyword arguments>)
+    plot_psd_butterfly(s_frq, s_pow; <keyword arguments>)
 
-Butterfly plot of `signal` channels power spectrum density.
+Butterfly PSD plot.
 
 # Arguments
 
-- `signal::AbstractArray`
-- `fs::Int64`: sampling rate
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `labels::Vector{String}=[""]`: channel labels vector
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 3}`: powers
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd_butterfly(signal::AbstractArray; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, labels::Vector{String}=[""], xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-    mono == true ? palette = :grays : palette = :darktest
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    frq_lim == (0, 0) && (frq_lim = (0, s_frq[end]))
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > s_frq[end]) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(s_frq[end])."))
 
-    norm == true && (ylabel = "Power [dB]")
+    pal = mono == true ? :grays : :darktest
+    
+    # channel labels
+    labels == [""] && (labels = repeat([""], size(s_pow, 1)))
 
-    channel_n = size(signal, 1)
-    signal = reshape(signal, size(signal, 1), size(signal, 2), 1)
-    if mw == false
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-    else
-        s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-    end
-    s_pow = s_pow[:, :, 1]
-    # s_frq = s_frq[:, :, 1]
-    frq_lim == (0, 0) && (frq_lim = (0, s_frq[1, end]))
-
-    if labels == [""]
-        labels = Vector{String}(undef, channel_n)
-        for idx in 1:channel_n
-            labels[idx] = ""
-        end
-    end
-
-    # plot channels
     if ax === :linlin
-        p = Plots.plot(xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-            for idx in 1:channel_n
-                p = Plots.plot!(s_frq[idx, :],
-                          s_pow[idx, :],
-                          label=labels[idx],
-                          linewidth=0.1,
-                          t=:line)
-            end
+        xticks=_ticks(frq_lim)
+        xscale=:identity
+        yscale=:identity
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[:, 1] == zeros(Float64, channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
-        p = Plots.plot(xaxis=:log10,
-                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
-        for idx in 1:channel_n
-            p = Plots.plot!(s_frq[idx, :],
-                      s_pow[idx, :],
-                      label=labels[idx],
-                      linewidth=0.1,
-                      t=:line)
-        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
     elseif ax === :linlog
-        if norm == false
-            p = Plots.plot(yaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-            for idx in 1:channel_n
-                p = Plots.plot!(s_frq[idx, :],
-                          s_pow[idx, :],
-                          label=labels[idx],
-                          linewidth=0.1,
-                          t=:line)
-            end
-        else
-            p = Plots.plot(xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-            for idx in 1:channel_n
-                p = Plots.plot!(s_frq[idx, :],
-                          s_pow[idx, :],
-                          label=labels[idx],
-                          linewidth=0.1,
-                          t=:line)
-            end
-        end
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = norm == false ? :log10 : :identity
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
             verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
         end
-        s_frq[:, 1] == zeros(channel_n) && (s_frq[:, 1] = zeros(channel_n) .+ 0.1)
-        if norm == false
-            p = Plots.plot(xaxis=:log10,
-                     yaxis=:log10,
-                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-            for idx in 1:channel_n
-                p = Plots.plot!(s_frq[idx, :],
-                          s_pow[idx, :],
-                          label=labels[idx],
-                          linewidth=0.1,
-                          t=:line)
-            end
-        else
-            p = Plots.plot(xaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-            for idx in 1:channel_n
-                p = Plots.plot!(s_frq[idx, :],
-                          s_pow[idx, :],
-                          label=labels[idx],
-                          linewidth=0.1,
-                          t=:line)
-            end
-        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = norm == false ? :log10 : :identity
     end
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   legend=false,
+                   xlims=frq_lim,
+                   xticks=xticks,
+                   xscale=xscale,
+                   yscale=yscale;
+                   title=title,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6)
+
+    # plot powers
+    for idx in 1:size(s_pow, 1)
+        p = Plots.plot!(s_frq,
+                        s_pow[idx, :],
+                        t=:line,
+                        linecolor=idx,
+                        linewidth=0.5,
+                        label=labels[idx],
+                        legend=true;
+                        kwargs...)
+    end
+
+    return p
+
+end
+
+"""
+    plot_psd_w3d(s_frq, s_pow; <keyword arguments>)
+
+Plot 3-d waterfall PSD plot.
+
+# Arguments
+
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 3}`: powers
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `zlabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
+
+    _check_var(variant, [:w, :s], "variant")
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
+    frq_lim = tuple_order(frq_lim)
+
+    channel_n = size(s_pow, 1)
+
+    pal = mono == true ? :grays : :darktest
+    
+    # channel labels
+    labels == [""] && (labels = repeat([""], channel_n))
+
+    if ax === :linlin
+        xticks=_ticks(frq_lim)
+        xscale=:identity
+        zscale=:identity
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        zscale = :identity
+    elseif ax === :linlog
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        zscale = norm == false ? :log10 : :identity
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        zscale = norm == false ? :log10 : :identity
+    end
+
+    # prepare plot
+    if variant === :w
+        p = Plots.plot(s_frq,
+                       ones(length(s_frq)),
+                       s_pow[1, :],
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       zlabel=zlabel,
+                       legend=false,
+                       xlims=frq_lim,
+                       xticks=xticks,
+                       xscale=xscale,
+                       zscale=zscale;
+                       title=title,
+                       palette=pal,
+                       st=:line,
+                       lc=:black,
+                       size=(1200, 800),
+                       left_margin=20Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6)
+
+        # plot powers
+        for idx in 2:channel_n
+            p = Plots.plot!(s_frq,
+                            ones(length(s_frq)) .* idx,
+                            s_pow[idx, :],
+                            st=:line,
+                            linecolor=idx,
+                            linewidth=0.5,
+                            kwargs...)
+        end
+    else
+        f1 = vsearch(frq_lim[1], s_frq)
+        f2 = vsearch(frq_lim[2], s_frq)
+        p = Plots.plot(s_frq[f1:f2],
+                       1:length(labels),
+                       s_pow[:, f1:f2],
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       zlabel=zlabel,
+                       legend=false,
+                       xlims=frq_lim,
+                       xticks=xticks,
+                       xscale=xscale,
+                       zscale=zscale;
+                       title=title,
+                       palette=pal,
+                       st=:surface,
+                       lc=:black,
+                       size=(1200, 800),
+                       left_margin=20Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6)
+    end
+
+    p = Plots.plot!(yticks=(1:channel_n, labels))
 
     return p
 end
 
 """
-    eeg_plot_signal_psd(eeg; <keyword arguments>)
+    plot_psd_topo(s_frq, s_pow; <keyword arguments>)
 
-Plot `eeg` channels power spectrum density.
+Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 3}`: powers
+- `Union{Vector{Int64}, AbstractRange}`: which channels to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `fig::GLMakie.Figure`
+"""
+function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; channels=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
+    frq_lim = tuple_order(frq_lim)
+
+    pal = mono == true ? :grays : :darktest
+    
+    # channel labels
+    labels == [""] && (labels = repeat([""], size(s_pow, 1)))
+
+    if ax === :linlin
+        xticks=_ticks(frq_lim)
+        xscale=:identity
+        yscale=:identity
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
+    elseif ax === :linlog
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = norm == false ? :log10 : :identity
+    elseif ax === :loglog
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = norm == false ? :log10 : :identity
+    end
+
+    # plot parameters
+    plot_size = 1200
+    marker_size = (150, 75)
+    
+    # get locations
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    # get marker centers
+    loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
+    loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    loc_x = loc_x[channels]
+    loc_y = loc_y[channels]
+
+    fig = Figure(; resolution=(plot_size, plot_size))
+    fig_axis = Axis(fig[1, 1])
+    fig_axis.aspect = AxisAspect(1)
+    fig_axis.title = title
+    GLMakie.xlims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
+    GLMakie.ylims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
+    hidedecorations!(fig_axis, grid=true, ticks=true)
+
+    for idx in 1:size(s_pow, 1)
+        p = Plots.plot(s_frq,
+                       s_pow[idx, :],
+                       t=:line,
+                       c=:black,
+                       linewidth=0.5,
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       legend=false,
+                       xlims=frq_lim,
+                       xticks=false,
+                       yticks=false,
+                       xscale=xscale,
+                       yscale=yscale,
+                       title=labels[idx],
+                       palette=pal,
+                       size=marker_size,
+                       #left_margin=20Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6;
+                       kwargs...)
+        marker_img = tempname() * ".png"
+        savefig(p, marker_img)
+        marker = load(marker_img)
+        GLMakie.scatter!(fig_axis, (loc_x[idx], loc_y[idx]), marker=marker, markersize=marker_size)
+        rm(marker_img)
+    end
+
+    return fig
+end
+
+"""
+    eeg_plot_psd(eeg; <keyword arguments>)
+
+Plot power spectrum density.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Int64`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
+- `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
+- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
+- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+- `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or grey palette
-- `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
-- `ax::Symbol=:linlin`: type of axes scaling
+- `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
 """
-function eeg_plot_signal_psd(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Int64, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin, kwargs...)
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
+    _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
+    _check_var(method, [:welch, :mt, :mw], "method")
+    _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    ref !== :abs && method === :mw && throw(ArgumentError("For relative PSD, method must be :welch or :mt."))
 
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    _check_epochs(eeg, epoch)
 
-    ref in [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("type must be :abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 
+    _check_channels(eeg, channel)
+
+    labels = eeg_labels(eeg)[channel]
+    length(channel) == 1 && (labels = [labels])
+
+    ref !== :abs && (f = eeg_band(eeg, band=ref))
+
+    # get frequency range
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
 
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, _ = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
+    # calculate PSD
+    signal = eeg.eeg_signals[channel, :, epoch]
 
     # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-    labels = eeg_labels(eeg)[channel]
-
-    channel_name = labels
-    labels = [""]
-    signal = vec(signal)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
+    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if ref === :abs
-        title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-        p = plot_psd(signal,
-                     fs=fs,
-                     labels=labels,
-                     norm=norm,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     mw=mw,
-                     mt=mt,
-                     frq_lim=frq_lim,
-                     ncyc=ncyc,
-                     mono=mono,
-                     ax=ax;
-                     kwargs...)
+        if method === :welch
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
+            title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
+            title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mw
+            s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
     elseif ref === :total
-        title == "" && (title = "PSD relative to total power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-        p = plot_rel_psd(signal,
-                         fs=fs,
-                         labels=labels,
-                         norm=norm,
-                         frq_lim=frq_lim,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         mono=mono,
-                         mt=mt,
-                         f=nothing,
-                         ax=ax;
-                         kwargs...)
+        if method === :welch
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false)
+            title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true)
+            title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
     else
-        title == "" && (title = "PSD relative to $ref power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-        p = plot_rel_psd(signal,
-                         fs=fs,
-                         labels=labels,
-                         norm=norm,
-                         frq_lim=frq_lim,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         mono=mono,
-                         mt=mt,
-                         f=eeg_band(eeg, band=ref),
-                         ax=ax;
-                         kwargs...)
-    end
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_signal_psd_avg(eeg; <keyword arguments>)
-
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `labels::Vector{String}=[""]`: channel labels vector
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_psd_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+        if method === :welch
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
     end
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-    labels = [""]
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "PSD averaged with 95%CI\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_psd_avg(signal,
-                     fs=fs,
-                     labels=labels,
-                     norm=norm,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     mono=mono,
-                     mw=mw,
-                     mt=mt,
-                     frq_lim=frq_lim,
-                     ncyc=ncyc,
-                     ax=ax;
-                     kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_signal_psd_butterfly(eeg; <keyword arguments>)
-
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `labels::Vector{String}=[""]`: channel labels vector
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_psd_butterfly(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, labels::Vector{String}=[""], norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-    typeof(channel) == Int64 && channel != 0 && throw(ArgumentError("For eeg_plot_signal_psd() channel must contain ≥ 2 channels."))
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    channel_name = _channel2channel_name(channel)
-    labels = eeg_labels(eeg)[channel]
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    p = plot_psd_butterfly(signal,
-                           fs=fs,
-                           labels=labels,
-                           norm=norm,
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           title=title,
-                           mono=mono,
-                           mw=mw,
-                           mt=mt,
-                           frq_lim=frq_lim,
-                           ncyc=ncyc,
-                           ax=ax;
-                           kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_psd(eeg; <keyword arguments>)
-
-Plot PSD of `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Int64`: channel to display
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_psd(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    _check_epochs(eeg, epoch)
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)[channel]
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[channel, :, epoch]
-
-    p = plot_psd(c,
-                 fs=fs,
-                 labels=labels,
-                 norm=norm,
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 mono=mono,
-                 mw=mw,
-                 mt=mt,
-                 frq_lim=frq_lim,
-                 ncyc=ncyc,
-                 ax=ax;
-                 kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_psd_avg(eeg; <keyword arguments>)
-
-Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_psd_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    ax in [:linlin, :loglin] || throw(ArgumentError("ax must be :linlin or :loglin."))
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-
-    _check_epochs(eeg, epoch)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    fs = eeg_sr(eeg)
-    c = c[channel, :, epoch]
-
-    p = plot_psd_avg(c,
-                     fs=fs,
-                     labels=labels,
-                     norm=norm,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     mw=mw,
-                     mt=mt,
-                     frq_lim=frq_lim,
-                     ncyc=ncyc,
-                     mono=mono,
-                     ax=ax;
-                     kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_psd_butterfly(eeg; <keyword arguments>)
-
-Butterfly plot PSD of `eeg` external or embedded component:.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_psd_butterfly(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-
-    _check_epochs(eeg, epoch)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    fs = eeg_sr(eeg)
-    c = c[channel, :, epoch]
-
-    p = plot_psd_butterfly(c,
-                           fs=fs,
-                           labels=labels,
-                           norm=norm,
-                           mw=mw,
-                           mt=mt,
-                           frq_lim=frq_lim,
-                           ncyc=ncyc,
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           title=title,
-                           mono=mono;
-                           kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_spectrogram(signal; <keyword arguments>)
-
-Plot spectrogram of `signal`.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `fs::Int64`: sampling frequency
-- `offset::Real`: displayed segment offset in seconds
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_spectrogram(signal::AbstractVector; fs::Int64, offset::Real=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Time [s]", ylabel="Frequency [Hz]", title="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0 Hz."))
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    nfft = length(signal)
-    interval = fs
-    overlap = round(Int64, fs * 0.85)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    if mw == false
-        if st == false
-            if mt == false
-                spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-                spec_power = spec.power
-            else
-                spec = mt_spectrogram(signal, fs=fs)
-                spec_power = spec.power
-            end
-            norm == true && (spec_power = pow2db.(spec_power))
-            spec_frq = spec.freq
-            t = collect(spec.time) .+ offset
+    # set labels
+    if type !== :w3d && type !== :s3d && type !== :topo
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        if norm == true
+            ylabel == "default" && (ylabel = "Power [dB]")
         else
-            spec_power = abs.(stft(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-            norm == true && (spec_power = pow2db.(spec_power))
-            t = 0:1/fs:(length(signal) / fs)
-            t = linspace(t[1], t[end], size(spec_power, 2)) .+ offset
-            spec_frq = linspace(0, fs/2, size(spec_power, 1))
+            ylabel == "default" && (ylabel = "Power [μV^2/Hz]")
         end
-    else
-        _, spec_power, _, spec_frq = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=norm)
-        t = linspace(0, size(spec_power, 2)/fs, size(spec_power, 2)) .+ offset
     end
 
-    norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
+    if type === :normal
+        ndims(s_pow) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
+        p = plot_psd(s_frq,
+                     s_pow,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title,
+                     norm=norm,
+                     frq_lim=frq_lim,
+                     ax=ax,
+                     mono=mono;
+                     kwargs...)
+    elseif type === :butterfly
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_butterfly(s_frq,
+                               s_pow,
+                               labels=labels,
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               title=title,
+                               norm=norm,
+                               frq_lim=frq_lim,
+                               ax=ax,
+                               mono=mono;
+                               kwargs...)
+    elseif type === :mean
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
+        title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
+        title = replace(title, "channel" => "averaged channels")
+        p = plot_psd_avg(s_frq,
+                         s_pow,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono;
+                         kwargs...)
+    elseif type === :w3d
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = "Channels")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_3d(s_frq,
+                        s_pow,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        zlabel=zlabel,
+                        title=title,
+                        norm=norm,
+                        frq_lim=frq_lim,
+                        ax=ax,
+                        mono=mono,
+                        variant=:w;
+                        kwargs...)
+    elseif type === :s3d
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = "Channels")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_3d(s_frq,
+                        s_pow,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        zlabel=zlabel,
+                        title=title,
+                        norm=norm,
+                        frq_lim=frq_lim,
+                        ax=ax,
+                        mono=mono,
+                        variant=:s;
+                        kwargs...)
+    elseif type === :topo
+        eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+        ndims(s_pow) == 1 && (s_pow = reshape(s_pow, 1, length(s_pow)))
+        xlabel == "default" && (xlabel = "")
+        ylabel == "default" && (ylabel = "")
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_topo(eeg.eeg_locs,
+                          s_frq,
+                          s_pow,
+                          channels=channel,
+                          labels=labels,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          norm=norm,
+                          frq_lim=frq_lim,
+                          ax=ax,
+                          mono=mono;
+                          kwargs...)
+    end
 
-    p = Plots.heatmap(t,
-                spec_frq,
-                spec_power,
-                xlabel=xlabel,
-                ylabel=ylabel,
-                ylims=frq_lim,
-                xticks=_xticks(t),
-                title=title,
-                seriescolor=palette,
-                colorbar_title=cb_title,
-                titlefontsize=8,
-                xlabelfontsize=6,
-                ylabelfontsize=6,
-                xtickfontsize=4,
-                ytickfontsize=4;
-                kwargs...)
+    if typeof(p) == Plots.Plot{Plots.GRBackend}
+        Plots.plot(p)
+    else
+        p
+    end
+
+    eeg = deepcopy(eeg_backup)
 
     return p
 end
 
-
 """
-    eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
+    eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
-Plots spectrogram of `eeg` channel(s).
+Plot power spectrum density of embedded or external component.
 
 # Arguments
 
-- `eeg:EEG`
-- `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Symbol, AbstractArray}`: component to plot
+- `epoch::Int64`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short-time Fourier transform spectrogram
-- `xlabel::String="Time [s]"`: x-axis label
+- `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+- `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
+- `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
+- `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+- `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
+- `mono::Bool=false`: use color or grey palette
+- `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+
+    _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
+    _check_var(method, [:welch, :mt, :mw], "method")
+    _check_var(ref, [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], "ref")
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+    ref !== :abs && method === :mw && throw(ArgumentError("For relative PSD, method must be :welch or :mt."))
+    
+    _check_epochs(eeg, epoch)
+
+    # select component c_idxs, default is all c_idxs
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
+    labels = _gen_clabels(c)[c_idx]
+    length(c_idx) == 1 && (labels = [labels])
+
+    ref !== :abs && (f = eeg_band(eeg, band=ref))
+
+    # get frequency range
+    fs = eeg_sr(eeg)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_lim = tuple_order(frq_lim)
+    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
+
+    # calculate PSD
+    signal = c[c_idx, :, epoch]
+
+    # get time vector
+    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+
+    if ref === :abs
+        if method === :welch
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
+            title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
+            title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mw
+            s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
+    elseif ref === :total
+        if method === :welch
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false)
+            title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true)
+            title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
+    else
+        if method === :welch
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        elseif method === :mt
+            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+        end
+    end
+
+    # set labels
+    if type !== :w3d && type !== :s3d
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        if norm == true
+            ylabel == "default" && (ylabel = "Power [dB]")
+        else
+            ylabel == "default" && (ylabel = "Power [μV^2/Hz]")
+        end
+    end
+
+    if type === :normal
+        ndims(s_pow) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 c_idx."))
+        p = plot_psd(s_frq,
+                     s_pow,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title,
+                     norm=norm,
+                     frq_lim=frq_lim,
+                     ax=ax,
+                     mono=mono;
+                     kwargs...)
+    elseif type === :butterfly
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 c_idxs."))
+        title = replace(title, "component" => "components")
+        p = plot_psd_butterfly(s_frq,
+                               s_pow,
+                               labels=labels,
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               title=title,
+                               norm=norm,
+                               frq_lim=frq_lim,
+                               ax=ax,
+                               mono=mono;
+                               kwargs...)
+    elseif type === :mean
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 c_idxs."))
+        title = replace(title, "PSD" => "PSD [mean ± 95%CI]")
+        title = replace(title, "component" => "averaged components")
+        p = plot_psd_avg(s_frq,
+                         s_pow,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono;
+                         kwargs...)
+    elseif type === :w3d
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = "Channels")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_3d(s_frq,
+                        s_pow,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        zlabel=zlabel,
+                        title=title,
+                        norm=norm,
+                        frq_lim=frq_lim,
+                        ax=ax,
+                        mono=mono,
+                        variant=:w;
+                        kwargs...)
+    elseif type === :s3d
+        ndims(s_pow) < 2 && throw(ArgumentError("For type=:w3d plot the signal must contain ≥ 2 channels."))
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        ylabel == "default" && (ylabel = "Channels")
+        zlabel == "default" && (zlabel = norm == true ? "Power [dB]" : "Power [μV^2/Hz]")
+        title = replace(title, "channel" => "channels")
+        p = plot_psd_3d(s_frq,
+                        s_pow,
+                        labels=labels,
+                        xlabel=xlabel,
+                        ylabel=ylabel,
+                        zlabel=zlabel,
+                        title=title,
+                        norm=norm,
+                        frq_lim=frq_lim,
+                        ax=ax,
+                        mono=mono,
+                        variant=:s;
+                        kwargs...)
+    end
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_spectrogram(s_t, s_frq, s_pow; <keyword arguments>)
+
+Plot single-channel spectrogram.
+
+# Arguments
+
+- `s_t::Vector{Float64}`: time
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 2}`: powers
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -3170,364 +1554,380 @@ Plots spectrogram of `eeg` channel(s).
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
+    size(s_pow, 2) == length(s_t) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and time vector $(length(s_t)) do not match."))
+    size(s_pow, 1) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and frequencies vector $(length(s_frq)) do not match."))
 
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
+    palette = mono == true ? :grays : :darktest
+    cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
 
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
+    p = Plots.heatmap(s_t,
+                      s_frq,
+                      s_pow,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      ylims=frq_lim,
+                      xticks=_ticks(s_t),
+                      yticks=_ticks(frq_lim),
+                      title=title,
+                      size=(1200, 800),
+                      left_margin=20Plots.px,
+                      seriescolor=palette,
+                      colorbar_title=cb_title,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=6,
+                      ytickfontsize=6;
+                      kwargs...)
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
+    return p
+end
+
+"""
+    plot_spectrogram(s_ch, s_frq, s_pow; <keyword arguments>)
+
+Plot multiple-channel spectrogram.
+
+# Arguments
+
+- `s_ch::Vector{String}`: channel labels
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Array{Float64, 2}`: powers
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_spectrogram(s_ch::Vector{String}, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    size(s_pow, 1) == length(s_ch) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and channels vector $(length(s_ch)) do not match."))
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and frequencies vector $(length(s_frq)) do not match."))
+
+    palette = mono == true ? :grays : :darktest
+    cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
+    
+    ch = collect(1:length(s_ch)) .- 0.5
+    p = Plots.heatmap(s_frq,
+                      ch,
+                      s_pow,
+                      xlabel=xlabel,
+                      xticks=_ticks(s_frq),
+                      ylabel=ylabel,
+                      yticks=(ch, s_ch),
+                      title=title,
+                      size=(1200, 800),
+                      left_margin=20Plots.px,
+                      seriescolor=:darktest,
+                      colorbar_title=cb_title,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=6,
+                      ytickfontsize=6;
+                      kwargs...)
+
+    return p
+end
+
+"""
+    eeg_plot_spectrogram(eeg; <keyword arguments>)
+
+Plots spectrogram.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `epoch::Int64`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `norm::Bool=true`: normalize powers to dB
+- `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
+- `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[channel: 1, epoch: 1, time window: 0 ms:10 s]
+- `mono::Bool=false`: use color or grey palette
+- `markers::Bool`: draw markers if available
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+
+    _check_var(method, [:standard, :stft, :mt, :mw], "method")
+
+    _check_epochs(eeg, epoch)
+
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
     _check_channels(eeg, channel)
 
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
     labels = eeg_labels(eeg)[channel]
+    length(channel) == 1 && (labels = [labels])
 
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    length(channel) > 1 && len < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
-
+    # get frequency range
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
 
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
+    # calculate spectrogram
+    signal = eeg.eeg_signals[channel, :, epoch]
+    length(channel) > 1 && length(signal) / length(channel) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
+
+    # get time vector
+    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if length(channel) == 1
-        ylabel = "Frequency [Hz]"
-        channel_name = labels
-        labels = [""]
-        signal = vec(signal)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
+        ylabel == "default" && (ylabel = "Frequency [Hz]")
+        xlabel == "default" && (xlabel = "Time [s]")
+        title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(channel)), epoch: $epoch, time window: $t_s1:$t_s2]")
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
+        if method === :standard
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=false, st=false, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mt
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=true, st=false, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(multi-tapered periodogram)")
+        elseif method === :stft
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=false, st=true, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(short-time Fourier transform)")
+        elseif method === :mw
+            _, s_p, _, s_f = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(Morlet-wavelet transform)")
+        end
 
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
+        norm == true && (s_p = pow2db.(s_p))
+        p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
 
-    offset = eeg.eeg_epochs_time[1]
-
-    if length(channel) == 1
-        p = plot_spectrogram(signal,
-                             fs=fs,
-                             offset=offset,
-                             norm=norm,
-                             mw=mw,
-                             mt=mt,
-                             st=st,
-                             xlabel=xlabel,
-                             ylabel=ylabel,
-                             frq_lim=frq_lim,
-                             ncyc=ncyc,
-                             title=title,
-                             mono=mono;
-                             kwargs...)
-
-        # add epochs markers
-        if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-            p = vline!(epoch_markers,
-                       linestyle=:dash,
-                       linewidth=0.2,
-                       linecolor=:black,
-                       label="")
-            for idx in 1:length(epoch_markers)
-                p = Plots.plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+        # plot markers if available
+        # TODO: draw markers length
+        if markers == true && eeg.eeg_header[:markers] == true
+            markers_pos = eeg.eeg_markers[!, :start] ./ eeg_sr(eeg)
+            markers_desc = eeg.eeg_markers[!, :description]
+            p = Plots.vline!(markers_pos,
+                             linestyle=:dash,
+                             linewidth=0.5,
+                             linecolor=:black,
+                             label=false)
+            for idx in 1:length(markers_desc)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
+
     else
-        ylabel = "Channel"
-        xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=mt)
-        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
-        palette = :darktest
-        mono == true && (palette = :grays)
-        p = Plots.heatmap(s_frq[1, :],
-                    channel,
-                    s_pow,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    xlims=frq_lim,
-                    yticks=channel,
-                    title=title,
-                    seriescolor=palette,
-                    colorbar_title=cb_title,
-                    titlefontsize=8,
-                    xlabelfontsize=6,
-                    ylabelfontsize=6,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
+        ylabel == "default" && (ylabel = "Channel")
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(_channel2channel_name(channel)), epoch: $epoch, time window: $t_s1:$t_s2]")
+
+        if method === :standard
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mt
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(multi-tapered periodogram)")
+        elseif method === :stft
+            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mw
+            s_p, s_f = s_wspectrum(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_f = linspace(0, frq_lim[2], size(s_p, 2))
+            title = replace(title, "method" => "(Morlet-wavelet transform)")
+        end
+
+        norm == true && (s_p = pow2db.(s_p))
+        p = plot_spectrogram(labels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
     end
 
     Plots.plot(p)
+
+    eeg = deepcopy(eeg_backup)
 
     return p
 end
 
 """
-    eeg_plot_signal_spectrogram_avg(eeg; <keyword arguments>)
+    eeg_plot_spectrogram(eeg, c; <keyword arguments>)
 
-Plots spectrogram of `eeg` channel(s).
+Plots spectrogram of embedded or external component.
 
 # Arguments
 
-- `eeg:EEG`
-- `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-- `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+- `eeg::NeuroAnalyzer.EEG`
+- `c::Union{Symbol, AbstractArray}`: component to plot
+- `epoch::Int64`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
+- `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
+- `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[component: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or grey palette
+- `markers::Bool`: draw markers if available
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_signal_spectrogram_avg(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
-
-    length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
-    _check_channels(eeg, channel)
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    len < 4 * eeg_sr(eeg) && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-    signal = vec(mean(signal, dims=1))
-
-    ylabel == "" && (ylabel = "Amplitude [μV]")
-    channel_name = _channel2channel_name(channel)
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Averaged spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    offset = eeg.eeg_epochs_time[1]
-
-    p = plot_spectrogram(signal,
-                         fs=fs,
-                         offset=offset,
-                         norm=norm,
-                         mw=mw,
-                         mt=mt,
-                         st=st,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         title=title,
-                         mono=mono;
-                         kwargs...)
-
-    # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
-        end
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_spectrogram(eeg; <keyword arguments>)
-
-Plots spectrogram of `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg:EEG`
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `channel::Int64`: channel to display
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, channel::Union{Int64, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
+    _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
     _check_epochs(eeg, epoch)
 
-    # select channels, default is all up to 20 channels
-    channel == 0 && (channel = _select_channels(eeg, channel, 20))
-    _check_channels(eeg, channel)
+    # select component c_idxs, default is all c_idxs
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
+    labels = _gen_clabels(c)[c_idx]
+    length(c_idx) == 1 && (labels = [labels])
 
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    length(channel) > 1 && length(t) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
-
+    # get frequency range
     fs = eeg_sr(eeg)
     frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
     frq_lim = tuple_order(frq_lim)
     (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(channel) == 1
-        channel_name = labels
-        labels = [""]
-        signal = vec(c)
-    else
-        channel_name = _channel2channel_name(channel)
-    end
-    title == "" && (title = "Component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(channel_name), epoch: $epoch, time window: $t_s1:$t_s2]")
+    # calculate spectrogram
+    signal = c[c_idx, :, epoch]
+    length(c_idx) > 1 && length(signal) / length(c_idx) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
 
-    c = c[channel, :, epoch]
-    offset = eeg.eeg_epochs_time[1]
+    # get time vector
+    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
-    if length(channel) == 1
-        p = plot_spectrogram(c,
-                             fs=fs,
-                             offset=0,
-                             norm=norm,
-                             mw=mw,
-                             mt=mt,
-                             st=st,
-                             xlabel=xlabel,
-                             ylabel=ylabel,
-                             frq_lim=frq_lim,
-                             ncyc=ncyc,
-                             title=title,
-                             mono=mono;
-                             kwargs...)
+    if length(c_idx) == 1
+        ylabel == "default" && (ylabel = "Frequency [Hz]")
+        xlabel == "default" && (xlabel = "Time [s]")
+        title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+
+        if method === :standard
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=false, st=false, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mt
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=true, st=false, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(multi-tapered periodogram)")
+        elseif method === :stft
+            s_p, s_f, s_t = s_spectrogram(signal, fs=fs, norm=false, mt=false, st=true, demean=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[f1:f2, :]
+            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(short-time Fourier transform)")
+        elseif method === :mw
+            _, s_p, _, s_f = s_wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            title = replace(title, "method" => "(Morlet-wavelet transform)")
+        end
+
+        norm == true && (s_p = pow2db.(s_p))
+        p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
+
+        # plot markers if available
+        # TODO: draw markers length
+        if markers == true && eeg.eeg_header[:markers] == true
+            markers_pos = eeg.eeg_markers[!, :start] ./ eeg_sr(eeg)
+            markers_desc = eeg.eeg_markers[!, :description]
+            p = Plots.vline!(markers_pos,
+                             linestyle=:dash,
+                             linewidth=0.5,
+                             linecolor=:black,
+                             label=false)
+            for idx in 1:length(markers_desc)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
+            end
+        end
+
     else
-        ylabel = "Components"
-        xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
-        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
-        palette = :darktest
-        mono == true && (palette = :grays)
-        p = Plots.heatmap(s_frq[1, :],
-                    channel,
-                    s_pow,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    xlims=frq_lim,
-                    yticks=channel,
-                    title=title,
-                    seriescolor=palette,
-                    colorbar_title=cb_title,
-                    titlefontsize=8,
-                    xlabelfontsize=6,
-                    ylabelfontsize=6,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
+        ylabel == "default" && (ylabel = "Component")
+        xlabel == "default" && (xlabel = "Frequency [Hz]")
+        title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[components: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
+
+        if method === :standard
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mt
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(multi-tapered periodogram)")
+        elseif method === :stft
+            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
+            f1 = vsearch(frq_lim[1], s_f)
+            f2 = vsearch(frq_lim[2], s_f)
+            s_f = s_f[f1:f2]
+            s_p = s_p[:, f1:f2]
+            title = replace(title, "method" => "(standard periodogram)")
+        elseif method === :mw
+            s_p, s_f = s_wspectrum(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_f = linspace(0, frq_lim[2], size(s_p, 2))
+            title = replace(title, "method" => "(Morlet-wavelet transform)")
+        end
+
+        norm == true && (s_p = pow2db.(s_p))
+        p = plot_spectrogram(labels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
     end
 
     Plots.plot(p)
@@ -3536,124 +1936,125 @@ function eeg_plot_component_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{F
 end
 
 """
-    eeg_plot_component_spectrogram_avg(eeg; <keyword arguments>)
+    plot_electrodes(locs; <keyword arguments>)
 
-Plots spectrogram of `eeg` channel(s).
+Preview of electrode locations. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
-- `eeg:EEG`
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-- `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `labels::Bool=true`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
+- `head_details::Bool=true`: draw nose and ears
+- `plot_size::Int64=400`: plot dimensions in pixels (size × size)
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
+    pal = mono == true ? :grays : :darktest
 
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
 
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    length(channel) < 2 && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() at least  two channels epoch and len must not be specified."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
+    if plot_size > 300
+        marker_size = plot_size ÷ 75
+        font_size = plot_size ÷ 75
     else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
+        marker_size = plot_size ÷ 50
+        font_size = plot_size ÷ 50
+        labels = false
     end
 
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
+    loc_x .*= 0.9
+    loc_y .*= 0.9
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   palette=pal,
+                   size=(plot_size, plot_size),
+                   border=:none,
+                   aspect_ratio=1,
+                   right_margin=-30 * Plots.px,
+                   bottom_margin=-30 * Plots.px,
+                   top_margin=-30 * Plots.px,
+                   left_margin=-50 * Plots.px,
+                   xlim=(-1.22, 1.23),
+                   ylim=(-1.1, 1.2))
 
-    labels = eeg_labels(eeg)[channel]
+    hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
+    p = Plots.plot!(hd)
 
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
+    for idx in 1:length(locs[!, :labels])
+        if idx in channel
+            if selected != 0
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                #seriestype=:scatter,
+                                grid=true,
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            else
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                #seriestype=:scatter,
+                                grid=true,
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            end
+        end
+        if idx in selected
+            if mono != true
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=idx,
+                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                #seriestype=:scatter,
+                                grid=true,
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            else
+                #p = Plots.plot!((loc_x[idx], loc_y[idx]),
+                p = Plots.scatter!((loc_x[idx], loc_y[idx]),
+                                color=:lightgrey,
+                                markerstrokecolor = Colors.RGBA(255/255, 255/255, 255/255, 0/255),
+                                #seriestype=:scatter,
+                                grid=true,
+                                label="",
+                                markershape=:circle,
+                                markersize=marker_size,
+                                markerstrokewidth=0,
+                                markerstrokealpha=0)
+            end
+        end
     end
 
-    _check_offset_len(eeg_tmp, offset, len)
-
-    len < 4 * eeg_sr(eeg) && throw(ArgumentError("For eeg_plot_signal_spectrogram_avg() len must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)))."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    c = c[channel, :, epoch]
-    c = vec(mean(c, dims=1))
-
-    ylabel == "" && (ylabel = "Amplitude [μV]")
-    channel_name = _channel2channel_name(channel)
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "Averaged component spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $(channel_name), epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    offset = eeg.eeg_epochs_time[1]
-
-    p = plot_spectrogram(c,
-                         fs=fs,
-                         offset=offset,
-                         norm=norm,
-                         mw=mw,
-                         mt=mt,
-                         st=st,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         title=title,
-                         mono=mono;
-                         kwargs...)
-
-    # add epochs markers
-    if length(epoch_markers) > 0 && len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        p = vline!(epoch_markers,
-                   linestyle=:dash,
-                   linewidth=0.2,
-                   linecolor=:black,
-                   label="")
-        for idx in 1:length(epoch_markers)
-            p = Plots.plot!(annotation=((epoch_markers[idx] - 1), frq_lim[2], Plots.text("E$(floor(Int64, epoch_markers[idx] / (eeg_epoch_len(eeg) / eeg_sr(eeg))))", pointsize=4, halign=:center, valign=:top)))
+    if labels == true
+        for idx in 1:length(locs[!, :labels])
+            if idx in channel
+                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+            end
+            if idx in selected
+                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+            end
         end
     end
 
@@ -3663,368 +2064,135 @@ function eeg_plot_component_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Arr
 end
 
 """
-    eeg_plot_component_idx_spectrogram(eeg; <keyword arguments>)
+    plot_electrodes3d(locs; <keyword arguments>)
 
-Plot spectrogram of indexed `eeg` external or embedded component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `c_idx::Int64`: component index to display, default is all components
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Times [s]`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_component_idx_spectrogram(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-
-    # select components, default is all
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 0))
-        _check_cidx(eeg, c, c_idx)
-    else
-        c_idx == 0 && (c_idx = 1:size(c, 1))
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-        end
-    end
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
-    end
-
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0")) spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = c[c_idx, :, epoch]
-
-    offset = eeg.eeg_epochs_time[1]
-
-    if length(c_idx) == 1
-        p = plot_spectrogram(c,
-                             fs=fs,
-                             offset=offset,
-                             norm=norm,
-                             mw=mw,
-                             mt=mt,
-                             st=st,
-                             xlabel=xlabel,
-                             ylabel=ylabel,
-                             frq_lim=frq_lim,
-                             ncyc=ncyc,
-                             title=title,
-                             mono=mono;
-                             kwargs...)
-    else
-        ylabel = "Components"
-        xlabel = "Frequency [Hz]"
-        s_pow, s_frq = s_psd(c, fs=fs, norm=norm, mt=mt)
-        norm == true ? cb_title = "[dB/Hz]" : cb_title = "[μV^2/Hz]"
-        palette = :darktest
-        mono == true && (palette = :grays)
-        p = Plots.heatmap(s_frq[1, :],
-                    c_idx,
-                    s_pow,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    xlims=frq_lim,
-                    yticks=c_idx,
-                    title=title,
-                    seriescolor=palette,
-                    colorbar_title=cb_title,
-                    titlefontsize=8,
-                    xlabelfontsize=6,
-                    ylabelfontsize=6,
-                    xtickfontsize=4,
-                    ytickfontsize=4;
-                    kwargs...)
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_component_idx_spectrogram_avg(eeg; <keyword arguments>)
-
-Plot spectrogram of averaged indexed `eeg` external or embedded component.
+3D interactive preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `labels::Bool=true`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
+ `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `fig::GLMakie.Figure`
 """
-function eeg_plot_component_idx_spectrogram_avg(eeg::NeuroAnalyzer.EEG; c::Union{Array{Float64, 3}, Symbol}, epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, mw::Bool=false, mt::Bool=false, st::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
+function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
 
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (mw == true && st == true) && throw(ArgumentError("Both mw and st must not be true."))
-    (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
+    # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
+    # channel = setdiff(channel, selected)
 
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
+    pal = mono == true ? :grays : :darktest
 
-    _check_epochs(eeg, epoch)
+    loc_x = locs[!, :loc_x]
+    loc_y = locs[!, :loc_y]
+    loc_z = locs[!, :loc_z]
 
-    # select components, default is all up to 20
-    if typeof(c) == Symbol
-        c_idx == 0 && (c_idx = _select_cidx(eeg, c, c_idx, 20))
-        _check_cidx(eeg, c, c_idx)
-    else
-        if c_idx == 0
-            size(c, 1) > 20 && (c_idx = 1:20)
-            size(c, 1) <= 20 && (c_idx = 1:size(c, 1))
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    x_lim = (-1.1, 1.1)
+    y_lim = (-1.1, 1.1)
+    z_lim = extrema(loc_z)
+
+    marker_size = plot_size ÷ 40
+    font_size = plot_size ÷ 40
+
+    fig = Figure(; resolution=(plot_size, plot_size))
+    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
+    # hidedecorations!(ax, grid=true, ticks=true)
+
+    GLMakie.scatter!(ax, loc_x[channel], loc_y[channel], loc_z[channel], markersize=marker_size, color=:gray)
+    if selected != 0
+        if mono == true
+            GLMakie.scatter!(ax, loc_x[selected], loc_y[selected], loc_z[selected], markersize=marker_size, color=:gray)
+        else
+            GLMakie.scatter!(ax, loc_x[selected], loc_y[selected], loc_z[selected], markersize=marker_size, color=:red)
         end
-        for idx in 1:length(c_idx)
-            (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    end
+
+    if labels == true
+        for idx in 1:length(locs[!, :labels])
+            if idx in channel
+                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
+            end
+            if idx in selected
+                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
+            end
         end
     end
-    length(c_idx) == 1 && throw(ArgumentError("c_idx length must be ≥ 2."))
 
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    labels = Vector{String}()
-    for idx in 1:length(c_idx)
-        push!(labels, string(c_idx[idx]))
+    if head_labels == true
+        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
+        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
     end
+    fig
 
-    # get time vector
-    t = eeg.eeg_epochs_time
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-    if length(c_idx) == 1
-        labels = [""]
-        signal = vec(c)
-    end
-    title == "" && (title = "Component #$(lpad(string(c_idx), 3, "0")) averaged spectrogram\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-
-    c = vec(mean(c[c_idx, :, epoch], dims=1))
-
-    offset = eeg.eeg_epochs_time[1]
-
-    p = plot_spectrogram(c,
-                         fs=fs,
-                         norm=norm,
-                         mw=mw,
-                         mt=mt,
-                         st=st,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         title=title,
-                         mono=mono;
-                         kwargs...)
-
-    Plots.plot(p)
-
-    return p
+    return fig
 end
 
 """
     eeg_plot_electrodes(eeg; <keyword arguments>)
 
-Plot `eeg` electrodes. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Preview of electrode locations.
 
 # Arguments
 
-- `eeg:EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `labels::Bool=true`: plot electrode labels
 - `head::Bool`=true: plot head
 - `head_labels::Bool=false`: plot head labels
-- `small::Bool=false`: draws small plot
+- `plot_size::Int64=400`: plot dimensions in pixels (plot_size×plot_size)
+- `head_details::Bool=true`: draw nose and ears
 - `mono::Bool=false`: use color or grey palette
+- `threed::Bool=false`: 3-dimensional plot
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
+function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
 
-    mono == true ? palette = :grays : palette = :darktest
+    pal = mono == true ? :grays : :darktest
 
     # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
     _check_channels(eeg, channel)
+    selected != 0 && _check_channels(eeg, selected)
 
-    if small == true
-        plot_size = 250
-        marker_size = 2
-        labels = false
+    if threed == false
+        p = plot_electrodes(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size)
     else
-        plot_size = 400
-        marker_size = 4
-        font_size = 4
+        p = plot_electrodes3d(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
     end
-
-    p = Plots.plot(grid=true,
-                   framestyle=:none,
-                   palette=palette,
-                   size=(plot_size, plot_size),
-                   markerstrokewidth=0,
-                   border=:none,
-                   aspect_ratio=1,
-                   margins=-plot_size * Plots.px,
-                   titlefontsize=8;
-                   kwargs...)
-
-    # plot selected channels positions
-    if selected != 0
-        length(selected) > 1 && sort!(selected)
-        for idx in 1:length(selected)
-            (selected[idx] < 1 || selected[idx] > eeg.eeg_header[:channel_n]) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg.eeg_header[:channel_n])."))
-        end
-        typeof(selected) <: AbstractRange && (selected = collect(selected))
-        length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
-        length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
-        loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-        loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-        for idx in 1:eeg_channel_n(eeg, type=:eeg)
-            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                              eeg.eeg_header[:loc_theta][idx])
-        end
-        loc_x, loc_y = _locnorm(loc_x, loc_y)
-        loc_x = round.(loc_x, digits=2)[selected]
-        loc_y = round.(loc_y, digits=2)[selected]
-        for idx in 1:length(selected)
-            if mono != true
-                p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                          color=idx,
-                          seriestype=:scatter,
-                          grid=true,
-                          label="",
-                          markersize=marker_size,
-                          markerstrokewidth=0,
-                          markerstrokealpha=0;
-                          kwargs...)
-            else
-                p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                          color=:black,
-                          seriestype=:scatter,
-                          grid=true,
-                          label="",
-                          markersize=marker_size,
-                          markerstrokewidth=0,
-                          markerstrokealpha=0;
-                          kwargs...)
-            end                
-        end
-        if labels == true
-            for idx in selected
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=font_size)))
-            end
-        end
-    end
-
-    # plot non-selected channels positions
-    if selected != channel
-        channel = setdiff(channel, selected)
-        loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-        loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-        for idx in 1:eeg_channel_n(eeg, type=:eeg)
-            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                              eeg.eeg_header[:loc_theta][idx])
-        end
-        loc_x, loc_y = _locnorm(loc_x, loc_y)
-        loc_x = round.(loc_x, digits=2)[channel]
-        loc_y = round.(loc_y, digits=2)[channel]
-        for idx in 1:length(channel)
-            p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                      color=:gray,
-                      seriestype=:scatter,
-                      grid=true,
-                      label="",
-                      markersize=marker_size,
-                      markerstrokewidth=0,
-                      markerstrokealpha=0;
-                      kwargs...)
-        end
-        if selected == 0 && labels == true
-            for idx in channel
-                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=font_size)))
-            end
-        end
-    end
-
-    if head == true
-        hd = _draw_head(p, head_labels=false)
-        p = Plots.plot!(hd)
-    end
-
-    Plots.plot(p)
 
     return p
 end
 
 """
-    eeg_plot_matrix(eeg, m; <keyword arguments>)
+    plot_matrix(m; <keyword arguments>)
 
-Plot matrix `m` of `eeg` channels.
+Plot matrix.
 
 # Arguments
 
-- `eeg:EEG`
-- `m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: channels by channels matrix
-- `epoch::Int64=1`: epoch number to display
+- `m::Array{<:Real, 2}`
+- `xlabels::Vector{String}`
+- `ylabels::Vector{String}`
+- `xlabel::String=""`
+- `ylabel::String=""`
+- `title::String=""`
+- `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -4032,44 +2200,53 @@ Plot matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_matrix(eeg::NeuroAnalyzer.EEG, m::Union{Matrix{<:Real}, Array{<:Real, 3}}; epoch::Int64=1, mono::Bool=false, kwargs...)
+function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", cb_title::String="", mono::Bool=false, kwargs...)
 
-    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
+    size(m, 1) == size(m, 2) || throw(ArgumentError("Matrix is not square."))
+    length(xlabels) == length(ylabels) || throw(ArgumentError("Lengths of xlabels and ylabels must be equal."))
+    length(xlabels) == size(m, 1) || throw(ArgumentError("Length of xlabels and matrix size must be equal."))
+    length(ylabels) == size(m, 2) || throw(ArgumentError("Length of ylabels and matrix size must be equal."))
 
-    labels = eeg_labels(eeg)
-    channel_n = size(m, 1)
-    ndims(m) == 3 && (m = m[:, :, epoch])
-
-    mono == true ? palette = :grays : palette = :darktest
+    n = size(m, 1)
+    r = maximum(length.(xlabels)) > 10 ? 45 : 0
+    mar = maximum(length.(xlabels)) > 10 ? 40 : 0
+    pal = mono == true ? :grays : :darktest
 
     p = Plots.heatmap(m,
-                xticks=(1:channel_n, labels),
-                yticks=(1:channel_n, eeg_labels(eeg)),
-                seriescolor=palette,
-                titlefontsize=8,
-                xlabelfontsize=6,
-                ylabelfontsize=6,
-                xtickfontsize=4,
-                ytickfontsize=4;
-                kwargs...)
-    Plots.plot(p)
+                      title=title,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      xaxis=(tickfontrotation=r),
+                      xticks=(1:n, xlabels),
+                      yticks=(1:n, xlabels),
+                      seriescolor=pal,
+                      colorbar_title=cb_title,
+                      size=(1200, 800),
+                      left_margin=mar * Plots.px,
+                      bottom_margin=mar * Plots.px,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=6,
+                      ytickfontsize=6;
+                      kwargs...)
 
     return p
 end
 
 """
-    eeg_plot_matrix(eeg, cov_m, lags; <keyword arguments>)
+    plot_covmatrix(m, lags; <keyword arguments>)
 
-Plot covariance matrix `m` of `eeg` channels.
+Plot cross/auto-covariance matrix.
 
 # Arguments
 
-- `eeg:EEG`
-- `cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: covariance matrix
-- `lags::AbstractVector`: covariance lags
-- `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
-- `epoch::Int64=1`: epoch number to display
+- `m::Abstractvector`: covariance matrix
+- `lags::AbstractVector`: covariance lags, lags will be displayed in ms
+- `xlabel::String="lag"`
+- `ylabel::String=""`
+- `title::String=""`
+- `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -4077,35 +2254,30 @@ Plot covariance matrix `m` of `eeg` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_covmatrix(eeg::NeuroAnalyzer.EEG, cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}, lags::AbstractVector; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Int64=1, mono::Bool=false, kwargs...)
+function plot_covmatrix(m::AbstractVector, lags::AbstractVector; xlabel::String="lag [ms]", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-
-    labels = eeg_labels(eeg)
-    ndims(cov_m) == 3 && (cov_m = cov_m[:, :, epoch])
-    p = []
-    for idx in channel
-        push!(p,
-              Plots.plot(lags,
-                   cov_m[idx, :],
-                   title="ch: $(labels[idx])",
-                   label="",
-                   palette=palette,
-                   titlefontsize=4,
-                   xlabelfontsize=4,
-                   ylabelfontsize=4,
-                   xtickfontsize=3,
-                   ytickfontsize=3,
-                   lw=0.5))
-    end
-    p = Plots.plot(p...; kwargs...)
+    pal = mono == true ? :grays : :darktest
+    r = length(lags) > 10 ? 90 : 0
+    p = Plots.plot(lags,
+                   m,
+                   title=title,
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   xticks=round.(lags, digits=1),
+                   xaxis=(tickfontrotation=r),
+                   yticks=false,
+                   palette=pal,
+                   size=(600, 200),
+                   lw=0.5,
+                   grid=false,
+                   legend=false,
+                   bottom_margin=10 * Plots.px,
+                   titlefontsize=5,
+                   xlabelfontsize=5,
+                   ylabelfontsize=5,
+                   xtickfontsize=4,
+                   ytickfontsize=4;
+                   kwargs...)
 
     return p
 end
@@ -4118,7 +2290,7 @@ Plot histogram of `signal`.
 # Arguments
 
 - `signal::AbstractVector`
-- `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
+- `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
 - `label::String=""`: channel label
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -4132,32 +2304,43 @@ Plot histogram of `signal`.
 """
 function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    type in [:hist, :kd] || throw(ArgumentError("type must be :hist or :kd."))
+    _check_var(type, [:hist, :kd], "type")
 
     type === :kd && (type = :density)
 
-    mono == true ? palette = :grays : palette = :darktest
+    pal = mono == true ? :grays : :darktest
+
+    if mean(signal) < median(signal)
+        xticks = [floor(minimum(signal), digits=1), round(mean(signal), digits=1), round(median(signal), digits=1), ceil(maximum(signal), digits=1)]
+    else
+        xticks = [floor(minimum(signal), digits=1), round(median(signal), digits=1), round(mean(signal), digits=1), ceil(maximum(signal), digits=1)]
+    end        
 
     p = Plots.plot(signal,
-             seriestype=type,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             label=label,
-             title=title,
-             palette=palette,
-             grid=false,
-             linecolor=:black,
-             fillcolor=1,
-             linewidth=0.5,
-             margins=0Plots.px,
-             yticks=false,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
-             kwargs...)
+                   seriestype=type,
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   label=label,
+                   title=title,
+                   palette=pal,
+                   grid=false,
+                   linecolor=:black,
+                   fillcolor=:grey,
+                   fillalpha=0.5,
+                   linewidth=1,
+                   size=(600, 400),
+                   xaxis=(tickfontrotation=90),
+                   margins=10Plots.px,
+                   xticks=xticks,
+                   yticks=false,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=5,
+                   ytickfontsize=5;
+                   kwargs...)
+    p = Plots.vline!([round(mean(signal), digits=1)], lw=1, ls=:dot, lc=:black, label="mean")
+    p = Plots.vline!([round(median(signal), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median")
 
     Plots.plot(p)
 
@@ -4165,1309 +2348,39 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::Strin
 end
 
 """
-    plot_histogram(signal; <keyword arguments>)
-
-Plot histogram of `signal`.
-
-# Arguments
-
-- `signal::Matrix{<:Real}`
-- `type::Symbol`: type of histogram: :hist or :kd
-- `labels::Vector{String}=[""]`
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_histogram(signal::Matrix{<:Real}; type::Symbol=:hist, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    channel_n = size(signal, 1)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    # reverse so 1st channel is on top
-    signal = reverse(signal, dims = 1)
-
-    labels == [""] && (labels = repeat([""], channel_n))
-
-    # plot channels
-    p = []
-    for idx in 1:channel_n
-        push!(p, plot_histogram(signal[idx, :],
-                                type=type,
-                                label="",
-                                xlabel=xlabel,
-                                ylabel=labels[idx],
-                                title=title,
-                                linecolor=idx,
-                                fillcolor=idx,
-                                linewidth=0.5,
-                                left_margin=30Plots.px,
-                                yticks=true,
-                                titlefontsize=8,
-                                xlabelfontsize=6,
-                                ylabelfontsize=6,
-                                xtickfontsize=4,
-                                ytickfontsize=4,
-                                xticks=[floor(minimum(signal), digits=1), 0, ceil(maximum(signal), digits=1)];
-                                kwargs...))
-    end
-
-    p = Plots.plot(p...,
-             palette=palette,
-             layout=(channel_n, 1);
-             kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_histogram(eeg; <keyword arguments>)
-
-Plot `eeg` channel histograms.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `type::Symbol: type of histogram: :hist or :kd
-- `epoch::Int64=1`: epoch number to display
-- `channel::Int64`: channel to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
-- `label::String=""`: channel label
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_histogram(eeg::NeuroAnalyzer.EEG; type::Symbol=:hist, epoch::Int64=1, channel::Int64, offset::Int64=0, len::Int64=0, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    len < 0 && throw(ArgumentError("len must be > 0."))
-    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    (channel < 1 || channel > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-
-    # default length is one epoch or 20 seconds
-    len = _len(eeg, len, 20)
-
-    # get epochs markers for len > epoch_len
-    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-    else
-        eeg_tmp = eeg
-    end
-
-    label == "" && (label = eeg_labels(eeg_tmp)[channel])
-
-    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
-    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
-
-    signal = vec(eeg_tmp.eeg_signals[channel, (1 + offset):(offset + len), epoch])
-
-    p = plot_histogram(signal,
-                       type=type,
-                       labels=label,
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       mono=mono;
-                       kwargs...)
-
-    return p
-end
-
-"""
-    plot_ica(t, ica; <keyword arguments>)
-
-Plot `ica` components against time vector `t`.
-
-# Arguments
-
-- `t::Union{AbstractVector, AbstractRange}`: the time vector
-- `ica::Vector{Float64}`
-- `label::String=""`: channel label
-- `norm::Bool=true`: normalize the `ica` prior to calculations
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Amplitude [μV]"`: y-axis label
-- `title::String=""`: plot title
-- `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits (-ylim:ylim)
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_ica(t::Union{AbstractVector, AbstractRange}, ica::Vector{Float64}; label::String="", norm::Bool=true, xlabel::String="Time [s]", ylabel::String="Amplitude [μV]", title::String="", ylim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
-
-    typeof(t) <: AbstractRange && (t = float(collect(t)))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    if ylim == (0, 0)
-        ylim = (floor(Int64, minimum(ica) * 1.5), ceil(Int64, maximum(ica) * 1.5))
-        abs(ylim[1]) > abs(ylim[2]) && (ylim = (ylim[1], abs(ylim[1])))
-        abs(ylim[1]) < abs(ylim[2]) && (ylim = (-ylim[2], abs(ylim[2])))
-    end
-
-    p = Plots.plot(t,
-             ica[1:length(t)],
-             xlabel=xlabel,
-             ylabel=ylabel,
-             label="",
-             xlims=_xlims(t),
-             xticks=_xticks(t),
-             ylims=ylim,
-             title=title,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             palette=palette;
-             kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_signal_topo(eeg; <keyword arguments>)
-
-Plot topographical view of `eeg` signal. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 second
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `cb::Bool=true`: draw color bar
-- `cb_label::String="[A.U.]"`: color bar label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, nmethod::Symbol=:minmax, kwargs...)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # select all channels
-    channel = _select_channels(eeg, 0, 0)
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, epoch_markers = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-    s_non_interpolated = mean(signal, dims=2)
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    (title == "" && len > 1) && (title = "Averaged amplitude\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-    (title == "" && len == 1) && (title = "Amplitude\n[epoch: $epoch_tmp, time: $t_s1]")
-
-    # plot signal at electrodes at time
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
-    for idx in 1:eeg_channel_n(eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    # interpolate
-    x_lim_int = (-1.4, 1.4)
-    y_lim_int = (-1.4, 1.4)
-    interpolation_factor = 100
-    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
-    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
-    interpolated_x = round.(interpolated_x, digits=2)
-    interpolated_y = round.(interpolated_y, digits=2)
-    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-        end
-    end
-    s_interpolated = zeros(interpolation_factor, interpolation_factor)
-    electrode_locations = [loc_x loc_y]'
-    m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
-    m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
-    m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
-        end
-    end
-    
-    s_interpolated = s_normalize(s_interpolated, method=nmethod)
-
-    p = Plots.plot(grid=false,
-             framestyle=:none,
-             border=:none,
-             margins=0Plots.px,
-             aspect_ratio=1,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             title=title,
-             palette=palette;
-             kwargs...)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:heatmap,
-              seriescolor=palette,
-              colorbar=cb,
-              colorbar_title=cb_label,
-              levels=10,
-              linewidth=0)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:contour,
-              seriescolor=palette,
-              colorbar=cb,
-              colorbar_title=cb_label,
-              levels=5,
-              linecolor=:black,
-              linewidth=0.5)
-    p = Plots.plot!((loc_x, loc_y),
-              color=:black,
-              seriestype=:scatter,
-              grid=true,
-              label="",
-              markersize=2,
-              markerstrokewidth=0,
-              markerstrokealpha=0)
-
-    # draw head
-    hd = _draw_head(p, head_labels=false, topo=true)
-    p = Plots.plot!(hd)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_acomponent_topo(eeg; <keyword arguments>)
-
-Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Int64`: epoch to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 second
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `cb_label::String="[A.U.]"`: color bar label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_acomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Array{<:Real, 3}, Symbol}, offset::Int64=0, len::Int64=0, m::Symbol=:shepard, cb_label::String="[A.U.]", title::String="", mono::Bool=false, nmethod::Symbol=:minmax, kwargs...)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-    typeof(c) <: Array{<:Real, 3} || throw(ArgumentError("c type must be an array."))
-    size(c) == size(eeg.eeg_signals) || throw(ArgumentError("Size of c ($(size(c))) does not match size of EEG signal ($(size(eeg.eeg_signals))), use another type of plotting function."))
-
-    _check_epochs(eeg, epoch)
-
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    offset + len > eeg_epoch_len(eeg) && throw(ArgumentError("offset + len must be ≤ ($(eeg_epoch_len(eeg)))."))
-
-    len == 0 && (len = eeg_epoch_len(eeg))
-
-    # get time vector
-    t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    s_non_interpolated = c[:, (1 + offset):(offset + len), epoch]
-    len > 1 && (s_non_interpolated = mean(s_non_interpolated, dims=2))
-
-    (title == "" && len > 1) && (title = "Component averaged value\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-    (title == "" && len == 1) && (title = "Component value\n[epoch: $epoch, time: $t_s1]")
-
-    # plot signal at electrodes at time
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
-    for idx in 1:eeg_channel_n(eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    # interpolate
-    x_lim_int = (-1.4, 1.4)
-    y_lim_int = (-1.4, 1.4)
-    interpolation_factor = 100
-    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
-    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
-    interpolated_x = round.(interpolated_x, digits=2)
-    interpolated_y = round.(interpolated_y, digits=2)
-    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-        end
-    end
-    s_interpolated = zeros(interpolation_factor, interpolation_factor)
-    electrode_locations = [loc_x loc_y]'
-    m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
-    m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
-    m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
-        end
-    end
-
-    s_interpolated = s_normalize(s_interpolated, method=nmethod)
-
-    p = Plots.plot(grid=false,
-             framestyle=:none,
-             border=:none,
-             margins=0Plots.px,
-             aspect_ratio=1,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             title=title,
-             palette=palette;
-             kwargs...)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:heatmap,
-              seriescolor=palette,
-              colorbar_title=cb_label,
-              levels=10,
-              linewidth=0)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:contour,
-              seriescolor=palette,
-              colorbar_title=cb_label,
-              levels=5,
-              linecolor=:black,
-              linewidth=0.5)
-    p = Plots.plot!((loc_x, loc_y),
-              color=:black,
-              seriestype=:scatter,
-              grid=true,
-              label="",
-              markersize=2,
-              markerstrokewidth=0,
-              markerstrokealpha=0)
-    # draw head
-    hd = _draw_head(p, head_labels=false, topo=true)
-    p = Plots.plot!(hd)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_weights_topo(eeg; <keyword arguments>)
-
-Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg:EEG`
-- `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `weights=Matrix{<:Real}`: weights to plot
-- `head::Bool`=true: plot head
-- `small::Bool=false`: draws small plot
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_weights_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, weights=Matrix{<:Real}, head::Bool=true, head_labels::Bool=false, small::Bool=false, mono::Bool=false, kwargs...)
-
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    # select all channels
-    channel = _select_channels(eeg, 0, 0)
-
-    _check_epochs(eeg, epoch)
-    size(weights, 1) == eeg_channel_n(eeg) || throw(ArgumentError("Number of weights rows ($(size(weights, 1))) must be equal to number of channels ($(eeg_channel_n(eeg)))."))
-    size(weights, 2) == eeg_epoch_n(eeg) || throw(ArgumentError("Number of weights columns ($(size(weights, 2))) must be equal to number of epochs ($(eeg_epoch_n(eeg)))."))
-    weights = weights[:, epoch]
-
-    # look for location data
-    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    if small == true
-        plot_size = (400, 400)
-        marker_size = 4
-        font_size = 4
-    else
-        plot_size = (800, 800)
-        marker_size = 6
-        font_size = 6
-    end
-
-    p = Plots.plot(grid=true,
-             framestyle=:none,
-             palette=palette,
-             size=plot_size,
-             markerstrokewidth=0,
-             border=:none,
-             aspect_ratio=1,
-             margins=-20Plots.px,
-             titlefontsize=8;
-             kwargs...)
-    for idx in 1:eeg.eeg_header[:channel_n]
-        p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                  color=idx,
-                  seriestype=:scatter,
-                  grid=true,
-                  label="",
-                  markersize=marker_size,
-                  markerstrokewidth=0,
-                  markerstrokealpha=0;
-                  kwargs...)
-    end
-
-    for idx in channel
-        p = Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(weights[idx], pointsize=font_size)))
-    end
-
-    if head == true
-        hd = _draw_head(p, head_labels=head_labels, topo=true)
-        Plots.plot!(hd)
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
-
-Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `epoch::Int64`: epoch to display
-- `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `cb::Bool=false`: draw color bar
-- `cb_label::String="[A.U.]"`: color bar label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_mcomponent_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, c::Union{Matrix{<:Real}, Symbol}, m::Symbol=:shepard, cb::Bool=true, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-
-    typeof(c) == Symbol && (c, _ = _get_component(eeg, c))
-
-    _check_epochs(eeg, epoch)
-    typeof(c) <: Matrix{<:Real} || throw(ArgumentError("c type must be a matrix."))
-    size(c, 1) == eeg_channel_n(eeg) || throw(ArgumentError("Number of c rows ($(size(c, 1))) must be equal to number of channels ($(eeg_channel_n(eeg)))."))
-    size(c, 2) == eeg_epoch_n(eeg) || throw(ArgumentError("Number of c columns ($(size(c, 2))) must be equal to number of epochs ($(eeg_epoch_n(eeg)))."))
-    c = c[:, epoch]
-
-    title == "" && (title = "Component value\n[epoch: $epoch]")
-
-    # plot signal at electrodes at time
-    loc_x = zeros(eeg_channel_n(eeg))
-    loc_y = zeros(eeg_channel_n(eeg))
-    for idx in 1:eeg_channel_n(eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    # interpolate
-    x_lim_int = (-1.4, 1.4)
-    y_lim_int = (-1.4, 1.4)
-    interpolation_factor = 100
-    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
-    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
-    interpolated_x = round.(interpolated_x, digits=2)
-    interpolated_y = round.(interpolated_y, digits=2)
-    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-        end
-    end
-    s_interpolated = zeros(interpolation_factor, interpolation_factor)
-    electrode_locations = [loc_x loc_y]'
-    m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, c))
-    m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, c))
-    m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, c))
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
-        end
-    end
-
-    s_interpolated = s_normalize_minmax(s_interpolated)
-
-    p = Plots.plot(grid=false,
-             framestyle=:none,
-             border=:none,
-             margins=0Plots.px,
-             aspect_ratio=1,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             title=title,
-             palette=palette;
-             kwargs...)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:heatmap,
-              seriescolor=palette,
-              colorbar=cb,
-              colorbar_title=cb_label,
-              clims=(-1, 1),
-              levels=10,
-              linewidth=0)
-    p = Plots.plot!(interpolated_x,
-              interpolated_y,
-              s_interpolated,
-              fill=:darktest,
-              seriestype=:contour,
-              seriescolor=palette,
-              colorbar=cb,
-              colorbar_title=cb_label,
-              clims=(-1, 1),
-              levels=5,
-              linecolor=:black,
-              linewidth=0.5)
-    p = Plots.plot!((loc_x, loc_y),
-              color=:black,
-              seriestype=:scatter,
-              grid=true,
-              label="",
-              markersize=2,
-              markerstrokewidth=0,
-              markerstrokealpha=0)
-    # draw head
-    hd = _draw_head(p, head_labels=false, topo=true)
-    p = Plots.plot!(hd)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_ica_topo(eeg; <keyword arguments>)
-
-Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Int64`: epoch to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 second
-- `ic::Union{Vector{Int64}, AbstractRange}=0`: list of ICAs plot, default is all ICAs
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `cb::Bool=false`: draw color bar
-- `cb_label::String="[A.U.]"`: color bar label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_ica_topo(eeg::NeuroAnalyzer.EEG; epoch::Int64, offset::Int64=0, len::Int64=0, ic::Union{Int64, Vector{Int64}, AbstractRange}=0, m::Symbol=:shepard, cb::Bool=false, cb_label::String="[A.U.]", title::String="", mono::Bool=false, kwargs...)
-
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before processing."))
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
-    :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    ica, _ = _get_component(eeg, :ica)
-    ica_mw, _ = _get_component(eeg, :ica_mw)
-
-    ic == 0 && (ic = 1:size(ica, 1))
-
-    sort!(ic)
-    for idx in 1:length(ic)
-        (ic[idx] < 1 || ic[idx] > size(ica, 1)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica, 1))."))
-    end
-
-    _check_epochs(eeg, epoch)
-
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    offset + len > eeg_epoch_len(eeg) && throw(ArgumentError("offset + len must be ≤ ($(eeg_epoch_len(eeg)))."))
-
-    len == 0 && (len = eeg_epoch_len(eeg))
-
-    # get time vector
-    t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    p_ica = []
-    title_tmp = title
-
-    for idx in 1:length(ic)
-        ic_v = setdiff(1:size(ica_mw, 2), idx)
-        s_reconstructed = s_ica_reconstruct(eeg.eeg_signals, ic=ica, ic_mw=ica_mw, ic_v=ic_v)
-        s_non_interpolated = s_reconstructed[:, (1 + offset):(offset + len), epoch]
-        len > 1 && (s_non_interpolated = mean(s_non_interpolated, dims=2))
-
-        (title_tmp == "" && len > 1) && (title = "Component: #$(lpad(string(idx), 3, "0"))\n[epoch: $epoch, time window: $t_s1:$t_s2]")
-        (title_tmp == "" && len == 1) && (title = "Component: #$(lpad(string(idx), 3, "0"))\n[epoch: $epoch, time: $t_s1]")
-
-        # plot signal at electrodes at time
-        loc_x = zeros(eeg_channel_n(eeg))
-        loc_y = zeros(eeg_channel_n(eeg))
-        for idx in 1:eeg_channel_n(eeg)
-            loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                              eeg.eeg_header[:loc_theta][idx])
-        end
-        loc_x, loc_y = _locnorm(loc_x, loc_y)
-        loc_x = round.(loc_x, digits=2)
-        loc_y = round.(loc_y, digits=2)
-
-        # interpolate
-        x_lim_int = (-1.4, 1.4)
-        y_lim_int = (-1.4, 1.4)
-        interpolation_factor = 100
-        interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
-        interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
-        interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-        @inbounds @simd for idx1 in 1:interpolation_factor
-            for idx2 in 1:interpolation_factor
-                interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-            end
-        end
-        s_interpolated = zeros(interpolation_factor, interpolation_factor)
-        electrode_locations = [loc_x loc_y]'
-        m === :shepard && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s_non_interpolated))
-        m === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s_non_interpolated))
-        m === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s_non_interpolated))
-        @inbounds @simd for idx1 in 1:interpolation_factor
-            for idx2 in 1:interpolation_factor
-                s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
-            end
-        end
-
-        s_interpolated = s_normalize_minmax(s_interpolated)
-
-        p = Plots.plot(grid=false,
-                 framestyle=:none,
-                 border=:none,
-                 margins=0Plots.px,
-                 aspect_ratio=1,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4,
-                 title=title,
-                 palette=palette;
-                 kwargs...)
-        p = Plots.plot!(interpolated_x,
-                  interpolated_y,
-                  s_interpolated,
-                  fill=:darktest,
-                  seriestype=:heatmap,
-                  seriescolor=palette,
-                  colorbar=cb,
-                  colorbar_title=cb_label,
-                  clims=(-1, 1),
-                  levels=10,
-                  linewidth=0)
-        p = Plots.plot!(interpolated_x,
-                  interpolated_y,
-                  s_interpolated,
-                  fill=:darktest,
-                  seriestype=:contour,
-                  seriescolor=palette,
-                  colorbar=cb,
-                  colorbar_title=cb_label,
-                  clims=(-1, 1),
-                  levels=5,
-                  linecolor=:black,
-                  linewidth=0.5)
-        p = Plots.plot!((loc_x, loc_y),
-                  color=:black,
-                  seriestype=:scatter,
-                  grid=true,
-                  label="",
-                  markersize=2,
-                  markerstrokewidth=0,
-                  markerstrokealpha=0)
-        # draw head
-        hd = _draw_head(p, head_labels=false, topo=true)
-        p = Plots.plot!(hd)
-
-        push!(p_ica, p)
-    end
-
-    p = eeg_plot_tile(p_ica)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_tile(p)
-
-Plot vector of plots `p` as tiles.
-
-# Arguments
-
-- `p::Vector{Any}`: vector of plots
-- `w::Int64=800`: single plot width (px)
-- `h::Int64=800`: single plot height (px)
-- `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
-- `mono::Bool=false`: use color or grey palette
-
-# Returns
-
-- `p_tiled::Plots.Plot{Plots.GRBackend}`
-
-"""
-function eeg_plot_tile(p::Vector{Any}, w::Int64=800, h::Int64=800, rows::Int64=2, mono::Bool=false)
-    length(p) > 10 && (rows *= 2)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    l = (rows, ceil(Int64, length(p) / rows))
-
-    # fill remaining tiles with empty plots
-    for idx in (length(p) + 1):l[1]*l[2]
-        push!(p, Plots.plot(border=:none, title=""))
-    end
-
-    p_tiled = Plots.plot!(p...,
-                    layout=l,
-                    size=(l[2] * w, l[1] * h),
-                    palette=palette)
-
-    return p_tiled
-end
-
-"""
-    plot_bands(signal; <keyword arguments>)
-
-Plot absolute/relative bands powers of a single-channel `signal`.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `fs::Int64`: sampling rate
-- `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, :alpha]
-- `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
-- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-- `norm::Bool=true`: normalize powers to dB
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_bands(signal::AbstractVector; fs::Int64, band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher], band_frq::Vector{Tuple{Real, Real}}, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    type in [:abs, :rel] || throw(ArgumentError("type must be :abs or :rel."))
-    for idx in 1:length(band)
-        band[idx] in [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("band must be: :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
-        band_frq[idx][1] > fs / 2 && (band_frq[idx] = (fs / 2, band_frq[idx][2]))
-        band_frq[idx][2] > fs / 2 && (band_frq[idx] = (band_frq[idx][1], fs / 2))
-    end
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    total_pow = round(s_total_power(signal, fs=fs), digits=2)
-    abs_band_pow = zeros(length(band))
-    for idx in 1:length(band)
-        abs_band_pow[idx] = round(s_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
-    end
-    for idx in 1:length(band)
-        abs_band_pow[idx] = round(s_band_power(signal, fs=fs, f=band_frq[idx]), digits=2)
-    end
-    prepend!(abs_band_pow, total_pow)
-    norm == true && (abs_band_pow = pow2db.(abs_band_pow))
-    rel_band_pow = abs_band_pow ./ total_pow
-    labels = Array{String}(undef, (length(band) + 1))
-    labels[1] = "total"
-    for idx in 2:(length(band) + 1)
-        labels[idx] = String(band[idx - 1])
-        labels[idx] = replace(labels[idx], "_" => " ")
-        labels[idx] = replace(labels[idx], "alpha" => "α")
-        labels[idx] = replace(labels[idx], "beta" => "β")
-        labels[idx] = replace(labels[idx], "delta" => "δ")
-        labels[idx] = replace(labels[idx], "theta" => "θ")
-        labels[idx] = replace(labels[idx], "gamma" => "γ")
-        labels[idx] = replace(labels[idx], " high" => "\nhigh")
-        labels[idx] = replace(labels[idx], " lower" => "\nlower")
-        labels[idx] = replace(labels[idx], " higher" => "\nhigher")
-    end
-    if type === :abs
-        ylabel == "" && (ylabel = "Absolute power")
-        norm == true && (ylabel *= " [dB]")
-        norm == false && (ylabel *= " [μV^2/Hz]")
-        p = Plots.plot(labels,
-                 abs_band_pow,
-                 seriestype=:bar,
-                 label="",
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=8,
-                 ytickfontsize=8;
-                 kwargs...)
-    else
-        ylabel == "" && (ylabel = "Relative power")
-        p = Plots.plot(labels,
-                 rel_band_pow,
-                 seriestype=:bar,
-                 label="",
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=8,
-                 ytickfontsize=8;
-                 kwargs...)
-    end
-
-    return p
-end
-
-"""
-    eeg_plot_bands(eeg; <keyword arguments>)
-
-Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `band:Vector{Symbols}=:all`: band name, e.g. :delta
-- `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-- `norm::Bool=true`: normalize powers to dB
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_bands(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=1, channel::Union{Int64, Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, band::Union{Symbol, Vector{Symbol}}=:all, type::Symbol, norm::Bool=true, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (band === :all && (typeof(channel) != Int64 || length(channel) != 1)) && throw(ArgumentError("For band :all only one channel may be specified."))
-    band === :all && (band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher])
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-    offset < 0 && throw(ArgumentError("offset must be ≥ 0."))
-    len < 0 && throw(ArgumentError("len must be > 0."))
-    (typeof(channel) == Int64 && (channel < 1 || channel > eeg_channel_n(eeg))) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    (epoch != 1 && (offset != 0 || len != 0)) && throw(ArgumentError("For epoch ≠ 1, offset and len must not be specified."))
-    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-    (length(epoch) == 1 && (epoch < 1 || epoch > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    (length(epoch) > 1 && (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg))) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    if length(epoch) > 1
-        sort!(epoch)
-        (epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch = 1
-    end
-
-    # default length is one epoch or 20 seconds
-    len = _len(eeg, len, 20)
-
-    # get epochs markers for len > epoch_len
-    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-    else
-        eeg_tmp = eeg
-    end
-
-    t = collect(0:(1 / eeg_sr(eeg_tmp)):(len / eeg_sr(eeg)))
-    t = t .+ (offset / eeg_sr(eeg_tmp))
-    t = t[1:(end - 1)]
-    t[1] = floor(t[1], digits=2)
-    t[end] = ceil(t[end], digits=2)
-
-    (offset < 0 || offset > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg_tmp))."))
-    (offset + len > eeg_epoch_len(eeg_tmp)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg_tmp))."))
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), epoch]
-
-    band_frq = Vector{Tuple{Real, Real}}()
-    for idx in 1:length(band)
-        push!(band_frq, eeg_band(eeg, band=band[idx]))
-    end
-
-    if typeof(band) == Symbol
-        typeof(channel) <: AbstractRange && (channel = collect(channel))
-        if collect(channel[1]:channel[end]) == channel
-            channel_list = string(channel[1]) * ":" * string(channel[end])
-        elseif typeof(channel) != Int64
-            channel_list = "" 
-            for idx in 1:(length(channel) - 1)
-                channel_list *= string(channel[idx])
-                channel_list *= ", "
-            end
-            channel_list *= string(channel[end])
-        else
-            channel_list = string(channel)
-        end
-        typeof(signal) == Vector{Float64} && (signal = reshape(signal, 1, length(signal)))
-        epoch_tmp = epoch
-        offset > eeg_epoch_len(eeg) && (epoch_tmp = floor(Int64, offset / eeg_epoch_len(eeg)) + 1)
-        title == "" && (title = "$(titlecase(string(band))) power\n[epoch: $epoch_tmp, channel(s): $channel_list]\n[offset: $offset samples, length: $len samples]")
-        labels = eeg_labels(eeg)[channel]
-        typeof(labels) == String && (labels = [labels])
-        p = plot_bands(signal,
-                       band=band,
-                       band_frq=band_frq,
-                       fs=eeg_sr(eeg),
-                       type=type,
-                       labels=labels,
-                       norm=norm,
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       mono=mono;
-                       kwargs...)
-    else
-        signal = vec(signal)
-        epoch_tmp = epoch
-        offset > eeg_epoch_len(eeg) && (epoch_tmp = floor(Int64, offset / eeg_epoch_len(eeg)) + 1)
-        title == "" && (title = "Band powers\n[epoch: $epoch_tmp, channel: $channel ($(eeg_labels(eeg)[channel])), offset: $offset samples, length: $len samples]")
-
-        p = plot_bands(signal,
-                       band=band,
-                       band_frq=band_frq,
-                       fs=eeg_sr(eeg),
-                       type=type,
-                       norm=norm,
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       mono=mono;
-                       kwargs...)
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_save(p; file_name::String)
-
-Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
-
-# Arguments
-
-- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
-- `file_name::String`
-"""
-function eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
-
-    ext = splitext(file_name)[2]
-    ext in [".png", ".pdf", ".jpg", ".tiff"] || throw(ArgumentError("Fiel format must be: .png, .pdf, .tiff or .jpg"))
-    (isfile(file_name) && verbose == true) && @info "File $file_name will be overwritten."
-    if typeof(p) == Plots.Plot{Plots.GRBackend}
-        savefig(p, file_name)
-    else
-        save(file_name, p)
-    end
-
-    nothing
-end
-
-"""
-    eeg_plot_channels(eeg; <keyword arguments>)
-
-Plot values of `c` for selected channels of `eeg`.
-
-# Arguments
-
-- `eeg:NeuroAnalyzer.EEG`
-- `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
-- `epoch::Int64`: number of epoch for which `c` should be plotted
-- `xlabel::String="Channel"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_channels(eeg::NeuroAnalyzer.EEG; c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}, epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Channel", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-    labels = eeg_labels(eeg)[channel]
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    if typeof(c) != Symbol
-        length(c[:, epoch]) == eeg_channel_n(eeg) || throw(ArgumentError("Length of c ($(length(c))) and number of EEG channels ($(length(channel))) do not match."))
-        var = c[channel, epoch]
-    else
-        c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c not found."))
-        component_idx = findfirst(isequal(c), eeg.eeg_header[:components])
-        var = eeg.eeg_components[component_idx][channel, epoch]
-    end
-
-    p = Plots.plot(var,
-             label="",
-             xticks=(1:length(labels), labels),
-             xlabel=xlabel,
-             ylabel=ylabel,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=8,
-             ytickfontsize=8;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_epochs(eeg; <keyword arguments>)
-
-Plot values of `c` for selected epoch of `eeg`.
-
-# Arguments
-
-- `eeg:NeuroAnalyzer.EEG`
-- `c::Union{AbstractVector, Symbol}`: values to plot; if symbol, than use embedded component
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
-- `xlabel::String="Epochs"`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_epochs(eeg::NeuroAnalyzer.EEG; c::Union{AbstractVector, Symbol}, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, xlabel::String="Epochs", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    epoch = _select_epochs(eeg, epoch, 0)
-    _check_epochs(eeg, epoch)
-    mono == true ? palette = :grays : palette = :darktest
-
-    if typeof(c) != Symbol
-        length(c) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of c ($(length(c))) and number of epochs ($(length(epoch))) do not match."))
-        var = c[epoch]
-    else
-        c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c not found."))
-        component_idx = findfirst(isequal(c), eeg.eeg_header[:components])
-        length(eeg.eeg_components[component_idx]) == eeg_epoch_n(eeg) || throw(ArgumentError("Length of component vector ($(length(eeg.eeg_components[component_idx]))) and number of epochs ($(length(epoch))) do not match."))
-        var = eeg.eeg_components[component_idx][epoch]
-    end
-
-    p = Plots.plot(var,
-             label="",
-             xticks=epoch,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             title=title,
-             palette=palette,
-             linewidth=0.5,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=8,
-             ytickfontsize=8;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_filter_response(eeg; <keyword arguments>)
+    plot_filter_response(<keyword arguments>)
 
 Plot filter response.
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
-- `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
-- `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
+- `fs::Int64`: sampling rate
+- `fprototype::Symbol`: filter class: `:fir`, `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`
+- `ftype::Symbol`: filter type: low-pass (`:lp`), high-pass (`:hp`), band-pass (`:bp`), band-stop (`:bs`)
 - `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
 - `order::Int64`: filter order
 - `rp::Real`: dB ripple in the passband
 - `rs::Real`: dB attenuation in the stopband
 - `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
 - `mono::Bool=false`: use color or grey palette
+- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, kwargs...)
+function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    mono == true ? palette = :grays : palette = :darktest
+    _check_var(fprototype, [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype")
+    _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
-    fs = eeg_sr(eeg)
-    fprototype in [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic] || throw(ArgumentError("fprototype must be :fir, :butterworth, :chebyshev1:, :chebyshev2 or :elliptic."))
     fprototype !== :fir && order < 1 && throw(ArgumentError("order must be > 0."))
-    ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs."))
+
+    pal = mono == true ? :grays : :darktest
+
+    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
+    frq_lim = tuple_order(frq_lim)
 
     if ftype === :lp
         length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
@@ -5520,33 +2433,40 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         p1 = Plots.plot(w,
-                  H,
-                  title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
-                  xlims=(0, x_max),
-                  ylims=(-100, 0),
-                  ylabel="Magnitude\n[dB]",
-                  xlabel="Frequency [Hz]",
-                  label="",
-                  titlefontsize=8,
-                  xlabelfontsize=6,
-                  ylabelfontsize=6,
-                  xtickfontsize=4,
-                  ytickfontsize=4,
-                  palette=palette)
+                        H,
+                        title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
+                        # xlims=(0, x_max),
+                        xlims=frq_lim,
+                        ylims=(-100, 0),
+                        ylabel="Magnitude\n[dB]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=5,
+                        xlabelfontsize=4,
+                        ylabelfontsize=4,
+                        xtickfontsize=3,
+                        ytickfontsize=3,
+                        palette=pal)
         if length(cutoff) == 1
             p1 = Plots.plot!((0, cutoff),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:black)
         else
             p1 = Plots.plot!((0, cutoff[1]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:red)
             p1 = Plots.plot!((0, cutoff[2]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:green)
         end
 
         phi, w = phaseresp(ffilter)
@@ -5556,33 +2476,40 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         p2 = Plots.plot(w,
-                  phi,
-                  title="Phase response",
-                  ylims=(-180, 180),
-                  xlims=(0, x_max),
-                  ylabel="Phase\n[°]",
-                  xlabel="Frequency [Hz]",
-                  label="",
-                  titlefontsize=8,
-                  xlabelfontsize=6,
-                  ylabelfontsize=6,
-                  xtickfontsize=4,
-                  ytickfontsize=4,
-                  palette=palette)
+                        phi,
+                        title="Phase response",
+                        ylims=(-180, 180),
+                        # xlims=(0, x_max),
+                        xlims=frq_lim,
+                        ylabel="Phase\n[°]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=5,
+                        xlabelfontsize=4,
+                        ylabelfontsize=4,
+                        xtickfontsize=3,
+                        ytickfontsize=3,
+                        palette=pal)
         if length(cutoff) == 1
             p2 = Plots.plot!((0, cutoff),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:black)
         else
             p2 = Plots.plot!((0, cutoff[1]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:red)
             p2 = Plots.plot!((0, cutoff[2]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:green)
         end
 
         tau, w = grpdelay(ffilter)
@@ -5592,35 +2519,42 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         p3 = Plots.plot(w,
-                  tau,
-                  title="Group delay",
-                  xlims=(0, x_max),
-                  ylabel="Group delay\n[samples]",
-                  xlabel="Frequency [Hz]",
-                  label="",
-                  titlefontsize=8,
-                  xlabelfontsize=6,
-                  ylabelfontsize=6,
-                  xtickfontsize=4,
-                  ytickfontsize=4,
-                  palette=palette)
+                        tau,
+                        title="Group delay",
+                        # xlims=(0, x_max),
+                        xlims=frq_lim,
+                        ylabel="Group delay\n[samples]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=5,
+                        xlabelfontsize=4,
+                        ylabelfontsize=4,
+                        xtickfontsize=3,
+                        ytickfontsize=3,
+                        palette=pal)
         if length(cutoff) == 1
             p3 = Plots.plot!((0, cutoff),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:black)
         else
             p3 = Plots.plot!((0, cutoff[1]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:red)
             p3 = Plots.plot!((0, cutoff[2]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:green)
         end
 
-        p = Plots.plot(p1, p2, p3, layout=(3, 1), palette=palette; kwargs...)
+        p = Plots.plot(p1, p2, p3, size=(1200, 800), left_margin=20*Plots.px, layout=(3, 1), palette=pal; kwargs...)
     else
         w = range(0, stop=pi, length=1024)
         H = _fir_response(ffilter, w)
@@ -5631,33 +2565,40 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         p1 = Plots.plot(w,
-                  H,
-                  title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz\nFrequency response",
-                  xlims=(0, x_max),
-                  ylims=(-100, 0),
-                  ylabel="Magnitude\n[dB]",
-                  xlabel="Frequency [Hz]",
-                  label="",
-                  titlefontsize=8,
-                  xlabelfontsize=6,
-                  ylabelfontsize=6,
-                  xtickfontsize=4,
-                  ytickfontsize=4,
-                  palette=palette)
+                        H,
+                        title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz\nFrequency response",
+                        # xlims=(0, x_max),
+                        xlims=frq_lim,
+                        ylims=(-100, 0),
+                        ylabel="Magnitude\n[dB]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=5,
+                        xlabelfontsize=4,
+                        ylabelfontsize=4,
+                        xtickfontsize=3,
+                        ytickfontsize=3,
+                        palette=pal)
         if length(cutoff) == 1
             p1 = Plots.plot!((0, cutoff),
-                        seriestype=:vline,
-                        linestyle=:dash,
-                        label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:black)
         else
             p1 = Plots.plot!((0, cutoff[1]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:red)
             p1 = Plots.plot!((0, cutoff[2]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:green)
         end
         w = range(0, stop=pi, length=1024)
         phi = _fir_response(ffilter, w)
@@ -5667,36 +2608,1045 @@ function eeg_plot_filter_response(eeg::NeuroAnalyzer.EEG; fprototype::Symbol, ft
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
         p2 = Plots.plot(w,
-                  phi,
-                  title="Phase response",
-                  xlims=(0, x_max),
-                  ylabel="Phase\n[rad]",
-                  xlabel="Frequency [Hz]",
-                  label="",
-                  titlefontsize=8,
-                  xlabelfontsize=6,
-                  ylabelfontsize=6,
-                  xtickfontsize=4,
-                  ytickfontsize=4,
-                  palette=palette)
+                        phi,
+                        title="Phase response",
+                        # xlims=(0, x_max),
+                        xlims=frq_lim,
+                        ylabel="Phase\n[rad]",
+                        xlabel="Frequency [Hz]",
+                        label="",
+                        titlefontsize=5,
+                        xlabelfontsize=4,
+                        ylabelfontsize=4,
+                        xtickfontsize=3,
+                        ytickfontsize=3,
+                        palette=pal)
         if length(cutoff) == 1
             p2 = Plots.plot!((0, cutoff),
-                        seriestype=:vline,
-                        linestyle=:dash,
-                        label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:black)
         else
             p2 = Plots.plot!((0, cutoff[1]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:red)
             p2 = Plots.plot!((0, cutoff[2]),
-                       seriestype=:vline,
-                       linestyle=:dash,
-                       label="")
+                             seriestype=:vline,
+                             linestyle=:dash,
+                             label="",
+                             lw=0.5,
+                             lc=:green)
         end
 
-        p = Plots.plot(p1, p2, layout=(2, 1), palette=palette; kwargs...)
+        p = Plots.plot(p1, p2, size=(1200, 800), left_margin=20*Plots.px, layout=(2, 1), palette=pal; kwargs...)
     end
+
+    return p
+end
+
+"""
+    plot_weights(locs; <keyword arguments>)
+
+Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `weights::Vector{<:Real}=[]`: weights vector
+- `labels::Bool=true`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+- `head_details::Bool=true`: draw nose and ears
+- `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, weights::Vector{<:Real}=[], labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
+
+    length(weights) > length(channel) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(channel)))."))
+    length(weights) < 1 && throw(ArgumentError("weights must contain at least one value."))
+
+    # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
+    # channel = setdiff(channel, selected)
+
+    pal = mono == true ? :grays : :darktest
+
+    marker_size = plot_size ÷ 100
+    font_size = plot_size ÷ 100
+
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   palette=pal,
+                   size=(plot_size, plot_size),
+                   markerstrokewidth=0,
+                   border=:none,
+                   aspect_ratio=1,
+                   margins=-plot_size * Plots.px,
+                   titlefontsize=plot_size ÷ 50)
+
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+
+    for idx in 1:length(locs[!, :labels])
+        if idx in channel
+            p = Plots.plot!((loc_x[idx], loc_y[idx]),
+                            color=:black,
+                            seriestype=:scatter,
+                            grid=true,
+                            label="",
+                            markersize=marker_size,
+                            markerstrokewidth=0,
+                            markerstrokealpha=0)
+        end
+    end
+
+    for idx in 1:length(locs[!, :labels])
+        if idx in channel
+            Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(string(weights[idx]), pointsize=font_size)))
+        end
+    end
+
+    hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
+    p = Plots.plot!(hd)
+
+    Plots.plot(p)
+
+    return p
+end
+
+
+"""
+    eeg_plot_weights(eeg; <keyword arguments>)
+
+Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `weights::Matrix{<:Real}`: matrix of weights
+- `labels::Bool=false`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+- `head_details::Bool=true`: draw nose and ears
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_weights(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, weights::Vector{<:Real}, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
+    # select channels, default is all channels
+    channel == 0 && (channel = _select_channels(eeg, channel))
+    _check_channels(eeg, channel)
+    typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
+
+    p = plot_weights(eeg.eeg_locs, weights=weights, channel=channel, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+
+    Plots.plot!(p, title=title; kwargs)
+
+    return p
+end
+
+"""
+    eeg_plot_connections(eeg; <keyword arguments>)
+
+Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `connections::Matrix{<:Real}`: matrix of connections weights
+- `threshold::Real`: plot all connection above threshold
+- `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+- `weights::Bool=true`: weight line widths and alpha based on connection value
+- `labels::Bool=false`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+- `head_details::Bool=true`: draw nose and ears
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `title::String=""`: plot title
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+
+    _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
+
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
+    # select channels, default is all channels
+    channel == 0 && (channel = _select_channels(eeg, channel))
+    _check_channels(eeg, channel)
+    typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
+
+    p = plot_connections(eeg.eeg_locs, connections=connections, channel=channel, threshold=threshold, threshold_type=threshold_type, weights=weights, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+
+    Plots.plot!(p, title=title; kwargs)
+
+    return p
+end
+
+"""
+    eeg_plot_connections(eeg; <keyword arguments>)
+
+Plot connections between channels. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `connections::Matrix{<:Real}`: matrix of connections weights
+- `threshold::Real`: plot all connection above threshold
+- `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+- `weights::Bool=true`: weight line widths and alpha based on connection value
+- `labels::Bool=false`: plot electrode labels
+- `head_labels::Bool=true`: plot head labels
+- `mono::Bool=false`: use color or grey palette
+- `head_details::Bool=true`: draw nose and ears
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, kwargs...)
+
+    size(connections, 1) == length(channel) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
+    _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
+    pal = mono == true ? :grays : :darktest
+    marker_size = plot_size ÷ 100
+    font_size = plot_size ÷ 100
+
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   palette=pal,
+                   size=(plot_size, plot_size),
+                   markerstrokewidth=0,
+                   border=:none,
+                   aspect_ratio=1,
+                   margins=-plot_size * Plots.px,
+                   titlefontsize=plot_size ÷ 50)
+
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+
+    for idx in 1:length(locs[!, :labels])
+        if idx in channel
+            p = Plots.plot!((loc_x[idx], loc_y[idx]),
+                            color=:gray,
+                            seriestype=:scatter,
+                            grid=true,
+                            label="",
+                            markersize=marker_size,
+                            markerstrokewidth=0,
+                            markerstrokealpha=0)
+        end
+    end
+
+    if labels == true
+        for idx in 1:length(locs[!, :labels])
+            if idx in channel
+                Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
+            end
+        end
+    end
+
+    hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
+    p = Plots.plot!(hd)
+
+    m_tmp = s_normalize_max(connections)
+
+#    loc_x = loc_x[channel]
+#    loc_y = loc_y[channel]
+
+    for idx1 in 1:size(connections, 1)
+        for idx2 in 1:size(connections, 1)
+            if threshold_type === :g
+                if connections[idx1, idx2] > threshold
+                    if weights == true
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                    else
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
+                end
+            elseif threshold_type === :l
+                if connections[idx1, idx2] < threshold
+                    if weights == true
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                    else
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
+                end
+            elseif threshold_type === :eq
+                if connections[idx1, idx2] == threshold
+                    if weights == true
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                    else
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
+                end
+            elseif threshold_type === :leq
+                if connections[idx1, idx2] <= threshold
+                    if weights == true
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                    else
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
+                end
+            elseif threshold_type === :geq
+                if connections[idx1, idx2] >= threshold
+                    if weights == true
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m_tmp[idx1, idx2], alpha=0.25 * m_tmp[idx1, idx2], lc=:black, legend=false)
+                    else
+                        p = Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
+                    end
+                end
+            end
+        end
+    end
+
+    return p
+end
+
+"""
+    eeg_plot(eeg, c; <keyword arguments>)
+
+Plot channel/epoch data.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}`: component to plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `plot_by::Symbol`: c values refer to: :labels, :channels or :epochs
+- `type::Symbol`: plot type: histogram (`:hist`), kernel density (`:kd`), bar plot (`:bar`), box plot (`:box`), violin plot (`:violin`), paired (`:paired`) or polar (`:polar`); for `:box` and `:violin` `c` must contain ≥ 2 values per channel
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+
+# Notes
+
+Labeled matrix is a dictionary of labels and vectors associated with these labels. This way plotting of vectors non-equal length is possible. Labeled matrix is created using `_labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{<:Real}})` and converted back to keys and values using `_dict2labeled_matrix(d::Dict)`.
+
+For `:polar plot` if `c` is a vector, than it contains phases in radians. If `c` is a two column matrix, than first column contains phases in radians and second column contains lengths.
+"""
+function eeg_plot_stats(eeg::NeuroAnalyzer.EEG, c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", plot_by::Symbol, type::Symbol, mono::Bool=false, kwargs...)
+
+    _check_var(plot_by, [:channels, :epochs, :labels], "plot_by")
+    _check_var(type, [:hist, :kd, :line, :bar, :box, :violin, :dots, :paired, :polar], "type")
+
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+
+    if plot_by === :channels
+        channel == 0 && throw(ArgumentError("channel must be specified for plot by :channels."))
+        epoch == 0 && (epoch = _select_epochs(eeg, epoch))
+        _check_channels(eeg, channel)
+        _check_epochs(eeg, epoch)
+        labels = eeg_labels(eeg)[channel]
+        if ndims(c) == 2
+            c = c[channel, epoch]
+        else
+            length(c) < length(channel) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of channels ($(length(channel)))"))
+            c = c[channel]
+        end
+    elseif plot_by === :epochs
+        epoch == 0 && throw(ArgumentError("epoch must be specified for plot by :epochs."))
+        channel == 0 && (channel = _select_channels(eeg, channel))
+        _check_epochs(eeg, epoch)
+        _check_channels(eeg, channel)
+        labels = "e" .* string.(collect(epoch))
+        if ndims(c) == 2
+            c = c[channel, epoch]
+        else
+            length(c) < length(epoch) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of epochs ($(length(epoch)))"))
+            c = c[epoch]
+        end
+    elseif plot_by === :labels
+        if typeof(c) <: Dict
+            l_tmp, c = _dict2labeled_matrix(c)
+            l_tmp = reverse!(l_tmp)
+            c = reverse!(c)
+            labels == [""] && (labels = l_tmp)
+            length(c) == length(labels) || throw(ArgumentError("Number of rows of c ($(length(c))) does not match number of labels ($(length(labels)))"))
+        else
+            if ndims(c) == 1
+                length(c) == length(labels) || throw(ArgumentError("Length c ($(length(c))) does not match the number of labels ($(length(epoch)))"))
+            else
+                size(c, 1) == length(labels) || throw(ArgumentError("Number of rows of c ($(size(c, 1))) does not match number of labels ($(length(labels)))"))
+            end
+        end
+    end
+
+    pal = mono == true ? :grays : :darktest
+
+    if type in [:bar, :hist, :kd]
+        if plot_by === :epochs
+            length(channel) > 1 && throw(ArgumentError("For :bar, :hist and :kd plots and plot by :epochs only one channel may be specified."))
+            length(epoch) == 1 && throw(ArgumentError("More than 1 epoch must be specified."))
+        elseif plot_by === :channels
+            plot_by === :channels && length(epoch) > 1 && throw(ArgumentError("For :bar, :hist and :kd plots and plot by :channels only one epoch may be specified."))
+            length(channel) == 1 && throw(ArgumentError("More than 1 channel must be specified."))
+        end
+    end
+
+    if type === :hist
+        p = plot_histogram(c,
+                           type=:hist,
+                            mono=mono,
+                            xlabel=xlabel,
+                            title=title;
+                            kwargs)
+    elseif type === :kd
+        p = plot_histogram(c,
+                           type=:kd,
+                           mono=mono,
+                           xlabel=xlabel,
+                           title=title;
+                           kwargs)
+    elseif type === :line
+        if ndims(c) == 1
+            color = mono == true ? :lightgrey : :lightblue
+            p = Plots.plot(c,
+                           seriestype=:line,
+                           size=(1200, 800),
+                           left_margin=20Plots.px,
+                           legend=false,
+                           xticks=(1:length(labels), labels),
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           color=color,
+                           title=title,
+                           palette=pal,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8,
+                           kwargs=kwargs)
+        else
+            if plot_by === :channels
+                p = Plots.plot(c[:, 1],
+                               seriestype=:line,
+                               size=(1200, 800),
+                               left_margin=20Plots.px,
+                               label="e 1",
+                               legend=true,
+                               xticks=(1:length(labels), labels),
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               color=1,
+                               title=title,
+                               palette=pal,
+                               titlefontsize=8,
+                               xlabelfontsize=8,
+                               ylabelfontsize=8,
+                               xtickfontsize=8,
+                               ytickfontsize=8,
+                               kwargs=kwargs)
+                for idx in 2:size(c, 2)
+                    p = Plots.plot!(c[:, idx],
+                                    seriestype=:line,
+                                    label="e $idx",
+                                    color=idx)
+                end
+            elseif plot_by === :epochs
+                p = Plots.plot(c[1, :],
+                               seriestype=:line,
+                               size=(1200, 800),
+                               left_margin=20Plots.px,
+                               label="ch 1",
+                               legend=true,
+                               xticks=(1:length(labels), labels),
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               color=1,
+                               title=title,
+                               palette=pal,
+                               titlefontsize=8,
+                               xlabelfontsize=8,
+                               ylabelfontsize=8,
+                               xtickfontsize=8,
+                               ytickfontsize=8,
+                               kwargs=kwargs)
+                for idx in 2:size(c, 1)
+                    p = Plots.plot!(c[idx, :],
+                                    seriestype=:line,
+                                    label="ch $idx",
+                                    color=idx)
+                end
+            else
+                p = Plots.plot(c,
+                               seriestype=:line,
+                               size=(1200, 800),
+                               left_margin=20Plots.px,
+                               legend=false,
+                               xticks=(1:length(labels), labels),
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               color=1,
+                               title=title,
+                               palette=pal,
+                               titlefontsize=8,
+                               xlabelfontsize=8,
+                               ylabelfontsize=8,
+                               xtickfontsize=8,
+                               ytickfontsize=8,
+                               kwargs=kwargs)
+            end
+        end
+    elseif type === :bar
+        color = mono == true ? :lightgrey : :lightblue
+        p = Plots.plot(c,
+                       seriestype=:bar,
+                       size=(1200, 800),
+                       left_margin=20Plots.px,
+                       legend=false,
+                       xticks=(1:length(labels), labels),
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       title=title,
+                       color=color,
+                       palette=pal,
+                       linewidth=0.5,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8,
+                       kwargs=kwargs)
+    elseif type in [:box, :violin]
+        color = mono == true ? :lightgrey : :auto
+        if plot_by !== :labels
+            p = Plots.plot(c',
+                           seriestype=type,
+                           size=(1200, 800),
+                           left_margin=20Plots.px,
+                           legend=false,
+                           xticks=(1:length(labels), labels),
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           color=color,
+                           palette=pal,
+                           linewidth=0.5,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8;
+                           kwargs...)
+        else
+            p = Plots.plot(c,
+                           seriestype=type,
+                           size=(1200, 800),
+                           left_margin=20Plots.px,
+                           legend=false,
+                           xticks=(1:length(labels), labels),
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           color=color,
+                           palette=pal,
+                           linewidth=0.5,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8;
+                           kwargs...)
+        end
+    elseif type === :dots
+        p = Plots.plot(size=(1200, 800),
+                       left_margin=20Plots.px,
+                       legend=false,
+                       xticks=(1:length(labels), labels),
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       title=title,
+                       palette=pal,
+                       linewidth=0.5,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8;
+                       kwargs...)
+        for idx1 in 1:length(labels)
+            for idx2 in 1:length(c[idx1])
+                if mono == false
+                    p = Plots.scatter!((idx1, c[idx1][idx2]),
+                                       color=idx1)
+                else
+                    p = Plots.scatter!((idx1, c[idx1][idx2]),
+                                       color=:black)
+                end
+            end
+        end
+    elseif type === :paired
+        ll = Vector{Int64}()
+        for idx in 1:length(labels)
+            push!(ll, length(c[idx]))
+        end
+        length(unique(ll)) == 1 || throw(ArgumentError("For :paired plot each label must have the same number of values."))
+        p = Plots.plot(size=(1200, 800),
+                       left_margin=20Plots.px,
+                       legend=false,
+                       xticks=(1:length(labels), labels),
+                       xlabel=xlabel,
+                       ylabel=ylabel,
+                       title=title,
+                       palette=pal,
+                       linewidth=0.5,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8;
+                       kwargs...)
+        for idx1 in 1:length(labels)
+            for idx2 in 1:length(c[idx1])
+                if mono == false
+                    p = Plots.scatter!((idx1, c[idx1][idx2]),
+                                       color=idx2)
+                else
+                    p = Plots.scatter!((idx1, c[idx1][idx2]),
+                                       color=:black)
+                end
+            end
+        end
+        for idx1 in 1:length(c[1])
+            c_tmp = zeros(length(labels))
+            for idx2 in 1:length(labels)
+                c_tmp[idx2] = c[idx2][idx1]
+            end
+            p = Plots.plot!(c_tmp,
+                            color=:black)
+        end
+    elseif type === :polar
+        if ndims(c) == 1
+            p = Plots.plot([0, c[1]], [0, 1],
+                           size=(800, 800),
+                           projection=:polar,
+                           left_margin=50Plots.px,
+                           right_margin=50Plots.px,
+                           bottom_margin=30Plots.px,
+                           legend=false,
+                           xticks=false,
+                           yticks=false, 
+                           title=title,
+                           color=:black,
+                           palette=pal,
+                           linewidth=0.5,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8;
+                           kwargs...)
+            for idx in 2:length(c)
+                p = Plots.plot!([0, c[idx]], [0, 1],
+                                projection=:polar,
+                                color=:black)
+            end
+        else
+            size(c, 2) > 2 && throw(ArgumentError("c must have exactly 2 columns: phases and lengths."))
+            p = Plots.plot([0, c[1, 1]], [0, c[1, 2]],
+                           size=(800, 800),
+                           projection=:polar,
+                           left_margin=50Plots.px,
+                           right_margin=50Plots.px,
+                           bottom_margin=30Plots.px,
+                           legend=false,
+                           xticks=false,
+                           yticks=false, 
+                           title=title,
+                           color=:black,
+                           palette=pal,
+                           linewidth=0.5,
+                           titlefontsize=8,
+                           xlabelfontsize=8,
+                           ylabelfontsize=8,
+                           xtickfontsize=8,
+                           ytickfontsize=8;
+                           kwargs...)
+            for idx in 2:size(c, 1)
+                p = Plots.plot!([0, c[idx, 1]], [0, c[idx, 2]],
+                                projection=:polar,
+                                color=:black)
+            end
+        end
+    end
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_topo(c; <keyword arguments>)
+
+Plot topographical view.
+
+# Arguments
+
+- `signal::Vector{<:Real}`: values to plot (one value per channel)
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `cb::Bool=true`: plot color bar
+- `cb_label::String="[A.U.]"`: color bar label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `plot_contours::Bools=true`: plot contours over topo plot
+- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `head_labels::Bool=false`: plot head labels
+- `head_details::Bool=true`: draw nose and ears
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+    
+    pal = mono == true ? :grays : :darktest
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    loc_x = loc_x[channel]
+    loc_y = loc_y[channel]
+
+    s_interpolated, interpolated_x, interpolated_y = _interpolate(signal, loc_x, loc_y, 100, imethod, nmethod)
+
+    p = Plots.plot(grid=true,
+                   framestyle=:none,
+                   palette=pal,
+                   size=(plot_size, plot_size),
+                   border=:none,
+                   aspect_ratio=1,
+                   left_margin=-20 * Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=6,
+                   ylabelfontsize=6,
+                   xtickfontsize=4,
+                   ytickfontsize=4,
+                   title=title;
+                   kwargs...)
+
+    p = Plots.plot!(interpolated_x,
+                    interpolated_y,
+                    s_interpolated,
+                    fill=:darktest,
+                    seriestype=:heatmap,
+                    seriescolor=pal,
+                    colorbar=cb,
+                    colorbar_title=cb_label,
+                    levels=10,
+                    linewidth=0)
+    if plot_contours
+        p = Plots.plot!(interpolated_x,
+                        interpolated_y,
+                        s_interpolated,
+                        fill=:darktest,
+                        seriestype=:contour,
+                        seriescolor=pal,
+                        colorbar=cb,
+                        colorbar_title=cb_label,
+                        levels=5,
+                        linecolor=:black,
+                        linewidth=0.2)
+    end
+    if plot_electrodes
+        p = Plots.plot!((loc_x, loc_y),
+                        color=:black,
+                        seriestype=:scatter,
+                        grid=true,
+                        label="",
+                        markersize=5,
+                        markerstrokewidth=0,
+                        markerstrokealpha=0)
+    end
+
+    # draw head
+    hd = _draw_head(p, head_labels=head_labels, head_details=head_details, topo=true)
+    p = Plots.plot!(hd)
+
+    return p
+
+end
+
+"""
+    eeg_plot_topo(eeg; <keyword arguments>)
+
+Topographical plot.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
+- `mono::Bool=false`: use color or grey palette
+- `cb::Bool=true`: plot color bar
+- `cb_label::String="[A.U.]"`: color bar label
+- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `plot_contours::Bools=true`: plot contours over topo plot
+- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `head_labels::Bool=false`: plot head labels
+- `head_details::Bool=true`: draw nose and ears
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+    pal = mono == true ? :grays : :darktest
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    _check_var(amethod, [:mean, :median], "amethod")
+    _check_segment(eeg, segment[1], segment[2])
+
+    if epoch != 0
+        _check_epochs(eeg, epoch)
+        if eeg_epoch_n(eeg) == 1
+            epoch = 0
+        else
+            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+            if typeof(epoch) == Int64
+                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
+            else
+                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
+            end
+            epoch = 0
+        end
+    end
+
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
+    # select channels, default is all channels
+    channel == 0 && (channel = _select_channels(eeg, channel))
+    length(channel) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
+    _check_channels(eeg, channel)
+
+    # get time vector
+    if segment[2] <= eeg_epoch_len(eeg)
+        signal = eeg.eeg_signals[channel, segment[1]:segment[2], 1]
+    else
+        signal = eeg_epochs(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+    end
+    t = _get_t(segment[1], segment[2], eeg_sr(eeg))
+    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    epoch = _t2epoch(eeg, segment[1], segment[2])
+    
+    # average signal and convert to vector
+    if size(signal, 2) > 1
+        if amethod === :mean
+            signal = vec(mean(signal, dims=2))
+        elseif amethod === :median
+            signal = vec(median(signal, dims=2))
+        end
+    else
+        signal = vec(signal)
+    end
+
+    if segment[2] != segment[1] + 1
+        title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(channel))): $(_channel2channel_name(channel)), epoch$(_pl(length(epoch))): $epoch, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
+    else
+        title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(channel))): $(_channel2channel_name(channel)), epoch$(_pl(length(epoch))): $epoch, time point: $t_s1]")
+    end
+    cb_label == "default" && (cb_label = "[A.U.]")
+
+    p = plot_topo(signal, channel=channel, locs=eeg.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+
+    Plots.plot(p)
+
+    eeg = deepcopy(eeg_backup)
+
+    return p
+end
+
+"""
+    eeg_plot_topo(eeg; <keyword arguments>)
+
+Topographical plot of embedded or external component.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Symbol, AbstractArray}`: component to plot
+- `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
+- `mono::Bool=false`: use color or grey palette
+- `cb::Bool=true`: plot color bar
+- `cb_label::String="[A.U.]"`: color bar label
+- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+- `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `plot_contours::Bools=true`: plot contours over topo plot
+- `plot_electrodes::Bools=true`: plot electrodes over topo plot
+- `head_labels::Bool=false`: plot head labels
+- `head_details::Bool=true`: draw nose and ears
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+    pal = mono == true ? :grays : :darktest
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    _check_var(amethod, [:mean, :median], "amethod")
+
+    no_timepoint = false
+    if typeof(c) == Matrix{Float64}
+        c = reshape(c, size(c, 1), size(c, 2), 1)
+        segment = (1, size(c, 2))
+        no_timepoint = true
+    elseif typeof(c) == Vector{Float64}
+        c = reshape(c, length(c), 1, 1)
+        segment = (1, 1)
+        no_timepoint = true
+    elseif size(c, 2) == 1
+        no_timepoint = true
+        segment = (1, 1)
+    end
+
+    _check_segment(eeg, segment[1], segment[2])
+
+    if epoch != 0
+        _check_epochs(eeg, epoch)
+        if eeg_epoch_n(eeg) == 1
+            epoch = 0
+        else
+            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+            if typeof(epoch) == Int64
+                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
+            else
+                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
+            end
+            epoch = 0
+        end
+    end
+
+    # remove non-EEG/MEG channels
+    eeg_backup = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
+    # select component channels, default is all channels
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
+    labels = _gen_clabels(c)[c_idx]
+
+    # get time vector
+    if segment[2] <= eeg_epoch_len(eeg)
+        signal = c[c_idx, segment[1]:segment[2], 1]
+    else
+        signal = _make_epochs(c, epoch_n=1)[c_idx, segment[1]:segment[2], 1]
+    end
+    if segment[1] != segment[2]
+        t = _get_t(segment[1], segment[2], eeg_sr(eeg))
+    else
+        t = _get_t(segment[1], segment[2] + 1, eeg_sr(eeg))
+    end
+    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    epoch = _t2epoch(eeg, segment[1], segment[2])
+    
+    # average signal and convert to vector
+    if size(signal, 2) > 1
+        if amethod === :mean
+            signal = vec(mean(signal, dims=2))
+        elseif amethod === :median
+            signal = vec(median(signal, dims=2))
+        end
+    else
+        signal = vec(signal)
+    end
+
+    if segment[2] != segment[1]
+        if no_timepoint != true
+            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), epoch$(_pl(length(epoch))): $epoch, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
+        else
+            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), averaged ($(string(amethod))) over $(length(segment[1]:segment[2])) time point$(_pl(length(segment)))]")
+        end
+    else
+        if no_timepoint != true
+            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), epoch$(_pl(length(epoch))): $epoch, time point: $t_s1]")
+        else
+            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), $(size(c, 2)) time point$(_pl(size(c, 2)))]")
+        end
+    end
+    cb_label == "default" && (cb_label = "[A.U.]")
+
+    p = plot_topo(signal, channel=c_idx, locs=eeg.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+
+    Plots.plot(p)
+
+    eeg = deepcopy(eeg_backup)
 
     return p
 end
@@ -5713,1637 +3663,23 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
 - `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
 - `mono::Bool=false`: use color or grey palette
+- `title::String=""`: plot title
 - `kwargs`: optional arguments for `p` vector plots
 
 # Returns
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
+function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String="", layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 
-    mono == true ? palette = :grays : palette = :darktest
+    palette = mono == true ? :grays : :darktest
 
     pc = Plots.plot(grid=false,
-              framestyle=:none,
-              border=:none,
-              margins=0Plots.px)
-    pc = Plots.plot!(p..., layout=layout, palette=palette; kwargs...)
+                    framestyle=:none,
+                    border=:none,
+                    margins=0Plots.px)
+    pc = Plots.plot!(p..., title=title, layout=layout, palette=palette; kwargs...)
     Plots.plot(pc)
 
     return pc
-end
-
-"""
-    eeg_plot_env(eeg; <keyword arguments>)
-
-Plot envelope of `eeg` channels.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time), :hamp (Hilbert spectrum amplitude)
-- `average::Symbol`: averaging method: :no, :mean or :median
-- `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-- `epoch::Int64`: epoch number to display
-- `channel::Int64`: channel to display
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_env(eeg::NeuroAnalyzer.EEG; type::Symbol, average::Symbol=:no, dims::Union{Int64, Nothing}=nothing, d::Int64=32, epoch::Int64, channel::Int64, xlabel::String="", ylabel::String="", title::String="", y_lim::Tuple{Real, Real}=(0, 0), frq_lim::Tuple{Real, Real}=(0, 0), mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    type in [:amp, :pow, :spec, :hamp] || throw(ArgumentError("type must be :amp, :pow, :spec or :hamp."))
-
-    type === :amp && (d = 32)
-    type === :hamp && (d = 8)
-    type === :pow && (d = 8)
-    type === :spec && (d = 8)
-
-    type === :amp && (type = :amplitude)
-    type === :hamp && (type = :hamplitude)
-    type === :pow && (type = :power)
-    type === :spec && (type = :spectrogram)
-
-    average in [:no, :mean, :median] || throw(ArgumentError("average must be :no, :mean or :median."))
-    (epoch < 1 || epoch > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    (channel < 1 || epoch > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    average === :no && (dims = nothing)
-    (average !== :no && dims == nothing) && throw(ArgumentError("dims must be ≥ 1 and ≤ 3."))
-    (average !== :no && (dims < 1 || dims > 3)) && throw(ArgumentError("dims must be ≥ 1 and ≤ 3."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    t = eeg.eeg_epochs_time
-    t[1] = floor(t[1], digits=2)
-    t[end] = ceil(t[end], digits=2)
-
-    if average === :no
-        type === :amplitude && ((e, t) = eeg_tenv(eeg, d=d))
-        type === :hamplitude && ((e, t) = eeg_henv(eeg, d=d))
-        type === :power && ((e, t) = eeg_penv(eeg, d=d))
-        type === :spectrogram && ((e, t) = eeg_senv(eeg, d=d))
-    elseif average === :mean
-        type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_mean(eeg, dims=dims, d=d))
-        type === :hamplitude && ((e, e_u, e_l, t) = eeg_henv_mean(eeg, dims=dims, d=d))
-        type === :power && ((e, e_u, e_l, t) = eeg_penv_mean(eeg, dims=dims, d=d))
-        type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_mean(eeg, dims=dims, d=d))
-    elseif average === :median
-        type === :amplitude && ((e, e_u, e_l, t) = eeg_tenv_median(eeg, dims=dims, d=d))
-        type === :hamplitude && ((e, e_u, e_l, t) = eeg_henv_median(eeg, dims=dims, d=d))
-        type === :power && ((e, e_u, e_l, t) = eeg_penv_median(eeg, dims=dims, d=d))
-        type === :spectrogram && ((e, e_u, e_l, t) = eeg_senv_median(eeg, dims=dims, d=d))
-    end
-
-    type === :amplitude && (xlabel == "" && (xlabel = "Time [s]"))
-    type === :amplitude && (ylabel == "" && (ylabel = "Amplitude [μV]"))
-    (type === :amplitude && y_lim == (0,0)) && (y_lim = (-200, 200))
-    type === :amplitude && (x_lim = _xlims(t))
-    type === :amplitude && (x_ticks = _xticks(t))
-
-    type === :hamplitude && (xlabel == "" && (xlabel = "Time [s]"))
-    type === :hamplitude && (ylabel == "" && (ylabel = "Amplitude"))
-    if type === :hamplitude && y_lim == (0,0)
-        if average === :no
-            y_lim = (minimum(e[channel, :, epoch]) - 0.1 * minimum(e[channel, :, epoch]), maximum(e[channel, :, epoch]) + 0.1 * maximum(e[channel, :, epoch]))
-        else
-            y_lim = (minimum(e_l) - 0.1 * minimum(e_l), maximum(e_u) + 0.1 * maximum(e_u))
-        end
-    end
-    type === :hamplitude && (x_lim = _xlims(t))
-    type === :hamplitude && (x_ticks = _xticks(t))
-
-    type === :power && (xlabel == "" && (xlabel = "Frequency [Hz]"))
-    type === :power && (t = linspace(t[1], t[end], length(t)))
-    type === :power && (ylabel == "" && (ylabel = "Power [dB/Hz]"))
-    type === :power && (x_lim = (frq_lim[1], frq_lim[end]))
-    type === :power && (x_ticks = round.(linspace(frq_lim[1], frq_lim[end], 10), digits=1))
-    (type === :power && y_lim == (0,0)) && (y_lim = (-50, 50))
-
-    type === :spectrogram && (xlabel == "" && (xlabel = "Time [s]"))
-    type === :spectrogram && (ylabel == "" && (ylabel = "Frequency [Hz]"))
-    type === :spectrogram && (x_lim = _xlims(t))
-    (type === :spectrogram && y_lim == (0,0)) && (y_lim = frq_lim)
-    type === :spectrogram && (x_ticks = _xticks(t))
-
-    channel_name = eeg_labels(eeg)[channel]
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    if dims == 1
-        e = e[:, epoch]
-        average !== :no && (e_u = e_u[:, epoch]; e_l = e_l[:, epoch])
-        if type === :hamplitude
-            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
-        else
-            title == "" && (title = "Envelope: $type\n[$average of averaged channels, epoch: $epoch, time window: $t_s1:$t_s2]")
-        end
-    elseif dims == 2
-        e = e[:, channel]
-        e_u = e_u[:, channel]
-        e_l = e_l[:, channel]
-        if type === :hamplitude
-            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
-        else
-            title == "" && (title = "Envelope: $type\n[$average of averaged epochs, channel: $channel_name, time window: $t_s1:$t_s2]")
-        end
-    elseif dims == 3
-        if type === :hamplitude
-            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[$average of averaged channels and epochs, time window: $t_s1:$t_s2]")
-        else
-            title == "" && (title = "Envelope: $type\n[$average of averaged channels and epochs, time window: $t_s1:$t_s2]")
-        end
-    else
-        e = e[channel, :, epoch]
-        if type === :hamplitude
-            title == "" && (title = "Envelope: Hilbert spectrum amplitude\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-        else
-            title == "" && (title = "Envelope: $type\n[channel: $channel_name, epoch: $epoch, time window: $t_s1:$t_s2]")
-        end
-    end
-
-    p = Plots.plot(t,
-                   e,
-                   label="",
-                   legend=false,
-                   title=title,
-                   xlabel=xlabel,
-                   xlims=x_lim,
-                   xticks=x_ticks,
-                   ylabel=ylabel,
-                   ylims=y_lim,
-                   yguidefontrotation=0,
-                   linewidth=0.5,
-                   color=:black,
-                   grid=true,
-                   titlefontsize=8,
-                   xlabelfontsize=6,
-                   ylabelfontsize=6,
-                   xtickfontsize=4,
-                   ytickfontsize=4,
-                   palette=palette;
-                   kwargs...)
-    if average !== :no
-        p = Plots.plot!(t,
-                        e_u,
-                        fillrange=e_l,
-                        fillalpha=0.35, 
-                        label=false,
-                        t=:line,
-                        c=:grey,
-                        linewidth=0.5)
-        p = Plots.plot!(t,
-                        e_l,
-                        label=false,
-                        t=:line,
-                        c=:grey,
-                        lw=0.5)
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    eeg_plot_ispc(eeg1, eeg2; <keyword arguments>)
-
-Plot ISPC `eeg1` and `eeg2` channels/epochs.
-
-# Arguments
-
-- `eeg1:NeuroAnalyzer.EEG`
-- `eeg2:NeuroAnalyzer.EEG`
-- `channel1::Int64`: channel to plot
-- `channel2::Int64`: channel to plot
-- `epoch1::Int64`: epoch to plot
-- `epoch2::Int64`: epoch to plot
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    ispc, ispc_angle, signal_diff, phase_diff, s1_phase, s2_phase = eeg_ispc(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
-    ispc = round.(ispc, digits=2)
-
-    t = eeg1.eeg_epochs_time
-
-    p1 = @views Plots.plot(t, eeg1.eeg_signals[channel1, :, epoch1], color=:black, lw=0.2)
-    p1 = @views Plots.plot!(t, eeg2.eeg_signals[channel2, :, epoch2], color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
-
-    p2 = @views Plots.plot(t, signal_diff[1, :, 1], color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
-
-    p3 = @views Plots.plot(t, s1_phase[1, :, 1], color=:black, lw=0.2)
-    p3 = @views Plots.plot!(t, s2_phase[1, :, 1], color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
-
-    p4 = @views Plots.plot(t, phase_diff[1, :, 1], color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
-
-    p5 = @views Plots.plot([0, s1_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p5 = @views Plots.plot!([0, s1_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
-    end
-
-    p5 = @views Plots.plot!([0, s2_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p5 = @views Plots.plot!([0, s2_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
-    end
-
-    p6 = @views Plots.plot([0, phase_diff[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and ISPC = $(ispc[1])")
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p6 = @views Plots.plot!([0, phase_diff[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
-    end
-    p6 = @views Plots.plot!([0, ispc_angle[1]], [0, ispc[1]], lw=1, color=:red)
-    
-    p = Plots.plot(p1, p2, p3, p4, p5, p6,
-             layout=(3, 2),
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             palette=palette;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_itpc(eeg; <keyword arguments>)
-
-Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
-
-# Arguments
-
-- `eeg:NeuroAnalyzer.EEG`
-- `channel::Int64`: channel to plot
-- `t::Int64`: time point to plot
-- `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_itpc(eeg::NeuroAnalyzer.EEG; channel::Int64, t::Int64, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    itpc, itpcz, itpc_angle, itpc_phases = eeg_itpc(eeg, channel=channel, t=t, w=w)
-    itpc = round(itpc, digits=2)
-    itpcz = round(itpcz, digits=2)
-    t = eeg_s2t(eeg, t=t)
-
-    p1 = Plots.plot(itpc_phases,
-              seriestype=:histogram,
-              bins=(length(itpc_phases) ÷ 10),
-              xticks=[-3.14, 0, 3.14],
-              xlims=(-pi, pi),
-              fill=:lightgrey,
-              title="Phase angles across trials\nchannel: $channel",
-              xlabel="Phase angle [rad]",
-              ylabel="Count/bin")
-
-    if z == false
-        if w === nothing
-            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPC at $t s = $itpc")
-        else
-            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPC at $t s = $itpc")
-        end
-    else
-        if w === nothing
-            p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nITPCz at $t s = $itpcz")
-        else
-            nothing && (p2 = @views Plots.plot([0, itpc_phases[1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phase differences\nwITPCz at $t s = $itpcz"))
-        end
-    end
-    for idx in 2:length(itpc_phases)
-        p2 = @views Plots.plot!([0, itpc_phases[idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
-    end
-    itpcz > 1 && (itpcz = 1)
-    z == false && (p2 = Plots.plot!([0, itpc_angle], [0, itpc], lw=1, color=:red))
-    z == true && (p2 = Plots.plot!([0, itpc_angle], [0, itpcz], lw=1, color=:red))
-
-    p = Plots.plot(p1, p2,
-             legend=false,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             margins=10Plots.px,
-             palette=palette;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
-
-Plot pli `eeg1` and `eeg2` channels/epochs.
-
-# Arguments
-
-- `eeg1:NeuroAnalyzer.EEG`
-- `eeg2:NeuroAnalyzer.EEG`
-- `channel1::Int64`: channel to plot
-- `channel2::Int64`: channel to plot
-- `epoch1::Int64`: epoch to plot
-- `epoch2::Int64`: epoch to plot
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Int64, epoch2::Int64, mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    pli, signal_diff, phase_diff, s1_phase, s2_phase = eeg_pli(eeg1, eeg2, channel1=channel1, channel2=channel2, epoch1=epoch1, epoch2=epoch2)
-    pli = round.(pli, digits=2)
-
-    t = eeg1.eeg_epochs_time
-
-    p1 = @views Plots.plot(t, eeg1.eeg_signals[channel1, :, epoch1], color=:black, lw=0.2)
-    p1 = @views Plots.plot!(t, eeg2.eeg_signals[channel2, :, epoch2], color=:grey, lw=0.2, title="Signals", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
-
-    p2 = @views Plots.plot(t, signal_diff[1, :, 1], color=:black, lw=0.2, title="Signals difference", legend=false, xlabel="Time [s]", ylabel="Amplitude [μv]")
-
-    p3 = @views Plots.plot(t, s1_phase[1, :, 1], color=:black, lw=0.2)
-    p3 = @views Plots.plot!(t, s2_phase[1, :, 1], color=:grey, lw=0.2, title="Phases", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
-
-    p4 = @views Plots.plot(t, phase_diff[1, :, 1], color=:black, lw=0.2, title="Phases difference", legend=false, xlabel="Time [s]", ylabel="Angle [rad]")
-
-    p5 = @views Plots.plot([0, s1_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases")
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p5 = @views Plots.plot!([0, s1_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
-    end
-
-    p5 = @views Plots.plot!([0, s2_phase[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:grey, lw=0.2, legend=nothing)
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p5 = @views Plots.plot!([0, s2_phase[1, :, 1][idx]], [0, 1], projection=:polar, color=:grey, lw=0.2)
-    end
-
-    p6 = @views Plots.plot([0, phase_diff[1, :, 1][1]], [0, 1], projection=:polar, yticks=false, color=:black, lw=0.2, legend=nothing, title="Phases difference and PLI = $(pli[1])")
-    @views for idx in 2:length(phase_diff[1, :, 1])
-        p6 = @views Plots.plot!([0, phase_diff[1, :, 1][idx]], [0, 1], projection=:polar, color=:black, lw=0.2)
-    end
-    
-    p = Plots.plot(p1, p2, p3, p4, p5, p6,
-             layout=(3, 2),
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             palette=palette;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_itpc_s(eeg; <keyword arguments>)
-
-Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Int64`
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-- `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String="ITPC spectrogram"`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="Frequency [Hz]", title::String="", mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-        title == "" && (title = "ITPC spectrogram\nchannel: $channel")
-    
-    itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq)
-
-    z == false && (s = itpc_s)
-    z == true && (s = itpc_z_s)
-
-    p = Plots.heatmap(eeg.eeg_epochs_time,
-                frq_list,
-                s,
-                title=title,
-                xlabel=xlabel,
-                ylabel=ylabel,
-                xticks=_xticks(eeg.eeg_epochs_time),
-                titlefontsize=8,
-                xlabelfontsize=6,
-                ylabelfontsize=6,
-                xtickfontsize=4,
-                ytickfontsize=4,
-                seriescolor=palette;
-                kwargs...)
-
-    return p
-end
-
-
-"""
-    eeg_plot_itpc_f(eeg; <keyword arguments>)
-
-Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Int64`
-- `f::Int64`: frequency to plot
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-- `z::Bool=false`: plot ITPCz instead of ITPC
-- `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-- `xlabel::String="Time [s]"`: x-axis label
-- `ylabel::String="Frequency [Hz]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_itpc_f(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, f::Int64, z::Bool=false, w::Union{AbstractVector, Nothing}=nothing, xlabel::String="Time [s]", ylabel::String="ITPC", title::String="", mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-    f < 0 && throw(ArgumentError("f must be ≥ 0."))
-    f > eeg_sr(eeg) ÷ 2 && throw(ArgumentError("f must be ≤ $(eeg_sr(eeg) ÷ 2)."))
-
-    itpc_s, itpc_z_s, frq_list = eeg_itpc_s(eeg, channel=channel, frq_lim=frq_lim, frq_n=frq_n, frq=frq, w=w)
-    title == "" && (title = "ITPC at frequency $(vsearch(f, frq_list)) Hz\nchannel: $channel")
-
-    z == false && (s = @view itpc_s[vsearch(f, frq_list), :])
-    z == true && (s = @view itpc_z_s[vsearch(f, frq_list), :])
-
-    p = Plots.plot(eeg.eeg_epochs_time,
-             s,
-             title=title,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             xticks=_xticks(eeg.eeg_epochs_time),
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4,
-             seriescolor=palette,
-             label=false;
-             kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_connections(eeg; <keyword arguments>)
-
-Plot connections between `eeg` electrodes.
-
-# Arguments
-
-- `eeg:EEG`
-- `m::Matrix{<:Real}`: matrix of connections weights
-- `threshold::Float64`: plot all connection above threshold
-- `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
-- `weights::Bool=true`: weight line widths and alpha based on connection value
-- `labels::Bool=false`: plot electrode labels
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; m::Matrix{<:Real}, threshold::Float64, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, mono::Bool=false, kwargs...)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    threshold_type in [:eq, :geq, :leq, :g, :l] || throw(ArgumentError("threshold_type must be :eq, :geq, :leq, :g, :l."))
-
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    # select channels, default is all channels
-    channel = length(eeg_labels(eeg))
-
-    # look for location data
-    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    p = Plots.plot(grid=true,
-             framestyle=:none,
-             palette=palette,
-             markerstrokewidth=0,
-             border=:none,
-             aspect_ratio=1,
-             margins=-20Plots.px,
-             titlefontsize=8;
-             kwargs...)
-    p = Plots.plot!(loc_x,
-              loc_y,
-              seriestype=:scatter,
-              color=:black,
-              alpha=0.2,
-              grid=true,
-              label="",
-              markersize=4,
-              markerstrokewidth=0,
-              markerstrokealpha=0;
-              kwargs...)
-    if labels == true
-        for idx in 1:length(eeg_labels(eeg))
-            Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(eeg_labels(eeg)[idx], pointsize=4)))
-        end
-        p = Plots.plot!()
-    end
-
-    # for some reason head is enlarged for channel > 1
-    #=
-    eeg_tmp = eeg_keep_channel(eeg, channel=1)
-    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y[1], loc_x[1] = pol2cart(eeg_tmp.eeg_header[:loc_radius][1], 
-                                  eeg_tmp.eeg_header[:loc_theta][1])
-    =#
-
-    hd = _draw_head(p, head_labels=false)
-    Plots.plot!(hd)
-
-    #=
-    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    =#
-
-    m = s_normalize_max(m)
-
-    for idx1 in 1:size(m, 1)
-        for idx2 in 1:size(m, 1)
-            if threshold_type === :g
-                if m[idx1, idx2] > threshold
-                    if weights == true
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
-                    else
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                    end
-                end
-            elseif threshold_type === :l
-                if m[idx1, idx2] < threshold
-                    if weights == true
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
-                    else
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                    end
-                end
-            elseif threshold_type === :eq
-                if m[idx1, idx2] == threshold
-                    if weights == true
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
-                    else
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                    end
-                end
-            elseif threshold_type === :leq
-                if m[idx1, idx2] <= threshold
-                    if weights == true
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
-                    else
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                    end
-                end
-            elseif threshold_type === :geq
-                if m[idx1, idx2] >= threshold
-                    if weights == true
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=6 * m[idx1, idx2], alpha=0.25 * m[idx1, idx2], lc=:black, legend=false)
-                    else
-                        Plots.plot!([loc_x[idx1], loc_x[idx2]], [loc_y[idx1], loc_y[idx2]], lw=0.2, lc=:black, legend=false)
-                    end
-                end
-            end
-        end
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_psd_3dw(signal; <keyword arguments>)
-
-Plot 3-d waterfall plot of `signal` channels power spectrum density.
-
-# Arguments
-
-- `signal::Matrix{Float64}`
-- `fs::Int64`: sampling frequency
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Channel"`: y-axis label
-- `zlabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_psd_3dw(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-
-    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-    frq_lim = tuple_order(frq_lim)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    zlabel == "" && (norm == true ? zlabel = "Power [dB]" : zlabel = "Power [μV^2/Hz]")
-
-    if mw == false
-        p_tmp, f_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
-    else
-        p_tmp, f_tmp = s_wspectrum(signal[1, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-    end
-
-    channel_n = size(signal, 1)
-    s_pow = zeros(channel_n, length(p_tmp))
-    s_frq = zeros(length(f_tmp))
-    for channel_idx in 1:channel_n
-        if mw == false
-            s_pow[channel_idx, :], s_frq = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
-        else
-            s_pow[channel_idx, :], s_frq = s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-        end
-    end
-
-    channel = ones(length(s_frq))
-
-    p = Plots.plot(s_frq,
-             channel,
-             s_pow[1, :],
-             xlabel=xlabel,
-             ylabel=ylabel,
-             zlabel=zlabel,
-             xlims=frq_lim,
-             legend=false,
-             title=title,
-             palette=palette,
-             lw=0.2,
-             lc=1,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
-
-    for channel_idx in 2:channel_n
-        if mono == false
-            p = Plots.plot!(s_frq,
-                      channel .* channel_idx,
-                      s_pow[channel_idx, :],
-                      lw=0.2,
-                      lc=channel_idx;
-                      kwargs...)
-        else
-            p = Plots.plot!(s_frq,
-                      channel .* channel_idx,
-                      s_pow[channel_idx, :],
-                      lw=0.2,
-                      lc=:black;
-                      kwargs...)
-        end            
-    end
-    p = Plots.plot!(yticks=collect(1:channel_n); 
-              kwargs...)
-
-    return p
-end
-
-"""
-    eeg_plot_signal_psd_3d(eeg; <keyword arguments>)
-
-Plot 3-d waterfall plot of `eeg` channels power spectrum density.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Int64`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `type::Symbol=:w`: plot type: :w waterfall, :s surface
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Channel"`: y-axis label
-- `zlabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_signal_psd_3d(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}, offset::Int64=0, len::Int64=0, type::Symbol=:w, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="Frequency [Hz]", ylabel::String="Channel", zlabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-    type in [:w, :s] || throw(ArgumentError("type must be :w or :s."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-    _check_channels(eeg, channel)
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, _ = _get_epoch_markers(eeg, offset, len)
-
-    labels = eeg_labels(eeg)[channel]
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-    title == "" && (title = "PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channels: $channel, epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-
-    if type ===:w
-        p = plot_psd_3dw(signal,
-                         fs=fs,
-                         norm=norm,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         zlabel=zlabel,
-                         mw=mw,
-                         mt=mt,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         title=title,
-                         mono=mono;
-                         kwargs...)
-    else
-        p = plot_psd_3ds(signal,
-                         fs=fs,
-                         norm=norm,
-                         xlabel=xlabel,
-                         ylabel=ylabel,
-                         zlabel=zlabel,
-                         mw=mw,
-                         mt=mt,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         title=title,
-                         mono=mono;
-                         kwargs...)
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_psd_3ds(signal; <keyword arguments>)
-
-Plot 3-d surface plot of `signal` channels power spectrum density.
-
-# Arguments
-
-- `signal::Matrix{Float64}`
-- `fs::Int64`: sampling frequency
-- `norm::Bool=true`: normalize powers to dB
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel="Channel"`: y-axis label
-- `zlabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_psd_3ds(signal::Matrix{Float64}; fs::Int64, norm::Bool=true, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel="Frequency [Hz]", ylabel="Channel", zlabel::String="", title="", mono::Bool=false, kwargs...)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-
-    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-    frq_lim = tuple_order(frq_lim)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    zlabel == "" && (norm == true ? zlabel = "Power [dB]" : zlabel = "Power [μV^2/Hz]")
-
-    if mw == false
-        p_tmp, f_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
-    else
-        p_tmp, f_tmp = s_wspectrum(signal[1, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
-    end
-
-    channel_n = size(signal, 1)
-    s_pow = zeros(channel_n, length(p_tmp))
-    s_frq = zeros(length(f_tmp))
-    for channel_idx in 1:channel_n
-        if mw == false
-                s_pow[channel_idx, :], s_frq = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
-        else
-            s_pow[channel_idx, :], s_frq = s_wspectrum(signal[channel_idx, :], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]))
-        end
-    end
-
-    channel = 1:channel_n
-
-    p = Plots.plot(s_frq,
-             channel,
-             s_pow,
-             seriestype=:surface,
-             xlabel=xlabel,
-             ylabel=ylabel,
-             zlabel=zlabel,
-             xlims=frq_lim,
-             yticks=collect(1:channel_n),
-             legend=false,
-             title=title,
-             palette=palette,
-             titlefontsize=8,
-             xlabelfontsize=6,
-             ylabelfontsize=6,
-             xtickfontsize=4,
-             ytickfontsize=4;
-             kwargs...)
-
-    return p
-end
-
-"""
-    plot_rel_psd(signal; <keyword arguments>)
-
-Plot relative `signal` channel power spectrum density.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `fs::Int64`: sampling frequency
-- `norm::Bool=true`: normalize powers to dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `xlabel::String="Frequency [Hz]"`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
-- `ax::Symbol=:linlin`: type of axes scaling
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="Frequency [Hz]", ylabel::String="Power [dB]", title::String="", mono::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing, ax::Symbol=:linlin, kwargs...)
-
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
-    frq_lim = tuple_order(frq_lim)
-    if f !== nothing
-        f = tuple_order(f)
-        (f[1] < 0 || f[2] > fs / 2) && throw(ArgumentError("f must be ≥ 0 and ≤ $(fs / 2)."))
-    end
-    s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=mt, f=f)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    (ylabel == "Power [dB]" && norm == false) && (ylabel = "Power [μV^2/Hz]")
-
-    if ax === :linlin
-        p = Plots.plot(s_frq,
-                 s_pow,
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 legend=false,
-                 t=:line,
-                 c=:black,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
-    elseif ax === :loglin
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
-        end
-        s_frq[1] == 0 && (s_frq[1] = 0.1)
-        p = Plots.plot(s_frq,
-                 s_pow,
-                 xaxis=:log10,
-                 xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                 xlabel=xlabel,
-                 ylabel=ylabel,
-                 xlims=frq_lim,
-                 legend=false,
-                 t=:line,
-                 c=:black,
-                 title=title,
-                 palette=palette,
-                 titlefontsize=8,
-                 xlabelfontsize=6,
-                 ylabelfontsize=6,
-                 xtickfontsize=4,
-                 ytickfontsize=4;
-                 kwargs...)
-    elseif ax === :linlog
-        if norm == false
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     yaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        else
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        end
-    elseif ax === :loglog
-        if frq_lim[1] == 0
-            frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
-        end
-        s_frq[1] == 0 && (s_frq[1] = 0.1)
-        if norm == false
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xaxis=:log10,
-                     yaxis=:log10,
-                     xticks=([0.1, 1, 10, 100], ["0.1", "1", "10", "100"]),
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        else
-            p = Plots.plot(s_frq,
-                     s_pow,
-                     xaxis=:log10,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     xlims=frq_lim,
-                     legend=false,
-                     t=:line,
-                     c=:black,
-                     title=title,
-                     palette=palette,
-                     titlefontsize=8,
-                     xlabelfontsize=6,
-                     ylabelfontsize=6,
-                     xtickfontsize=4,
-                     ytickfontsize=4;
-                     kwargs...)
-        end
-    end
-
-    return p
-end
-
-"""
-    eeg_plot_electrode(eeg; <keyword arguments>)
-
-Plot single `eeg` electrode. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg:EEG`
-- `channel::Int64`: channel to display
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function eeg_plot_electrode(eeg::NeuroAnalyzer.EEG; channel::Int64, kwargs...)
-
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    _check_channels(eeg, channel)
-
-    loc_x = zeros(eeg_channel_n(eeg, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg, type=:eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg.eeg_header[:loc_radius][idx], 
-                                          eeg.eeg_header[:loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)[channel]
-    loc_y = round.(loc_y, digits=2)[channel]
-    
-    plot_size = 250
-    marker_size = 2
-    
-    p = Plots.plot(grid=true,
-                   framestyle=:none,
-                   size=(plot_size, plot_size),
-                   border=:none,
-                   aspect_ratio=1,
-                   margins=-plot_size * Plots.px,
-                   titlefontsize=8;
-                   kwargs...)
-    p = Plots.plot!((loc_x, loc_y),
-              color=:black,
-              seriestype=:scatter,
-              label="",
-              markersize=marker_size,
-              markerstrokewidth=0,
-              markerstrokealpha=0;
-              kwargs...)
-
-    hd = _draw_head(p, head_labels=false)
-    p = Plots.plot!(hd)
-
-    return p
-end
-
-"""
-    eeg_plot_electrodes3d(eeg; <keyword arguments>)
-
-Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc_x, :loc_y and :loc_z locations.
-
-# Arguments
-
-- `eeg:EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
-- `labels::Bool=true`: plot electrode labels
-- `head_labels::Bool=false`: plot head labels
-- `mono::Bool=false`: use color or grey palette
-
-# Returns
-
-- `fig::GLMakie.Figure`
-"""
-function eeg_plot_electrodes3d(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
-
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-
-    eeg_tmp = eeg_keep_channel(eeg, channel=channel)
-    # selected channels
-    if selected != 0
-        length(selected) > 1 && sort!(selected)
-        for idx in 1:length(selected)
-            (selected[idx] < 1 || selected[idx] > eeg_tmp.eeg_header[:channel_n]) && throw(ArgumentError("selected must be ≥ 1 and ≤ $(eeg_tmp.eeg_header[:channel_n])."))
-        end
-        typeof(selected) <: AbstractRange && (selected = collect(selected))
-        length(selected) > 1 && (intersect(selected, channel) == selected || throw(ArgumentError("channel must include selected.")))
-        length(selected) == 1 && (intersect(selected, channel) == [selected] || throw(ArgumentError("channel must include selected.")))
-    end
-
-    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_z = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-        loc_x[idx], loc_y[idx], loc_z[idx] = eeg_tmp.eeg_header[:loc_x][idx], eeg_tmp.eeg_header[:loc_y][idx], eeg_tmp.eeg_header[:loc_z][idx]
-    end
-
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-    loc_z = round.(loc_z, digits=2)
-    x_lim = (-1.1, 1.1)
-    y_lim = (-1.1, 1.1)
-    z_lim = extrema(loc_z)
-
-    plot_size = 800
-    marker_size = 15
-    font_size = 15
-
-    fig = Figure(; resolution=(plot_size, plot_size))
-    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
-    # hidedecorations!(ax, grid=true, ticks=true)
-
-    if selected != 0 && length(selected) == eeg_tmp.eeg_header[:channel_n]
-        for idx in 1:eeg_tmp.eeg_header[:channel_n]
-            if mono != true
-                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size)
-            else
-                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size, color=:black)
-            end                
-        end
-    elseif selected == 0
-        GLMakie.scatter!(ax, loc_x, loc_y, loc_z, markersize=marker_size, color=:gray)
-    elseif selected != 0 && length(selected) != eeg_tmp.eeg_header[:channel_n]
-        loc_x_tmp = deepcopy(loc_x)
-        loc_y_tmp = deepcopy(loc_y)
-        loc_z_tmp = deepcopy(loc_z)
-        deleteat!(loc_x_tmp, selected)
-        deleteat!(loc_y_tmp, selected)
-        deleteat!(loc_z_tmp, selected)
-        GLMakie.scatter!(ax, loc_x_tmp, loc_y_tmp, loc_z_tmp, markersize=marker_size, color=:grey)
-        eeg_tmp = eeg_keep_channel(eeg, channel=selected)
-        for idx in 1:eeg_tmp.eeg_header[:channel_n]
-            if mono != true
-                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size)
-            else
-                GLMakie.scatter!(ax, loc_x[idx], loc_y[idx], loc_z[idx], markersize=marker_size, color=:black)
-            end                
-        end
-    end
-    if labels == true
-        for idx in 1:length(eeg_labels(eeg_tmp))
-            GLMakie.text!(ax, eeg_labels(eeg_tmp)[idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
-        end
-    end
-    if head_labels == true
-        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
-    end
-    fig
-
-    return fig
-end
-
-"""
-    eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
-
-Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-- `offset::Int64=0`: displayed segment offset in samples
-- `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-- `mw::Bool=false`: if true use Morlet wavelet convolution
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
-- `xlabel::String="Frequency [Hz]`: x-axis label
-- `ylabel::String="Power [dB]"`: y-axis label
-- `title::String=""`: plot title
-- `plot_size::Int64=1000`: plot dimensions in px
-- `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
-- `labels::Bool=true`: add channel labels
-- `mono::Bool=false`: use color or grey palette
-- `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher 
-- `ax::Symbol=:linlin`: type of axes scaling
-
-# Returns
-
-- `fig::GLMakie.Figure`
-"""
-function eeg_plot_signal_psd_topomap(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, offset::Int64=0, len::Int64=0, mw::Bool=false, mt::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, title::String="", plot_size::Int64=1000, marker_size::Tuple{Int64, Int64}=(150, 100), labels::Bool=true, mono::Bool=false, ref::Symbol=:abs, ax::Symbol=:linlin)
-
-    # always normalize to dB
-    norm = true
-    # plots y-axes are scaled to -40..+40 dB
-    ylims = (-40, 40)
-
-    (mw == true && mt == true) && throw(ArgumentError("Both mw and mt must not be true."))
-
-    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    eeg_channel_n(eeg, type=:eeg) < eeg_channel_n(eeg, type=:all) && throw(ArgumentError("EEG contains non-eeg channels (e.g. ECG or EMG), remove them before plotting."))
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    ref in [:abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher] || throw(ArgumentError("type must be :abs, :total, :delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower or :gamma_higher."))
-    ax in [:linlin, :loglin, :linlog, :loglog] || throw(ArgumentError("ax must be :linlin, :loglin, :linlog or :loglog."))
-
-    fs = eeg_sr(eeg)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_lim = tuple_order(frq_lim)
-    (frq_lim[1] < 0 || frq_lim[2] > fs / 2) && throw(ArgumentError("frq_lim must be ≥ 0 and ≤ $(fs / 2)."))
-
-    (epoch != 0 && len != 0) && throw(ArgumentError("Both epoch and len must not be specified."))
-
-    # select channels, default is all channels
-    channel = _select_channels(eeg, channel, 0)
-    _check_channels(eeg, channel)
-
-    epoch_tmp = epoch
-    if epoch != 0
-        # convert epochs to offset and len
-        typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
-        _check_epochs(eeg, epoch)
-        length(epoch) > 1 && sort!(epoch)
-        len = eeg_epoch_len(eeg) * length(epoch)
-        offset = eeg_epoch_len(eeg) * (epoch[1] - 1)
-        epoch_tmp = epoch[1]:epoch[end]
-        epoch = epoch[1]
-    else
-        # default length is one epoch or 20 seconds
-        len == 0 && (len = _len(eeg, len, 20))
-        epoch = floor(Int64, offset / eeg_epoch_len(eeg)) + 1
-        epoch_tmp = (floor(Int64, offset / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (offset + len) / eeg_epoch_len(eeg)))
-    end
-
-    # set epoch markers if len > epoch_len
-    eeg_tmp, _ = _get_epoch_markers(eeg, offset, len)
-
-    # get time vector
-    if length(epoch) == 1 && offset + len <= eeg_epoch_len(eeg)
-        t = eeg.eeg_epochs_time[(1 + offset):(offset + len)]
-        t[1] = floor(t[1], digits=2)
-        t[end] = ceil(t[end], digits=2)
-    else
-        t = _get_t(eeg_tmp, offset, len)
-    end
-
-    _check_offset_len(eeg_tmp, offset, len)
-
-    signal = eeg_tmp.eeg_signals[channel, (1 + offset):(offset + length(t)), 1]
-
-    t_1, t_s1, t_2, t_s2 = _convert_t(t)
-
-    epoch_tmp = _t2epoch(eeg, offset, len, epoch_tmp)
-    epoch_tmp[end] == epoch_tmp[1] && (epoch_tmp = epoch_tmp[1])
-
-    loc_x = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    loc_y = zeros(eeg_channel_n(eeg_tmp, type=:eeg))
-    for idx in 1:eeg_channel_n(eeg_tmp, type=:eeg)
-        loc_x[idx], loc_y[idx] = pol2cart(eeg_tmp.eeg_header[:loc_radius][idx], eeg_tmp.eeg_header[:loc_theta][idx])
-    end
-
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    # get marker centers
-    loc_x .*= ((plot_size ÷ 2) - marker_size[1] ÷ 2)
-    loc_y .*= ((plot_size ÷ 2) - marker_size[2] ÷ 2)
-    loc_x = round.(loc_x, digits=0)[channel]
-    loc_y = round.(loc_y, digits=0)[channel]
-
-    if ref === :abs
-        title == "" && (title = "Topographical map: PSD\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-    elseif ref === :total
-        title == "" && (title = "Topographical map: PSD relative to total power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-    else
-        title == "" && (title = "Topographical map: PSD relative to $ref power\n[frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[epoch: $epoch_tmp, time window: $t_s1:$t_s2]")
-    end
-
-    if labels == true
-        labels = eeg_labels(eeg)
-    else
-        labels = repeat([""], length(channel))
-    end
-
-    fig = Figure(; resolution=(plot_size, plot_size))
-    fig_axis = Axis(fig[1, 1])
-    fig_axis.aspect = AxisAspect(1)
-    fig_axis.title = title
-    GLMakie.xlims!(fig_axis, [-plot_size ÷ 2, plot_size ÷ 2])
-    GLMakie.ylims!(fig_axis, [-plot_size ÷ 2, plot_size ÷ 2])
-    hidedecorations!(fig_axis, grid=true, ticks=true)
-
-    for channel_idx in channel
-        s = signal[channel_idx, :, 1]
-        if ref === :abs
-            p = plot_psd(s,
-                         fs=fs,
-                         norm=norm,
-                         xlabel="",
-                         ylabel="",
-                         title=labels[channel_idx],
-                         mw=mw,
-                         mt=mt,
-                         frq_lim=frq_lim,
-                         ncyc=ncyc,
-                         mono=mono,
-                         ax=ax,
-                         grid=false,
-                         ticks=false,
-                         size=marker_size,
-                         ylims=ylims)
-        elseif ref === :total
-            p = plot_rel_psd(s,
-                             fs=fs,
-                             norm=norm,
-                             xlabel="",
-                             ylabel="",
-                             title=labels[channel_idx],
-                             mt=mt,
-                             frq_lim=frq_lim,
-                             f=nothing,
-                             ncyc=ncyc,
-                             mono=mono,
-                             ax=ax,
-                             grid=false,
-                             ticks=false,
-                             size=marker_size,
-                             ylims=ylims)
-        else
-            p = plot_rel_psd(s,
-                             fs=fs,
-                             labels=labels,
-                             norm=norm,
-                             frq_lim=frq_lim,
-                             xlabel="",
-                             ylabel="",
-                             title=labels[channel_idx],
-                             mono=mono,
-                             mt=mt,
-                             f=eeg_band(eeg, band=ref),
-                             ax=ax,
-                             grid=false,
-                             ticks=false,
-                             size=marker_size,
-                             ylims=ylims)
-        end
-
-        marker_img = tempname() * ".png"
-        savefig(p, marker_img)
-        marker = load(marker_img)
-        GLMakie.scatter!(fig_axis, (loc_x[channel_idx], loc_y[channel_idx]), marker=marker, markersize=marker_size)
-    end
-
-    fig
-
-    return fig
-end
-
-"""
-    plot_electrodes(locs; <keyword arguments>)
-
-Preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
-
-# Arguments
-
-- `locs::DataFrame`
-- `labels::Bool=true`: plot electrode labels
-- `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_electrodes(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    plot_size = 400
-    marker_size = 4
-    font_size = 4
-
-    p = Plots.plot(grid=true,
-                   framestyle=:none,
-                   palette=palette,
-                   size=(plot_size, plot_size),
-                   markerstrokewidth=0,
-                   border=:none,
-                   aspect_ratio=1,
-                   margins=-plot_size * Plots.px,
-                   titlefontsize=8)
-
-    loc_x = zeros(length(locs[!, :labels]))
-    loc_y = zeros(length(locs[!, :labels]))
-    for idx in 1:length(locs[!, :labels])
-        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], 
-                                          locs[!, :loc_theta][idx])
-    end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-
-    for idx in 1:length(locs[!, :labels])
-        if mono != true
-            p = Plots.plot!((loc_x, loc_y),
-                      color=:black,
-                      seriestype=:scatter,
-                      grid=true,
-                      label="",
-                      markersize=marker_size,
-                      markerstrokewidth=0,
-                      markerstrokealpha=0)
-        else
-            p = Plots.plot!((loc_x[idx], loc_y[idx]),
-                      color=:black,
-                      seriestype=:scatter,
-                      grid=true,
-                      label="",
-                      markersize=marker_size,
-                      markerstrokewidth=0,
-                      markerstrokealpha=0)
-        end                
-    end
-
-    if labels == true
-        for idx in 1:length(locs[!, :labels])
-            Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
-        end
-    end
-
-    hd = _draw_head(p, head_labels=head_labels)
-    p = Plots.plot!(hd)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_electrodes3d(locs; <keyword arguments>)
-
-3D interactive preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
-
-# Arguments
-
-- `locs::DataFrame`
-- `labels::Bool=true`: plot electrode labels
-- `head_labels::Bool=true`: plot head labels
-- `mono::Bool=false`: use color or grey palette
-
-# Returns
-
-- `fig::GLMakie.Figure`
-"""
-function plot_electrodes3d(locs::DataFrame; labels::Bool=true, head_labels::Bool=true, mono::Bool=false)
-
-    mono == true ? palette = :grays : palette = :darktest
-
-    loc_x = locs[!, :loc_x]
-    loc_y = locs[!, :loc_y]
-    loc_z = locs[!, :loc_z]
-
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-    loc_z = round.(loc_z, digits=2)
-    x_lim = (-1.1, 1.1)
-    y_lim = (-1.1, 1.1)
-    z_lim = extrema(loc_z)
-
-    plot_size = 800
-    marker_size = 15
-    font_size = 15
-
-    fig = Figure(; resolution=(plot_size, plot_size))
-    ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
-    # hidedecorations!(ax, grid=true, ticks=true)
-    GLMakie.scatter!(ax, loc_x, loc_y, loc_z, markersize=marker_size, color=:gray)
-
-    if labels == true
-        for idx in 1:length(locs[!, :labels])
-            GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
-        end
-    end
-
-    if head_labels == true
-        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
-    end
-    fig
-
-    return fig
 end

@@ -53,6 +53,7 @@ mutable struct EEG
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
     eeg_markers::DataFrame
+    eeg_locs::DataFrame
 end
 
 mutable struct STUDY
@@ -494,76 +495,34 @@ include("eeg_study.jl")
 export eeg_study_create
 
 include("eeg_plots.jl")
-export eeg_plot_acomponent_topo
-export eeg_plot_bands
-export eeg_plot_channels
-export eeg_plot_component
-export eeg_plot_component_avg
-export eeg_plot_component_butterfly
-export eeg_plot_component_idx
-export eeg_plot_component_idx_avg
-export eeg_plot_component_idx_butterfly
-export eeg_plot_component_idx_psd
-export eeg_plot_component_idx_psd_avg
-export eeg_plot_component_idx_psd_butterfly
-export eeg_plot_component_idx_spectrogram
-export eeg_plot_component_idx_spectrogram_avg
-export eeg_plot_component_psd
-export eeg_plot_component_psd_avg
-export eeg_plot_component_psd_butterfly
-export eeg_plot_component_spectrogram
-export eeg_plot_component_spectrogram_avg
-export eeg_plot_compose
-export eeg_plot_covmatrix
-export eeg_plot_electrodes
-export eeg_plot_epochs
-export eeg_plot_filter_response
-export eeg_plot_histogram
-export eeg_plot_ica_topo
-export eeg_plot_matrix
-export eeg_plot_mcomponent_topo
 export eeg_plot_save
-export eeg_plot_signal
-export eeg_plot_signal_avg
-export eeg_plot_signal_avg_details
-export eeg_plot_signal_butterfly
-export eeg_plot_signal_butterfly_details
-export eeg_plot_signal_details
-export eeg_plot_signal_psd
-export eeg_plot_signal_psd_avg
-export eeg_plot_signal_psd_butterfly
-export eeg_plot_signal_spectrogram
-export eeg_plot_signal_spectrogram_avg
-export eeg_plot_signal_topo
-export eeg_plot_tile
-export eeg_plot_weights_topo
-export eeg_plot_env
-export plot_bands
-export plot_histogram
-export plot_ica
+export plot_signal
+export plot_signal_avg
+export plot_signal_butterfly
+export eeg_plot
 export plot_psd
 export plot_psd_avg
 export plot_psd_butterfly
-export plot_signal
-export plot_signal_scaled
-export plot_signal_avg
-export plot_signal_butterfly
+export plot_psd_3d
+export plot_psd_topo
+export eeg_plot_psd
 export plot_spectrogram
-export eeg_plot_ispc
-export eeg_plot_itpc
-export eeg_plot_pli
-export eeg_plot_itpc_s
-export eeg_plot_connections
-export eeg_plot_itpc_f
-export plot_psd_3dw
-export plot_psd_3ds
-export eeg_plot_signal_psd_3d
-export plot_rel_psd
-export eeg_plot_electrode
-export eeg_plot_electrodes3d
-export eeg_plot_signal_psd_topomap
+export eeg_plot_spectrogram
 export plot_electrodes
 export plot_electrodes3d
+export eeg_plot_electrodes
+export plot_matrix
+export plot_covmatrix
+export plot_filter_response
+export plot_weights
+export eeg_plot_weights
+export plot_histogram
+export plot_connections
+export eeg_plot_connections
+export eeg_plot_stats
+export plot_topo
+export eeg_plot_topo
+export eeg_plot_compose
 
 include("nstim.jl")
 export tes_dose

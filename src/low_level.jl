@@ -868,10 +868,8 @@ Calculate covariance between all channels of the `signal`.
 """
 function s_cov(signal::AbstractVector; norm::Bool=false)
 
-    signal = signal'
-    
     # channels-vs-channels
-    cov_mat = cov(signal)
+    cov_mat = cov(signal * signal')
 
     # normalize
     norm == true && (cov_mat = m_norm(cov_mat))
@@ -983,7 +981,7 @@ Calculate mean, std and 95% confidence interval for each the `signal` channels.
 """
 function s_msci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
 
-    method in [:normal, :boot] || throw(ArgumentError("method must be :normal or :boot."))
+    _check_var(method, [:normal, :boot], "method")
 
     if method === :normal
         s_m = mean(signal, dims=1)'
@@ -1059,9 +1057,7 @@ Calculate mean difference and 95% confidence interval for 2 signals.
 - `signal1::AbstractArray`
 - `signal2::AbstractArray`
 - `n::Int64=3`: number of bootstraps
-- `method::Symbol=:absdiff`
-    - `:absdiff`: maximum difference
-    - `:diff2int`: integrated area of the squared difference
+- `method::Symbol=:absdiff`: maximum difference (`:absdiff`), integrated area of the squared difference (`:diff2int`)
 
 # Returns
 
@@ -1073,7 +1069,7 @@ Named tuple containing:
 function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
 
     size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
-    method in [:absdiff, :diff2int] || throw(ArgumentError("method must be :absdiff or :diff2int."))
+    _check_var(method, [:absdiff, :diff2int], "method")
 
     s1_mean = vec(mean(signal1, dims=1))
     s2_mean = vec(mean(signal2, dims=1))
@@ -1345,7 +1341,7 @@ Perform piecewise detrending of `eeg`.
 # Arguments
 
 - `signal::AbstractVector`
-- `type::Symbol`, optional
+- `type::Symbol`:
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
@@ -1362,7 +1358,7 @@ Perform piecewise detrending of `eeg`.
 """
 function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Int64=0)
 
-    type in [:ls, :linear, :constant, :poly, :loess, :hp] || throw(ArgumentError("type must be :ls, :linear, :constant, :poly, :loess, :hp."))
+    _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
 
     if type === :loess
         t = collect(1.0:1:length(signal))
@@ -1672,7 +1668,9 @@ Filter `signal`.
 """
 function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 
-    fprototype in [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez] || throw(ArgumentError("fprototype must be :mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch or :remez."))
+    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
+    typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
         bw != -1 && throw(ArgumentError("bw must not be specified."))
@@ -1875,12 +1873,11 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     size(signal, 2) < 4 * fs && (mt = true)
     channel_n = size(signal, 1)
-    psd_tmp, frq_tmp = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
+    psd_tmp, psd_frq = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_tmp))
-    psd_frq = zeros(channel_n, length(frq_tmp))
 
     @inbounds @simd for channel_idx in 1:channel_n
-        psd_pow[channel_idx, :], psd_frq[channel_idx, :] = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
+        psd_pow[channel_idx, :], _ = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
     end
     
     return (psd_pow=psd_pow, psd_frq=psd_frq)
@@ -1909,13 +1906,12 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
     size(signal, 2) < 4 * fs && (mt = true)
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
-    psd_tmp, frq_tmp = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
+    psd_tmp, psd_frq = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
-    psd_frq = zeros(channel_n, length(frq_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            psd_pow[channel_idx, :, epoch_idx], psd_frq[channel_idx, :, epoch_idx] = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
+            psd_pow[channel_idx, :, epoch_idx], _ = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
         end
     end
     
@@ -2000,7 +1996,7 @@ Remove `len` samples from the beginning (`from` = :start, default) or end (`from
 """
 function s_trim(signal::AbstractVector; len::Int64, offset::Int64=1, from::Symbol=:start)
 
-    from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
+    _check_var(from, [:start, :end], "from")
     len < 1 && throw(ArgumentError("len must be ≥ 1."))
     len >= length(signal) && throw(ArgumentError("len must be < $(length(signal))."))
     offset < 1 && throw(ArgumentError("offset must be ≥ 1."))
@@ -2294,7 +2290,7 @@ Calculate `n` first ICs for `signal`.
 """
 function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
-    f in [:tanh, :gaus] || throw(ArgumentError("f must be :tanh or :gaus."))
+    _check_var(f, [:tanh, :gaus], "f")
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of ICs must be ≤ $(size(signal, 1))."))
     channel_n, _, epoch_n = size(signal)
@@ -2922,6 +2918,8 @@ Named tuple containing:
 """
 function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
 
+    _check_var(frq, [:log, :lin], "frq")
+
     pad > 0 && (signal = pad0(signal, pad))
     if typeof(ncyc) == Int64
         ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
@@ -2935,7 +2933,6 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
 
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
@@ -3075,8 +3072,9 @@ Named tuple containing:
 """
 function s_ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
 
+    _check_var(frq, [:log, :lin], "frq")
+
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
@@ -3133,7 +3131,7 @@ Calculate power spectrum of the `signal` using wavelet convolution.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -3148,11 +3146,11 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function s_wspectrum(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
+    _check_var(frq, [:log, :lin], "frq")
     fs <= 0 && throw(ArgumentError("fs must be > 0."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-    frq in [:log, :lin] || throw(ArgumentError("frq must be :log or :lin."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
@@ -3175,13 +3173,56 @@ function s_wspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true, frq_l
         end
     end
 
+    channel_n = size(signal, 1)
+    w_powers = zeros(channel_n, )
+
     pad > 0 && (signal = pad0(signal, pad))
-    w_powers = zeros(length(frq_list))
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
         w_conv = s_fconv(signal, kernel=kernel, norm=true)
         w_powers[frq_idx] = mean(@. abs(w_conv)^2)
     end
+
+    w_powers = w_powers[1:length(frq_list)]
+    norm == true && (w_powers = pow2db.(w_powers))
+
+    return (w_powers=w_powers, frq_list=frq_list)
+end
+
+
+"""
+    s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+
+Calculate power spectrum of the `signal` channels using wavelet convolution.
+
+# Arguments
+
+- `signal::Array{Float64, 2}`
+- `pad::Int64`: pad the `signal` with `pad` zeros
+- `norm::Bool=true`: normalize powers to dB
+- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+- `frq_n::Int64`: number of frequencies
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `fs::Int64`: sampling rate
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
+
+# Returns
+
+Named tuple containing:
+- `w_powers::Matrix{Float64}`
+- `frq_list::Vector{Float64}`
+"""
+function s_wspectrum(signal::Matrix{Float64}; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+
+    channel_n = size(signal, 1)
+    w_powers, frq_list = s_wspectrum(signal[1, :], pad=pad, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
+    w_powers = zeros(channel_n, length(frq_list))
+    frq_list = zeros(length(frq_list))
+
+    Threads.@threads for channel_idx in 1:channel_n
+        @inbounds w_powers[channel_idx, :], frq_list = @views s_wspectrum(signal[channel_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
+    end
+
     norm == true && (w_powers = pow2db.(w_powers))
 
     return (w_powers=w_powers, frq_list=frq_list)
@@ -3593,6 +3634,54 @@ function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool
 end
 
 """
+    s_rel_psd(signal; fs, norm, mt, f)
+
+Calculate relative power spectrum density of the `signal`.
+
+# Arguments
+- `signal::Matrix{Float64}`
+- `fs::Int64`: sampling rate
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+
+# Returns
+
+Named tuple containing:
+- `psd_pow::Vector{Float64}`
+- `psd_frq::Vector{Float64}`
+"""
+function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    channel_n = size(signal, 1)
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    
+    if mt == true
+        psd_tmp = mt_pgram(signal[1, :], fs=fs)
+    else
+        psd_tmp = welch_pgram(signal[1, :], 4*fs, fs=fs)
+    end
+    psd_frq = Vector(freq(psd_tmp))
+    psd_pow = zeros(channel_n, length(Vector(freq(psd_tmp))))
+
+    Threads.@threads for channel_idx in 1:channel_n
+        ref_pow = f === nothing ? s_total_power(signal[channel_idx, :], fs=fs, mt=mt) : s_band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
+        if mt == true
+            psd = mt_pgram(signal[channel_idx, :], fs=fs)
+        else
+            psd = welch_pgram(signal[channel_idx, :], 4*fs, fs=fs)
+        end
+        psd_pow[channel_idx, :] = power(psd)
+        psd_pow[channel_idx, :] ./= ref_pow
+        psd_pow[channel_idx, 1] = psd_pow[channel_idx, 2]
+    end
+
+    norm == true && (psd_pow = pow2db.(psd_pow))
+
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
+end
+
+"""
     s_wbp(signal; pad, frq, fs, ncyc, demean)
 
 Perform wavelet bandpass filtering of the `signal`.
@@ -3993,7 +4082,7 @@ Normalize `signal`.
 """
 function s_normalize(signal::AbstractArray; method::Symbol)
 
-    method in [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none] || throw(ArgumentError("method must be :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot or :none."))
+    _check_var(method, [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none], "method")
 
     if method === :zscore
         return s_normalize_zscore(signal)
@@ -4102,7 +4191,8 @@ Perform discrete wavelet transformation (DWT) of the `signal`.
 - `dwt_c::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
 function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
-    type in [:sdwt, :acdwt] || throw(ArgumentError("type must be :sdwt or :acdwt"))
+    _check_var(type, [:sdwt, :acdwt], "type")
+
     l < 0 && throw(ArgumentError("l must be ≥ 0."))
     l > maxtransformlevels(signal) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(signal))."))
 
@@ -4142,7 +4232,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 - `signal::Vector{Float64}`: reconstructed signal
 """
 function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
-    type in [:sdwt, :acdwt] || throw(ArgumentError("type must be :sdwt or :acdwt"))
+    _check_var(type, [:sdwt, :acdwt], "type")
 
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
@@ -4216,7 +4306,7 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 - `signal::Vector{Float64}`: reconstructed signal
 """
 function s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
-    type in [:nd, :pd, :df] || throw(ArgumentError("type be :nd, :pd or :df"))
+    _check_var(type, [:nd, :pd, :df], "type")
 
     # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
     cwt_c = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))

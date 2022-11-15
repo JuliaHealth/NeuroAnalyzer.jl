@@ -1034,10 +1034,7 @@ Calculate mean difference and 95% confidence interval for 2 signals.
   * `signal1::AbstractArray`
   * `signal2::AbstractArray`
   * `n::Int64=3`: number of bootstraps
-  * `method::Symbol=:absdiff`
-
-      * `:absdiff`: maximum difference
-      * `:diff2int`: integrated area of the squared difference
+  * `method::Symbol=:absdiff`: maximum difference (`:absdiff`), integrated area of the squared difference (`:diff2int`)
 
 **Returns**
 
@@ -1193,7 +1190,7 @@ Perform piecewise detrending of `eeg`.
 **Arguments**
 
   * `signal::AbstractVector`
-  * `type::Symbol`, optional
+  * `type::Symbol`:
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
       * `:linear`: linear trend is subtracted from `signal`
@@ -2338,7 +2335,7 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
   * `s_new::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_wspectrum-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_wspectrum-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.s_wspectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wspectrum-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_wspectrum`** &mdash; *Method*.
 
 
@@ -2351,7 +2348,36 @@ Calculate power spectrum of the `signal` using wavelet convolution.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
+  * `pad::Int64`: pad the `signal` with `pad` zeros
+  * `norm::Bool=true`: normalize powers to dB
+  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
+  * `frq_n::Int64`: number of frequencies
+  * `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+  * `fs::Int64`: sampling rate
+  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq*n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq*n) for frq === :lin
+
+**Returns**
+
+Named tuple containing:
+
+  * `w_powers::Matrix{Float64}`
+  * `frq_list::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_wspectrum-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.s_wspectrum-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.s_wspectrum`** &mdash; *Method*.
+
+
+
+```julia
+s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+```
+
+Calculate power spectrum of the `signal` channels using wavelet convolution.
+
+**Arguments**
+
+  * `signal::Array{Float64, 2}`
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool=true`: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -2665,6 +2691,32 @@ Calculate relative power spectrum density of the `signal`.
 **Arguments**
 
   * `signal::AbstractVector`
+  * `fs::Int64`: sampling rate
+  * `norm::Bool=false`: normalize do dB
+  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+
+**Returns**
+
+Named tuple containing:
+
+  * `psd_pow::Vector{Float64}`
+  * `psd_frq::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_rel_psd-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.s_rel_psd-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.s_rel_psd`** &mdash; *Method*.
+
+
+
+```julia
+s_rel_psd(signal; fs, norm, mt, f)
+```
+
+Calculate relative power spectrum density of the `signal`.
+
+**Arguments**
+
+  * `signal::Matrix{Float64}`
   * `fs::Int64`: sampling rate
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -3810,16 +3862,18 @@ Named tuple containing:
 eeg_import(file_name; clean_labels)
 ```
 
-Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
+Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 
   * EDF/EDF+
   * BDF/BDF+
   * BrainVision
 
+This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr).
+
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
+  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 **Returns**
 
@@ -3834,12 +3888,12 @@ Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
 eeg_import_edf(file_name; clean_labels)
 ```
 
-Load EDF/EDF+ file and return and `NeuroAnalyzer.EEG` object.
+Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
+  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 **Returns**
 
@@ -3874,7 +3928,7 @@ Load electrode positions from CED file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_import_locs-Tuple{String}' href='#NeuroAnalyzer.eeg_import_locs-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_locs`** &mdash; *Method*.
@@ -3893,7 +3947,7 @@ Load electrode positions from LOCS file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_import_elc-Tuple{String}' href='#NeuroAnalyzer.eeg_import_elc-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_elc`** &mdash; *Method*.
@@ -3912,7 +3966,7 @@ Load electrode positions from ELC file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_import_tsv-Tuple{String}' href='#NeuroAnalyzer.eeg_import_tsv-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_tsv`** &mdash; *Method*.
@@ -3931,7 +3985,7 @@ Load electrode positions from TSV file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_import_sfp-Tuple{String}' href='#NeuroAnalyzer.eeg_import_sfp-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_sfp`** &mdash; *Method*.
@@ -3950,7 +4004,7 @@ Load electrode positions from SFP file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_import_csd-Tuple{String}' href='#NeuroAnalyzer.eeg_import_csd-Tuple{String}'>#</a>
 **`NeuroAnalyzer.eeg_import_csd`** &mdash; *Method*.
@@ -3969,7 +4023,7 @@ Load electrode positions from CSD file.
 
 **Returns**
 
-  * `sensors::DataFrame`
+  * `locs::DataFrame`
 
 <a id='NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_load_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_load_electrodes`** &mdash; *Method*.
@@ -4161,6 +4215,8 @@ Add electrode positions from `locs`.
 
 Electrode locations:
 
+  * channel         channel number
+  * labels          channel label
   * loc_theta       planar polar angle
   * loc_radius      planar polar radius
   * loc_x           spherical Cartesian x
@@ -4192,6 +4248,8 @@ Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with 
 
 Electrode locations:
 
+  * channel         channel number
+  * labels          channel label
   * loc_theta       planar polar angle
   * loc_radius      planar polar radius
   * loc_x           spherical Cartesian x
@@ -4215,12 +4273,12 @@ Electrode locations:
 eeg_import_bdf(file_name; clean_labels)
 ```
 
-Load BDF/BDF+ file and return and `NeuroAnalyzer.EEG` object.
+Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
+  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 **Returns**
 
@@ -4245,12 +4303,12 @@ https://www.biosemi.com/faq/file_format.htm
 eeg_import_digitrack(file_name; clean_labels)
 ```
 
-Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
+Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
+  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 **Returns**
 
@@ -4267,12 +4325,12 @@ Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
 eeg_import_bv(file_name; clean_labels)
 ```
 
-Load BrainVision BVCDF file and return and `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
+Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
 
 **Arguments**
 
   * `file_name::String`: name of the file to load, should point to .vhdr file.
-  * `clean_labels::Bool=true`: only keep channel names in channel labels
+  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 **Returns**
 
@@ -5376,8 +5434,8 @@ Interpolate `eeg` channel using planar interpolation.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+  * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+  * `interpolation_factor::Int64=100`: interpolation quality
 
 **Returns**
 
@@ -5389,7 +5447,7 @@ Interpolate `eeg` channel using planar interpolation.
 
 
 ```julia
-eeg_interpolate_channel(eeg; channel, m, q)
+eeg_interpolate_channel!(eeg; channel, imethod, interpolation_factor)
 ```
 
 Interpolate `eeg` channel using planar interpolation.
@@ -5398,8 +5456,8 @@ Interpolate `eeg` channel using planar interpolation.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `q::Float64=1.0`: interpolation quality (0 to 1.0)
+  * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+  * `interpolation_factor::Int64=100`: interpolation quality
 
 <a id='NeuroAnalyzer.eeg_loc_flipy-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_flipy-Tuple{DataFrame}'>#</a>
 **`NeuroAnalyzer.eeg_loc_flipy`** &mdash; *Method*.
@@ -5850,7 +5908,7 @@ Return index of `eeg` channels of `type`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+  * `type::Vector{Symbol}=:all`: channel type: [:all, :eeg, :meg, :ecg, :eog, :emg, :ref]
 
 **Returns**
 
@@ -7143,8 +7201,8 @@ Calculate cross-covariance for all `eeg` channels.
 
 Named tuple containing:
 
-  * `xcov::Matrix{Float64}`
-  * `lags::Vector{Float64}`
+  * `xcov::Matrix{Float64}`: ch1-ch1, ch1-ch2, ch1-ch3, etc.
+  * `lags::Vector{Float64}`: lags in ms
 
 <a id='NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_xcov-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_xcov`** &mdash; *Method*.
@@ -7174,7 +7232,7 @@ Calculate cross-covariance between `eeg1` and `eeg2`.
 Named tuple containing:
 
   * `xcov::Array{Float64, 3}`
-  * `lags::Vector{Float64}`
+  * `lags::Vector{Float64}`: lags in ms
 
 <a id='NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_psd`** &mdash; *Method*.
@@ -7796,7 +7854,7 @@ Calculate autocovariance of each `eeg` channels.
 Named tuple containing:
 
   * `acov::Matrix{Float64}`
-  * `lags::Vector{Float64}`
+  * `lags::Vector{Float64}`: lags in ms
 
 <a id='NeuroAnalyzer.eeg_tenv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tenv-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_tenv`** &mdash; *Method*.
@@ -8746,57 +8804,21 @@ Named tuple containing:
 
 ## EEG plots
 
-<a id='NeuroAnalyzer.plot_signal_scaled-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal_scaled-Tuple{AbstractVector, AbstractArray}'>#</a>
-**`NeuroAnalyzer.plot_signal_scaled`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_save`** &mdash; *Method*.
 
 
 
 ```julia
-plot_signal_scaled(t, signal; <keyword arguments>)
+eeg_plot_save(p; file_name::String)
 ```
 
-Plot scaled multi-channel `signal`.
+Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
 
 **Arguments**
 
-  * `t::Union{AbstractVector, AbstractRange}`
-  * `signal::AbstractArray`
-  * `labels::Vector{String}=[""]`: labels vector
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractVector}'>#</a>
-**`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-plot_signal(t, signal; <keyword arguments>)
-```
-
-Plot single-channel `signal`.
-
-**Arguments**
-
-  * `t::Union{AbstractVector, AbstractRange}`
-  * `signal::AbstractVector`
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
+  * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
+  * `file_name::String`
 
 <a id='NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray}'>#</a>
 **`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
@@ -8807,338 +8829,19 @@ Plot single-channel `signal`.
 plot_signal(t, signal; <keyword arguments>)
 ```
 
-Plot multi-channel `signal`.
+Plot amplitude of single- or multi-channel `signal`.
 
 **Arguments**
 
-  * `t::Union{AbstractVector, AbstractRange}`
-  * `signal::AbstractArray`
-  * `labels::Vector{String}=[""]`: labels vector
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channel or channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epochs to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `scaled::Bool=false`: if true than scale signals before plotting so all signals will fit the plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_details`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_details(eeg; <keyword arguments>)
-```
-
-Plot details of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `head::Bool=true`: add head plot
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `pc::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component(eeg; <keyword arguments>)
-```
-
-Plot `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::Union{AbstractVector, AbstractArray}`: data to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx(eeg; <keyword arguments>)
-```
-
-Plot indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_avg(eeg; <keyword arguments>)
-```
-
-Plot indexed `eeg` external or embedded component: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `x::Union{Nothing, Vector{<:Real}, AbstractRange}=nothing`: values for the X-axis, default is time of the epoch
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_psd`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Int64`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_psd_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd_avg(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
+  * `scale::Bool=true`: draw scale
+  * `units::String="μV"`: units of the scale
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -9154,84 +8857,19 @@ Plot PSD of indexed `eeg` external or embedded component: mean ± 95% CI.
 plot_signal_avg(t, signal; <keyword arguments>)
 ```
 
-Plot `signal` channels: mean and ±95% CI.
+Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 **Arguments**
 
-  * `t::Union{AbstractVector, AbstractRange}`
-  * `signal::AbstractArray`
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::AbstractArray`: data to plot
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_avg(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_avg_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_avg_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_avg_details`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_avg_details(eeg; <keyword arguments>)
-```
-
-Plot details of averaged `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `head::Bool=true`: add head plot
-  * `mono::Bool=false`: use color or grey palette
+  * `scale::Bool=true`: draw scale
+  * `units::String="μV"`: units of the scale
+  * `norm::Bool=false`: normalize to -1 .. +1
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -9251,411 +8889,323 @@ Butterfly plot of `signal` channels.
 
 **Arguments**
 
-  * `t::Union{AbstractVector, AbstractRange}`
-  * `signal::AbstractArray`
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::AbstractArray`: data to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
-  * `ylim::Tuple`: y-axis limits, default (0, 0)
+  * `scale::Bool=true`: draw scale
+  * `units::String="μV"`: units of the scale
   * `mono::Bool=false`: use color or grey palette
+  * `norm::Bool=false`: normalize to -1 .. +1
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_butterfly`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_butterfly(eeg; <keyword arguments>)
+eeg_plot(eeg; <keyword arguments>)
 ```
 
-Butterfly plot of `eeg` channels.
-
-**Arguments**
+Plot signal.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `ylabel::String="default"`: y-axis label, default is no label
+  * `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
   * `mono::Bool=false`: use color or grey palette
+  * `emarkers::Bool`: draw epoch markers if available
+  * `markers::Bool`: draw markers if available
+  * `scale::Bool=true`: draw scale
+  * `units::String="μV"`: units of the scale
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+  * `norm::Bool=false`: normalize signal for butterfly and averaged plots
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_butterfly_details-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_butterfly_details-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_butterfly_details`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}' href='#NeuroAnalyzer.eeg_plot-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}'>#</a>
+**`NeuroAnalyzer.eeg_plot`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_butterfly_details(eeg; <keyword arguments>)
+eeg_plot(eeg, c; <keyword arguments>)
 ```
 
-Plot details butterfly plot of `eeg` channels: amplitude, histogram, power density, phase histogram and spectrogram.
+Plot embedded or external component.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Int64=1`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=false`: normalize the `signal` prior to calculations
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram/spectrogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `hist::Symbol=:hist`: histogram type: :hist, :kd
-  * `head::Bool=true`: add head plot
+  * `c::Union{Symbol, AbstractArray}`: component to plot
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+  * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `ylabel::String="default"`: y-axis label, default is no label
+  * `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
   * `mono::Bool=false`: use color or grey palette
+  * `emarkers::Bool`: draw epoch markers if available
+  * `markers::Bool`: draw markers if available
+  * `scale::Bool=true`: draw scale
+  * `units::String=""`: units of the scale
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+  * `norm::Bool=false`: normalize signal for butterfly and averaged plots
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_psd-Tuple{AbstractVector}'>#</a>
+<a id='NeuroAnalyzer.plot_psd-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.plot_psd-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_psd`** &mdash; *Method*.
 
 
 
 ```julia
-plot_psd(signal; <keyword arguments>)
+plot_psd(s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot `signal` channel power spectrum density.
+Plot PSD (power spectrum density).
 
 **Arguments**
 
-  * `signal::AbstractVector`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Vector{Float64}`: powers
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd_avg-Tuple{AbstractArray}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.plot_psd_avg-Tuple{Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{Vector{Float64}, Matrix{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_psd_avg`** &mdash; *Method*.
 
 
 
 ```julia
-plot_psd_avg(signal; <keyword arguments>)
+plot_psd_avg(s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot `signal` channels power spectrum density: mean and ±95% CI.
+Plot PSD mean and ±95% CI of averaged channels.
 
 **Arguments**
 
-  * `signal::AbstractArray`
-  * `fs::Int64`: sampling rate
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 3}`: powers
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_psd_butterfly-Tuple{AbstractArray}' href='#NeuroAnalyzer.plot_psd_butterfly-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.plot_psd_butterfly-Tuple{Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_butterfly-Tuple{Vector{Float64}, Matrix{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_psd_butterfly`** &mdash; *Method*.
 
 
 
 ```julia
-plot_psd_butterfly(signal; <keyword arguments>)
+plot_psd_butterfly(s_frq, s_pow; <keyword arguments>)
 ```
 
-Butterfly plot of `signal` channels power spectrum density.
+Butterfly PSD plot.
 
 **Arguments**
 
-  * `signal::AbstractArray`
-  * `fs::Int64`: sampling rate
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 3}`: powers
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_3d-Tuple{Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_3d-Tuple{Vector{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_psd_3d`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_psd(eeg; <keyword arguments>)
+plot_psd_w3d(s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot `eeg` channels power spectrum density.
+Plot 3-d waterfall PSD plot.
 
 **Arguments**
 
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 3}`: powers
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `zlabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+  * `variant::Symbol`: waterfall (`:w`) or surface (`:s`)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_psd_topo-Tuple{DataFrame, Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_topo-Tuple{DataFrame, Vector{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_psd_topo`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_psd_avg(eeg; <keyword arguments>)
+plot_psd_topo(s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
+Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 3}`: powers
+  * `Union{Vector{Int64}, AbstractRange}`: which channels to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
-  * `p::Plots.Plot{Plots.GRBackend}`
+  * `fig::GLMakie.Figure`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channels power spectrum density: mean and ±95% CI.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `labels::Vector{String}=[""]`: channel labels vector
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_psd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_psd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_psd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_psd`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_component_psd(eeg; <keyword arguments>)
+eeg_plot_psd(eeg; <keyword arguments>)
 ```
 
-Plot PSD of `eeg` external or embedded component.
+Plot power spectrum density.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
   * `epoch::Int64`: epoch to display
-  * `channel::Int64`: channel to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
   * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
+  * `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+  * `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
+  * `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
+  * `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+  * `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
-  * `p::Plots.Plot{Plots.GRBackend}`
+  * `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
 
-<a id='NeuroAnalyzer.eeg_plot_component_psd_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_psd_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_psd-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}' href='#NeuroAnalyzer.eeg_plot_psd-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_psd`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_component_psd_avg(eeg; <keyword arguments>)
+eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 ```
 
-Plot PSD of `eeg` external or embedded component: mean and ±95% CI.
+Plot power spectrum density of embedded or external component.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
+  * `c::Union{Symbol, AbstractArray}`: component to plot
   * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
   * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
+  * `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
+  * `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher`
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+  * `xlabel::String="default"`: x-axis label, default is Frequency [Hz]
+  * `ylabel::String="default"`: y-axis label, default is Power [dB] or Power [μV^2/Hz]
+  * `zlabel::String="default"`: z-axis label for 3-d plots, default is Power [dB] or Power [μV^2/Hz]
+  * `title::String="default"`: plot title, default is PSD [frequency limit: 0-128 Hz] [channel: 1, epoch: 1, time window: 0 ms:10 s]
   * `mono::Bool=false`: use color or grey palette
-  * `ax::Symbol=:linlin`: type of axes scaling
+  * `type::Symbol=:normal`: plot type: `:normal`, `:butterfly`, `:mean`, 3-d waterfall (`:w3d`), 3-d surface (`:s3d`), topographical (`:topo`)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_component_psd_butterfly-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_psd_butterfly-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_psd_butterfly`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_psd_butterfly(eeg; <keyword arguments>)
-```
-
-Butterfly plot PSD of `eeg` external or embedded component:.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channels to display, default is all channels
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_spectrogram-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{AbstractVector}'>#</a>
+<a id='NeuroAnalyzer.plot_spectrogram-Tuple{Vector{Float64}, Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{Vector{Float64}, Vector{Float64}, Matrix{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_spectrogram`** &mdash; *Method*.
 
 
 
 ```julia
-plot_spectrogram(signal; <keyword arguments>)
+plot_spectrogram(s_t, s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot spectrogram of `signal`.
+Plot single-channel spectrogram.
 
 **Arguments**
 
-  * `signal::AbstractVector`
-  * `fs::Int64`: sampling frequency
-  * `offset::Real`: displayed segment offset in seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
+  * `s_t::Vector{Float64}`: time
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 2}`: powers
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
@@ -9664,207 +9214,154 @@ Plot spectrogram of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_spectrogram-Tuple{Vector{String}, Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_spectrogram-Tuple{Vector{String}, Vector{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_spectrogram`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_spectrogram(eeg; <keyword arguments>)
+plot_spectrogram(s_ch, s_frq, s_pow; <keyword arguments>)
 ```
 
-Plots spectrogram of `eeg` channel(s).
+Plot multiple-channel spectrogram.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
+  * `s_ch::Vector{String}`: channel labels
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Array{Float64, 2}`: powers
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_spectrogram`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_spectrogram(eeg; <keyword arguments>)
+```
+
+Plots spectrogram.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `epoch::Int64`: epoch to display
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
   * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short-time Fourier transform spectrogram
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
+  * `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
+  * `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]
+
+[channel: 1, epoch: 1, time window: 0 ms:10 s]
+
   * `mono::Bool=false`: use color or grey palette
+  * `markers::Bool`: draw markers if available
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_signal_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_spectrogram_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plot_spectrogram-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}' href='#NeuroAnalyzer.eeg_plot_spectrogram-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_spectrogram`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_signal_spectrogram_avg(eeg; <keyword arguments>)
+eeg_plot_spectrogram(eeg, c; <keyword arguments>)
 ```
 
-Plots spectrogram of `eeg` channel(s).
+Plots spectrogram of embedded or external component.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
+  * `eeg::NeuroAnalyzer.EEG`
+  * `c::Union{Symbol, AbstractArray}`: component to plot
+  * `epoch::Int64`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
   * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
+  * `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
   * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
   * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `ylabel::String="default"`: y-axis label, default is Frequency [Hz]
+  * `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]
+
+[component: 1, epoch: 1, time window: 0 ms:10 s]
+
   * `mono::Bool=false`: use color or grey palette
+  * `markers::Bool`: draw markers if available
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_component_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_spectrogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_electrodes`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_component_spectrogram(eeg; <keyword arguments>)
+plot_electrodes(locs; <keyword arguments>)
 ```
 
-Plots spectrogram of `eeg` external or embedded component.
+Preview of electrode locations. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `channel::Int64`: channel to display
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
   * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
+  * `head_details::Bool=true`: draw nose and ears
+  * `plot_size::Int64=400`: plot dimensions in pixels (size × size)
 
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_component_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_spectrogram_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_electrodes3d`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_component_spectrogram_avg(eeg; <keyword arguments>)
+plot_electrodes3d(locs; <keyword arguments>)
 ```
 
-Plots spectrogram of `eeg` channel(s).
+3D interactive preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z locations.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Union{Int64, AbstractRange}=1`: epoch to plot
-  * `channel::Union{Vector{Int64}, AbstractRange}`: channels to plot
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
   * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
+
+`plot_size::Int64=800`: plot dimensions in pixels (plot*size×plot*size)
 
 **Returns**
 
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_spectrogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_spectrogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_spectrogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_spectrogram(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Int64`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Times [s]`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_component_idx_spectrogram_avg`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_component_idx_spectrogram_avg(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of averaged indexed `eeg` external or embedded component.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `c::Union{Array{Float64, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component index to display, default is all components
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered spectrogram
-  * `st::Bool=false`: if true use short time Fourier transform
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
+  * `fig::GLMakie.Figure`
 
 <a id='NeuroAnalyzer.eeg_plot_electrodes-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrodes-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_plot_electrodes`** &mdash; *Method*.
@@ -9875,17 +9372,46 @@ Plot spectrogram of averaged indexed `eeg` external or embedded component.
 eeg_plot_electrodes(eeg; <keyword arguments>)
 ```
 
-Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+Preview of electrode locations.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
   * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
   * `labels::Bool=true`: plot electrode labels
   * `head::Bool`=true: plot head
   * `head_labels::Bool=false`: plot head labels
-  * `small::Bool=false`: draws small plot
+  * `plot_size::Int64=400`: plot dimensions in pixels (plot*size×plot*size)
+  * `head_details::Bool=true`: draw nose and ears
+  * `mono::Bool=false`: use color or grey palette
+  * `threed::Bool=false`: 3-dimensional plot
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_matrix-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_matrix-Tuple{Matrix{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_matrix`** &mdash; *Method*.
+
+
+
+```julia
+plot_matrix(m; <keyword arguments>)
+```
+
+Plot matrix.
+
+**Arguments**
+
+  * `m::Array{<:Real, 2}`
+  * `xlabels::Vector{String}`
+  * `ylabels::Vector{String}`
+  * `xlabel::String=""`
+  * `ylabel::String=""`
+  * `title::String=""`
+  * `cb_title::String=""`: color bar title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -9893,47 +9419,25 @@ Plot `eeg` electrodes. It uses polar :loc*radius and :loc*theta locations, which
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}}' href='#NeuroAnalyzer.eeg_plot_matrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}}'>#</a>
-**`NeuroAnalyzer.eeg_plot_matrix`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_covmatrix-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.plot_covmatrix-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.plot_covmatrix`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_matrix(eeg, m; <keyword arguments>)
+plot_covmatrix(m, lags; <keyword arguments>)
 ```
 
-Plot matrix `m` of `eeg` channels.
+Plot cross/auto-covariance matrix.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: channels by channels matrix
-  * `epoch::Int64=1`: epoch number to display
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}, AbstractVector}' href='#NeuroAnalyzer.eeg_plot_covmatrix-Tuple{NeuroAnalyzer.EEG, Union{Array{<:Real, 3}, Matrix{<:Real}}, AbstractVector}'>#</a>
-**`NeuroAnalyzer.eeg_plot_covmatrix`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_matrix(eeg, cov_m, lags; <keyword arguments>)
-```
-
-Plot covariance matrix `m` of `eeg` channels.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `cov_m::Union{Matrix{<:Real}, Array{<:Real, 3}}`: covariance matrix
-  * `lags::AbstractVector`: covariance lags
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange, Nothing}`: channel to display
-  * `epoch::Int64=1`: epoch number to display
+  * `m::Abstractvector`: covariance matrix
+  * `lags::AbstractVector`: covariance lags, lags will be displayed in ms
+  * `xlabel::String="lag"`
+  * `ylabel::String=""`
+  * `title::String=""`
+  * `cb_title::String=""`: color bar title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -9955,7 +9459,7 @@ Plot histogram of `signal`.
 **Arguments**
 
   * `signal::AbstractVector`
-  * `type::Symbol`: type of histogram: regular `:hist` or kernel density `:kd`
+  * `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
   * `label::String=""`: channel label
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -9967,404 +9471,285 @@ Plot histogram of `signal`.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_histogram-Tuple{Matrix{<:Real}}' href='#NeuroAnalyzer.plot_histogram-Tuple{Matrix{<:Real}}'>#</a>
-**`NeuroAnalyzer.plot_histogram`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_filter_response-Tuple{}' href='#NeuroAnalyzer.plot_filter_response-Tuple{}'>#</a>
+**`NeuroAnalyzer.plot_filter_response`** &mdash; *Method*.
 
 
 
 ```julia
-plot_histogram(signal; <keyword arguments>)
-```
-
-Plot histogram of `signal`.
-
-**Arguments**
-
-  * `signal::Matrix{<:Real}`
-  * `type::Symbol`: type of histogram: :hist or :kd
-  * `labels::Vector{String}=[""]`
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_histogram-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_histogram-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_histogram`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_histogram(eeg; <keyword arguments>)
-```
-
-Plot `eeg` channel histograms.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `type::Symbol: type of histogram: :hist or :kd
-  * `epoch::Int64=1`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default 1 epoch or 20 seconds
-  * `label::String=""`: channel label
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_ica-Tuple{AbstractVector, Vector{Float64}}' href='#NeuroAnalyzer.plot_ica-Tuple{AbstractVector, Vector{Float64}}'>#</a>
-**`NeuroAnalyzer.plot_ica`** &mdash; *Method*.
-
-
-
-```julia
-plot_ica(t, ica; <keyword arguments>)
-```
-
-Plot `ica` components against time vector `t`.
-
-**Arguments**
-
-  * `t::Union{AbstractVector, AbstractRange}`: the time vector
-  * `ica::Vector{Float64}`
-  * `label::String=""`: channel label
-  * `norm::Bool=true`: normalize the `ica` prior to calculations
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Amplitude [μV]"`: y-axis label
-  * `title::String=""`: plot title
-  * `ylim::Tuple{Real, Real}=(0, 0)`: y-axis limits (-ylim:ylim)
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` signal. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=true`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_acomponent_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_acomponent_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_acomponent_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_acomponent_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` external or embedded component (array type: many values per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `c::Union{Array{<:Real, 3}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Int64`: epoch to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `nmethod::Symbol=:minmax`: method for normalization, see s_normalization()
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_weights_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_weights_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_weights_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_weights_topo(eeg; <keyword arguments>)
-```
-
-Topographical plot `eeg` of weights values at electrodes locations. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `epoch::Int64`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `weights=Matrix{<:Real}`: weights to plot
-  * `head::Bool`=true: plot head
-  * `small::Bool=false`: draws small plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_mcomponent_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_mcomponent_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_mcomponent_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_mcomponent_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` external or embedded component (matrix type: 1 value per channel per epoch). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Int64`: epoch to display
-  * `c::Union{Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=false`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_ica_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_ica_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_ica_topo`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_ica_topo(eeg; <keyword arguments>)
-```
-
-Plot topographical view of `eeg` ICAs (each plot is signal reconstructed from this ICA). It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Int64`: epoch to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 second
-  * `ic::Union{Vector{Int64}, AbstractRange}=0`: list of ICAs plot, default is all ICAs
-  * `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-  * `cb::Bool=false`: draw color bar
-  * `cb_label::String="[A.U.]"`: color bar label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_tile' href='#NeuroAnalyzer.eeg_plot_tile'>#</a>
-**`NeuroAnalyzer.eeg_plot_tile`** &mdash; *Function*.
-
-
-
-```julia
-eeg_plot_tile(p)
-```
-
-Plot vector of plots `p` as tiles.
-
-**Arguments**
-
-  * `p::Vector{Any}`: vector of plots
-  * `w::Int64=800`: single plot width (px)
-  * `h::Int64=800`: single plot height (px)
-  * `rows::Int64=2`: number of rows; if number of plots > 10 then number of rows = rows × 2
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `p_tiled::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_bands-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_bands-Tuple{AbstractVector}'>#</a>
-**`NeuroAnalyzer.plot_bands`** &mdash; *Method*.
-
-
-
-```julia
-plot_bands(signal; <keyword arguments>)
-```
-
-Plot absolute/relative bands powers of a single-channel `signal`.
-
-**Arguments**
-
-  * `signal::AbstractVector`
-  * `fs::Int64`: sampling rate
-  * `band::Vector{Symbol}=[:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]`: band names, e.g. [:delta, :alpha]
-  * `band_frq::Vector{Tuple{Real, Real}}`: vector of band frequencies
-  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-  * `norm::Bool=true`: normalize powers to dB
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_bands-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_bands-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_bands`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_bands(eeg; <keyword arguments>)
-```
-
-Plots `eeg` channels. If signal is multichannel, only channel amplitudes are plotted. For single-channel signal, the histogram, amplitude, power density and spectrogram are plotted.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=1`: epochs to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channels to display
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `band:Vector{Symbols}=:all`: band name, e.g. :delta
-  * `type::Symbol`: plots absolute (:abs) or relative power (:rel)
-  * `norm::Bool=true`: normalize powers to dB
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
-**`NeuroAnalyzer.eeg_plot_save`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_save(p; file_name::String)
-```
-
-Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
-
-**Arguments**
-
-  * `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
-  * `file_name::String`
-
-<a id='NeuroAnalyzer.eeg_plot_channels-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_channels-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_channels`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_channels(eeg; <keyword arguments>)
-```
-
-Plot values of `c` for selected channels of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroAnalyzer.EEG`
-  * `c::Union{Matrix{Int64}, Matrix{<:Real}, Symbol}`: values to plot; if symbol, than use embedded component
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: list of channels to plot
-  * `epoch::Int64`: number of epoch for which `c` should be plotted
-  * `xlabel::String="Channel"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_epochs`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_epochs(eeg; <keyword arguments>)
-```
-
-Plot values of `c` for selected epoch of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroAnalyzer.EEG`
-  * `c::Union{AbstractVector, Symbol}`: values to plot; if symbol, than use embedded component
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: list of epochs to plot
-  * `xlabel::String="Epochs"`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_filter_response-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_filter_response-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_filter_response`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_filter_response(eeg; <keyword arguments>)
+plot_filter_response(<keyword arguments>)
 ```
 
 Plot filter response.
 
 **Arguments**
 
-  * `eeg::NeuroAnalyzer.EEG`
-  * `fprototype::Symbol`: filter class: :fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic
-  * `ftype::Symbol`: filter type: :lp, :hp, :bp, :bs
+  * `fs::Int64`: sampling rate
+  * `fprototype::Symbol`: filter class: `:fir`, `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`
+  * `ftype::Symbol`: filter type: low-pass (`:lp`), high-pass (`:hp`), band-pass (`:bp`), band-stop (`:bs`)
   * `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
   * `order::Int64`: filter order
   * `rp::Real`: dB ripple in the passband
   * `rs::Real`: dB attenuation in the stopband
   * `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
   * `mono::Bool=false`: use color or grey palette
+  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_weights-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_weights-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_weights`** &mdash; *Method*.
+
+
+
+```julia
+plot_weights(locs; <keyword arguments>)
+```
+
+Plot weights at electrode positions. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+  * `weights::Vector{<:Real}=[]`: weights vector
+  * `labels::Bool=true`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+  * `head_details::Bool=true`: draw nose and ears
+  * `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_weights-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_weights-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_weights`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_weights(eeg; <keyword arguments>)
+```
+
+Plot weights at electrode positions. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `weights::Matrix{<:Real}`: matrix of weights
+  * `labels::Bool=false`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+  * `head_details::Bool=true`: draw nose and ears
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `title::String=""`: plot title
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_connections`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_connections(eeg; <keyword arguments>)
+```
+
+Plot weights at electrode positions. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `connections::Matrix{<:Real}`: matrix of connections weights
+  * `threshold::Real`: plot all connection above threshold
+  * `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+  * `weights::Bool=true`: weight line widths and alpha based on connection value
+  * `labels::Bool=false`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+  * `head_details::Bool=true`: draw nose and ears
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `title::String=""`: plot title
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_connections-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_connections-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.plot_connections`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_connections(eeg; <keyword arguments>)
+```
+
+Plot connections between channels. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `connections::Matrix{<:Real}`: matrix of connections weights
+  * `threshold::Real`: plot all connection above threshold
+  * `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
+  * `weights::Bool=true`: weight line widths and alpha based on connection value
+  * `labels::Bool=false`: plot electrode labels
+  * `head_labels::Bool=true`: plot head labels
+  * `mono::Bool=false`: use color or grey palette
+  * `head_details::Bool=true`: draw nose and ears
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_stats-Tuple{NeuroAnalyzer.EEG, Union{Symbol, Dict, VecOrMat{<:Real}}}' href='#NeuroAnalyzer.eeg_plot_stats-Tuple{NeuroAnalyzer.EEG, Union{Symbol, Dict, VecOrMat{<:Real}}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_stats`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot(eeg, c; <keyword arguments>)
+```
+
+Plot channel/epoch data.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}`: component to plot
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `plot_by::Symbol`: c values refer to: :labels, :channels or :epochs
+  * `type::Symbol`: plot type: histogram (`:hist`), kernel density (`:kd`), bar plot (`:bar`), box plot (`:box`), violin plot (`:violin`), paired (`:paired`) or polar (`:polar`); for `:box` and `:violin` `c` must contain ≥ 2 values per channel
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+**Notes**
+
+Labeled matrix is a dictionary of labels and vectors associated with these labels. This way plotting of vectors non-equal length is possible. Labeled matrix is created using `_labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{<:Real}})` and converted back to keys and values using `_dict2labeled_matrix(d::Dict)`.
+
+For `:polar plot` if `c` is a vector, than it contains phases in radians. If `c` is a two column matrix, than first column contains phases in radians and second column contains lengths.
+
+<a id='NeuroAnalyzer.plot_topo-Tuple{Vector{<:Real}}' href='#NeuroAnalyzer.plot_topo-Tuple{Vector{<:Real}}'>#</a>
+**`NeuroAnalyzer.plot_topo`** &mdash; *Method*.
+
+
+
+```julia
+plot_topo(c; <keyword arguments>)
+```
+
+Plot topographical view.
+
+**Arguments**
+
+  * `signal::Vector{<:Real}`: values to plot (one value per channel)
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `cb::Bool=true`: plot color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+  * `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `plot_contours::Bools=true`: plot contours over topo plot
+  * `plot_electrodes::Bools=true`: plot electrodes over topo plot
+  * `head_labels::Bool=false`: plot head labels
+  * `head_details::Bool=true`: draw nose and ears
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_topo-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_topo-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_topo(eeg; <keyword arguments>)
+```
+
+Topographical plot.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+  * `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
+  * `mono::Bool=false`: use color or grey palette
+  * `cb::Bool=true`: plot color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
+  * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+  * `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `plot_contours::Bools=true`: plot contours over topo plot
+  * `plot_electrodes::Bools=true`: plot electrodes over topo plot
+  * `head_labels::Bool=false`: plot head labels
+  * `head_details::Bool=true`: draw nose and ears
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_topo-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}' href='#NeuroAnalyzer.eeg_plot_topo-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_topo`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_topo(eeg; <keyword arguments>)
+```
+
+Topographical plot of embedded or external component.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `c::Union{Symbol, AbstractArray}`: component to plot
+  * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+  * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+  * `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
+  * `mono::Bool=false`: use color or grey palette
+  * `cb::Bool=true`: plot color bar
+  * `cb_label::String="[A.U.]"`: color bar label
+  * `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
+  * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+  * `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
+  * `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+  * `plot_contours::Bools=true`: plot contours over topo plot
+  * `plot_electrodes::Bools=true`: plot electrodes over topo plot
+  * `head_labels::Bool=false`: plot head labels
+  * `head_details::Bool=true`: draw nose and ears
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -10390,459 +9775,12 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
   * `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
   * `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
   * `mono::Bool=false`: use color or grey palette
+  * `title::String=""`: plot title
   * `kwargs`: optional arguments for `p` vector plots
 
 **Returns**
 
   * `pc::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_env-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_env-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_env`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_env(eeg; <keyword arguments>)
-```
-
-Plot envelope of `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol`: envelope type: :amp (amplitude over time), :pow (power over frequencies), :spec (frequencies over time), :hamp (Hilbert spectrum amplitude)
-  * `average::Symbol`: averaging method: :no, :mean or :median
-  * `dims::Union{Int64, Nothing}=nothing`: average over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
-  * `epoch::Int64`: epoch number to display
-  * `channel::Int64`: channel to display
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `y_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for PSD and spectrogram
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_ispc-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_ispc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_ispc(eeg1, eeg2; <keyword arguments>)
-```
-
-Plot ISPC `eeg1` and `eeg2` channels/epochs.
-
-**Arguments**
-
-  * `eeg1:NeuroAnalyzer.EEG`
-  * `eeg2:NeuroAnalyzer.EEG`
-  * `channel1::Int64`: channel to plot
-  * `channel2::Int64`: channel to plot
-  * `epoch1::Int64`: epoch to plot
-  * `epoch2::Int64`: epoch to plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_itpc-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_itpc`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc(eeg; <keyword arguments>)
-```
-
-Plot ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg:NeuroAnalyzer.EEG`
-  * `channel::Int64`: channel to plot
-  * `t::Int64`: time point to plot
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_pli`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_pli(eeg1, eeg2; <keyword arguments>)
-```
-
-Plot pli `eeg1` and `eeg2` channels/epochs.
-
-**Arguments**
-
-  * `eeg1:NeuroAnalyzer.EEG`
-  * `eeg2:NeuroAnalyzer.EEG`
-  * `channel1::Int64`: channel to plot
-  * `channel2::Int64`: channel to plot
-  * `epoch1::Int64`: epoch to plot
-  * `epoch2::Int64`: epoch to plot
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_itpc_s-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc_s-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_itpc_s`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc_s(eeg; <keyword arguments>)
-```
-
-Plot spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String="ITPC spectrogram"`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_itpc_f-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_itpc_f-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_itpc_f`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_itpc_f(eeg; <keyword arguments>)
-```
-
-Plot time-frequency plot of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg` for frequency `f`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`
-  * `f::Int64`: frequency to plot
-  * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-  * `frq_n::Int64`: number of frequencies
-  * `frq::Symbol=:lin`: linear (:lin) or logarithmic (:log) frequencies
-  * `z::Bool=false`: plot ITPCz instead of ITPC
-  * `w::Union{AbstractVector, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
-  * `xlabel::String="Time [s]"`: x-axis label
-  * `ylabel::String="Frequency [Hz]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_connections-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_connections`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_connections(eeg; <keyword arguments>)
-```
-
-Plot connections between `eeg` electrodes.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `m::Matrix{<:Real}`: matrix of connections weights
-  * `threshold::Float64`: plot all connection above threshold
-  * `threshold_type::Symbol=:g`: rule for thresholding: :eq =, :geq ≥, :leq ≤, :g >, :l <
-  * `weights::Bool=true`: weight line widths and alpha based on connection value
-  * `labels::Bool=false`: plot electrode labels
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_psd_3dw-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_3dw-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroAnalyzer.plot_psd_3dw`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_3dw(signal; <keyword arguments>)
-```
-
-Plot 3-d waterfall plot of `signal` channels power spectrum density.
-
-**Arguments**
-
-  * `signal::Matrix{Float64}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_psd_3d-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_3d-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_psd_3d`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_3d(eeg; <keyword arguments>)
-```
-
-Plot 3-d waterfall plot of `eeg` channels power spectrum density.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Int64`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `type::Symbol=:w`: plot type: :w waterfall, :s surface
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_psd_3ds-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_3ds-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroAnalyzer.plot_psd_3ds`** &mdash; *Method*.
-
-
-
-```julia
-plot_psd_3ds(signal; <keyword arguments>)
-```
-
-Plot 3-d surface plot of `signal` channels power spectrum density.
-
-**Arguments**
-
-  * `signal::Matrix{Float64}`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel="Channel"`: y-axis label
-  * `zlabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_rel_psd-Tuple{AbstractVector}' href='#NeuroAnalyzer.plot_rel_psd-Tuple{AbstractVector}'>#</a>
-**`NeuroAnalyzer.plot_rel_psd`** &mdash; *Method*.
-
-
-
-```julia
-plot_rel_psd(signal; <keyword arguments>)
-```
-
-Plot relative `signal` channel power spectrum density.
-
-**Arguments**
-
-  * `signal::AbstractVector`
-  * `fs::Int64`: sampling frequency
-  * `norm::Bool=true`: normalize powers to dB
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `xlabel::String="Frequency [Hz]"`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
-  * `ax::Symbol=:linlin`: type of axes scaling
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_electrode-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrode-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_electrode`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_electrode(eeg; <keyword arguments>)
-```
-
-Plot single `eeg` electrode. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Int64`: channel to display
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.eeg_plot_electrodes3d-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_electrodes3d-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_electrodes3d`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_electrodes3d(eeg; <keyword arguments>)
-```
-
-Plot 3D interactive view of `eeg` electrodes. It uses spherical :loc*x, :loc*y and :loc_z locations.
-
-**Arguments**
-
-  * `eeg:EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
-  * `labels::Bool=true`: plot electrode labels
-  * `head_labels::Bool=false`: plot head labels
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `fig::GLMakie.Figure`
-
-<a id='NeuroAnalyzer.eeg_plot_signal_psd_topomap-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_signal_psd_topomap-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_plot_signal_psd_topomap`** &mdash; *Method*.
-
-
-
-```julia
-eeg_plot_signal_psd_topomap(eeg; <keyword arguments>)
-```
-
-Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Int64, AbstractRange}=0`: epoch number to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display, default is all channels
-  * `offset::Int64=0`: displayed segment offset in samples
-  * `len::Int64=0`: displayed segment length in samples, default is 1 epoch or 20 seconds
-  * `mw::Bool=false`: if true use Morlet wavelet convolution
-  * `mt::Bool=false`: if true use multi-tapered periodogram
-  * `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
-  * `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet (used when mw=true)
-  * `xlabel::String="Frequency [Hz]`: x-axis label
-  * `ylabel::String="Power [dB]"`: y-axis label
-  * `title::String=""`: plot title
-  * `plot_size::Int64=1000`: plot dimensions in px
-  * `marker_size::Tuple{Int64, Int64}=(100, 75)`: PSD images dimensions in px
-  * `labels::Bool=true`: add channel labels
-  * `mono::Bool=false`: use color or grey palette
-  * `ref::Symbol=:abs`: type of PSD reference: :abs absolute power (no reference) or relative to EEG band: :total (total power), :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower or :gamma_higher
-  * `ax::Symbol=:linlin`: type of axes scaling
-
-**Returns**
-
-  * `fig::GLMakie.Figure`
-
-<a id='NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.plot_electrodes`** &mdash; *Method*.
-
-
-
-```julia
-plot_electrodes(locs; <keyword arguments>)
-```
-
-Preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z locations.
-
-**Arguments**
-
-  * `locs::DataFrame`
-  * `labels::Bool=true`: plot electrode labels
-  * `head_labels::Bool=true`: plot head labels
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
-<a id='NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}' href='#NeuroAnalyzer.plot_electrodes3d-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.plot_electrodes3d`** &mdash; *Method*.
-
-
-
-```julia
-plot_electrodes3d(locs; <keyword arguments>)
-```
-
-3D interactive preview of electrode locations. It uses spherical :loc*x, :loc*y and :loc_z locations.
-
-**Arguments**
-
-  * `locs::DataFrame`
-  * `labels::Bool=true`: plot electrode labels
-  * `head_labels::Bool=true`: plot head labels
-  * `mono::Bool=false`: use color or grey palette
-
-**Returns**
-
-  * `fig::GLMakie.Figure`
 
 
 <a id='Neurostimulation'></a>

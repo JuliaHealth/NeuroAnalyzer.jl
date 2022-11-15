@@ -1,15 +1,17 @@
 """
     eeg_import(file_name; clean_labels)
 
-Load EEG file and return and `NeuroAnalyzer.EEG` object. Supported formats:
+Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 - EDF/EDF+
 - BDF/BDF+
 - BrainVision
 
+This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr).
+
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels
+- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 # Returns
 
@@ -27,12 +29,12 @@ end
 """
     eeg_import_edf(file_name; clean_labels)
 
-Load EDF/EDF+ file and return and `NeuroAnalyzer.EEG` object.
+Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels
+- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 # Returns
 
@@ -243,20 +245,10 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :data_records => data_records,
-                      :data_records_duration => data_records_duration,
                       :channel_n => channel_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
-                      :loc_theta => zeros(channel_n),
-                      :loc_radius => zeros(channel_n),
-                      :loc_x => zeros(channel_n),
-                      :loc_y => zeros(channel_n),
-                      :loc_z => zeros(channel_n),
-                      :loc_radius_sph => zeros(channel_n),
-                      :loc_theta_sph => zeros(channel_n),
-                      :loc_phi_sph => zeros(channel_n),
                       :history => String[],
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
@@ -280,8 +272,18 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
 
     eeg_components = Vector{Any}()
     eeg_epochs_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -297,18 +299,18 @@ Load electrode positions from CED file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_ced(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".ced" || throw(ArgumentError("Not a CED file."))
-    sensors = CSV.read(file_name, delim="\t", DataFrame)
+    locs = CSV.read(file_name, delim="\t", DataFrame)
 
-    colnames = lowercase.(names(sensors))
-    DataFrames.rename!(sensors, Symbol.(colnames))
+    colnames = lowercase.(names(locs))
+    DataFrames.rename!(locs, Symbol.(colnames))
 
-    labels = lstrip.(sensors[!, "labels"])
+    labels = lstrip.(locs[!, "labels"])
 
     x = zeros(length(labels))
     y = zeros(length(labels))
@@ -319,18 +321,18 @@ function eeg_import_ced(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
 
-    "x" in colnames && (x = Float64.(sensors[!, "x"]))
-    "y" in colnames && (y = Float64.(sensors[!, "y"]))
-    "z" in colnames && (z = Float64.(sensors[!, "z"]))
-    "theta" in colnames && (theta = Float64.(sensors[!, "theta"]))
-    "radius" in colnames && (radius = Float64.(sensors[!, "radius"]))
-    "sph_radius" in colnames && (radius_sph = Float64.(sensors[!, "sph_radius"]))
-    "sph_theta" in colnames && (theta_sph = Float64.(sensors[!, "sph_theta"]))
-    "sph_phi" in colnames && (phi_sph = Float64.(sensors[!, "sph_phi"]))
+    "x" in colnames && (x = Float64.(locs[!, "x"]))
+    "y" in colnames && (y = Float64.(locs[!, "y"]))
+    "z" in colnames && (z = Float64.(locs[!, "z"]))
+    "theta" in colnames && (theta = Float64.(locs[!, "theta"]))
+    "radius" in colnames && (radius = Float64.(locs[!, "radius"]))
+    "sph_radius" in colnames && (radius_sph = Float64.(locs[!, "sph_radius"]))
+    "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
+    "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -344,16 +346,16 @@ Load electrode positions from LOCS file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_locs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".locs" || throw(ArgumentError("Not a LOCS file."))
-    sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
+    locs = CSV.read(file_name, header=false, delim="\t", DataFrame)
 
-    DataFrames.rename!(sensors, [:number, :theta, :radius, :labels])
-    labels = lstrip.(sensors[!, "labels"])
+    DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
+    labels = lstrip.(locs[!, "labels"])
 
     x = zeros(length(labels))
     y = zeros(length(labels))
@@ -364,12 +366,12 @@ function eeg_import_locs(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
 
-    theta = Float64.(sensors[!, "theta"])
-    radius = Float64.(sensors[!, "radius"])
+    theta = Float64.(locs[!, "theta"])
+    radius = Float64.(locs[!, "radius"])
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -383,7 +385,7 @@ Load electrode positions from ELC file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_elc(file_name::String)
 
@@ -424,9 +426,9 @@ function eeg_import_elc(file_name::String)
         idx2 += 1
     end
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -440,20 +442,20 @@ Load electrode positions from TSV file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_tsv(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".tsv" || throw(ArgumentError("Not a TSV file."))
-    sensors = CSV.read(file_name, header=true, delim="\t", DataFrame)
+    locs = CSV.read(file_name, header=true, delim="\t", DataFrame)
 
-    colnames = lowercase.(names(sensors))
-    DataFrames.rename!(sensors, Symbol.(colnames))
+    colnames = lowercase.(names(locs))
+    DataFrames.rename!(locs, Symbol.(colnames))
 
-    "labels" in colnames && (labels = lstrip.(sensors[!, "labels"]))
-    "label" in colnames && (labels = lstrip.(sensors[!, "label"]))
-    "site" in colnames && (labels = lstrip.(sensors[!, "site"]))
+    "labels" in colnames && (labels = lstrip.(locs[!, "labels"]))
+    "label" in colnames && (labels = lstrip.(locs[!, "label"]))
+    "site" in colnames && (labels = lstrip.(locs[!, "site"]))
 
     x = zeros(length(labels))
     y = zeros(length(labels))
@@ -464,21 +466,21 @@ function eeg_import_tsv(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
     
-    "x" in colnames && (x = Float64.(sensors[!, "x"]))
-    "y" in colnames && (y = Float64.(sensors[!, "y"]))
-    "z" in colnames && (z = Float64.(sensors[!, "z"]))
-    "theta" in colnames && (theta = Float64.(sensors[!, "theta"]))
-    "radius" in colnames && (radius = Float64.(sensors[!, "radius"]))
-    "radius" in colnames && (radius_sph = Float64.(sensors[!, "radius"]))
-    "radius_sph" in colnames && (radius_sph = sensors[!, "radius_sph"])
-    "theta" in colnames && (theta_sph = Float64.(sensors[!, "theta"]))
-    "theta_sph" in colnames && (theta_sph = sensors[!, "theta_sph"])
-    "phi" in colnames && (phi_sph = sensors[!, "phi"])
-    "phi_sph" in colnames && (phi_sph = sensors[!, "phi_sph"])
+    "x" in colnames && (x = Float64.(locs[!, "x"]))
+    "y" in colnames && (y = Float64.(locs[!, "y"]))
+    "z" in colnames && (z = Float64.(locs[!, "z"]))
+    "theta" in colnames && (theta = Float64.(locs[!, "theta"]))
+    "radius" in colnames && (radius = Float64.(locs[!, "radius"]))
+    "radius" in colnames && (radius_sph = Float64.(locs[!, "radius"]))
+    "radius_sph" in colnames && (radius_sph = locs[!, "radius_sph"])
+    "theta" in colnames && (theta_sph = Float64.(locs[!, "theta"]))
+    "theta_sph" in colnames && (theta_sph = locs[!, "theta_sph"])
+    "phi" in colnames && (phi_sph = locs[!, "phi"])
+    "phi_sph" in colnames && (phi_sph = locs[!, "phi_sph"])
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -492,17 +494,17 @@ Load electrode positions from SFP file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_sfp(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".sfp" || throw(ArgumentError("Not a SFP file."))
-    sensors = CSV.read(file_name, header=false, delim="\t", DataFrame)
+    locs = CSV.read(file_name, header=false, delim="\t", DataFrame)
 
-    DataFrames.rename!(sensors, [:label, :x, :y, :z])
+    DataFrames.rename!(locs, [:label, :x, :y, :z])
 
-    labels = lstrip.(sensors[!, "label"])
+    labels = lstrip.(locs[!, "label"])
 
     x = zeros(length(labels))
     y = zeros(length(labels))
@@ -513,13 +515,13 @@ function eeg_import_sfp(file_name::String)
     theta_sph = zeros(length(labels))
     phi_sph = zeros(length(labels))
     
-    x = Float64.(sensors[!, "x"])
-    y = Float64.(sensors[!, "y"])
-    z = Float64.(sensors[!, "z"])
+    x = Float64.(locs[!, "x"])
+    y = Float64.(locs[!, "y"])
+    z = Float64.(locs[!, "z"])
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -533,29 +535,29 @@ Load electrode positions from CSD file.
 
 # Returns
 
-- `sensors::DataFrame`
+- `locs::DataFrame`
 """
 function eeg_import_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a csd file."))
-    sensors = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
+    locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
 
-    DataFrames.rename!(sensors, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
-    labels = lstrip.(sensors[!, "labels"])
+    DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
+    labels = lstrip.(locs[!, "labels"])
 
-    x = Float64.(sensors[!, "x"])
-    y = Float64.(sensors[!, "y"])
-    z = Float64.(sensors[!, "z"])
-    radius = Float64.(sensors[!, "radius_sph"])
-    theta = Float64.(sensors[!, "theta_sph"])
-    theta_sph = Float64.(sensors[!, "theta_sph"])
-    phi_sph = Float64.(sensors[!, "phi_sph"])
-    radius_sph = Float64.(sensors[!, "radius_sph"])
+    x = Float64.(locs[!, "x"])
+    y = Float64.(locs[!, "y"])
+    z = Float64.(locs[!, "z"])
+    radius = Float64.(locs[!, "radius_sph"])
+    theta = Float64.(locs[!, "theta_sph"])
+    theta_sph = Float64.(locs[!, "theta_sph"])
+    phi_sph = Float64.(locs[!, "phi_sph"])
+    radius_sph = Float64.(locs[!, "radius_sph"])
 
-    sensors = DataFrame(:labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
-    return sensors
+    return locs
 end
 
 """
@@ -596,56 +598,61 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
-        sensors = eeg_import_ced(file_name)
+        locs = eeg_import_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        sensors = eeg_import_elc(file_name)
+        locs = eeg_import_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        sensors = eeg_import_locs(file_name)
+        locs = eeg_import_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        sensors = eeg_import_tsv(file_name)
+        locs = eeg_import_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        sensors = eeg_import_sfp(file_name)
+        locs = eeg_import_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        sensors = eeg_import_csd(file_name)
+        locs = eeg_import_csd(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
 
-    f_labels = lowercase.(sensors[:, :labels])
+    f_labels = locs[!, :labels]
 
-    loc_theta = float.(sensors[:, :loc_theta])
-    loc_radius = float.(sensors[:, :loc_radius])
+    loc_theta = float.(locs[!, :loc_theta])
+    loc_radius = float.(locs[!, :loc_radius])
 
-    loc_radius_sph = float.(sensors[:, :loc_radius_sph])
-    loc_theta_sph = float.(sensors[:, :loc_theta_sph])
-    loc_phi_sph = float.(sensors[:, :loc_phi_sph])
+    loc_radius_sph = float.(locs[!, :loc_radius_sph])
+    loc_theta_sph = float.(locs[!, :loc_theta_sph])
+    loc_phi_sph = float.(locs[!, :loc_phi_sph])
 
-    loc_x = float.(sensors[:, :loc_x])
-    loc_y = float.(sensors[:, :loc_y])
-    loc_z = float.(sensors[:, :loc_z])
+    loc_x = float.(locs[!, :loc_x])
+    loc_y = float.(locs[!, :loc_y])
+    loc_z = float.(locs[!, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
-    no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in $file_name."))
+    no_match = setdiff(e_labels, lowercase.(f_labels))
+    length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) not found in $file_name."
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in 1:length(e_labels)
         for idx2 in 1:length(f_labels)
-            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
         end
     end
-    
+    for idx in length(labels_idx):-1:1
+        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
+    end
+
     # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:channel_locations] = true
-    eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx]
-    eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx]
-    eeg_new.eeg_header[:loc_x] = loc_x[labels_idx]
-    eeg_new.eeg_header[:loc_y] = loc_y[labels_idx]
-    eeg_new.eeg_header[:loc_z] = loc_z[labels_idx]
-    eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
-    eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
-    eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
+    eeg_new.eeg_locs = DataFrame(:channel => 1:length(e_labels),
+                                 :labels => f_labels[labels_idx],
+                                 :loc_theta => loc_theta[labels_idx],
+                                 :loc_radius => loc_radius[labels_idx],
+                                 :loc_x => loc_x[labels_idx],
+                                 :loc_y => loc_y[labels_idx],
+                                 :loc_z => loc_z[labels_idx],
+                                 :loc_radius_sph => loc_radius_sph[labels_idx],
+                                 :loc_theta_sph => loc_theta_sph[labels_idx],
+                                 :loc_phi_sph => loc_phi_sph[labels_idx])
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_load_electrodes(EEG, file_name=$file_name)")
@@ -686,53 +693,58 @@ function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
-        sensors = eeg_import_ced(file_name)
+        locs = eeg_import_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        sensors = eeg_import_elc(file_name)
+        locs = eeg_import_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        sensors = eeg_import_locs(file_name)
+        locs = eeg_import_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        sensors = eeg_import_tsv(file_name)
+        locs = eeg_import_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        sensors = eeg_import_sfp(file_name)
+        locs = eeg_import_sfp(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
 
-    f_labels = lowercase.(sensors[:, :labels])
+    f_labels = locs[!, :labels]
 
-    loc_theta = float.(sensors[:, :loc_theta])
-    loc_radius = float.(sensors[:, :loc_radius])
+    loc_theta = float.(locs[!, :loc_theta])
+    loc_radius = float.(locs[!, :loc_radius])
 
-    loc_radius_sph = float.(sensors[:, :loc_radius_sph])
-    loc_theta_sph = float.(sensors[:, :loc_theta_sph])
-    loc_phi_sph = float.(sensors[:, :loc_phi_sph])
+    loc_radius_sph = float.(locs[!, :loc_radius_sph])
+    loc_theta_sph = float.(locs[!, :loc_theta_sph])
+    loc_phi_sph = float.(locs[!, :loc_phi_sph])
 
-    loc_x = float.(sensors[:, :loc_x])
-    loc_y = float.(sensors[:, :loc_y])
-    loc_z = float.(sensors[:, :loc_z])
+    loc_x = float.(locs[!, :loc_x])
+    loc_y = float.(locs[!, :loc_y])
+    loc_z = float.(locs[!, :loc_z])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
-    no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) does not found in $file_name."))
+    no_match = setdiff(e_labels, lowercase.(f_labels))
+    length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) were not found in $file_name."
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in 1:length(e_labels)
         for idx2 in 1:length(f_labels)
-            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
         end
     end
-    
+    for idx in length(labels_idx):-1:1
+        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
+    end
+
     # create new dataset
+    eeg.eeg_locs = DataFrame(:channel => 1:length(f_labels),
+                             :labels => f_labels,
+                             :loc_theta => loc_theta[labels_idx],
+                             :loc_radius => loc_radius[labels_idx],
+                             :loc_x => loc_x[labels_idx],
+                             :loc_y => loc_y[labels_idx],
+                             :loc_z => loc_z[labels_idx],
+                             :loc_radius_sph => loc_radius_sph[labels_idx],
+                             :loc_theta_sph => loc_theta_sph[labels_idx],
+                             :loc_phi_sph => loc_phi_sph[labels_idx])
     eeg.eeg_header[:channel_locations] = true
-    eeg.eeg_header[:loc_theta] = loc_theta[labels_idx]
-    eeg.eeg_header[:loc_radius] = loc_radius[labels_idx]
-    eeg.eeg_header[:loc_x] = loc_x[labels_idx]
-    eeg.eeg_header[:loc_y] = loc_y[labels_idx]
-    eeg.eeg_header[:loc_z] = loc_z[labels_idx]
-    eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
-    eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
-    eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_load_electrodes!(EEG, $file_name)")
@@ -846,11 +858,18 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
         close(f)
     end
 
-    # markers
+    # MARKERS
     if markers
         file_name = replace(file_name, ".csv" => "_markers.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, eeg.eeg_markers)
+    end
+
+    # LOCS
+    if markers
+        file_name = replace(file_name, ".csv" => "_locs.csv")
+        (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+        CSV.write(file_name, eeg.eeg_locs)
     end
 end
 
@@ -869,19 +888,16 @@ function eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrit
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
-    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    eeg_tmp = eeg_keep_channel(eeg, channel=channels)
-
-    labels = eeg_labels(eeg_tmp)
-    channels = collect(1:eeg_channel_n(eeg_tmp))
-    theta = eeg_tmp.eeg_header[:loc_theta]
-    radius = eeg_tmp.eeg_header[:loc_radius]
-    x = eeg_tmp.eeg_header[:loc_x]
-    y = eeg_tmp.eeg_header[:loc_y]
-    z = eeg_tmp.eeg_header[:loc_z]
-    radius_sph = eeg_tmp.eeg_header[:loc_radius_sph]
-    theta_sph = eeg_tmp.eeg_header[:loc_theta_sph]
-    phi_sph = eeg_tmp.eeg_header[:loc_phi_sph]
+    channels = eeg.eeg_locs[!, :channel]
+    labels = eeg.eeg_locs[!, :labels]
+    theta = eeg.eeg_locs[!, :loc_theta]
+    radius = eeg.eeg_locs[!, :loc_radius]
+    x = eeg.eeg_locs[!, :loc_x]
+    y = eeg.eeg_locs[!, :loc_y]
+    z = eeg.eeg_locs[!, :loc_z]
+    radius_sph = eeg.eeg_locs[!, :loc_radius_sph]
+    theta_sph = eeg.eeg_locs[!, :loc_theta_sph]
+    phi_sph = eeg.eeg_locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
         df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
@@ -916,8 +932,8 @@ function eeg_save_electrodes(locs::DataFrame; file_name::String, overwrite::Bool
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
+    channels = locs[!, :channel]
     labels = locs[!, :labels]
-    channels = collect(1:length(labels))
     theta = locs[!, :loc_theta]
     radius = locs[!, :loc_radius]
     x = locs[!, :loc_x]
@@ -947,6 +963,8 @@ end
 Add electrode positions from `locs`. 
 
 Electrode locations:
+- channel         channel number
+- labels          channel label
 - loc_theta       planar polar angle
 - loc_radius      planar polar radius
 - loc_x           spherical Cartesian x
@@ -967,22 +985,11 @@ Electrode locations:
 """
 function eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 
-    f_labels = lowercase.(locs[:, :labels])
-
-    loc_theta = float.(locs[:, :loc_theta])
-    loc_radius = float.(locs[:, :loc_radius])
-
-    loc_radius_sph = float.(locs[:, :loc_radius_sph])
-    loc_theta_sph = float.(locs[:, :loc_theta_sph])
-    loc_phi_sph = float.(locs[:, :loc_phi_sph])
-
-    loc_x = float.(locs[:, :loc_x])
-    loc_y = float.(locs[:, :loc_y])
-    loc_z = float.(locs[:, :loc_z])
+    f_labels = lowercase.(locs[!, :labels])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in locs object."))
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in 1:length(e_labels)
@@ -994,14 +1001,7 @@ function eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:channel_locations] = true
-    eeg_new.eeg_header[:loc_theta] = loc_theta[labels_idx]
-    eeg_new.eeg_header[:loc_radius] = loc_radius[labels_idx]
-    eeg_new.eeg_header[:loc_x] = loc_x[labels_idx]
-    eeg_new.eeg_header[:loc_y] = loc_y[labels_idx]
-    eeg_new.eeg_header[:loc_z] = loc_z[labels_idx]
-    eeg_new.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
-    eeg_new.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
-    eeg_new.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
+    eeg_new.eeg_locs = locs
 
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_add_electrodes(EEG, locs)")
@@ -1015,6 +1015,8 @@ end
 Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Electrode locations:
+- channel         channel number
+- labels          channel label
 - loc_theta       planar polar angle
 - loc_radius      planar polar radius
 - loc_x           spherical Cartesian x
@@ -1031,22 +1033,11 @@ Electrode locations:
 """
 function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     
-    f_labels = lowercase.(locs[:, :labels])
-
-    loc_theta = float.(locs[:, :loc_theta])
-    loc_radius = float.(locs[:, :loc_radius])
-
-    loc_radius_sph = float.(locs[:, :loc_radius_sph])
-    loc_theta_sph = float.(locs[:, :loc_theta_sph])
-    loc_phi_sph = float.(locs[:, :loc_phi_sph])
-
-    loc_x = float.(locs[:, :loc_x])
-    loc_y = float.(locs[:, :loc_y])
-    loc_z = float.(locs[:, :loc_z])
+    f_labels = lowercase.(locs[!, :labels])
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in locs object."))
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in 1:length(e_labels)
@@ -1056,15 +1047,7 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     end
     
     # create new dataset
-    eeg.eeg_header[:channel_locations] = true
-    eeg.eeg_header[:loc_theta] = loc_theta[labels_idx]
-    eeg.eeg_header[:loc_radius] = loc_radius[labels_idx]
-    eeg.eeg_header[:loc_x] = loc_x[labels_idx]
-    eeg.eeg_header[:loc_y] = loc_y[labels_idx]
-    eeg.eeg_header[:loc_z] = loc_z[labels_idx]
-    eeg.eeg_header[:loc_radius_sph] = loc_radius_sph[labels_idx]
-    eeg.eeg_header[:loc_theta_sph] = loc_theta_sph[labels_idx]
-    eeg.eeg_header[:loc_phi_sph] = loc_phi_sph[labels_idx]
+    eeg.eeg_locs = locs
 
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_add_electrodes!(EEG, locs)")
@@ -1074,12 +1057,12 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
 """
     eeg_import_bdf(file_name; clean_labels)
 
-Load BDF/BDF+ file and return and `NeuroAnalyzer.EEG` object.
+Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels
+- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 # Returns
 
@@ -1288,20 +1271,10 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :data_records => data_records,
-                      :data_records_duration => data_records_duration,
                       :channel_n => channel_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
-                      :loc_theta => zeros(channel_n),
-                      :loc_radius => zeros(channel_n),
-                      :loc_x => zeros(channel_n),
-                      :loc_y => zeros(channel_n),
-                      :loc_z => zeros(channel_n),
-                      :loc_radius_sph => zeros(channel_n),
-                      :loc_theta_sph => zeros(channel_n),
-                      :loc_phi_sph => zeros(channel_n),
                       :history => String[],
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
@@ -1325,8 +1298,18 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 
     eeg_components = Vector{Any}()
     eeg_epochs_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1334,12 +1317,12 @@ end
 """
     eeg_import_digitrack(file_name; clean_labels)
 
-Load Digitrack ASCII file and return and `NeuroAnalyzer.EEG` object.
+Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels
+- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 # Returns
 
@@ -1432,20 +1415,10 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :data_records => data_records,
-                      :data_records_duration => data_records_duration,
                       :channel_n => channel_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
-                      :loc_theta => zeros(channel_n),
-                      :loc_radius => zeros(channel_n),
-                      :loc_x => zeros(channel_n),
-                      :loc_y => zeros(channel_n),
-                      :loc_z => zeros(channel_n),
-                      :loc_radius_sph => zeros(channel_n),
-                      :loc_theta_sph => zeros(channel_n),
-                      :loc_phi_sph => zeros(channel_n),
                       :history => String[],
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
@@ -1469,8 +1442,18 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
 
     eeg_components = Vector{Any}()
     eeg_epochs_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1478,12 +1461,12 @@ end
 """
     eeg_import_bv(file_name; clean_labels)
 
-Load BrainVision BVCDF file and return and `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
+Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
 
 # Arguments
 
 - `file_name::String`: name of the file to load, should point to .vhdr file.
-- `clean_labels::Bool=true`: only keep channel names in channel labels
+- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
 
 # Returns
 
@@ -1547,9 +1530,37 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
 
-    # READ MARKERS
+    # read locs
+    loc_theta = zeros(channel_n)
+    loc_radius = zeros(channel_n)
+    loc_x = zeros(channel_n)
+    loc_y = zeros(channel_n)
+    loc_z = zeros(channel_n)
+    loc_radius_sph = zeros(channel_n)
+    loc_theta_sph = zeros(channel_n)
+    loc_phi_sph = zeros(channel_n)
+    if locs_idx != 0
+        channel_locations = true
+        for idx in 1:channel_n
+            loc_radius_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[1])
+            loc_theta_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[2])
+            loc_phi_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[3])
+            loc_theta[idx] = loc_theta_sph[idx]
+            loc_radius[idx] = loc_radius_sph[idx]
+            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
+        end
+    else
+        channel_locations = false
+    end
+
+    # read markers
     if marker_file != ""
         has_markers = true
+        if file_name != basename(file_name)
+            marker_file = dirname(file_name) * "/" * marker_file
+        else
+            marker_file = marker_file
+        end
         isfile(marker_file) || throw(ArgumentError("File $marker_file cannot be loaded."))
         vmrk = readlines(marker_file)
         # delete comments
@@ -1588,31 +1599,15 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
         eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
     end
 
-    # READ LOCS
-    loc_theta = zeros(channel_n)
-    loc_radius = zeros(channel_n)
-    loc_x = zeros(channel_n)
-    loc_y = zeros(channel_n)
-    loc_z = zeros(channel_n)
-    loc_radius_sph = zeros(channel_n)
-    loc_theta_sph = zeros(channel_n)
-    loc_phi_sph = zeros(channel_n)
-    if locs_idx != 0
-        channel_locations = true
-        for idx in 1:channel_n
-            loc_radius_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[1])
-            loc_theta_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[2])
-            loc_phi_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[3])
-            loc_theta[idx] = loc_theta_sph[idx]
-            loc_radius[idx] = loc_radius_sph[idx]
-            loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(loc_radius_sph[idx], loc_theta_sph[idx], loc_phi_sph[idx])
-        end
-    else
-        channel_locations = false
-    end
-
     # sampling_interval in μs to sampling rate in Hz
     sampling_rate = round(Int64, 1 / (sampling_interval / 10^6))
+
+    # read data
+    if file_name != basename(file_name)
+        eeg_file = dirname(file_name) * "/" * eeg_file
+    else
+        eeg_file = eeg_file
+    end
 
     isfile(eeg_file) || throw(ArgumentError("File $eeg_file cannot be loaded."))
     if data_format == "binary"
@@ -1650,6 +1645,21 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
         @error "ASCII format is not supported yet."
     end
 
+    patient = ""
+    recording = ""
+    recording_date = ""
+    recording_time = ""
+
+    transducers = repeat([""], channel_n)
+    physical_dimension = repeat([""], channel_n)
+    physical_minimum = repeat([-1.0], channel_n)
+    physical_maximum = repeat([-1.0], channel_n)
+    digital_minimum = repeat([-1.0], channel_n)
+    digital_maximum = repeat([-1.0], channel_n)
+    samples_per_datarecord = repeat([-1], channel_n)
+    gain = repeat([-1.0], channel_n)
+    prefiltering = repeat([""], channel_n)
+
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate
     eeg_time = collect(0:(1 / sampling_rate):eeg_duration_seconds)
@@ -1663,24 +1673,14 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
-                      :patient => "",
-                      :recording => "",
-                      :recording_date => "",
-                      :recording_time => "",
-                      :data_records => -1,
-                      :data_records_duration => -1,
+                      :patient => string(patient),
+                      :recording => string(recording),
+                      :recording_date => recording_date,
+                      :recording_time => recording_time,
                       :channel_n => channel_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => channel_locations,
-                      :loc_theta => loc_theta,
-                      :loc_radius => loc_radius,
-                      :loc_x => loc_x,
-                      :loc_y => loc_y,
-                      :loc_z => loc_z,
-                      :loc_radius_sph => loc_radius_sph,
-                      :loc_theta_sph => loc_theta_sph,
-                      :loc_phi_sph => loc_phi_sph,
                       :history => String[],
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
@@ -1689,23 +1689,46 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels,
-                      :transducers => repeat([""], channel_n),
-                      :physical_dimension => repeat([""], channel_n),
-                      :physical_minimum => zeros(channel_n),
-                      :physical_maximum => zeros(channel_n),
-                      :digital_minimum => zeros(channel_n),
-                      :digital_maximum => zeros(channel_n),
-                      :prefiltering => repeat([""], channel_n),
-                      :samples_per_datarecord => zeros(Int64, channel_n),
+                      :transducers => transducers,
+                      :physical_dimension => physical_dimension,
+                      :physical_minimum => physical_minimum,
+                      :physical_maximum => physical_maximum,
+                      :digital_minimum => digital_minimum,
+                      :digital_maximum => digital_maximum,
+                      :prefiltering => prefiltering,
+                      :samples_per_datarecord => samples_per_datarecord,
                       :sampling_rate => sampling_rate,
-                      :gain => ones(channel_n),
+                      :gain => gain,
                       :note => "",
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
     eeg_epochs_time = eeg_time
+    if channel_locations == false
+        eeg_locs = DataFrame(:channel => Int64,
+                             :labels => String[],
+                             :loc_theta => Float64[],
+                             :loc_radius => Float64[],
+                             :loc_x => Float64[],
+                             :loc_y => Float64[],
+                             :loc_z => Float64[],
+                             :loc_radius_sph => Float64[],
+                             :loc_theta_sph => Float64[],
+                             :loc_phi_sph => Float64[])
+    else
+        eeg_locs = DataFrame(:channel_n => 1:channel_n,
+                             :labels => labels,
+                             :loc_theta => loc_theta,
+                             :loc_radius => loc_radius,
+                             :loc_x => loc_x,
+                             :loc_y => loc_y,
+                             :loc_z => loc_z,
+                             :loc_radius_sph => loc_radius_sph,
+                             :loc_theta_sph => loc_theta_sph,
+                             :loc_phi_sph => loc_phi_sph)
+    end
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end

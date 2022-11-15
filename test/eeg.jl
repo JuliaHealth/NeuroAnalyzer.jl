@@ -308,11 +308,11 @@ eeg_delete_note!(edf1)
 
 edf1 = eeg_epochs(edf, epoch_len=2560, average=true)
 new_channel = zeros(1, eeg_epoch_len(edf1), eeg_epoch_n(edf1))
-edf1 = eeg_replace_channel(edf1, channel=1, signal=new_channel)
-edf1 = eeg_replace_channel(edf1, channel=2, signal=new_channel)
-edf1 = eeg_replace_channel(edf1, channel=5, signal=new_channel)
+edf1 = eeg_replace_channel(edf1, channel=1, signal=new_channel);
+edf1 = eeg_replace_channel(edf1, channel=2, signal=new_channel);
+edf1 = eeg_replace_channel(edf1, channel=5, signal=new_channel);
 @test edf1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(edf1), eeg_epoch_n(edf1))
-edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5], q=0.2)
+edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5])
 @test edf2.eeg_signals[1, :, :] != zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
 
 @test length(eeg_band_mpower(edf, f=(1,4))) == 3
@@ -342,7 +342,7 @@ p, _, _ = eeg_cps(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 edf2 = eeg_channel_type(edf, channel=1, type="eog")
 @test edf2.eeg_header[:channel_type][1] == "eog"
 edf2 = eeg_edit_electrode(edf, channel=1, x=2)
-@test edf2.eeg_header[:loc_x][1] == 2.0
+@test edf2.eeg_locs[!, :loc_x][1] == 2.0
 _, _, x, _, _, _, _, _ = eeg_electrode_loc(edf2, channel=1, output=false)
 @test x == 2.0
 
@@ -351,17 +351,17 @@ ch1 = eeg_electrode_loc(edf, channel=1, output=false)
 
 locs = eeg_import_ced("../locs/standard-10-20-cap19-elmiko.ced")
 locs2 = eeg_loc_flipx(locs)
-@test locs2[1, 2] == 198.0
+@test locs2[1, 3] == 198.0
 locs2 = eeg_loc_flipy(locs)
-@test locs2[1, 2] == 18.0
+@test locs2[1, 3] == 18.0
 locs2 = eeg_loc_flipz(locs)
-@test locs2[1, 2] == -18.0
+@test locs2[1, 3] == -18.0
 locs2 = eeg_loc_swapxy(locs)
-@test locs2[1, 2] == 72.0
+@test locs2[1, 3] == 72.0
 locs2 = eeg_loc_sph2cart(locs)
-@test locs2[1, 4] == -0.03
+@test locs2[1, 5] == -0.03
 locs2 = eeg_loc_cart2sph(locs)
-@test locs2[1, 8] == 18.0
+@test locs2[1, 3] == -18.0
 
 @test size(eeg_phdiff(edf)) == (19, 309760, 1)
 @test size(eeg_scale(edf, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)

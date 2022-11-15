@@ -86,7 +86,8 @@ mutable struct EEG
     eeg_epochs_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
-    eeg_annotations::DataFrame
+    eeg_markers::DataFrame
+    eeg_locs::DataFrame
 end
 ```
 

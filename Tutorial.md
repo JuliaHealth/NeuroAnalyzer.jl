@@ -51,19 +51,23 @@ The tutorial is divided into five major steps of typical pipeline:
 Load EEG file (EDF/EDF+/BDF/BDF+/DigiTrack/BrainVision formats are supported):
 ```julia
 edf = eeg_import("test/eeg-test-edf.edf");
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24]);
 ```
 
 Load electrode positions (CED/LOCS/ELC/TSV/SFP/CSD formats are supported) directly into EEG object:
 ```julia
 eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko-correct.ced")
-p = eeg_plot_electrode(edf, channel=1)
+```
+
+View electrodes
+```julia
+p = eeg_plot_electrodes(edf, channel=1)
 eeg_plot_save(p, file_name="images/edf_electrode.png")
-p = eeg_plot_electrodes(edf, labels=true, head=true, selected=1:19)
+p = eeg_plot_electrodes(edf, labels=true, head=true, channel=1:19, selected=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
 ![edf electrode](images/edf_electrode.png)
+
 ![edf electrodes](images/edf_electrodes.png)
 
 Edit electrode position:
@@ -103,9 +107,9 @@ eeg_loc_flipz!(locs)
 
 eeg_loc_swapxy!(locs);
 
-p = plot_electrodes(locs)
+p = plot_electrodes(locs, channel=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes_xy.png")
-p = plot_electrodes3d(locs)
+p = plot_electrodes3d(locs, channel=1:19)
 eeg_plot_save(p, file_name="images/edf_electrodes3d_xy.png")
 ```
 
@@ -125,11 +129,10 @@ eeg_save_electrodes(locs, file_name="locs/standard-10-20-cap19-elmiko-correct.ce
 
 Preview electrodes in 3D:
 ```julia
-p = eeg_plot_electrodes3d(edf, selected=1:19)
+p = eeg_plot_electrodes(edf, channel=1:19, selected=1:19, three_d=true)
 eeg_plot_save(p, file_name="images/edf_electrodes3d.png")
 ```
 ![edf electrodes 3d](images/edf_electrodes3d.png)
-
 
 Save EEG object as HDF5-based file:
 ```julia
@@ -618,78 +621,72 @@ f, psd_slope, frq = eeg_psdslope(eeg, f=(8, 14), norm=true, mt=false)
 
 ### EEG Plots
 
+Plot electrodes:
+
+```julia
+eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
+p = plot_electrodes(edf.eeg_locs, channel=1:19, selected=1:19, labels=true)
+eeg_plot_save(p, file_name="images/edf_electrodes.png")
+```
+
+![](images/edf_electrodes.png)
+
 Plot multi-channel:
 ```julia
-p = eeg_plot_signal(edf, scaled=false, channel=1:19)
+p = eeg_plot(edf, channel=1:19)
 eeg_plot_save(p, file_name="images/edf_channels.png")
-p = eeg_plot_signal(edf, scaled=true)
-eeg_plot_save(p, file_name="images/edf_channels-2.png")
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-p = eeg_plot_electrodes(edf, selected=1:19, labels=true)
-eeg_plot_save(p, file_name="images/edf_electrodes.png")
 ```
 
 ![edf channels](images/edf_channels.png)
 
-![edf channels](images/edf_channels-2.png)
-
-![edf electrodes](images/edf_electrodes.png)
-
-Plot single-channel:
+Plot single-channel using time-points:
 ```julia
-p = eeg_plot_signal(edf, channel=1)
+p = eeg_plot(edf, channel=1, segment=(10*eeg_sr(edf), 12*eeg_sr(edf)))
 eeg_plot_save(p, file_name="images/edf_channel_1_simple.png")
-p = eeg_plot_signal_details(edf, channel=1, frq_lim=(0, 40))
+```
+![edf channel1](images/edf_channel_1_simple.png)
+
+```julia
+eeg_epochs!(edf, epoch_len = 2560)
+p1 = eeg_plot(edf, channel=1, epoch=1)
+p2 = eeg_plot_psd(edf, channel=1, epoch=1)
+p3 = eeg_plot_spectrogram(edf, channel=1, epoch=1, frq_lim=(0, 40))
+p4 = eeg_plot_electrodes(edf, channel=1, selected=1, labels=false)
+p = plot(p1, p2, p3, p4, layout=(4, 1))
 eeg_plot_save(p, file_name="images/edf_channel_1.png")
 ```
-
-![edf channel1](images/edf_channel_1_simple.png)
 
 ![edf channel1](images/edf_channel_1.png)
 
 Plot averaged signal:
-```juia
-p = eeg_plot_signal_avg(edf, channel=1:4)
+```julia
+p = eeg_plot(edf, channel=1:4, mc=:mean)
 eeg_plot_save(p, file_name="images/edf_avg_simple.png")
-p = eeg_plot_signal_avg_details(edf, frq_lim=(0, 20), channel=1:4)
-eeg_plot_save(p, file_name="images/edf_avg.png")
 ```
 
 ![edf avg](images/edf_avg_simple.png)
 
-![edf avg](images/edf_avg.png)
-
 ```julia
-p = eeg_plot_signal_butterfly(edf)
+p = eeg_plot(edf, channel=1:8, type=:butterfly)
 eeg_plot_save(p, file_name="images/edf_butterfly_simple.png")
-p = eeg_plot_signal_butterfly_details(edf, norm=true)
+```
+
+![edf butterfly](images/edf_butterfly_simple.png)
+
+```julia
+p1 = eeg_plot(edf, channel=1:4, epoch=1, type=:butterfly)
+p2 = eeg_plot_psd(edf, channel=1:4, epoch=1, type=:butterfly)
+p3 = eeg_plot_spectrogram(edf, channel=1:4, epoch=1, frq_lim=(0, 40))
+p4 = eeg_plot_electrodes(edf, channel=1:4, selected=1:4, labels=false)
+p = plot(p1, p2, p3, p4, layout=(4, 1))
 eeg_plot_save(p, file_name="images/edf_butterfly.png")
+
 ```
-
-![edf avg](images/edf_butterfly_simple.png)
-
-![edf avg](images/edf_butterfly.png)
-
-3D water-plot PSD:
-```julia
-p = eeg_plot_signal_psd_3d(edf, channel=1:5, offset=25600, mt=true)
-eeg_plot_save(p, file_name="images/edf_psd3d.png")
-```
-
-![edf PSD 3d](images/edf_psd3d.png)
-
-Use kwargs:
-```julia
-p1 = eeg_plot(edf, title="edf1")
-p2 = eeg_plot(edf)
-# or modify plots
-p2 = plot!(title="edf2")
-plot(p1, p2, layout=(1, 2))
-```
+![edf butterfly](images/edf_butterfly.png)
 
 Plot filter response:
 ```julia
-p = eeg_plot_filter_response(edf, fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
+p = plot_filter_response(fs=eeg_sr(edf), fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
 eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
 ```
 
@@ -697,7 +694,17 @@ eeg_plot_save(p, file_name="images/butter_bs_45-55_8.png")
 
 Plot band power:
 ```julia
-p = eeg_plot_bands(edf, channel=1, type=:abs)
+using DSP
+bands = [:delta, :theta, :alpha, :beta]
+frq = Vector{Tuple{Float64, Float64}}()
+for idx in bands
+    push!(frq, eeg_band(edf, band=idx))
+end
+bp = Vector{Float64}()
+for idx in frq
+    push!(bp, pow2db.(eeg_band_power(edf, f=idx))[1])
+end
+p = eeg_plot_stats(edf, bp, epoch=1, channel=1, plot_by=:labels, labels=string.(bands), type=:bar, xlabel="", ylabel="Power [dB]", title="Band powers\n[epoch: 1, channel: 1 ($(eeg_labels(edf)[1]))]")
 eeg_plot_save(p, file_name="images/edf_bands.png")
 ```
 
@@ -705,7 +712,7 @@ eeg_plot_save(p, file_name="images/edf_bands.png")
 
 Plot spectrogram:
 ```julia
-p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true)
+p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true)
 eeg_plot_save(p, file_name="images/edf_spec1.png")
 ```
 
@@ -713,7 +720,7 @@ eeg_plot_save(p, file_name="images/edf_spec1.png")
 
 Plot spectrogram using wavelet convolution and variable number of Morlet-wavelet cycles:
 ```julia
-p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true, mw=true, ncyc=(2, 32))
+p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true, method=:mw, ncyc=(2, 32))
 eeg_plot_save(p, file_name="images/edf_spec2.png")
 ```
 
@@ -721,7 +728,7 @@ eeg_plot_save(p, file_name="images/edf_spec2.png")
 
 Plot spectrogram using STFT:
 ```julia
-p = eeg_plot_signal_spectrogram(edf, channel=9, norm=true, st=true)
+p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true, method=:stft)
 eeg_plot_save(p, file_name="images/edf_spec4.png")
 ```
 
@@ -729,7 +736,7 @@ eeg_plot_save(p, file_name="images/edf_spec4.png")
 
 Plot multi-channel spectrogram:
 ```julia
-p = eeg_plot_signal_spectrogram(edf, channel=1:19, len=1024, norm=true, frq_lim=(0, 50))
+p = eeg_plot_spectrogram(e10, epoch=1, channel=1:19, norm=true, frq_lim=(0, 50))
 eeg_plot_save(p, file_name="images/edf_spec3.png")
 ```
 
@@ -737,7 +744,7 @@ eeg_plot_save(p, file_name="images/edf_spec3.png")
 
 Plot PSD, x and y axes are log10-scaled:
 ```julia
-p = eeg_plot_signal_psd(edf, norm=false, channel=1, ax=:loglog)
+p = eeg_plot_psd(edf, epoch=1, channel=1, norm=false, ax=:loglog)
 eeg_plot_save(p, file_name="images/edf_psd.png")
 ```
 
@@ -745,7 +752,7 @@ eeg_plot_save(p, file_name="images/edf_psd.png")
 
 Plot PSD relative to alpha band power:
 ```julia
-p = eeg_plot_signal_psd(edf, channel=1, ref=:alpha)
+p = eeg_plot_psd(edf, epoch=1, channel=1, ref=:alpha)
 eeg_plot_save(p, file_name="images/edf_rel_psd.png")
 ```
 ![](images/edf_rel_psd.png)
@@ -755,37 +762,57 @@ Plot phase of the convoluted signal:
 mw = generate_morlet(256, 10, 32, complex=true)
 e10_tconv = eeg_tconv(e10, kernel=mw)
 pt = s_phases(e10_tconv)
-p = eeg_plot_component(e10, c=pt, epoch=1, channel=1:4)
+p = eeg_plot(e10, pt, epoch=1, c_idx=1:4, scale=false, emarkers=false)
 eeg_plot_save(p, file_name="images/e10_tconv_phases.png")
 ```
 ![](images/e10_tconv_phases.png)
 
 Plot PSD 3d waterfall:
 ```julia
-p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10)
+p = eeg_plot_psd(edf, channel=1:5, epoch=1, method=:mw, variant=:w3d)
+eeg_plot_save(p, file_name="images/edf_psd3d.png")
+```
+
+![edf PSD 3d](images/edf_psd3d.png)
+
+Plot PSD 3d waterfall:
+```julia
+p = eeg_plot_psd(edf, epoch=1, channel=1:10, variant=:w3d)
 eeg_plot_save(p, file_name="images/edf_psd_3d.png")
 ```
 ![](images/edf_psd_3d.png)
 
 Plot PSD 3d surface:
 ```julia
-p = eeg_plot_signal_psd_3d(edf, norm=true, channel=1:10, type=:s, mw=true, ncyc=(2, 32))
-eeg_plot_save(p, file_name="images/edf_psd_3dw.png")
+p = eeg_plot_psd(edf, epoch=1, channel=1:10, variant=:s3d, psd=:mw, ncyc=(2, 32), frq_lim=(0, 45))
+eeg_plot_save(p, file_name="images/edf_psd_s3d.png")
 ```
 
-![](images/edf_psd_3dw.png)
+![](images/edf_psd_s3d.png)
 
-Topographical plots:
+Topographical plot:
 ```julia
-p = eeg_plot_signal_topo(edf, offset=1, len=2560, frq_lim=(0, 20))
+p = eeg_plot_topo(edf, segment=(1, 2560))
 eeg_plot_save(p, file_name="images/edf_amp.png")
 ```
 
 ![edf topo :amp](images/edf_amp.png)
 
+Topographical plots:
+```
+p1 = eeg_plot_topo(edf, segment=(1, 2560), title="0:1s", cb=false)
+p2 = eeg_plot_topo(edf, segment=(1 * 256 + 1, 2 * 2560), title="1:2s", cb=false)
+p3 = eeg_plot_topo(edf, segment=(2 * 256 + 1, 3 * 2560), title="2:3s", cb=false)
+p4 = eeg_plot_topo(edf, segment=(3 * 256 + 1, 4 * 2560), title="3:4s", cb=false)
+p = plot(p1, p2, p3, p4, layout=(2, 2))
+eeg_plot_save(p, file_name="images/edf_topos.png")
+```
+
+![](images/edf_topos.png)
+
 Topographical map of PSD
 ```julia
-p = eeg_plot_signal_psd_topomap(edf, offset=25600, frq_lim=(0, 8), mt=true, ref=:total)
+p = eeg_plot_psd(edf, channel=1:19, epoch=1, frq_lim=(0, 8), mt=true, variant=:topo)
 eeg_plot_save(p, file_name="images/edf_psd_topo.png")
 ```
 ![](images/edf_psd_topo.png)
@@ -793,32 +820,44 @@ eeg_plot_save(p, file_name="images/edf_psd_topo.png")
 Plot PCA components:
 ```julia
 pc, pc_m, pc_var = eeg_pca(edf, n=10)
-p = eeg_plot_component_idx(edf, c=pc, c_idx=1:5, epoch=1)
+p = eeg_plot(edf, channel=1:5, segment=(10*eeg_sr(edf), 20*eeg_sr(edf)))
+eeg_plot_save(p, file_name="images/edf_1_5.png")
+p = eeg_plot(edf, pc, c_idx=1:5, segment=(10*eeg_sr(edf), 20*eeg_sr(edf)))
 eeg_plot_save(p, file_name="images/edf_pca_1_5.png")
 bar(vec(pc_var))
 ```
 
+![pca](images/edf_1_5.png)
 ![pca](images/edf_pca_1_5.png)
 
 Plot ICA components:
 ```julia
 ic, icm = eeg_ica(edf, n=16, tol=0.99)
-p = eeg_plot_component_idx(edf, c=ic, c_idx=1:10, epoch=1)
+p = eeg_plot(edf, ic, c_idx=1:10, epoch=1)
 eeg_plot_save(p, file_name="images/edf_ica_1_10.png")
-eeg_add_component!(edf, c=:ica, v=ic)
-eeg_add_component!(edf, c=:ica_mw, v=icm)
-p = eeg_plot_ica_topo(edf, epoch=1, len=256, ic=1:8)
-eeg_plot_save(p, file_name="images/edf_ica_1_8.png")
 ```
 
 ![edf amplitude :ica](images/edf_ica_1_10.png)
 
-![edf topo :ica](images/edf_ica_1_8.png)
+
+```julia
+ic, icm = eeg_ica(edf, n=16, tol=0.99)
+eeg_add_component!(edf, c=:ica, v=ic)
+eeg_add_component!(edf, c=:ica_mw, v=icm)
+# reconstruct signal using ICA 1:10
+s_reconstructed = s_ica_reconstruct(edf.eeg_signals, ic=ic, ic_mw=icm, ic_v=1:10)
+p1 = eeg_plot_topo(edf, epoch=1, title="Original signal", cb=false)
+p2 = eeg_plot_topo(edf, s_reconstructed, epoch=1, title="Signal reconstructed from ICA 1:10", cb=false)
+p = plot(p1, p2)
+eeg_plot_save(p, file_name="images/edf_ica_1_10.png")
+```
+
+![edf topo :ica](images/edf_ica_1_10.png)
 
 Plot alpha band power:
 ```julia
 alpha_power = eeg_band_power(edf, f=eeg_band(edf, band=:alpha))
-p = eeg_plot_mcomponent_topo(edf, epoch=1, c=alpha_power)
+p = eeg_plot_topo(edf, alpha_power)
 eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 ```
 
@@ -827,7 +866,7 @@ eeg_plot_save(p, file_name="images/edf_alpha_topo.png")
 Plot phase difference at time = 1s (sample = 256 as fs = 256 Hz)
 ```julia
 pdiff = eeg_phdiff(edf)
-p = eeg_plot_mcomponent_topo(edf, epoch=1, c=pdiff[:, 256, :])
+p = eeg_plot_topo(edf, pdiff[:, 256, :])
 eeg_plot_save(p, file_name="images/edf_phdiff_topo.png")
 ```
 ![](images/edf_phdiff_topo.png)
@@ -835,7 +874,7 @@ eeg_plot_save(p, file_name="images/edf_phdiff_topo.png")
 Plot amp difference at time = 1s (sample = 256 as fs = 256 Hz)
 ```julia
 ampdiff = eeg_ampdiff(edf)
-p = eeg_plot_mcomponent_topo(edf, epoch=1, c=ampdiff[:, 256, :])
+p = eeg_plot_topo(edf, ampdiff[:, 256, :], epoch=1)
 eeg_plot_save(p, file_name="images/edf_ampdiff_topo.png")
 ```
 ![](images/edf_ampdiff_topo.png)
@@ -843,43 +882,51 @@ eeg_plot_save(p, file_name="images/edf_ampdiff_topo.png")
 Plot weights:
 ```julia
 w = (1:19) * 0.05
-p = eeg_plot_weights_topo(edf, weights=w, epoch=1)
+p = plot_weights(edf.eeg_locs, channel=1:19, weights=round.(w, digits=2), head_labels=false)
 eeg_plot_save(p, file_name="images/edf_weights.png")
 ```
+
 ![](images/edf_weights.png)
 
 Plot covariance matrix:
 ```julia
 edf_cov = eeg_cov(edf)
-p = eeg_plot_matrix(edf, edf_cov, title="Covariance matrix")
+p = plot_matrix(edf_cov[:, :, 1], title="Covariance matrix", labels_x=eeg_labels(edf)[1:19], labels_y=eeg_labels(edf)[1:19])
 eeg_plot_save(p, file_name="images/edf_cov.png")
 ```
 
 ![edf cov](images/edf_cov.png)
 
-Plot autocovariance matrix:
+Plot auto-covariance matrix:
 ```julia
 ac, lags = eeg_acov(edf, lag=5, norm=false)
-p = eeg_plot_covmatrix(edf, ac, lags)
+p = plot_covmatrix(ac[1, :, 1], lags, xlabel="", title=eeg_labels(edf)[eeg_channel_idx(edf, type=Symbol(edf.eeg_header[:signal_type]))][1])
 eeg_plot_save(p, file_name="images/edf_autocov.png")
 ```
-
 ![edf autocov](images/edf_autocov.png)
+
+Plot cross-covariance matrix:
+```julia
+xc, lags = eeg_xcov(edf, lag=5, norm=false)
+p = plot_covmatrix(xc[2, :, 1], lags, xlabel="", title="Fp1-Fp2")
+eeg_plot_save(p, file_name="images/edf_xcov.png")
+```
+
+![edf xcov](images/edf_xcov.png)
 
 Plot channels stats:
 ```julia
-e10 = eeg_epochs(edf, epoch_n=10);
-c = eeg_channels_stats(e10)
-e = eeg_epochs_stats(e10)
-eeg_add_component!(e10, c=:channels_var, v=c[4])
-eeg_add_component!(e10, c=:epochs_var, v=e[4])
-p = eeg_plot_channels(e10, c=:channels_var, epoch=1, title="Channels variance\n[epoch: 1]")
-eeg_plot_save(p, file_name="images/e10_channels.png")
-p = eeg_plot_epochs(e10, c=:epochs_var, title="Epochs variance")
+c = eeg_channels_stats(edf)
+e = eeg_epochs_stats(edf)
+eeg_add_component!(edf, c=:channels_var, v=c[4])
+eeg_add_component!(edf, c=:epochs_var, v=e[4])
+p = eeg_plot_stats(edf, :channels_var, epoch=1, title="Channels variance\n[epoch: 1]", plot_by=:channels, type=:line)
+eeg_plot_save(p, file_name="images/edf_channels.png")
+p = eeg_plot_stats(edf, :epochs_var, epoch=1:10, title="Epochs 1:10 variance", plot_by=:epochs, type=:line)
 eeg_plot_save(p, file_name="images/e10_epochs.png")
 ```
 
-![e10 channels](images/e10_channels.png)
+![e10 channels](images/edf_channels.png)
 
 ![e10 epochs](images/e10_epochs.png)
 
@@ -916,9 +963,9 @@ ISPC:
 p = eeg_plot_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 eeg_plot_save(p, file_name="images/e10_ispc.png")
 m = eeg_ispc(e10)
-p = eeg_plot_matrix(e10, m[:, :, 1])
+p = plot_matrix(m[:, :, 1], labels_x=eeg_labels(e10), labels_y=eeg_labels(e10))
 eeg_plot_save(p, file_name="images/e10_ispc_m.png")
-p = eeg_plot_connections(edf, m=m[:, :, 1], threshold=0.90, threshold_type=:geq)
+p = eeg_plot_connections(e10, m=m[:, :, 1], threshold=0.90, threshold_type=:geq)
 eeg_plot_save(p, file_name="images/e10_ispc_connections.png")
 ```
 
@@ -945,10 +992,18 @@ eeg_plot_itpc_f(e10, channel=1, frq_lim=(0, 10), frq_n=10, f=4, frq=:lin)
 
 PLI:
 ```julia
-p = eeg_plot_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+p = eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
+p1 = eeg_plot(e10, segment=(1, 256), channel=1:2, variant=:butterfly, title="Signals")
+p2 = eeg_plot(e10, p.signal_diff, segment=(1, 256), title="Signals difference [μV]", scale=false)
+p3 = eeg_plot(e10, [p.s1_phase; p.s2_phase], segment=(1, 256), channel=1:2, variant=:butterfly, title="Phases [rad]")
+p4 = eeg_plot(e10, p.phase_dif, segment=(1, 256), channel=1:2, title="Phases difference [rad]", scale=false)
+p5 = eeg_plot_stats(e10, hcat(p.s1_phase[1, :, 1], ones(length(p.s1_phase[:, :, 1]))), plot_by=:channels, channel=1:2, type=:polar, title="Phases")
+p6 = eeg_plot_stats(e10, hcat(p.phase_dif[1, :, 1], ones(length(p.s1_phase[:, :, 1]))), plot_by=:channels, channel=1:2, type=:polar, title="Phases difference and PLI = $(p.pli[1])")
+p = plot(p1, p2, p3, p4, p5, p6, layout=(3, 2))
 eeg_plot_save(p, file_name="images/e10_pli.png")
+
 m = eeg_pli(e10)
-p = eeg_plot_matrix(e10, m[:, :, 1])
+p = plot_matrix(m[:, :, 1], labels_x=eeg_labels(e10), labels_y=eeg_labels(e10))
 eeg_plot_save(p, file_name="images/e10_pli_m.png")
 ```
 
@@ -971,6 +1026,24 @@ eeg_plot_save(p, file_name="images/h_connections.png")
 ```
 ![](images/h_connections.png)
 
+Animate:
+```julia
+anim = @animate for i ∈ 1::10:2*eeg_sr(edf)
+    eeg_plot_topo(edf, segment=(2560 + i, 2560 + i + 1), channel=1:19)
+end
+gif(anim, "/tmp/anim_fps15.gif", fps = 15)
+```
+
+Using kwargs:
+```julia
+c = rand(-pi:0.01:pi, 100)
+p = eeg_plot_stats(edf, c, plot_by=:epochs, epoch=1, type=:hist)
+p = plot!(title="Phases in radians", xticks=([-pi, pi], ["-π", "π"]))
+eeg_plot_save(p, file_name="images/kwargs.png")
+```
+
+![](images/kwargs.png)
+
 ### Statistics
 
 Generate spectrogram segments:
@@ -979,7 +1052,7 @@ sp, sf, st = eeg_spectrogram(e10)
 segp1, segs1, tidx1, fidx1 = s_specseg(sp, st, sf, channel=1, t=(1.0, 4.0), f=(10.0, 20.0))
 segp2, segs2, tidx2, fidx2 = s_specseg(sp, st, sf, channel=1, t=(5.0, 8.0), f=(45.0, 55.0))
 
-p = eeg_plot_signal_spectrogram(e10, channel=1)
+p = eeg_plot_spectrogram(e10, channel=1, epoch=1)
 p = plot!(segs1, lc=:black, fill=nothing, label=false)
 p = plot!(segs2, lc=:white, fill=nothing, label=false)
 eeg_plot_save(p, file_name="images/spec_seg.png")
@@ -990,7 +1063,9 @@ tt, t, c, df, p = s2_cmp(segp1, segp2, paired=true, type=:p);
 println("segment 1: mean $(round(mean(segp1), digits=2)), sd $(round(std(segp1), digits=2))")
 println("segment 2: mean $(round(mean(segp2), digits=2)), sd $(round(std(segp2), digits=2))")
 println("test statistic $(t[2]): $(t[1]) (df = $df), p: $p")
-p = boxplot([s1, s2], xticks=([1, 2], ["segment 1", "segment 2"]), legend=false, outliers=false)
+p = boxplot([segp1, segp1], xticks=([1, 2], ["segment 1", "segment 2"]), legend=false, outliers=false)
+segp = _labeled_matrix2dict(["segment 1", "segment 2"], [segp1, segp2])
+p = eeg_plot_stats(e10, segp, plot_by=:labels, type=:box, title="Mean power [dB]", outliers=false)
 eeg_plot_save(p, file_name="images/spec_seg_box.png")
 ```
 ![](images/spec_seg.png)

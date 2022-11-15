@@ -296,43 +296,30 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     channel_n = eeg_channel_n(eeg)
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
     length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-
-    if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("channel does not match signal channels."))
-    end
+    _check_channels(eeg, channel)
 
     eeg_new = deepcopy(eeg)
 
     # update headers
-    eeg_new.eeg_header[:channel_n] = channel_n - length(channel)
-    for idx1 in 1:length(channel)
-        for idx2 in 1:channel_n
-            if idx2 == channel[idx1]
-                deleteat!(eeg_new.eeg_header[:labels], idx2)
-                deleteat!(eeg_new.eeg_header[:channel_type], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_theta]) > 0) && deleteat!(eeg_new.eeg_header[:loc_theta], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_radius]) > 0) && deleteat!(eeg_new.eeg_header[:loc_radius], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_x]) > 0) && deleteat!(eeg_new.eeg_header[:loc_x], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_y]) > 0) && deleteat!(eeg_new.eeg_header[:loc_y], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_z]) > 0) && deleteat!(eeg_new.eeg_header[:loc_z], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_radius_sph], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_theta_sph], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_phi_sph], idx2)
-                deleteat!(eeg_new.eeg_header[:transducers], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_dimension], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_minimum], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_maximum], idx2)
-                deleteat!(eeg_new.eeg_header[:digital_minimum], idx2)
-                deleteat!(eeg_new.eeg_header[:digital_maximum], idx2)
-                deleteat!(eeg_new.eeg_header[:prefiltering], idx2)
-                deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg_new.eeg_header[:gain], idx2)
-            end
-        end 
+    for idx in channel
+        loc = findfirst(isequal(lowercase(eeg_new.eeg_header[:labels][idx])), lowercase.(string.(eeg_new.eeg_locs[!, :labels])))
+        loc !== nothing && deleteat!(eeg_new.eeg_locs, loc)
+        deleteat!(eeg_new.eeg_header[:labels], idx)
+        deleteat!(eeg_new.eeg_header[:channel_type], idx)
+        deleteat!(eeg_new.eeg_header[:transducers], idx)
+        deleteat!(eeg_new.eeg_header[:physical_dimension], idx)
+        deleteat!(eeg_new.eeg_header[:physical_minimum], idx)
+        deleteat!(eeg_new.eeg_header[:physical_maximum], idx)
+        deleteat!(eeg_new.eeg_header[:digital_minimum], idx)
+        deleteat!(eeg_new.eeg_header[:digital_maximum], idx)
+        deleteat!(eeg_new.eeg_header[:prefiltering], idx)
+        deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx)
+        deleteat!(eeg_new.eeg_header[:gain], idx)
     end
+    eeg_new.eeg_header[:channel_n] -= length(channel)
 
     # remove channel
     eeg_new.eeg_signals = eeg_new.eeg_signals[setdiff(1:end, (channel)), :, :]
@@ -357,41 +344,28 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     channel_n = eeg_channel_n(eeg)
+    length(channel) > 1 && (channel = sort!(channel, rev=true))
     length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-
-    if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("channel does not match signal channels."))
-    end
+    _check_channels(eeg, channel)
 
     # update headers
-    eeg.eeg_header[:channel_n] = channel_n - length(channel)
-    for idx1 in 1:length(channel)
-        for idx2 in 1:channel_n
-            if idx2 == channel[idx1]
-                deleteat!(eeg.eeg_header[:labels], idx2)
-                deleteat!(eeg.eeg_header[:channel_type], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius]) > 0) && deleteat!(eeg.eeg_header[:loc_radius], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x]) > 0) && deleteat!(eeg.eeg_header[:loc_x], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y]) > 0) && deleteat!(eeg.eeg_header[:loc_y], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_z]) > 0) && deleteat!(eeg.eeg_header[:loc_z], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_radius_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_theta_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_phi_sph], idx2)
-                deleteat!(eeg.eeg_header[:transducers], idx2)
-                deleteat!(eeg.eeg_header[:physical_dimension], idx2)
-                deleteat!(eeg.eeg_header[:physical_minimum], idx2)
-                deleteat!(eeg.eeg_header[:physical_maximum], idx2)
-                deleteat!(eeg.eeg_header[:digital_minimum], idx2)
-                deleteat!(eeg.eeg_header[:digital_maximum], idx2)
-                deleteat!(eeg.eeg_header[:prefiltering], idx2)
-                deleteat!(eeg.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg.eeg_header[:gain], idx2)
-            end
-        end 
+    for idx in channel
+        loc = findfirst(isequal(lowercase(eeg.eeg_header[:labels][idx])), lowercase.(string.(eeg.eeg_locs[!, :labels])))
+        loc !== nothing && deleteat!(eeg.eeg_locs, loc)
+        deleteat!(eeg.eeg_header[:labels], idx)
+        deleteat!(eeg.eeg_header[:channel_type], idx)
+        deleteat!(eeg.eeg_header[:transducers], idx)
+        deleteat!(eeg.eeg_header[:physical_dimension], idx)
+        deleteat!(eeg.eeg_header[:physical_minimum], idx)
+        deleteat!(eeg.eeg_header[:physical_maximum], idx)
+        deleteat!(eeg.eeg_header[:digital_minimum], idx)
+        deleteat!(eeg.eeg_header[:digital_maximum], idx)
+        deleteat!(eeg.eeg_header[:prefiltering], idx)
+        deleteat!(eeg.eeg_header[:samples_per_datarecord], idx)
+        deleteat!(eeg.eeg_header[:gain], idx)
     end
+    eeg.eeg_header[:channel_n] -= length(channel)
 
     # remove channel
     eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel)), :, :]
@@ -419,55 +393,14 @@ Keep `channels` in `eeg`.
 function eeg_keep_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
+    _check_channels(eeg, channel)
 
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-    if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("channel does not match signal channels."))
-    end
+    channel_n = eeg_channel_n(eeg)
+    channels_to_remove = setdiff(collect(1:channel_n), channel)
+    # length(channels_to_remove) > 1 && sort!(channels_to_remove, rev=true)
+    length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
-    channel_list = collect(1:eeg_channel_n(eeg))
-    channel_to_remove = setdiff(channel_list, channel)
-
-    length(channel_to_remove) > 1 && (channel_to_remove = sort!(channel_to_remove, rev=true))
-
-    eeg_new = deepcopy(eeg)
-    channel_n = eeg_new.eeg_header[:channel_n]
-
-    # update headers
-    eeg_new.eeg_header[:channel_n] = channel_n - length(channel_to_remove)
-    for idx1 in 1:length(channel_to_remove)
-        for idx2 in channel_n:-1:1
-            if idx2 == channel_to_remove[idx1]
-                deleteat!(eeg_new.eeg_header[:labels], idx2)
-                deleteat!(eeg_new.eeg_header[:channel_type], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_theta]) > 0) && deleteat!(eeg_new.eeg_header[:loc_theta], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_radius]) > 0) && deleteat!(eeg_new.eeg_header[:loc_radius], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_x]) > 0) && deleteat!(eeg_new.eeg_header[:loc_x], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_y]) > 0) && deleteat!(eeg_new.eeg_header[:loc_y], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_z]) > 0) && deleteat!(eeg_new.eeg_header[:loc_z], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_radius_sph], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_theta_sph], idx2)
-                (eeg_new.eeg_header[:channel_locations] == true && length(eeg_new.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg_new.eeg_header[:loc_phi_sph], idx2)
-                deleteat!(eeg_new.eeg_header[:transducers], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_dimension], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_minimum], idx2)
-                deleteat!(eeg_new.eeg_header[:physical_maximum], idx2)
-                deleteat!(eeg_new.eeg_header[:digital_minimum], idx2)
-                deleteat!(eeg_new.eeg_header[:digital_maximum], idx2)
-                deleteat!(eeg_new.eeg_header[:prefiltering], idx2)
-                deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg_new.eeg_header[:gain], idx2)
-            end
-        end
-    end
-
-    # remove channel
-    eeg_new.eeg_signals = eeg_new.eeg_signals[setdiff(1:end, (channel_to_remove)), :, :]
-
-    eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_keep_channel(EEG, $channel)")
-
-    return eeg_new
+    return eeg_delete_channel(eeg, channel=channels_to_remove)
 end
 
 """
@@ -483,54 +416,14 @@ Keep `channels` in `eeg`.
 function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-    if channel[end] < 1 || channel[1] > eeg_channel_n(eeg)
-        throw(ArgumentError("channel does not match signal channels."))
-    end
-
-    channel_list = collect(1:eeg_channel_n(eeg))
-    channel_to_remove = setdiff(channel_list, channel)
-
-    length(channel_to_remove) > 1 && (channel_to_remove = sort!(channel_to_remove, rev=true))
+    _check_channels(eeg, channel)
 
     channel_n = eeg_channel_n(eeg)
+    channels_to_remove = setdiff(collect(1:channel_n), channel)
+    # length(channels_to_remove) > 1 && sort!(channels_to_remove, rev=true)
+    length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
-    # update headers
-    eeg.eeg_header[:channel_n] = channel_n - length(channel_to_remove)
-    for idx1 in 1:length(channel_to_remove)
-        for idx2 in 1:channel_n
-            if idx2 == channel_to_remove[idx1]
-                deleteat!(eeg.eeg_header[:labels], idx2)
-                deleteat!(eeg.eeg_header[:channel_type], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta]) > 0) && deleteat!(eeg.eeg_header[:loc_theta], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius]) > 0) && deleteat!(eeg.eeg_header[:loc_radius], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_x]) > 0) && deleteat!(eeg.eeg_header[:loc_x], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_y]) > 0) && deleteat!(eeg.eeg_header[:loc_y], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_z]) > 0) && deleteat!(eeg.eeg_header[:loc_z], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_radius_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_radius_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_theta_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_theta_sph], idx2)
-                (eeg.eeg_header[:channel_locations] == true && length(eeg.eeg_header[:loc_phi_sph]) > 0) && deleteat!(eeg.eeg_header[:loc_phi_sph], idx2)
-                deleteat!(eeg.eeg_header[:transducers], idx2)
-                deleteat!(eeg.eeg_header[:physical_dimension], idx2)
-                deleteat!(eeg.eeg_header[:physical_minimum], idx2)
-                deleteat!(eeg.eeg_header[:physical_maximum], idx2)
-                deleteat!(eeg.eeg_header[:digital_minimum], idx2)
-                deleteat!(eeg.eeg_header[:digital_maximum], idx2)
-                deleteat!(eeg.eeg_header[:prefiltering], idx2)
-                deleteat!(eeg.eeg_header[:samples_per_datarecord], idx2)
-                deleteat!(eeg.eeg_header[:gain], idx2)
-            end
-        end
-    end
-
-    # remove channel
-    eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel_to_remove)), :, :]
-
-    eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_keep_channel!(EEG, channel=$channel)")
-
-    return nothing
+    eeg_delete_channel!(eeg, channel=channels_to_remove)
 end
 
 """
@@ -912,27 +805,19 @@ Splits `eeg` into epochs.
 """
 function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
-    # unsplit epochs
-    s_merged = reshape(eeg.eeg_signals,
-                       eeg_channel_n(eeg),
-                       eeg_epoch_len(eeg) * eeg_epoch_n(eeg))
-    
     # split into epochs
-    s_split = _make_epochs(s_merged, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
-
-    # convert into Array{Float64, 3}
-    s_split = reshape(s_split, size(s_split, 1), size(s_split, 2), size(s_split, 3))
+    epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
 
     # create new dataset
-    epoch_n = size(s_split, 3)
-    epoch_duration_samples = size(s_split, 2)
-    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate]
-    eeg_duration_samples = size(s_split, 2) * size(s_split, 3)
+    epoch_n = size(epochs, 3)
+    epoch_duration_samples = size(epochs, 2)
+    epoch_duration_seconds = size(epochs, 2) / eeg.eeg_header[:sampling_rate]
+    eeg_duration_samples = size(epochs, 2) * size(epochs, 3)
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
     eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals = s_split
+    eeg_new.eeg_signals = epochs
     eeg_new.eeg_time = eeg_time
 
     # update epochs time
@@ -967,26 +852,18 @@ Splits `eeg` into epochs.
 """
 function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
-    # unsplit epochs
-    s_merged = reshape(eeg.eeg_signals,
-                       eeg_channel_n(eeg),
-                       eeg_epoch_len(eeg) * eeg_epoch_n(eeg))
-    
     # split into epochs
-    s_split = _make_epochs(s_merged, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
-
-    # convert into Array{Float64, 3}
-    s_split = reshape(s_split, size(s_split, 1), size(s_split, 2), size(s_split, 3))
+    epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
 
     # create new dataset
-    epoch_n = size(s_split, 3)
-    epoch_duration_samples = size(s_split, 2)
-    epoch_duration_seconds = size(s_split, 2) / eeg.eeg_header[:sampling_rate]
-    eeg_duration_samples = size(s_split, 2) * size(s_split, 3)
+    epoch_n = size(epochs, 3)
+    epoch_duration_samples = size(epochs, 2)
+    epoch_duration_seconds = size(epochs, 2) / eeg.eeg_header[:sampling_rate]
+    eeg_duration_samples = size(epochs, 2) * size(epochs, 3)
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
     eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
-    eeg.eeg_signals = s_split
+    eeg.eeg_signals = epochs
     eeg.eeg_time = eeg_time
 
     # update epochs time
@@ -1550,7 +1427,7 @@ function eeg_edit_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, va
     value === nothing && throw(ArgumentError("value cannot be empty."))
     (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
     
-    field in [:channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels] || throw(ArgumentError("field must be: :channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels."))
+    field in [:channel_type, :labels] || throw(ArgumentError("field must be: :channel_type, :labels."))
 
     eeg_new = deepcopy(eeg)
     typeof(eeg_new.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
@@ -1580,7 +1457,7 @@ function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, v
     value === nothing && throw(ArgumentError("value cannot be empty."))
     (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
     
-    field in [:channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels] || throw(ArgumentError("field must be: :channel_type, :loc_theta, :loc_radius, :loc_x, :loc_y, :loc_z, :loc_radius_sph, :loc_theta_sph, :loc_phi_sph, :labels."))
+    field in [:channel_type, :labels] || throw(ArgumentError("field must be: :channel_type, :labels."))
 
     typeof(eeg.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
     eeg.eeg_header[field][channel] = value
@@ -1609,7 +1486,7 @@ function eeg_keep_channel_type(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
     string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] === string(type) && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] == string(type) && push!(eeg_channels_idx, idx)
     end
     eeg_new = eeg_keep_channel(eeg, channel=eeg_channels_idx)
     eeg_reset_components!(eeg_new)
@@ -1633,7 +1510,7 @@ function eeg_keep_channel_type!(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
     string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
     eeg_channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] === string(type) && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] == string(type) && push!(eeg_channels_idx, idx)
     end
     eeg_keep_channel!(eeg, channel=eeg_channels_idx)
     push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
@@ -1895,95 +1772,63 @@ Interpolate `eeg` channel using planar interpolation.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `q::Float64=1.0`: interpolation quality (0 to 1.0)
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `interpolation_factor::Int64=100`: interpolation quality
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
+function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
 
-    m in [:shepard, :mq, :tp] || throw(ArgumentError("m must be :shepard, :mq or :tp."))
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
+
     typeof(channel) == Vector{Int64} && sort!(channel, rev=true)
 
-    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    _check_channels(channels, channel)
-    eeg_tmp = eeg_keep_channel(eeg, channel=channels)
-    eeg_tmp = eeg_delete_channel(eeg_tmp, channel=channel).eeg_signals
-    channel_n = eeg_channel_n(eeg)
     eeg_new = deepcopy(eeg)
+    _check_channels(eeg, channel)
 
-    loc_x = zeros(channel_n)
-    loc_y = zeros(channel_n)
-    for idx in 1:channel_n
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_header[:loc_theta][idx], eeg.eeg_header[:loc_radius][idx])
-    end
-    loc_x = round.(loc_x, digits=2)
-    loc_y = round.(loc_y, digits=2)
-    x_lim = (findmin(loc_x)[1] * 1.8, findmax(loc_x)[1] * 1.8)
-    y_lim = (findmin(loc_y)[1] * 1.8, findmax(loc_y)[1] * 1.8)
-    ch_loc_x = zeros(length(channel))
-    ch_loc_y = zeros(length(channel))
-    for idx in length(channel):-1:1
-        ch_loc_x[idx] = loc_x[channel[idx]]
-        ch_loc_y[idx] = loc_y[channel[idx]]
-        deleteat!(loc_x, channel[idx])
-        deleteat!(loc_y, channel[idx])
-    end
-    # interpolate
-    x_lim_int = (findmin(loc_x)[1] * 1.4, findmax(loc_x)[1] * 1.4)
-    y_lim_int = (findmin(loc_y)[1] * 1.4, findmax(loc_y)[1] * 1.4)
-    interpolation_factor = round(Int64, 100 * q)
-    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
-    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
-    interpolated_x = round.(interpolated_x, digits=2)
-    interpolated_y = round.(interpolated_y, digits=2)
-    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
-    @inbounds @simd for idx1 in 1:interpolation_factor
-        for idx2 in 1:interpolation_factor
-            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
-        end
-    end
+    loc_x1 = eeg.eeg_locs[!, :loc_x]
+    loc_y1 = eeg.eeg_locs[!, :loc_y]
+    
+    eeg_delete_channel!(eeg, channel=channel)
+    loc_x2 = eeg.eeg_locs[!, :loc_x]
+    loc_y2 = eeg.eeg_locs[!, :loc_y]
+    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+
     epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
-    electrode_locations = [loc_x loc_y]'
+
     s_interpolated = zeros(Float64, length(channel), epoch_len, epoch_n)
-    ch_pos = Vector{Tuple{Int64, Int64}}()
-    for idx in 1:length(channel)
-        push!(ch_pos, f_nearest(interpolation_m, (ch_loc_x[idx], ch_loc_y[idx])))
-    end
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for length_idx in 1:epoch_len
-            s_interpolated_tmp = zeros(interpolation_factor, interpolation_factor)
-            m === :shepard && (itp = @views ScatteredInterpolation.interpolate(Shepard(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
-            m === :mq && (itp = @views ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
-            m === :tp && (itp = @views ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, eeg_tmp[:, length_idx, epoch_idx]))
-            for idx1 in 1:interpolation_factor
-                for idx2 in 1:interpolation_factor
-                    s_interpolated_tmp[idx1, idx2] = @views ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
-                end
-            end
-            for idx in 1:length(channel)
-                s_interpolated[idx, length_idx, epoch_idx] = @views s_interpolated_tmp[ch_pos[idx][1], ch_pos[idx][2]]
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n, 1))
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for length_idx in 1:epoch_len
+            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch_idx], loc_x2, loc_y2, interpolation_factor, imethod, :none)
+            for channel_idx in 1:length(channel)
+                x_idx = vsearch(loc_x1[channel[channel_idx]], x)
+                y_idx = vsearch(loc_y1[channel[channel_idx]], y)
+                s_interpolated[channel_idx, length_idx, epoch_idx] = s_tmp[x_idx, y_idx]
             end
         end
+
+        # update progress bar
+        progress_bar == true && next!(p)
     end
-    for idx in 1:length(channel)
-        eeg_new.eeg_signals[channel[idx], :, :] = @views s_interpolated[idx, :, :]
-    end
+
+    eeg_new.eeg_signals[channel, :, :] = s_interpolated
+
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, m=$m, q=$q)")
+    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return eeg_new
 end
 
 """
-    eeg_interpolate_channel(eeg; channel, m, q)
+    eeg_interpolate_channel!(eeg; channel, imethod, interpolation_factor)
 
 Interpolate `eeg` channel using planar interpolation.
 
@@ -1991,14 +1836,14 @@ Interpolate `eeg` channel using planar interpolation.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
-- `m::Symbol=:shepard`: interpolation method `:shepard` (Shepard), `:mq` (Multiquadratic), `:tp` (ThinPlate)
-- `q::Float64=1.0`: interpolation quality (0 to 1.0)
+- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `interpolation_factor::Int64=100`: interpolation quality
 """
-function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, q::Float64=1.0)
+function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, interpolation_factor::Int64=100)
 
-    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, m=m, q=q).eeg_signals
+    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, m=$m, q=$q)")
+    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return nothing
 end
@@ -2307,14 +2152,14 @@ function eeg_edit_electrode(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int64
     name != "" && eeg_rename_channel!(eeg_new, channel=channel, name=name)
     type != "" && eeg_channel_type!(eeg_new, channel=channel, type=type)
 
-    x !== nothing && (eeg_new.eeg_header[:loc_x][channel] = x)
-    y !== nothing && (eeg_new.eeg_header[:loc_y][channel] = y)
-    z !== nothing && (eeg_new.eeg_header[:loc_z][channel] = z)
-    theta !== nothing && (eeg_new.eeg_header[:loc_theta][channel] = theta)
-    radius !== nothing && (eeg_new.eeg_header[:loc_radius][channel] = radius)
-    theta_sph !== nothing && (eeg_new.eeg_header[:loc_theta_sph][channel] = theta_sph)
-    radius_sph !== nothing && (eeg_new.eeg_header[:loc_radius_sph][channel] = radius_sph)
-    phi_sph !== nothing && (eeg_new.eeg_header[:loc_phi_sph][channel] = phi_sph)
+    x !== nothing && (eeg_new.eeg_locs[!, :loc_x][channel] = x)
+    y !== nothing && (eeg_new.eeg_locs[!, :loc_y][channel] = y)
+    z !== nothing && (eeg_new.eeg_locs[!, :loc_z][channel] = z)
+    theta !== nothing && (eeg_new.eeg_locs[!, :loc_theta][channel] = theta)
+    radius !== nothing && (eeg_new.eeg_locs[!, :loc_radius][channel] = radius)
+    theta_sph !== nothing && (eeg_new.eeg_locs[!, :loc_theta_sph][channel] = theta_sph)
+    radius_sph !== nothing && (eeg_new.eeg_locs[!, :loc_radius_sph][channel] = radius_sph)
+    phi_sph !== nothing && (eeg_new.eeg_locs[!, :loc_phi_sph][channel] = phi_sph)
 
     (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (eeg_new.eeg_header[:channel_locations] == true)
 
@@ -2351,14 +2196,14 @@ function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int6
     name != "" && eeg_rename_channel!(eeg, channel=channel, name=name)
     type != "" && eeg_channel_type!(eeg, channel=channel, type=type)
 
-    x !== nothing && (eeg.eeg_header[:loc_x][channel] = x)
-    y !== nothing && (eeg.eeg_header[:loc_y][channel] = y)
-    z !== nothing && (eeg.eeg_header[:loc_z][channel] = z)
-    theta !== nothing && (eeg.eeg_header[:loc_theta][channel] = theta)
-    radius !== nothing && (eeg.eeg_header[:loc_radius][channel] = radius)
-    theta_sph !== nothing && (eeg.eeg_header[:loc_theta_sph][channel] = theta_sph)
-    radius_sph !== nothing && (eeg.eeg_header[:loc_radius_sph][channel] = radius_sph)
-    phi_sph !== nothing && (eeg.eeg_header[:loc_phi_sph][channel] = phi_sph)
+    x !== nothing && (eeg.eeg_locs[!, :loc_x][channel] = x)
+    y !== nothing && (eeg.eeg_locs[!, :loc_y][channel] = y)
+    z !== nothing && (eeg.eeg_locs[!, :loc_z][channel] = z)
+    theta !== nothing && (eeg.eeg_locs[!, :loc_theta][channel] = theta)
+    radius !== nothing && (eeg.eeg_locs[!, :loc_radius][channel] = radius)
+    theta_sph !== nothing && (eeg.eeg_locs[!, :loc_theta_sph][channel] = theta_sph)
+    radius_sph !== nothing && (eeg.eeg_locs[!, :loc_radius_sph][channel] = radius_sph)
+    phi_sph !== nothing && (eeg.eeg_locs[!, :loc_phi_sph][channel] = phi_sph)
 
     (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (eeg.eeg_header[:channel_locations] == true)
 
@@ -2397,14 +2242,14 @@ function eeg_electrode_loc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}
 
     channel = _get_channel_idx(eeg_labels(eeg), channel)
 
-    x = eeg.eeg_header[:loc_x][channel]
-    y = eeg.eeg_header[:loc_y][channel]
-    z = eeg.eeg_header[:loc_z][channel]
-    theta = eeg.eeg_header[:loc_theta][channel]
-    radius = eeg.eeg_header[:loc_radius][channel]
-    theta_sph = eeg.eeg_header[:loc_theta_sph][channel]
-    radius_sph = eeg.eeg_header[:loc_radius_sph][channel]
-    phi_sph = eeg.eeg_header[:loc_phi_sph][channel]
+    x = eeg.eeg_locs[!, :loc_x][channel]
+    y = eeg.eeg_locs[!, :loc_y][channel]
+    z = eeg.eeg_locs[!, :loc_z][channel]
+    theta = eeg.eeg_locs[!, :loc_theta][channel]
+    radius = eeg.eeg_locs[!, :loc_radius][channel]
+    theta_sph = eeg.eeg_locs[!, :loc_theta_sph][channel]
+    radius_sph = eeg.eeg_locs[!, :loc_radius_sph][channel]
+    phi_sph = eeg.eeg_locs[!, :loc_phi_sph][channel]
 
     if output
         println("Channel: $channel")
@@ -2734,7 +2579,7 @@ Return index of `eeg` channels of `type`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+- `type::Vector{Symbol}=:all`: channel type: [:all, :eeg, :meg, :ecg, :eog, :emg, :ref]
 
 # Returns
 
@@ -2743,9 +2588,10 @@ Return index of `eeg` channels of `type`.
 function eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 
     channel_idx = Vector{Int64}()
-    for idx in 1:size(eeg.eeg_signals, 1)
+    for idx in 1:eeg_channel_n(eeg)
         eeg.eeg_header[:channel_type][idx] == string(type) && (push!(channel_idx, idx))
     end
+
     return channel_idx
 end
 

@@ -8,12 +8,15 @@ _reflect(signal::AbstractArray) = vcat(signal[end:-1:1], signal, signal[end:-1:1
 
 _chop(signal::AbstractArray) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
 
-_xlims(t::Vector{<:Real}) = (floor(t[1], digits=2), ceil(t[end], digits=2))
+_xlims(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2), ceil(t[end], digits=2)
 
-_xticks(t::Vector{<:Real}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+_ticks(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
+_ticks(t::Tuple{Real, Real}) = floor(t[1], digits=2):((ceil(t[2]) - floor(t[1])) / 10):ceil(t[2], digits=2)
 
 _pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
 _pl(x::Real) = x > 1 ? "s" : ""
+
+_get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
 
 function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in 1:length(channel)
@@ -32,6 +35,36 @@ function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64}
     for idx in 1:length(epoch)
         (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
+end
+
+function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange})
+    c, _ = _get_component(eeg, c)
+    for idx in 1:length(c_idx)
+        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    end
+end
+
+function _check_cidx(c::Array{Float64, 3}, c_idx::Union{Int64, Vector{Int64}, AbstractRange})
+    for idx in 1:length(c_idx)
+        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    end
+end
+
+function _gen_clabels(eeg::NeuroAnalyzer.EEG, c::Symbol)
+    c, _ = _get_component(eeg, c)
+    clabels = Vector{String}()
+    for idx in 1:size(c, 1)
+        push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
+    end
+    return clabels
+end
+
+function _gen_clabels(c::Array{Float64, 3})
+    clabels = Vector{String}()
+    for idx in 1:size(c, 1)
+        push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
+    end
+    return clabels
 end
 
 function _select_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, def_chn::Int64=0)
@@ -55,12 +88,25 @@ function _select_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64
 end
 
 function _select_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
+    # select component channels, default is all or def_cidx
     c, _ = _get_component(eeg, c)
-    # select channels, default is all or def_cidx
     def_cidx > size(c, 1) && (def_cidx = size(c, 1))
     def_cidx == 0 && (def_cidx = size(c, 1))
-    channel == 0 && (channel = 1:def_cidx)
-    typeof(c_idx) <: AbstractRange && (channel = collect(channel))
+    c_idx == 0 && (channel = 1:def_cidx)
+    typeof(c_idx) <: AbstractRange && (c_idx = collect(c_idx))
+    length(c_idx) > 1 && sort!(c_idx)
+    for idx in 1:length(c_idx)
+        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    end
+    return c_idx
+end
+
+function _select_cidx(c::AbstractArray, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
+    # select component channels, default is all or def_cidx
+    def_cidx > size(c, 1) && (def_cidx = size(c, 1))
+    def_cidx == 0 && (def_cidx = size(c, 1))
+    c_idx == 0 && (c_idx = 1:def_cidx)
+    typeof(c_idx) <: AbstractRange && (c_idx = collect(c_idx))
     length(c_idx) > 1 && sort!(c_idx)
     for idx in 1:length(c_idx)
         (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
@@ -75,6 +121,13 @@ function _get_component(eeg::NeuroAnalyzer.EEG, c::Symbol)
     return (c=c, c_idx=c_idx)
 end
 
+function _set_defaults(xl::String, yl::String, tt::String, x::String, y::String, t::String)
+    xl == "default" && (xl = x)
+    yl == "default" && (yl = y)
+    tt == "default" && (tt = t)
+    return xl, yl, tt
+end
+
 function _len(eeg::NeuroAnalyzer.EEG, len::Int64, def_l::Int64)
     # return default length: one epoch (if epoch_len_seconds < def_l) or def_l seconds
     if len == 0
@@ -87,7 +140,7 @@ function _len(eeg::NeuroAnalyzer.EEG, len::Int64, def_l::Int64)
     return len
 end
 
-function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo::Bool=false, kwargs...)
+function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head_details::Bool=true, topo::Bool=false, kwargs...)
     # Draw head over a topographical plot `p`.
     # - `p::Plots.Plot{Plots.GRBackend}`: electrodes plot
     # - `loc_x::Vector{<:Real}`: vector of x electrode position
@@ -98,14 +151,47 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     # loc_x, loc_y = loc_y, loc_x
     pts = Plots.partialcircle(0, 2π, 100, 1.1)
     x, y = Plots.unzip(pts)
+    maxx = maximum(x)
+    maxy = maximum(y)
+    minx = minimum(x)
+    miny = minimum(y)
     head = Plots.Shape(x, y)
-    nose = Plots.Shape([(-0.05, maximum(y)), (0, maximum(y) + 0.1 * maximum(y)), (0.05, maximum(y))])
-    ear_l = Plots.Shape([(minimum(x), -0.2), (minimum(x) + 0.05 * minimum(x), -0.2), (minimum(x) + 0.05 * minimum(x), 0.2), (minimum(x), 0.2)])
-    ear_r = Plots.Shape([(maximum(x), -0.2), (maximum(x) + 0.05 * maximum(x), -0.2), (maximum(x) + 0.05 * maximum(x), 0.2), (maximum(x), 0.2)])
+    if head_details == true
+        nose = Plots.Shape([(-0.2, maxy - 0.015),
+                            (0, maxy + 0.08),
+                            (0.2, maxy - 0.015),
+                            (-0.01, maxy)
+                           ])
+        ear_r = Plots.Shape([(maxx, -0.05),
+                             (maxx - 0.005, 0.09),
+                             (maxx + 0.02, 0.125),
+                             (maxx + 0.04, 0.13),
+                             (maxx + 0.06, 0.115),
+                             (maxx + 0.075, 0.085),
+                             (maxx + 0.07, 0),
+                             (maxx + 0.08, -0.155),
+                             (maxx + 0.05, -0.215),
+                             (maxx + 0.015, -0.225),
+                             (maxx - 0.016, -0.19)
+                            ])
+        ear_l = Plots.Shape([(minx, -0.05),
+                             (minx + 0.005, 0.09),
+                             (minx - 0.02, 0.125),
+                             (minx - 0.04, 0.13),
+                             (minx - 0.06, 0.115),
+                             (minx - 0.075, 0.085),
+                             (minx - 0.07, 0),
+                             (minx - 0.08, -0.155),
+                             (minx - 0.05, -0.215),
+                             (minx - 0.015, -0.225),
+                             (minx + 0.016, -0.19)
+                            ])
+        p = Plots.plot!(nose, fill=nothing, label="")
+        p = Plots.plot!(ear_l, fill=nothing, label="")
+        p = Plots.plot!(ear_r, fill=nothing, label="")
+    end
+
     p = Plots.plot!(p, head, fill=nothing, label="")
-    p = Plots.plot!(nose, fill=nothing, label="")
-    p = Plots.plot!(ear_l, fill=nothing, label="")
-    p = Plots.plot!(ear_r, fill=nothing, label="")
 
     if head_labels == true
         p = Plots.plot!(annotation=(0, 1.05, Plots.text("IN", pointsize=4, halign=:center, valign=:center)))
@@ -115,7 +201,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     end
 
     if topo == true
-        pts = Plots.partialcircle(0, 2π, 100, 1.3)
+        pts = Plots.partialcircle(0, 2π, 100, 1.4)
         x, y = Plots.unzip(pts)
         for idx in 1:0.001:1.7
             peripheral = Shape(x .* idx, y .* idx)
@@ -127,65 +213,33 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, topo
     return p
 end
 
-function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch)
-    epoch[1] < 1 || epoch[end] > eeg_epoch_n(eeg) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    for idx in 1:length(epoch)
-        (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    end
+function _get_epoch_markers(eeg::NeuroAnalyzer.EEG)
+    return round.(s2t.(collect(1:eeg_epoch_len(eeg):eeg_epoch_len(eeg) * eeg_epoch_n(eeg)), eeg_sr(eeg)), digits=0)
 end
 
-function _get_epoch_markers(eeg::NeuroAnalyzer.EEG, offset, len)
-    # get epochs markers for len > epoch_len
-    epoch_markers = Vector{Int64}[]
-    if len + offset > eeg_epoch_len(eeg) && eeg_epoch_n(eeg) > 1
-        eeg_tmp = eeg_epochs(eeg, epoch_n=1)
-        epoch_len = eeg_epoch_len(eeg)
-        epoch_n = eeg_epoch_n(eeg)
-        epoch_markers = collect(1:epoch_len:epoch_len * epoch_n)[2:end] 
-        epoch_markers = floor.(Int64, (epoch_markers ./ eeg_sr(eeg)))
-        epoch_markers = epoch_markers[epoch_markers .> floor(Int64, offset / eeg_sr(eeg))]
-        epoch_markers = epoch_markers[epoch_markers .<= ceil(Int64, (offset + len) / eeg_sr(eeg))]
-    else
-        eeg_tmp = eeg
-    end
-    return eeg_tmp, epoch_markers
-end
-
-function _get_t(eeg::NeuroAnalyzer.EEG, offset, len)
-    t = collect(0:(1 / eeg_sr(eeg)):(len / eeg_sr(eeg)))
-    t = t .+ (offset / eeg_sr(eeg))
+function _get_t(from::Int64, to::Int64, fs::Int64)
+    t = collect((from / fs):(1 / fs):(to / fs))
     t = t[1:(end - 1)]
     t[1] = floor(t[1], digits=2)
+    t[2:(end - 1)] = round.(t[2:(end - 1)], digits=3)
     t[end] = ceil(t[end], digits=2)
     return t
 end
 
-function _check_offset_len(eeg::NeuroAnalyzer.EEG, offset, len)
-    (offset < 0 || offset > eeg_epoch_len(eeg)) && throw(ArgumentError("offset must be > 0 and ≤ $(eeg_epoch_len(eeg))."))
-    (offset + len > eeg_epoch_len(eeg)) && throw(ArgumentError("offset + len must be ≤ $(eeg_epoch_len(eeg))."))
+function _check_segment(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
+    from < 0 && throw(ArgumentError("from must be > 0."))
+    to < 0 && throw(ArgumentError("to must be > 0."))
+    to < from && throw(ArgumentError("to must be ≥ $from."))
+    (from > eeg_signal_len(eeg)) && throw(ArgumentError("from must be ≤ $(eeg_signal_len(eeg))."))
+    (to > eeg_signal_len(eeg)) && throw(ArgumentError("to must be ≤ $(eeg_signal_len(eeg))."))
 end
 
-function _convert_t(t)
-    t_1 = floor(t[1], digits=2)
-    t_2 = ceil(t[end], digits=2)
-    abs(t_1) < 1.0 && (t_s1 = string(floor(t_1 * 1000, digits=2)) * " ms")
-    abs(t_1) >= 1.0 && (t_s1 = string(floor(t_1, digits=2)) * " s")
-    abs(t_2) < 1.0 && (t_s2 = string(ceil(t_2 * 1000, digits=2)) * " ms")
-    abs(t_2) >= 1.0 && (t_s2 = string(ceil(t_2, digits=2)) * " s")
-    return t_1, t_s1, t_2, t_s2
-end
-
-function _check_channels(eeg::NeuroAnalyzer.EEG, channel)
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
-    end
-end
-
-function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx)
-    c, _ = _get_component(eeg, c)
-    for idx in 1:length(c_idx)
-        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
-    end
+function _convert_t(t1::Float64, t2::Float64)
+    abs(t1) < 1.0 && (ts1 = string(floor(t1 * 1000, digits=2)) * " ms")
+    abs(t1) >= 1.0 && (ts1 = string(floor(t1, digits=2)) * " s")
+    abs(t2) < 1.0 && (ts2 = string(ceil(t2 * 1000, digits=2)) * " ms")
+    abs(t2) >= 1.0 && (ts2 = string(ceil(t2, digits=2)) * " s")
+    return t1, ts1, t2, ts2
 end
 
 function _tuple_max(t::Tuple{Real, Real})
@@ -194,29 +248,30 @@ function _tuple_max(t::Tuple{Real, Real})
     return t
 end
 
-function _channel2channel_name(channel)
-    if collect(channel[1]:channel[end]) == channel
-        channel_name = string(channel[1]) * ":" * string(channel[end])
+function _channel2channel_name(channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) == Int64
+        return channel
     else
-        channel_name = "" 
-        for idx in 1:(length(channel) - 1)
-            channel_name *= string(channel[idx])
-            channel_name *= ", "
+        if collect(channel[1]:channel[end]) == channel
+            channel_name = string(channel[1]) * ":" * string(channel[end])
+        else
+            channel_name = "" 
+            for idx in 1:(length(channel) - 1)
+                channel_name *= string(channel[idx])
+                channel_name *= ", "
+            end
+            channel_name *= string(channel[end])
         end
-        channel_name *= string(channel[end])
     end
     return channel_name
 end
 
-function _t2epoch(eeg::NeuroAnalyzer.EEG, offset, len, epoch_tmp)
-    if (1 + offset) > eeg_epoch_len(eeg)
-        if (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1) < (ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1)
-            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(ceil(Int64, (1 + offset + len) / eeg_epoch_len(eeg)) - 1))
-        else
-            (epoch_tmp = (floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1):(floor(Int64, (1 + offset) / eeg_epoch_len(eeg)) + 1))
-        end
-    end
-    return epoch_tmp
+function _t2epoch(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
+    epoch = floor(Int64, from / eeg_epoch_len(eeg)):ceil(Int64, to / eeg_epoch_len(eeg))
+    from / eeg_epoch_len(eeg) > from ÷ eeg_epoch_len(eeg) && (epoch = epoch[1] + 1:epoch[end])
+    epoch[1] == 0 && (epoch = 1:epoch[end])
+    epoch[1] == epoch[end] && (epoch = epoch[1])
+    return epoch
 end
 
 function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
@@ -235,28 +290,40 @@ function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
 end
 
 function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
-    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be set."))
-    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be set."))
+    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
+    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
     (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
     (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
 
-    channel_n, _ = size(signal)
-
+    channel_n = size(signal, 1)
     if epoch_n === nothing
         epoch_n = size(signal, 2) ÷ epoch_len
     else
         epoch_len = size(signal, 2) ÷ epoch_n
     end
-
-    epochs = zeros(channel_n, epoch_len, epoch_n)
-
-    idx1 = 1
-    for idx2 in 1:epoch_len:(epoch_n * epoch_len - 1)
-        epochs[:, :, idx1] = signal[:, idx2:(idx2 + epoch_len - 1), 1]
-        idx1 += 1
-    end
+    epochs = reshape(signal[:, 1:(epoch_len * epoch_n)], channel_n, epoch_len, epoch_n)
 
     average == true && (epochs = mean(epochs, dims=3)[:, :])
+
+    return epochs
+end
+
+function _make_epochs(signal::Array{<:Real, 3}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
+    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
+    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
+    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
+
+    channel_n = size(signal, 1)
+    if epoch_n === nothing
+        epoch_n = size(signal, 2) * size(signal, 3) ÷ epoch_len
+    else
+        epoch_len = size(signal, 2) * size(signal, 3) ÷ epoch_n
+    end
+    signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
+    epochs = reshape(signal[:, 1:(epoch_len * epoch_n), 1], channel_n, epoch_len, epoch_n)
+
+    average == true && (epochs = mean(epochs, dims=3)[:, :, :])
 
     return epochs
 end
@@ -405,4 +472,69 @@ function _set_channel_types(labels::Vector{String})
         occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "markers")
     end
     return channel_type
+end
+
+function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)
+    m = var * " must be "
+    for idx in 1:(length(s2) - 2)
+        m *= ":" * string(s2[idx]) * ", "
+    end
+    m *= ":" * string(s2[end - 1]) * " or " * string(s2[end]) * "."
+    s1 in s2 || throw(ArgumentError(m))
+end
+
+function _check_var(s1::String, s2::Vector{String}, var::String)
+    m = var * " must be "
+    for idx in 1:(length(s2) - 2)
+        m *= ":" * s2[idx] * ", "
+    end
+    m *= ":" * s2[end - 1] * " or " * s2[end] * "."
+    s1 in s2 || throw(ArgumentError(m))
+end
+
+function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector{Float64}, interpolation_factor::Int64=100, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
+    # `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+    _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
+    x_lim_int = (-1.4, 1.4)
+    y_lim_int = (-1.4, 1.4)
+    interpolated_x = linspace(x_lim_int[1], x_lim_int[2], interpolation_factor)
+    interpolated_y = linspace(y_lim_int[1], y_lim_int[2], interpolation_factor)
+    interpolated_x = round.(interpolated_x, digits=2)
+    interpolated_y = round.(interpolated_y, digits=2)
+    interpolation_m = Matrix{Tuple{Float64, Float64}}(undef, interpolation_factor, interpolation_factor)
+    @inbounds @simd for idx1 in 1:interpolation_factor
+        for idx2 in 1:interpolation_factor
+            interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
+        end
+    end
+    signal_interpolated = zeros(interpolation_factor, interpolation_factor)
+    electrode_locations = [loc_x loc_y]'
+    imethod === :sh && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, signal))
+    imethod === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, signal))
+    imethod === :imq && (itp = ScatteredInterpolation.interpolate(InverseMultiquadratic(), electrode_locations, signal))
+    imethod === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, signal))
+    imethod === :nn && (itp = ScatteredInterpolation.interpolate(NearestNeighbor(), electrode_locations, signal))
+    imethod === :ga && (itp = ScatteredInterpolation.interpolate(Gaussian(), electrode_locations, signal))
+    @inbounds @simd for idx1 in 1:interpolation_factor
+        for idx2 in 1:interpolation_factor
+            signal_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
+        end
+    end
+    
+    return s_normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
+end
+
+function _dict2labeled_matrix(d::Dict)
+    l = Vector{String}()
+    v = Vector{Vector{Float64}}()
+    for (kk, vv) in d
+        push!(l, kk)
+        push!(v, vv)
+    end
+    return l, v
+end
+
+function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})
+    length(l) == length(v) || throw(ArgumentError("Length of labels and values do not match."))
+    return Dict(zip(l, v))
 end
