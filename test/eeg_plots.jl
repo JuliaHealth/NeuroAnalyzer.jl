@@ -49,11 +49,11 @@ p = eeg_plot_spectrogram(e10, norm=true, epoch=1, channel=1, method=:mw)
 p = eeg_plot_spectrogram(e10, norm=true, epoch=1, channel=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = eeg_plot_electrodes(e10, channel=1:19)
+p = eeg_plot_electrodes(e10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_electrodes(e10, channel=1:19, selected=1:4)
+p = eeg_plot_electrodes(e10, selected=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_electrodes(e10, channel=1:19, threed=true)
+p = eeg_plot_electrodes(e10, threed=true)
 @test typeof(p) == Makie.Figure
 
 edf_cor = eeg_cor(e10)

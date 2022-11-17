@@ -1108,7 +1108,7 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    s_convoluted = zeros(ComplexF64, size(signal))
+    s_convoluted = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
@@ -1147,9 +1147,9 @@ function eeg_tconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
     epoch_n = eeg_epoch_n(eeg)
 
     if typeof(kernel) == Vector{ComplexF64}
-        s_convoluted = zeros(ComplexF64, size(signal))
+        s_convoluted = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
     else
-        s_convoluted = zeros(size(signal))
+        s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
@@ -1184,7 +1184,7 @@ function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     epoch_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
-    sfft = zeros(ComplexF64, size(signal))
+    sfft = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
     sf = nothing
 
     @inbounds @simd for epoch_idx in 1:epoch_n
@@ -1301,8 +1301,8 @@ Calculates mean difference and 95% confidence interval for two EEG channels.
 
 # Arguments
 
-- `eeg1::Array{Float64, 3}`
-- `eeg2:Array{Float64, 3}`
+- `eeg1::NeuroAnalyzer.EEG`
+- `eeg2:NeuroAnalyzer.EEG`
 - `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
@@ -1319,7 +1319,7 @@ Named tuple containing:
 - `s_stat_single::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function eeg_difference(eeg1::Array{Float64, 3}, eeg2::Array{Float64, 3}; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2), n::Int64=3, method::Symbol=:absdiff)
+function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2), n::Int64=3, method::Symbol=:absdiff)
 
     # check channels
     _check_channels(eeg1, channel1)

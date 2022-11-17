@@ -249,7 +249,7 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 m_pad0(m)
 ```
 
-Pad the matrix `m` with zeros to make it square.
+Pad matrix with zeros to make it square.
 
 **Arguments**
 
@@ -268,18 +268,18 @@ Pad the matrix `m` with zeros to make it square.
 vsearch(y, x; return_distance)
 ```
 
-Return the positions of the `y` value in the vector `x` and the difference between `y` and `x[vsearch(x, y)].
+Return the positions of the `y` value in the vector `x`.
 
 **Arguments**
 
-  * `y::Real`
-  * `x::AbstractVector`
-  * `return_distance::Bool=false`
+  * `y::Real`: value of interest
+  * `x::AbstractVector`: vector to search within
+  * `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
 
 **Returns**
 
   * `y_idx::Int64`
-  * `y_dist::Real`
+  * `y_dist::Real`: the difference between `y` and `x[y_idx]`
 
 <a id='NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.vsearch-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.vsearch`** &mdash; *Method*.
@@ -294,14 +294,14 @@ Return the positions of the `y` vector in the vector `x`.
 
 **Arguments**
 
-  * `x::AbstractVector`
-  * `y::AbstractVector`
-  * `return_distance::Bool=false`
+  * `y::AbstractVector`: vector of interest
+  * `x::AbstractVector`: vector to search within
+  * `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
 
 **Returns**
 
   * `y_idx::Int64`
-  * `y_dist::Real`
+  * `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
 
 <a id='NeuroAnalyzer.cart2pol-Tuple{Real, Real}' href='#NeuroAnalyzer.cart2pol-Tuple{Real, Real}'>#</a>
 **`NeuroAnalyzer.cart2pol`** &mdash; *Method*.
@@ -312,7 +312,7 @@ Return the positions of the `y` vector in the vector `x`.
 cart2pol(x, y)
 ```
 
-Convert cartographic coordinates `x` and `y` to polar.
+Convert cartographic coordinates to polar.
 
 **Arguments**
 
@@ -333,7 +333,7 @@ Convert cartographic coordinates `x` and `y` to polar.
 pol2cart(radius, theta)
 ```
 
-Convert polar coordinates `radius` and `theta` to cartographic.
+Convert polar coordinates to cartographic.
 
 **Arguments**
 
@@ -354,7 +354,7 @@ Convert polar coordinates `radius` and `theta` to cartographic.
 sph2cart(radius, theta, phi)
 ```
 
-Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+Convert spherical coordinates to cartographic.
 
 **Arguments**
 
@@ -377,7 +377,7 @@ Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
 cart2sph(x, y, z)
 ```
 
-Convert spherical coordinates `theta` and `phi` and `radius` to cartographic.
+Convert spherical coordinates to cartographic.
 
 **Arguments**
 
@@ -509,7 +509,7 @@ Splits the vector `x` into `n`-long pieces.
 s_rms(signal)
 ```
 
-Calculate Root Mean Square of `signal`.
+Calculate Root Mean Square.
 
 **Arguments**
 
@@ -570,7 +570,7 @@ Return vector of frequencies and Nyquist frequency for given time vector `t`.
 s_freqs(signal, fs)
 ```
 
-Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+Return vector of frequencies and Nyquist frequency.
 
 **Arguments**
 
@@ -896,7 +896,7 @@ Normalize matrix `m`.
 
 s_cov(signal; norm=true)
 
-Calculate covariance between all channels of the `signal`.
+Calculate covariance between all channels.
 
 **Arguments**
 
@@ -935,7 +935,7 @@ Calculate covariance between `signal1` and `signal2`.
 s_dft(signal; fs)
 ```
 
-Return FFT and DFT sample frequencies for a DFT for the `signal`.
+Return FFT and DFT sample frequencies for a DFT.
 
 **Arguments**
 
@@ -958,7 +958,7 @@ Named tuple containing:
 s_msci95(signal)
 ```
 
-Calculate mean, std and 95% confidence interval for `signal`.
+Calculate mean, std and 95% confidence interval.
 
 **Arguments**
 
@@ -980,7 +980,7 @@ Calculate mean, std and 95% confidence interval for `signal`.
 s_msci95(signal; n, method)
 ```
 
-Calculate mean, std and 95% confidence interval for each the `signal` channels.
+Calculate mean, std and 95% confidence interval for each the channel.
 
 **Arguments**
 
@@ -1051,7 +1051,7 @@ Named tuple containing:
 
 s_acov(signal; lag, demean, norm)
 
-Calculate autocovariance of the `signal`.
+Calculate autocovariance.
 
 **Arguments**
 
@@ -1096,7 +1096,7 @@ Calculate cross-covariance between `signal1` and `signal2`.
 s_spectrum(signal; pad)
 ```
 
-Calculate FFT, amplitudes, powers and phases of the `signal`.
+Calculate FFT, amplitudes, powers and phases.
 
 **Arguments**
 
@@ -1122,7 +1122,7 @@ Named tuple containing:
 s_total_power(signal; fs, mt)
 ```
 
-Calculate `signal` total power.
+Calculate total power.
 
 **Arguments**
 
@@ -1143,7 +1143,7 @@ Calculate `signal` total power.
 s_band_power(signal; fs, f, mt)
 ```
 
-Calculate `signal` power between `f[1]` and `f[2]`.
+Calculate power between `f[1]` and `f[2]`.
 
 **Arguments**
 
@@ -1165,7 +1165,7 @@ Calculate `signal` power between `f[1]` and `f[2]`.
 s_taper(signal; taper)
 ```
 
-Taper the `signal` with `taper`.
+Taper the signal.
 
 **Arguments**
 
@@ -1200,7 +1200,7 @@ Perform piecewise detrending of `eeg`.
       * `:hp`: use HP filter
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
-  * `span::Float64=0.5`: smoothing of loess
+  * `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
   * `fs::Int64=0`: sampling frequency
 
 **Returns**
@@ -1216,7 +1216,7 @@ Perform piecewise detrending of `eeg`.
 s_demean(signal)
 ```
 
-Remove mean value (DC offset) from the `signal`.
+Remove mean value (DC offset).
 
 **Arguments**
 
@@ -1235,7 +1235,7 @@ Remove mean value (DC offset) from the `signal`.
 s_normalize_zscore(signal)
 ```
 
-Normalize (by z-score) `signal`.
+Normalize (by z-score).
 
 **Arguments**
 
@@ -1254,7 +1254,7 @@ Normalize (by z-score) `signal`.
 s_normalize_minmax(signal)
 ```
 
-Normalize `signal` in [-1, +1].
+Normalize in [-1, +1].
 
 **Arguments**
 
@@ -1273,7 +1273,7 @@ Normalize `signal` in [-1, +1].
 s_normalize_max(signal)
 ```
 
-Normalize `signal` in [0, +1].
+Normalize in [0, +1].
 
 **Arguments**
 
@@ -1292,7 +1292,7 @@ Normalize `signal` in [0, +1].
 s_normalize_log(signal)
 ```
 
-Normalize `signal` using log-transformation.
+Normalize using log-transformation.
 
 **Arguments**
 
@@ -1311,7 +1311,7 @@ Normalize `signal` using log-transformation.
 s_add_noise(signal)
 ```
 
-Adds random noise to the `signal`.
+Adds random noise.
 
 **Arguments**
 
@@ -1330,7 +1330,7 @@ Adds random noise to the `signal`.
 s_resample(signal; t, new_sr)
 ```
 
-Resample `signal` to `new_sr` sampling frequency.
+Resample to `new_sr` sampling frequency.
 
 **Arguments**
 
@@ -1352,7 +1352,7 @@ Resample `signal` to `new_sr` sampling frequency.
 s_resample(signal; t, new_sr)
 ```
 
-Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling frequency.
+Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 **Arguments**
 
@@ -1374,7 +1374,7 @@ Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling f
 s_derivative(signal)
 ```
 
-Return derivative of `signal` of the same length.
+Return derivative of the same length.
 
 **Arguments**
 
@@ -1409,7 +1409,7 @@ Performs convolution in the time domain between `signal` and `kernel`.
 s_filter(signal; <keyword arguments>)
 ```
 
-Filter `signal`.
+Apply filtering.
 
 **Arguments**
 
@@ -1454,7 +1454,7 @@ Filter `signal`.
 s_psd(signal; fs, norm, mt)
 ```
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 **Arguments**
 
@@ -1479,7 +1479,7 @@ Named tuple containing:
 s_psd(signal; fs, norm, mt)
 ```
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 **Arguments**
 
@@ -1504,7 +1504,7 @@ Named tuple containing:
 s_psd(signal; fs, norm, mt)
 ```
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 **Arguments**
 
@@ -1630,7 +1630,7 @@ Calculate mutual information between `signal1` and `signal2`.
 s_entropy(signal)
 ```
 
-Calculate entropy of `signal`.
+Calculate entropy.
 
 **Arguments**
 
@@ -1651,7 +1651,7 @@ Calculate entropy of `signal`.
 s_negentropy(signal)
 ```
 
-Calculate negentropy of `signal`.
+Calculate negentropy.
 
 **Arguments**
 
@@ -1670,7 +1670,7 @@ Calculate negentropy of `signal`.
 s_average(signal)
 ```
 
-Average all channels of `signal`.
+Average all channels.
 
 **Arguments**
 
@@ -1733,7 +1733,7 @@ Named tuple containing:
 s_pca(signal, n)
 ```
 
-Calculate `n` first PCs for `signal`.
+Calculate `n` first PCs.
 
 **Arguments**
 
@@ -1747,6 +1747,7 @@ Named tuple containing:
   * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
   * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
   * `pc_m::PCA{Float64}`: PC mean
+  * `pca::MultivariateStats.PCA{Float64}`: PC model
 
 <a id='NeuroAnalyzer.s_pca_reconstruct-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_pca_reconstruct-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_pca_reconstruct`** &mdash; *Method*.
@@ -1754,7 +1755,7 @@ Named tuple containing:
 
 
 ```julia
-s_pca_reconstruct(signal, pc, pcm)
+s_pca_reconstruct(signal, pc, pca)
 ```
 
 Reconstructs `signal` using PCA components.
@@ -1763,7 +1764,7 @@ Reconstructs `signal` using PCA components.
 
   * `signal::AbstractArray`
   * `pc::AbstractArray:`: IC(1)..IC(n) × epoch
-  * `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
+  * `pca::MultivariateStats.PCA{Float64}:`: IC(1)..IC(n) × epoch
 
 **Returns**
 
@@ -1811,8 +1812,10 @@ Calculate `n` first ICs for `signal`.
 
 **Returns**
 
-  * `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
-  * `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+Named tuple containing:
+
+  * `ica::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+  * `ica_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 
 <a id='NeuroAnalyzer.s_ica_reconstruct-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ica_reconstruct-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_ica_reconstruct`** &mdash; *Method*.
@@ -1820,17 +1823,17 @@ Calculate `n` first ICs for `signal`.
 
 
 ```julia
-s_ica_reconstruct(signal, ic, ic_mw, ic_v)
+s_ica_reconstruct(signal, ica, ica_mw, ic)
 ```
 
-Reconstructs `signal` using removal of `ic_v` ICA components.
+Reconstructs `signal` using removal of `ic` ICA components.
 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `ic::AbstractArray:`: IC(1)..IC(n) × epoch
-  * `ic_mw::AbstractArray:`: IC(1)..IC(n) × epoch
-  * `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+  * `ica::AbstractArray:`: IC(1)..IC(n) × epoch
+  * `ica_mw::AbstractArray:`: IC(1)..IC(n) × epoch
+  * `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 **Returns**
 
@@ -1845,7 +1848,7 @@ Reconstructs `signal` using removal of `ic_v` ICA components.
 s_spectrogram(signal; fs, norm, mt, st, demean)
 ```
 
-Calculate spectrogram of `signal`.
+Calculate spectrogram.
 
 **Arguments**
 
@@ -1873,7 +1876,7 @@ Named tuple containing:
 s_detect_epoch_flat(signal)
 ```
 
-Detect bad `signal` epochs based on: flat channel(s)
+Detect bad epochs based on: flat channel(s)
 
 **Arguments**
 
@@ -1892,7 +1895,7 @@ Detect bad `signal` epochs based on: flat channel(s)
 s_detect_epoch_rmse(signal)
 ```
 
-Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
+Detect bad epochs based on: RMSE vs average channel > 95%CI.
 
 **Arguments**
 
@@ -1911,7 +1914,7 @@ Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
 detect_epoch_rmsd(signal)
 ```
 
-Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
+Detect bad epochs based on: RMSD vs average channel > 95%CI.
 
 **Arguments**
 
@@ -1930,7 +1933,7 @@ Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
 s_detect_epoch_euclid(signal)
 ```
 
-Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
+Detect bad epochs based on: Euclidean distance vs median channel > 95% CI.
 
 **Arguments**
 
@@ -1949,7 +1952,7 @@ Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% 
 s_detect_epoch_p2p(signal)
 ```
 
-Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
+Detect bad epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
 **Arguments**
 
@@ -1968,7 +1971,7 @@ Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 s_snr(signal)
 ```
 
-Calculate SNR of `signal`.
+Calculate SNR.
 
 **Arguments**
 
@@ -1991,7 +1994,7 @@ D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-
 s_findpeaks(signal; d)
 ```
 
-Find peaks in `signal`.
+Find peaks.
 
 **Arguments**
 
@@ -2058,11 +2061,11 @@ Named tuple containing:
 s_itpc(signal; t)
 ```
 
-Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of `signal`.
+Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t`.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractArray`: one channel over epochs/trials
   * `t::Int64`: time point (sample number) at which ITPC is calculated
   * `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -2110,7 +2113,7 @@ Named tuple containing:
 s2_ged(signal1, signal2)
 ```
 
-Perform generalized eigendecomposition between `signal1` and `signal2`.
+Perform generalized eigendecomposition.
 
 **Arguments**
 
@@ -2134,7 +2137,7 @@ Named tuple containing:
 s_frqinst(signal; fs)
 ```
 
-Calculate instantaneous frequency `signal`.
+Calculate instantaneous frequency.
 
 **Arguments**
 
@@ -2154,7 +2157,7 @@ Calculate instantaneous frequency `signal`.
 s_hspectrum(signal; pad=0)
 ```
 
-Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
+Calculate amplitudes, powers and phases using Hilbert transform.
 
 **Arguments**
 
@@ -2218,7 +2221,7 @@ Convert frequency `f` to cycle length in ms.
 s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
 ```
 
-Calculate spectrogram of the `signal` using wavelet convolution.
+Calculate spectrogram using wavelet convolution.
 
 **Arguments**
 
@@ -2272,7 +2275,7 @@ Named tuple containing:
 s_gfilter(signal, fs, f, gw)
 ```
 
-Filter `signal` using Gaussian in the frequency domain.
+Filter using Gaussian in the frequency domain.
 
 **Arguments**
 
@@ -2296,7 +2299,7 @@ Named tuple containing:
 s_ghspectrogram(signal; fs, norm, frq_lim, frq_n, frq, fs, demean)
 ```
 
-Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
+Calculate spectrogram using Gaussian and Hilbert transform.
 
 **Arguments**
 
@@ -2344,7 +2347,7 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 ```
 
-Calculate power spectrum of the `signal` using wavelet convolution.
+Calculate power spectrum using wavelet convolution.
 
 **Arguments**
 
@@ -2373,7 +2376,7 @@ Named tuple containing:
 s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 ```
 
-Calculate power spectrum of the `signal` channels using wavelet convolution.
+Calculate power spectrum using wavelet convolution.
 
 **Arguments**
 
@@ -2427,7 +2430,7 @@ Named tuple containing:
 s_fcoherence(signal; fs, frq)
 ```
 
-Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels.
 
 **Arguments**
 
@@ -2516,7 +2519,7 @@ Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) d
 s_cums(signal)
 ```
 
-Calculate cumulative sum of the `signal`.
+Calculate cumulative sum.
 
 **Arguments**
 
@@ -2535,7 +2538,7 @@ Calculate cumulative sum of the `signal`.
 s_cums(signal)
 ```
 
-Calculate cumulative sum of the `signal`.
+Calculate cumulative sum.
 
 **Arguments**
 
@@ -2554,7 +2557,7 @@ Calculate cumulative sum of the `signal`.
 s_gfp(signal)
 ```
 
-Calculate GFP (Global Field Power) of the `signal`.
+Calculate GFP (Global Field Power).
 
 **Arguments**
 
@@ -2686,7 +2689,7 @@ Named tuple containing:
 s_rel_psd(signal; fs, norm, mt, f)
 ```
 
-Calculate relative power spectrum density of the `signal`.
+Calculate relative power spectrum density.
 
 **Arguments**
 
@@ -2712,7 +2715,7 @@ Named tuple containing:
 s_rel_psd(signal; fs, norm, mt, f)
 ```
 
-Calculate relative power spectrum density of the `signal`.
+Calculate relative power spectrum density.
 
 **Arguments**
 
@@ -2738,7 +2741,7 @@ Named tuple containing:
 s_wbp(signal; pad, frq, fs, ncyc, demean)
 ```
 
-Perform wavelet bandpass filtering of the `signal`.
+Perform wavelet bandpass filtering.
 
 **Arguments**
 
@@ -2762,7 +2765,7 @@ Perform wavelet bandpass filtering of the `signal`.
 s_normalize_gauss(signal)
 ```
 
-Normalize `signal` to Gaussian.
+Normalize to Gaussian.
 
 **Arguments**
 
@@ -2782,7 +2785,7 @@ Normalize `signal` to Gaussian.
 s_cbp(signal; pad, frq, fs, demean)
 ```
 
-Perform convolution bandpass filtering of the `signal`.
+Perform convolution bandpass filtering.
 
 **Arguments**
 
@@ -2862,7 +2865,7 @@ Named tuple containing:
 s_denoise_wien(signal)
 ```
 
-Perform Wiener deconvolution denoising of the `signal`.
+Perform Wiener deconvolution denoising.
 
 **Arguments**
 
@@ -2931,7 +2934,7 @@ Named tuple containing:
 s_normalize_log10(signal)
 ```
 
-Normalize `signal` using log10-transformation.
+Normalize using log10-transformation.
 
 **Arguments**
 
@@ -2950,7 +2953,7 @@ Normalize `signal` using log10-transformation.
 s_normalize_neglog(signal)
 ```
 
-Normalize `signal` to using -log-transformation.
+Normalize to using -log-transformation.
 
 **Arguments**
 
@@ -2969,7 +2972,7 @@ Normalize `signal` to using -log-transformation.
 s_normalize_neglog10(signal)
 ```
 
-Normalize `signal` using -log10-transformation.
+Normalize using -log10-transformation.
 
 **Arguments**
 
@@ -2988,7 +2991,7 @@ Normalize `signal` using -log10-transformation.
 s_normalize_neg(signal)
 ```
 
-Normalize `signal` in [0, -∞].
+Normalize in [0, -∞].
 
 **Arguments**
 
@@ -3007,7 +3010,7 @@ Normalize `signal` in [0, -∞].
 s_normalize_pos(signal)
 ```
 
-Normalize `signal` in [0, +∞].
+Normalize in [0, +∞].
 
 **Arguments**
 
@@ -3026,7 +3029,7 @@ Normalize `signal` in [0, +∞].
 s_normalize_perc(signal)
 ```
 
-Normalize `signal` in percentages.
+Normalize in percentages.
 
 **Arguments**
 
@@ -3045,7 +3048,7 @@ Normalize `signal` in percentages.
 s_normalize(signal; method)
 ```
 
-Normalize `signal`.
+Normalize.
 
 **Arguments**
 
@@ -3065,7 +3068,7 @@ Normalize `signal`.
 s_phases(signal; h, pad)
 ```
 
-Calculate phases of the `signal`.
+Calculate phases.
 
 **Arguments**
 
@@ -3086,7 +3089,7 @@ Named tuple containing:
 s_cwtspectrogram(signal; wt, pad, norm, frq_lim, fs, demean)
 ```
 
-Calculate spectrogram of the `signal` using continuous wavelet transformation (CWT).
+Calculate spectrogram using continuous wavelet transformation (CWT).
 
 **Arguments**
 
@@ -3113,7 +3116,7 @@ Named tuple containing:
 s_dwt(signal; wt, type, l)
 ```
 
-Perform discrete wavelet transformation (DWT) of the `signal`.
+Perform discrete wavelet transformation (DWT).
 
 **Arguments**
 
@@ -3156,7 +3159,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 s_normalize_invroot(signal)
 ```
 
-Normalize `signal` in inverse root (1/sqrt(x)).
+Normalize in inverse root (1/sqrt(x)).
 
 **Arguments**
 
@@ -3175,7 +3178,7 @@ Normalize `signal` in inverse root (1/sqrt(x)).
 s_cwt(signal; wt, type, l)
 ```
 
-Perform continuous wavelet transformation (CWT) of the `signal`.
+Perform continuous wavelet transformation (CWT).
 
 **Arguments**
 
@@ -3859,7 +3862,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_import(file_name; clean_labels)
+eeg_import(file_name; detect_type)
 ```
 
 Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
@@ -3873,7 +3876,7 @@ This is a meta-function that triggers appropriate `eeg_import_*()` function. Fil
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+  * `detect_type::Bool=true`: detect channel type based on its label
 
 **Returns**
 
@@ -3885,7 +3888,7 @@ This is a meta-function that triggers appropriate `eeg_import_*()` function. Fil
 
 
 ```julia
-eeg_import_edf(file_name; clean_labels)
+eeg_import_edf(file_name; detect_type)
 ```
 
 Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
@@ -3893,7 +3896,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+  * `detect_type::Bool=true`: detect channel type based on its label
 
 **Returns**
 
@@ -4270,7 +4273,7 @@ Electrode locations:
 
 
 ```julia
-eeg_import_bdf(file_name; clean_labels)
+eeg_import_bdf(file_name; detect_type)
 ```
 
 Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
@@ -4278,7 +4281,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+  * `detect_type::Bool=true`: detect channel type based on its label
 
 **Returns**
 
@@ -4300,7 +4303,7 @@ https://www.biosemi.com/faq/file_format.htm
 
 
 ```julia
-eeg_import_digitrack(file_name; clean_labels)
+eeg_import_digitrack(file_name; detect_type)
 ```
 
 Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
@@ -4308,7 +4311,7 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 **Arguments**
 
   * `file_name::String`: name of the file to load
-  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+  * `detect_type::Bool=true`: detect channel type based on its label
 
 **Returns**
 
@@ -4322,7 +4325,7 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 
 
 ```julia
-eeg_import_bv(file_name; clean_labels)
+eeg_import_bv(file_name; detect_type)
 ```
 
 Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
@@ -4330,7 +4333,7 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two 
 **Arguments**
 
   * `file_name::String`: name of the file to load, should point to .vhdr file.
-  * `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+  * `detect_type::Bool=true`: detect channel type based on its label
 
 **Returns**
 
@@ -4352,7 +4355,7 @@ Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two 
 eeg_add_component(eeg; c, v)
 ```
 
-Add component name `c` of value `v` to `eeg`.
+Add component.
 
 **Arguments**
 
@@ -4373,7 +4376,7 @@ Add component name `c` of value `v` to `eeg`.
 eeg_add_component!(eeg; c, v)
 ```
 
-Add component name `c` of value `v` to `eeg`.
+Add component.
 
 **Arguments**
 
@@ -4390,7 +4393,7 @@ Add component name `c` of value `v` to `eeg`.
 eeg_list_components(eeg)
 ```
 
-List `eeg` components.
+List components.
 
 **Arguments**
 
@@ -4409,7 +4412,7 @@ List `eeg` components.
 eeg_extract_component(eeg, c)
 ```
 
-Extract component `c` of `eeg`.
+Extract component `c`.
 
 **Arguments**
 
@@ -4429,7 +4432,7 @@ Extract component `c` of `eeg`.
 eeg_delete_component(eeg; c)
 ```
 
-Delete component `c` of `eeg`.
+Delete component `c`. 
 
 **Arguments**
 
@@ -4449,7 +4452,7 @@ Delete component `c` of `eeg`.
 eeg_delete_component!(eeg; c)
 ```
 
-Delete component `c` of `eeg`.
+Delete component `c`.
 
 **Arguments**
 
@@ -4465,7 +4468,7 @@ Delete component `c` of `eeg`.
 eeg_reset_components(eeg)
 ```
 
-Remove all `eeg` components.
+Remove all components.
 
 **Arguments**
 
@@ -4484,7 +4487,7 @@ Remove all `eeg` components.
 eeg_reset_components!(eeg)
 ```
 
-Remove all `eeg` components.
+Remove all components.
 
 **Arguments**
 
@@ -4499,7 +4502,7 @@ Remove all `eeg` components.
 eeg_component_idx(eeg, c)
 ```
 
-Return index of `eeg` component.
+Return index of component `c`.
 
 **Arguments**
 
@@ -4519,7 +4522,7 @@ Return index of `eeg` component.
 eeg_component_type(eeg, c)
 ```
 
-Return type of `eeg` components.
+Return type of components `c`.
 
 **Arguments**
 
@@ -4539,7 +4542,7 @@ Return type of `eeg` components.
 eeg_rename_component(eeg, c_old, c_new)
 ```
 
-Return type of `eeg` components.
+Rename component.
 
 **Arguments**
 
@@ -4557,10 +4560,10 @@ Return type of `eeg` components.
 
 
 ```julia
-eeg_rename_component(eeg, c_old, c_new)
+eeg_rename_component!(eeg, c_old, c_new)
 ```
 
-Return type of `eeg` components.
+Rename component.
 
 **Arguments**
 
@@ -4577,12 +4580,12 @@ Return type of `eeg` components.
 eeg_delete_channel(eeg; channel)
 ```
 
-Remove `channel` from `eeg`.
+Delete EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed, vector of numbers or range
 
 **Returns**
 
@@ -4597,12 +4600,12 @@ Remove `channel` from `eeg`.
 eeg_delete_channel!(eeg; channel)
 ```
 
-Remove `channel` from `eeg`.
+Delete EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed
 
 <a id='NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_keep_channel`** &mdash; *Method*.
@@ -4613,12 +4616,12 @@ Remove `channel` from `eeg`.
 eeg_keep_channel(eeg; channel)
 ```
 
-Keep `channels` in `eeg`.
+Keep EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
 
 **Returns**
 
@@ -4633,12 +4636,12 @@ Keep `channels` in `eeg`.
 eeg_keep_channel!(eeg; channel)
 ```
 
-Keep `channels` in `eeg`.
+Keep EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
 
 <a id='NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_get_channel`** &mdash; *Method*.
@@ -4649,16 +4652,16 @@ Keep `channels` in `eeg`.
 eeg_get_channel(eeg; channel)
 ```
 
-Return the `channel` index / name.
+Return EEG channel number / name.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`: channel name
+  * `channel::Union{Int64, String}`: channel number or name
 
 **Returns**
 
-  * `channel_idx::Int64`
+  * `channel_idx::Union{Int64, String}`: channel number or name
 
 <a id='NeuroAnalyzer.eeg_rename_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_rename_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_rename_channel`** &mdash; *Method*.
@@ -4669,13 +4672,13 @@ Return the `channel` index / name.
 eeg_rename_channel(eeg; channel, name)
 ```
 
-Rename `eeg` `channel`.
+Rename EEG channel.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`
-  * `name::String`
+  * `channel::Union{Int64, String}`: channel number or name
+  * `name::String`: new name
 
 **Returns**
 
@@ -4690,7 +4693,7 @@ Rename `eeg` `channel`.
 eeg_rename_channel!(eeg; channel, name)
 ```
 
-Rename `eeg` `channel`.
+Rename EEG channel.
 
 **Arguments**
 
@@ -4707,7 +4710,7 @@ Rename `eeg` `channel`.
 eeg_extract_channel(eeg; channel)
 ```
 
-Extract `channel` number or name.
+Extract EEG channel.
 
 **Arguments**
 
@@ -4746,7 +4749,7 @@ Show processing history.
 eeg_labels(eeg)
 ```
 
-Return `eeg` labels.
+Return EEG labels.
 
 **Arguments**
 
@@ -4765,7 +4768,7 @@ Return `eeg` labels.
 eeg_sr(eeg)
 ```
 
-Return `eeg` sampling rate.
+Return EEG sampling rate.
 
 **Arguments**
 
@@ -4784,12 +4787,12 @@ Return `eeg` sampling rate.
 eeg_channel_n(eeg; type=:eeg)
 ```
 
-Return number of `eeg` channels of `type`.
+Return number of EEG channels of `type`.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+  * `type::Vector{Symbol}=:all`: channel type: `:all`, `:eeg`, `:meg`, `:ecg`, `:eog`, `:emg`, `:ref`
 
 **Returns**
 
@@ -4804,7 +4807,7 @@ Return number of `eeg` channels of `type`.
 eeg_epoch_n(eeg)
 ```
 
-Return number of `eeg` epochs.
+Return number EEG epochs.
 
 **Arguments**
 
@@ -4823,7 +4826,7 @@ Return number of `eeg` epochs.
 eeg_signal_len(eeg)
 ```
 
-Return length of `eeg` signal.
+Return length of EEG signal.
 
 **Arguments**
 
@@ -4842,7 +4845,7 @@ Return length of `eeg` signal.
 eeg_epoch_len(eeg)
 ```
 
-Return length of `eeg` signal.
+Return length of EEG signal.
 
 **Arguments**
 
@@ -4876,14 +4879,14 @@ Show info.
 eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 ```
 
-Splits `eeg` into epochs.
+Splits EEG into epochs.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch_n::Union{Int64, Nothing}`: number of epochs
-  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
+  * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
+  * `average::Bool=false`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
 
 **Returns**
 
@@ -4898,7 +4901,7 @@ Splits `eeg` into epochs.
 eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 ```
 
-Splits `eeg` into epochs.
+Splits EEG into epochs.
 
 **Arguments**
 
@@ -4916,7 +4919,7 @@ Splits `eeg` into epochs.
 eeg_extract_epoch(eeg; epoch)
 ```
 
-Extract the `epoch` epoch.
+Extract EEG epoch.
 
 **Arguments**
 
@@ -4933,18 +4936,18 @@ Extract the `epoch` epoch.
 
 
 ```julia
-eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
 ```
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
+Change EEG signal length.
 
 **Arguments**
 
   * `eeg:EEG`
   * `len::Int64`: number of samples to remove
-  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+  * `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
+  * `from::Symbol=:start`: trims from the signal `:start` or `:end`
+  * `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
 **Returns**
 
@@ -4956,18 +4959,18 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 
 
 ```julia
-eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
 ```
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
+Change EEG signal length.
 
 **Arguments**
 
   * `eeg:EEG`
   * `len::Int64`: number of samples to remove
-  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-  * `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-  * `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+  * `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
+  * `from::Symbol=:start`: trims from the signal `:start` or `:end`
+  * `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
 <a id='NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_edit_header`** &mdash; *Method*.
@@ -4978,7 +4981,7 @@ Remove `len` samples from the beginning + `offset` (`from` = :start, default) or
 eeg_edit_header(eeg; field, value)
 ```
 
-Change value of `eeg` `field` to `value`.
+Change value of EEG header.
 
 **Arguments**
 
@@ -4988,7 +4991,7 @@ Change value of `eeg` `field` to `value`.
 
 **Returns**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 <a id='NeuroAnalyzer.eeg_edit_header!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header!-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_edit_header!`** &mdash; *Method*.
@@ -4999,17 +5002,13 @@ Change value of `eeg` `field` to `value`.
 eeg_edit_header!(eeg; field, value)
 ```
 
-Change value of `eeg` `field` to `value`.
+Change value of EEG header.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
   * `field::Symbol`
   * `value::Any`
-
-**Returns**
-
-  * `eeg:EEG`
 
 <a id='NeuroAnalyzer.eeg_show_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_show_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_show_header`** &mdash; *Method*.
@@ -5020,7 +5019,7 @@ Change value of `eeg` `field` to `value`.
 eeg_show_header(eeg)
 ```
 
-Show keys and values of `eeg` header.
+Show keys and values of EEG header.
 
 **Arguments**
 
@@ -5035,7 +5034,7 @@ Show keys and values of `eeg` header.
 eeg_delete_epoch(eeg; epoch)
 ```
 
-Remove `epoch` from `eeg`.
+Remove epoch(s) from EEG.
 
 **Arguments**
 
@@ -5055,7 +5054,7 @@ Remove `epoch` from `eeg`.
 eeg_delete_epoch!(eeg; epoch)
 ```
 
-Remove `epoch` from `eeg`.
+Remove epoch(s) from EEG.
 
 **Arguments**
 
@@ -5071,7 +5070,7 @@ Remove `epoch` from `eeg`.
 eeg_keep_epoch(eeg; epoch)
 ```
 
-Keep `epoch` in `eeg`.
+Keep epoch(s).
 
 **Arguments**
 
@@ -5091,7 +5090,7 @@ Keep `epoch` in `eeg`.
 eeg_keep_epoch!(eeg; epoch)
 ```
 
-Keep `epoch` in `eeg`.
+Keep epoch(s).
 
 **Arguments**
 
@@ -5104,21 +5103,21 @@ Keep `epoch` in `eeg`.
 
 
 ```julia
-eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
+eeg_detect_bad_epochs(eeg; method, ch_t)
 ```
 
-Detect bad `eeg` epochs based on:
-
-  * flat channel(s)
-  * RMSE
-  * RMSD
-  * Euclidean distance
-  * peak-to-peak amplitude
+Detect bad EEG epochs. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
+  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`: detection method:
+
+      * `:flat`: flat channel(s)
+      * `:rmse`: RMSE
+      * `:rmsd`: RMSD
+      * `:euclid`: Euclidean distance
+      * `:p2p`: peak-to-peak amplitude
   * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
 **Returns**
@@ -5131,10 +5130,10 @@ Detect bad `eeg` epochs based on:
 
 
 ```julia
-eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+eeg_add_labels(eeg, labels)
 ```
 
-Add `labels` to `eeg` channels.
+Add EEG channels labels.
 
 **Arguments**
 
@@ -5154,7 +5153,7 @@ Add `labels` to `eeg` channels.
 eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 ```
 
-Add `labels` to `eeg` channels.
+Add EEG channels labels.
 
 **Arguments**
 
@@ -5170,13 +5169,13 @@ Add `labels` to `eeg` channels.
 eeg_edit_channel(eeg; channel, field, value)
 ```
 
-Edits `eeg` `channel` properties.
+Edit EEG channel properties.
 
 **Arguments**
 
   * `eeg:EEG`
   * `channel::Int64`
-  * `field::Any`
+  * `field::Symbol`
   * `value::Any`
 
 **Returns**
@@ -5192,13 +5191,13 @@ Edits `eeg` `channel` properties.
 eeg_edit_channel!(eeg; channel, field, value)
 ```
 
-Edit `eeg` `channel` properties.
+Edit EEG channel properties.
 
 **Arguments**
 
   * `eeg:EEG`
   * `channel::Int64`
-  * `field::Any`
+  * `field::Symbol`
   * `value::Any`
 
 <a id='NeuroAnalyzer.eeg_keep_channel_type-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel_type-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -5210,7 +5209,7 @@ Edit `eeg` `channel` properties.
 eeg_keep_channel_type(eeg; type)
 ```
 
-Keep `type` channels.
+Keep EEG channels of `type` type.
 
 **Arguments**
 
@@ -5227,10 +5226,10 @@ Keep `type` channels.
 
 
 ```julia
-eeg_keep_channel_type!(eeg)
+eeg_keep_channel_type!(eeg; type)
 ```
 
-Keep `type` channels.
+Keep EEG channels of `type` type.
 
 **Arguments**
 
@@ -5246,7 +5245,7 @@ Keep `type` channels.
 eeg_view_note(eeg)
 ```
 
-Return `eeg` note.
+Return EEG note.
 
 **Arguments**
 
@@ -5261,7 +5260,7 @@ Return `eeg` note.
 eeg_copy(eeg)
 ```
 
-Make copy of `eeg`.
+Make copy of EEG.
 
 **Arguments**
 
@@ -5280,7 +5279,7 @@ Make copy of `eeg`.
 eeg_epochs_time(eeg; ts)
 ```
 
-Edit `eeg` epochs time start.
+Edit EEG epochs time start.
 
 **Arguments**
 
@@ -5300,7 +5299,7 @@ Edit `eeg` epochs time start.
 eeg_epochs_time!(eeg; ts)
 ```
 
-Edit `eeg` epochs time start.
+Edit EEG epochs time start.
 
 **Arguments**
 
@@ -5320,7 +5319,7 @@ Edit `eeg` epochs time start.
 eeg_add_note(eeg; note)
 ```
 
-Return `eeg` note.
+Add EEG note.
 
 **Arguments**
 
@@ -5340,7 +5339,7 @@ Return `eeg` note.
 eeg_add_note!(eeg; note)
 ```
 
-Return `eeg` note.
+Add EEG note.
 
 **Arguments**
 
@@ -5356,7 +5355,7 @@ Return `eeg` note.
 eeg_delete_note(eeg)
 ```
 
-Return `eeg` note.
+Delete EEG note.
 
 **Arguments**
 
@@ -5375,7 +5374,7 @@ Return `eeg` note.
 eeg_delete_note!(eeg)
 ```
 
-Return `eeg` note.
+Delete EEG note.
 
 **Arguments**
 
@@ -5390,12 +5389,12 @@ Return `eeg` note.
 eeg_replace_channel(eeg; channel, signal)
 ```
 
-Replace the `channel` index / name with `signal`.
+Replace EEG channel with signal.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`: channel name
+  * `channel::Union{Int64, String}`: channel number or name
   * `signal::Array{Float64, 3}
 
 **Returns**
@@ -5425,15 +5424,16 @@ Replace the `channel` index / name with `signal`.
 
 
 ```julia
-eeg_interpolate_channel(eeg; channel, m, q)
+eeg_interpolate_channel(eeg; channel, epoch, m, q)
 ```
 
-Interpolate `eeg` channel using planar interpolation.
+Interpolate channel(s) using planar interpolation.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
   * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
   * `interpolation_factor::Int64=100`: interpolation quality
 
@@ -5447,7 +5447,7 @@ Interpolate `eeg` channel using planar interpolation.
 
 
 ```julia
-eeg_interpolate_channel!(eeg; channel, imethod, interpolation_factor)
+eeg_interpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
 ```
 
 Interpolate `eeg` channel using planar interpolation.
@@ -5455,7 +5455,8 @@ Interpolate `eeg` channel using planar interpolation.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}}`: channel number(s) to interpolate
+  * `channel::Union{Int64, Vector{Int64}, Abstractrange}`: channel number(s) to interpolate
+  * `epoch::Union{Int64, Vector{Int64}, Abstractrange}`: epoch number(s) within to interpolate
   * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
   * `interpolation_factor::Int64=100`: interpolation quality
 
@@ -5578,7 +5579,7 @@ Flip channel locations along z axis.
 eeg_channel_type(eeg; channel, type)
 ```
 
-Change `eeg` `channel` type.
+Change EEG channel type.
 
 **Arguments**
 
@@ -5599,7 +5600,7 @@ Change `eeg` `channel` type.
 eeg_channel_type!(eeg; channel, new_name)
 ```
 
-Change `eeg` `channel` type.
+Change EEG channel type.
 
 **Arguments**
 
@@ -5616,7 +5617,7 @@ Change `eeg` `channel` type.
 eeg_edit_electrode(eeg; <keyword arguments>)
 ```
 
-Edit `eeg` electrode.
+Edit EEG electrode.
 
 **Arguments**
 
@@ -5672,12 +5673,12 @@ Edit `eeg` electrode.
 eeg_electrode_loc(eeg; channel, output)
 ```
 
-Return locations of `eeg` `channel` electrode.
+Return locations of EEG channel electrode.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`
+  * `channel::Union{Int64, String}`: channel number or name
   * `output::Bool=true`: print output if true
 
 **Returns**
@@ -5808,7 +5809,7 @@ Convert Cartesian locations to spherical.
 eeg_view_markers(eeg)
 ```
 
-Return `eeg` markers.
+Return EEG markers.
 
 **Arguments**
 
@@ -5823,7 +5824,7 @@ Return `eeg` markers.
 eeg_delete_marker(eeg; n)
 ```
 
-Delete `n`th marker.
+Delete EEG marker.
 
 **Arguments**
 
@@ -5843,7 +5844,7 @@ Delete `n`th marker.
 eeg_delete_marker!(eeg; n)
 ```
 
-Delete `n`th marker.
+Delete EEG marker.
 
 **Arguments**
 
@@ -5903,12 +5904,12 @@ Add marker.
 eeg_channel_idx(eeg; type=:eeg)
 ```
 
-Return index of `eeg` channels of `type`.
+Return index of EEG channels of `type` type.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Vector{Symbol}=:all`: channel type: [:all, :eeg, :meg, :ecg, :eog, :emg, :ref]
+  * `type::Vector{Symbol}=:all`: channel type
 
 **Returns**
 
@@ -5943,7 +5944,7 @@ Calculate virtual channel using formula `f`.
 eeg_edit_marker(eeg; n, id, start, len, desc)
 ```
 
-Edit `n`th marker.
+Edit EEG marker.
 
 **Arguments**
 
@@ -5968,7 +5969,7 @@ Edit `n`th marker.
 eeg_edit_marker!(eeg; n, id, start, len, desc)
 ```
 
-Edit `n`th marker.
+Edit EEG marker.
 
 **Arguments**
 
@@ -5996,7 +5997,7 @@ Edit `n`th marker.
 eeg_reference_ch(eeg; channel, med)
 ```
 
-Reference `eeg` to specific `channel`.
+Reference to selected channel(s). Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 **Arguments**
 
@@ -6017,7 +6018,7 @@ Reference `eeg` to specific `channel`.
 eeg_reference_ch!(eeg; channel, med)
 ```
 
-Reference `eeg` to specific channel `channel`.
+Reference to selected channel(s). Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 **Arguments**
 
@@ -6034,13 +6035,13 @@ Reference `eeg` to specific channel `channel`.
 eeg_reference_car(eeg; exclude_fpo, exclude_current, med)
 ```
 
-Reference `eeg` to common average reference.
+Reference to common average reference. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR calculation
-  * `exclude_current::Bool=true`: exclude current electrode from CAR calculation
+  * `exclude_fpo::Bool=false`: exclude Fp1, Fp2, O1, O2 from CAR calculation
+  * `exclude_current::Bool=true`: exclude current channel from CAR calculation
   * `med::Bool=false`: use median instead of mean
 
 **Returns**
@@ -6056,13 +6057,13 @@ Reference `eeg` to common average reference.
 eeg_reference_car!(eeg; exclude_fpo, exclude_current, med)
 ```
 
-Reference `eeg` to common average reference.
+Reference to common average reference. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `exclude_fpo::Bool=true`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
-  * `exclude_current::Bool=true`: exclude current electrode from CAR mean calculation
+  * `exclude_fpo::Bool=false`: exclude Fp1, Fp2, O1, O2 from CAR mean calculation
+  * `exclude_current::Bool=true`: exclude current channel from CAR mean calculation
   * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_derivative-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -6074,12 +6075,12 @@ Reference `eeg` to common average reference.
 eeg_derivative(eeg; channel)
 ```
 
-Return the derivative of `eeg` with length same as the signal.
+Return the derivative of EEG channel(s) with length same as the signal.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 **Returns**
 
@@ -6094,12 +6095,12 @@ Return the derivative of `eeg` with length same as the signal.
 eeg_derivative!(eeg; channel)
 ```
 
-Return the derivative of `eeg` with length same as the signal.
+Return the derivative of EEG channel(s) with length same as the signal.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_detrend`** &mdash; *Method*.
@@ -6107,26 +6108,26 @@ Return the derivative of `eeg` with length same as the signal.
 
 
 ```julia
-eeg_detrend(eeg; channel, type, offset, order, span)
+eeg_detrend(eeg; channel, type, offset, order, f)
 ```
 
-Perform piecewise detrending of `eeg`.
+Perform piecewise detrending of EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `type::Symbol`, optional
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `type::Symbol=:linear`
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
       * `:linear`: linear trend is subtracted from `signal`
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` is subtracted
-      * `:loess`: fit and subtract loess approximation
+      * `:loess`: fit and subtract LOESS approximation
       * `:hp`: use HP filter
-  * `offset::Real=0`: constant for :constant detrending
+  * `offset::Real=0`: constant for `:constant` detrending
   * `order::Int64=1`: polynomial fitting order
-  * `span::Float64=0.5`: smoothing of loess
+  * `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 
 **Returns**
 
@@ -6141,23 +6142,23 @@ Perform piecewise detrending of `eeg`.
 eeg_detrend!(eeg; channel, type, offset, order, span)
 ```
 
-Remove linear trend from `eeg`.
+Perform piecewise detrending of EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `type::Symbol`, optional
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `type::Symbol=:linear`
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
       * `:linear`: linear trend is subtracted from `signal`
       * `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
       * `:poly`: polynomial of `order` order is subtracted
-      * `:loess`: fit and subtract loess approximation
+      * `:loess`: fit and subtract LOESS approximation
       * `:hp`: use HP filter
   * `offset::Real=0`: constant for :constant detrending
   * `order::Int64=1`: polynomial fitting order
-  * `span::Float64`: smoothing of loess
+  * `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 
 <a id='NeuroAnalyzer.eeg_taper-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_taper-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_taper`** &mdash; *Method*.
@@ -6168,13 +6169,13 @@ Remove linear trend from `eeg`.
 eeg_taper(eeg; channel, taper)
 ```
 
-Taper `eeg` with `taper`.
+Taper EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `taper::Union{Vector{Real, Vector{ComplexF64}}``
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `taper::Union{Vector{Real, Vector{ComplexF64}}`
 
 **Returns**
 
@@ -6189,13 +6190,13 @@ Taper `eeg` with `taper`.
 eeg_taper!(eeg; channel, taper)
 ```
 
-Taper `eeg` with `taper`.
+Taper EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}``
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 <a id='NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_demean`** &mdash; *Method*.
@@ -6211,7 +6212,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 **Returns**
 
@@ -6231,7 +6232,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_normalize`** &mdash; *Method*.
@@ -6242,13 +6243,13 @@ Remove mean value (DC offset).
 eeg_normalize(eeg; channel, method)
 ```
 
-Normalize each `eeg` channel.
+Normalize EEG channel(s)
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `method::Symbol`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `method::Symbol`: method for normalization, see `s_normalize()` for details
 
 **Returns**
 
@@ -6263,13 +6264,13 @@ Normalize each `eeg` channel.
 eeg_normalize!(eeg; channel, method)
 ```
 
-Normalize each `eeg` channel.
+Normalize EEG channel(s)
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
-  * `method::Symbol`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `method::Symbol`: method for normalization, see `s_normalize()` for details
 
 <a id='NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_add_noise`** &mdash; *Method*.
@@ -6280,12 +6281,12 @@ Normalize each `eeg` channel.
 eeg_add_noise(eeg; channel)
 ```
 
-Add random noise to `eeg` channels.
+Add random noise to EEG channel(s)
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 **Returns**
 
@@ -6300,12 +6301,12 @@ Add random noise to `eeg` channels.
 eeg_add_noise!(eeg; channel)
 ```
 
-Add random noise to `eeg` channels.
+Add random noise to EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, process only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_filter`** &mdash; *Method*.
@@ -6316,12 +6317,12 @@ Add random noise to `eeg` channels.
 eeg_filter(eeg; <keyword arguments>)
 ```
 
-Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
+Apply filtering to EEG channel(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, filter only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -6341,13 +6342,13 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+  * `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  * `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
+  * `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for`:fir` filter
 
 **Returns**
 
@@ -6362,12 +6363,11 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
 eeg_filter!(eeg; <keyword arguments>)
 ```
 
-Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) channels. To filter other channel type, use `channel` parameter.
+Apply filtering to EEG channel(s).
 
 **Arguments**
 
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64=0`: if specified, filter only this channel
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -6387,13 +6387,13 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for FIR filter
+  * `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  * `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
+  * `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+  * `window::Union{Vector{<:Real}, Nothing} - window, required for`:fir` filter
 
 <a id='NeuroAnalyzer.eeg_pca-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_pca`** &mdash; *Method*.
@@ -6401,15 +6401,16 @@ Apply filtering to `eeg` channels. By default it filters all signal (EEG/MEG) ch
 
 
 ```julia
-eeg_pca(eeg; n)
+eeg_pca(eeg; channel, n)
 ```
 
-Calculate `n` first PCs for `eeg`.
+Perform principal component analysis (PCA).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `n::Int64`: number of PCs
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `n::Int64`: number of PCs to calculate
 
 **Returns**
 
@@ -6417,679 +6418,8 @@ Named tuple containing:
 
   * `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
   * `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
-  * `pc_m::PCA{Float64}`: PC mean
-
-<a id='NeuroAnalyzer.eeg_pca_reconstruct-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca_reconstruct-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_pca_reconstruct`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pca_reconstruct(eeg)
-```
-
-Reconstruct `eeg` signals using PCA components.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_pca_reconstruct!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pca_reconstruct!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_pca_reconstruct!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_pca_reconstruct!(eeg)
-```
-
-Reconstruct `eeg` signals using PCA components.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_ica-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_ica`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica(eeg; <keyword arguments>)
-```
-
-Calculate `n` first ICs for `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `n::Int64`: number of ICs
-  * `tol::Float64=1.0e-6`: tolerance for ICA
-  * `iter::Int64=100`: maximum number of iterations
-  * `f::Symbol=:tanh`: neg-entropy functor: :tanh, :gaus
-
-**Returns**
-
-Named tuple containing:
-
-  * `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
-  * `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-
-<a id='NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_average`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average(eeg)
-```
-
-Return the average signal of all `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_average!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average!(eeg)
-```
-
-Return the average signal of all `eeg` channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_average`** &mdash; *Method*.
-
-
-
-```julia
-eeg_average(eeg1, eeg2)
-```
-
-Return the average signal of all `eeg1` and `eeg2` channels.
-
-**Arguments**
-
-  * `eeg1::NeuroAnalyzer.EEG`
-  * `eeg2::NeuroAnalyzer.EEG`
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_ica_reconstruct-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica_reconstruct-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_ica_reconstruct`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica_reconstruct(eeg; ic)
-```
-
-Reconstruct `eeg` signals using removal of `ica` ICA components.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_ica_reconstruct!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ica_reconstruct!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_ica_reconstruct!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_ica_reconstruct!(eeg; ic)
-```
-
-Reconstruct `eeg` signals using removal of `ica` ICA components.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `ica::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
-
-<a id='NeuroAnalyzer.eeg_invert_polarity-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_invert_polarity-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_invert_polarity`** &mdash; *Method*.
-
-
-
-```julia
-eeg_invert_polarity(eeg; channel)
-```
-
-Invert polarity of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`: channel to invert
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_invert_polarity!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_invert_polarity!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_invert_polarity!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_invert_polarity!(eeg; channel)
-```
-
-Invert polarity of `channel` of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to invert
-
-<a id='NeuroAnalyzer.eeg_resample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_resample-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_resample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_resample(eeg; new_sr)
-```
-
-Resample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_resample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_resample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_resample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_resample!(eeg; new_sr)
-```
-
-Resample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-<a id='NeuroAnalyzer.eeg_upsample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_upsample-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_upsample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_upsample(eeg; new_sr)
-```
-
-Upsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_upsample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_upsample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_upsample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_upsample!(eeg; new_sr)
-```
-
-Upsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_downsample-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_downsample-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_downsample`** &mdash; *Method*.
-
-
-
-```julia
-eeg_downsample(eeg; new_sr)
-```
-
-Downsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_downsample!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_downsample!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_downsample!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_downsample!(eeg; new_sr)
-```
-
-Downsample all channels of `eeg` to `new_sr` sampling frequency.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `new_sr::Int64`: new sampling rate
-
-<a id='NeuroAnalyzer.eeg_wdenoise-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.eeg_wdenoise-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
-**`NeuroAnalyzer.eeg_wdenoise`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wdenoise(eeg; wt)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_wdenoise!-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet' href='#NeuroAnalyzer.eeg_wdenoise!-Union{Tuple{NeuroAnalyzer.EEG}, Tuple{T}} where T<:DiscreteWavelet'>#</a>
-**`NeuroAnalyzer.eeg_wdenoise!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wdenoise!(eeg; wt)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-
-<a id='NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_a`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_a(eeg; type, med)
-```
-
-Reference `eeg` to auricular channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels, A2 for right channels) or :c (contraletral, A1 for right channels, A2 for left channels)
-  * `med::Bool=false`: use median instead of mean
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_reference_a!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_a!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_a!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_a!(eeg; type, med)
-```
-
-Reference `eeg` to auricular channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol=:link`: :l (linked, average of A1 and A2), :i (ipsilateral, A1 for left channels) or :c (contraletral, A1 for right channels)
-  * `med::Bool=false`: use median instead of mean
-
-<a id='NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_m-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_m`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_m(eeg; type, med)
-```
-
-Reference `eeg` to mastoid channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
-  * `med::Bool=false`: use median instead of mean
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_reference_m!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_m!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_m!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_m!(eeg; type, med)
-```
-
-Reference `eeg` to mastoid channels.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `type::Symbol=:link`: :l (linked, average of M1 and M2), :i (ipsilateral, M1 for left channels) or :c (contraletral, M1 for right channels)
-  * `med::Bool=false`: use median instead of mean
-
-<a id='NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fftdenoise-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_fftdenoise`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fftdenoise(eeg; pad, threshold)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64=0`: pad signal with `pad` zeros
-  * `threshold::Int64=100`: PSD threshold for keeping frequency components
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_fftdenoise!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_fftdenoise!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_fftdenoise!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_fftdenoise!(eeg; pad, threshold)
-```
-
-Perform wavelet denoising.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64=0`: pad signal with `pad` zeros
-  * `threshold::Int64=100`: PSD threshold for keeping frequency components
-
-<a id='NeuroAnalyzer.eeg_reference_plap-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_plap-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_plap`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_plap(eeg; nn, weights)
-```
-
-Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `nn::Int64=4`: number of nearest electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
-  * `med::Bool=false`: use median instead of mean
-
-**Returns**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_reference_plap!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_reference_plap!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_reference_plap!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_reference_plap!(eeg; nn, weights)
-```
-
-Reference `eeg` using planar Laplacian (using `nn` adjacent electrodes).
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `nn::Int64=4`: number of nearest electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
-  * `med::Bool=false`: use median instead of mean
-
-<a id='NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_zero`** &mdash; *Method*.
-
-
-
-```julia
-eeg_zero(eeg)
-```
-
-Zero `eeg` channels at the beginning and at the end.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_zero!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_zero!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_zero!(eeg)
-```
-
-Zero `eeg` channel at the beginning and at the end.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_wbp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wbp-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_wbp`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wbp(eeg; pad, frq, ncyc, demean)
-```
-
-Perform wavelet bandpass filtering of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-  * `demean::Bool=true`: demean signal prior to analysis
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_wbp!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wbp!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_wbp!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_wbp!(eeg; pad, frq, ncyc, demean)
-```
-
-Perform wavelet bandpass filtering of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `ncyc::Int64=6`: number of cycles for Morlet wavelet
-  * `demean::Bool=true`: demean signal prior to analysis
-
-<a id='NeuroAnalyzer.eeg_cbp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cbp-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_cbp`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cbp(eeg; pad, frq, demean)
-```
-
-Perform convolution bandpass filtering of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Real`: filter frequency
-  * `demean::Bool=true`: demean signal prior to analysis
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_cbp!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_cbp!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_cbp!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_cbp!(eeg; pad, frq, ncyc, demean)
-```
-
-Perform convolution bandpass filtering of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64`: pad the `signal` with `pad` zeros
-  * `frq::Tuple{Real, Real}`: filter frequency
-  * `demean::Bool=true`: demean signal prior to analysis
-
-<a id='NeuroAnalyzer.eeg_denoise_wien-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_denoise_wien-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_denoise_wien`** &mdash; *Method*.
-
-
-
-```julia
-eeg_denoise_wien(eeg)
-```
-
-Perform Wiener deconvolution denoising of `eeg`.
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_denoise_wien!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_denoise_wien!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_denoise_wien!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_denoise_wien!(eeg)
-```
-
-Perform Wiener deconvolution denoising of `eeg`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_scale-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_scale-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_scale`** &mdash; *Method*.
-
-
-
-```julia
-eeg_scale(eeg; channel, factor)
-```
-
-Multiply `channel` signal by `factor`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`: channel to invert
-  * `factor::Real`: channel signal is multiplied by factor
-
-**Returns**
-
-  * `eeg_new::NeuroAnalyzer.EEG`
-
-<a id='NeuroAnalyzer.eeg_scale!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_scale!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_scale!`** &mdash; *Method*.
-
-
-
-```julia
-eeg_scale!(eeg; channel)
-```
-
-Multiply `channel` signal by `factor`.
-
-**Arguments**
-
-  * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`: channel to invert
-  * `factor::Real`: channel signal is multiplied by factor
+  * `pc_m::Vector{Float64}`: PC mean
+  * `pca::MultivariateStats.PCA{Float64}`: PC model
 
 
 <a id='EEG-analyze'></a>
@@ -7098,20 +6428,21 @@ Multiply `channel` signal by `factor`.
 
 ## EEG analyze
 
-<a id='NeuroAnalyzer.eeg_total_power' href='#NeuroAnalyzer.eeg_total_power'>#</a>
-**`NeuroAnalyzer.eeg_total_power`** &mdash; *Function*.
+<a id='NeuroAnalyzer.eeg_total_power-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_total_power-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_total_power`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_total_power(eeg, mt)
+eeg_total_power(eeg, channel, mt)
 ```
 
-Calculate total power of `eeg`.
+Calculate total power.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
 **Returns**
@@ -7124,14 +6455,15 @@ Calculate total power of `eeg`.
 
 
 ```julia
-eeg_band_power(eeg; f, mt)
+eeg_band_power(eeg; channel, f, mt)
 ```
 
-Calculate absolute band power between frequencies `f[1]` and `f[2]` of `eeg`.
+Calculate absolute band power between two frequencies
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -7145,14 +6477,15 @@ Calculate absolute band power between frequencies `f[1]` and `f[2]` of `eeg`.
 
 
 ```julia
-eeg_cov(eeg; norm)
+eeg_cov(eeg; channel, norm)
 ```
 
-Calculate covariance matrix for all EEG/MEG channels of `eeg`.
+Calculate covariance matrix.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=true`: normalize matrix
 
 **Returns**
@@ -7165,14 +6498,15 @@ Calculate covariance matrix for all EEG/MEG channels of `eeg`.
 
 
 ```julia
-eeg_cor(eeg; norm)
+eeg_cor(eeg; channel, norm)
 ```
 
-Calculate correlation coefficients between all channels of `eeg`.
+Calculate correlation coefficients.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=true`: normalize matrix
 
 **Returns**
@@ -7185,14 +6519,15 @@ Calculate correlation coefficients between all channels of `eeg`.
 
 
 ```julia
-eeg_xcov(eeg; lag, demean, norm)
+eeg_xcov(eeg; channel, lag, demean, norm)
 ```
 
-Calculate cross-covariance for all `eeg` channels.
+Calculate cross-covariance.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean signal prior to analysis
   * `norm::Bool=false`: normalize cross-covariance
@@ -7213,16 +6548,16 @@ Named tuple containing:
 eeg_xcov(eeg1, eeg2; channel1, channel2, epoch1, epoch2, lag, demean, norm)
 ```
 
-Calculate cross-covariance between `eeg1` and `eeg2`.
+Calculate cross-covariance between two EEG signals.
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean signal prior to analysis
   * `norm::Bool=false`: normalize cross-covariance
@@ -7240,14 +6575,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_psd(eeg; norm, mt)
+eeg_psd(eeg; channel, norm, mt)
 ```
 
-Calculate power spectrum density for each `eeg` channels.
+Calculate power spectrum density.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -7264,7 +6600,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_stationarity(eeg; window, method)
+eeg_stationarity(eeg; channel, window, method)
 ```
 
 Calculate stationarity.
@@ -7272,12 +6608,13 @@ Calculate stationarity.
 **Arguments**
 
   * `eeg:EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `window::Int64=10`: time window in samples
-  * `method::Symbol=:euclid`: stationarity method: :mean, :var, :euclid, :hilbert, :adf
+  * `method::Symbol=:euclid`: stationarity method: `:mean`, `:var`, `:euclid`, `:hilbert`, `:adf`
 
 **Returns**
 
-  * `stationarity::Union{Matrix{Float64}, Array{Float64, 3}}}`
+  * `stationarity::Array{Float64, 3}`
 
 <a id='NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mi-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_mi`** &mdash; *Method*.
@@ -7285,14 +6622,15 @@ Calculate stationarity.
 
 
 ```julia
-eeg_mi(eeg)
+eeg_mi(eeg; channel)
 ```
 
-Calculate mutual information between all channels of `eeg`.
+Calculate mutual information between EEG channels.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7304,15 +6642,19 @@ Calculate mutual information between all channels of `eeg`.
 
 
 ```julia
-eeg_mi(eeg1, eeg2)
+eeg_mi(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate mutual information between all channels of `eeg1` and `eeg2`.
+Calculate mutual information between two EEG channels.
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -7324,14 +6666,15 @@ Calculate mutual information between all channels of `eeg1` and `eeg2`.
 
 
 ```julia
-eeg_entropy(eeg)
+eeg_entropy(eeg; channel)
 ```
 
-Calculate entropy of all channels of `eeg`.
+Calculate entropy.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7347,14 +6690,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_negentropy(eeg)
+eeg_negentropy(eeg; channel)
 ```
 
-Calculate negentropy of all channels of `eeg`.
+Calculate negentropy.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7369,12 +6713,12 @@ Calculate negentropy of all channels of `eeg`.
 eeg_band(eeg, band)
 ```
 
-Return frequency limits for a `band` range.
+Return frequency limits for a `band`.
 
 **Arguments**
 
   * `eeg:EEG`
-  * `band::Symbol`: name of band range: :total, :delta, :theta, :alpha, :beta, :beta*high, :gamma, :gamma*1, :gamma*2, :gamma*lower, :gamma_higher. If lower or upper band frequency limit exceeds Nyquist frequency of `eeg`, than bound is truncated to `eeg` range.
+  * `band::Symbol`: band range name: `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
 
 **Returns**
 
@@ -7389,16 +6733,16 @@ Return frequency limits for a `band` range.
 eeg_tcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate coherence (mean over time) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
+Calculate coherence (mean over time) and MSC (magnitude-squared coherence).
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -7417,7 +6761,7 @@ Named tuple containing:
 eeg_freqs(eeg)
 ```
 
-Return vector of frequencies and Nyquist frequency for `eeg`.
+Return vector of frequencies and Nyquist frequency.
 
 **Arguments**
 
@@ -7430,21 +6774,21 @@ Named tuple containing:
   * `hz::Vector{Float64}`
   * `nyquist::Float64`
 
-<a id='NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
+<a id='NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_difference`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_difference(eeg1, eeg2; n, method)
+eeg_difference(eeg; channel, n, method)
 ```
 
-Calculate mean difference and its 95% CI between `eeg1` and `eeg2`.
+Calculate mean difference and its 95% CI between EEG channels.
 
 **Arguments**
 
-  * `eeg1::NeuroAnalyzer.EEG`
-  * `eeg2::NeuroAnalyzer.EEG`
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `n::Int64=3`: number of bootstraps
   * `method::Symbol=:absdiff`
 
@@ -7468,15 +6812,15 @@ Named tuple containing:
 eeg_picks(eeg; pick)
 ```
 
-Return `pick` of electrodes for `eeg` electrodes.
+Return set of channel indices corresponding with `pick` of electrodes
 
 **Arguments**
 
-  * `pick::Vector{Symbol}`
+  * `pick::Vector{Symbol}`: pick of electrodes, e.g. `:list`, `:central` (or `:c`), `:left` (or `:l`), `:right` (or `:r`), `:frontal` (or `:f`), `:temporal` (or `:t`), `:parietal` (or `:p`), `:occipital` (or `:o`); picks may be combined, e.g. `[:left, :frontal]`
 
 **Returns**
 
-  * `channels::Vector{Int64}`
+  * `channels::Vector{Int64}`: channel numbers
 
 <a id='NeuroAnalyzer.eeg_epochs_stats-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_stats-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_epochs_stats`** &mdash; *Method*.
@@ -7487,7 +6831,7 @@ Return `pick` of electrodes for `eeg` electrodes.
 eeg_epochs_stats(eeg)
 ```
 
-Calculate `eeg` epochs statistics.
+Calculate epochs statistics.
 
 **Arguments**
 
@@ -7514,14 +6858,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_spectrogram(eeg; norm, mt, st, demean)
+eeg_spectrogram(eeg; channel, norm, mt, st, demean)
 ```
 
-Return spectrogram of `eeg`.
+Calculate spectrogram.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=true`: normalize powers to dB
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `st::Bool=false`: if true use short time Fourier transform
@@ -7541,15 +6886,16 @@ Named tuple containing:
 
 
 ```julia
-eeg_spectrum(eeg; pad, h)
+eeg_spectrum(eeg; channel, pad, h)
 ```
 
-Calculate FFT, amplitudes, powers and phases for each channel of `eeg`. For `pad` > 0 channels are padded with 0s.
+Calculate FFT, amplitudes, powers and phases.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `pad::Int64=0`: pad with `pad` zeros
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `pad::Int64=0`: pad channels with `pad` zeros
   * `h::Bool=false`: use Hilbert transform for calculations instead of FFT
   * `norm::Bool=false`: normalize do dB
 
@@ -7571,7 +6917,7 @@ Named tuple containing:
 eeg_s2t(eeg; t)
 ```
 
-Convert time `t` in samples to seconds using `eeg` sampling rate.
+Convert time in samples to seconds.
 
 **Arguments**
 
@@ -7591,7 +6937,7 @@ Convert time `t` in samples to seconds using `eeg` sampling rate.
 eeg_t2s(eeg; t)
 ```
 
-Convert time `t` in seconds to samples using `eeg` sampling rate.
+Convert time in seconds to samples.
 
 **Arguments**
 
@@ -7611,7 +6957,7 @@ Convert time `t` in seconds to samples using `eeg` sampling rate.
 eeg_channels_stats(eeg)
 ```
 
-Calculate `eeg` channels statistics.
+Calculate channels statistics per epoch.
 
 **Arguments**
 
@@ -7638,7 +6984,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_snr(eeg)
+eeg_snr(eeg; channel)
 ```
 
 Calculate SNR of `eeg` channels.
@@ -7646,6 +6992,7 @@ Calculate SNR of `eeg` channels.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7657,14 +7004,15 @@ Calculate SNR of `eeg` channels.
 
 
 ```julia
-eeg_standardize(eeg)
+eeg_standardize(eeg; channel)
 ```
 
-Standardize `eeg` channels for ML.
+Standardize channels.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7677,14 +7025,15 @@ Standardize `eeg` channels for ML.
 
 
 ```julia
-eeg_standardize!(eeg)
+eeg_standardize!(eeg; channel)
 ```
 
-Standardize `eeg` channels for ML.
+Standardize channels.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7696,14 +7045,15 @@ Standardize `eeg` channels for ML.
 
 
 ```julia
-eeg_fconv(eeg, kernel, norm)
+eeg_fconv(eeg; channel, kernel, norm)
 ```
 
-Perform convolution of all `eeg` channels in the frequency domain using `kernel`.
+Perform convolution in the frequency domain.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
   * `norm::Bool=false`: normalize kernel
 
@@ -7717,7 +7067,7 @@ Perform convolution of all `eeg` channels in the frequency domain using `kernel`
 
 
 ```julia
-eeg_tconv(eeg; kernel)
+eeg_tconv(eeg; channel, kernel)
 ```
 
 Perform convolution in the time domain.
@@ -7725,6 +7075,7 @@ Perform convolution in the time domain.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel used for convolution
 
 **Returns**
@@ -7737,14 +7088,15 @@ Perform convolution in the time domain.
 
 
 ```julia
-eeg_dft(eeg)
+eeg_dft(eeg; channel)
 ```
 
-Returns FFT and DFT sample frequencies for a DFT for each `eeg` channels.
+Return FFT and DFT sample frequencies for a DFT.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -7753,22 +7105,23 @@ Named tuple containing:
   * `sfft::Array{ComplexF64, 3}`: FFT
   * `sf::Vector{Float64}`: sample frequencies
 
-<a id='NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_msci95`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_mean`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_msci95(eeg; n::=3, method=:normal)
+eeg_mean(eeg; channel, n, method)
 ```
 
-Calculates mean, std and 95% confidence interval for each `eeg` channels.
+Calculate mean, standard deviation and 95% confidence interval for EEG channels.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `n::Int64`: number of bootstraps
-  * `method::Symbol[:normal, :boot]`: use normal method or `n`-times boostrapping
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `n::Int64=3`: number of bootstraps
+  * `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
 **Returns**
 
@@ -7785,22 +7138,26 @@ Named tuple containing:
 
 
 ```julia
-eeg_mean(eeg1, eeg2)
+eeg_mean(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculates mean and 95% confidence interval for `eeg1` and `eeg2` channels.
+Calculates mean, standard deviation and 95% confidence interval for two EEG channels.
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2:NeuroAnalyzer.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
 Named tuple containing:
 
   * `s_m::Matrix{Float64}`: mean by epochs
-  * `s_s::Matrix{Float64}`: std by epochs
+  * `s_s::Matrix{Float64}`: standard deviation by epochs
   * `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
   * `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
 
@@ -7810,15 +7167,19 @@ Named tuple containing:
 
 
 ```julia
-eeg_difference(eeg1, eeg2; n=3, method=:absdiff)
+eeg_difference(eeg1, eeg2; channel1, channel2, epoch1, epoch2, n, method)
 ```
 
-Calculates mean difference and 95% confidence interval for `eeg1` and `eeg2`.
+Calculates mean difference and 95% confidence interval for two EEG channels.
 
 **Arguments**
 
   * `eeg1::Array{Float64, 3}`
   * `eeg2:Array{Float64, 3}`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
   * `n::Int64`: number of bootstraps
   * `method::Symbol[:absdiff, :diff2int]`
 
@@ -7838,13 +7199,14 @@ Named tuple containing:
 
 
 
-eeg_acov(eeg; lag=1, demean=false, norm=false)
+eeg_acov(eeg; channel, lag=1, demean=false, norm=false)
 
-Calculate autocovariance of each `eeg` channels.
+Calculate autocovariance.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `lag::Int64`: lags range is `-lag:lag`
   * `demean::Bool`: demean eeg prior to analysis
   * `norm::Bool`: normalize autocovariance
@@ -7862,14 +7224,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_tenv(eeg; d)
+eeg_tenv(eeg; channel, d)
 ```
 
-Calculate temporal envelope of `eeg`.
+Calculate temporal envelope.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
@@ -7885,14 +7248,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_tenv_mean(eeg; dims, d)
+eeg_tenv_mean(eeg; channel, dims, d)
 ```
 
-Calculate temporal envelope of `eeg`: mean and 95% CI.
+Calculate temporal envelope: mean and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -7911,7 +7275,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_tenv_median(eeg; dims, d)
+eeg_tenv_median(eeg; channel, dims, d)
 ```
 
 Calculate temporal envelope of `eeg`: median and 95% CI.
@@ -7919,6 +7283,7 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -7937,14 +7302,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_penv(eeg; d)
+eeg_penv(eeg; channel, d)
 ```
 
-Calculate power (in dB) envelope of `eeg`.
+Calculate power (in dB) envelope.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -7961,14 +7327,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_penv_mean(eeg; dims, d)
+eeg_penv_mean(eeg; channel, dims, d)
 ```
 
-Calculate power (in dB) envelope of `eeg`: mean and 95% CI.
+Calculate power (in dB) envelope: mean and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -7988,14 +7355,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_penv_median(eeg; dims, d)
+eeg_penv_median(eeg; channel, dims, d)
 ```
 
-Calculate power (in dB) envelope of `eeg`: median and 95% CI.
+Calculate power (in dB) envelope: median and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
   * `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -8015,14 +7383,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv(eeg; d, mt, t)
+eeg_senv(eeg; channel, d, mt, t)
 ```
 
-Calculate spectral envelope of `eeg`.
+Calculate spectral envelope.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
   * `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -8040,14 +7409,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_mean(eeg; dims, d, mt, t)
+eeg_senv_mean(eeg; channel, dims, d, mt, t)
 ```
 
-Calculate spectral envelope of `eeg`: mean and 95% CI.
+Calculate spectral envelope: mean and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -8068,14 +7438,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_senv_median(eeg; dims, d, mt)
+eeg_senv_median(eeg; channel, dims, d, mt)
 ```
 
-Calculate spectral envelope of `eeg`: median and 95% CI.
+Calculate spectral envelope: median and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
   * `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -8099,16 +7470,16 @@ Named tuple containing:
 eeg_ispc(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate ISPC (Inter-Site-Phase Clustering) between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate ISPC (Inter-Site-Phase Clustering).
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -8130,12 +7501,12 @@ Named tuple containing:
 eeg_itpc(eeg; channel, t, w)
 ```
 
-Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of `channel` of `eeg`.
+Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs/trials.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Int64`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `t::Int64`: time point (sample number) at which ITPC is calculated
   * `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -8143,10 +7514,10 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at time `t` over epochs/trials of 
 
 Named tuple containing:
 
-  * `itpc::Float64`: ITPC or wITPC value
-  * `itpcz::Float64`: Rayleigh's ITPC Z value
-  * `itpc_angle::Float64`: ITPC angle
-  * `phase_diff::Array{Float64, 3}`: phase difference (channel2 - channel1)
+  * `itpc::Vector{Float64}`: ITPC or wITPC value
+  * `itpcz::Vector{Float64}`: Rayleigh's ITPC Z value
+  * `itpc_angle::Vector{Float64}`: ITPC angle
+  * `itpc_phases::Array{Float64, 2}`: phase difference (channel2 - channel1)
 
 <a id='NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_pli-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_pli`** &mdash; *Method*.
@@ -8163,10 +7534,10 @@ Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -8184,14 +7555,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_pli(eeg)
+eeg_pli(eeg; channel)
 ```
 
-Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
+Calculate PLIs (Phase Lag Index).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -8203,14 +7575,15 @@ Calculate PLIs (Phase Lag Index) between all channels of `eeg`.
 
 
 ```julia
-eeg_ispc(eeg)
+eeg_ispc(eeg; channel)
 ```
 
-Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
+Calculate ISPCs (Inter-Site-Phase Clustering).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -8225,7 +7598,7 @@ Calculate ISPCs (Inter-Site-Phase Clustering) between all channels of `eeg`.
 eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channel2` of `epoch2` of `eeg`.
+Calculate amplitude envelope correlation.
 
 **Arguments**
 
@@ -8233,15 +7606,15 @@ Calculate amplitude envelope correlation between `channel1`/`epoch1` and `channe
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
 Named tuple containing:
 
-  * `aec::Float64`: power correlation value
-  * `aec_p::Float64`: power correlation p-value
+  * `aec::Vector{Float64}`: power correlation value
+  * `aec_p::Vector{Float64}`: power correlation p-value
 
 <a id='NeuroAnalyzer.eeg_ged-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_ged-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_ged`** &mdash; *Method*.
@@ -8249,15 +7622,19 @@ Named tuple containing:
 
 
 ```julia
-eeg_ged(eeg1, eeg2)
+eeg_ged(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Perform generalized eigendecomposition between `eeg1` and `eeg2`.
+Perform generalized eigendecomposition..
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`: signal data to be analyzed
   * `eeg2::NeuroAnalyzer.EEG`: original signal data
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -8271,7 +7648,7 @@ Perform generalized eigendecomposition between `eeg1` and `eeg2`.
 
 
 ```julia
-eeg_frqinst(eeg)
+eeg_frqinst(eeg; channel)
 ```
 
 Calculate instantaneous frequency of `eeg`.
@@ -8279,6 +7656,7 @@ Calculate instantaneous frequency of `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -8293,7 +7671,7 @@ Calculate instantaneous frequency of `eeg`.
 eeg_itpc_s(eeg; <keyword arguments>)
 ```
 
-Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering) for `channel` of `eeg`.
+Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 
 **Arguments**
 
@@ -8318,7 +7696,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_wspectrogram(eeg; pad, norm, frq_lim, frq_n, frq, ncyc, demean)
+eeg_wspectrogram(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc, demean)
 ```
 
 Return spectrogram of `eeg` using Morlet wavelet convolution.
@@ -8326,6 +7704,7 @@ Return spectrogram of `eeg` using Morlet wavelet convolution.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool`=true: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -8348,7 +7727,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_tkeo(eeg)
+eeg_tkeo(eeg; channel)
 ```
 
 Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
@@ -8356,6 +7735,7 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -8367,14 +7747,15 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
 
 ```julia
-eeg_wspectrum(eeg; pad, norm, frq_lim, frq_n, frq, ncyc)
+eeg_wspectrum(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc)
 ```
 
-Return power spectrogrum of `eeg` using Morlet wavelet convolution.
+Return power spectrogram using Morlet wavelet convolution.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `pad::Int64`: pad the `signal` with `pad` zeros
   * `norm::Bool`=true: normalize powers to dB
   * `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
@@ -8398,16 +7779,16 @@ Named tuple containing:
 eeg_fcoherence(eeg1, eeg2; channel1, channel2, epoch1, epoch2, frq_lim)
 ```
 
-Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence) between `eeg1` and `eeg2`.
+Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence).
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0`: default use all epochs
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
   * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 **Returns**
@@ -8424,14 +7805,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_vartest(eeg)
+eeg_vartest(eeg; channel)
 ```
 
-Calculate variance F-test for all channels of `eeg`.
+Calculate variance F-test.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 
 **Returns**
 
@@ -8446,15 +7828,19 @@ Named tuple containing:
 
 
 ```julia
-eeg_vartest(eeg1, eeg2)
+eeg_vartest(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate variance F-test for all channels of `eeg1` and `eeg2`.
+Calculate variance F-test.
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -8469,7 +7855,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_band_mpower(eeg; f, mt)
+eeg_band_mpower(eeg; channel, f, mt)
 ```
 
 Calculate mean and maximum band power and its frequency.
@@ -8477,6 +7863,7 @@ Calculate mean and maximum band power and its frequency.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `f::Tuple{Real, Real}`: lower and upper frequency bounds
   * `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -8494,14 +7881,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_rel_psd(eeg; norm, mt, f)
+eeg_rel_psd(eeg; channel, norm, mt, f)
 ```
 
-Calculate relative power spectrum density for each `eeg` channels.
+Calculate relative power spectrum density.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
   * `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
@@ -8519,7 +7907,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_fbsplit(eeg; order)
+eeg_fbsplit(eeg; channel, order)
 ```
 
 Split EEG signal into frequency bands.
@@ -8527,6 +7915,7 @@ Split EEG signal into frequency bands.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `order::Int64=8`: bandpass filter order
 
 **Returns**
@@ -8543,17 +7932,19 @@ Named tuple containing:
 
 
 ```julia
-eeg_chdiff(eeg1, eeg2; channel1, channel2)
+eeg_chdiff(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
+Calculate difference between EEG1 and EEG2 channels.
 
 **Arguments**
 
   * `eeg1::NeuroAnalyzer.EEG`
   * `eeg2::NeuroAnalyzer.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
 
 **Returns**
 
@@ -8565,14 +7956,15 @@ Calculate difference between `channel1` of `eeg1` and `channel2` of `eeg2`.
 
 
 ```julia
-eeg_cps(eeg; norm)
+eeg_cps(eeg; channel, norm)
 ```
 
-Calculate cross power spectrum between all channels of `eeg`.
+Calculate cross power spectrum.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `norm::Bool=true`: normalize do dB
 
 **Returns**
@@ -8592,15 +7984,15 @@ Named tuple containing:
 eeg_cps(eeg1, eeg2; channel1, channel2, epoch1, epoch2, norm)
 ```
 
-Calculate cross power spectrum between `eeg` channels.
+Calculate cross power spectrum.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel1::Int64`
-  * `channel2::Int64`
-  * `epoch1::Int64`
-  * `epoch2::Int64`
+  * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
   * `norm::Bool=true`: normalize do dB
 
 **Returns**
@@ -8620,15 +8012,15 @@ Named tuple containing:
 eeg_phdiff(eeg; channel, pad, h)
 ```
 
-Calculate phase difference between each `eeg` channel and mean phase of `channel`.
+Calculate phase difference between EEG channels and mean phase of reference `channel`.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
-  * `avg::Symbol=:phase`: method of averaging: `:phase` or `:signal`; for :signal `channel` signals are averaged prior to phase calculation; for :phase phase is calculated for each reference channel separately and then averaged
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of reference channels, default is all EEG/MEG channels except the analyzed one
+  * `avg::Symbol=:phase`: method of averaging: `:phase` or `:signal`; for `:signal` `channel` signals are averaged prior to phase calculation; for `:phase` phase is calculated for each reference channel separately and then averaged
   * `pad::Int64=0`: pad signals with 0s
-  * `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
+  * `h::Bool=false`: use FFT or Hilbert transformation
 
 **Returns**
 
@@ -8648,7 +8040,7 @@ Calculate amplitude difference between each `eeg` channel and mean amplitude of 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: reference channels, default is all channels except the analyzed one
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of reference channels, default is all EEG/MEG channels except the analyzed one
 
 **Returns**
 
@@ -8660,16 +8052,17 @@ Calculate amplitude difference between each `eeg` channel and mean amplitude of 
 
 
 ```julia
-eeg_dwt(eeg; wt, type, l)
+eeg_dwt(eeg; channel, wt, type, l)
 ```
 
-Perform discrete wavelet transformation (DWT) of each `eeg` channel.
+Perform discrete wavelet transformation (DWT).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-  * `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+  * `type::Symbol`: transformation type: Stationary Wavelet Transforms (`:sdwt`) or Autocorrelation Wavelet Transforms (`:acdwt`)
   * `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
 
 **Returns**
@@ -8682,14 +8075,15 @@ Perform discrete wavelet transformation (DWT) of each `eeg` channel.
 
 
 ```julia
-eeg_cwt(eeg; wt)
+eeg_cwt(eeg; channel, wt)
 ```
 
-Perform continuous wavelet transformation (CWT) of each `eeg` channel.
+Perform continuous wavelet transformation (CWT).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 **Returns**
@@ -8702,7 +8096,7 @@ Perform continuous wavelet transformation (CWT) of each `eeg` channel.
 
 
 ```julia
-eeg_psdslope(eeg; f, norm, mt)
+eeg_psdslope(eeg; channel, f, norm, mt)
 ```
 
 Calculate PSD linear fit and slope.
@@ -8710,6 +8104,7 @@ Calculate PSD linear fit and slope.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `f::Union{Real, Real}=(0, 0)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
   * `norm::Bool=false`: normalize do dB
   * `mt::Bool=false`: if true use multi-tapered periodogram
@@ -8728,7 +8123,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_henv(eeg; d)
+eeg_henv(eeg; channel, d)
 ```
 
 Calculate Hilbert spectrum amplitude envelope of `eeg`.
@@ -8736,6 +8131,7 @@ Calculate Hilbert spectrum amplitude envelope of `eeg`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 **Returns**
@@ -8751,14 +8147,15 @@ Named tuple containing:
 
 
 ```julia
-eeg_henv_mean(eeg; dims, d)
+eeg_henv_mean(eeg; channel, dims, d)
 ```
 
-Calculate Hilbert spectrum amplitude envelope of `eeg`: mean and 95% CI.
+Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -8777,7 +8174,7 @@ Named tuple containing:
 
 
 ```julia
-eeg_henv_median(eeg; dims, d)
+eeg_henv_median(eeg; channel, dims, d)
 ```
 
 Calculate Hilbert spectrum amplitude envelope of `eeg`: median and 95% CI.
@@ -8785,6 +8182,7 @@ Calculate Hilbert spectrum amplitude envelope of `eeg`: median and 95% CI.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
   * `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -8920,7 +8318,7 @@ Plot signal.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
   * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
   * `xlabel::String="default"`: x-axis label, default is Time [s]
   * `ylabel::String="default"`: y-axis label, default is no label
@@ -9377,7 +8775,7 @@ Preview of electrode locations.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
   * `labels::Bool=true`: plot electrode labels
   * `head::Bool`=true: plot head
@@ -9541,7 +8939,7 @@ Plot weights at electrode positions. It uses polar :loc*radius and :loc*theta lo
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `weights::Matrix{<:Real}`: matrix of weights
   * `labels::Bool=false`: plot electrode labels
   * `head_labels::Bool=true`: plot head labels
@@ -9569,7 +8967,7 @@ Plot weights at electrode positions. It uses polar :loc*radius and :loc*theta lo
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `connections::Matrix{<:Real}`: matrix of connections weights
   * `threshold::Real`: plot all connection above threshold
   * `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -9700,7 +9098,7 @@ Topographical plot.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
   * `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
   * `mono::Bool=false`: use color or grey palette
@@ -9781,6 +9179,21 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 **Returns**
 
   * `pc::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_empty-Tuple{}' href='#NeuroAnalyzer.plot_empty-Tuple{}'>#</a>
+**`NeuroAnalyzer.plot_empty`** &mdash; *Method*.
+
+
+
+```julia
+plot_empty()
+```
+
+Return an empty plot, useful for filling matrices of plots. 
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
 
 
 <a id='Neurostimulation'></a>
