@@ -1,5 +1,5 @@
 """
-    eeg_import(file_name; clean_labels)
+    eeg_import(file_name; detect_type)
 
 Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 - EDF/EDF+
@@ -11,30 +11,30 @@ This is a meta-function that triggers appropriate `eeg_import_*()` function. Fil
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_import(file_name::String; clean_labels::Bool=true)
+function eeg_import(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    splitext(file_name)[2] == ".edf" && return eeg_import_edf(file_name, clean_labels=clean_labels)
-    splitext(file_name)[2] == ".bdf" && return eeg_import_bdf(file_name, clean_labels=clean_labels)
-    splitext(file_name)[2] == ".vhdr" && return eeg_import_bv(file_name, clean_labels=clean_labels)
+    splitext(file_name)[2] == ".edf" && return eeg_import_edf(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".bdf" && return eeg_import_bdf(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".vhdr" && return eeg_import_bv(file_name, detect_type=detect_type)
 end
 
 """
-    eeg_import_edf(file_name; clean_labels)
+    eeg_import_edf(file_name; detect_type)
 
 Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
@@ -52,7 +52,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
 3. https://www.edfplus.info/specs/
 """
-function eeg_import_edf(file_name::String; clean_labels::Bool=true)
+function eeg_import_edf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -159,10 +159,13 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    clean_labels == true && (labels = _clean_labels(labels))
-    channel_type = _set_channel_types(labels)
-    sp = _sort_channels(copy(channel_type))
-    @show channel_type
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
 
     if eeg_filetype == "EDF"
         has_markers = false
@@ -211,13 +214,13 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
     close(fid)
 
     if has_markers
-        eeg_signals = eeg_signals[1:(end - 1), :, :]
-        deleteat!(labels, channel_n)
-        deleteat!(channel_type, channel_n)
-        deleteat!(transducers, channel_n)
-        deleteat!(physical_dimension, channel_n)
-        deleteat!(prefiltering, channel_n)
-        deleteat!(gain, channel_n)
+        deleteat!(channel_order, vsearch(markers_channel, channel_order))
+        eeg_signals = eeg_signals[setdiff(1:channel_n, markers_channel), :, :]
+        deleteat!(labels, markers_channel)
+        deleteat!(transducers, markers_channel)
+        deleteat!(physical_dimension, markers_channel)
+        deleteat!(prefiltering, markers_channel)
+        deleteat!(gain, markers_channel)
         channel_n -= 1
         eeg_markers = _m2df(markers)
         eeg_markers[!, :start] = t2s.(eeg_markers[!, :start], sampling_rate)
@@ -244,7 +247,7 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                       :recording_date => recording_date,
                       :recording_time => recording_time,
                       :channel_n => channel_n,
-                      :channel_type => channel_type[sp],
+                      :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => false,
                       :history => String[],
@@ -254,12 +257,12 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels[sp],
-                      :transducers => transducers[sp],
-                      :physical_dimension => physical_dimension[sp],
-                      :prefiltering => prefiltering[sp],
+                      :labels => labels[channel_order],
+                      :transducers => transducers[channel_order],
+                      :physical_dimension => physical_dimension[channel_order],
+                      :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
-                      :gain => gain[sp],
+                      :gain => gain[channel_order],
                       :note => "",
                       :markers => has_markers)
 
@@ -276,7 +279,7 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1048,14 +1051,14 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
  end
 
 """
-    eeg_import_bdf(file_name; clean_labels)
+    eeg_import_bdf(file_name; detect_type)
 
 Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
@@ -1071,7 +1074,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
 
 https://www.biosemi.com/faq/file_format.htm
 """
-function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
+function eeg_import_bdf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -1178,9 +1181,13 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    clean_labels == true && (labels = _clean_labels(labels))
-    channel_type = _set_channel_types(labels)
-    sp = _sort_channels(copy(channel_type))
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
 
     fid = open(file_name)
@@ -1228,12 +1235,14 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
     close(fid)
 
     if has_markers
-        eeg_signals = eeg_signals[1:(end - 1), :, :]
-        deleteat!(labels, channel_n)
-        deleteat!(transducers, channel_n)
-        deleteat!(physical_dimension, channel_n)
-        deleteat!(prefiltering, channel_n)
-        deleteat!(gain, channel_n)
+        deleteat!(channel_order, vsearch(markers_channel, channel_order))
+        eeg_signals = eeg_signals[setdiff(1:channel_n, markers_channel), :, :]
+        deleteat!(channel_type, markers_channel)
+        deleteat!(labels, markers_channel)
+        deleteat!(transducers, markers_channel)
+        deleteat!(physical_dimension, markers_channel)
+        deleteat!(prefiltering, markers_channel)
+        deleteat!(gain, markers_channel)
         channel_n -= 1
         eeg_markers = _m2df(markers)
         # convert markers time to samples
@@ -1271,12 +1280,12 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels[sp],
-                      :transducers => transducers[sp],
-                      :physical_dimension => physical_dimension[sp],
-                      :prefiltering => prefiltering[sp],
+                      :labels => labels[channel_order],
+                      :transducers => transducers[channel_order],
+                      :physical_dimension => physical_dimension[channel_order],
+                      :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
-                      :gain => gain[sp],
+                      :gain => gain[channel_order],
                       :note => "",
                       :markers => has_markers)
 
@@ -1293,20 +1302,20 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
 
 """
-    eeg_import_digitrack(file_name; clean_labels)
+    eeg_import_digitrack(file_name; detect_type)
 
 Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 
 # Arguments
 
 - `file_name::String`: name of the file to load
-- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
@@ -1314,7 +1323,7 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
 
 # Notes
 """
-function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
+function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
  
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -1360,9 +1369,13 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
     physical_dimension = repeat([""], channel_n)
     gain = repeat([-1.0], channel_n)
     
-    clean_labels == true && (labels = _clean_labels(labels))
-    channel_type = _set_channel_types(labels)
-    sp = _sort_channels(copy(channel_type))
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
 
     data = readlines(fid)
@@ -1406,12 +1419,12 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels[sp],
-                      :transducers => transducers[sp],
-                      :physical_dimension => physical_dimension[sp],
-                      :prefiltering => prefiltering[sp],
+                      :labels => labels[channel_order],
+                      :transducers => transducers[channel_order],
+                      :physical_dimension => physical_dimension[channel_order],
+                      :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
-                      :gain => gain[sp],
+                      :gain => gain[channel_order],
                       :note => "",
                       :markers => has_markers)
 
@@ -1428,26 +1441,26 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
 
 """
-    eeg_import_bv(file_name; clean_labels)
+    eeg_import_bv(file_name; detect_type)
 
 Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
 
 # Arguments
 
 - `file_name::String`: name of the file to load, should point to .vhdr file.
-- `clean_labels::Bool=true`: only keep channel names in channel labels, i.e. remove EEG prefix
+- `detect_type::Bool=true`: detect channel type based on its label
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_import_bv(file_name::String; clean_labels::Bool=true)
+function eeg_import_bv(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     splitext(file_name)[2] == ".vhdr" || throw(ArgumentError("file_name must specify .VHDR file."))
@@ -1495,16 +1508,34 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && @info "Software filters are not supported yet."
     end
 
+    patient = ""
+    recording = ""
+    recording_date = ""
+    recording_time = ""
+    transducers = repeat([""], channel_n)
+    physical_dimension = repeat([""], channel_n)
+    gain = repeat([1.0], channel_n)
+    prefiltering = repeat([""], channel_n)
+
     labels = repeat([""], channel_n)
     for idx in 1:channel_n
+        tmp = split(split(vhdr[idx + channels_idx], '=')[2], ',')
+        # channel label
         labels[idx] = replace(split(split(vhdr[idx + channels_idx], '=')[2], ',')[1], "\1" => ",")
-        # split(split(vhdr[idx + channels_idx], '=')[2], ',')[2] # reference channel name
-        # split(split(vhdr[idx + channels_idx], '=')[2], ',')[3] # resolution in units
-        # split(split(vhdr[idx + channels_idx], '=')[2], ',')[4] # units name, e.g. μV
+        # reference channel name
+        # split(split(vhdr[idx + channels_idx], '=')[2], ',')[2]
+        # resolution in units
+        length(tmp) >= 3 && (gain[idx] = parse(Float64, split(split(vhdr[idx + channels_idx], '=')[2], ',')[3]))
+        # units name, e.g. μV
+        length(tmp) >= 4 && (physical_dimension[idx] = split(split(vhdr[idx + channels_idx], '=')[2], ',')[4])
     end
-    clean_labels == true && (labels = _clean_labels(labels))
-    channel_type = _set_channel_types(labels)
-    sp = _sort_channels(copy(channel_type))
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
 
     # read locs
     loc_theta = zeros(channel_n)
@@ -1621,16 +1652,6 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
         @error "ASCII format is not supported yet."
     end
 
-    patient = ""
-    recording = ""
-    recording_date = ""
-    recording_time = ""
-
-    transducers = repeat([""], channel_n)
-    physical_dimension = repeat([""], channel_n)
-    gain = repeat([1.0], channel_n)
-    prefiltering = repeat([""], channel_n)
-
     eeg_duration_samples = size(eeg_signals, 2)
     eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate
     eeg_time = collect(0:(1 / sampling_rate):eeg_duration_seconds)
@@ -1649,7 +1670,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :recording_date => recording_date,
                       :recording_time => recording_time,
                       :channel_n => channel_n,
-                      :channel_type => channel_type[sp],
+                      :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => channel_locations,
                       :history => String[],
@@ -1659,12 +1680,12 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels[sp],
-                      :transducers => transducers[sp],
-                      :physical_dimension => physical_dimension[sp],
-                      :prefiltering => prefiltering[sp],
+                      :labels => labels[channel_order],
+                      :transducers => transducers[channel_order],
+                      :physical_dimension => physical_dimension[channel_order],
+                      :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
-                      :gain => gain[sp],
+                      :gain => gain[channel_order],
                       :note => "",
                       :markers => has_markers)
 
@@ -1694,7 +1715,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                              :loc_phi_sph => loc_phi_sph)
     end
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end

@@ -43,7 +43,7 @@ function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     end
 
     eeg_new.eeg_signals[channels, :, :] = signal
-    eeg_new.eeg_header[:reference] = "channel: $channel_orig"
+    eeg_new.eeg_header[:reference] = "channel: $channel"
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_reference_ch(EEG, channel=$channel, med=$med")
 

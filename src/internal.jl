@@ -419,10 +419,10 @@ function _clean_labels(labels::Vector{String})
 end
 
 function _has_markers(channel_type::Vector{String})
-    if "markers" in channel_type
+    if "mrk" in channel_type
         markers = true
         for channel_idx in 1:length(channel_type)
-            channel_type[channel_idx] == "markers" && (markers_channel = channel_idx)
+            channel_type[channel_idx] == "mrk" && (markers_channel = channel_idx)
         end
     else
         markers = false
@@ -435,7 +435,7 @@ function _set_channel_types(labels::Vector{String})
     eeg_channels = ["af3", "af4", "af7", "af8", "afz", "c1", "c2", "c3", "c4", "c5", "c6", "cp1", "cp2", "cp3", "cp4", "cp5", "cp6", "cpz", "cz", "f1", "f10", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fc1", "fc2", "fc3", "fc4", "fc5", "fc6", "fcz", "fp1", "fp2", "fpz", "ft10", "ft7", "ft8", "ft9", "fz", "nz", "o1", "o2", "oz", "p1", "p10", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "po3", "po4", "po7", "po8", "poz", "pz", "t10", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "tp10", "tp7", "tp8", "tp9"]
     ref_channels = ["a1", "a2", "m1", "m2", "pg1", "pg2"]
     eog_channel = ["e", "e1", "e2"]
-    channel_type = repeat(["unknown"], length(labels))
+    channel_type = repeat(["???"], length(labels))
     for idx in 1:length(labels)
         in(lowercase(labels[idx]), eeg_channels) && (channel_type[idx] = "eeg")
         for idx2 in 1:length(eeg_channels)
@@ -457,19 +457,18 @@ function _set_channel_types(labels::Vector{String})
             occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eog")
         end
         occursin("emg", lowercase(labels[idx])) && (channel_type[idx] = "emg")
-        occursin("temp", lowercase(labels[idx])) && (channel_type[idx] = "other")
         in(lowercase(labels[idx]), ref_channels) && (channel_type[idx] = "ref")
         for idx2 in 1:length(ref_channels)
             occursin(ref_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "ref")
         end
-        occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("marker", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("markers", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("events", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("marker", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("markers", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("events", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
     end
     return channel_type
 end

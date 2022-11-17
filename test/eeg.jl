@@ -3,20 +3,17 @@ using Test
 using Wavelets
 
 edf = eeg_import_edf("eeg-test-edf.edf")
+
 ecg = eeg_extract_channel(edf, channel=24)
-eeg_delete_channel!(edf, channel=24)
 eog2 = eeg_extract_channel(edf, channel=23)
-eeg_delete_channel!(edf, channel=23)
 eog1 = eeg_extract_channel(edf, channel=22)
-eeg_delete_channel!(edf, channel=22)
+eeg_delete_channel!(edf, channel=22:24)
 
 edf1 = eeg_reference_a(edf)
 @test size(edf1.eeg_signals) == (21, 309760, 1)
-
-a2 = eeg_extract_channel(edf, channel=18)
-eeg_delete_channel!(edf, channel=18)
-a1 = eeg_extract_channel(edf, channel=17)
-eeg_delete_channel!(edf, channel=17)
+a1 = eeg_extract_channel(edf, channel=20)
+a2 = eeg_extract_channel(edf, channel=21)
+eeg_delete_channel!(edf, channel=[20, 21])
 
 edf1 = eeg_delete_channel(edf, channel=1)
 @test edf1.eeg_header[:channel_n] == 18
@@ -245,7 +242,7 @@ v = eeg_channels_stats(edf)
 @test length(v) == 10
 
 edf = eeg_import_edf("eeg-test-edf.edf")
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
+eeg_delete_channel!(edf, channel=20:24)
 eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 
 v = eeg_snr(edf)

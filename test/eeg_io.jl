@@ -22,10 +22,10 @@ eog2 = eeg_extract_channel(edf, channel=23)
 eeg_delete_channel!(edf, channel=23)
 eog1 = eeg_extract_channel(edf, channel=22)
 eeg_delete_channel!(edf, channel=22)
-a2 = eeg_extract_channel(edf, channel=18)
-eeg_delete_channel!(edf, channel=18)
-a1 = eeg_extract_channel(edf, channel=17)
-eeg_delete_channel!(edf, channel=17)
+a2 = eeg_extract_channel(edf, channel=21)
+eeg_delete_channel!(edf, channel=21)
+a1 = eeg_extract_channel(edf, channel=20)
+eeg_delete_channel!(edf, channel=20)
 
 @test edf.eeg_header[:eeg_filetype] == "EDF"
 @test edf.eeg_header[:channel_n] == 19
