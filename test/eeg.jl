@@ -164,12 +164,13 @@ e10 = eeg_epochs(edf, epoch_len=2560)
 s_conv = eeg_fconv(e10, kernel=[1, 2, 3, 4])
 @test size(s_conv) == (19, 2560, 121)
 
-p, v, m = eeg_pca(edf, n=2)
+p, v, m, pca = eeg_pca(edf, n=2)
 @test size(p) == (2, 309760, 1)
 @test size(v) == (2, 1)
 e1 = eeg_add_component(edf, c=:pc, v=p)
-eeg_add_component!(e1, c=:pc_m, v=m)
+eeg_add_component!(e1, c=:pca, v=pca)
 e2 = eeg_pca_reconstruct(e1)
+e2 = eeg_pca_reconstruct(edf, p, pca)
 @test size(e2.eeg_signals) == (19, 309760, 1)
 
 e = eeg_edit_header(edf, field=:patient, value="unknown")
@@ -312,7 +313,7 @@ edf1 = eeg_replace_channel(edf1, channel=1, signal=new_channel);
 edf1 = eeg_replace_channel(edf1, channel=2, signal=new_channel);
 edf1 = eeg_replace_channel(edf1, channel=5, signal=new_channel);
 @test edf1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(edf1), eeg_epoch_n(edf1))
-edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5])
+edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5], epoch=1)
 @test edf2.eeg_signals[1, :, :] != zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
 
 @test length(eeg_band_mpower(edf, f=(1,4))) == 3

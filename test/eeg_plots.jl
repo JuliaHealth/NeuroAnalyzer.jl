@@ -89,7 +89,7 @@ p = eeg_plot_stats(e10, stats, plot_by=:epochs, channel=1:10, epoch=1:10, type=:
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p1 = eeg_plot(e10, epoch=1, xlabel="")
-p2 = eeg_plot(e10, epoch=2)
+p2 = plot_empty()
 pp = [p1, p2]
 l = (2, 1)
 p = eeg_plot_compose(pp, layout=l)

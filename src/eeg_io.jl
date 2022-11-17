@@ -161,6 +161,9 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
 
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
+    sp = _sort_channels(copy(channel_type))
+    @show channel_type
+
     if eeg_filetype == "EDF"
         has_markers = false
         eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
@@ -213,12 +216,7 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
         deleteat!(channel_type, channel_n)
         deleteat!(transducers, channel_n)
         deleteat!(physical_dimension, channel_n)
-        deleteat!(physical_minimum, channel_n)
-        deleteat!(physical_maximum, channel_n)
-        deleteat!(digital_minimum, channel_n)
-        deleteat!(digital_maximum, channel_n)
         deleteat!(prefiltering, channel_n)
-        deleteat!(samples_per_datarecord, channel_n)
         deleteat!(gain, channel_n)
         channel_n -= 1
         eeg_markers = _m2df(markers)
@@ -246,7 +244,7 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                       :recording_date => recording_date,
                       :recording_time => recording_time,
                       :channel_n => channel_n,
-                      :channel_type => channel_type,
+                      :channel_type => channel_type[sp],
                       :reference => "",
                       :channel_locations => false,
                       :history => String[],
@@ -256,17 +254,12 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels,
-                      :transducers => transducers,
-                      :physical_dimension => physical_dimension,
-                      :physical_minimum => physical_minimum,
-                      :physical_maximum => physical_maximum,
-                      :digital_minimum => digital_minimum,
-                      :digital_maximum => digital_maximum,
-                      :prefiltering => prefiltering,
-                      :samples_per_datarecord => samples_per_datarecord,
+                      :labels => labels[sp],
+                      :transducers => transducers[sp],
+                      :physical_dimension => physical_dimension[sp],
+                      :prefiltering => prefiltering[sp],
                       :sampling_rate => sampling_rate,
-                      :gain => gain,
+                      :gain => gain[sp],
                       :note => "",
                       :markers => has_markers)
 
@@ -283,7 +276,7 @@ function eeg_import_edf(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1187,6 +1180,7 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
 
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
+    sp = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
 
     fid = open(file_name)
@@ -1238,12 +1232,7 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
         deleteat!(labels, channel_n)
         deleteat!(transducers, channel_n)
         deleteat!(physical_dimension, channel_n)
-        deleteat!(physical_minimum, channel_n)
-        deleteat!(physical_maximum, channel_n)
-        deleteat!(digital_minimum, channel_n)
-        deleteat!(digital_maximum, channel_n)
         deleteat!(prefiltering, channel_n)
-        deleteat!(samples_per_datarecord, channel_n)
         deleteat!(gain, channel_n)
         channel_n -= 1
         eeg_markers = _m2df(markers)
@@ -1282,17 +1271,12 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels,
-                      :transducers => transducers,
-                      :physical_dimension => physical_dimension,
-                      :physical_minimum => physical_minimum,
-                      :physical_maximum => physical_maximum,
-                      :digital_minimum => digital_minimum,
-                      :digital_maximum => digital_maximum,
-                      :prefiltering => prefiltering,
-                      :samples_per_datarecord => samples_per_datarecord,
+                      :labels => labels[sp],
+                      :transducers => transducers[sp],
+                      :physical_dimension => physical_dimension[sp],
+                      :prefiltering => prefiltering[sp],
                       :sampling_rate => sampling_rate,
-                      :gain => gain,
+                      :gain => gain[sp],
                       :note => "",
                       :markers => has_markers)
 
@@ -1309,7 +1293,7 @@ function eeg_import_bdf(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1374,15 +1358,11 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
 
     transducers = repeat([""], channel_n)
     physical_dimension = repeat([""], channel_n)
-    physical_minimum = repeat([-1.0], channel_n)
-    physical_maximum = repeat([-1.0], channel_n)
-    digital_minimum = repeat([-1.0], channel_n)
-    digital_maximum = repeat([-1.0], channel_n)
-    samples_per_datarecord = repeat([-1], channel_n)
     gain = repeat([-1.0], channel_n)
     
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
+    sp = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
 
     data = readlines(fid)
@@ -1426,17 +1406,12 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels,
-                      :transducers => transducers,
-                      :physical_dimension => physical_dimension,
-                      :physical_minimum => physical_minimum,
-                      :physical_maximum => physical_maximum,
-                      :digital_minimum => digital_minimum,
-                      :digital_maximum => digital_maximum,
-                      :prefiltering => prefiltering,
-                      :samples_per_datarecord => samples_per_datarecord,
+                      :labels => labels[sp],
+                      :transducers => transducers[sp],
+                      :physical_dimension => physical_dimension[sp],
+                      :prefiltering => prefiltering[sp],
                       :sampling_rate => sampling_rate,
-                      :gain => gain,
+                      :gain => gain[sp],
                       :note => "",
                       :markers => has_markers)
 
@@ -1453,7 +1428,7 @@ function eeg_import_digitrack(file_name::String; clean_labels::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1529,6 +1504,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
     end
     clean_labels == true && (labels = _clean_labels(labels))
     channel_type = _set_channel_types(labels)
+    sp = _sort_channels(copy(channel_type))
 
     # read locs
     loc_theta = zeros(channel_n)
@@ -1652,12 +1628,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
 
     transducers = repeat([""], channel_n)
     physical_dimension = repeat([""], channel_n)
-    physical_minimum = repeat([-1.0], channel_n)
-    physical_maximum = repeat([-1.0], channel_n)
-    digital_minimum = repeat([-1.0], channel_n)
-    digital_maximum = repeat([-1.0], channel_n)
-    samples_per_datarecord = repeat([-1], channel_n)
-    gain = repeat([-1.0], channel_n)
+    gain = repeat([1.0], channel_n)
     prefiltering = repeat([""], channel_n)
 
     eeg_duration_samples = size(eeg_signals, 2)
@@ -1678,7 +1649,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :recording_date => recording_date,
                       :recording_time => recording_time,
                       :channel_n => channel_n,
-                      :channel_type => channel_type,
+                      :channel_type => channel_type[sp],
                       :reference => "",
                       :channel_locations => channel_locations,
                       :history => String[],
@@ -1688,17 +1659,12 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                       :epoch_n => 1,
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
-                      :labels => labels,
-                      :transducers => transducers,
-                      :physical_dimension => physical_dimension,
-                      :physical_minimum => physical_minimum,
-                      :physical_maximum => physical_maximum,
-                      :digital_minimum => digital_minimum,
-                      :digital_maximum => digital_maximum,
-                      :prefiltering => prefiltering,
-                      :samples_per_datarecord => samples_per_datarecord,
+                      :labels => labels[sp],
+                      :transducers => transducers[sp],
+                      :physical_dimension => physical_dimension[sp],
+                      :prefiltering => prefiltering[sp],
                       :sampling_rate => sampling_rate,
-                      :gain => gain,
+                      :gain => gain[sp],
                       :note => "",
                       :markers => has_markers)
 
@@ -1728,7 +1694,7 @@ function eeg_import_bv(file_name::String; clean_labels::Bool=true)
                              :loc_phi_sph => loc_phi_sph)
     end
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals, eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[sp, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end

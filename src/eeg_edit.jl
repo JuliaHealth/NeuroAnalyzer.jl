@@ -1,7 +1,7 @@
 """
     eeg_add_component(eeg; c, v)
 
-Add component name `c` of value `v` to `eeg`.
+Add component.
 
 # Arguments
 
@@ -27,7 +27,7 @@ end
 """
     eeg_add_component!(eeg; c, v)
 
-Add component name `c` of value `v` to `eeg`.
+Add component.
 
 # Arguments
 
@@ -48,7 +48,7 @@ end
 """
     eeg_list_components(eeg)
 
-List `eeg` components.
+List components.
 
 # Arguments
 
@@ -66,7 +66,7 @@ end
 """
     eeg_extract_component(eeg, c)
 
-Extract component `c` of `eeg`.
+Extract component `c`.
 
 # Arguments
 
@@ -91,7 +91,7 @@ end
 """
     eeg_delete_component(eeg; c)
 
-Delete component `c` of `eeg`.
+Delete component `c`. 
 
 # Arguments
 
@@ -104,8 +104,9 @@ Delete component `c` of `eeg`.
 """
 function eeg_delete_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
+    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
+    
     eeg_new = deepcopy(eeg)
-    c in eeg_new.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     for idx in 1:length(eeg.eeg_header[:components])
         if c == eeg_new.eeg_header[:components][idx]
             deleteat!(eeg_new.eeg_components, idx)
@@ -119,7 +120,7 @@ end
 """
     eeg_delete_component!(eeg; c)
 
-Delete component `c` of `eeg`.
+Delete component `c`.
 
 # Arguments
 
@@ -144,7 +145,7 @@ end
 """
     eeg_reset_components(eeg)
 
-Remove all `eeg` components.
+Remove all components.
 
 # Arguments
 
@@ -166,7 +167,7 @@ end
 """
     eeg_reset_components!(eeg)
 
-Remove all `eeg` components.
+Remove all components.
 
 # Arguments
 
@@ -183,7 +184,7 @@ end
 """
     eeg_component_idx(eeg, c)
 
-Return index of `eeg` component.
+Return index of component `c`.
 
 # Arguments
 
@@ -205,7 +206,7 @@ end
 """
     eeg_component_type(eeg, c)
 
-Return type of `eeg` components.
+Return type of components `c`.
 
 # Arguments
 
@@ -228,7 +229,7 @@ end
 """
     eeg_rename_component(eeg, c_old, c_new)
 
-Return type of `eeg` components.
+Rename component.
 
 # Arguments
 
@@ -255,9 +256,9 @@ function eeg_rename_component(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Symb
 end
 
 """
-    eeg_rename_component(eeg, c_old, c_new)
+    eeg_rename_component!(eeg, c_old, c_new)
 
-Return type of `eeg` components.
+Rename component.
 
 # Arguments
 
@@ -281,12 +282,12 @@ end
 """
     eeg_delete_channel(eeg; channel)
 
-Remove `channel` from `eeg`.
+Delete EEG channel(s).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed, vector of numbers or range
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed, vector of numbers or range
 
 # Returns
 
@@ -311,12 +312,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
         deleteat!(eeg_new.eeg_header[:channel_type], idx)
         deleteat!(eeg_new.eeg_header[:transducers], idx)
         deleteat!(eeg_new.eeg_header[:physical_dimension], idx)
-        deleteat!(eeg_new.eeg_header[:physical_minimum], idx)
-        deleteat!(eeg_new.eeg_header[:physical_maximum], idx)
-        deleteat!(eeg_new.eeg_header[:digital_minimum], idx)
-        deleteat!(eeg_new.eeg_header[:digital_maximum], idx)
         deleteat!(eeg_new.eeg_header[:prefiltering], idx)
-        deleteat!(eeg_new.eeg_header[:samples_per_datarecord], idx)
         deleteat!(eeg_new.eeg_header[:gain], idx)
     end
     eeg_new.eeg_header[:channel_n] -= length(channel)
@@ -333,12 +329,12 @@ end
 """
     eeg_delete_channel!(eeg; channel)
 
-Remove `channel` from `eeg`.
+Delete EEG channel(s).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to be removed
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed
 """
 function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -357,12 +353,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
         deleteat!(eeg.eeg_header[:channel_type], idx)
         deleteat!(eeg.eeg_header[:transducers], idx)
         deleteat!(eeg.eeg_header[:physical_dimension], idx)
-        deleteat!(eeg.eeg_header[:physical_minimum], idx)
-        deleteat!(eeg.eeg_header[:physical_maximum], idx)
-        deleteat!(eeg.eeg_header[:digital_minimum], idx)
-        deleteat!(eeg.eeg_header[:digital_maximum], idx)
         deleteat!(eeg.eeg_header[:prefiltering], idx)
-        deleteat!(eeg.eeg_header[:samples_per_datarecord], idx)
         deleteat!(eeg.eeg_header[:gain], idx)
     end
     eeg.eeg_header[:channel_n] -= length(channel)
@@ -379,12 +370,12 @@ end
 """
     eeg_keep_channel(eeg; channel)
 
-Keep `channels` in `eeg`.
+Keep EEG channel(s).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
 
 # Returns
 
@@ -397,7 +388,6 @@ function eeg_keep_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
 
     channel_n = eeg_channel_n(eeg)
     channels_to_remove = setdiff(collect(1:channel_n), channel)
-    # length(channels_to_remove) > 1 && sort!(channels_to_remove, rev=true)
     length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
     return eeg_delete_channel(eeg, channel=channels_to_remove)
@@ -406,12 +396,12 @@ end
 """
     eeg_keep_channel!(eeg; channel)
 
-Keep `channels` in `eeg`.
+Keep EEG channel(s).
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel index to keep
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
 """
 function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
@@ -429,16 +419,16 @@ end
 """
     eeg_get_channel(eeg; channel)
 
-Return the `channel` index / name.
+Return EEG channel number / name.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, String}`: channel name
+- `channel::Union{Int64, String}`: channel number or name
 
 # Returns
 
-- `channel_idx::Int64`
+- `channel_idx::Union{Int64, String}`: channel number or name
 """
 function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
@@ -451,13 +441,11 @@ function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
             end
         end
         if channel_idx === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
+            throw(ArgumentError("Channel name ($channel) does not match signal labels."))
         end
         return channel_idx
     else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        end
+        _check_channels(eeg, channel)
         return labels[channel]
     end
 end
@@ -465,13 +453,13 @@ end
 """
     eeg_rename_channel(eeg; channel, name)
 
-Rename `eeg` `channel`.
+Rename EEG channel.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, String}`
-- `name::String`
+- `channel::Union{Int64, String}`: channel number or name
+- `name::String`: new name
 
 # Returns
 
@@ -482,7 +470,8 @@ function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String
     # create new dataset
     eeg_new = deepcopy(eeg)
     labels = eeg_labels(eeg_new)
-    
+    name in labels && throw(ArgumentError("Channel $name already exist."))
+
     if typeof(channel) == String
         channel_found = nothing
         for idx in 1:length(labels)
@@ -492,14 +481,11 @@ function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String
             end
         end
         if channel_found === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
+            throw(ArgumentError("Channel name ($channel )does not match channel labels."))
         end
     else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        else
-            labels[channel] = name
-        end
+        _check_channels(eeg, channel)
+        labels[channel] = name
     end
     eeg_new.eeg_header[:labels] = labels
     
@@ -512,7 +498,7 @@ end
 """
     eeg_rename_channel!(eeg; channel, name)
 
-Rename `eeg` `channel`.
+Rename EEG channel.
 
 # Arguments
 
@@ -522,28 +508,7 @@ Rename `eeg` `channel`.
 """
 function eeg_rename_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, name::String)
 
-    labels = eeg_labels(eeg)
-    
-    if typeof(channel) == String
-        channel_found = nothing
-        for idx in 1:length(labels)
-            if channel == labels[idx]
-                labels[idx] = name
-                channel_found = idx
-            end
-        end
-        if channel_found === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
-        end
-    else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        else
-            labels[channel] = name
-        end
-    end
-    eeg.eeg_header[:labels] = labels
-    
+    eeg.eeg_header[:labels] = eeg_rename_channel(eeg, channel=channel, name=name).eeg_header[:labels]
     push!(eeg.eeg_header[:history], "eeg_rename_channel!(EEG, channel=$channel, name=$name)")
 
     return nothing
@@ -552,7 +517,7 @@ end
 """
     eeg_extract_channel(eeg; channel)
 
-Extract `channel` number or name.
+Extract EEG channel.
 
 # Arguments
 
@@ -574,12 +539,10 @@ function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
             end
         end
         if channel_idx === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
+            throw(ArgumentError("Channel name ($channel )does not match channel labels."))
         end
     else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        end
+        _check_channels(eeg, channel)
         channel_idx = channel
     end    
     eeg_channel = reshape(eeg.eeg_signals[channel_idx, :, :], 1, eeg_epoch_len(eeg), eeg_epoch_n(eeg))
@@ -608,7 +571,7 @@ end
 """
     eeg_labels(eeg)
 
-Return `eeg` labels.
+Return EEG labels.
 
 # Arguments
 
@@ -626,7 +589,7 @@ end
 """
     eeg_sr(eeg)
 
-Return `eeg` sampling rate.
+Return EEG sampling rate.
 
 # Arguments
 
@@ -644,12 +607,12 @@ end
 """
     eeg_channel_n(eeg; type=:eeg)
 
-Return number of `eeg` channels of `type`.
+Return number of EEG channels of `type`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Vector{Symbol}=:all`: channel type :all, :eeg, :meg, :ecg, :eog, :emg, :ref
+- `type::Vector{Symbol}=:all`: channel type: `:all`, `:eeg`, `:meg`, `:ecg`, `:eog`, `:emg`, `:ref`
 
 # Returns
 
@@ -657,6 +620,8 @@ Return number of `eeg` channels of `type`.
 """
 function eeg_channel_n(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 
+    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :markers, :other], "type")
+    length(eeg.eeg_header[:channel_type]) == 0 && throw(ArgumentError("EEG has no channel types."))
     channel_n = 0
     for idx in 1:eeg.eeg_header[:channel_n]
         eeg.eeg_header[:channel_type][idx] == string(type) && (channel_n += 1)
@@ -669,7 +634,7 @@ end
 """
     eeg_epoch_n(eeg)
 
-Return number of `eeg` epochs.
+Return number EEG epochs.
 
 # Arguments
 
@@ -689,7 +654,7 @@ end
 """
     eeg_signal_len(eeg)
 
-Return length of `eeg` signal.
+Return length of EEG signal.
 
 # Arguments
 
@@ -707,7 +672,7 @@ end
 """
     eeg_epoch_len(eeg)
 
-Return length of `eeg` signal.
+Return length of EEG signal.
 
 # Arguments
 
@@ -790,14 +755,14 @@ end
 """
     eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 
-Splits `eeg` into epochs.
+Splits EEG into epochs.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `epoch_n::Union{Int64, Nothing}`: number of epochs
-- `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-- `average::Bool`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
+- `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
+- `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
+- `average::Bool=false`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
 
 # Returns
 
@@ -841,7 +806,7 @@ end
 """
     eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 
-Splits `eeg` into epochs.
+Splits EEG into epochs.
 
 # Arguments
 
@@ -852,31 +817,9 @@ Splits `eeg` into epochs.
 """
 function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
 
-    # split into epochs
-    epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
-
-    # create new dataset
-    epoch_n = size(epochs, 3)
-    epoch_duration_samples = size(epochs, 2)
-    epoch_duration_seconds = size(epochs, 2) / eeg.eeg_header[:sampling_rate]
-    eeg_duration_samples = size(epochs, 2) * size(epochs, 3)
-    eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
-    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
-    eeg_time = eeg_time[1:(end - 1)]
-    eeg.eeg_signals = epochs
-    eeg.eeg_time = eeg_time
-
-    # update epochs time
-    fs = eeg_sr(eeg)
-    ts = eeg.eeg_epochs_time[1]
-    new_epochs_time = linspace(ts, ts + (epoch_duration_samples / fs), epoch_duration_samples)
-    eeg.eeg_epochs_time = new_epochs_time
-
-    eeg.eeg_header[:eeg_duration_samples] = eeg_duration_samples
-    eeg.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
-    eeg.eeg_header[:epoch_n] = epoch_n
-    eeg.eeg_header[:epoch_duration_samples] = epoch_duration_samples
-    eeg.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
+    eeg_tmp = eeg_epochs(eeg, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.signal = eeg_tmp.signal
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_epochs!(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
@@ -887,7 +830,7 @@ end
 """
     eeg_extract_epoch(eeg; epoch)
 
-Extract the `epoch` epoch.
+Extract EEG epoch.
 
 # Arguments
 
@@ -900,9 +843,7 @@ Extract the `epoch` epoch.
 """
 function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
 
-    if epoch < 1 || epoch > eeg_epoch_n(eeg)
-        throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
-    end
+    _check_epochs(eeg, epoch)
 
     s_new = reshape(eeg.eeg_signals[:, :, epoch], eeg_channel_n(eeg), eeg_signal_len(eeg), 1)
     eeg_new = deepcopy(eeg)
@@ -913,23 +854,23 @@ function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_get_epoch(EEG, epoch=$epoch)")
+    push!(eeg_new.eeg_header[:history], "eeg_extract_epoch(EEG, epoch=$epoch)")
 
     return eeg_new
 end
 
 """
-    eeg_trim(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+    eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
+Change EEG signal length.
 
 # Arguments
 
 - `eeg:EEG`
 - `len::Int64`: number of samples to remove
-- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-- `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-- `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+- `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
+- `from::Symbol=:start`: trims from the signal `:start` or `:end`
+- `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
 # Returns
 
@@ -978,59 +919,23 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Sym
 end
 
 """
-    eeg_trim!(eeg:EEG; len, offset=0, from=:start, keep_epochs::Bool=true)
+    eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
 
-Remove `len` samples from the beginning + `offset` (`from` = :start, default) or end (`from` = :end) of `eeg`.
+Change EEG signal length.
 
 # Arguments
 
 - `eeg:EEG`
 - `len::Int64`: number of samples to remove
-- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-- `from::Symbol[:start, :end]`: trims from the signal start (default) or end
-- `keep_epochs::Bool`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+- `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
+- `from::Symbol=:start`: trims from the signal `:start` or `:end`
+- `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 """
 function eeg_trim!(eeg::NeuroAnalyzer.EEG; len::Int64, offset::Int64=1, from::Symbol=:start, keep_epochs::Bool=true)
 
-    eeg_len = eeg_signal_len(eeg)
-    from in [:start, :end] || throw(ArgumentError("from must be :start or :end."))
-    len < 0 && throw(ArgumentError("len must be ≥ 1."))
-    len >= eeg_len && throw(ArgumentError("len must be < $(eeg_len)."))
-    offset < 0 && throw(ArgumentError("offset must be ≥ 1."))
-    offset >= eeg_len - 1 && throw(ArgumentError("offset must be < $(eeg_len)."))
-    (from ===:start && 1 + offset + len > eeg_len) && throw(ArgumentError("offset + len must be < $(eeg_len)."))
-
-    eeg_epoch_n(eeg) == 1 && (keep_epochs = false)
-    
-    if keep_epochs == false
-        verbose == true && @info "This operation will remove epochs, to keep epochs use keep_epochs=true."
-        eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg, epoch_n=1))
-        channel_n = eeg_channel_n(eeg)
-        epoch_n = eeg_epoch_n(eeg)
-        s_trimmed = zeros(channel_n, (size(eeg.eeg_signals, 2) - len), epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx in 1:channel_n
-                s_trimmed[idx, :, epoch_idx] = @views s_trim(eeg.eeg_signals[idx, :, epoch_idx], len=len, offset=offset, from=from)
-            end
-        end
-        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
-        eeg.eeg_signals = s_trimmed
-        eeg.eeg_time = t_trimmed
-        eeg.eeg_epochs_time = t_trimmed
-        eeg.eeg_header[:eeg_duration_samples] -= len
-        eeg.eeg_header[:eeg_duration_seconds] -= len * (1 / eeg_sr(eeg))
-        eeg.eeg_header[:epoch_duration_samples] -= len
-        eeg.eeg_header[:epoch_duration_seconds] -= len * (1 / eeg_sr(eeg))
-    else
-        if from === :start
-            epoch_from = floor(Int64, (offset / eeg_epoch_len(eeg))) + 1
-            epoch_to = floor(Int64, ((offset + len) / eeg_epoch_len(eeg))) + 1
-        else
-            epoch_from = floor(Int64, ((eeg.eeg_header[:eeg_duration_samples] - len) / eeg_epoch_len(eeg)) + 1)
-            epoch_to = eeg_epoch_n(eeg)
-        end
-        eeg_delete_epoch!(eeg, epoch=epoch_from:epoch_to)
-    end
+    eeg_tmp = eeg_trim(eeg, len=len, offset=offset, from=from, keep_epochs=keep_epochs)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.signal = eeg_tmp.signal
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_trim!(EEG, len=$len, offset=$offset, from=$from, keep_epochs=$keep_epochs)")
@@ -1041,7 +946,7 @@ end
 """
     eeg_edit_header(eeg; field, value)
 
-Change value of `eeg` `field` to `value`.
+Change value of EEG header.
 
 # Arguments
 
@@ -1051,16 +956,14 @@ Change value of `eeg` `field` to `value`.
 
 # Returns
 
-- `eeg:EEG`
+- `eeg::NeuroAnalyzer.EEG`
 """
 function eeg_edit_header(eeg::NeuroAnalyzer.EEG; field::Symbol, value::Any)
 
-    field === nothing && throw(ArgumentError("field cannot be empty."))
     value === nothing && throw(ArgumentError("value cannot be empty."))
 
     eeg_new = deepcopy(eeg)
-    fields = keys(eeg_new.eeg_header)
-    field in fields || throw(ArgumentError("$field does not exist."))
+    field in keys(eeg_new.eeg_header) || throw(ArgumentError("$field does not exist."))
     typeof(eeg_new.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
     eeg_new.eeg_header[field] = value
     push!(eeg_new.eeg_header[:history], "eeg_edit(EEG, field=$field, value=$value)")    
@@ -1071,27 +974,17 @@ end
 """
     eeg_edit_header!(eeg; field, value)
 
-Change value of `eeg` `field` to `value`.
+Change value of EEG header.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
 - `field::Symbol`
 - `value::Any`
-
-# Returns
-
-- `eeg:EEG`
 """
 function eeg_edit_header!(eeg::NeuroAnalyzer.EEG; field::Symbol, value::Any)
 
-    value === nothing && throw(ArgumentError("value cannot be empty."))
-
-    fields = keys(eeg.eeg_header)
-    field in fields || throw(ArgumentError("field does not exist."))
-    typeof(eeg.eeg_header[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
-    eeg.eeg_header[field] = value
-    push!(eeg.eeg_header[:history], "eeg_edit!(EEG, field=$field, value=$value)")    
+    eeg.eeg_header = eeg_edit_header(eeg, field=field, value=value).eeg_header
 
     return nothing
 end
@@ -1099,7 +992,7 @@ end
 """
     eeg_show_header(eeg)
 
-Show keys and values of `eeg` header.
+Show keys and values of EEG header.
 
 # Arguments
 
@@ -1115,7 +1008,7 @@ end
 """
     eeg_delete_epoch(eeg; epoch)
 
-Remove `epoch` from `eeg`.
+Remove epoch(s) from EEG.
 
 # Arguments
 
@@ -1129,18 +1022,10 @@ Remove `epoch` from `eeg`.
 function eeg_delete_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
-
-    if typeof(epoch) <: AbstractRange
-        epoch = collect(epoch)
-    end
-
+    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
     length(epoch) == eeg_epoch_n(eeg) && throw(ArgumentError("You cannot delete all epochs."))
-
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-
-    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("epoch does not match signal epochs."))
-    end
+    _check_epochs(eeg, epoch)
 
     eeg_new = deepcopy(eeg)
 
@@ -1164,7 +1049,7 @@ end
 """
     eeg_delete_epoch!(eeg; epoch)
 
-Remove `epoch` from `eeg`.
+Remove epoch(s) from EEG.
 
 # Arguments
 
@@ -1173,30 +1058,9 @@ Remove `epoch` from `eeg`.
 """
 function eeg_delete_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg_epoch_n(eeg) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
-
-    if typeof(epoch) <: AbstractRange
-        epoch = collect(epoch)
-    end
-
-    length(epoch) == eeg_epoch_n(eeg) && throw(ArgumentError("You cannot delete all epochs."))
-
-    length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-
-    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("epoch does not match signal epochs."))
-    end
-
-    # remove epoch
-    eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch))]
-
-    # update headers
-    eeg.eeg_header[:epoch_n] -= length(epoch)
-    epoch_n = eeg.eeg_header[:epoch_n]
-    eeg.eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
-    eeg.eeg_header[:eeg_duration_seconds] = round((epoch_n * size(eeg.eeg_signals, 2)) / eeg_sr(eeg), digits=2)
-    eeg.eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
-    eeg.eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
+    eeg_tmp = eeg_delete_epoch(eeg, epoch=epoch)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.signal = eeg_tmp.signal
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_epoch!(EEG, $epoch)")
@@ -1207,7 +1071,7 @@ end
 """
     eeg_keep_epoch(eeg; epoch)
 
-Keep `epoch` in `eeg`.
+Keep epoch(s).
 
 # Arguments
 
@@ -1221,15 +1085,9 @@ Keep `epoch` in `eeg`.
 function eeg_keep_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG contains only one epoch."))
-
-    if typeof(epoch) <: AbstractRange
-        epoch = collect(epoch)
-    end
-
+    typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
     length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("epoch does not match signal epochs."))
-    end
+    _check_epochs(eeg, epoch)
 
     epoch_list = collect(1:eeg_epoch_n(eeg))
     epoch_to_remove = setdiff(epoch_list, epoch)
@@ -1258,7 +1116,7 @@ end
 """
     eeg_keep_epoch!(eeg; epoch)
 
-Keep `epoch` in `eeg`.
+Keep epoch(s).
 
 # Arguments
 
@@ -1267,32 +1125,9 @@ Keep `epoch` in `eeg`.
 """
 function eeg_keep_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG contains only one epoch."))
-
-    if typeof(epoch) <: AbstractRange
-        epoch = collect(epoch)
-    end
-
-    length(epoch) > 1 && (epoch = sort!(epoch, rev=true))
-    if epoch[end] < 1 || epoch[1] > eeg_epoch_n(eeg)
-        throw(ArgumentError("epoch does not match signal epochs."))
-    end
-
-    epoch_list = collect(1:eeg_epoch_n(eeg))
-    epoch_to_remove = setdiff(epoch_list, epoch)
-
-    length(epoch_to_remove) > 1 && (epoch_to_remove = sort!(epoch_to_remove, rev=true))
-
-    # remove epoch
-    eeg.eeg_signals = eeg.eeg_signals[:, :, setdiff(1:end, (epoch_to_remove))]
-
-    # update headers
-    eeg.eeg_header[:epoch_n] = eeg_epoch_n(eeg) - length(epoch_to_remove)
-    epoch_n = eeg_epoch_n(eeg)
-    eeg.eeg_header[:eeg_duration_samples] = epoch_n * eeg_epoch_len(eeg)
-    eeg.eeg_header[:eeg_duration_seconds] = round(epoch_n * (eeg_epoch_len(eeg) / eeg_sr(eeg)), digits=2)
-    eeg.eeg_header[:epoch_duration_samples] = eeg_epoch_len(eeg)
-    eeg.eeg_header[:epoch_duration_seconds] = round(eeg_epoch_len(eeg) / eeg_sr(eeg), digits=2)
+    eeg_tmp = eeg_keep_epoch(eeg, epoch=epoch)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.signal = eeg_tmp.signal
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
@@ -1301,19 +1136,19 @@ function eeg_keep_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int6
 end
 
 """
-    eeg_detect_bad_epochs(eeg; method=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t)
+    eeg_detect_bad_epochs(eeg; method, ch_t)
 
-Detect bad `eeg` epochs based on:
-- flat channel(s)
-- RMSE
-- RMSD
-- Euclidean distance
-- peak-to-peak amplitude
+Detect bad EEG epochs. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`
+- `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`: detection method:
+    - `:flat`: flat channel(s)
+    - `:rmse`: RMSE
+    - `:rmsd`: RMSD
+    - `:euclid`: Euclidean distance
+    - `:p2p`: peak-to-peak amplitude
 - `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
 
 # Returns
@@ -1322,14 +1157,12 @@ Detect bad `eeg` epochs based on:
 """
 function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
 
+    for idx in method
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :p2p], "method")
+    end
     channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
     signal = @view eeg.eeg_signals[channels, :, :]
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
-
-    for idx in method
-        idx in [:flat, :rmse, :rmsd, :euclid, :p2p] || throw(ArgumentError("method must be :flat, :rmse, :rmsd, :euclid, :p2p"))
-    end
+    epoch_n = eeg_epoch_n(eeg)
 
     bad_epochs_idx = zeros(Int64, epoch_n)
 
@@ -1362,9 +1195,9 @@ function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; method::Vector{Symbol}=[:
 end
 
 """
-    eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+    eeg_add_labels(eeg, labels)
 
-Add `labels` to `eeg` channels.
+Add EEG channels labels.
 
 # Arguments
 
@@ -1390,7 +1223,7 @@ end
 """
     eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 
-Add `labels` to `eeg` channels.
+Add EEG channels labels.
 
 # Arguments
 
@@ -1408,26 +1241,25 @@ end
 
 """
     eeg_edit_channel(eeg; channel, field, value)
-Edits `eeg` `channel` properties.
+
+Edit EEG channel properties.
 
 # Arguments
 
 - `eeg:EEG`
 - `channel::Int64`
-- `field::Any`
+- `field::Symbol`
 - `value::Any`
 
 # Returns
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_edit_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, value::Any)
+function eeg_edit_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Symbol, value::Any)
     
-    field === nothing && throw(ArgumentError("field cannot be empty."))
     value === nothing && throw(ArgumentError("value cannot be empty."))
-    (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
-    
-    field in [:channel_type, :labels] || throw(ArgumentError("field must be: :channel_type, :labels."))
+    _check_channels(eeg, channel)
+    _check_var(field, [:channel_type, :labels], "field")    
 
     eeg_new = deepcopy(eeg)
     typeof(eeg_new.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg_new.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
@@ -1442,25 +1274,19 @@ end
 """
     eeg_edit_channel!(eeg; channel, field, value)
 
-Edit `eeg` `channel` properties.
+Edit EEG channel properties.
 
 # Arguments
 
 - `eeg:EEG`
 - `channel::Int64`
-- `field::Any`
+- `field::Symbol`
 - `value::Any`
 """
-function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Any, value::Any)
+function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Symbol, value::Any)
     
-    field === nothing && throw(ArgumentError("field cannot be empty."))
-    value === nothing && throw(ArgumentError("value cannot be empty."))
-    (channel < 0 || channel > eeg_channel_n(eeg, type=:all)) && throw(ArgumentError("channel must be > 0 and ≤ $(eeg_channel_n(eeg, type=:all))."))
-    
-    field in [:channel_type, :labels] || throw(ArgumentError("field must be: :channel_type, :labels."))
-
-    typeof(eeg.eeg_header[field][channel]) == typeof(value) || throw(ArgumentError("field type ($(eltype(eeg.eeg_header[field]))) does not mach value type ($(typeof(value)))."))
-    eeg.eeg_header[field][channel] = value
+    eeg_tmp = eeg_edit_channel(eeg, channel=channel, field=field, value=value)
+    eeg.eeg_header = eeg_tmp.eeg_header
 
     push!(eeg.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")
 
@@ -1470,7 +1296,7 @@ end
 """
     eeg_keep_channel_type(eeg; type)
 
-Keep `type` channels.
+Keep EEG channels of `type` type.
 
 # Arguments
 
@@ -1483,12 +1309,13 @@ Keep `type` channels.
 """
 function eeg_keep_channel_type(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
 
-    string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
-    eeg_channels_idx = Vector{Int64}()
+    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :markers, :other], "type")
+
+    channels_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] == string(type) && push!(eeg_channels_idx, idx)
+        eeg.eeg_header[:channel_type][idx] == string(type) && push!(channels_idx, idx)
     end
-    eeg_new = eeg_keep_channel(eeg, channel=eeg_channels_idx)
+    eeg_new = eeg_keep_channel(eeg, channel=channels_idx)
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_keep_channel_type(EEG, type=$type")
 
@@ -1496,9 +1323,9 @@ function eeg_keep_channel_type(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
 end
 
 """
-    eeg_keep_channel_type!(eeg)
+    eeg_keep_channel_type!(eeg; type)
 
-Keep `type` channels.
+Keep EEG channels of `type` type.
 
 # Arguments
 
@@ -1507,12 +1334,10 @@ Keep `type` channels.
 """
 function eeg_keep_channel_type!(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
 
-    string(type) in eeg.eeg_header[:channel_type] || throw(ArgumentError("EEG does not contain channel type $type, available types are: $(unique(eeg.eeg_header[:channel_type]))."))
-    eeg_channels_idx = Vector{Int64}()
-    for idx in 1:eeg_channel_n(eeg, type=:all)
-        eeg.eeg_header[:channel_type][idx] == string(type) && push!(eeg_channels_idx, idx)
-    end
-    eeg_keep_channel!(eeg, channel=eeg_channels_idx)
+    eeg_tmp = eeg_keep_channel_type(eeg, type=type)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+
     push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
 
     return nothing
@@ -1521,7 +1346,7 @@ end
 """
     eeg_view_note(eeg)
 
-Return `eeg` note.
+Return EEG note.
 
 # Arguments
 
@@ -1535,7 +1360,7 @@ end
 """
     eeg_copy(eeg)
 
-Make copy of `eeg`.
+Make copy of EEG.
 
 # Arguments
 
@@ -1553,7 +1378,7 @@ end
 """
     eeg_epochs_time(eeg; ts)
 
-Edit `eeg` epochs time start.
+Edit EEG epochs time start.
 
 # Arguments
 
@@ -1566,12 +1391,12 @@ Edit `eeg` epochs time start.
 """
 function eeg_epochs_time(eeg::NeuroAnalyzer.EEG; ts::Real)
 
-    epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
     fs = eeg_sr(eeg)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_epochs_time = new_epochs_time
+
     push!(eeg_new.eeg_header[:history], "eeg_epochs_time(EEG, ts=$ts)")
 
     return eeg_new
@@ -1580,7 +1405,7 @@ end
 """
     eeg_epochs_time!(eeg; ts)
 
-Edit `eeg` epochs time start.
+Edit EEG epochs time start.
 
 # Arguments
 
@@ -1593,11 +1418,11 @@ Edit `eeg` epochs time start.
 """
 function eeg_epochs_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
 
-    epoch_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
     fs = eeg_sr(eeg)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg.eeg_epochs_time = new_epochs_time
+
     push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
 
     return nothing
@@ -1606,7 +1431,7 @@ end
 """
     eeg_add_note(eeg; note)
 
-Return `eeg` note.
+Add EEG note.
 
 # Arguments
 
@@ -1628,7 +1453,7 @@ end
 """
     eeg_add_note!(eeg; note)
 
-Return `eeg` note.
+Add EEG note.
 
 # Arguments
 
@@ -1645,7 +1470,7 @@ end
 """
     eeg_delete_note(eeg)
 
-Return `eeg` note.
+Delete EEG note.
 
 # Arguments
 
@@ -1666,7 +1491,7 @@ end
 """
     eeg_delete_note!(eeg)
 
-Return `eeg` note.
+Delete EEG note.
 
 # Arguments
 
@@ -1682,12 +1507,12 @@ end
 """
     eeg_replace_channel(eeg; channel, signal)
 
-Replace the `channel` index / name with `signal`.
+Replace EEG channel with signal.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, String}`: channel name
+- `channel::Union{Int64, String}`: channel number or name
 - `signal::Array{Float64, 3}
 
 # Returns
@@ -1695,7 +1520,6 @@ Replace the `channel` index / name with `signal`.
 - `eeg::NeuroAnalyzer.EEG`
 """
 function eeg_replace_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
-
 
     channel_idx = nothing
     labels = eeg_labels(eeg)
@@ -1705,16 +1529,14 @@ function eeg_replace_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
                 channel_idx = idx
             end
         end
-        channel_idx === nothing && throw(ArgumentError("channel name does not match signal labels."))
+        channel_idx === nothing && throw(ArgumentError("Channel name ($channel) does not match signal labels."))
     else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        end
+        _check_channels(eeg, channel)
         channel_idx = channel
     end
 
     eeg_new = deepcopy(eeg)
-    size(signal) == (1, eeg_epoch_len(eeg_new), eeg_epoch_n(eeg_new)) || throw(ArgumentError("signal size must be the same as EEG channel size ($(size(eeg_new.eeg_signals[channel_idx, :, :]))."))
+    size(signal) == (1, eeg_epoch_len(eeg_new), eeg_epoch_n(eeg_new)) || throw(ArgumentError("signal size ($(size(signal))) must be the same as EEG channel size ($(size(eeg_new.eeg_signals[channel_idx, :, :]))."))
     eeg_new.eeg_signals[channel_idx, :, :] = signal
     eeg_reset_components!(eeg_new)
 
@@ -1737,26 +1559,11 @@ Replace the `channel` index / name with `signal`.
 """
 function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
-    labels = eeg_labels(eeg)
-    channel_idx = nothing
-    if typeof(channel) == String
-        for idx in 1:length(labels)
-            if channel == labels[idx]
-                channel_idx = idx
-            end
-        end
-        channel_idx === nothing && throw(ArgumentError("channel name does not match signal labels."))
-    else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        end
-        channel_idx = channel
-    end
+    eeg_tmp = eeg_replace_channel(eeg, channel=chanel, signal=signal)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
 
-    size(signal) == (1, eeg_epoch_len(eeg_new), eeg_epoch_n(eeg_new)) || throw(ArgumentError("signal size must be the same as EEG channel size ($(size(eeg.eeg_signals[channel_idx, :, :]))."))
-    eeg.eeg_signals[channel_idx, :, :] = signal
     eeg_reset_components!(eeg)
-
     # add entry to :history field
     push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal=$signal")
 
@@ -2034,7 +1841,7 @@ end
 """
     eeg_channel_type(eeg; channel, type)
 
-Change `eeg` `channel` type.
+Change EEG channel type.
 
 # Arguments
 
@@ -2064,14 +1871,11 @@ function eeg_channel_type(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String},
             end
         end
         if channel_found === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
+            throw(ArgumentError("Channel name ($channel) does not match signal labels."))
         end
     else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        else
-            types[channel] = type
-        end
+        _check_channels(eeg, channel)
+        types[channel] = type
     end
     eeg_new.eeg_header[:channel_type] = types
     
@@ -2084,7 +1888,7 @@ end
 """
     eeg_channel_type!(eeg; channel, new_name)
 
-Change `eeg` `channel` type.
+Change EEG channel type.
 
 # Arguments
 
@@ -2094,30 +1898,7 @@ Change `eeg` `channel` type.
 """
 function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
-    type = lowercase(type)
-    labels = eeg_labels(eeg)
-    types = eeg.eeg_header[:channel_type]
-    
-    if typeof(channel) == String
-        channel_found = nothing
-        for idx in 1:length(labels)
-            if channel == labels[idx]
-                types[idx] = type
-                channel_found = idx
-            end
-        end
-        if channel_found === nothing
-            throw(ArgumentError("channel name does not match signal labels."))
-        end
-    else
-        if channel < 1 || channel > length(labels)
-            throw(ArgumentError("channel index does not match signal channels."))
-        else
-            types[channel] = type
-        end
-    end
-    eeg_new.eeg_header[:channel_type] = types
-    
+    eeg.eeg_header[:channel_type] = eeg_channel_idx(eeg, channel=channel, type=type)[:channel_type]
     push!(eeg.eeg_header[:history], "eeg_channel_type!(EEG, channel=$channel, type=$type)")
 
     return nothing
@@ -2126,7 +1907,7 @@ end
 """
     eeg_edit_electrode(eeg; <keyword arguments>)
 
-Edit `eeg` electrode.
+Edit EEG electrode.
 
 # Arguments
 
@@ -2194,21 +1975,9 @@ Edit `eeg` electrode.
 """
 function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
-    channel = _get_channel_idx(eeg_labels(eeg), channel)
-
-    name != "" && eeg_rename_channel!(eeg, channel=channel, name=name)
-    type != "" && eeg_channel_type!(eeg, channel=channel, type=type)
-
-    x !== nothing && (eeg.eeg_locs[!, :loc_x][channel] = x)
-    y !== nothing && (eeg.eeg_locs[!, :loc_y][channel] = y)
-    z !== nothing && (eeg.eeg_locs[!, :loc_z][channel] = z)
-    theta !== nothing && (eeg.eeg_locs[!, :loc_theta][channel] = theta)
-    radius !== nothing && (eeg.eeg_locs[!, :loc_radius][channel] = radius)
-    theta_sph !== nothing && (eeg.eeg_locs[!, :loc_theta_sph][channel] = theta_sph)
-    radius_sph !== nothing && (eeg.eeg_locs[!, :loc_radius_sph][channel] = radius_sph)
-    phi_sph !== nothing && (eeg.eeg_locs[!, :loc_phi_sph][channel] = phi_sph)
-
-    (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (eeg.eeg_header[:channel_locations] == true)
+    eeg_tmp = eeg_edit_electrode(eeg, channel=channel, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_locs = eeg_tmp.eeg_locs
 
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_edit_electrode(EEG; channel=$channel, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
@@ -2219,12 +1988,12 @@ end
 """
     eeg_electrode_loc(eeg; channel, output)
 
-Return locations of `eeg` `channel` electrode.
+Return locations of EEG channel electrode.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, String}`
+- `channel::Union{Int64, String}`: channel number or name
 - `output::Bool=true`: print output if true
 
 # Returns
@@ -2422,7 +2191,6 @@ end
 
 Convert Cartesian locations to spherical.
 
-
 # Arguments
 
 - `locs::DataFrame`
@@ -2445,7 +2213,7 @@ end
 """
     eeg_view_markers(eeg)
 
-Return `eeg` markers.
+Return EEG markers.
 
 # Arguments
 
@@ -2461,7 +2229,7 @@ end
 """
     eeg_delete_marker(eeg; n)
 
-Delete `n`th marker.
+Delete EEG marker.
 
 # Arguments
 
@@ -2488,7 +2256,7 @@ end
 """
     eeg_delete_marker!(eeg; n)
 
-Delete `n`th marker.
+Delete EEG marker.
 
 # Arguments
 
@@ -2496,11 +2264,11 @@ Delete `n`th marker.
 - `n::Int64`: marker number
 """
 function eeg_delete_marker!(eeg::NeuroAnalyzer.EEG; n::Int64)
-    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
-    nn = size(eeg.eeg_markers, 1)
-    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    deleteat!(eeg.eeg_markers, n)
-    size(eeg.eeg_markers, 1) == 0 && (eeg.eeg_header[:markers] = false)
+
+    eeg_tmp = eeg_delete_marker(eeg, n=n)
+    eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
+    eeg.eeg_markers = eeg_tmp.eeg_markers
+
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_delete_marker!(EEG; n=$n)")
 
@@ -2538,7 +2306,7 @@ function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::I
     append!(eeg_new.eeg_markers, DataFrame(:id => id, :start => start, :length => len, :description => desc, :channel => channel))
     sort!(eeg_new.eeg_markers)
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_add_marker(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
+    push!(eeg_new.eeg_header[:history], "eeg_add_marker(EEG; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
 
     return eeg_new
 end
@@ -2559,17 +2327,12 @@ Add marker.
 """
 function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
 
-    start < 1 && throw(ArgumentError("Marker start must be > 0."))
-    len < 1 && throw(ArgumentError("Marker length must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    eeg_tmp = eeg_add_marker(eeg, id=id, start=start, len=len, desc=desc, channel=channel)
+    eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
+    eeg.eeg_markers = eeg_tmp.eeg_markers
 
-    eeg.eeg_header[:markers] = true
-    append!(eeg.eeg_markers, DataFrame(:id => id, :start => start, :length => len, :description => desc, :channel => channel))
-    sort!(eeg.eeg_markers)
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_add_marker!(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
+    push!(eeg.eeg_header[:history], "eeg_add_marker!(EEG; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
 
     return nothing
 end
@@ -2577,12 +2340,12 @@ end
 """
     eeg_channel_idx(eeg; type=:eeg)
 
-Return index of `eeg` channels of `type`.
+Return index of EEG channels of `type` type.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `type::Vector{Symbol}=:all`: channel type: [:all, :eeg, :meg, :ecg, :eog, :emg, :ref]
+- `type::Vector{Symbol}=:all`: channel type
 
 # Returns
 
@@ -2590,6 +2353,7 @@ Return index of `eeg` channels of `type`.
 """
 function eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 
+    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :markers, :other], "type")
     channel_idx = Vector{Int64}()
     for idx in 1:eeg_channel_n(eeg)
         eeg.eeg_header[:channel_type][idx] == string(type) && (push!(channel_idx, idx))
@@ -2636,7 +2400,7 @@ end
 """
     eeg_edit_marker(eeg; n, id, start, len, desc)
 
-Edit `n`th marker.
+Edit EEG marker.
 
 # Arguments
 
@@ -2674,7 +2438,7 @@ end
 """
     eeg_edit_marker!(eeg; n, id, start, len, desc)
 
-Edit `n`th marker.
+Edit EEG marker.
 
 # Arguments
 
@@ -2688,16 +2452,10 @@ Edit `n`th marker.
 """
 function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
 
-    eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
-    start < 1 && throw(ArgumentError("Marker start must be > 0."))
-    len < 1 && throw(ArgumentError("Marker length must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    eeg_tmp = eeg_edit_marker(eeg, n=n, id=id, start=start, len=len, desc=desc, channel=channel)
+    eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
+    eeg.eeg_markers = eeg_tmp.eeg_markers
 
-    nn = size(eeg.eeg_markers, 1)
-    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    eeg.eeg_markers[n, :] = Dict(:id => id, :start => start, :length => len, :description => desc, :channel => channel)
     eeg_reset_components!(eeg)
     push!(eeg.eeg_header[:history], "eeg_edit_marker!(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
 

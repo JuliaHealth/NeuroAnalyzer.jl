@@ -1175,11 +1175,6 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     ref !== :abs && method === :mw && throw(ArgumentError("For relative PSD, method must be :welch or :mt."))
 
     _check_epochs(eeg, epoch)
-
-    # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-
     _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
@@ -1342,8 +1337,6 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     else
         p
     end
-
-    eeg = deepcopy(eeg_backup)
 
     return p
 end
@@ -1668,11 +1661,6 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
     _check_epochs(eeg, epoch)
-
-    # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-
     _check_channels(eeg, channel)
 
     labels = eeg_labels(eeg)[channel]
@@ -1782,8 +1770,6 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
     end
 
     Plots.plot(p)
-
-    eeg = deepcopy(eeg_backup)
 
     return p
 end
@@ -2755,15 +2741,15 @@ function eeg_plot_weights(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
     # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg, channel))
-    _check_channels(eeg, channel)
+    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
+    _check_channels(eeg_tmp, channel)
     typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
-    p = plot_weights(eeg.eeg_locs, weights=weights, channel=channel, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+    p = plot_weights(eeg_tmp.eeg_locs, weights=weights, channel=channel, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
 
     Plots.plot!(p, title=title; kwargs)
 
@@ -2802,15 +2788,15 @@ function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vect
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
     # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
     # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg, channel))
-    _check_channels(eeg, channel)
+    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
+    _check_channels(eeg_tmp, channel)
     typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
-    p = plot_connections(eeg.eeg_locs, connections=connections, channel=channel, threshold=threshold, threshold_type=threshold_type, weights=weights, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+    p = plot_connections(eeg_tmp.eeg_locs, connections=connections, channel=channel, threshold=threshold, threshold_type=threshold_type, weights=weights, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
 
     Plots.plot!(p, title=title; kwargs)
 
@@ -3479,23 +3465,23 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     end
 
     # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
     # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg, channel))
+    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
     length(channel) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
-    _check_channels(eeg, channel)
+    _check_channels(eeg_tmp, channel)
 
     # get time vector
-    if segment[2] <= eeg_epoch_len(eeg)
-        signal = eeg.eeg_signals[channel, segment[1]:segment[2], 1]
+    if segment[2] <= eeg_epoch_len(eeg_tmp)
+        signal = eeg_tmp.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        signal = eeg_epochs(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+        signal = eeg_epochs(eeg_tmp, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
-    t = _get_t(segment[1], segment[2], eeg_sr(eeg))
+    t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
     t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg, segment[1], segment[2])
+    epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -3515,11 +3501,9 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(signal, channel=channel, locs=eeg.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+    p = plot_topo(signal, channel=channel, locs=eeg_tmp.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
 
     Plots.plot(p)
-
-    eeg = deepcopy(eeg_backup)
 
     return p
 end
@@ -3593,28 +3577,28 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     end
 
     # remove non-EEG/MEG channels
-    eeg_backup = deepcopy(eeg)
-    eeg_keep_channel_type!(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = deepcopy(eeg)
+    eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
     # select component channels, default is all channels
-    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    typeof(c) == Symbol && (c = _get_component(eeg_tmp, c).c)
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     labels = _gen_clabels(c)[c_idx]
 
     # get time vector
-    if segment[2] <= eeg_epoch_len(eeg)
+    if segment[2] <= eeg_epoch_len(eeg_tmp)
         signal = c[c_idx, segment[1]:segment[2], 1]
     else
         signal = _make_epochs(c, epoch_n=1)[c_idx, segment[1]:segment[2], 1]
     end
     if segment[1] != segment[2]
-        t = _get_t(segment[1], segment[2], eeg_sr(eeg))
+        t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
     else
-        t = _get_t(segment[1], segment[2] + 1, eeg_sr(eeg))
+        t = _get_t(segment[1], segment[2] + 1, eeg_sr(eeg_tmp))
     end
     t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg, segment[1], segment[2])
+    epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -3642,11 +3626,9 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(signal, channel=c_idx, locs=eeg.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+    p = plot_topo(signal, channel=c_idx, locs=eeg_tmp.eeg_locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
 
     Plots.plot(p)
-
-    eeg = deepcopy(eeg_backup)
 
     return p
 end
@@ -3682,4 +3664,17 @@ function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String=
     Plots.plot(pc)
 
     return pc
+end
+
+"""
+    plot_empty()
+
+Return an empty plot, useful for filling matrices of plots. 
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_empty()
+    return Plots.plot(grid=false, border=:none, title="")
 end

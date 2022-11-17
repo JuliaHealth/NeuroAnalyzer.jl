@@ -457,7 +457,7 @@ function _set_channel_types(labels::Vector{String})
             occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eog")
         end
         occursin("emg", lowercase(labels[idx])) && (channel_type[idx] = "emg")
-        occursin("temp", lowercase(labels[idx])) && (channel_type[idx] = "temp")
+        occursin("temp", lowercase(labels[idx])) && (channel_type[idx] = "other")
         in(lowercase(labels[idx]), ref_channels) && (channel_type[idx] = "ref")
         for idx2 in 1:length(ref_channels)
             occursin(ref_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "ref")
@@ -465,8 +465,8 @@ function _set_channel_types(labels::Vector{String})
         occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("marker", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("markers", lowercase(labels[idx])) && (channel_type[idx] = "markers")
-        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "events")
-        occursin("events", lowercase(labels[idx])) && (channel_type[idx] = "events")
+        occursin("event", lowercase(labels[idx])) && (channel_type[idx] = "markers")
+        occursin("events", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "markers")
         occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "markers")
@@ -537,4 +537,28 @@ end
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})
     length(l) == length(v) || throw(ArgumentError("Length of labels and values do not match."))
     return Dict(zip(l, v))
+end
+
+function _map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, channels=Vector{Int64})
+    channel_orig = channel
+    if typeof(channel) == Int64
+        channel = vsearch(channel, channels)
+    else
+        for idx in 1:length(channel)
+            channel[idx] = vsearch(channel[idx], channels)
+        end
+    end
+    return channel, channel_orig
+end
+
+function _sort_channels(ch_t::Vector{String})
+    replace!(ch_t, "eeg" => "1")
+    replace!(ch_t, "meg" => "2")
+    replace!(ch_t, "ref" => "3")
+    replace!(ch_t, "eog" => "4")
+    replace!(ch_t, "ecg" => "5")
+    replace!(ch_t, "emg" => "6")
+    replace!(ch_t, "other" => "7")
+    replace!(ch_t, "markers" => "7")
+    return sortperm(ch_t)
 end

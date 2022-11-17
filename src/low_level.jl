@@ -1350,13 +1350,13 @@ Perform piecewise detrending of `eeg`.
     - `:hp`: use HP filter
 - `offset::Real=0`: constant for :constant detrending
 - `order::Int64=1`: polynomial fitting order
-- `span::Float64=0.5`: smoothing of loess
+- `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 - `fs::Int64=0`: sampling frequency
 
 # Returns
 - `s_det::Vector{Float64}`
 """
-function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, span::Float64=0.5, fs::Int64=0)
+function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0, fs::Int64=0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
 
@@ -1394,7 +1394,7 @@ function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0,
         return signal .- trend
     elseif type === :hp
         fs <= 0 && throw(ArgumentError("fs must be > 0."))
-        return s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=1, fs=fs, order=8)
+        return s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=f, fs=fs, order=8)
     end
 end
 
@@ -2166,6 +2166,7 @@ Named tuple containing:
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pc_var::Matrix{Float64}`: variance of PC(1)..PC(n) × epoch
 - `pc_m::PCA{Float64}`: PC mean
+- `pca::MultivariateStats.PCA{Float64}`: PC model
 """
 function s_pca(signal::AbstractArray; n::Int64)
 
@@ -2186,8 +2187,8 @@ function s_pca(signal::AbstractArray; n::Int64)
     
     pc = zeros(n, size(signal, 2), epoch_n)
     pc_var = zeros(n, epoch_n)
-    pc_reconstructed = zeros(size(signal))
-
+    pca = nothing
+    
     @inbounds @simd for epoch_idx in 1:epoch_n
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
@@ -2196,22 +2197,22 @@ function s_pca(signal::AbstractArray; n::Int64)
         # eig_vec = m_sort(eig_vec, eig_val_idx)
         # eig_val = 100 .* eig_val / sum(eig_val) # convert to %
 
-        pc_m = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
-        v = MultivariateStats.principalvars(pc_m) ./ MultivariateStats.var(pc_m) * 100
+        pca = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
+        v = MultivariateStats.principalvars(pca) ./ MultivariateStats.var(pca) * 100
 
         for idx in 1:n
             pc_var[idx, epoch_idx] = v[idx]
             # pc[idx, :, epoch_idx] = (eig_vec[:, idx] .* s)[idx, :]
-            pc[idx, :, epoch_idx] = @views MultivariateStats.predict(pc_m, signal[:, :, epoch_idx])[idx, :]
+            pc[idx, :, epoch_idx] = @views MultivariateStats.predict(pca, signal[:, :, epoch_idx])[idx, :]
         end
     end
 
-    return (pc=pc, pc_var=pc_var, pc_m=pc_m)
+    return (pc=pc, pc_var=pc_var, pc_m=pca.mean, pca=pca)
 end
 
 
 """
-    s_pca_reconstruct(signal, pc, pcm)
+    s_pca_reconstruct(signal, pc, pca)
 
 Reconstructs `signal` using PCA components.
 
@@ -2219,18 +2220,18 @@ Reconstructs `signal` using PCA components.
 
 - `signal::AbstractArray`
 - `pc::AbstractArray:`: IC(1)..IC(n) × epoch
-- `pc_m::PCA{Float64}:`: IC(1)..IC(n) × epoch
+- `pca::MultivariateStats.PCA{Float64}:`: IC(1)..IC(n) × epoch
 
 # Returns
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pc_m::PCA{Float64})
+function s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pca::MultivariateStats.PCA{Float64})
 
     s_reconstructed = similar(signal)
     epoch_n = size(signal, 3)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s_reconstructed[:, :, epoch_idx] = @views MultivariateStats.reconstruct(pc_m, pc[:, :, epoch_idx])
+        s_reconstructed[:, :, epoch_idx] = @views MultivariateStats.reconstruct(pca, pc[:, :, epoch_idx])
     end
 
     return s_reconstructed
@@ -2285,8 +2286,9 @@ Calculate `n` first ICs for `signal`.
 
 # Returns
 
-- `ic::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
-- `ic_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+Named tuple containing:
+- `ica::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
+- `ica_mw::Array{Float64, 3}:`: IC(1)..IC(n) × epoch
 """
 function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
@@ -2294,8 +2296,8 @@ function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("Number of ICs must be ≤ $(size(signal, 1))."))
     channel_n, _, epoch_n = size(signal)
-    ic = zeros(n, size(signal, 2), epoch_n)
-    ic_mw = zeros(channel_n, n, epoch_n)
+    ica = zeros(n, size(signal, 2), epoch_n)
+    ica_mw = zeros(channel_n, n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         f === :tanh && (M = @views MultivariateStats.fit(ICA, signal[:, :, epoch_idx], n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
@@ -2305,50 +2307,50 @@ function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64
         n < size(signal, 1) && (mw = pinv(M.W)')
 
         for idx in 1:n
-            ic[idx, :, epoch_idx] = @views MultivariateStats.predict(M, signal[:, :, epoch_idx])[idx, :]
+            ica[idx, :, epoch_idx] = @views MultivariateStats.predict(M, signal[:, :, epoch_idx])[idx, :]
         end
 
-        ic_mw[:, :, epoch_idx] = mw
+        ica_mw[:, :, epoch_idx] = mw
     end
 
-    return ic, ic_mw
+    return (ica=ica, ica_mw=ica_mw)
 end
 
 """
-    s_ica_reconstruct(signal, ic, ic_mw, ic_v)
+    s_ica_reconstruct(signal, ica, ica_mw, ic)
 
-Reconstructs `signal` using removal of `ic_v` ICA components.
+Reconstructs `signal` using removal of `ic` ICA components.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `ic::AbstractArray:`: IC(1)..IC(n) × epoch
-- `ic_mw::AbstractArray:`: IC(1)..IC(n) × epoch
-- `ic_v::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ica::AbstractArray:`: IC(1)..IC(n) × epoch
+- `ica_mw::AbstractArray:`: IC(1)..IC(n) × epoch
+- `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function s_ica_reconstruct(signal::AbstractArray; ic::AbstractArray, ic_mw::AbstractArray, ic_v::Union{Int64, Vector{Int64}, AbstractRange})
+function s_ica_reconstruct(signal::AbstractArray; ica::AbstractArray, ica_mw::AbstractArray, ic::Union{Int64, Vector{Int64}, AbstractRange})
 
-    typeof(ic_v) <: AbstractRange && (ic_v = collect(ic_v))
-    if typeof(ic_v) == Vector{Int64}
-        sort!(ic_v)
-        for idx in 1:length(ic_v)
-            (ic_v[idx] < 1 || ic_v[idx] > size(ic_mw, 2)) && throw(ArgumentError("ic_v must be ≥ 1 and ≤ $(size(ic_mw, 2))"))
+    typeof(ic) <: AbstractRange && (ic = collect(ic))
+    if typeof(ic) == Vector{Int64}
+        sort!(ic)
+        for idx in 1:length(ic)
+            (ic[idx] < 1 || ic[idx] > size(ica_mw, 2)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica_mw, 2))"))
         end
     else
-        (ic_v < 1 || ic_v > size(ic_mw, 2)) && throw(ArgumentError("ic_v must be ≥ 1 and ≤ $(size(ic_mw, 2))"))
+        (ic < 1 || ic > size(ica_mw, 2)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica_mw, 2))"))
     end
-    ic_removal = setdiff(1:size(ic_mw, 2), ic_v)
+    ic_removal = setdiff(1:size(ica_mw, 2), ic)
 
     s_reconstructed = zeros(size(signal))
 
     _, _, epoch_n = size(signal)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s_reconstructed[:, :, epoch_idx] = ic_mw[:, ic_removal, epoch_idx] * ic[ic_removal, :, epoch_idx]
+        s_reconstructed[:, :, epoch_idx] = ica_mw[:, ic_removal, epoch_idx] * ica[ic_removal, :, epoch_idx]
     end
 
     return s_reconstructed

@@ -523,6 +523,7 @@ export eeg_plot_stats
 export plot_topo
 export eeg_plot_topo
 export eeg_plot_compose
+export plot_empty
 
 include("nstim.jl")
 export tes_dose

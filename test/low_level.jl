@@ -69,14 +69,14 @@ p, f = s_psd(ones(10), fs=10)
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
 @test s2_tcoherence([1, 2], [3, 4]) == (c = [0.04166666666666667, 0.027777777777777776], msc = [0.006944444444444444, 0.0007716049382716049], ic = [0.07216878364870322, -0.0])
-p, w, m = s_pca(ones(2, 10, 1), n=1)
+p, w, m, pca = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
-s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pc_m=m)
+s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
 @test s == ones(2, 10, 1)
 @test round.(s_fconv(ones(10), kernel=[1.0, 2.0])) == [1.00 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)
-@test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ic=i, ic_mw=m, ic_v=[1]) == zeros(2, 2, 1)
+@test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ica=i, ica_mw=m, ic=[1]) == zeros(2, 2, 1)
 p, f, t = s_spectrogram(ones(100), fs=10)
 @test size(p) == (51, 46)
 @test size(s_detect_epoch_flat(zeros(2, 10, 2))) == (2,)
