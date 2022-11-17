@@ -451,7 +451,6 @@ export eeg_standardize!
 export eeg_fconv
 export eeg_tconv
 export eeg_dft
-export eeg_msci95
 export eeg_mean
 export eeg_difference
 export eeg_acov

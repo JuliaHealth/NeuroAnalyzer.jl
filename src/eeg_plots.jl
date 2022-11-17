@@ -305,7 +305,7 @@ Plot signal.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
 - `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -323,7 +323,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
@@ -349,8 +349,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
         epoch_markers = _get_epoch_markers(eeg)
     end
 
-    # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg, channel))
+    # check channels
     _check_channels(eeg, channel)
     labels = eeg_labels(eeg)[channel]
     length(channel) == 1 && (labels = [labels])
@@ -2131,7 +2130,7 @@ Preview of electrode locations.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `labels::Bool=true`: plot electrode labels
 - `head::Bool`=true: plot head
@@ -2722,7 +2721,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
 - `weights::Matrix{<:Real}`: matrix of weights
 - `labels::Bool=false`: plot electrode labels
 - `head_labels::Bool=true`: plot head labels
@@ -2736,7 +2735,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_weights(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, weights::Vector{<:Real}, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function eeg_plot_weights(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), weights::Vector{<:Real}, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
@@ -2744,8 +2743,6 @@ function eeg_plot_weights(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     eeg_tmp = deepcopy(eeg)
     eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
-    # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
     _check_channels(eeg_tmp, channel)
     typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
@@ -2764,7 +2761,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -2781,7 +2778,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; channel::Union{Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
@@ -2791,8 +2788,6 @@ function eeg_plot_connections(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vect
     eeg_tmp = deepcopy(eeg)
     eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
-    # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
     _check_channels(eeg_tmp, channel)
     typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
@@ -3421,7 +3416,7 @@ Topographical plot.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
 - `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
@@ -3441,7 +3436,7 @@ Topographical plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     pal = mono == true ? :grays : :darktest
@@ -3468,8 +3463,6 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     eeg_tmp = deepcopy(eeg)
     eeg_keep_channel_type!(eeg_tmp, type=Symbol(eeg_tmp.eeg_header[:signal_type]))
 
-    # select channels, default is all channels
-    channel == 0 && (channel = _select_channels(eeg_tmp, channel))
     length(channel) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
     _check_channels(eeg_tmp, channel)
 

@@ -3,6 +3,7 @@ using Test
 using Wavelets
 
 edf = eeg_import_edf("eeg-test-edf.edf")
+@test size(edf.eeg_signals) == (24, 309760, 1)
 
 ecg = eeg_extract_channel(edf, channel=24)
 eog2 = eeg_extract_channel(edf, channel=23)
@@ -98,7 +99,7 @@ s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
 f, s = eeg_dft(edf)
 @test size(f) == (19, 309760, 1)
 
-m, _, _, _ = eeg_msci95(edf)
+m, _, _, _ = eeg_mean(edf)
 @test size(m) == (1, 309760)
 
 m, _, _, _ = eeg_mean(edf, edf)

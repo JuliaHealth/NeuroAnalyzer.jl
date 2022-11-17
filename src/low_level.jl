@@ -41,7 +41,7 @@ end
 """
     m_pad0(m)
 
-Pad the matrix `m` with zeros to make it square.
+Pad matrix with zeros to make it square.
 
 # Arguments
 
@@ -412,7 +412,7 @@ end
 """
     s_rms(signal)
 
-Calculate Root Mean Square of `signal`.
+Calculate Root Mean Square.
 
 # Arguments
 
@@ -485,7 +485,7 @@ end
 """
     s_freqs(signal, fs)
 
-Return vector of frequencies and Nyquist frequency for given `signal` and `fs`.
+Return vector of frequencies and Nyquist frequency.
 
 # Arguments
 
@@ -855,7 +855,7 @@ end
 """
    s_cov(signal; norm=true)
 
-Calculate covariance between all channels of the `signal`.
+Calculate covariance between all channels.
 
 # Arguments
 
@@ -908,7 +908,7 @@ end
 """
     s_dft(signal; fs)
 
-Return FFT and DFT sample frequencies for a DFT for the `signal`.
+Return FFT and DFT sample frequencies for a DFT.
 
 # Arguments
 
@@ -938,7 +938,7 @@ end
 """
     s_msci95(signal)
 
-Calculate mean, std and 95% confidence interval for `signal`.
+Calculate mean, std and 95% confidence interval.
 
 # Arguments
 
@@ -964,7 +964,7 @@ end
 """
     s_msci95(signal; n, method)
 
-Calculate mean, std and 95% confidence interval for each the `signal` channels.
+Calculate mean, std and 95% confidence interval for each the channel.
 
 # Arguments
 
@@ -1120,7 +1120,7 @@ end
 """
    s_acov(signal; lag, demean, norm)
 
-Calculate autocovariance of the `signal`.
+Calculate autocovariance.
 
 # Arguments
 
@@ -1211,7 +1211,7 @@ end
 """
     s_spectrum(signal; pad)
 
-Calculate FFT, amplitudes, powers and phases of the `signal`.
+Calculate FFT, amplitudes, powers and phases.
 
 # Arguments
 
@@ -1248,7 +1248,7 @@ end
 """
     s_total_power(signal; fs, mt)
 
-Calculate `signal` total power.
+Calculate total power.
 
 # Arguments
 
@@ -1280,7 +1280,7 @@ end
 """
     s_band_power(signal; fs, f, mt)
 
-Calculate `signal` power between `f[1]` and `f[2]`.
+Calculate power between `f[1]` and `f[2]`.
 
 # Arguments
 
@@ -1317,7 +1317,7 @@ end
 """
     s_taper(signal; taper)
 
-Taper the `signal` with `taper`.
+Taper the signal.
 
 # Arguments
 
@@ -1401,7 +1401,7 @@ end
 """
     s_demean(signal)
 
-Remove mean value (DC offset) from the `signal`.
+Remove mean value (DC offset).
 
 # Arguments
 
@@ -1420,7 +1420,7 @@ end
 """
     s_normalize_zscore(signal)
 
-Normalize (by z-score) `signal`.
+Normalize (by z-score).
 
 # Arguments
 
@@ -1440,7 +1440,7 @@ end
 """
     s_normalize_minmax(signal)
 
-Normalize `signal` in [-1, +1].
+Normalize in [-1, +1].
 
 # Arguments
 
@@ -1461,7 +1461,7 @@ end
 """
     s_normalize_max(signal)
 
-Normalize `signal` in [0, +1].
+Normalize in [0, +1].
 
 # Arguments
 
@@ -1480,7 +1480,7 @@ end
 """
     s_normalize_log(signal)
 
-Normalize `signal` using log-transformation.
+Normalize using log-transformation.
 
 # Arguments
 
@@ -1499,7 +1499,7 @@ end
 """
     s_add_noise(signal)
 
-Adds random noise to the `signal`.
+Adds random noise.
 
 # Arguments
 
@@ -1517,7 +1517,7 @@ end
 """
     s_resample(signal; t, new_sr)
 
-Resample `signal` to `new_sr` sampling frequency.
+Resample to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -1553,7 +1553,7 @@ end
 """
     s_resample(signal; t, new_sr)
 
-Resamples all channels of the`signal` and time vector `t` to `new_sr` sampling frequency.
+Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 # Arguments
 
@@ -1588,7 +1588,7 @@ end
 """
     s_derivative(signal)
 
-Return derivative of `signal` of the same length.
+Return derivative of the same length.
 
 # Arguments
 
@@ -1632,7 +1632,7 @@ end
 """
     s_filter(signal; <keyword arguments>)
 
-Filter `signal`.
+Apply filtering.
 
 # Arguments
 
@@ -1819,7 +1819,7 @@ end
 """
     s_psd(signal; fs, norm, mt)
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 # Arguments
 - `signal::Vector{Float64}`
@@ -1854,7 +1854,7 @@ end
 """
     s_psd(signal; fs, norm, mt)
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 # Arguments
 - `signal::Matrix{Float64}`
@@ -1886,7 +1886,7 @@ end
 """
     s_psd(signal; fs, norm, mt)
 
-Calculate power spectrum density of the `signal`.
+Calculate power spectrum density.
 
 # Arguments
 - `signal::AbstractArray`
@@ -2032,7 +2032,7 @@ end
 """
     s_entropy(signal)
 
-Calculate entropy of `signal`.
+Calculate entropy.
 
 # Arguments
 
@@ -2063,7 +2063,7 @@ end
 """
     s_negentropy(signal)
 
-Calculate negentropy of `signal`.
+Calculate negentropy.
 
 # Arguments
 
@@ -2082,7 +2082,7 @@ end
 """
     s_average(signal)
 
-Average all channels of `signal`.
+Average all channels.
 
 # Arguments
 
@@ -2153,7 +2153,7 @@ end
 """
     s_pca(signal, n)
 
-Calculate `n` first PCs for `signal`.
+Calculate `n` first PCs.
 
 # Arguments
 
@@ -2359,7 +2359,7 @@ end
 """
     s_spectrogram(signal; fs, norm, mt, st, demean)
 
-Calculate spectrogram of `signal`.
+Calculate spectrogram.
 
 # Arguments
 
@@ -2417,7 +2417,7 @@ end
 """
     s_detect_epoch_flat(signal)
 
-Detect bad `signal` epochs based on: flat channel(s)
+Detect bad epochs based on: flat channel(s)
 
 # Arguments
 
@@ -2446,7 +2446,7 @@ end
 """
     s_detect_epoch_rmse(signal)
 
-Detect bad `signal` epochs based on: RMSE vs average channel > 95%CI.
+Detect bad epochs based on: RMSE vs average channel > 95%CI.
 
 # Arguments
 
@@ -2479,7 +2479,7 @@ end
 """
     detect_epoch_rmsd(signal)
 
-Detect bad `signal` epochs based on: RMSD vs average channel > 95%CI.
+Detect bad epochs based on: RMSD vs average channel > 95%CI.
 
 # Arguments
 
@@ -2512,7 +2512,7 @@ end
 """
     s_detect_epoch_euclid(signal)
 
-Detect bad `signal` epochs based on: Euclidean distance vs median channel > 95% CI.
+Detect bad epochs based on: Euclidean distance vs median channel > 95% CI.
 
 # Arguments
 
@@ -2545,7 +2545,7 @@ end
 """
     s_detect_epoch_p2p(signal)
 
-Detect bad `signal` epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
+Detect bad epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
 
 # Arguments
 
@@ -2577,7 +2577,7 @@ end
 """
     s_snr(signal)
 
-Calculate SNR of `signal`.
+Calculate SNR.
 
 # Arguments
 
@@ -2601,7 +2601,7 @@ end
 """
     s_findpeaks(signal; d)
 
-Find peaks in `signal`.
+Find peaks.
 
 # Arguments
 
@@ -2687,11 +2687,11 @@ end
 """
     s_itpc(signal; t)
 
-Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t` of `signal`.
+Calculate ITPC (Inter-Trial-Phase Clustering) over epochs/trials at time `t`.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractArray`: one channel over epochs/trials
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -2706,8 +2706,8 @@ Named tuple containing:
 function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
 
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
-    size(signal, 1) == 1 || throw(ArgumentError("signals must have 1 channel."))
     t > size(signal, 2) && throw(ArgumentError("t must be ≤ $(size(signal, 2))."))
+    size(signal, 1) == 1 || throw(ArgumentError("signal must have 1 channel."))
     epoch_n = size(signal, 3)
 
     w === nothing && (w = ones(epoch_n))
@@ -2765,7 +2765,7 @@ end
 """
     s2_ged(signal1, signal2)
 
-Perform generalized eigendecomposition between `signal1` and `signal2`.
+Perform generalized eigendecomposition.
 
 # Arguments
 
@@ -2801,7 +2801,7 @@ end
 """
     s_frqinst(signal; fs)
 
-Calculate instantaneous frequency `signal`.
+Calculate instantaneous frequency.
 
 # Arguments
 
@@ -2823,7 +2823,7 @@ end
 """
     s_hspectrum(signal; pad=0)
 
-Calculate amplitudes, powers and phases of the `signal` using Hilbert transform.
+Calculate amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
@@ -2896,7 +2896,7 @@ end
 """
     s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
 
-Calculate spectrogram of the `signal` using wavelet convolution.
+Calculate spectrogram using wavelet convolution.
 
 # Arguments
 
@@ -3016,7 +3016,7 @@ end
 """
     s_gfilter(signal, fs, f, gw)
 
-Filter `signal` using Gaussian in the frequency domain.
+Filter using Gaussian in the frequency domain.
 
 # Arguments
 
@@ -3053,7 +3053,7 @@ end
 """
     s_ghspectrogram(signal; fs, norm, frq_lim, frq_n, frq, fs, demean)
 
-Calculate spectrogram of the `signal` using Gaussian and Hilbert transform.
+Calculate spectrogram using Gaussian and Hilbert transform.
 
 # Arguments
 
@@ -3129,7 +3129,7 @@ end
 """
     s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum of the `signal` using wavelet convolution.
+Calculate power spectrum using wavelet convolution.
 
 # Arguments
 
@@ -3195,7 +3195,7 @@ end
 """
     s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum of the `signal` channels using wavelet convolution.
+Calculate power spectrum using wavelet convolution.
 
 # Arguments
 
@@ -3281,7 +3281,7 @@ end
 """
     s_fcoherence(signal; fs, frq)
 
-Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels of `signal`.
+Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels.
 
 # Arguments
 
@@ -3403,7 +3403,7 @@ end
 """
     s_cums(signal)
 
-Calculate cumulative sum of the `signal`.
+Calculate cumulative sum.
 
 # Arguments
 
@@ -3421,7 +3421,7 @@ end
 """
     s_cums(signal)
 
-Calculate cumulative sum of the `signal`.
+Calculate cumulative sum.
 
 # Arguments
 
@@ -3448,7 +3448,7 @@ end
 """
     s_gfp(signal)
 
-Calculate GFP (Global Field Power) of the `signal`.
+Calculate GFP (Global Field Power).
 
 # Arguments
 
@@ -3599,7 +3599,7 @@ end
 """
     s_rel_psd(signal; fs, norm, mt, f)
 
-Calculate relative power spectrum density of the `signal`.
+Calculate relative power spectrum density.
 
 # Arguments
 - `signal::AbstractVector`
@@ -3638,7 +3638,7 @@ end
 """
     s_rel_psd(signal; fs, norm, mt, f)
 
-Calculate relative power spectrum density of the `signal`.
+Calculate relative power spectrum density.
 
 # Arguments
 - `signal::Matrix{Float64}`
@@ -3686,7 +3686,7 @@ end
 """
     s_wbp(signal; pad, frq, fs, ncyc, demean)
 
-Perform wavelet bandpass filtering of the `signal`.
+Perform wavelet bandpass filtering.
 
 # Arguments
 
@@ -3723,7 +3723,7 @@ end
 """
     s_normalize_gauss(signal)
 
-Normalize `signal` to Gaussian.
+Normalize to Gaussian.
 
 # Arguments
 
@@ -3743,7 +3743,7 @@ end
 """
     s_cbp(signal; pad, frq, fs, demean)
 
-Perform convolution bandpass filtering of the `signal`.
+Perform convolution bandpass filtering.
 
 # Arguments
 
@@ -3867,7 +3867,7 @@ end
 """
     s_denoise_wien(signal)
 
-Perform Wiener deconvolution denoising of the `signal`.
+Perform Wiener deconvolution denoising.
 
 # Arguments
 
@@ -3957,7 +3957,7 @@ end
 """
     s_normalize_log10(signal)
 
-Normalize `signal` using log10-transformation.
+Normalize using log10-transformation.
 
 # Arguments
 
@@ -3976,7 +3976,7 @@ end
 """
     s_normalize_neglog(signal)
 
-Normalize `signal` to using -log-transformation.
+Normalize to using -log-transformation.
 
 # Arguments
 
@@ -3994,7 +3994,7 @@ end
 """
     s_normalize_neglog10(signal)
 
-Normalize `signal` using -log10-transformation.
+Normalize using -log10-transformation.
 
 # Arguments
 
@@ -4012,7 +4012,7 @@ end
 """
     s_normalize_neg(signal)
 
-Normalize `signal` in [0, -∞].
+Normalize in [0, -∞].
 
 # Arguments
 
@@ -4031,7 +4031,7 @@ end
 """
     s_normalize_pos(signal)
 
-Normalize `signal` in [0, +∞].
+Normalize in [0, +∞].
 
 # Arguments
 
@@ -4050,7 +4050,7 @@ end
 """
     s_normalize_perc(signal)
 
-Normalize `signal` in percentages.
+Normalize in percentages.
 
 # Arguments
 
@@ -4071,7 +4071,7 @@ end
 """
     s_normalize(signal; method)
 
-Normalize `signal`.
+Normalize.
 
 # Arguments
 
@@ -4118,7 +4118,7 @@ end
 """
     s_phases(signal; h, pad)
 
-Calculate phases of the `signal`.
+Calculate phases.
 
 # Arguments
 
@@ -4137,7 +4137,7 @@ end
 """
     s_cwtspectrogram(signal; wt, pad, norm, frq_lim, fs, demean)
 
-Calculate spectrogram of the `signal` using continuous wavelet transformation (CWT).
+Calculate spectrogram using continuous wavelet transformation (CWT).
 
 # Arguments
 
@@ -4179,7 +4179,7 @@ end
 """
     s_dwt(signal; wt, type, l)
 
-Perform discrete wavelet transformation (DWT) of the `signal`.
+Perform discrete wavelet transformation (DWT).
 
 # Arguments
 
@@ -4253,7 +4253,7 @@ end
 """
     s_normalize_invroot(signal)
 
-Normalize `signal` in inverse root (1/sqrt(x)).
+Normalize in inverse root (1/sqrt(x)).
 
 # Arguments
 
@@ -4272,7 +4272,7 @@ end
 """
     s_cwt(signal; wt, type, l)
 
-Perform continuous wavelet transformation (CWT) of the `signal`.
+Perform continuous wavelet transformation (CWT).
 
 # Arguments
 
