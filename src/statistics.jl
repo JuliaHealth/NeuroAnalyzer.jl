@@ -32,11 +32,10 @@ Calculate Jaccard similarity between two vectors `x` and `y`.
 """
 function jaccard_similarity(x::AbstractVector, y::AbstractVector)
 
-    i = length(intersect(x, y))
+    i = float(length(intersect(x, y)))
     u = length(x) + length(y) - i
-    j = i / u
 
-    return j
+    return i / u
 end
 
 """

@@ -170,10 +170,6 @@ export s_ica
 export s_ica_reconstruct
 export s_spectrogram
 export s_detect_channel_flat
-export s_detect_epoch_rmse
-export s_detect_epoch_rmsd
-export s_detect_epoch_euclid
-export s_detect_epoch_p2p
 export s_snr
 export s_findpeaks
 export s_wdenoise
@@ -320,7 +316,7 @@ export eeg_delete_epoch
 export eeg_delete_epoch!
 export eeg_keep_epoch
 export eeg_keep_epoch!
-export eeg_detect_bad_epochs
+export eeg_detect_bad
 export eeg_add_labels
 export eeg_add_labels!
 export eeg_edit_channel

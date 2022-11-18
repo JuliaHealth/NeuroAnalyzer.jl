@@ -817,18 +817,18 @@ end
 """
     s2_rmse(signal1, signal2)
 
-Calculate RMSE between `signal1` and `signal2`.
+Calculate RMSE between two signals.
 
 # Arguments
 
-- `signal1::Vector{Float64}`
-- `signal2::Vector{Float64}`
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
 
 # Returns
 
 - `r::Float64`
 """
-function s2_rmse(signal1::Vector{Float64}, signal2::Vector{Float64})
+function s2_rmse(signal1::AbstractVector, signal2::AbstractVector)
 
     # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
     return sqrt(mean(signal2 - signal1)^2)
@@ -2440,172 +2440,6 @@ function s_detect_channel_flat(signal::AbstractVector; w::Int64=8, tol::Float64=
     r = count(abs.(diff(sm)) .< tol) == (length(sm) - 1)
     p = count(abs.(diff(sm)) .< tol) / (length(sm) - 1)
     return (r=r, p=p)
-end
-
-"""
-    s_detect_epoch_flat(signal; w, tol)
-
-Detect bad epochs based on: flat channel(s)
-
-# Arguments
-
-- `signal::AbstractArray`
-- `w::Int64=8`: window width in samples (signal is averaged within `w`-width window)
-- `tol::Float64=eps()`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
-
-# Returns
-
-Named tuple containing:
-- `score::Vector{Int64}`: percentage of bad channels per epoch
-- `p::Float64`: flat to non-flat segments ratio (channels × epochs)
-"""
-function s_detect_epoch_flat(signal::AbstractArray; w::Int64=1, tol::Float64=eps())
-    
-    channel_n, _, epoch_n = size(signal)
-
-    bad_epochs_score = zeros(epoch_n)
-    bad_epochs_p = zeros(channel_n, epoch_n)
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            r, p = @views s_detect_channel_flat(signal[channel_idx, :, epoch_idx], w=w, tol=tol)
-            r == true && (bad_epochs_score[epoch_idx] += 1)
-            bad_epochs_p[channel_idx, epoch_idx] = p
-        end
-    end
-
-    return (score=round.(bad_epochs_score ./ channel_n, digits=2), p=bad_epochs_p)
-end
-
-"""
-    s_detect_epoch_rmse(signal)
-
-Detect bad epochs based on: RMSE vs average channel > 95%CI.
-
-# Arguments
-
-- `signal::AbstractArray`
-
-# Returns
-
-- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-"""
-function s_detect_epoch_rmse(signal::AbstractArray)
-    
-    channel_n, _, epoch_n = size(signal)
-
-    bad_epochs_score = zeros(epoch_n)
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        ch_m = vec(median(signal[:, :, epoch_idx], dims=1))
-        rmse_ch = zeros(channel_n)
-        Threads.@threads for channel_idx in 1:channel_n
-            rmse_ch[channel_idx] = s2_rmse(signal[channel_idx, :, epoch_idx], ch_m)
-        end
-        Threads.@threads for channel_idx in 1:channel_n
-            rmse_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
-        end
-    end
-
-    return round.(bad_epochs_score ./ channel_n, digits=2)
-end
-
-"""
-    detect_epoch_rmsd(signal)
-
-Detect bad epochs based on: RMSD vs average channel > 95%CI.
-
-# Arguments
-
-- `signal::AbstractArray`
-
-# Returns
-
-- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-"""
-function s_detect_epoch_rmsd(signal::AbstractArray)
-    
-    channel_n, _, epoch_n = size(signal)
-
-    bad_epochs_score = zeros(epoch_n)
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        ch_m = median(signal[:, :, epoch_idx], dims=1)
-        rmsd_ch = zeros(channel_n)
-        Threads.@threads for channel_idx in 1:channel_n
-            rmsd_ch[channel_idx] = Distances.rmsd(signal[channel_idx, :, epoch_idx], ch_m)
-        end
-        Threads.@threads for channel_idx in 1:channel_n
-            rmsd_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
-        end
-    end
-
-    return round.(bad_epochs_score ./ channel_n, digits=2)
-end
-
-"""
-    s_detect_epoch_euclid(signal)
-
-Detect bad epochs based on: Euclidean distance vs median channel > 95% CI.
-
-# Arguments
-
-- `signal::AbstractArray`
-
-# Returns
-
-- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-"""
-function s_detect_epoch_euclid(signal::AbstractArray)
-    
-    channel_n, _, epoch_n = size(signal)
-
-    bad_epochs_score = zeros(epoch_n)
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        ch_m = median(signal[:, :, epoch_idx], dims=1)
-        ed_ch = zeros(channel_n)
-        Threads.@threads for channel_idx in 1:channel_n
-            ed_ch[channel_idx] = euclidean(signal[channel_idx, :, epoch_idx], ch_m)
-        end
-        Threads.@threads for channel_idx in 1:channel_n
-            ed_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2] && (bad_epochs_score[epoch_idx] += 1)
-        end
-    end
-
-    return round.(bad_epochs_score ./ channel_n, digits=2)
-end
-
-"""
-    s_detect_epoch_p2p(signal)
-
-Detect bad epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
-
-# Arguments
-
-- `signal::AbstractArray`
-
-# Returns
-
-- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-"""
-function s_detect_epoch_p2p(signal::AbstractArray)
-    
-    channel_n, _, epoch_n = size(signal)
-
-    bad_epochs_score = zeros(epoch_n)
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        p2p = zeros(channel_n)
-        Threads.@threads for channel_idx in 1:channel_n
-            p2p[channel_idx] = maximum(signal[channel_idx, :, epoch_idx]) + abs(minimum(signal[channel_idx, :, epoch_idx]))
-        end
-        Threads.@threads for channel_idx in 1:channel_n
-            p2p[channel_idx] > HypothesisTests.confint(OneSampleTTest(p2p))[2] && (bad_epochs_score[epoch_idx] += 1)
-        end
-    end
-
-    return round.(bad_epochs_score ./ channel_n, digits=2)
 end
 
 """
