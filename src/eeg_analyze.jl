@@ -329,7 +329,7 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for window_idx = 1:window_n
-                cov_mat[:, :, window_idx, epoch_idx] = @views s2_cov(eeg.eeg_signals[:, window_idx, epoch_idx], eeg.eeg_signals[:, window_idx, epoch_idx])
+                cov_mat[:, :, window_idx, epoch_idx] = @views s2_cov(eeg.eeg_signals[channel, window_idx, epoch_idx], eeg.eeg_signals[channel, window_idx, epoch_idx])
             end
         end
 
@@ -914,7 +914,7 @@ end
 """
     eeg_spectrum(eeg; channel, pad, h)
 
-Calculate FFT, amplitudes, powers and phases.
+Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 # Arguments
 
@@ -1401,7 +1401,7 @@ function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     p = zeros(epoch_n)
 
     Threads.@threads for epoch_idx in 1:epoch_n
-        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(eeg1.eeg_signals[channel1, :, epoch_idx], eeg2.eeg_signals[channel2, :, epoch_idx])
+        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(eeg1.eeg_signals[channel1, :, epoch_idx], eeg2.eeg_signals[channel2, :, epoch_idx], n=n, method=method)
     end
 
     return (s_stat=s_stat, statsitic_single=s_stat_single, p=p)
@@ -3009,7 +3009,7 @@ end
 """
     eeg_chdiff(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 
-Calculate channels difference.
+Subtract channels.
 
 # Arguments
 

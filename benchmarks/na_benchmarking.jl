@@ -47,10 +47,10 @@ print(rpad("Import Digitrack", 32))
 eeg_import_digitrack("test/eeg-test-digitrack.txt");
 @time eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import BrainVision", 32))
-eeg_import_edf("test/eeg-test-bv.vhdr");
-@time eeg_import_edf("test/eeg-test-bv.vhdr");
+eeg_import_bv("test/eeg-test-bv.vhdr");
+@time eeg_import_bv("test/eeg-test-bv.vhdr");
 
-eeg_delete_channel!(edf, channel=[17, 18, 22, 23, 24])
+eeg_delete_channel!(edf, channel=20:24)
 e10 = eeg_epochs(edf, epoch_len=2560)
 
 @info "Benchmarking: eeg_edit.jl"
@@ -118,9 +118,15 @@ println()
 print(rpad("Total power", 32))
 eeg_total_power(e10);
 @time eeg_total_power(e10);
+print(rpad("Total power: mt", 32))
+eeg_total_power(e10, mt=true);
+@time eeg_total_power(e10, mt=true);
 print(rpad("Band power", 32))
 eeg_band_power(e10, f=(10, 20));
 @time eeg_band_power(e10, f=(10, 20));
+print(rpad("Band power: mt", 32))
+eeg_band_power(e10, f=(10, 20), mt=true);
+@time eeg_band_power(e10, f=(10, 20), mt=true);
 print(rpad("Covariance matrix", 32))
 eeg_cov(e10);
 @time eeg_cov(e10);
@@ -136,10 +142,10 @@ eeg_xcov(e10, lag=10, demean=true);
 print(rpad("Cross-covariance 2", 32))
 eeg_xcov(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2, lag=10, demean=true);
 @time eeg_xcov(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2, lag=10, demean=true);
-print(rpad("PSD 1", 32))
+print(rpad("PSD", 32))
 eeg_psd(e10);
 @time eeg_psd(e10);
-print(rpad("PSD 2", 32))
+print(rpad("PSD: mt", 32))
 eeg_psd(e10, mt=true);
 @time eeg_psd(e10, mt=true);
 print(rpad("Stationarity: mean", 32))
@@ -172,25 +178,28 @@ eeg_negentropy(e10);
 print(rpad("Time coherence", 32))
 eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
-print(rpad("Signal difference 1", 32))
+print(rpad("Signal difference: absdiff", 32))
 eeg_difference(e10, e10; method=:absdiff);
 @time eeg_difference(e10, e10; method=:absdiff);
-print(rpad("Signal difference 2", 32))
+print(rpad("Signal difference: diff2int", 32))
 eeg_difference(e10, e10; method=:diff2int);
 @time eeg_difference(e10, e10; method=:diff2int);
 print(rpad("Epoch stats", 32))
 eeg_epochs_stats(e10);
 @time eeg_epochs_stats(e10);
-print(rpad("Spectrogram 1", 32))
+print(rpad("Spectrogram", 32))
 eeg_spectrogram(e10);
 @time eeg_spectrogram(e10);
-print(rpad("Spectrogram 2", 32))
+print(rpad("Spectrogram: mt", 32))
 eeg_spectrogram(e10, mt=true);
 @time eeg_spectrogram(e10, mt=true);
-print(rpad("Spectrum 1", 32))
+print(rpad("Spectrogram: st", 32))
+eeg_spectrogram(e10, st=true);
+@time eeg_spectrogram(e10, st=true);
+print(rpad("Spectrum: FFT", 32))
 eeg_spectrum(e10);
 @time eeg_spectrum(e10);
-print(rpad("Spectrum 2", 32))
+print(rpad("Spectrum: Hilbert", 32))
 eeg_spectrum(e10, h=true);
 @time eeg_spectrum(e10, h=true);
 print(rpad("Channel stats", 32))
@@ -214,48 +223,51 @@ eeg_dft(e10);
 print(rpad("MSCI95", 32))
 eeg_msci95(e10);
 @time eeg_msci95(e10);
-print(rpad("Mean", 32))
+print(rpad("Mean: normal", 32))
 eeg_mean(e10, e10);
 @time eeg_mean(e10, e10);
-print(rpad("Difference", 32))
-eeg_difference(e10, e10); 
-@time eeg_difference(e10, e10); 
-print(rpad("Temporal envelope 1", 32))
+print(rpad("Mean: boot", 32))
+eeg_mean(e10, e10, method=:boot);
+@time eeg_mean(e10, e10, method=:boot);
+print(rpad("Subtract channels", 32))
+eeg_chdiff(e10, e10); 
+@time eeg_chdiff(e10, e10); 
+print(rpad("Temporal envelope", 32))
 eeg_tenv(e10);
 @time eeg_tenv(e10);
-print(rpad("Temporal envelope 2", 32))
+print(rpad("Temporal envelope: mean", 32))
 eeg_tenv_mean(e10, dims=1);
 @time eeg_tenv_mean(e10, dims=1);
-print(rpad("Temporal envelope 3", 32))
+print(rpad("Temporal envelope: median", 32))
 eeg_tenv_median(e10, dims=1);
 @time eeg_tenv_median(e10, dims=1);
-print(rpad("Power envelope 1", 32))
+print(rpad("Power envelope", 32))
 eeg_penv(e10);
 @time eeg_penv(e10);
-print(rpad("Power envelope 2", 32))
+print(rpad("Power envelope: mean", 32))
 eeg_penv_mean(e10, dims=1);
 @time eeg_penv_mean(e10, dims=1);
-print(rpad("Power envelope 3", 32))
+print(rpad("Power envelope: median", 32))
 eeg_penv_median(e10, dims=1);
 @time eeg_penv_median(e10, dims=1);
-print(rpad("Spectral envelope 1", 32))
+print(rpad("Spectral envelope", 32))
 eeg_senv(e10);
 @time eeg_senv(e10);
-print(rpad("Spectral envelope 2", 32))
+print(rpad("Spectral envelope: mean", 32))
 eeg_senv_mean(e10, dims=1);
 @time eeg_senv_mean(e10, dims=1);
-print(rpad("Spectral envelope 3", 32))
+print(rpad("Spectral envelope: median", 32))
 eeg_senv_median(e10, dims=1);
 @time eeg_senv_median(e10, dims=1);
-print(rpad("Hilbert amplitude envelope 1", 32))
+print(rpad("Hilbert amplitude envelope", 32))
 eeg_henv(e10);
-@time eeg_tenv(e10);
-print(rpad("Hilbert amplitude envelope 2", 32))
+@time eeg_henv(e10);
+print(rpad("Hilbert amplitude envelope: mean", 32))
 eeg_henv_mean(e10, dims=1);
-@time eeg_tenv_mean(e10, dims=1);
-print(rpad("Hilbert amplitude envelope 3", 32))
+@time eeg_henv_mean(e10, dims=1);
+print(rpad("Hilbert amplitude envelope: median", 32))
 eeg_henv_median(e10, dims=1);
-@time eeg_tenv_median(e10, dims=1);
+@time eeg_henv_median(e10, dims=1);
 print(rpad("ISPC 1", 32))
 eeg_ispc(e10);
 @time eeg_ispc(e10);
