@@ -569,3 +569,5 @@ function _sort_channels(ch_t::Vector{String})
     replace!(ch_t, "markers" => "7")
     return sortperm(ch_t)
 end
+
+_c(n) = collect(1:n)

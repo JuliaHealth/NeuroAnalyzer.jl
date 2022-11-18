@@ -305,7 +305,7 @@ Plot signal.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: channel(s) to plot, default is all channels
 - `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -323,7 +323,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
@@ -589,7 +589,7 @@ Plot PSD (power spectrum density).
 - `s_frq::Vector{Float64}`: frequencies
 - `s_pow::Vector{Float64}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
-- `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -2149,8 +2149,6 @@ function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
-    pal = mono == true ? :grays : :darktest
-
     # select channels, default is all channels
     _check_channels(eeg, channel, Symbol(eeg.eeg_header[:signal_type]))
     selected != 0 && _check_channels(eeg, selected)
@@ -3439,7 +3437,6 @@ Topographical plot.
 function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    pal = mono == true ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
     _check_segment(eeg, segment[1], segment[2])
@@ -3534,7 +3531,6 @@ Topographical plot of embedded or external component.
 function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
-    pal = mono == true ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 

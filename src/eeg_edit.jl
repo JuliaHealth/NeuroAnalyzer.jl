@@ -1913,14 +1913,14 @@ Edit EEG electrode.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{String, Int64}`: channel number or name
-- `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
-- `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
-- `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
-- `theta::Union{Real, Nothing}`: polar planar theta coordinate
-- `radius::Union{Real, Nothing}`: polar planar radius coordinate
-- `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-- `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
-- `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+- `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+- `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 - `name::String=""`: channel name
 - `type::String=""`: channel type
 
@@ -1999,14 +1999,14 @@ Return locations of EEG channel electrode.
 # Returns
 
 Named tuple containing:
-- `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
-- `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
-- `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-- `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-- `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-- `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-- `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-- `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+- `theta::Float64`: polar planar theta coordinate
+- `radius::Float64`: polar planar radius coordinate
+- `x::Float64`: Cartesian X spherical coordinate
+- `y::Float64`: Cartesian Y spherical coordinate
+- `z::Float64`: Cartesian Z spherical coordinate
+- `theta_sph::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `radius_sph::Float64`: spherical radius, the distance from the origin to the point
+- `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 """
 function eeg_electrode_loc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, output::Bool=true)
 

@@ -570,14 +570,14 @@ Accepted formats:
 - CSD
 
 Electrode locations:
-- loc_theta       planar polar angle
-- loc_radius      planar polar radius
-- loc_x           spherical Cartesian x
-- loc_y           spherical Cartesian y
-- loc_z           spherical Cartesian z
-- loc_radius_sph  spherical radius
-- loc_theta_sph   spherical horizontal angle
-- loc_phi_sph     spherical azimuth angle
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
 
 # Arguments
 
@@ -669,14 +669,14 @@ Accepted formats:
 - SFP
 
 Electrode locations:
-- loc_theta       planar polar angle
-- loc_radius      planar polar radius
-- loc_x           spherical Cartesian x
-- loc_y           spherical Cartesian y
-- loc_z           spherical Cartesian z
-- loc_radius_sph  spherical radius
-- loc_theta_sph   spherical horizontal angle
-- loc_phi_sph     spherical azimuth angle
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
 
 # Arguments
 
@@ -959,16 +959,16 @@ end
 Add electrode positions from `locs`. 
 
 Electrode locations:
-- channel         channel number
-- labels          channel label
-- loc_theta       planar polar angle
-- loc_radius      planar polar radius
-- loc_x           spherical Cartesian x
-- loc_y           spherical Cartesian y
-- loc_z           spherical Cartesian z
-- loc_radius_sph  spherical radius
-- loc_theta_sph   spherical horizontal angle
-- loc_phi_sph     spherical azimuth angle
+- `channel`         channel number
+- `labels`          channel label
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
 
 # Arguments
 
@@ -1011,16 +1011,16 @@ end
 Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Electrode locations:
-- channel         channel number
-- labels          channel label
-- loc_theta       planar polar angle
-- loc_radius      planar polar radius
-- loc_x           spherical Cartesian x
-- loc_y           spherical Cartesian y
-- loc_z           spherical Cartesian z
-- loc_radius_sph  spherical radius
-- loc_theta_sph   spherical horizontal angle
-- loc_phi_sph     spherical azimuth angle
+- `channel`         channel number
+- `labels`          channel label
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
 
 # Arguments
 

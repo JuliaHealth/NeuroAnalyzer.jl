@@ -326,7 +326,7 @@ edf1 = eeg_zero(edf)
 @test edf1.eeg_signals[1, 1, 1] == 0
 
 c = eeg_chdiff(edf, edf, channel1=1, channel2=2)
-@test size(c) == (309760, 1)
+@test size(c) == (1, 309760, 1)
 
 edf1 = eeg_wbp(edf, frq=10)
 @test size(edf1.eeg_signals) == (19, 309760, 1)

@@ -103,7 +103,7 @@ Return the positions of the `y` vector in the vector `x`.
 - `y_idx::Int64`
 - `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
 """
-function vsearch(y::AbstractVector, x::AbstractVector; return_distance=false)
+function vsearch(y::AbstractVector, x::AbstractVector; return_distance::Bool=false)
 
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 

@@ -6080,7 +6080,7 @@ Return the derivative of EEG channel(s) with length same as the signal.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 **Returns**
 
@@ -6100,7 +6100,7 @@ Return the derivative of EEG channel(s) with length same as the signal.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detrend-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_detrend`** &mdash; *Method*.
@@ -6116,7 +6116,7 @@ Perform piecewise detrending of EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `type::Symbol=:linear`
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -6147,7 +6147,7 @@ Perform piecewise detrending of EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `type::Symbol=:linear`
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
@@ -6174,7 +6174,7 @@ Taper EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `taper::Union{Vector{Real, Vector{ComplexF64}}`
 
 **Returns**
@@ -6195,7 +6195,7 @@ Taper EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
 
 <a id='NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_demean-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -6212,7 +6212,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 **Returns**
 
@@ -6232,7 +6232,7 @@ Remove mean value (DC offset).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_normalize-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_normalize`** &mdash; *Method*.
@@ -6248,7 +6248,7 @@ Normalize EEG channel(s)
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `method::Symbol`: method for normalization, see `s_normalize()` for details
 
 **Returns**
@@ -6269,7 +6269,7 @@ Normalize EEG channel(s)
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `method::Symbol`: method for normalization, see `s_normalize()` for details
 
 <a id='NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_noise-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -6286,7 +6286,7 @@ Add random noise to EEG channel(s)
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 **Returns**
 
@@ -6306,7 +6306,7 @@ Add random noise to EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 <a id='NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_filter-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_filter`** &mdash; *Method*.
@@ -6322,7 +6322,7 @@ Apply filtering to EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -6367,7 +6367,7 @@ Apply filtering to EEG channel(s).
 
 **Arguments**
 
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `fprototype::Symbol`: filter prototype:
 
       * `:butterworth`
@@ -6409,7 +6409,7 @@ Perform principal component analysis (PCA).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `n::Int64`: number of PCs to calculate
 
 **Returns**
@@ -6556,8 +6556,8 @@ Calculate cross-covariance between two EEG signals.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
   * `lag::Int64=1`: lags range is `-lag:lag`
   * `demean::Bool=false`: demean signal prior to analysis
   * `norm::Bool=false`: normalize cross-covariance
@@ -6607,7 +6607,7 @@ Calculate stationarity.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `window::Int64=10`: time window in samples
   * `method::Symbol=:euclid`: stationarity method: `:mean`, `:var`, `:euclid`, `:hilbert`, `:adf`
@@ -6653,8 +6653,8 @@ Calculate mutual information between two EEG channels.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -6717,8 +6717,28 @@ Return frequency limits for a `band`.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `band::Symbol`: band range name: `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
+  * `eeg::NeuroAnalyzer.EEG`
+  * `band::Symbol`: band range name: `:list`, `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
+
+**Returns**
+
+  * `band_frequency::Tuple{Real, Real}`
+
+<a id='NeuroAnalyzer.eeg_band-Tuple{Int64}' href='#NeuroAnalyzer.eeg_band-Tuple{Int64}'>#</a>
+**`NeuroAnalyzer.eeg_band`** &mdash; *Method*.
+
+
+
+```julia
+eeg_band(fs, band)
+```
+
+Return frequency limits for a `band`.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `band::Symbol`: band range name: `:list`, `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
 
 **Returns**
 
@@ -6741,8 +6761,8 @@ Calculate coherence (mean over time) and MSC (magnitude-squared coherence).
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7149,8 +7169,8 @@ Calculates mean, standard deviation and 95% confidence interval for two EEG chan
   * `eeg2:NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7161,7 +7181,7 @@ Named tuple containing:
   * `s_u::Matrix{Float64}`: upper 95% CI bound by epochs
   * `s_l::Matrix{Float64}`: lower 95% CI bound by epochs
 
-<a id='NeuroAnalyzer.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}' href='#NeuroAnalyzer.eeg_difference-Tuple{Array{Float64, 3}, Array{Float64, 3}}'>#</a>
+<a id='NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_difference-Tuple{NeuroAnalyzer.EEG, NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_difference`** &mdash; *Method*.
 
 
@@ -7174,12 +7194,12 @@ Calculates mean difference and 95% confidence interval for two EEG channels.
 
 **Arguments**
 
-  * `eeg1::Array{Float64, 3}`
-  * `eeg2:Array{Float64, 3}`
+  * `eeg1::NeuroAnalyzer.EEG`
+  * `eeg2:NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
   * `n::Int64`: number of bootstraps
   * `method::Symbol[:absdiff, :diff2int]`
 
@@ -7478,8 +7498,8 @@ Calculate ISPC (Inter-Site-Phase Clustering).
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7536,8 +7556,8 @@ Calculate PLI (Phase Lag Index) between `eeg1` and `eeg2`.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7606,8 +7626,8 @@ Calculate amplitude envelope correlation.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Int64`
   * `channel2::Int64`
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7633,8 +7653,8 @@ Perform generalized eigendecomposition..
   * `eeg2::NeuroAnalyzer.EEG`: original signal data
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7787,8 +7807,8 @@ Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
   * `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 **Returns**
@@ -7839,8 +7859,8 @@ Calculate variance F-test.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7916,7 +7936,7 @@ Split EEG signal into frequency bands.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `order::Int64=8`: bandpass filter order
+  * `order::Int64=8`: band-pass filter order
 
 **Returns**
 
@@ -7935,7 +7955,7 @@ Named tuple containing:
 eeg_chdiff(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate difference between EEG1 and EEG2 channels.
+Calculate channels difference.
 
 **Arguments**
 
@@ -7943,8 +7963,8 @@ Calculate difference between EEG1 and EEG2 channels.
   * `eeg2::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
 
 **Returns**
 
@@ -7991,8 +8011,8 @@ Calculate cross power spectrum.
   * `eeg::NeuroAnalyzer.EEG`
   * `channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg1)`: default use all epochs
-  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg2)`: default use all epochs
+  * `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
+  * `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
   * `norm::Bool=true`: normalize do dB
 
 **Returns**
@@ -8318,7 +8338,7 @@ Plot signal.
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
   * `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to plot, default is all channels
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: channel(s) to plot, default is all channels
   * `segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
   * `xlabel::String="default"`: x-axis label, default is Time [s]
   * `ylabel::String="default"`: y-axis label, default is no label

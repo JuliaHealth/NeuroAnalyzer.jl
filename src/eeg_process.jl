@@ -156,13 +156,13 @@ Return the derivative of EEG channel(s) with length same as the signal.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_derivative(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_derivative(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     epoch_n = eeg_epoch_n(eeg)
     
@@ -187,9 +187,9 @@ Return the derivative of EEG channel(s) with length same as the signal.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_derivative!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_derivative!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_derivative(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
@@ -206,7 +206,7 @@ Perform piecewise detrending of EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `type::Symbol=:linear`
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -222,7 +222,7 @@ Perform piecewise detrending of EEG channel(s).
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_detrend(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function eeg_detrend(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
 
@@ -250,7 +250,7 @@ Perform piecewise detrending of EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `type::Symbol=:linear`
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -262,7 +262,7 @@ Perform piecewise detrending of EEG channel(s).
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 """
-function eeg_detrend!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function eeg_detrend!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     eeg.eeg_signals = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, f=f).eeg_signals
     eeg_reset_components!(eeg)
@@ -279,14 +279,14 @@ Taper EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `taper::Union{Vector{Real, Vector{ComplexF64}}`
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_taper(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function eeg_taper(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     _check_channels(eeg, channel)
 
@@ -313,10 +313,10 @@ Taper EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `taper::Union{Vector{<:Real}, Vector{ComplexF64}}`
 """
-function eeg_taper!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function eeg_taper!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     eeg.eeg_signals = eeg_taper(eeg, channel=channel, taper=taper).eeg_signals
     eeg_reset_components!(eeg)
@@ -333,13 +333,13 @@ Remove mean value (DC offset).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_demean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_demean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -366,9 +366,9 @@ Remove mean value (DC offset).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_demean!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_demean!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_demean(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
@@ -385,14 +385,14 @@ Normalize EEG channel(s)
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `s_normalize()` for details
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_normalize(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), method::Symbol)
+function eeg_normalize(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), method::Symbol)
 
     _check_channels(eeg, channel)
 
@@ -419,10 +419,10 @@ Normalize EEG channel(s)
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `s_normalize()` for details
 """
-function eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), method::Symbol)
+function eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), method::Symbol)
 
     eeg.eeg_signals = eeg_normalize(eeg, channel=channel, method=method).eeg_signals
     eeg_reset_components!(eeg)
@@ -439,13 +439,13 @@ Add random noise to EEG channel(s)
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_noise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_add_noise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -473,9 +473,9 @@ Add random noise to EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_add_noise(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
@@ -492,7 +492,7 @@ Apply filtering to EEG channel(s).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -522,7 +522,7 @@ Apply filtering to EEG channel(s).
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_channels(eeg, channel)
 
@@ -549,7 +549,7 @@ Apply filtering to EEG channel(s).
 
 # Arguments
 
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -575,7 +575,7 @@ Apply filtering to EEG channel(s).
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Vector{<:Real}, Nothing} - window, required for `:fir` filter
 """
-function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
+function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing)
 
     eeg.eeg_signals = eeg_filter(eeg,
                                  channel=channel,
@@ -603,7 +603,7 @@ Perform principal component analysis (PCA).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `n::Int64`: number of PCs to calculate
 
 # Returns
@@ -614,7 +614,7 @@ Named tuple containing:
 - `pc_m::Vector{Float64}`: PC mean
 - `pca::MultivariateStats.PCA{Float64}`: PC model
 """
-function eeg_pca(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), n::Int64)
+function eeg_pca(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), n::Int64)
 
     _check_channels(eeg, channel)
 
@@ -631,13 +631,13 @@ Reconstruct EEG signals using embedded PCA components (`:pc`) and model (`:pca`)
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)
+function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))
 )
 
     :pc in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc component. Perform eeg_pca(EEG) first."))
@@ -663,9 +663,9 @@ Reconstruct EEG signals using embedded PCA components (`:pc`) and model (`:pca`)
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_pca_reconstruct(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
@@ -684,13 +684,13 @@ Reconstruct EEG signals using external PCA components (`pc` and `pca`).
 - `eeg::NeuroAnalyzer.EEG`
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pca::MultivariateStats.PCA{Float64}`: PC model
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG, pc::Array{Float64, 3}, pca::MultivariateStats.PCA{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG, pc::Array{Float64, 3}, pca::MultivariateStats.PCA{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -712,9 +712,9 @@ Reconstruct EEG signals using external PCA components (`pc` and `pca`).
 - `eeg::NeuroAnalyzer.EEG`
 - `pc::Array{Float64, 3}:`: PC(1)..PC(n) × epoch
 - `pca::MultivariateStats.PCA{Float64}`: PC model
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG, pc::Array{Float64, 3}, pca::MultivariateStats.PCA{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG, pc::Array{Float64, 3}, pca::MultivariateStats.PCA{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_pca_reconstruct(eeg, pc, pca).eeg_signals
     eeg_reset_components!(eeg)
@@ -731,7 +731,7 @@ Perform independent component analysis (ICA).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `n::Int64`: number of ICs
 - `tol::Float64=1.0e-6`: tolerance for ICA
 - `iter::Int64=100`: maximum number of iterations
@@ -743,7 +743,7 @@ Named tuple containing:
 - `ica::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ica_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
 """
-function eeg_ica(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+function eeg_ica(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
     _check_channels(eeg, channel)
 
@@ -760,14 +760,14 @@ Reconstruct EEG signals using embedded ICA components (`:ica` and `:ica_mw`).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `ic::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), ic::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
     :ica in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica component. Perform eeg_ica(EEG) first."))
     :ica_mw in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :ica_mw component. Perform eeg_ica(EEG) first."))
@@ -792,10 +792,10 @@ Reconstruct EEG signals using embedded ICA components (`:ica` and `:ica_mw`).
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 """
-function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), ic::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
     eeg.eeg_signals = eeg_ica_reconstruct(eeg, channel=channel, ic=ic).eeg_signals
     eeg_reset_components!(eeg)
@@ -814,7 +814,7 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
 - `eeg::NeuroAnalyzer.EEG`
 - `ica::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ica_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
 # Returns
@@ -822,7 +822,7 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
 - `eeg::NeuroAnalyzer.EEG`
 """
 
-function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), ic::Union{Int64, Vector{Int64}, AbstractRange})
+function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
     _check_channels(eeg, channel)
 
@@ -845,10 +845,10 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
 - `eeg::NeuroAnalyzer.EEG`
 - `ica::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ica_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 """
-function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), ic::Union{Int64, Vector{Int64}, AbstractRange}, )
+function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange}, )
 
     eeg.eeg_signals = eeg_ica_reconstruct(eeg, ica, ica_mw, channel=channel, ic=ic).eeg_signals
     eeg_reset_components!(eeg)
@@ -865,13 +865,13 @@ Return the average signal of EEG channels.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_average(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_average(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -893,9 +893,9 @@ Return the average signal of EEG channels.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_average!(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_average!(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals = eeg_average(eeg, channel=channel).eeg_signals
     eeg_reset_components!(eeg)
@@ -945,13 +945,13 @@ Invert polarity.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_invert_polarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_invert_polarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
     
@@ -971,9 +971,9 @@ Invert polarity.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: channel(s) to invert
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: channel(s) to invert
 """
-function eeg_invert_polarity!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_invert_polarity!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -1173,14 +1173,14 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), wt::T) where {T <: DiscreteWavelet}
+function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), wt::T) where {T <: DiscreteWavelet}
 
     _check_channels(eeg, channel)
 
@@ -1208,10 +1208,10 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
 """
-function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), wt::T) where {T <: DiscreteWavelet}
+function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), wt::T) where {T <: DiscreteWavelet}
 
     eeg.eeg_signals = eeg_wdenoise(eeg, channel=channel, wt=wt).eeg_signals
 
@@ -1491,7 +1491,7 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64=0`: pad signal with `pad` zeros
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 
@@ -1499,7 +1499,7 @@ Perform wavelet denoising.
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_fftdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, threshold::Int64=100)
+function eeg_fftdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, threshold::Int64=100)
 
     _check_channels(eeg, channel)
 
@@ -1526,11 +1526,11 @@ Perform wavelet denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64=0`: pad signal with `pad` zeros
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 """
-function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, threshold::Int64=100)
+function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, threshold::Int64=100)
 
     eeg.eeg_signals = eeg_fftdenoise(eeg, channel=channel, pad=pad, threshold=threshold).eeg_signals
     eeg_reset_components!(eeg)
@@ -1693,7 +1693,7 @@ Perform wavelet bandpass filtering.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -1703,7 +1703,7 @@ Perform wavelet bandpass filtering.
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_wbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+function eeg_wbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
     _check_channels(eeg, channel)
 
@@ -1731,13 +1731,13 @@ Perform wavelet bandpass filtering.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 - `demean::Bool=true`: demean signal prior to analysis
 """
-function eeg_wbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+function eeg_wbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
     eeg.eeg_signals = eeg_wbp(eeg, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean).eeg_signals
 
@@ -1755,7 +1755,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `demean::Bool=true`: demean signal prior to analysis
@@ -1764,7 +1764,7 @@ Perform convolution bandpass filtering.
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_cbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, frq::Real, demean::Bool=true)
+function eeg_cbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, demean::Bool=true)
 
     _check_channels(eeg, channel)
 
@@ -1792,12 +1792,12 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Tuple{Real, Real}`: filter frequency
 - `demean::Bool=true`: demean signal prior to analysis
 """
-function eeg_cbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), pad::Int64=0, frq::Real, demean::Bool=true)
+function eeg_cbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, demean::Bool=true)
 
     eeg.eeg_signals = eeg_cbp(eeg, channel=channel, pad=pad, frq=frq, demean=demean).eeg_signals
 
@@ -1815,12 +1815,12 @@ Perform Wiener deconvolution denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 
 # Returns
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_denoise_wien(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_denoise_wien(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -1840,9 +1840,9 @@ Perform Wiener deconvolution denoising.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg))
+function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     eeg.eeg_signals[channel, :, :] = s_denoise_wien(eeg.eeg_signals[channel, :, :])
     eeg_reset_components!(eeg)
@@ -1859,14 +1859,14 @@ Multiply EEG channel(s) by `factor`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `factor::Real`: channel signal is multiplied by `factor`
 
 # Returns
 
 - `eeg_new::NeuroAnalyzer.EEG`
 """
-function eeg_scale(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), factor::Real)
+function eeg_scale(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), factor::Real)
 
     _check_channels(eeg, channel)
     
@@ -1886,10 +1886,10 @@ Multiply EEG channel(s) by `factor`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `factor::Real`: channel signal is multiplied by `factor`
 """
-function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=1:eeg_channel_n(eeg), factor::Real)
+function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), factor::Real)
 
     _check_channels(eeg, channel)
 
