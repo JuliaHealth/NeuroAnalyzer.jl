@@ -1138,37 +1138,53 @@ end
 """
     eeg_detect_bad_epochs(eeg; method, ch_t)
 
-Detect bad EEG epochs. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
+Detect bad EEG epochs.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`: detection method:
     - `:flat`: flat channel(s)
     - `:rmse`: RMSE
     - `:rmsd`: RMSD
     - `:euclid`: Euclidean distance
     - `:p2p`: peak-to-peak amplitude
-- `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
+- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad
+- `t::Float64=0.1`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 
 # Returns
 
 - `bad_epochs_idx::Vector{Int64}`
 """
-function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], ch_t::Float64=0.1)
+function eeg_detect_bad_epochs(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], p::Float64=0.95, t::Float64=0.1)
 
     for idx in method
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :p2p], "method")
     end
-    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
-    signal = @view eeg.eeg_signals[channels, :, :]
-    epoch_n = eeg_epoch_n(eeg)
 
-    bad_epochs_idx = zeros(Int64, epoch_n)
+    p < 0 || p > 1 && throw(ArgumentError("p must be ≥ 0 and ≤ 1"))
+    t < 0 || t > 1 && throw(ArgumentError("t must be ≥ 0 and ≤ 1"))
+
+    _check_channels(eeg, channel)
+    channel_n = length(channel)
+    epoch_n = eeg_epoch_n(eeg)    
+
+    bad_idx = zeros(Bool, channel_n, epoch_n)
 
     if :flat in method
-        bad_epochs = s_detect_epoch_flat(signal)
-        bad_epochs_idx[bad_epochs .> ch_t] .= 1
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            bad_channels_score = 0
+            bad_channels = zeros(Bool, channel_n)
+            Threads.@threads for channel_idx in 1:channel_n
+                cr, cp = @views s_detect_channel_flat(eeg.eeg_signals[channel_idx, :, epoch_idx], w=w, tol=tol)
+                if cr == true && cp > p
+                    bad_channels_score += 1
+                    bad_channels[channel_idx] = true
+                end
+            end
+            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+        end
     end
 
     if :rmse in method

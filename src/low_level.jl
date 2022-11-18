@@ -2415,32 +2415,66 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
 end
 
 """
-    s_detect_epoch_flat(signal)
+s_detect_channel_flat(signal; w, tol)
+
+Detect flat channel.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `w::Int64=8`: window width in samples (signal is averaged within `w`-width window)
+- `tol::Float64=eps()`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+
+# Returns
+
+Named tuple containing:
+- `r::Bool`: true if channel is flat
+- `p::Float64`: flat to non-flat segments ratio
+"""
+function s_detect_channel_flat(signal::AbstractVector; w::Int64=8, tol::Float64=eps())
+    w < length(signal) || throw(ArgumentError("w must be < $(length(signal))"))
+    sm = Vector{Float64}()
+    for idx in 1:w:(length(signal) - w)
+        @views push!(sm, mean(signal[idx:(idx + w)]))
+    end
+    r = count(abs.(diff(sm)) .< tol) == (length(sm) - 1)
+    p = count(abs.(diff(sm)) .< tol) / (length(sm) - 1)
+    return (r=r, p=p)
+end
+
+"""
+    s_detect_epoch_flat(signal; w, tol)
 
 Detect bad epochs based on: flat channel(s)
 
 # Arguments
 
 - `signal::AbstractArray`
+- `w::Int64=8`: window width in samples (signal is averaged within `w`-width window)
+- `tol::Float64=eps()`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 
 # Returns
 
-- `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+Named tuple containing:
+- `score::Vector{Int64}`: percentage of bad channels per epoch
+- `p::Float64`: flat to non-flat segments ratio (channels × epochs)
 """
-function s_detect_epoch_flat(signal::AbstractArray)
+function s_detect_epoch_flat(signal::AbstractArray; w::Int64=1, tol::Float64=eps())
     
     channel_n, _, epoch_n = size(signal)
 
     bad_epochs_score = zeros(epoch_n)
+    bad_epochs_p = zeros(channel_n, epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            # add tolerance around zero μV
-            @views sum(abs.(diff(signal[channel_idx, :, epoch_idx]))) < eps() && (bad_epochs_score[epoch_idx] += 1)
+            r, p = @views s_detect_channel_flat(signal[channel_idx, :, epoch_idx], w=w, tol=tol)
+            r == true && (bad_epochs_score[epoch_idx] += 1)
+            bad_epochs_p[channel_idx, epoch_idx] = p
         end
     end
 
-    return round.(bad_epochs_score ./ channel_n, digits=1)
+    return (score=round.(bad_epochs_score ./ channel_n, digits=2), p=bad_epochs_p)
 end
 
 """
@@ -2473,7 +2507,7 @@ function s_detect_epoch_rmse(signal::AbstractArray)
         end
     end
 
-    return round.(bad_epochs_score ./ channel_n, digits=1)
+    return round.(bad_epochs_score ./ channel_n, digits=2)
 end
 
 """
@@ -2506,7 +2540,7 @@ function s_detect_epoch_rmsd(signal::AbstractArray)
         end
     end
 
-    return round.(bad_epochs_score ./ channel_n, digits=1)
+    return round.(bad_epochs_score ./ channel_n, digits=2)
 end
 
 """
@@ -2539,7 +2573,7 @@ function s_detect_epoch_euclid(signal::AbstractArray)
         end
     end
 
-    return round.(bad_epochs_score ./ channel_n, digits=1)
+    return round.(bad_epochs_score ./ channel_n, digits=2)
 end
 
 """
@@ -2571,7 +2605,7 @@ function s_detect_epoch_p2p(signal::AbstractArray)
         end
     end
 
-    return round.(bad_epochs_score ./ channel_n, digits=1)
+    return round.(bad_epochs_score ./ channel_n, digits=2)
 end
 
 """

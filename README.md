@@ -16,7 +16,7 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 ## Installation
 
-First, download [Julia](https://julialang.org/downloads/) 1.7.0 or later. 
+First, download [Julia](https://julialang.org/downloads/) v1.7.0 or later. 
 
 There are two branches of NeuroAnalyzer:
 - [stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master): released once per month, recommended for research tasks
@@ -99,6 +99,7 @@ mutable struct STUDY
     study_group::Vector{Symbol}
 end
 ```
+
 Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object inter- and intra- groups.
 
 Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
@@ -107,13 +108,13 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html).
 
-Tutorial introducing NeuroAnalyzer functions is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Tutorial.md). More tutorials and FAQ are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
+NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.htm](https://neuroanalyzer.org/changelog.html).
 
 ## What's next
 
-This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future developments of NeuroAnalyzer is not complete and not in any particular order.
+This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future developments of NeuroAnalyzer is neither complete, nor in any particular order.
 
 ## Performance
 

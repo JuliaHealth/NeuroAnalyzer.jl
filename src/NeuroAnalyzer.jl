@@ -169,7 +169,7 @@ export s_fconv
 export s_ica
 export s_ica_reconstruct
 export s_spectrogram
-export s_detect_epoch_flat
+export s_detect_channel_flat
 export s_detect_epoch_rmse
 export s_detect_epoch_rmsd
 export s_detect_epoch_euclid

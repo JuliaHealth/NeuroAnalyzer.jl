@@ -162,7 +162,7 @@ edf_tmp = eeg_copy(edf)
 ```
 Do not use `edf_tmp = edf` as all operations on `edf_tmp` will also affect `edf`.
 
-All operations on EEG are stored within the object. Show processing history:
+All operations on EEG are stored within the object. To show processing history:
 ```julia
 eeg_history(edf)
 ```
