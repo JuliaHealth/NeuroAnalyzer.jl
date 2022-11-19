@@ -449,7 +449,7 @@ function eeg_add_noise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
 
     _check_channels(eeg, channel)
 
-    channel_n = eeg_channel_n(eeg)
+    channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
     eeg_new = deepcopy(eeg)
@@ -1183,13 +1183,12 @@ Perform wavelet denoising.
 function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), wt::T) where {T <: DiscreteWavelet}
 
     _check_channels(eeg, channel)
-
-    channel_n = eeg_channel_n(eeg)
+    channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:length(channel)
+        Threads.@threads for channel_idx in 1:channel_n
             eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt)
         end
     end

@@ -1093,6 +1093,13 @@ my_study.study_eeg[1].eeg_signals
 
 ### EEG Misc
 
+Any external formula/operation/function may be applied to EEG signal using `eeg_apply()` function:
+```julia
+eeg_apply(edf, f="mean(eeg, dims=1)", channel=1:4)
+```
+`eeg` indicates EEG signal channels. Function `f` will be applied to all channels indicated by `channel` (default is all EEG/MEG channels).
+
+Using band names and picks:
 ```julia
 eeg_band(edf, band=:alpha)
 edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
@@ -1108,26 +1115,4 @@ Convert samples to seconds/seconds to samples:
 ```julia
 eeg_s2t(edf, t=1234)
 eeg_t2s(edf, t=10)
-```
-
-Mutators store results as embedded components in the EEG object:
-```julia
-eeg_autocov!(edf)
-eeg_cor!(edf)
-eeg_cov!(edf)
-eeg_entropy!(edf)
-eeg_freqs!(edf)
-eeg_mi!(edf)
-eeg_pca!(edf, n=2)
-eeg_psd!(edf)
-eeg_stationarity!(edf)
-eeg_total_power!(edf)
-
-eeg_ica!(edf, n=4)
-eeg_component(edf, c=:ica)
-
-eeg_epochs_stats!(edf)
-eeg_component(edf, c=:epochs_mean)
-
-eeg_info(edf)
 ```

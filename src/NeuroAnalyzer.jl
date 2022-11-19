@@ -448,6 +448,7 @@ export eeg_fconv
 export eeg_tconv
 export eeg_dft
 export eeg_mean
+export eeg_msci95
 export eeg_difference
 export eeg_acov
 export eeg_tenv
@@ -485,6 +486,7 @@ export eeg_psdslope
 export eeg_henv
 export eeg_henv_mean
 export eeg_henv_median
+export eeg_apply
 
 include("eeg_study.jl")
 export eeg_study_create

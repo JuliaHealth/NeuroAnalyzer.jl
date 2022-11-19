@@ -2056,8 +2056,8 @@ function s_entropy(signal::AbstractVector)
 
     # convert histograms to probability values
     return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
-            sent=coefentropy(float.(signal), ShannonEntropy()),
-            leent=coefentropy(float.(signal), LogEnergyEntropy()))
+            sent=coefentropy(signal, ShannonEntropy()),
+            leent=coefentropy(signal, LogEnergyEntropy()))
 end
 
 """

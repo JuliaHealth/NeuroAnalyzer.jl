@@ -169,12 +169,12 @@ eeg_mi(e10);
 print(rpad("Mutual information 2", 32))
 eeg_mi(e10, e10);
 @time eeg_mi(e10, e10);
-print(rpad("Entropy", 32))
-eeg_entropy(e10);
-@time eeg_entropy(e10);
-print(rpad("Negentropy", 32))
-eeg_negentropy(e10);
-@time eeg_negentropy(e10);
+# print(rpad("Entropy", 32))
+# eeg_entropy(e10);
+# @time eeg_entropy(e10);
+# print(rpad("Negentropy", 32))
+# eeg_negentropy(e10);
+# @time eeg_negentropy(e10);
 print(rpad("Time coherence", 32))
 eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
@@ -343,3 +343,6 @@ eeg_cwt(e10, wt=wavelet(Morlet(π), β=2));
 print(rpad("PSD slope", 32))
 eeg_psdslope(e10);
 @time eeg_psdslope(e10);
+print(rpad("eeg_apply()", 32))
+eeg_apply(e10, f="mean(eeg, dims=1)", channel=1:4);
+@time eeg_apply(e10, f="mean(eeg, dims=1)", channel=1:4);

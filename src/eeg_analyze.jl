@@ -458,8 +458,8 @@ Calculate entropy.
 
 Named tuple containing:
 - `ent::Array{Float64, 2}`
-- `sent::Array{Float64, 2}`: Shanon entropy
-- `leent::Array{Float64, 2}`: log energy entropy
+- `s_ent::Array{Float64, 2}`: Shanon entropy
+- `le_ent::Array{Float64, 2}`: log energy entropy
 """
 function eeg_entropy(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])))
 
@@ -476,7 +476,7 @@ function eeg_entropy(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
         end
     end
 
-    return (ent=ent, sent=sent, leent=leent)
+    return (ent=ent, s_ent=sent, le_ent=leent)
 end
 
 """
@@ -1259,7 +1259,7 @@ function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
 end
 
 """
-    eeg_mean(eeg; channel, n, method)
+    eeg_msci95(eeg; channel, n, method)
 
 Calculate mean, standard deviation and 95% confidence interval for EEG channels.
 
@@ -1278,7 +1278,7 @@ Named tuple containing:
 - `s_u::Matrix{Float64}`: upper 95% CI
 - `s_l::Matrix{Float64}`: lower 95% CI
 """
-function eeg_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), n::Int64=3, method::Symbol=:normal)
+function eeg_msci95(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), n::Int64=3, method::Symbol=:normal)
 
     _check_var(method, [:normal, :boot], "method")
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
@@ -3587,4 +3587,47 @@ function eeg_henv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     return (h_env_m=h_env_m, h_env_u=h_env_u, h_env_l=h_env_l, s_t=s_t)
+end
+
+"""
+    eeg_apply(eeg; channel, f)
+
+Apply any function.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+- `f::String`: function to be applied, e.g. `f="mean(eeg, dims=3)"; EEG signal is given using variable `eeg` here.
+
+# Returns
+
+- `out::Array{Float64, 3}`
+"""
+function eeg_apply(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::String)
+
+    #_check_channels(eeg, channel)
+    channel_n = length(channel)
+    epoch_n = eeg_epoch_n(eeg)
+
+    f_tmp = replace(f, "eeg" => "$(eeg.eeg_signals[1, :, 1])")
+    out_tmp = eval(Meta.parse(f_tmp))
+    out = zeros(eltype(out_tmp), channel_n, length(out_tmp), epoch_n)
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(channel_n * epoch_n, 1))
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            f_tmp = replace(f, "eeg" => "$(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])")
+            try
+                out[channel_idx, :, epoch_idx] = eval(Meta.parse(f_tmp))
+
+            catch
+                @error "Formula is incorrect."
+            end
+            # update progress bar
+            progress_bar == true && next!(p)
+        end
+    end
+    return out
 end
