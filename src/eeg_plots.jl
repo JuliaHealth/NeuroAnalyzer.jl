@@ -120,6 +120,104 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 end
 
 """
+    plot_signal(t, signal, bad; <keyword arguments>)
+
+Plot amplitude of single- or multi-channel `signal`.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::Union{AbstractVector, AbstractArray}`: data to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `scale::Bool=true`: draw scale
+- `units::String="μV"`: units of the scale
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{AbstractVector, AbstractArray}, bad::Vector{Bool}; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="μV", kwargs...)
+
+    length(bad) == size(signal, 1) || throw(ArgumentError("Length of bad channels vector and number of channels must be equal."))
+
+    # convert single-channel signal to single-row matrix
+    ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
+    channel_n = size(signal, 1)
+
+    # reverse so 1st channel is on top
+    signal = @views reverse(signal[:, 1:length(t)], dims = 1)
+
+    pal = :darktest
+
+    # get range of the original signal for the scale
+    range = _get_range(signal)
+
+    # normalize and shift so all channels are visible
+    # each channel is between -1.0 and +1.0
+    for idx in 1:channel_n
+        # scale by 0.5 so maxima do not overlap
+        signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+    end
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=(-1, channel_n),
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   bottom_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+    
+    # plot zero line
+    p = Plots.hline!(collect((channel_n - 1):-1:0),
+                     color=:grey,
+                     lw=0.5,
+                     labels="")
+
+    # plot channels
+    for idx in 1:channel_n
+        if bad[idx]
+            p = @views Plots.plot!(t,
+                                   signal[idx, :],
+                                   linewidth=1,
+                                   label="",
+                                   color=:red)
+        else
+            p = @views Plots.plot!(t,
+                                   signal[idx, :],
+                                   linewidth=1,
+                                   label="",
+                                   color=:black)
+        end
+    end
+
+    # plot labels
+    p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
+
+    # draw scale
+    if scale == true
+        p = Plots.plot!([t[1], t[1]], [(channel_n - 1.5), (channel_n - 0.5)], color=:red, linewidth=5, label="")
+        p = Plots.plot!(annotation=(t[1], (channel_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+    end
+
+    return p
+end
+
+"""
     plot_signal_avg(t, signal; <keyword arguments>)
 
 Plot amplitude mean and ±95% CI of averaged `signal` channels.
@@ -317,13 +415,14 @@ Plot signal.
 - `units::String="μV"`: units of the scale
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
+- `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
@@ -366,17 +465,33 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
     epoch = _t2epoch(eeg, segment[1], segment[2])
 
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channel$(_pl(length(channel))) $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
-        p = plot_signal(t,
-                        signal,
-                        labels=labels,
-                        xlabel=xlabel,
-                        ylabel=ylabel,
-                        title=title,
-                        scale=scale,
-                        units=units,
-                        mono=mono;
-                        kwargs...)
+        if bad == false
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channel$(_pl(length(channel))) $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+            p = plot_signal(t,
+                            signal,
+                            labels=labels,
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            title=title,
+                            scale=scale,
+                            units=units,
+                            mono=mono;
+                            kwargs...)
+        else
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Bad channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+            length(channel) > size(bad, 1) && throw(ArgumentError("Number of channels cannot be larger than number of bad channels rows."))
+            epoch > size(bad, 2) && throw(ArgumentError("Epoch number cannot be larger than number of bad channels columns."))
+            p = plot_signal(t,
+                            signal,
+                            bad[channel, epoch],
+                            labels=labels,
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            title=title,
+                            scale=scale,
+                            units=units;
+                            kwargs...)
+        end
     elseif type === :butterfly
         size(signal, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channels $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
