@@ -2422,24 +2422,21 @@ Detect flat channel.
 # Arguments
 
 - `signal::AbstractVector`
-- `w::Int64=8`: window width in samples (signal is averaged within `w`-width window)
-- `tol::Float64=eps()`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+- `w::Int64=4`: window width in samples (signal is averaged within `w`-width window)
+- `tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 
 # Returns
 
 Named tuple containing:
-- `r::Bool`: true if channel is flat
-- `p::Float64`: flat to non-flat segments ratio
+- `r::Float64`: flat to non-flat segments ratio
 """
-function s_detect_channel_flat(signal::AbstractVector; w::Int64=8, tol::Float64=eps())
+function s_detect_channel_flat(signal::AbstractVector; w::Int64=4, tol::Float64=0.1)
     w < length(signal) || throw(ArgumentError("w must be < $(length(signal))"))
     sm = Vector{Float64}()
     for idx in 1:w:(length(signal) - w)
         @views push!(sm, mean(signal[idx:(idx + w)]))
     end
-    r = count(abs.(diff(sm)) .< tol) == (length(sm) - 1)
-    p = count(abs.(diff(sm)) .< tol) / (length(sm) - 1)
-    return (r=r, p=p)
+    return count(abs.(diff(sm)) .< tol) / length(sm)
 end
 
 """

@@ -429,16 +429,11 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
 
     if epoch != 0
         _check_epochs(eeg, epoch)
-        if eeg_epoch_n(eeg) == 1
-            epoch = 0
+        segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+        if typeof(epoch) == Int64
+            segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
         else
-            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
-            if typeof(epoch) == Int64
-                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
-            else
-                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
-            end
-            epoch = 0
+            segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
         end
     end
 
@@ -461,7 +456,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     epoch = _t2epoch(eeg, segment[1], segment[2])
 
     if type === :normal
@@ -586,16 +581,11 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
 
     if epoch != 0
         _check_epochs(eeg, epoch)
-        if eeg_epoch_n(eeg) == 1
-            epoch = 0
+        segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
+        if typeof(epoch) == Int64
+            segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
         else
-            segment = (((epoch[1] - 1) * eeg_epoch_len(eeg) + 1), segment[2])
-            if typeof(epoch) == Int64
-                segment = (segment[1], (segment[1] + eeg_epoch_len(eeg) - 1))
-            else
-                segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
-            end
-            epoch = 0
+            segment = (segment[1], (epoch[end] * eeg_epoch_len(eeg)))
         end
     end
 
@@ -619,7 +609,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
-    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     epoch = _t2epoch(eeg, segment[1], segment[2])
 
     if type === :normal
@@ -1306,7 +1296,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     signal = eeg.eeg_signals[channel, :, epoch]
 
     # get time vector
-    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if ref === :abs
         if method === :welch
@@ -1513,7 +1503,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; e
     signal = c[c_idx, :, epoch]
 
     # get time vector
-    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if ref === :abs
         if method === :welch
@@ -1791,7 +1781,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
     length(channel) > 1 && length(signal) / length(channel) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
 
     # get time vector
-    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if length(channel) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -1938,7 +1928,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
     length(c_idx) > 1 && length(signal) / length(c_idx) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
 
     # get time vector
-    t_1, t_s1, t_2, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
 
     if length(c_idx) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -3585,7 +3575,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
         signal = eeg_epochs(eeg_tmp, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
-    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector
@@ -3701,7 +3691,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     else
         t = _get_t(segment[1], segment[2] + 1, eeg_sr(eeg_tmp))
     end
-    t_1, t_s1, t_2, t_s2 = _convert_t(t[1], t[end])
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
     epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector

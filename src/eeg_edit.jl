@@ -1149,20 +1149,24 @@ Detect bad EEG channels and epochs.
     - `:rmse`: RMSE vs average channel outside of 95%CI
     - `:rmsd`: RMSD
     - `:euclid`: Euclidean distance
+    - `:var`: mean signal variance
     - `:p2p`: peak-to-peak amplitude
-- `w::Int64=8`: window width in samples (signal is averaged within `w`-width window)
-- `tol::Float64=eps()`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+- `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
+- `tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+- `f::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
 - `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad
-- `t::Float64=0.1`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
+- `t::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 
 # Returns
 
-- `bad_idx::Vector{Int64}`: matrix of bad channels × epochs
+Named tuple containing:
+- `bad_idx::Matrix{Bool}`: matrix of bad channels × epochs
+- `bad_epochs::Vector{Int64}`: list of bad epochs
 """
-function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=8, tol::Float64=eps(), p::Float64=0.95, t::Float64=0.2)
+function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, tol::Float64=0.1, f::Float64=0.3, p::Float64=0.95, t::Float64=0.3)
 
     for idx in method
-        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :p2p], "method")
+        _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p], "method")
     end
 
     p < 0 || p > 1 && throw(ArgumentError("p must be ≥ 0 and ≤ 1"))
@@ -1173,25 +1177,29 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
     epoch_n = eeg_epoch_n(eeg)    
 
     bad_idx = zeros(Bool, channel_n, epoch_n)
+    bad_epochs = Vector{Int64}()
 
     if :flat in method
         @inbounds @simd for epoch_idx in 1:epoch_n
             bad_channels_score = 0
             bad_channels = zeros(Bool, channel_n)
             Threads.@threads for channel_idx in 1:channel_n
-                cr, cp = @views s_detect_channel_flat(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], w=w, tol=tol)
-                if cr == true && cp > p
+                r = @views s_detect_channel_flat(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], w=w, tol=tol)
+                if r > f
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
         end
     end
     
     if :rmse in method
         @inbounds @simd for epoch_idx in 1:epoch_n
-            ch_m = @views vec(median(eeg.eeg_signals[:, :, epoch_idx], dims=1))
+            ch_m = @views vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, channel_n)
 
@@ -1205,13 +1213,16 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
                     bad_channels[channel_idx] = true
                 end
             end
-            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
         end
     end
 
     if :rmsd in method
         @inbounds @simd for epoch_idx in 1:epoch_n
-            ch_m = @views vec(median(eeg.eeg_signals[:, :, epoch_idx], dims=1))
+            ch_m = @views vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, channel_n)
 
@@ -1225,13 +1236,16 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
                     bad_channels[channel_idx] = true
                 end
             end
-            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
         end
     end
 
     if :euclid in method
         @inbounds @simd for epoch_idx in 1:epoch_n
-            ch_m = @views vec(median(eeg.eeg_signals[:, :, epoch_idx], dims=1))
+            ch_m = @views vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, channel_n)
 
@@ -1245,13 +1259,46 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
                     bad_channels[channel_idx] = true
                 end
             end
-            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
+        end
+    end
+
+    if :var in method
+        epoch_idx=1
+        epoch_idx=2
+        epoch_idx=18
+        epoch_idx=19
+        epoch_idx=20
+        channel=1:19
+        s_v = @views var(eeg.eeg_signals[channel, :, :], dims=2)
+        # mean variance
+        s_mv = @views vec(mean(s_v, dims=3))
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            bad_channels_score = 0
+            bad_channels = zeros(Bool, channel_n)
+
+            Threads.@threads for channel_idx in 1:channel_n
+                ch_v = @views vec(var(eeg.eeg_signals[channel, :, epoch_idx], dims=2))
+                if ch_v[channel_idx] < HypothesisTests.confint(OneSampleTTest(s_mv))[1] || ch_v[channel_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2]
+                    bad_channels_score += 1
+                    bad_channels[channel_idx] = true
+                end
+            end
+            @show epoch_idx
+            @show bad_channels_score
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
         end
     end
 
     if :p2p in method
         @inbounds @simd for epoch_idx in 1:epoch_n
-            ch_m = @views vec(median(eeg.eeg_signals[:, :, epoch_idx], dims=1))
+            ch_m = @views vec(median(eeg.eeg_signals[channel, :, epoch_idx], dims=1))
             p2p_m = abs(maximum(ch_m)) + abs(minimum(ch_m))
 
             bad_channels_score = 0
@@ -1267,11 +1314,14 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
                     bad_channels[channel_idx] = true
                 end
             end
-            (bad_channels_score / channel_n) > t && (bad_idx[:, epoch_idx] = bad_channels)
+            if (bad_channels_score / channel_n) > t
+                bad_idx[:, epoch_idx] = bad_channels
+                push!(bad_epochs, epoch_idx)
+            end
         end
     end
 
-    return bad_idx
+    return (bad_idx=bad_idx, bad_epochs=bad_epochs)
 end
 
 """
