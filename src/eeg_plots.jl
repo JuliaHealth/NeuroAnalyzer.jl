@@ -151,6 +151,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # reverse so 1st channel is on top
     signal = @views reverse(signal[:, 1:length(t)], dims = 1)
+    bad = reverse(bad)
 
     pal = :darktest
 
@@ -190,7 +191,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # plot channels
     for idx in 1:channel_n
-        if bad[idx]
+        if bad[idx] == true
             p = @views Plots.plot!(t,
                                    signal[idx, :],
                                    linewidth=1,

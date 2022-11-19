@@ -140,7 +140,7 @@ Named tuple containing:
 """
 function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
 
-    std(x) == 0 && throw(ArgumentError("Standard deviation of the input vector must not be 0."))
+    # std(x) == 0 && throw(ArgumentError("Standard deviation of the input vector must not be 0."))
 
     n = length(x)
     df = n - 2
