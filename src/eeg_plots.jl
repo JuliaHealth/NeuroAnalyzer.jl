@@ -3046,7 +3046,15 @@ Plot channel/epoch data.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `plot_by::Symbol`: c values refer to: :labels, :channels or :epochs
-- `type::Symbol`: plot type: histogram (`:hist`), kernel density (`:kd`), bar plot (`:bar`), box plot (`:box`), violin plot (`:violin`), paired (`:paired`) or polar (`:polar`); for `:box` and `:violin` `c` must contain ≥ 2 values per channel
+- `type::Symbol`: plot type:
+    - `:hist`: histogram
+    - `:kd`: kernel density
+    - `:bar`: bar plot
+    - `:heat`: heatmap; rows of `c` must be time points, columns must be either channels or epochs
+    - `:box`: box plot; `c` must contain ≥ 2 values per group
+    - `:violin`: violin plot; `c` must contain ≥ 2 values per group
+    - `:paired`: paired
+    - `:polar`: polar
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -3062,33 +3070,35 @@ For `:polar plot` if `c` is a vector, than it contains phases in radians. If `c`
 function eeg_plot_stats(eeg::NeuroAnalyzer.EEG, c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", plot_by::Symbol, type::Symbol, mono::Bool=false, kwargs...)
 
     _check_var(plot_by, [:channels, :epochs, :labels], "plot_by")
-    _check_var(type, [:hist, :kd, :line, :bar, :box, :violin, :dots, :paired, :polar], "type")
+    _check_var(type, [:hist, :kd, :line, :bar, :box, :violin, :dots, :paired, :polar, :heat], "type")
 
     typeof(c) == Symbol && (c = _get_component(eeg, c).c)
 
     if plot_by === :channels
         channel == 0 && throw(ArgumentError("channel must be specified for plot by :channels."))
-        epoch == 0 && (epoch = _select_epochs(eeg, epoch))
         _check_channels(eeg, channel)
-        _check_epochs(eeg, epoch)
         labels = eeg_labels(eeg)[channel]
-        if ndims(c) == 2
-            c = c[channel, epoch]
-        else
-            length(c) < length(channel) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of channels ($(length(channel)))"))
-            c = c[channel]
+        if epoch != 0
+            _check_epochs(eeg, epoch)
+            if ndims(c) == 2
+                c = c[channel, epoch]
+            else
+                length(c) < length(channel) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of channels ($(length(channel)))"))
+                c = c[channel]
+            end
         end
     elseif plot_by === :epochs
         epoch == 0 && throw(ArgumentError("epoch must be specified for plot by :epochs."))
-        channel == 0 && (channel = _select_channels(eeg, channel))
         _check_epochs(eeg, epoch)
-        _check_channels(eeg, channel)
         labels = "e" .* string.(collect(epoch))
-        if ndims(c) == 2
-            c = c[channel, epoch]
-        else
-            length(c) < length(epoch) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of epochs ($(length(epoch)))"))
-            c = c[epoch]
+        if channel != 0
+            _check_channels(eeg, channel)
+            if ndims(c) == 2
+                c = c[channel, epoch]
+            else
+                length(c) < length(epoch) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of epochs ($(length(epoch)))"))
+                c = c[epoch]
+            end
         end
     elseif plot_by === :labels
         if typeof(c) <: Dict
@@ -3403,6 +3413,52 @@ function eeg_plot_stats(eeg::NeuroAnalyzer.EEG, c::Union{Vector{<:Real}, Matrix{
                                 projection=:polar,
                                 color=:black)
             end
+        end
+    elseif type === :heat
+        ndims(c) == 1 && throw(ArgumentError("For :heat plot data must have 2 dimensions."))
+        plot_by === :labels && throw(ArgumentError("For :heat plot_by :labels is not available."))
+        if plot_by === :epochs
+            c = @views c[:, epoch]
+            size(c, 2) == length(epoch) || throw(ArgumentError("Number of columns in c ($(size(c, 2))) must be equal to number of epochs ($length(epoch))."))
+            p = Plots.heatmap(eeg.eeg_epochs_time,
+                              epoch,                              
+                              c,
+                              size=(1200, 800),
+                              left_margin=20Plots.px,
+                              legend=false,
+                              xticks=_ticks(eeg.eeg_epochs_time),
+                              yticks=round.(Int64, range(1, epoch[end], length=10)),
+                              xlabel=xlabel,
+                              ylabel=ylabel,
+                              title=title,
+                              palette=pal,
+                              linewidth=0.5,
+                              titlefontsize=8,
+                              xlabelfontsize=8,
+                              ylabelfontsize=8,
+                              xtickfontsize=8,
+                              ytickfontsize=8;
+                              kwargs...)
+        elseif plot_by === :channels
+            c = @views c[:, channel]
+            size(c, 2) == length(channel) || throw(ArgumentError("Number of columns in c ($(size(c, 2))) must be equal to number of channels ($length(channel))."))
+            p = Plots.heatmap(channel,
+                              eeg.eeg_epochs_time,
+                              c,
+                              size=(1200, 800),
+                              left_margin=20Plots.px,
+                              legend=false,
+                              xticks=_ticks(eeg.eeg_epochs_time),
+                              yticks=round.(Int64, range(1, channel[end], length=10)),
+                              title=title,
+                              palette=pal,
+                              linewidth=0.5,
+                              titlefontsize=8,
+                              xlabelfontsize=8,
+                              ylabelfontsize=8,
+                              xtickfontsize=8,
+                              ytickfontsize=8;
+                              kwargs...)
         end
     end
 

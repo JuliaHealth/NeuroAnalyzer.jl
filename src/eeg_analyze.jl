@@ -1109,7 +1109,6 @@ function eeg_standardize(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     _check_channels(eeg, channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    ss = similar(eeg.eeg_signals[channel, :, :])
     scaler = Vector{Any}()
 
     eeg_new = deepcopy(eeg)
@@ -1469,7 +1468,7 @@ function eeg_tenv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    t_env = reshape(similar(eeg.eeg_signals[channel, :, :]), channel_n, :, epoch_n)
+    t_env = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     s_t = eeg.eeg_epochs_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
@@ -2480,7 +2479,7 @@ function eeg_ged(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Uni
     epoch_n = length(epoch1)
     channel_n = length(channel1)
 
-    sged = similar(eeg1.eeg_signals)
+    sged = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
     ress = zeros(channel_n, epoch_n)
     ress_normalized = zeros(channel_n, epoch_n)
 
@@ -2511,7 +2510,7 @@ function eeg_frqinst(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    frqinst = similar(eeg.eeg_signals[channel, :, :])
+    frqinst = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     fs = eeg_sr(eeg)
 
     verbose == true && @info "eeg_frqinst() uses Hilbert transform, the signal should be narrowband for best results."
@@ -2665,7 +2664,7 @@ function eeg_tkeo(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    tkeo = similar(eeg.eeg_signals)
+    tkeo = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             tkeo[channel_idx, :, epoch_idx] = @views s_tkeo(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
@@ -2860,7 +2859,7 @@ function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1:
 
     Threads.@threads for epoch_idx in 1:epoch_n
        @inbounds @simd for channel_idx1 in 1:channel_n
-           for channel_idx2 in 1:channel_n1
+           for channel_idx2 in 1:channel_idx1
                 ftest = @views VarianceFTest(eeg1.eeg_signals[channel1[channel_idx1], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
@@ -3186,7 +3185,7 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    ph_diff = similar(eeg.eeg_signals[channel, :, :])
+    ph_diff = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     if avg === :phase
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for channel_idx in 1:channel_n
@@ -3242,7 +3241,7 @@ function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    amp_diff = similar(eeg.eeg_signals)
+    amp_diff = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             ref_channels = setdiff(channel, channel_idx)
