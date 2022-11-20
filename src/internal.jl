@@ -242,6 +242,14 @@ function _check_segment(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
     (to > eeg_signal_len(eeg)) && throw(ArgumentError("to must be ≤ $(eeg_signal_len(eeg))."))
 end
 
+function _check_segment(signal::AbstractVector, from::Int64, to::Int64)
+    from < 0 && throw(ArgumentError("from must be > 0."))
+    to < 0 && throw(ArgumentError("to must be > 0."))
+    to < from && throw(ArgumentError("to must be ≥ $from."))
+    from > length(signal) && throw(ArgumentError("from must be ≤ $(length(signal))."))
+    to > length(signal) && throw(ArgumentError("to must be ≤ $(length(signal))."))
+end
+
 function _convert_t(t1::Float64, t2::Float64)
     abs(t1) < 1.0 && (ts1 = string(floor(t1 * 1000, digits=2)) * " ms")
     abs(t1) >= 1.0 && (ts1 = string(floor(t1, digits=2)) * " s")

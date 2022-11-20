@@ -232,22 +232,20 @@ ch = eeg_extract_channel(edf, channel=18)
 edf1 = eeg_replace_channel(edf, channel=1, signal=ch)
 ```
 
-Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):
-```julia
-eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:start)
-edf = eeg_trim(edf, len=(10*eeg_sr(edf)), offset=(10*eeg_sr(edf)), from=:start)
-eeg_trim!(edf, len=(10*eeg_sr(edf)), from=:end)
-```
-
 Split into 10-second epochs:
 ```julia
 e10 = eeg_epochs(edf, epoch_len=10*eeg_sr(edf))
 ```
 
-Trim 1 second from each epoch:
+Remove parts of the signal (all lengths are in samples, use `eeg_t2s()` or `time * sampling rate` to convert time to samples):
 ```julia
-e9 = eeg_trim(e10, trim_len=(1*eeg_sr(e10)), from=:start)
-eeg_plot(e9, len=60*eeg_sr(e9), offset=0)
+eeg_plot(e10, epoch=1)
+# remove one second
+eeg_trim!(e10, segment=(1, 1*eeg_sr(e10)), keep_epochs=false)
+
+eeg_plot(e10, epoch=2)
+# convert time 16.0 to 17.0 s to samples
+eeg_trim!(e10, segment=(t2s(16, eeg_sr(e10)), t2s(17, eeg_sr(e10))), keep_epochs=false)
 ```
 
 Get 1st epoch:

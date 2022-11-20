@@ -99,7 +99,7 @@ s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
 f, s = eeg_dft(edf)
 @test size(f) == (19, 309760, 1)
 
-m, _, _, _ = eeg_mean(edf)
+m, _, _, _ = eeg_msci95(edf)
 @test size(m) == (1, 309760)
 
 m, _, _, _ = eeg_mean(edf, edf)
@@ -136,7 +136,7 @@ p = eeg_stationarity(edf, method=:hilbert)
 p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test size(p) == (32, 1)
 
-e = eeg_trim(edf, len=(10 * eeg_sr(edf)), offset=(20 * eeg_sr(edf)), from=:start)
+e = eeg_trim(edf, segment=(10 * eeg_sr(edf), 20 * eeg_sr(edf)), keep_epochs=false)
 @test size(e.eeg_signals) == (19, 307200, 1)
 
 m = eeg_mi(edf)

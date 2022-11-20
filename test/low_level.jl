@@ -62,9 +62,9 @@ p, f = s_psd(ones(10), fs=10)
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0;;]
 @test s_stationarity_var(ones(10), window=1) == [0.0;;]
-@test s_trim(ones(10), offset=1, len=5) == ones(5)
+@test s_trim(ones(10), segment=(1,5)) == ones(5)
 @test s2_mi(ones(10), ones(10)) == 0.0
-@test s_entropy([1, 2, 3]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)
+@test s_entropy([1.0, 2.0, 3.0]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)
 @test s_negentropy([1, 2, 3]) == -0.16602396751648252
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
@@ -79,11 +79,7 @@ i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ica=i, ica_mw=m, ic=[1]) == zeros(2, 2, 1)
 p, f, t = s_spectrogram(ones(100), fs=10)
 @test size(p) == (51, 46)
-@test size(s_detect_epoch_flat(zeros(2, 10, 2))) == (2,)
-@test s_detect_epoch_rmse(ones(2, 10, 2)) == zeros(2)
-@test s_detect_epoch_rmsd(ones(2, 10, 2)) == zeros(2)
-@test s_detect_epoch_euclid(ones(2, 10, 2)) == zeros(2)
-@test s_detect_epoch_p2p(ones(2, 10, 2)) == zeros(2)
+@test s_detect_channel_flat(ones(100)) == 0.9583333333333334
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test length(s_wdenoise(rand(100), wt=wavelet(WT.haar))) == 100

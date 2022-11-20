@@ -1979,35 +1979,24 @@ function s_stationarity_var(signal::AbstractVector; window::Int64)
 end
 
 """
-    s_trim(signal; len, offset, from)
+    s_trim(signal; segment)
 
-Remove `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Remove segment from the signal.
 
 # Arguments
 
 - `signal::AbstractVector`
-- `len::Int64`: trimming length in samples
-- `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-- `from::Symbol[:start, :end]
+- `segment::Tuple{Int64, Int64}`: segment (from, to) in samples
 
 # Returns
 
 - `s_trimmed::Vector{Float64}`
 """
-function s_trim(signal::AbstractVector; len::Int64, offset::Int64=1, from::Symbol=:start)
+function s_trim(signal::AbstractVector; segment::Tuple{Int64, Int64})
 
-    _check_var(from, [:start, :end], "from")
-    len < 1 && throw(ArgumentError("len must be ≥ 1."))
-    len >= length(signal) && throw(ArgumentError("len must be < $(length(signal))."))
-    offset < 1 && throw(ArgumentError("offset must be ≥ 1."))
-    offset >= length(signal) - 1 && throw(ArgumentError("offset must be < $(length(signal))."))
-    (from ===:start && 1 + offset + len > length(signal)) && throw(ArgumentError("offset + len must be < $(length(signal))."))
+    _check_segment(signal, segment[1], segment[2])
     
-    offset == 1 && (from === :start && (s_trimmed = signal[(offset + len):end]))
-    offset > 1 && (from === :start && (s_trimmed = vcat(signal[1:offset], signal[(1 + offset + len):end])))
-    from === :end && (s_trimmed = signal[1:(end - len)])
-    
-    return s_trimmed
+    return vcat(signal[1:segment[1] - 1], signal[(segment[2] + 1):end])
 end
 
 """
