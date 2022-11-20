@@ -220,15 +220,15 @@ eeg_tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true));
 print(rpad("DFT", 32))
 eeg_dft(e10);
 @time eeg_dft(e10);
-print(rpad("MSCI95", 32))
+print(rpad("MSCI95: normal", 32))
 eeg_msci95(e10);
 @time eeg_msci95(e10);
-print(rpad("Mean: normal", 32))
+print(rpad("MSCI95:boot", 32))
+eeg_msci95(e10, method=:boot);
+@time eeg_msci95(e10);
+print(rpad("Mean", 32))
 eeg_mean(e10, e10);
 @time eeg_mean(e10, e10);
-print(rpad("Mean: boot", 32))
-eeg_mean(e10, e10, method=:boot);
-@time eeg_mean(e10, e10, method=:boot);
 print(rpad("Subtract channels", 32))
 eeg_chdiff(e10, e10); 
 @time eeg_chdiff(e10, e10); 

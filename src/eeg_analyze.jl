@@ -2566,6 +2566,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
 
     _check_channels(eeg, channel)
     epoch_n = eeg_epoch_n(eeg)
+    epoch_len = eeg_epoch_len(eeg)
     epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
 
     itpc_s = zeros(frq_n, epoch_len)
