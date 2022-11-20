@@ -26,7 +26,7 @@ Pkg.add("Gtk")
 using Pluto
 Pluto.run()
 ```
-Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.jl).
+Example Pluto notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/docs/Notebook.jl).
 
 For non-interactive GUI, use Jupyter:
 ```julia
@@ -35,7 +35,7 @@ Pkg.add("IJulia")
 using IJulia
 notebook()
 ```
-Example Jupyter notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Notebook.ipynb).
+Example Jupyter notebook is located [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/docs/Notebook.ipynb).
 
 ## EEG
 

@@ -3750,7 +3750,11 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String="", layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 
     palette = mono == true ? :grays : :darktest
-
+    if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
+        for idx in 1:(layout[1] * layout[2]) - length(p)
+            push!(p, Plots.plot(border=:none, title=""))
+        end
+    end
     pc = Plots.plot(grid=false,
                     framestyle=:none,
                     border=:none,
