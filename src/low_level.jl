@@ -14,7 +14,6 @@ Generates `length`-long sequence of evenly spaced numbers between `start` and `s
 - `range::Number`
 """
 function linspace(start::Real, stop::Real, length::Int64)
-
     return collect(range(start, stop, length))
 end
 
@@ -34,7 +33,6 @@ Generates `length`-long sequence of log10-spaced numbers between `start` and `st
 - `range::Number`
 """
 function logspace(start::Real, stop::Real, length::Int64)
-
     return collect(exp10.(range(start, stop, length)))
 end
 
@@ -73,22 +71,22 @@ Return the positions of the `y` value in the vector `x`.
 
 - `y::Real`: value of interest
 - `x::AbstractVector`: vector to search within
-- `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
+- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
 
 # Returns
 
 - `y_idx::Int64`
 - `y_dist::Real`: the difference between `y` and `x[y_idx]`
 """
-function vsearch(y::Real, x::AbstractVector; return_distance::Bool=false)
+function vsearch(y::Real, x::AbstractVector; acc::Bool=false)
 
     y_dist, y_idx = findmin(abs.(x .- y))
 
-    return return_distance == true ? (y_idx, y_dist) : y_idx
+    return acc == true ? (y_idx, y_dist) : y_idx
 end
 
 """
-    vsearch(y, x; return_distance)
+    vsearch(y, x; acc)
 
 Return the positions of the `y` vector in the vector `x`.
 
@@ -96,14 +94,14 @@ Return the positions of the `y` vector in the vector `x`.
 
 - `y::AbstractVector`: vector of interest
 - `x::AbstractVector`: vector to search within
-- `return_distance::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
+- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
 
 # Returns
 
 - `y_idx::Int64`
 - `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
 """
-function vsearch(y::AbstractVector, x::AbstractVector; return_distance::Bool=false)
+function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
 
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
@@ -114,7 +112,7 @@ function vsearch(y::AbstractVector, x::AbstractVector; return_distance::Bool=fal
         y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
     end
 
-    return return_distance == true ? (convert.(Int64, y_idx), y_dist) : convert.(Int64, y_idx)
+    return acc == true ? (convert.(Int64, y_idx), y_dist) : y_idx
 end
 
 """
@@ -295,7 +293,7 @@ end
 """
     fft0(x, n)
 
-Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate FFT for the vector `x` padded with `n` zeros.
 
 # Arguments
 
@@ -308,8 +306,77 @@ Calculate FFT for the vector `x` padded with `n` or `n - length(x)` zeros at the
 """
 function fft0(x::AbstractArray, n::Int64=0)
 
-    n < 0 && throw(ArgumentError("Pad must be positive."))
-    n > length(x) && (n -= length(x))
+    n < 0 && throw(ArgumentError("n must be ≥ 0."))
+    if CUDA.functional() && use_cuda
+        # _free_gpumem()
+        CUDA.memory_status()
+        if n == 0
+            cx = CuArray(x)
+        else
+            cx = CuArray(pad0(x, n))
+        end
+        return Vector(fft(cx))
+    else
+        if n == 0
+            return fft(x)
+        else
+            return fft(pad0(x, n))
+        end
+    end
+end
+
+"""
+    ifft0(x, n)
+
+Calculate IFFT for the vector `x` padded `n` zeros.
+
+# Arguments
+
+- `x::AbstractArray`
+- `n::Int64`
+
+# Returns
+
+- `ifft0::Vector{ComplexF64}`
+"""
+function ifft0(x::AbstractArray, n::Int64=0)
+
+    n < 0 && throw(ArgumentError("n must be ≥ 0."))
+
+    if CUDA.functional() && use_cuda
+        # _free_gpumem()
+        if n == 0
+            cx = CuArray(x)
+        else
+            cx = CuArray(vcat(x, zeros(eltype(x), n)))
+        end
+        return Vector(ifft(cx))
+    else
+        if n == 0
+            return ifft(x)
+        else
+            return ifft(vcat(x, zeros(eltype(x), n)))
+        end
+    end
+end
+
+"""
+    fft2(x)
+
+Calculate FFT for the vector `x` padded with zeros so the length of padded `x` is a power of 2.
+
+# Arguments
+
+- `x::AbstractArray`
+
+# Returns
+
+- `fft2::Vector{ComplexF64}`
+"""
+function fft2(x::AbstractArray)
+
+    n = nextpow2(length(x)) - length(x)
+
     if CUDA.functional() && use_cuda
         # _free_gpumem()
         CUDA.memory_status()
@@ -329,23 +396,22 @@ function fft0(x::AbstractArray, n::Int64=0)
 end
 
 """
-    ifft0(x, n)
+    ifft2(x)
 
-Calculate IFFT for the vector `x` padded with `n` or `n - length(x)` zeros at the end.
+Calculate IFFT for the vector `x` padded with zeros so the length of padded `x` is a power of 2.
 
 # Arguments
 
 - `x::AbstractArray`
-- `n::Int64`
 
 # Returns
 
 - `ifft0::Vector{ComplexF64}`
 """
-function ifft0(x::AbstractArray, n::Int64=0)
+function ifft2(x::AbstractArray)
 
-    n < 0 && throw(ArgumentError("Pad must be positive."))
-    n > length(x) && (n -= length(x))
+    n = nextpow2(length(x)) - length(x)
+
     if CUDA.functional() && use_cuda
         # _free_gpumem()
         if n == 0
@@ -370,15 +436,15 @@ Return the next power of 2 for given number `x`.
 
 # Argument
 
- - `x::Int64`
+- `x::Int64`
 
 # Returns
 
 - `nextpow::Int64`
 """
 function nextpow2(x::Int64)
-    # return nextpow(2, x)
-    return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
+    # return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
+    return nextpow(2, x)
 end
 
 """
@@ -423,9 +489,7 @@ Calculate Root Mean Square.
 - rms::Float64`
 """
 function s_rms(signal::AbstractVector)
-
     # rms = sqrt(mean(signal.^2))    
-
     return norm(signal) / sqrt(length(signal))
 end
 
@@ -446,7 +510,6 @@ Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` 
 - sine::Vector{Float64}`
 """
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
-
     return @. a * sin(2 * pi * f * t + p)
  end
 
@@ -581,69 +644,45 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 end
 
 """
-    pad0(x, n, sym)
+    pad0(x, n)
 
-Pad the vector `x` with `n` zeros.
-
-# Arguments
-
-- `x::AbstractVector`
-- `n::Int64`
-- `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
-
-# Returns
-
-- `v_pad::AbstractVector`
-"""
-function pad0(x::AbstractVector, n::Int64, sym::Bool=false)
-
-    n < 0 && throw(ArgumentError("n must be ≥ 0."))
-
-    return sym == true ? vcat(zeros(eltype(x), n), x, zeros(eltype(x), n)) : vcat(x, zeros(eltype(x), n))
-end
-
-"""
-    pad0(x, n, sym)
-
-Pad the vector `x` with `n` zeros. Works only for two- and three-dimensional arrays.
+Pad vector / rows of matrix / array with zeros. Works with 1-, 2- and 3-dimensional arrays.
 
 # Arguments
 
-- `x::AbstractArray`
-- `n::Int64`
-- `sym::Bool=false`: if true, than pad at the beginning and at the end, otherwise only at the end.
+- `x::Union{AbstractVector, AbstractArray`
+- `n::Int64`: number of zeros to add.
 
 # Returns
 
-- `v_pad::AbstractVector`
+- `v_pad::Union{AbstractVector, AbstractArray`
 """
-function pad0(x::AbstractArray, n::Int64, sym::Bool=false)
-
+function pad0(x::Union{AbstractVector, AbstractArray}, n::Int64)
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
-
-    if length(size(x)) == 2
-        return sym == true ? hcat(zeros(eltype(x), size(x, 1), n), x, zeros(eltype(x), size(x, 1), n)) : hcat(x, zeros(eltype(x), size(x, 1), n))
-    elseif length(size(x)) == 3
-        return sym == true ? hcat(zeros(eltype(x), size(x, 1), n, size(x, 3)), x, zeros(eltype(x), size(x, 1), n, size(x, 3))) : hcat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)))
-    end
+    ndims(x) == 1 && return vcat(x, zeros(eltype(x), n))
+    ndims(x) == 2 && return hcat(x, zeros(eltype(x), size(x, 1), n))
+    ndims(x) == 3 && return hcat(x, zeros(eltype(x), size(x, 1), n, size(x, 3)))
+    ndims(x) > 3 && throw(ArgumentError("pad0() works only for 1-, 2- or 3-dimension array."))
 end
 
 """
     pad2(x)
 
-Pad the vector / array `x` with zeros to the nearest power of 2 length.
+Pad vector / rows of matrix / array with zeros to the nearest power of 2 length.
 
 # Arguments
 
-- `x::Union{AbstractVector, AbstractArray}`
+- `x::Union{AbstractVector, AbstractArray`
 
 # Returns
 
-- `v_pad::Union{AbstractVector, AbstractArray}`
+- `v_pad::Union{AbstractVector, AbstractArray`
 """
 function pad2(x::Union{AbstractVector, AbstractArray})
-
-    return pad0(x, nextpow2(length(x)) - length(x))
+    ndims(x) == 1 && return pad0(x, nextpow2(length(x)) - length(x))
+    ndims(x) == 2 && return hcat(x, zeros(eltype(x), size(x, 1), nextpow2(size(x, 2)) - size(x, 2)))
+    ndims(x) == 3 && return hcat(x, zeros(eltype(x), size(x, 1), nextpow2(size(x, 2)) - size(x, 2), size(x, 3)))
+    ndims(x) > 3 && throw(ArgumentError("pad2() works only for 1-, 2- or 3-dimension array."))
 end
 
 """
@@ -1643,11 +1682,11 @@ Apply filtering.
     - `:chebyshev2`
     - `:elliptic`
     - `:fir`
-    - `:iirnotch`
-    - `:remez`
+    - `:iirnotch`: second-order IIR notch filter
+    - `:remez`: Remez FIR filter
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order` order
+    - `:poly`: polynomial of `order`
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -2245,10 +2284,9 @@ function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{Com
 
     n_signal = length(signal)
     n_kernel = length(kernel)
-    n_conv = n_signal + n_kernel - 1
     half_kernel = floor(Int64, n_kernel / 2)
-    s_fft = fft0(signal, n_conv)
-    kernel_fft = fft0(kernel, n_conv)
+    s_fft = fft0(signal, n_kernel - 1)
+    kernel_fft = fft0(kernel, n_signal - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
     s_conv = ifft0(s_fft .* kernel_fft)
     

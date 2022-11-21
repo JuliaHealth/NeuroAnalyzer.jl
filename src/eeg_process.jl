@@ -499,11 +499,11 @@ Apply filtering to EEG channel(s).
     - `:chebyshev2`
     - `:elliptic`
     - `:fir`
-    - `:iirnotch`
-    - `:remez`
+    - `:iirnotch`: second-order IIR notch filter
+    - `:remez`: Remez FIR filter
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order` order
+    - `:poly`: polynomial of `order`
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -564,11 +564,11 @@ Apply filtering to EEG channel(s).
     - `:chebyshev2`
     - `:elliptic`
     - `:fir`
-    - `:iirnotch`
-    - `:remez`
+    - `:iirnotch`: second-order IIR notch filter
+    - `:remez`: Remez FIR filter
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order` order
+    - `:poly`: polynomial of `order`
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass

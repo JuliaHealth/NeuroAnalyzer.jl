@@ -137,7 +137,7 @@ p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test size(p) == (32, 1)
 
 e = eeg_trim(edf, segment=(10 * eeg_sr(edf), 20 * eeg_sr(edf)), keep_epochs=false)
-@test size(e.eeg_signals) == (19, 307200, 1)
+@test size(e.eeg_signals) == (19, 309760, 0)
 
 m = eeg_mi(edf)
 @test size(m) == (19, 19, 1)
@@ -223,9 +223,8 @@ eeg_add_component!(e, c=:ica_mw, v=iw)
 e2 = eeg_ica_reconstruct(e, ic=1)
 @test size(e2.eeg_signals) == (19, 309760, 1)
 
-e = eeg_epochs(edf, epoch_len=20*256)
-b = eeg_detect_bad_epochs(edf)
-@test length(b) == 1
+b = eeg_detect_bad(edf)
+@test length(b) == 2
 
 @test eeg_t2s(edf, t=10) == 2561
 @test eeg_s2t(edf, t=10) == 0.04

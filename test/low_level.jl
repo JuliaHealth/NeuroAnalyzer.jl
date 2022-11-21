@@ -5,6 +5,10 @@ using ContinuousWavelets
 
 @test linspace(1, 10, 10) == 1.0:10.0
 @test logspace(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
+@test length(pad0(ones(3), 1)) == 4
+@test size(pad0(ones(3, 3), 1)) == (3, 4)
+@test length(pad2(ones(10))) == 16
+@test size(pad2(ones(3, 3))) == (3, 4)
 @test size(m_pad0(ones(3, 4))) == (4, 4)
 @test vsearch([1, 2], [1, 2, 3, 4]) == [1, 2]
 @test cart2pol(1, 1) == (1.41, 45.0)
@@ -21,8 +25,6 @@ using ContinuousWavelets
 @test length(s_freqs(rand(10))) == 2
 @test m_sortperm([1 2; 4 6]) == [1 1; 2 2]
 @test m_sort([1 2; 4 6], [2, 1]) == [4 6; 1 2]
-@test length(pad0(ones(10), 10)) == 20
-@test length(pad2(ones(10))) == 16
 @test hz2rads(1) == 6.283185307179586
 @test rads2hz(1) == 1.5707963267948966
 @test cmax([1.0im, 2.0im]) == 0.0 + 2.0im
