@@ -850,7 +850,7 @@ Order tuple elements in ascending or descending (rev=true) order.
 
   * `t::Tuple{Real, Real}`
 
-<a id='NeuroAnalyzer.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}' href='#NeuroAnalyzer.s2_rmse-Tuple{Vector{Float64}, Vector{Float64}}'>#</a>
+<a id='NeuroAnalyzer.s2_rmse-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_rmse-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s2_rmse`** &mdash; *Method*.
 
 
@@ -859,12 +859,12 @@ Order tuple elements in ascending or descending (rev=true) order.
 s2_rmse(signal1, signal2)
 ```
 
-Calculate RMSE between `signal1` and `signal2`.
+Calculate RMSE between two signals.
 
 **Arguments**
 
-  * `signal1::Vector{Float64}`
-  * `signal2::Vector{Float64}`
+  * `signal1::AbstractVector`
+  * `signal2::AbstractVector`
 
 **Returns**
 
@@ -1585,17 +1585,15 @@ Calculate variance stationarity.
 
 
 ```julia
-s_trim(signal; len, offset, from)
+s_trim(signal; segment)
 ```
 
-Remove `len` samples from the beginning (`from` = :start, default) or end (`from` = :end) of the `signal`.
+Remove segment from the signal.
 
 **Arguments**
 
   * `signal::AbstractVector`
-  * `len::Int64`: trimming length in samples
-  * `offset::Int64`: offset from which trimming starts, only works for `from` = :start
-  * `from::Symbol[:start, :end]
+  * `segment::Tuple{Int64, Int64}`: segment (from, to) in samples
 
 **Returns**
 
@@ -1867,100 +1865,26 @@ Named tuple containing:
   * `s_frq::Vector{Float64}`: frequencies
   * `s_t::Vector{Float64}`: time
 
-<a id='NeuroAnalyzer.s_detect_epoch_flat-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_flat-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_detect_epoch_flat`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_detect_channel_flat-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_detect_channel_flat-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_detect_channel_flat`** &mdash; *Method*.
 
 
 
-```julia
-s_detect_epoch_flat(signal)
-```
+s*detect*channel_flat(signal; w, tol)
 
-Detect bad epochs based on: flat channel(s)
+Detect flat channel.
 
 **Arguments**
 
-  * `signal::AbstractArray`
+  * `signal::AbstractVector`
+  * `w::Int64=4`: window width in samples (signal is averaged within `w`-width window)
+  * `tol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 
 **Returns**
 
-  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+Named tuple containing:
 
-<a id='NeuroAnalyzer.s_detect_epoch_rmse-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_rmse-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_detect_epoch_rmse`** &mdash; *Method*.
-
-
-
-```julia
-s_detect_epoch_rmse(signal)
-```
-
-Detect bad epochs based on: RMSE vs average channel > 95%CI.
-
-**Arguments**
-
-  * `signal::AbstractArray`
-
-**Returns**
-
-  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-
-<a id='NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_rmsd-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_detect_epoch_rmsd`** &mdash; *Method*.
-
-
-
-```julia
-detect_epoch_rmsd(signal)
-```
-
-Detect bad epochs based on: RMSD vs average channel > 95%CI.
-
-**Arguments**
-
-  * `signal::AbstractArray`
-
-**Returns**
-
-  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-
-<a id='NeuroAnalyzer.s_detect_epoch_euclid-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_euclid-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_detect_epoch_euclid`** &mdash; *Method*.
-
-
-
-```julia
-s_detect_epoch_euclid(signal)
-```
-
-Detect bad epochs based on: Euclidean distance vs median channel > 95% CI.
-
-**Arguments**
-
-  * `signal::AbstractArray`
-
-**Returns**
-
-  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
-
-<a id='NeuroAnalyzer.s_detect_epoch_p2p-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_detect_epoch_p2p-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.s_detect_epoch_p2p`** &mdash; *Method*.
-
-
-
-```julia
-s_detect_epoch_p2p(signal)
-```
-
-Detect bad epochs based on: p2p amplitude > upper 95% CI p2p amplitude.
-
-**Arguments**
-
-  * `signal::AbstractArray`
-
-**Returns**
-
-  * `bad_epochs_score::Vector{Int64}`: percentage of bad channels per epoch
+  * `r::Float64`: flat to non-flat segments ratio
 
 <a id='NeuroAnalyzer.s_snr-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_snr-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_snr`** &mdash; *Method*.
@@ -4050,14 +3974,14 @@ Accepted formats:
 
 Electrode locations:
 
-  * loc_theta       planar polar angle
-  * loc_radius      planar polar radius
-  * loc_x           spherical Cartesian x
-  * loc_y           spherical Cartesian y
-  * loc_z           spherical Cartesian z
-  * loc*radius*sph  spherical radius
-  * loc*theta*sph   spherical horizontal angle
-  * loc*phi*sph     spherical azimuth angle
+  * `loc_theta`       planar polar angle
+  * `loc_radius`      planar polar radius
+  * `loc_x`           spherical Cartesian x
+  * `loc_y`           spherical Cartesian y
+  * `loc_z`           spherical Cartesian z
+  * `loc_radius_sph`  spherical radius
+  * `loc_theta_sph`   spherical horizontal angle
+  * `loc_phi_sph`     spherical azimuth angle
 
 **Arguments**
 
@@ -4089,14 +4013,14 @@ Accepted formats:
 
 Electrode locations:
 
-  * loc_theta       planar polar angle
-  * loc_radius      planar polar radius
-  * loc_x           spherical Cartesian x
-  * loc_y           spherical Cartesian y
-  * loc_z           spherical Cartesian z
-  * loc*radius*sph  spherical radius
-  * loc*theta*sph   spherical horizontal angle
-  * loc*phi*sph     spherical azimuth angle
+  * `loc_theta`       planar polar angle
+  * `loc_radius`      planar polar radius
+  * `loc_x`           spherical Cartesian x
+  * `loc_y`           spherical Cartesian y
+  * `loc_z`           spherical Cartesian z
+  * `loc_radius_sph`  spherical radius
+  * `loc_theta_sph`   spherical horizontal angle
+  * `loc_phi_sph`     spherical azimuth angle
 
 **Arguments**
 
@@ -4218,16 +4142,16 @@ Add electrode positions from `locs`.
 
 Electrode locations:
 
-  * channel         channel number
-  * labels          channel label
-  * loc_theta       planar polar angle
-  * loc_radius      planar polar radius
-  * loc_x           spherical Cartesian x
-  * loc_y           spherical Cartesian y
-  * loc_z           spherical Cartesian z
-  * loc*radius*sph  spherical radius
-  * loc*theta*sph   spherical horizontal angle
-  * loc*phi*sph     spherical azimuth angle
+  * `channel`         channel number
+  * `labels`          channel label
+  * `loc_theta`       planar polar angle
+  * `loc_radius`      planar polar radius
+  * `loc_x`           spherical Cartesian x
+  * `loc_y`           spherical Cartesian y
+  * `loc_z`           spherical Cartesian z
+  * `loc_radius_sph`  spherical radius
+  * `loc_theta_sph`   spherical horizontal angle
+  * `loc_phi_sph`     spherical azimuth angle
 
 **Arguments**
 
@@ -4251,16 +4175,16 @@ Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with 
 
 Electrode locations:
 
-  * channel         channel number
-  * labels          channel label
-  * loc_theta       planar polar angle
-  * loc_radius      planar polar radius
-  * loc_x           spherical Cartesian x
-  * loc_y           spherical Cartesian y
-  * loc_z           spherical Cartesian z
-  * loc*radius*sph  spherical radius
-  * loc*theta*sph   spherical horizontal angle
-  * loc*phi*sph     spherical azimuth angle
+  * `channel`         channel number
+  * `labels`          channel label
+  * `loc_theta`       planar polar angle
+  * `loc_radius`      planar polar radius
+  * `loc_x`           spherical Cartesian x
+  * `loc_y`           spherical Cartesian y
+  * `loc_z`           spherical Cartesian z
+  * `loc_radius_sph`  spherical radius
+  * `loc_theta_sph`   spherical horizontal angle
+  * `loc_phi_sph`     spherical azimuth angle
 
 **Arguments**
 
@@ -4393,7 +4317,7 @@ Add component.
 eeg_list_components(eeg)
 ```
 
-List components.
+List component names.
 
 **Arguments**
 
@@ -4412,7 +4336,7 @@ List components.
 eeg_extract_component(eeg, c)
 ```
 
-Extract component `c`.
+Extract component values.
 
 **Arguments**
 
@@ -4432,7 +4356,7 @@ Extract component `c`.
 eeg_delete_component(eeg; c)
 ```
 
-Delete component `c`. 
+Delete component. 
 
 **Arguments**
 
@@ -4452,7 +4376,7 @@ Delete component `c`.
 eeg_delete_component!(eeg; c)
 ```
 
-Delete component `c`.
+Delete component.
 
 **Arguments**
 
@@ -4472,7 +4396,7 @@ Remove all components.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 **Returns**
 
@@ -4491,7 +4415,7 @@ Remove all components.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
 
 <a id='NeuroAnalyzer.eeg_component_idx-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_component_idx-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_component_idx`** &mdash; *Method*.
@@ -4502,11 +4426,11 @@ Remove all components.
 eeg_component_idx(eeg, c)
 ```
 
-Return index of component `c`.
+Return component index.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
 
 **Return**
@@ -4522,11 +4446,11 @@ Return index of component `c`.
 eeg_component_type(eeg, c)
 ```
 
-Return type of components `c`.
+Return component data type.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c::Symbol`: component name
 
 **Return**
@@ -4546,7 +4470,7 @@ Rename component.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c_old::Symbol`: old component name
   * `c_new::Symbol`: new component name
 
@@ -4567,7 +4491,7 @@ Rename component.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `c_old::Symbol`: old component name
   * `c_new::Symbol`: new component name
 
@@ -4585,7 +4509,7 @@ Delete EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed, vector of numbers or range
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to be removed
 
 **Returns**
 
@@ -4605,7 +4529,7 @@ Delete EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to be removed
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to be removed
 
 <a id='NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_keep_channel`** &mdash; *Method*.
@@ -4621,7 +4545,7 @@ Keep EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to keep
 
 **Returns**
 
@@ -4641,7 +4565,7 @@ Keep EEG channel(s).
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to keep
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to keep
 
 <a id='NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_get_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_get_channel`** &mdash; *Method*.
@@ -4652,7 +4576,7 @@ Keep EEG channel(s).
 eeg_get_channel(eeg; channel)
 ```
 
-Return EEG channel number / name.
+Return EEG channel number (if provided by name) or name (if provided by number).
 
 **Arguments**
 
@@ -4698,8 +4622,8 @@ Rename EEG channel.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`
-  * `name::String`
+  * `channel::Union{Int64, String}`: channel number or name
+  * `name::String`: new name
 
 <a id='NeuroAnalyzer.eeg_extract_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_extract_channel`** &mdash; *Method*.
@@ -4710,12 +4634,12 @@ Rename EEG channel.
 eeg_extract_channel(eeg; channel)
 ```
 
-Extract EEG channel.
+Extract EEG channel data.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`
+  * `channel::Union{Int64, String}`: channel number or name
 
 **Returns**
 
@@ -4730,7 +4654,7 @@ Extract EEG channel.
 eeg_history(eeg)
 ```
 
-Show processing history.
+Show EEG processing history.
 
 **Arguments**
 
@@ -4749,7 +4673,7 @@ Show processing history.
 eeg_labels(eeg)
 ```
 
-Return EEG labels.
+Return EEG channel labels.
 
 **Arguments**
 
@@ -4792,7 +4716,7 @@ Return number of EEG channels of `type`.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `type::Vector{Symbol}=:all`: channel type: `:all`, `:eeg`, `:meg`, `:ecg`, `:eog`, `:emg`, `:ref`
+  * `type::Vector{Symbol}=:all`: channel type: `:all`, `:eeg`, `:meg`, `:ecg`, `:eog`, `:emg`, `:ref`, `:mrk`
 
 **Returns**
 
@@ -4807,7 +4731,7 @@ Return number of EEG channels of `type`.
 eeg_epoch_n(eeg)
 ```
 
-Return number EEG epochs.
+Return number of EEG epochs.
 
 **Arguments**
 
@@ -4845,7 +4769,7 @@ Return length of EEG signal.
 eeg_epoch_len(eeg)
 ```
 
-Return length of EEG signal.
+Return length of EEG epoch.
 
 **Arguments**
 
@@ -4864,7 +4788,7 @@ Return length of EEG signal.
 eeg_info(eeg)
 ```
 
-Show info.
+Show EEG info.
 
 **Arguments**
 
@@ -4879,14 +4803,14 @@ Show info.
 eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 ```
 
-Splits EEG into epochs.
+Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
   * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
-  * `average::Bool=false`: average all epochs, return one averaged epoch; if false than return array of epochs, each row is one epoch
+  * `average::Bool=false`: average all epochs, return one averaged epoch
 
 **Returns**
 
@@ -4901,14 +4825,14 @@ Splits EEG into epochs.
 eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
 ```
 
-Splits EEG into epochs.
+Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch_n::Union{Int64, Nothing}`: number of epochs
-  * `epoch_len::Union{Int64, Nothing}`: epoch length in samples
-  * `average::Bool`: average all epochs, return one averaged epoch
+  * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
+  * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
+  * `average::Bool=false`: average all epochs, return one averaged epoch
 
 <a id='NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_extract_epoch`** &mdash; *Method*.
@@ -4936,22 +4860,20 @@ Extract EEG epoch.
 
 
 ```julia
-eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
+eeg_trim(eeg; segment, keep_epochs)
 ```
 
-Change EEG signal length.
+Trim EEG signal by removing parts of the signal.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `len::Int64`: number of samples to remove
-  * `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
-  * `from::Symbol=:start`: trims from the signal `:start` or `:end`
-  * `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+  * EEG
+  * `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
+  * `keep_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and remove epoching
 
 **Returns**
 
-  * `eeg:EEG`
+  * EEG
 
 <a id='NeuroAnalyzer.eeg_trim!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_trim!-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_trim!`** &mdash; *Method*.
@@ -4959,17 +4881,15 @@ Change EEG signal length.
 
 
 ```julia
-eeg_trim(eeg:EEG; len, offset, from, keep_epochs)
+eeg_trim!(eeg; segment, keep_epochs)
 ```
 
-Change EEG signal length.
+Trim EEG signal by removing parts of the signal.
 
 **Arguments**
 
-  * `eeg:EEG`
-  * `len::Int64`: number of samples to remove
-  * `offset::Int64=1`: offset from which trimming starts, only works for `from` = `:start`
-  * `from::Symbol=:start`: trims from the signal `:start` or `:end`
+  * `eeg::NeuroAnalyzer.EEG`
+  * `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
   * `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
 
 <a id='NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -5034,12 +4954,12 @@ Show keys and values of EEG header.
 eeg_delete_epoch(eeg; epoch)
 ```
 
-Remove epoch(s) from EEG.
+Remove EEG epoch(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to be removed
 
 **Returns**
 
@@ -5054,12 +4974,12 @@ Remove epoch(s) from EEG.
 eeg_delete_epoch!(eeg; epoch)
 ```
 
-Remove epoch(s) from EEG.
+Remove EEG epoch(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to be removed, vector of numbers or range
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to be removed
 
 <a id='NeuroAnalyzer.eeg_keep_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_keep_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_keep_epoch`** &mdash; *Method*.
@@ -5070,12 +4990,12 @@ Remove epoch(s) from EEG.
 eeg_keep_epoch(eeg; epoch)
 ```
 
-Keep epoch(s).
+Keep EEG epoch(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to keep
 
 **Returns**
 
@@ -5090,39 +5010,48 @@ Keep epoch(s).
 eeg_keep_epoch!(eeg; epoch)
 ```
 
-Keep epoch(s).
+Keep EEG epoch(s).
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch index to keep, vector of numbers or range
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to keep
 
-<a id='NeuroAnalyzer.eeg_detect_bad_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detect_bad_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_detect_bad_epochs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_detect_bad-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_detect_bad-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_detect_bad`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_detect_bad_epochs(eeg; method, ch_t)
+eeg_detect_bad(eeg; method, ch_t)
 ```
 
-Detect bad EEG epochs. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signal_type]`) channels are processed.
+Detect bad EEG channels and epochs.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p]`: detection method:
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
 
       * `:flat`: flat channel(s)
-      * `:rmse`: RMSE
+      * `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
+      * `:var`: mean signal variance outside of 95%CI and variance inter-quartile outliers
+      * `:rmse`: RMSE vs average channel outside of 95%CI
       * `:rmsd`: RMSD
       * `:euclid`: Euclidean distance
-      * `:p2p`: peak-to-peak amplitude
-  * `ch_t::Float64`: percentage of bad channels to mark the epoch as bad
+  * `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
+  * `ftol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
+  * `fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
+  * `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad; also z-score to set threshold for `:p2p` detection: above `mean + pc * std` and below `mean - pc * std`: 90th percentile: 1.282, 95th percentile: 1.645, 97.5th percentile: 1.960, 99th percentile: 2.326
+  * `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 
 **Returns**
 
-  * `bad_epochs_idx::Vector{Int64}`
+Named tuple containing:
+
+  * `bad_m::Matrix{Bool}`: matrix of bad channels × epochs
+  * `bad_epochs::Vector{Int64}`: list of bad epochs
 
 <a id='NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}' href='#NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}'>#</a>
 **`NeuroAnalyzer.eeg_add_labels`** &mdash; *Method*.
@@ -5133,7 +5062,7 @@ Detect bad EEG epochs. Only signal (EEG/MEG, depending on `eeg.eeg_header[:signa
 eeg_add_labels(eeg, labels)
 ```
 
-Add EEG channels labels.
+Add EEG channel labels.
 
 **Arguments**
 
@@ -5153,7 +5082,7 @@ Add EEG channels labels.
 eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 ```
 
-Add EEG channels labels.
+Add EEG channel labels.
 
 **Arguments**
 
@@ -5173,7 +5102,7 @@ Edit EEG channel properties.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `field::Symbol`
   * `value::Any`
@@ -5195,7 +5124,7 @@ Edit EEG channel properties.
 
 **Arguments**
 
-  * `eeg:EEG`
+  * `eeg::NeuroAnalyzer.EEG`
   * `channel::Int64`
   * `field::Symbol`
   * `value::Any`
@@ -5389,7 +5318,7 @@ Delete EEG note.
 eeg_replace_channel(eeg; channel, signal)
 ```
 
-Replace EEG channel with signal.
+Replace EEG channel.
 
 **Arguments**
 
@@ -5410,12 +5339,12 @@ Replace EEG channel with signal.
 eeg_replace_channel!(eeg; channel, signal)
 ```
 
-Replace the `channel` index / name with `signal`.
+Replace EEG channel.
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, String}`: channel name
+  * `channel::Union{Int64, String}`: channel number or name
   * `signal::Array{Float64, 3}
 
 <a id='NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
@@ -5427,7 +5356,7 @@ Replace the `channel` index / name with `signal`.
 eeg_interpolate_channel(eeg; channel, epoch, m, q)
 ```
 
-Interpolate channel(s) using planar interpolation.
+Interpolate EEG channel(s) using planar interpolation.
 
 **Arguments**
 
@@ -5450,7 +5379,7 @@ Interpolate channel(s) using planar interpolation.
 eeg_interpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
 ```
 
-Interpolate `eeg` channel using planar interpolation.
+Interpolate EEG channel(s) using planar interpolation.
 
 **Arguments**
 
@@ -5623,14 +5552,14 @@ Edit EEG electrode.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{String, Int64}`: channel number or name
-  * `x::Union{Real, Nothing}`: Cartesian X spherical coordinate
-  * `y::Union{Real, Nothing}`: Cartesian Y spherical coordinate
-  * `z::Union{Real, Nothing}`: Cartesian Z spherical coordinate
-  * `theta::Union{Real, Nothing}`: polar planar theta coordinate
-  * `radius::Union{Real, Nothing}`: polar planar radius coordinate
-  * `theta_sph::Union{Real, Nothing}`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  * `radius_sph::Union{Real, Nothing}`: spherical radius, the distance from the origin to the point
-  * `phi_sph::Union{Real, Nothing}`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
+  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
+  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
+  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
+  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
+  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
   * `name::String=""`: channel name
   * `type::String=""`: channel type
 
@@ -5647,7 +5576,7 @@ Edit EEG electrode.
 eeg_edit_electrode!(eeg; <keyword arguments>)
 ```
 
-Edit `eeg` electrode.
+Edit EEG electrode.
 
 **Arguments**
 
@@ -5685,14 +5614,14 @@ Return locations of EEG channel electrode.
 
 Named tuple containing:
 
-  * `theta::Union{Real, Nothing}=nothing`: polar planar theta coordinate
-  * `radius::Union{Real, Nothing}=nothing`: polar planar radius coordinate
-  * `x::Union{Real, Nothing}=nothing`: Cartesian X spherical coordinate
-  * `y::Union{Real, Nothing}=nothing`: Cartesian Y spherical coordinate
-  * `z::Union{Real, Nothing}=nothing`: Cartesian Z spherical coordinate
-  * `theta_sph::Union{Real, Nothing}=nothing`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
-  * `radius_sph::Union{Real, Nothing}=nothing`: spherical radius, the distance from the origin to the point
-  * `phi_sph::Union{Real, Nothing}=nothing`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+  * `theta::Float64`: polar planar theta coordinate
+  * `radius::Float64`: polar planar radius coordinate
+  * `x::Float64`: Cartesian X spherical coordinate
+  * `y::Float64`: Cartesian Y spherical coordinate
+  * `z::Float64`: Cartesian Z spherical coordinate
+  * `theta_sph::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+  * `radius_sph::Float64`: spherical radius, the distance from the origin to the point
+  * `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
 <a id='NeuroAnalyzer.eeg_loc_swapxy-Tuple{DataFrame}' href='#NeuroAnalyzer.eeg_loc_swapxy-Tuple{DataFrame}'>#</a>
 **`NeuroAnalyzer.eeg_loc_swapxy`** &mdash; *Method*.
@@ -5809,7 +5738,7 @@ Convert Cartesian locations to spherical.
 eeg_view_markers(eeg)
 ```
 
-Return EEG markers.
+Show markers.
 
 **Arguments**
 
@@ -5824,7 +5753,7 @@ Return EEG markers.
 eeg_delete_marker(eeg; n)
 ```
 
-Delete EEG marker.
+Delete marker.
 
 **Arguments**
 
@@ -5844,7 +5773,7 @@ Delete EEG marker.
 eeg_delete_marker!(eeg; n)
 ```
 
-Delete EEG marker.
+Delete marker.
 
 **Arguments**
 
@@ -6681,8 +6610,8 @@ Calculate entropy.
 Named tuple containing:
 
   * `ent::Array{Float64, 2}`
-  * `sent::Array{Float64, 2}`: Shanon entropy
-  * `leent::Array{Float64, 2}`: log energy entropy
+  * `s_ent::Array{Float64, 2}`: Shanon entropy
+  * `le_ent::Array{Float64, 2}`: log energy entropy
 
 <a id='NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_negentropy-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_negentropy`** &mdash; *Method*.
@@ -6909,7 +6838,7 @@ Named tuple containing:
 eeg_spectrum(eeg; channel, pad, h)
 ```
 
-Calculate FFT, amplitudes, powers and phases.
+Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 **Arguments**
 
@@ -7125,13 +7054,13 @@ Named tuple containing:
   * `sfft::Array{ComplexF64, 3}`: FFT
   * `sf::Vector{Float64}`: sample frequencies
 
-<a id='NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mean-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_mean`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_msci95-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_msci95`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_mean(eeg; channel, n, method)
+eeg_msci95(eeg; channel, n, method)
 ```
 
 Calculate mean, standard deviation and 95% confidence interval for EEG channels.
@@ -7955,7 +7884,7 @@ Named tuple containing:
 eeg_chdiff(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 ```
 
-Calculate channels difference.
+Subtract channels.
 
 **Arguments**
 
@@ -8215,6 +8144,27 @@ Named tuple containing:
   * `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
   * `s_t::Vector{Float64}`: signal time
 
+<a id='NeuroAnalyzer.eeg_apply-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_apply-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_apply`** &mdash; *Method*.
+
+
+
+```julia
+eeg_apply(eeg; channel, f)
+```
+
+Apply any function.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+  * `f::String`: function to be applied, e.g. `f="mean(eeg, dims=3)"; EEG signal is given using variable`eeg` here.
+
+**Returns**
+
+  * `out::Array{Float64, 3}`
+
 
 <a id='EEG-plots'></a>
 
@@ -8245,6 +8195,34 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 
 ```julia
 plot_signal(t, signal; <keyword arguments>)
+```
+
+Plot amplitude of single- or multi-channel `signal`.
+
+**Arguments**
+
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::Union{AbstractVector, AbstractArray}`: data to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `scale::Bool=true`: draw scale
+  * `units::String="μV"`: units of the scale
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray, Vector{Bool}}' href='#NeuroAnalyzer.plot_signal-Tuple{AbstractVector, AbstractArray, Vector{Bool}}'>#</a>
+**`NeuroAnalyzer.plot_signal`** &mdash; *Method*.
+
+
+
+```julia
+plot_signal(t, signal, bad; <keyword arguments>)
 ```
 
 Plot amplitude of single- or multi-channel `signal`.
@@ -8350,6 +8328,7 @@ Plot signal.
   * `units::String="μV"`: units of the scale
   * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
   * `norm::Bool=false`: normalize signal for butterfly and averaged plots
+  * `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
@@ -8406,7 +8385,7 @@ Plot PSD (power spectrum density).
   * `s_frq::Vector{Float64}`: frequencies
   * `s_pow::Vector{Float64}`: powers
   * `norm::Bool=true`: whether powers are normalized to dB
-  * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for the Y-axis
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -9057,7 +9036,16 @@ Plot channel/epoch data.
   * `title::String=""`: plot title
   * `mono::Bool=false`: use color or grey palette
   * `plot_by::Symbol`: c values refer to: :labels, :channels or :epochs
-  * `type::Symbol`: plot type: histogram (`:hist`), kernel density (`:kd`), bar plot (`:bar`), box plot (`:box`), violin plot (`:violin`), paired (`:paired`) or polar (`:polar`); for `:box` and `:violin` `c` must contain ≥ 2 values per channel
+  * `type::Symbol`: plot type:
+
+      * `:hist`: histogram
+      * `:kd`: kernel density
+      * `:bar`: bar plot
+      * `:heat`: heatmap; rows of `c` must be time points, columns must be either channels or epochs
+      * `:box`: box plot; `c` must contain ≥ 2 values per group
+      * `:violin`: violin plot; `c` must contain ≥ 2 values per group
+      * `:paired`: paired
+      * `:polar`: polar
   * `kwargs`: optional arguments for plot() function
 
 **Returns**

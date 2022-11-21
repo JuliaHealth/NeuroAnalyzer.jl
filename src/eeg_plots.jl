@@ -2450,6 +2450,7 @@ Plot filter response.
 - `order::Int64`: filter order
 - `rp::Real`: dB ripple in the passband
 - `rs::Real`: dB attenuation in the stopband
+- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
 - `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
 - `mono::Bool=false`: use color or grey palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
@@ -2459,9 +2460,9 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
-    _check_var(fprototype, [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic], "fprototype")
+    _check_var(fprototype, [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez], "fprototype")
     _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
 
     fprototype !== :fir && order < 1 && throw(ArgumentError("order must be > 0."))
@@ -2481,9 +2482,11 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
         length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
         responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
     elseif ftype === :bs
-        length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
-        cutoff = tuple_order(cutoff)
-        responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+        if fprototype !== :iirnotch
+            length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
+            cutoff = tuple_order(cutoff)
+            responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
+        end
     end
 
     fprototype === :butterworth && (prototype = Butterworth(order))
@@ -2510,8 +2513,22 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
         (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Elliptic(order, rp, rs)
     end
-
-    ffilter = digitalfilter(responsetype, prototype)
+    if fprototype === :elliptic
+        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
+        prototype = Elliptic(order, rp, rs)
+    end
+    if fprototype === :iirnotch
+        ffilter = iirnotch(cutoff, bw, fs=fs)
+    elseif fprototype === :remez
+        ftype === :lp && (window = [(0, cutoff - bw) => 1, (cutoff + bw, fs / 2) => 0])
+        ftype === :hp && (window = [(0, cutoff - bw) => 0, (cutoff + bw, fs / 2) => 1])
+        ftype === :bp && (window = [(0, cutoff[1] - bw / 2) => 0, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 1, (cutoff[2] + bw / 2, fs / 2) => 0])
+        ftype === :bs && (window = [(0, cutoff[1] - bw / 2) => 1, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 0, (cutoff[2] + bw / 2, fs / 2) => 1])
+        ffilter = remez(order, window, Hz=fs)
+    else
+        ffilter = digitalfilter(responsetype, prototype)
+    end
 
     if fprototype !== :fir
         H, w = freqresp(ffilter)
@@ -2521,20 +2538,24 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
         w = w .* fs / 2 / pi
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
+        fprototype !== :irrnotch && (fname = titlecase(String(fprototype)))
+        fprototype !== :irrnotch && (fname = "IRR notch")
         p1 = Plots.plot(w,
                         H,
-                        title="Filter: $(titlecase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\nFrequency response",
+                        title="Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response",
                         # xlims=(0, x_max),
                         xlims=frq_lim,
                         ylims=(-100, 0),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        titlefontsize=5,
-                        xlabelfontsize=4,
-                        ylabelfontsize=4,
-                        xtickfontsize=3,
-                        ytickfontsize=3,
+                        top_margin=10Plots.px,
+                        bottom_margin=10Plots.px,
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
             p1 = Plots.plot!((0, cutoff),
@@ -2573,11 +2594,12 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                         ylabel="Phase\n[°]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        titlefontsize=5,
-                        xlabelfontsize=4,
-                        ylabelfontsize=4,
-                        xtickfontsize=3,
-                        ytickfontsize=3,
+                        bottom_margin=10Plots.px,
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
             p2 = Plots.plot!((0, cutoff),
@@ -2615,11 +2637,11 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                         ylabel="Group delay\n[samples]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        titlefontsize=5,
-                        xlabelfontsize=4,
-                        ylabelfontsize=4,
-                        xtickfontsize=3,
-                        ytickfontsize=3,
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
             p3 = Plots.plot!((0, cutoff),
@@ -2662,11 +2684,12 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        titlefontsize=5,
-                        xlabelfontsize=4,
-                        ylabelfontsize=4,
-                        xtickfontsize=3,
-                        ytickfontsize=3,
+                        bottom_margin=10Plots.px,
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
             p1 = Plots.plot!((0, cutoff),
@@ -2704,11 +2727,11 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                         ylabel="Phase\n[rad]",
                         xlabel="Frequency [Hz]",
                         label="",
-                        titlefontsize=5,
-                        xlabelfontsize=4,
-                        ylabelfontsize=4,
-                        xtickfontsize=3,
-                        ytickfontsize=3,
+                        titlefontsize=8,
+                        xlabelfontsize=6,
+                        ylabelfontsize=6,
+                        xtickfontsize=6,
+                        ytickfontsize=6;
                         palette=pal)
         if length(cutoff) == 1
             p2 = Plots.plot!((0, cutoff),

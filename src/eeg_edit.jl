@@ -854,13 +854,13 @@ Trim EEG signal by removing parts of the signal.
 
 # Arguments
 
-- `eeg`
+- EEG
 - `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
 - `keep_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and remove epoching
 
 # Returns
 
-- `eeg`
+- EEG
 """
 function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, keep_epochs::Bool=true)
 
@@ -1117,7 +1117,7 @@ Detect bad EEG channels and epochs.
 - `w::Int64=10`: window width in samples (signal is averaged within `w`-width window)
 - `ftol::Float64=0.1`: tolerance (signal is flat within `-tol` to `+tol`), `eps()` gives very low tolerance
 - `fr::Float64=0.3`: acceptable ratio (0.0 to 1.0) of flat segments within a channel before marking it as flat
-- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad; also z-score to set threshold for `:p2p` detection: above `mean + pc * std` and below `mean - pc * std`: 90th percentile: 1.282, 95th percentile: 1.645, 97.5th percentile: 1.960, 99th percentile: 2.326
+- `p::Float64=0.95`: probability threshold (0.0 to 1.0) for marking channel as bad; also threshold for `:p2p` detection: above `mean + p * std` and below `mean - p * std`, here p (as percentile) will be converted to z-score (0.9 (90th percentile): 1.282, 0.95 (95th percentile): 1.645, 0.975 (97.5th percentile): 1.960, 0.99 (99th percentile): 2.326) 
 - `tc::Float64=0.3`: threshold (0.0 to 1.0) of bad channels ratio to mark the epoch as bad
 
 # Returns
@@ -2032,7 +2032,7 @@ end
 """
     eeg_edit_electrode!(eeg; <keyword arguments>)
 
-Edit `eeg` electrode.
+Edit EEG electrode.
 
 # Arguments
 
