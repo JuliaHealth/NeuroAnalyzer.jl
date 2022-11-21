@@ -383,6 +383,6 @@ _, _, f = eeg_psdslope(edf)
 @test size(eeg_henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_henv_median(e10, dims=1)[1]) == (2560, 121)
 
-@test size(eeg_apply(e10, f="mean(eeg, dims=1") == (2560, 121)
+@test size(eeg_apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
 
 true
