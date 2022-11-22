@@ -125,7 +125,7 @@ end
 """
     grubbs(x; alpha, t)
 
-Perform Grubbs test for outlier in vector `x`.
+Perform Grubbs test for outlier.
 
 # Arguments
 
@@ -168,7 +168,7 @@ end
 """
     outlier_detect(x; method)
 
-Detect outliers in `x`.
+Detect outliers.
 
 # Arguments
 
@@ -229,7 +229,6 @@ Calculate mean of a segment (e.g. spectrogram).
 - `seg::Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)
-
     return reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
 end
 
@@ -250,11 +249,7 @@ Named tuple containing:
 - `seg2::Vector{Float64}`: averaged segment 2
 """
 function seg2_mean(seg1::AbstractArray, seg2::AbstractArray)
-
-    seg1_avg = reshape(mean(mean(seg1, dims=1), dims=2), size(seg1, 3))
-    seg2_avg = reshape(mean(mean(seg2, dims=1), dims=2), size(seg2, 3))
-
-    return (seg1=seg1_avg, seg2=seg2_avg)
+    return (seg1=seg_mean(seg1), seg2=seg_mean(seg2))
 end
 
 """
@@ -485,18 +480,18 @@ Calculates the prediction interval (95% CI adjusted for sample size)
 """
 function pred_int(n::Int64)
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    (n > 0 && n < 21) && return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
-    @warn "Result may not be accurate."
-    n > 20 && n <= 25 && return 2.10
-    n > 25 && n <= 30 && return 2.08
-    n > 31 && n <= 35 && return 2.06
-    n > 35 && n <= 40 && return 2.05
-    n > 41 && n <= 50 && return 2.03
-    n > 51 && n <= 60 && return 2.02
-    n > 61 && n <= 70 && return 2.01
-    n > 71 && n <= 80 && return 2.00
-    n > 81 && n <= 90 && return 2.00
-    n > 91 && n <= 100 && return 1.99
+    n in 1:19 && return [NaN, 15.56, 4.97, 3.56, 3.04, 2.78, 2.62, 2.51, 2.43, 2.37, 2.33, 2.29, 2.26, 2.24, 2.22, 2.18, 2.17, 2.16, 2.10][n]
+    @warn "For n > 20 result may not be accurate."
+    n in 20:25 && return 2.10
+    n in 25:30 && return 2.08
+    n in 31:35 && return 2.06
+    n in 35:40 && return 2.05
+    n in 41:50 && return 2.03
+    n in 51:60 && return 2.02
+    n in 61:70 && return 2.01
+    n in 71:80 && return 2.00
+    n in 81:90 && return 2.00
+    n in 91:100 && return 1.99
     n > 100 && return 1.98
 end
 

@@ -836,7 +836,6 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-
 function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
     _check_channels(eeg, channel)

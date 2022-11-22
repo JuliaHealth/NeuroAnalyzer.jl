@@ -14,6 +14,8 @@ using Wavelets
 using ContinuousWavelets
 @info "Loading package: StatsModels"
 using StatsModels
+@info "Loading package: MultivariateStats"
+using MultivariateStats
 @info "Loading package: NeuroAnalyzer"
 using NeuroAnalyzer
 println()

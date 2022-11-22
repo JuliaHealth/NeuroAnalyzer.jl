@@ -49,6 +49,13 @@ eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import BrainVision", 36))
 eeg_import_bv("test/eeg-test-bv.vhdr");
 @time eeg_import_bv("test/eeg-test-bv.vhdr");
+print(rpad("Save HDF5", 36))
+tmp = tempname()
+eeg_save(edf, file_name=tmp);
+@time eeg_save(edf, file_name=tmp);
+print(rpad("Load HDF5", 36))
+eeg_load(tmp);
+@time eeg_load(tmp);
 
 eeg_delete_channel!(edf, channel=20:24)
 e10 = eeg_epochs(edf, epoch_len=2560)

@@ -365,7 +365,7 @@ end
 """
     fft2(x)
 
-Calculate FFT for the vector `x` padded with zeros, so the length of padded `x` is a power of 2.
+Zeros-padded FFT, so the length of padded vector is a power of 2.
 
 # Arguments
 

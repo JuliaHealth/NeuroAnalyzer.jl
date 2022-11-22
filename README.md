@@ -106,7 +106,7 @@ Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These
 
 ## Documentation
 
-Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html).
+Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html) formats.
 
 NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
 

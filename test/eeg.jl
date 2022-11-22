@@ -349,17 +349,17 @@ ch1 = eeg_electrode_loc(edf, channel=1, output=false)
 @test ch1[1] == -18.0
 
 locs = eeg_import_ced("../locs/standard-10-20-cap19-elmiko.ced")
-locs2 = eeg_loc_flipx(locs)
+locs2 = loc_flipx(locs)
 @test locs2[1, 3] == 198.0
-locs2 = eeg_loc_flipy(locs)
+locs2 = loc_flipy(locs)
 @test locs2[1, 3] == 18.0
-locs2 = eeg_loc_flipz(locs)
+locs2 = loc_flipz(locs)
 @test locs2[1, 3] == -18.0
-locs2 = eeg_loc_swapxy(locs)
+locs2 = loc_swapxy(locs)
 @test locs2[1, 3] == 72.0
-locs2 = eeg_loc_sph2cart(locs)
+locs2 = loc_sph2cart(locs)
 @test locs2[1, 5] == -0.03
-locs2 = eeg_loc_cart2sph(locs)
+locs2 = loc_cart2sph(locs)
 @test locs2[1, 3] == -18.0
 
 @test size(eeg_phdiff(edf)) == (19, 309760, 1)

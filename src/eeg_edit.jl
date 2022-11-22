@@ -1735,7 +1735,7 @@ function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, 
 end
 
 """
-    eeg_loc_flipy(locs; planar, spherical)
+    loc_flipy(locs; planar, spherical)
 
 Flip channel locations along y axis.
 
@@ -1749,7 +1749,7 @@ Flip channel locations along y axis.
 
 - `locs_new::DataFrame`
 """
-function eeg_loc_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
@@ -1766,13 +1766,13 @@ function eeg_loc_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
         end
         spherical == true && (locs_new[!, :loc_y][idx] = -locs_new[!, :loc_y][idx])
     end
-    eeg_loc_cart2sph!(locs_new)
+    loc_cart2sph!(locs_new)
 
     return locs_new
 end
 
 """
-    eeg_loc_flipy!(locs; planar, spherical)
+    loc_flipy!(locs; planar, spherical)
 
 Flip channel locations along y axis.
 
@@ -1782,7 +1782,7 @@ Flip channel locations along y axis.
 - `planar::Bool=true`: modify planar coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function eeg_loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     for idx in 1:length(locs[!, :labels])
         if planar == true
@@ -1797,13 +1797,13 @@ function eeg_loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true
         end
         spherical == true && (locs[!, :loc_y][idx] = -locs[!, :loc_y][idx])
     end
-    eeg_loc_cart2sph!(locs)
+    loc_cart2sph!(locs)
 
     return nothing
 end
 
 """
-    eeg_loc_flipx(locs; planar, spherical)
+    loc_flipx(locs; planar, spherical)
 
 Flip channel locations along x axis.
 
@@ -1817,7 +1817,7 @@ Flip channel locations along x axis.
 
 - `locs_new::DataFrame`
 """
-function eeg_loc_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
@@ -1834,13 +1834,13 @@ function eeg_loc_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
         end
         spherical == true && (locs_new[!, :loc_x][idx] = -locs_new[!, :loc_x][idx])
     end
-    eeg_loc_cart2sph!(locs_new)
+    loc_cart2sph!(locs_new)
 
     return locs_new
 end
 
 """
-    eeg_loc_flipx!(locs; planar, spherical)
+    loc_flipx!(locs; planar, spherical)
 
 Flip channel locations along x axis.
 
@@ -1850,7 +1850,7 @@ Flip channel locations along x axis.
 - `planar::Bool=true`: modify planar coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function eeg_loc_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     for idx in 1:length(locs[!, :labels])
         if planar == true
@@ -1865,13 +1865,13 @@ function eeg_loc_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true
         end
         spherical == true && (locs[!, :loc_x][idx] = -locs[!, :loc_x][idx])
     end
-    eeg_loc_cart2sph!(locs)
+    loc_cart2sph!(locs)
 
     return nothing
 end
 
 """
-    eeg_loc_flipz(locs)
+    loc_flipz(locs)
 
 Flip channel locations along z axis.
 
@@ -1883,20 +1883,20 @@ Flip channel locations along z axis.
 
 - `locs_new::DataFrame`
 """
-function eeg_loc_flipz(locs::DataFrame)
+function loc_flipz(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
     for idx in 1:length(locs[!, :labels])
         locs_new[!, :loc_z][idx] = -locs_new[!, :loc_z][idx]
     end
-    eeg_loc_cart2sph!(locs_new)
+    loc_cart2sph!(locs_new)
 
     return locs_new
 end
 
 """
-    eeg_loc_flipz!(eeg)
+    loc_flipz!(eeg)
 
 Flip channel locations along z axis.
 
@@ -1904,12 +1904,12 @@ Flip channel locations along z axis.
 
 - `locs::DataFrame`
 """
-function eeg_loc_flipz!(locs::DataFrame)
+function loc_flipz!(locs::DataFrame)
 
     for idx in 1:length(locs[!, :labels])
         locs[!, :loc_z][idx] = -locs[!, :loc_z][idx]
     end
-    eeg_loc_cart2sph!(locs)
+    loc_cart2sph!(locs)
 
     return nothing
 end
@@ -2116,7 +2116,7 @@ function eeg_electrode_loc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}
 end
 
 """
-    eeg_loc_swapxy(locs; planar, spherical)
+    loc_swapxy(locs; planar, spherical)
 
 Swap channel locations x and y axes.
 
@@ -2130,7 +2130,7 @@ Swap channel locations x and y axes.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_loc_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
@@ -2144,13 +2144,13 @@ function eeg_loc_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true
             locs_new[!, :loc_x][idx], locs_new[!, :loc_y][idx] = locs_new[!, :loc_y][idx], locs_new[!, :loc_x][idx]
         end
     end
-    eeg_loc_cart2sph!(locs_new)
+    loc_cart2sph!(locs_new)
 
     return locs_new
 end
 
 """
-    eeg_loc_swapxy!(locs; planar, spherical)
+    loc_swapxy!(locs; planar, spherical)
 
 Swap channel locations x and y axes.
 
@@ -2160,7 +2160,7 @@ Swap channel locations x and y axes.
 - `planar::Bool=true`: modify planar coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function eeg_loc_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
+function loc_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     for idx in 1:length(locs[!, :labels])
         if planar == true
@@ -2172,13 +2172,13 @@ function eeg_loc_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=tru
             locs[!, :loc_x][idx], locs[!, :loc_y][idx] = locs[!, :loc_y][idx], locs[!, :loc_x][idx]
         end
     end
-    eeg_loc_cart2sph!(locs)
+    loc_cart2sph!(locs)
 
     return nothing
 end
 
 """
-    eeg_loc_sph2cart(locs)
+    loc_sph2cart(locs)
 
 Convert spherical locations to Cartesian.
 
@@ -2190,7 +2190,7 @@ Convert spherical locations to Cartesian.
 
 - `locs_new::DataFrame`
 """
-function eeg_loc_sph2cart(locs::DataFrame)
+function loc_sph2cart(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
@@ -2208,7 +2208,7 @@ function eeg_loc_sph2cart(locs::DataFrame)
 end
 
 """
-    eeg_loc_sph2cart!(locs)
+    loc_sph2cart!(locs)
 
 Convert spherical locations to Cartesian.
 
@@ -2216,7 +2216,7 @@ Convert spherical locations to Cartesian.
 
 - `locs::DataFrame`
 """
-function eeg_loc_sph2cart!(locs::DataFrame)
+function loc_sph2cart!(locs::DataFrame)
 
     for idx in 1:length(locs[!, :labels])
         r = locs[!, :loc_radius_sph][idx]
@@ -2232,7 +2232,7 @@ function eeg_loc_sph2cart!(locs::DataFrame)
 end
 
 """
-    eeg_loc_cart2sph(locs)
+    loc_cart2sph(locs)
 
 Convert Cartesian locations to spherical.
 
@@ -2244,7 +2244,7 @@ Convert Cartesian locations to spherical.
 
 - `locs_new::DataFrame`
 """
-function eeg_loc_cart2sph(locs::DataFrame)
+function loc_cart2sph(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
@@ -2263,7 +2263,7 @@ function eeg_loc_cart2sph(locs::DataFrame)
 end
 
 """
-    eeg_loc_cart2sph!(locs)
+    loc_cart2sph!(locs)
 
 Convert Cartesian locations to spherical.
 
@@ -2271,7 +2271,7 @@ Convert Cartesian locations to spherical.
 
 - `locs::DataFrame`
 """
-function eeg_loc_cart2sph!(locs::DataFrame)
+function loc_cart2sph!(locs::DataFrame)
 
     for idx in 1:length(locs[!, :labels])
         x = locs[!, :loc_x][idx]

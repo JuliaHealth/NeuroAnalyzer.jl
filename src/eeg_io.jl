@@ -768,9 +768,9 @@ function eeg_save(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=fal
 
     eeg.eeg_header[:eeg_filename] = file_name
 
-    save_object("/tmp/$file_name", eeg)
-    eeg.eeg_header[:eeg_filesize_mb] = round(filesize("/tmp/$file_name") / 1024, digits=2)
-    rm("/tmp/$file_name")
+    save_object("/tmp/$(basename(file_name))", eeg)
+    eeg.eeg_header[:eeg_filesize_mb] = round(filesize("/tmp/$(basename(file_name))") / 1024, digits=2)
+    rm("/tmp/$(basename(file_name))")
 
     save_object(file_name, eeg)
 end
@@ -809,13 +809,14 @@ Export EEG data as CSV.
 - `header::Bool=false`: export header
 - `components::Bool=false`: export components
 - `markers::Bool=false`: export markers
+- `locs::Bool=false`: export locations
 - `overwrite::Bool=false`
 
 # Returns
 
 - `success::Bool`
 """
-function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, markers::Bool=false, overwrite::Bool=false)
+function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
     eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
@@ -862,7 +863,7 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
     end
 
     # LOCS
-    if markers
+    if locs
         file_name = replace(file_name, ".csv" => "_locs.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, eeg.eeg_locs)
