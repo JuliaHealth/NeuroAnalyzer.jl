@@ -186,7 +186,7 @@ export s_fftdenoise
 export s_gfilter
 export s_ghspectrogram
 export s_tkeo
-export s_wspectrum
+export s_mwpsd
 export a2_cmp
 export s_fcoherence
 export s2_fcoherence
@@ -417,6 +417,8 @@ export eeg_denoise_wien
 export eeg_denoise_wien!
 export eeg_scale
 export eeg_scale!
+export eeg_gfilter
+
 
 include("eeg_analyze.jl")
 export eeg_total_power
@@ -468,9 +470,8 @@ export eeg_aec
 export eeg_ged
 export eeg_frqinst
 export eeg_itpc_s
-export eeg_wspectrogram
 export eeg_tkeo
-export eeg_wspectrum
+export eeg_mwpsd
 export eeg_fcoherence
 export eeg_vartest
 export eeg_band_mpower

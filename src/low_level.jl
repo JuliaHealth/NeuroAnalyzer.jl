@@ -1,39 +1,41 @@
 """
     linspace(start, stop, length)
 
-Generates `length`-long sequence of evenly spaced numbers between `start` and `stop`.
+Generates a sequence of evenly spaced numbers between `start` and `stop`.
 
 # Arguments
 
-- `start::Real`
-- `stop::Real`
-- `length::Int64`
+- `start::Number`
+- `stop::Number`
+- `n::Int64`: sequence length
 
 # Returns
 
-- `range::Number`
+- `range::Vector`
 """
-function linspace(start::Real, stop::Real, length::Int64)
-    return collect(range(start, stop, length))
+function linspace(start::Number, stop::Number, n::Int64)
+    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+    return collect(range(start, stop, n))
 end
 
 """
-    logspace(start, stop, length)
+    logspace(start, stop, n)
 
-Generates `length`-long sequence of log10-spaced numbers between `start` and `stop`.
+Generates a sequence of log10-spaced numbers between `start` and `stop`.
 
 # Arguments
 
-- `start::Real`
-- `stop::Real`
-- `length::Int64`
+- `start::Number`
+- `stop::Number`
+- `n::Int64`: sequence length
 
 # Returns
 
-- `range::Number`
+- `range::Vector{<:Number}`
 """
-function logspace(start::Real, stop::Real, length::Int64)
-    return collect(exp10.(range(start, stop, length)))
+function logspace(start::Number, stop::Number, n::Int64)
+    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+    return collect(exp10.(range(start, stop, n)))
 end
 
 """
@@ -79,9 +81,7 @@ Return the positions of the `y` value in the vector `x`.
 - `y_dist::Real`: the difference between `y` and `x[y_idx]`
 """
 function vsearch(y::Real, x::AbstractVector; acc::Bool=false)
-
     y_dist, y_idx = findmin(abs.(x .- y))
-
     return acc == true ? (y_idx, y_dist) : y_idx
 end
 
@@ -209,6 +209,7 @@ Convert spherical coordinates to cartographic.
 - `z::Real`
 
 # Returns
+
 - `radius::Float64`: spherical radius, the distance from the origin to the point
 - `theta::Float64`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
 - `phi::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
@@ -293,12 +294,12 @@ end
 """
     fft0(x, n)
 
-Calculate FFT for the vector `x` padded with `n` zeros.
+Zeros-padded FFT.
 
 # Arguments
 
 - `x::AbstractArray`
-- `n::Int64`
+- `n::Int64`: number of zeros to add
 
 # Returns
 
@@ -307,6 +308,7 @@ Calculate FFT for the vector `x` padded with `n` zeros.
 function fft0(x::AbstractArray, n::Int64=0)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
+
     if CUDA.functional() && use_cuda
         # _free_gpumem()
         CUDA.memory_status()
@@ -328,12 +330,12 @@ end
 """
     ifft0(x, n)
 
-Calculate IFFT for the vector `x` padded `n` zeros.
+Zeros-padded IFFT.
 
 # Arguments
 
 - `x::AbstractArray`
-- `n::Int64`
+- `n::Int64`: number of zeros to add
 
 # Returns
 
@@ -363,7 +365,7 @@ end
 """
     fft2(x)
 
-Calculate FFT for the vector `x` padded with zeros so the length of padded `x` is a power of 2.
+Calculate FFT for the vector `x` padded with zeros, so the length of padded `x` is a power of 2.
 
 # Arguments
 
@@ -374,31 +376,14 @@ Calculate FFT for the vector `x` padded with zeros so the length of padded `x` i
 - `fft2::Vector{ComplexF64}`
 """
 function fft2(x::AbstractArray)
-
     n = nextpow2(length(x)) - length(x)
-
-    if CUDA.functional() && use_cuda
-        # _free_gpumem()
-        CUDA.memory_status()
-        if n == 0
-            cx = CuArray(x)
-        else
-            cx = CuArray(vcat(x, zeros(eltype(x), n)))
-        end
-        return Vector(fft(cx))
-    else
-        if n == 0
-            return fft(x)
-        else
-            return fft(vcat(x, zeros(eltype(x), n)))
-        end
-    end
+    fft0(x, n)
 end
 
 """
     ifft2(x)
 
-Calculate IFFT for the vector `x` padded with zeros so the length of padded `x` is a power of 2.
+Calculate IFFT for the vector `x` padded with zeros, so the length of padded `x` is a power of 2.
 
 # Arguments
 
@@ -409,24 +394,8 @@ Calculate IFFT for the vector `x` padded with zeros so the length of padded `x` 
 - `ifft0::Vector{ComplexF64}`
 """
 function ifft2(x::AbstractArray)
-
     n = nextpow2(length(x)) - length(x)
-
-    if CUDA.functional() && use_cuda
-        # _free_gpumem()
-        if n == 0
-            cx = CuArray(x)
-        else
-            cx = CuArray(vcat(x, zeros(eltype(x), n)))
-        end
-        return Vector(ifft(cx))
-    else
-        if n == 0
-            return ifft(x)
-        else
-            return ifft(vcat(x, zeros(eltype(x), n)))
-        end
-    end
+    ifft0(x, n)
 end
 
 """
@@ -463,7 +432,7 @@ Splits the vector `x` into `n`-long pieces.
 """
 function vsplit(x::AbstractVector, n::Int64=1)
 
-    n < 0 && throw(ArgumentError("n must be positive."))
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
     length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
 
     x_m = reshape(x, length(x) ÷ n, n)
@@ -516,7 +485,7 @@ function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real
 """
     s_freqs(t)
 
-Return vector of frequencies and Nyquist frequency for given time vector `t`.
+Return vector of frequencies and Nyquist frequency for time vector.
 
 # Arguments
 
@@ -548,7 +517,7 @@ end
 """
     s_freqs(signal, fs)
 
-Return vector of frequencies and Nyquist frequency.
+Return vector of frequencies and Nyquist frequency for signal.
 
 # Arguments
 
@@ -589,7 +558,7 @@ Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims
 """
 function m_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
 
-    (dims < 1 || dims > 2) && throw(ArgumentError("dims must be 1 or 2."))
+    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
     
     m_idx = zeros(Int, size(m))
     if dims == 1
@@ -625,7 +594,7 @@ Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows 
 """
 function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
 
-    (dims < 1 || dims > 2) && throw(ArgumentError("dims must be 1 or 2."))
+    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
 
     m_sorted = zeros(eltype(m), size(m))
     if dims == 1
@@ -651,7 +620,7 @@ Pad vector / rows of matrix / array with zeros. Works with 1-, 2- and 3-dimensio
 # Arguments
 
 - `x::Union{AbstractVector, AbstractArray`
-- `n::Int64`: number of zeros to add.
+- `n::Int64`: number of zeros to add
 
 # Returns
 
@@ -699,7 +668,6 @@ Convert frequency `f` in Hz to rad/s.
 - `f_rads::Float64`
 """
 function hz2rads(f::Real)
-
     return 2 * pi * f
 end
 
@@ -717,7 +685,6 @@ Convert frequency `f` in rad/s to Hz.
 - `f_rads::Float64`
 """
 function rads2hz(f::Real)
-
     return f / 2 * pi
 end
 
@@ -735,7 +702,6 @@ Return maximum value of the complex vector`x`.
 - `cmax::ComplexF64`
 """
 function cmax(x::Vector{ComplexF64})
-
     return argmax(abs, x)
 end
 
@@ -753,14 +719,13 @@ Return minimum value of the complex vector`x`.
 - `cmin::ComplexF64`
 """
 function cmin(x::Vector{ComplexF64})
-
     return argmin(abs, x)
 end
 
 """
     generate_sinc(t, f, peak, norm)
 
-Generate normalized or unnormalized sinc function.
+Generate sinc function.
 
 # Arguments
 
@@ -800,7 +765,9 @@ Generate Morlet wavelet.
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
-
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
+    t <= 0 && throw(ArgumentError("t must be > 0."))
     t = -t:1/fs:t
     sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
@@ -825,7 +792,9 @@ Generate Gaussian wave.
 - `gaussian::Vector{Float64}`
 """
 function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
-
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
+    t <= 0 && throw(ArgumentError("t must be > 0."))
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
     return @. a * exp(-(t/s)^2 / 2)     # Gaussian
@@ -846,10 +815,8 @@ Order tuple elements in ascending or descending (rev=true) order.
 - `t::Tuple{Real, Real}`
 """
 function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
-    
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
-
     return t
 end
 
@@ -868,7 +835,7 @@ Calculate RMSE between two signals.
 - `r::Float64`
 """
 function s2_rmse(signal1::AbstractVector, signal2::AbstractVector)
-
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
     # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
     return sqrt(mean(signal2 - signal1)^2)
 end
@@ -876,7 +843,7 @@ end
 """
     m_norm(m)
 
-Normalize matrix `m`.
+Normalize matrix.
 
 # Arguments
 
@@ -887,14 +854,13 @@ Normalize matrix `m`.
 - `m_norm::AbstractArray`
 """
 function m_norm(m::AbstractArray)
-    
     return m ./ (size(m, 2) - 1)
 end
 
 """
    s_cov(signal; norm=true)
 
-Calculate covariance between all channels.
+Calculate covariance of `signal * signal'`.
 
 # Arguments
 
@@ -945,7 +911,7 @@ function s2_cov(signal1::AbstractVector, signal2::AbstractVector; norm::Bool=fal
 end
 
 """
-    s_dft(signal; fs)
+    s_dft(signal; fs, pad)
 
 Return FFT and DFT sample frequencies for a DFT.
 
@@ -953,6 +919,7 @@ Return FFT and DFT sample frequencies for a DFT.
 
 - `signal::AbstractVector`
 - `fs::Int64`: sampling rate
+- `pad::Int64=0`: number of zeros to add
 
 # Returns
 
@@ -960,11 +927,11 @@ Named tuple containing:
 - `s_fft::Vector{ComplexF64}`
 - `s_sf::Vector{Float64}`
 """
-function s_dft(signal::AbstractVector; fs::Int64, n::Int64=0)
+function s_dft(signal::AbstractVector; fs::Int64, pad::Int64=0)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    s_fft = fft0(signal)
+    s_fft = fft0(signal, pad)
     # number of samples
     n = length(signal)
     # time between samples
@@ -991,12 +958,10 @@ Calculate mean, std and 95% confidence interval.
 - `s_l::Float64`: lower 95% CI
 """
 function s_msci95(signal::Vector{Float64})
-
     s_m = mean(signal)
     s_s = std(signal) / sqrt(length(signal))
     s_u = s_m + 1.96 * s_s
     s_l = s_m - 1.96 * s_s
-
     return s_m, s_s, s_u, s_l
 end
 
@@ -1021,6 +986,7 @@ Calculate mean, std and 95% confidence interval for each the channel.
 function s_msci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
 
     _check_var(method, [:normal, :boot], "method")
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
         s_m = mean(signal, dims=1)'
@@ -1067,7 +1033,7 @@ Calculate mean and 95% confidence interval for 2 signals.
 """
 function s2_mean(signal1::Vector{Float64}, signal2::Vector{Float64})
 
-    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as size."))
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same as size."))
 
     s_m = zeros(length(signal1))
     s_s = zeros(length(signal1))
@@ -1107,8 +1073,9 @@ Named tuple containing:
 """
 function s2_difference(signal1::AbstractArray, signal2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
 
-    size(signal1) != size(signal2) && throw(ArgumentError("Both signals must be of the same size."))
+    size(signal1) == size(signal2) || throw(ArgumentError("Both signals must be of the same size."))
     _check_var(method, [:absdiff, :diff2int], "method")
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
     s1_mean = vec(mean(signal1, dims=1))
     s2_mean = vec(mean(signal2, dims=1))
@@ -1176,7 +1143,6 @@ Calculate autocovariance.
 function s_acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
-
     lags = collect(-lag:lag)
 
     if demean == true
@@ -1221,9 +1187,8 @@ Calculate cross-covariance between `signal1` and `signal2`.
 """
 function s2_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
-    length(signal1) != length(signal2) && throw(ArgumentError("Both signals must be of the same as length."))
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
-
     lags = collect(-lag:lag)
 
     if demean == true
@@ -1255,7 +1220,7 @@ Calculate FFT, amplitudes, powers and phases.
 # Arguments
 
 - `signal::AbstractArray`
-- `pad::Int64=0`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: number of zeros to add
 - `norm::Bool=false`: normalize do dB
 
 # Returns
@@ -1268,7 +1233,6 @@ Named tuple containing:
 """
 function s_spectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=false)
 
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     s_fft = fft0(signal, pad)
 
     # amplitudes
@@ -1334,6 +1298,7 @@ Calculate power between `f[1]` and `f[2]`.
 """
 function s_band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
     f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
@@ -1368,14 +1333,14 @@ Taper the signal.
 - `s_tapered::Vector{Union{Float64, ComplexF64}}`
 """
 function s_taper(signal::AbstractVector; taper::Union{AbstractVector, Vector{ComplexF64}})
-
     length(taper) == length(signal) || throw(ArgumentError("Taper and signal lengths must be equal."))
     return signal .* taper
 end
 
 """
     s_detrend(signal; type, offset, order, span, fs)
-Perform piecewise detrending of `eeg`.
+
+Perform piecewise detrending.
 
 # Arguments
 
@@ -1398,6 +1363,8 @@ Perform piecewise detrending of `eeg`.
 function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0, fs::Int64=0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
+    f <= 0 && throw(ArgumentError("f must be > 0."))
+    order < 1 && throw(ArgumentError("order must be ≥ 1."))
 
     if type === :loess
         t = collect(1.0:1:length(signal))
@@ -1451,7 +1418,6 @@ Remove mean value (DC offset).
 - `s_demeaned::Vector{Float64}`
 """
 function s_demean(signal::AbstractVector)
-
     m = mean(signal)
     return signal .- m
 end
@@ -1470,7 +1436,6 @@ Normalize (by z-score).
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_zscore(signal::AbstractArray)
-
     m = mean(signal)
     s = std(signal)
     return @. (signal - m) / s
@@ -1490,7 +1455,6 @@ Normalize in [-1, +1].
 - `s_normalized::AbstractArray`
 """
 function s_normalize_minmax(signal::AbstractArray)
-
     mi = minimum(signal)
     mx = maximum(signal)
     mxi = mx - mi
@@ -1511,7 +1475,6 @@ Normalize in [0, +1].
 - `s_normalized::AbstractArray`
 """
 function s_normalize_max(signal::AbstractArray)
-
     mx = maximum(signal)
     return signal ./ mx
 end
@@ -1530,7 +1493,6 @@ Normalize using log-transformation.
 - `s_normalized::AbstractArray`
 """
 function s_normalize_log(signal::AbstractArray)
-
     m = abs(minimum(signal))
     return @. log(1 + signal + m)
 end
@@ -1549,7 +1511,6 @@ Adds random noise.
 - `s_noisy::AbstractArray`
 """
 function s_add_noise(signal::AbstractArray)
-
     return signal .+ rand(length(signal))
 end
 
@@ -1571,7 +1532,7 @@ Resample to `new_sr` sampling frequency.
 """
 function s_resample(signal::AbstractVector; t::AbstractRange, new_sr::Int64)
 
-    new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
 
     # sampling interval
     dt = t[2] - t[1]
@@ -1607,7 +1568,7 @@ Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 """
 function s_resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
 
-    new_sr < 1 && throw(ArgumentError("New sampling rate must be positive."))
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
 
     channel_n, _, epoch_n = size(signal)
 
@@ -1634,7 +1595,6 @@ Return derivative of the same length.
 - `signal::AbstractVector`
 """
 function s_derivative(signal::AbstractVector)
-
     s_der = diff(signal)
     return vcat(s_der, s_der[end])
 end
@@ -1709,6 +1669,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
 
     _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
     typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+    fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
@@ -1971,7 +1932,6 @@ Calculate phase stationarity using Hilbert transformation.
 - `phase_stationarity::Vector{Float64}`
 """
 function s_stationarity_hilbert(signal::AbstractVector)
-    
     return diff(DSP.unwrap(angle.(hilbert(signal))))
 end
 
@@ -1990,7 +1950,8 @@ Calculate mean stationarity.
 - `mean_stationarity::Vector{Float64}`
 """
 function s_stationarity_mean(signal::AbstractVector; window::Int64)
-
+    window < 1 && throw(ArgumentError("window must be ≥ 1."))
+    window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
     return mean(signal, dims=1)
@@ -2011,7 +1972,8 @@ Calculate variance stationarity.
 - `var_stationarity::Vector{Float64}`
 """
 function s_stationarity_var(signal::AbstractVector; window::Int64)
-
+    window < 1 && throw(ArgumentError("window must be ≥ 1."))
+    window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
     return var(signal, dims=1)
@@ -2032,9 +1994,7 @@ Remove segment from the signal.
 - `s_trimmed::Vector{Float64}`
 """
 function s_trim(signal::AbstractVector; segment::Tuple{Int64, Int64})
-
     _check_segment(signal, segment[1], segment[2])
-    
     return vcat(signal[1:segment[1] - 1], signal[(segment[2] + 1):end])
 end
 
@@ -2053,7 +2013,6 @@ Calculate mutual information between `signal1` and `signal2`.
 - `mi::Float64`
 """
 function s2_mi(signal1::AbstractVector, signal2::AbstractVector)
-
     return get_mutual_information(signal1, signal2)
 end
 
@@ -2102,7 +2061,6 @@ Calculate negentropy.
 - `ent::Float64`
 """
 function s_negentropy(signal::AbstractVector)
-
     s = s_demean(signal)
     return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)[1]
 end
@@ -2121,7 +2079,6 @@ Average all channels.
 - `s_averaged::AbstractArray`
 """
 function s_average(signal::AbstractArray)
-
     return mean(signal, dims=1)
 end
 
@@ -2140,12 +2097,11 @@ Averages `signal1` and `signal2`.
 - `s_averaged::Vector{Float64}`
 """
 function s2_average(signal1::AbstractArray, signal2::AbstractArray)
-
     return mean(hcat(signal1, signal2), dims=2)
 end
 
 """
-    s2_tcoherence(signal1, signal2)
+    s2_tcoherence(signal1, signal2; pad)
 
 Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitude-squared coherence) between `signal1` and `signal2`.
 
@@ -2153,6 +2109,7 @@ Calculate coherence (mean over time), IC (imaginary coherence) and MSC (magnitud
 
 - `signal1::AbstractVector`
 - `signal2::AbstractVector`
+- `pad::Int64=0`: number of zeros to add
 
 # Returns
 
@@ -2161,15 +2118,15 @@ Named tuple containing:
 - `msc::Vector{Float64}`: magnitude-squares coherence
 - `ic::Vector{Float64}`: imaginary part of coherence
 """
-function s2_tcoherence(signal1::AbstractVector, signal2::AbstractVector)
+function s2_tcoherence(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
     signal1 = _reflect(signal1)
     signal2 = _reflect(signal2)
 
-    s1_fft = fft0(signal1) ./ length(signal1)
-    s2_fft = fft0(signal2) ./ length(signal2)
+    s1_fft = fft0(signal1, pad) ./ length(signal1)
+    s2_fft = fft0(signal2, pad) ./ length(signal2)
 
     coh = @. (abs((s1_fft) * conj.(s2_fft))^2) / (s1_fft * s2_fft)
     coh = _chop(coh)
@@ -2199,7 +2156,7 @@ Named tuple containing:
 function s_pca(signal::AbstractArray; n::Int64)
 
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
-    n > size(signal, 1) && throw(ArgumentError("Number of PCs must be ≤ $(size(signal, 1))."))
+    n > size(signal, 1) && throw(ArgumentError("n must be ≤ $(size(signal, 1))."))
 
     epoch_n = size(signal, 3)
     pc_m = []
@@ -2238,7 +2195,6 @@ function s_pca(signal::AbstractArray; n::Int64)
     return (pc=pc, pc_var=pc_var, pc_m=pca.mean, pca=pca)
 end
 
-
 """
     s_pca_reconstruct(signal, pc, pca)
 
@@ -2274,21 +2230,22 @@ Perform convolution in the frequency domain between `signal` and `kernel`.
 
 - `signal::AbstractArray`
 - `kernel::Union{AbstractVector, Vector{ComplexF64}}`
+- `pad::Int64=0`: number of zeros to add
 - `norm::Bool=false`: normalize kernel
 
 # Returns
 
 - `s_conv::Vector{ComplexF64}`
 """
-function s_fconv(signal::AbstractArray; kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
+function s_fconv(signal::AbstractArray; pad::Int64=0, kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
     half_kernel = floor(Int64, n_kernel / 2)
-    s_fft = fft0(signal, n_kernel - 1)
-    kernel_fft = fft0(kernel, n_signal - 1)
+    s_fft = fft0(signal, pad + n_kernel - 1)
+    kernel_fft = fft0(kernel, pad + n_signal - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = ifft0(s_fft .* kernel_fft)
+    s_conv = ifft0(s_fft .* kernel_fft, pad)
     
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
@@ -2321,7 +2278,7 @@ function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64
 
     _check_var(f, [:tanh, :gaus], "f")
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
-    n > size(signal, 1) && throw(ArgumentError("Number of ICs must be ≤ $(size(signal, 1))."))
+    n > size(signal, 1) && throw(ArgumentError("n must be ≤ $(size(signal, 1))."))
     channel_n, _, epoch_n = size(signal)
     ica = zeros(n, size(signal, 2), epoch_n)
     ica_mw = zeros(channel_n, n, epoch_n)
@@ -2407,7 +2364,7 @@ Named tuple containing:
 function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false, demean::Bool=true)
 
     (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1 Hz."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
     demean == true && (signal = s_demean(signal))
 
@@ -2442,7 +2399,7 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
 end
 
 """
-s_detect_channel_flat(signal; w, tol)
+    s_detect_channel_flat(signal; w, tol)
 
 Detect flat channel.
 
@@ -2484,7 +2441,6 @@ Calculate SNR.
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function s_snr(signal::AbstractVector)
-
     # make signal positive
     signal .+= abs(minimum(signal))
     return mean(signal) / std(signal)
@@ -2506,7 +2462,7 @@ Find peaks.
 
 """
 function s_findpeaks(signal::AbstractVector; d::Int64=32)
-    
+    d < 1 && throw(ArgumentError("d must be ≥ 1."))
     return findpeaks1d(signal, distance=d)[1]
 end
 
@@ -2675,8 +2631,6 @@ function s2_ged(signal1::AbstractArray, signal2::AbstractArray)
 
     size(signal1) == size(signal2) || throw(ArgumentError("signal1 and signal2 must have the same size."))
 
-    channel_n = size(signal1, 1)
-
     s1cov = cov(signal1')
     s2cov = cov(signal2')
     eig_val, eig_vec = eigen(s1cov, s2cov)
@@ -2705,9 +2659,7 @@ Calculate instantaneous frequency.
 - `frqinst::Vector{Float64}`
 """
 function s_frqinst(signal::AbstractVector; fs::Int64)
-
-    fs < 0 && throw(ArgumentError("fs must be > 0."))
-
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     _, _, _, h_phases = s_hspectrum(signal)
     return 256 * s_derivative(h_phases) / (2*pi)
 end
@@ -2733,7 +2685,6 @@ Named tuple containing:
 """
 function s_hspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true)
 
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
     h = hilbert(pad0(signal, pad))
 
     # amplitudes
@@ -2761,7 +2712,6 @@ Convert cycle length in ms `t` to frequency.
 - `f::Float64`: frequency in Hz
 """
 function t2f(t::Real)
-
     t <= 0 && throw(ArgumentError("t must be > 0."))
     return round(1000 / t, digits=2)
 end
@@ -2780,7 +2730,6 @@ Convert frequency `f` to cycle length in ms.
 - `f::Float64`: cycle length in ms
 """
 function f2t(f::Real)
-
     f <= 0 && throw(ArgumentError("f must be > 0."))
     return round(1000 / f, digits=2)
 end
@@ -2825,11 +2774,11 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
     # add reflected signal to reduce edge artifacts
     signal = _reflect(signal)
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    # get frequency range
+    fs < 1 && throw(ArgumentError("fs must be > 1."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+    frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
     frq_n < 2 && throw(ArgumentError("frq_n must be ≥ 2."))
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
     if frq === :log
@@ -2857,9 +2806,9 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
 
     @inbounds @simd for frq_idx in 1:frq_n
         kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
-        w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=true)
+        w_conv[frq_idx, :] = s_fconv(signal, kernel=kernel, norm=false)
         # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(w_conv), imag.(w_conv), 2)
-        w_powers[frq_idx, :] = @views @fastmath @. abs(w_conv[frq_idx, :])^2
+        w_powers[frq_idx, :] = @views @. abs(w_conv[frq_idx, :])^2
         w_phases[frq_idx, :] = @views @. angle(w_conv[frq_idx, :])
     end
 
@@ -2882,7 +2831,7 @@ Perform FFT denoising.
 # Arguments
 
 - `signal::AbstractVector`
-- `pad::Int64=0`: pad the `signal` with `pad` zeros
+- `pad::Int64=0`: number of zeros to add
 - `threshold::Real=0`: PSD threshold for keeping frequency components; if 0, use mean signal power value
 
 # Returns
@@ -2902,7 +2851,7 @@ function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
     frq_idx = s_pow .> threshold
     s_fft[frq_idx] .= Complex(0, 0)
 
-    return (s_denoised=real.(ifft0(s_fft)), frq_idx=frq_idx)
+    return (s_denoised=real.(ifft0(s_fft, pad)), frq_idx=frq_idx)
 end
 
 """
@@ -2914,6 +2863,7 @@ Filter using Gaussian in the frequency domain.
 
 - `signal::AbstractVector`
 - `fs::Int64`: sampling rate
+- `pad::Int64=0`: number of zeros to add
 - `f::Real`: filter frequency
 - `gw::Real=5`: Gaussian width in Hz
 
@@ -2922,7 +2872,11 @@ Filter using Gaussian in the frequency domain.
 Named tuple containing:
 - `s_f::Vector{Float64}`
 """
-function s_gfilter(signal::AbstractVector; fs::Int64, f::Real, gw::Real=5)
+function s_gfilter(signal::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw::Real=5)
+
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    f <= 0 && throw(ArgumentError("f must be > 0."))
+    gw <= 0 && throw(ArgumentError("gw must be > 0."))
 
     # add reflected signal to reduce edge artifacts
     s_r = _reflect(signal)
@@ -2936,7 +2890,7 @@ function s_gfilter(signal::AbstractVector; fs::Int64, f::Real, gw::Real=5)
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_f = 2 .* real.(ifft0(fft0(s_r).*g))
+    s_f = 2 .* real.(ifft0(fft0(s_r, pad).*g))
     
     # remove reflected part of the signal
     return _chop(s_f)
@@ -2961,14 +2915,15 @@ Calculate spectrogram using Gaussian and Hilbert transform.
 # Returns
 
 Named tuple containing:
-- `h_powers::Matrix{Float64}`
-- `frq_list::Vector{Float64}`
+- `s_pow::Matrix{Float64}`: powers
+- `s_pow::Matrix{Float64}`: phases
+- `frq_list::Vector{Float64}`: frequencies
 """
 function s_ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
 
     _check_var(frq, [:log, :lin], "frq")
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
@@ -2976,22 +2931,22 @@ function s_ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
     if frq === :log
         frq_lim = (frq_lim[1], frq_lim[2])
-        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        s_frq = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
-        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+        s_frq = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
     demean == true && (signal = s_demean(signal))
-    h_powers = zeros(length(frq_list), length(signal))
-    h_phases = zeros(length(frq_list), length(signal))
-    @inbounds @simd for frq_idx in 1:length(frq_list)
-        s = s_gfilter(signal, fs=fs, f=frq_list[frq_idx], gw=gw)
-        h_powers[frq_idx, :] = abs.(hilbert(s)).^2
-        h_phases[frq_idx, :] = angle.(hilbert(s))
+    s_pow = zeros(length(s_frq), length(signal))
+    s_ph = zeros(length(s_frq), length(signal))
+    @inbounds @simd for frq_idx in 1:length(s_frq)
+        s = s_gfilter(signal, fs=fs, f=s_frq[frq_idx], gw=gw)
+        s_pow[frq_idx, :] = abs.(hilbert(s)).^2
+        s_ph[frq_idx, :] = angle.(hilbert(s))
     end
-    norm == true && (h_powers = pow2db.(h_powers))
+    norm == true && (s_pow = pow2db.(s_pow))
 
-    return (h_powers=h_powers, frq_list=frq_list)
+    return (s_pow=s_pow, s_ph=s_ph, s_frq=s_frq)
 end
 
 """
@@ -3019,9 +2974,9 @@ function s_tkeo(signal::AbstractVector)
 end
 
 """
-    s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    s_mwpsd(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum using wavelet convolution.
+Calculate power spectrum using Morlet wavelet convolution.
 
 # Arguments
 
@@ -3029,7 +2984,7 @@ Calculate power spectrum using wavelet convolution.
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
+- `frq_n::Int64=0`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
@@ -3040,15 +2995,17 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function s_mwpsd(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=0, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_var(frq, [:log, :lin], "frq")
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
-    frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
+    frq_n == 0 && (frq_n = length(frq_lim[1]:frq_lim[2]))
+    frq_n < 2 && throw(ArgumentError("frq_n must be ≥ 2."))
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
     if frq === :log
         frq_lim = (frq_lim[1], frq_lim[2])
@@ -3085,17 +3042,17 @@ end
 
 
 """
-    s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+    s_mwpsd(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 
-Calculate power spectrum using wavelet convolution.
+Calculate power spectrum using Morlet wavelet convolution.
 
 # Arguments
 
 - `signal::Array{Float64, 2}`
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency bounds for the spectrogram
+- `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
@@ -3106,15 +3063,15 @@ Named tuple containing:
 - `w_powers::Matrix{Float64}`
 - `frq_list::Vector{Float64}`
 """
-function s_wspectrum(signal::Matrix{Float64}; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function s_mwpsd(signal::Matrix{Float64}; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=10, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     channel_n = size(signal, 1)
-    w_powers, frq_list = s_wspectrum(signal[1, :], pad=pad, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
+    w_powers, frq_list = s_mwpsd(signal[1, :], pad=pad, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
     w_powers = zeros(channel_n, length(frq_list))
     frq_list = zeros(length(frq_list))
 
     Threads.@threads for channel_idx in 1:channel_n
-        @inbounds w_powers[channel_idx, :], frq_list = @views s_wspectrum(signal[channel_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
+        @inbounds w_powers[channel_idx, :], frq_list = @views s_mwpsd(signal[channel_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
     end
 
     norm == true && (w_powers = pow2db.(w_powers))
@@ -3141,7 +3098,11 @@ Named tuple containing:
 - `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
 function a2_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
+
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
+    perm_n <= 0 && throw(ArgumentError("perm_n must be > 0."))
+    p < 0 && throw(ArgumentError("p must be ≥ 0."))
+    p > 1 && throw(ArgumentError("p must be ≤ 1."))
 
     spec_diff = dropdims(mean(a2, dims=3) .- mean(a1, dims=3), dims=3)
     zval = abs(norminvcdf(p))
@@ -3171,7 +3132,7 @@ function a2_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, per
 end
 
 """
-    s_fcoherence(signal; fs, frq)
+    s_fcoherence(signal; fs, frq_lim)
 
 Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coherence) between channels.
 
@@ -3190,7 +3151,7 @@ Named tuple containing:
 """
 function s_fcoherence(signal::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     c = mt_coherence(signal, fs=fs)
     f = Vector(c.freq)
     c = c.coherence
@@ -3228,7 +3189,7 @@ Calculate coherence (mean over all frequencies) and MSC (magnitude-squared coher
 function s2_fcoherence(signal1::AbstractArray, signal2::AbstractArray; fs::Int64, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
     signal = hcat(signal1, signal2)'
     c = mt_coherence(signal, fs=fs)
@@ -3252,7 +3213,7 @@ end
 """
     a2_l1(a1, a2)
 
-Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) distance.
+Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 
 # Arguments
 
@@ -3264,16 +3225,14 @@ Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L1 (Manhattan) d
 - `l1::Float64`
 """
 function a2_l1(a1::AbstractArray, a2::AbstractArray)
-
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
-
     return sum(abs.(a1 .- a2))
 end
 
 """
     a2_l2(a1, a2)
 
-Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) distance.
+Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 
 # Arguments
 
@@ -3285,9 +3244,7 @@ Compare two arrays `a1` and `a2` (e.g. two spectrograms), using L2 (Euclidean) d
 - `l2::Float64`
 """
 function a2_l2(a1::AbstractArray, a2::AbstractArray)
-
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
-
     # return sqrt(sum((a1 .- a2).^2))
     return euclidean(a1, a2)
 end
@@ -3306,7 +3263,6 @@ Calculate cumulative sum.
 - `signal_cs::Vector{Float64}`
 """
 function s_cums(signal::AbstractVector)
-    
     return cumsum(signal)
 end
 
@@ -3351,16 +3307,13 @@ Calculate GFP (Global Field Power).
 - `gfp::Float64`
 """
 function s_gfp(signal::AbstractVector)
-    
-    gfp = sum(signal.^2) / length(signal)
-
-    return gfp
+    return sum(signal.^2) / length(signal)
 end
 
 """
     s_gfp_norm(signal)
 
-Calculate `signal` values normalized for GFP (Global Field Power) of that signal.
+Calculate signal normalized for GFP (Global Field Power).
 
 # Arguments
 
@@ -3371,7 +3324,6 @@ Calculate `signal` values normalized for GFP (Global Field Power) of that signal
 - `gfp_norm::Float64`
 """
 function s_gfp_norm(signal::AbstractVector)
-    
     return signal ./ s_gfp(signal)
 end
 
@@ -3423,7 +3375,6 @@ Generate Morlet wavelet using Mike X Cohen formula.
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
 """
 function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
-
     t = -t:1/fs:t
     return @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
 end
@@ -3431,7 +3382,7 @@ end
 """
     f_nearest(m, pos)
 
-Find nearest position tuple `pos` in matrxi of positions `m`.
+Find nearest position tuple `pos` in matrix of positions `m`.
 
 # Arguments
 
@@ -3472,6 +3423,11 @@ Named tuple containing:
 """
 function s_band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    f = tuple_order(f)
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+
     if mt == true
         psd = mt_pgram(signal, fs=fs)
     else
@@ -3509,7 +3465,11 @@ Named tuple containing:
 function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    
+    if f !== nothing
+        f = tuple_order(f)
+        f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+        f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+    end
     ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
     if mt == true
         psd = mt_pgram(signal, fs=fs)
@@ -3549,7 +3509,10 @@ function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Boo
 
     channel_n = size(signal, 1)
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    
+    f = tuple_order(f)
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+
     if mt == true
         psd_tmp = mt_pgram(signal[1, :], fs=fs)
     else
@@ -3595,14 +3558,16 @@ Perform wavelet bandpass filtering.
 """
 function s_wbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc::Int64=6, demean::Bool=true)
 
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    frq <= 0 && throw(ArgumentError("frq must be > 0."))
+    ncyc <= 0 && throw(ArgumentError("ncyc must be > 0."))
+    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
+    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+
     pad > 0 && (signal = pad0(signal, pad))
+
     # add reflected signal to reduce edge artifacts
     signal = _reflect(signal)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-    frq < 0 && throw(ArgumentError("frq must be ≥ 0."))
-    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
 
     demean == true && (signal = s_demean(signal))
 
@@ -3613,21 +3578,21 @@ function s_wbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc:
 end
 
 """
-    s_normalize_gauss(signal)
+    s_normalize_gauss(signal, dims)
 
 Normalize to Gaussian.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `signal::AbstractArray`
 - `dims::Int64=1`: dimension for cumsum()
 
 # Returns
 
 - `s_normalized::Vector{Float64}`
 """
-function s_normalize_gauss(signal::AbstractVector, dims::Int64=1)
-
+function s_normalize_gauss(signal::AbstractArray, dims::Int64=1)
+    dims in 1:ndims(signal) || throw(ArgumentError("dims must be in: 1:$(ndims(signal)).")) 
     l = length(signal) + 1
     return atanh.((tiedrank(cumsum(signal, dims=dims)) ./ l .- 0.5) .* 2)
 end
@@ -3643,7 +3608,6 @@ Perform convolution bandpass filtering.
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `fs::Int64`: sampling rate
-- `ncyc::Int64=6`: number of cycles for Morlet wavelet
 - `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
@@ -3652,14 +3616,14 @@ Perform convolution bandpass filtering.
 """
 function s_cbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, demean::Bool=true)
 
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    frq <= 0 && throw(ArgumentError("frq must be > 0."))
+    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
+
     pad > 0 && (signal = pad0(signal, pad))
+
     # add reflected signal to reduce edge artifacts
     signal = _reflect(signal)
-
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    pad < 0 && throw(ArgumentError("pad must be ≥ 0."))
-    frq < 0 && throw(ArgumentError("frq must be ≥ 0."))
-    frq > fs / 2 && throw(ArgumentError("frq must be ≤ $(fs / 2)."))
 
     demean == true && (signal = s_demean(signal))
 
@@ -3739,7 +3703,6 @@ function s_specseg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; ch
 
     channel < 1 && throw(ArgumentError("channel must be ≥ 1."))
     channel > size(sp, 3) && throw(ArgumentError("channel must be ≤ $(size(sp, 3))."))
-    epoch_n = size(sp, 4)
 
     t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
     t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
@@ -3807,6 +3770,7 @@ Named tuple containing:
 """
 function s2_cps(signal1::AbstractVector, signal2::AbstractVector; fs::Int64, norm::Bool=true)
 
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     s = hcat(signal1, signal2)'
     p = mt_cross_power_spectra(s, fs=fs)
     cps_pw = real.(p.power)[1, 2, :]
@@ -3825,7 +3789,7 @@ Calculate phase difference between signals.
 
 - `signal1::AbstractVector`
 - `signal2::AbstractVector`
-- `pad::Int64=0`: pad signals with 0s
+- `pad::Int64=0`: number of zeros to add
 - `h::Bool=false`: use FFT or Hilbert transformation (if h=true)
 
 # Returns
@@ -3836,11 +3800,11 @@ Named tuple containing:
 function s2_phdiff(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0, h::Bool=false)
 
     if h
-        _, _, _, ph1 = s_hspectrum(signal1)
-        _, _, _, ph2 = s_hspectrum(signal2)
+        _, _, _, ph1 = s_hspectrum(signal1, pad=pad)
+        _, _, _, ph2 = s_hspectrum(signal2, pad=pad)
     else
-        _, _, _, ph1 = s_spectrum(signal1)
-        _, _, _, ph2 = s_spectrum(signal2)
+        _, _, _, ph1 = s_spectrum(signal1, pad=pad)
+        _, _, _, ph2 = s_spectrum(signal2, pad=pad)
     end
 
     return round.(ph1 - ph2, digits=2)
@@ -3860,7 +3824,6 @@ Normalize using log10-transformation.
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_log10(signal::AbstractArray)
-
     m = 1 + abs(minimum(signal))
     return @. log10(signal + m)
 end
@@ -3879,7 +3842,6 @@ Normalize to using -log-transformation.
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_neglog(signal::AbstractArray)
-
     return @. -log(signal)
 end
 
@@ -3897,7 +3859,6 @@ Normalize using -log10-transformation.
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_neglog10(signal::AbstractArray)
-
     return @. -log10(signal)
 end
 
@@ -3915,7 +3876,6 @@ Normalize in [0, -∞].
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_neg(signal::AbstractArray)
-
     m = maximum(signal)
     return @. signal - m
 end
@@ -3934,7 +3894,6 @@ Normalize in [0, +∞].
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_pos(signal::AbstractArray)
-
     m = abs(minimum(signal))
     return @. signal + m
 end
@@ -3953,7 +3912,6 @@ Normalize in percentages.
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_perc(signal::AbstractArray)
-
     m1 = minimum(signal)
     m2 = maximum(signal)
     m = m2 - m1
@@ -4008,22 +3966,21 @@ function s_normalize(signal::AbstractArray; method::Symbol)
 end
 
 """
-    s_phases(signal; h, pad)
+    s_phases(signal; pad)
 
 Calculate phases.
 
 # Arguments
 
 - `signal::AbstractArray`
+- `pad::Int64=0`: number of zeros to add
 
 # Returns
 
-Named tuple containing:
 - `phases::Vector{Float64}`
 """
-function s_phases(signal::AbstractArray)
-
-    return angle.(signal)
+function s_phases(signal::AbstractArray, pad::Int64=0)
+    return angle.(pad0(signal, pad))
 end
 
 """
@@ -4048,10 +4005,10 @@ Named tuple containing:
 """
 function s_cwtspectrogram(signal::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, demean::Bool=true) where {T <: CWT}
 
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
+    frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
 
     demean == true && (signal = s_demean(signal))
 
@@ -4087,7 +4044,7 @@ Perform discrete wavelet transformation (DWT).
 function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
-    l < 0 && throw(ArgumentError("l must be ≥ 0."))
+    l < 0 && throw(ArgumentError("l must be > 0."))
     l > maxtransformlevels(signal) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(signal))."))
 
     if l == 0
@@ -4126,6 +4083,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 - `signal::Vector{Float64}`: reconstructed signal
 """
 function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
+    
     _check_var(type, [:sdwt, :acdwt], "type")
 
     # reconstruct array of DWT coefficients as returned by Wavelets.jl functions
@@ -4156,7 +4114,6 @@ Normalize in inverse root (1/sqrt(x)).
 - `s_normalized::Vector{Float64}`
 """
 function s_normalize_invroot(signal::AbstractArray)
-
     # make signal > 0
     return 1 ./ (sqrt.(signal .+ abs(minimum(signal)) .+ eps()))
 end
@@ -4200,6 +4157,7 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 - `signal::Vector{Float64}`: reconstructed signal
 """
 function s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
+
     _check_var(type, [:nd, :pd, :df], "type")
 
     # reconstruct array of CWT coefficients as returned by ContinuousWavelets.jl functions
@@ -4227,7 +4185,6 @@ Convert time to sample number.
 - `s::Int6464`: sample number
 """
 function t2s(t::Real, fs::Int64)
-
     t < 0 && throw(ArgumentError("t must be ≥ 0."))
     if t == 0
         return 1
@@ -4251,7 +4208,6 @@ Convert sample number to time.
 - `t::Float64`: time in s
 """
 function s2t(s::Int64, fs::Int64)
-
     s < 0 && throw(ArgumentError("s must be > 0."))
     return s / fs
 end

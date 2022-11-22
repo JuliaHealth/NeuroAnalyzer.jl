@@ -395,12 +395,12 @@ Normalize EEG channel(s)
 function eeg_normalize(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), method::Symbol)
 
     _check_channels(eeg, channel)
-
+    channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:length(channel)
+        Threads.@threads for channel_idx in 1:channel_n
             @views eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = s_normalize(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], method=method)
         end
     end
@@ -653,8 +653,7 @@ Reconstruct EEG signals using embedded PCA components (`:pc`) and model (`:pca`)
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))
-)
+function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     :pc in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pc component. Perform eeg_pca(EEG) first."))
     :pca in eeg.eeg_header[:components] || throw(ArgumentError("EEG does not contain :pca component. Perform eeg_pca(EEG) first."))
@@ -1016,7 +1015,7 @@ Resample (up- or down-sample).
 """
 function eeg_resample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    new_sr < 1 & throw(ArgumentError("new_sr must be ≥ 1."))
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
     new_sr > eeg_sr(eeg) && (eeg_new = eeg_upsample(eeg, new_sr=new_sr))
     new_sr < eeg_sr(eeg) && (eeg_new = eeg_downsample(eeg, new_sr=new_sr))
     new_sr == eeg_sr(eeg) && (eeg_new = eeg)
@@ -1036,7 +1035,7 @@ Resample (up- or down-sample).
 """
 function eeg_resample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    new_sr < 1 & throw(ArgumentError("new_sr must be ≥ 1."))
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
     new_sr > eeg_sr(eeg) && eeg_upsample!(eeg, new_sr=new_sr)
     new_sr < eeg_sr(eeg) && eeg_downsample!(eeg, new_sr=new_sr)
 
@@ -1507,7 +1506,7 @@ Perform wavelet denoising.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
-- `pad::Int64=0`: pad signal with `pad` zeros
+- `pad::Int64=0`: number of zeros to add signal for FFT
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 
 # Returns
@@ -1542,7 +1541,7 @@ Perform wavelet denoising.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
-- `pad::Int64=0`: pad signal with `pad` zeros
+- `pad::Int64=0`: number of zeros to add signal for FFT
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 """
 function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, threshold::Int64=100)
@@ -1580,7 +1579,8 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
     signal = eeg.eeg_signals[channels, :, :]
 
     channel_n = size(signal, 1)
-    nn < channel_n - 1 || throw(ArgumentError("nn must be < $(channel_n - 1)"))
+    nn < 1 && throw(ArgumentError("nn must be ≥ 1"))
+    nn > channel_n - 1 && throw(ArgumentError("nn must be < $(channel_n - 1)"))
     epoch_n = size(signal, 3)
     
     loc_x = zeros(channel_n)

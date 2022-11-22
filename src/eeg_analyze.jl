@@ -48,16 +48,10 @@ Calculate absolute band power between two frequencies
 """
 function eeg_band_power(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}, mt::Bool=false)
 
-    fs = eeg_sr(eeg)
-    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
-    f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
-
-    fs = eeg_sr(eeg)
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
+    fs = eeg_sr(eeg)
 
     sbp = zeros(length(channel), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
@@ -203,8 +197,6 @@ Named tuple containing:
 """
 function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)), lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
-    lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
-
     # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
@@ -277,7 +269,12 @@ Calculate stationarity.
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `window::Int64=10`: time window in samples
-- `method::Symbol=:euclid`: stationarity method: `:mean`, `:var`, `:euclid`, `:hilbert`, `:adf`
+- `method::Symbol=:euclid`: stationarity method:
+    - `:mean`
+    - `:var`: variance stationarity
+    - `:euclid`
+    - `:hilbert`
+    - `:adf`
 
 # Returns
 
@@ -286,13 +283,12 @@ Calculate stationarity.
 function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), window::Int64=10, method::Symbol=:hilbert)
 
     _check_var(method, [:mean, :var, :euclid, :hilbert, :adf], "method")
+    window < 1 && throw(ArgumentError("window must be ≥ 1."))
+    window > eeg_epoch_len(eeg) && throw(ArgumentError("window must be ≤ $(eeg_epoch_len(eeg))."))
 
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
-
-    (typeof(window) == Int64 && window < 1) && throw(ArgumentError("window must be ≥ 1."))
-    (typeof(window) == Int64 && window > eeg_epoch_len(eeg)) && throw(ArgumentError("window must be ≤ $(eeg_epoch_len(eeg))."))
 
     if method === :mean
         s_stationarity = zeros(channel_n, window, epoch_n)
@@ -620,6 +616,7 @@ Calculate coherence (mean over time) and MSC (magnitude-squared coherence).
 - `channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
 - `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2))`: default use all epochs
+- `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
@@ -628,7 +625,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `ic::Array{Float64, 3}`: imaginary part of coherence
 """
-function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
+function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)), pad::Int64=0)
 
     # check channels, default is all
     _check_channels(eeg1, channel1)
@@ -650,7 +647,7 @@ function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]])
+            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]], pad=pad)
         end
     end
 
@@ -673,9 +670,7 @@ Named tuple containing:
 - `nyquist::Float64`
 """
 function eeg_freqs(eeg::NeuroAnalyzer.EEG)
-
     hz, nyq = s_freqs(eeg.eeg_signals[1, :, 1], eeg_sr(eeg))
-
     return (hz=hz, nyquist=nyq)
 end
 
@@ -876,10 +871,22 @@ Calculate spectrogram.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+- `method::Symbol=:standard`: method of calculating spectrogram:
+    - `:standard`: standard
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+    - `:gh`: Gaussian and Hilbert transform
+    - `:cwt`: continuous wavelet transformation
+- `pad::Int64=0`: number of zeros to add
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limits
+- `frq_n::Int64=0`: number of frequencies, default is length(frq_lim[1]:frq_lim[2])
 - `norm::Bool=true`: normalize powers to dB
-- `mt::Bool=false`: if true use multi-tapered spectrogram
-- `st::Bool=false`: if true use short time Fourier transform
 - `demean::Bool=true`: demean signal prior to analysis
+- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `gw::Real=5`: Gaussian width in Hz
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
+- `wt<:CWT=wavelet(Morlet(π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
@@ -888,19 +895,56 @@ Named tuple containing:
 - `s_frq::Vector{Float64}`
 - `s_t::Vector{Float64}`
 """
-function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), norm::Bool=true, mt::Bool=false, st::Bool=false, demean::Bool=true)
+function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=0, method::Symbol=:standard, norm::Bool=true, demean::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(π), β=2)) where {T <: CWT}
 
+    _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
+    # get frequency range
     fs = eeg_sr(eeg)
-    p_tmp, s_frq, s_t = @views s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, st=st, demean=demean)
+    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
+    frq_n == 0 && (frq_n = length(frq_lim[1]:frq_lim[2]))
+
+    if method === :standard
+        p_tmp, s_frq, _ = @views s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=false, st=false, demean=demean)
+    elseif method === :mt
+        p_tmp, s_frq, _ = @views s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=true, st=false, demean=demean)
+    elseif method === :stft
+        p_tmp, s_frq, _ = @views s_spectrogram(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=false, st=true, demean=demean)
+    elseif method === :mw
+    _, p_tmp, _, s_frq = @views s_wspectrogram(eeg.eeg_signals[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+    elseif method === :gh
+        p_tmp, s_frq = @views s_ghspectrogram(eeg.eeg_signals[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
+    elseif method === :cwt
+        p_tmp, s_frq = @views s_cwtspectrogram(eeg.eeg_signals[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
+    end
+
+    s_t = linspace(0, (eeg_epoch_len(eeg) / fs), size(p_tmp, 2))
     s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
+
+    # initialize progress bar
+    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, st=st, demean=demean)
+            if method === :standard
+                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=false, st=false, demean=demean)
+            elseif method === :mt
+                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=true, st=false, demean=demean)
+            elseif method === :stft
+                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=false, st=true, demean=demean)
+            elseif method === :mw
+                _, s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+            elseif method === :gh
+                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_ghspectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
+            elseif method === :cwt
+                s_pow[:, :, channel_idx, epoch_idx], _ = @views s_cwtspectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
+            end
+
+            # update progress bar
+            progress_bar == true && next!(p)
         end
     end
 
@@ -920,7 +964,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `pad::Int64=0`: pad channels with `pad` zeros
+- `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 - `norm::Bool=false`: normalize do dB
 
@@ -1158,12 +1202,13 @@ Perform convolution in the frequency domain.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 - `norm::Bool=false`: normalize kernel
+- `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
 - `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false)
+function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false, pad::Int64=0)
 
     _check_channels(eeg, channel)
     channel_n = length(channel)
@@ -1176,7 +1221,7 @@ function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel, norm=norm)
+            s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
             progress_bar == true && next!(p)
@@ -1231,6 +1276,7 @@ Return FFT and DFT sample frequencies for a DFT.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+- `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
@@ -1238,7 +1284,7 @@ Named tuple containing:
 - `sfft::Array{ComplexF64, 3}`: FFT
 - `sf::Vector{Float64}`: sample frequencies
 """
-function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])))
+function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), pad::Int64=0)
 
     _check_channels(eeg, channel)
     channel_n = length(channel)
@@ -1250,7 +1296,7 @@ function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            sfft[channel_idx, :, epoch_idx], sf = @views s_dft(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs)
+            sfft[channel_idx, :, epoch_idx], sf = @views s_dft(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, pad=pad)
         end
     end
 
@@ -1280,7 +1326,6 @@ Named tuple containing:
 function eeg_msci95(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), n::Int64=3, method::Symbol=:normal)
 
     _check_var(method, [:normal, :boot], "method")
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
     _check_channels(eeg, channel)
     epoch_len = eeg_epoch_len(eeg)
@@ -2596,55 +2641,6 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
 end
 
 """
-    eeg_wspectrogram(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc, demean)
-
-Return spectrogram of `eeg` using Morlet wavelet convolution.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `pad::Int64`: pad the `signal` with `pad` zeros
-- `norm::Bool`=true: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
-- `demean::Bool`=true: demean signal prior to analysis
-
-# Returns
-
-Named tuple containing:
-- `w_pow::Array{Float64, 4}`
-- `w_frq::Matrix{Float64}`
-- `w_t::Matrix{Float64}`
-"""
-function eeg_wspectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
-
-    _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
-
-    fs = eeg_sr(eeg)
-    _, p_tmp, _, w_frq = s_wspectrogram(eeg.eeg_signals[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
-    w_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
-
-    # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
-
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            _, w_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
-
-            # update progress bar
-            progress_bar == true && next!(p)
-        end
-    end
-
-    return (w_pow=w_pow, w_frq=round.(w_frq, digits=2), w_t=eeg.eeg_epochs_time)
-end
-
-"""
     eeg_tkeo(eeg; channel)
 
 Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
@@ -2675,9 +2671,9 @@ function eeg_tkeo(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
 end
 
 """
-    eeg_wspectrum(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc)
+    eeg_mwpsd(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc)
 
-Return power spectrogram using Morlet wavelet convolution.
+Calculate power spectrum using Morlet wavelet convolution.
 
 # Arguments
 
@@ -2685,10 +2681,10 @@ Return power spectrogram using Morlet wavelet convolution.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency bounds for the spectrogram
+- `frq_n::Int64=10`: number of frequencies
 - `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
-- `ncyc::Int64=6`: number of cycles for Morlet wavelet
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
 
 # Returns
 
@@ -2696,23 +2692,22 @@ Named tuple containing:
 - `w_pow::Array{Float64, 4}`
 - `w_frq::Matrix{Float64}`
 """
-function eeg_wspectrum(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, ncyc::Int64=6)
+function eeg_mwpsd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=0, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
-    p_tmp, f_tmp = @views s_wspectrum(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    w_pow = zeros(length(p_tmp), channel_n, epoch_n)
-    w_frq = zeros(length(f_tmp), epoch_n)
+    p_tmp, w_frq = @views s_mwpsd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    w_pow = zeros(channel_n, length(p_tmp), epoch_n)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            w_pow[:, channel_idx, epoch_idx], w_frq[:, epoch_idx] = @views s_wspectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            w_pow[channel_idx, :, epoch_idx], w_frq[:, epoch_idx] = @views s_mwpsd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
             # update progress bar
             progress_bar == true && next!(p)

@@ -54,13 +54,17 @@ using ContinuousWavelets
 @test s_normalize_max([1, 2, 1]) == [0.5, 1.0, 0.5]
 @test s_normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
 @test length(s_add_noise(ones(10))) == 10
+
 s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0
+
 @test s_derivative(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_tconv(ones(10), kernel=[1.0, 1.0]) == [1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 @test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
+
 p, f = s_psd(ones(10), fs=10)
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0;;]
 @test s_stationarity_var(ones(10), window=1) == [0.0;;]
@@ -71,16 +75,22 @@ p, f = s_psd(ones(10), fs=10)
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
 @test s2_tcoherence([1, 2], [3, 4]) == (c = [0.04166666666666667, 0.027777777777777776], msc = [0.006944444444444444, 0.0007716049382716049], ic = [0.07216878364870322, -0.0])
+
 p, w, m, pca = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
+
 s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
 @test s == ones(2, 10, 1)
+
 @test round.(s_fconv(ones(10), kernel=[1.0, 2.0])) == [1.00 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
+
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)
 @test s_ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ica=i, ica_mw=m, ic=[1]) == zeros(2, 2, 1)
+
 p, f, t = s_spectrogram(ones(100), fs=10)
 @test size(p) == (51, 46)
+
 @test s_detect_channel_flat(ones(100)) == 0.9583333333333334
 @test s_snr(ones(10)) == Inf
 @test s_findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
@@ -90,12 +100,14 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s2_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test length(s2_ged(ones(10, 10), zeros(10, 10))) == 3
 @test s_frqinst(ones(10), fs=10) == zeros(10)
+
 s, _ = s_fftdenoise(rand(10))
 @test length(s) == 10
-@test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
+
+@test length(s_ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 3
 @test s_tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
 @test length(s_wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
-@test length(s_wspectrum(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
+@test length(s_mwpsd(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
 @test length(a2_cmp(ones(10,10,10), zeros(10,10,10))) == 2
 @test length(s_fcoherence(ones(2, 10), fs=1)) == 3
 @test length(s2_fcoherence(ones(10), ones(10), fs=1)) == 3
@@ -109,17 +121,23 @@ s, _ = s_fftdenoise(rand(10))
 @test length(generate_morlet_fwhm(10, 10)) == 21
 @test f_nearest([(1.0, 1.0) (0.0, 0.0); (0.0, 0.0) (0.0, 0.0)], (1.0, 0.0)) == (1, 1)
 @test s_band_mpower(ones(100), f=(1,2), fs=10) == (mbp = 0.0, maxfrq = 1.0, maxbp = 0.0)
+
 p, f = s_rel_psd(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
+
 @test s_wbp(ones(10), fs=10, frq=3) == zeros(10)
 @test round.(s_normalize_gauss([1, 0, 1]), digits=2) == [-0.26, -0.26, 0.55]
 @test s_cbp(ones(100), fs=10, frq=1) == zeros(100)
+
 sp, sf, st = s_spectrogram(rand(2560), fs=256)
 segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
 @test size(segp) == (101, 10)
+
 @test size(s_denoise_wien(ones(2, 4, 1))) == (2, 4, 1)
+
 p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
+
 @test s2_phdiff(ones(100), zeros(100)) == zeros(100)
 @test round.(s_normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
 @test round.(s_normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]

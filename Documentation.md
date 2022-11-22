@@ -2262,13 +2262,13 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
   * `s_new::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_wspectrum-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_wspectrum-Tuple{AbstractVector}'>#</a>
-**`NeuroAnalyzer.s_wspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_mwpsd-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_mwpsd-Tuple{AbstractVector}'>#</a>
+**`NeuroAnalyzer.s_mwpsd`** &mdash; *Method*.
 
 
 
 ```julia
-s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+s_mwpsd(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 ```
 
 Calculate power spectrum using wavelet convolution.
@@ -2291,13 +2291,13 @@ Named tuple containing:
   * `w_powers::Matrix{Float64}`
   * `frq_list::Vector{Float64}`
 
-<a id='NeuroAnalyzer.s_wspectrum-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.s_wspectrum-Tuple{Matrix{Float64}}'>#</a>
-**`NeuroAnalyzer.s_wspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.s_mwpsd-Tuple{Matrix{Float64}}' href='#NeuroAnalyzer.s_mwpsd-Tuple{Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.s_mwpsd`** &mdash; *Method*.
 
 
 
 ```julia
-s_wspectrum(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+s_mwpsd(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
 ```
 
 Calculate power spectrum using wavelet convolution.
@@ -7690,13 +7690,13 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 
   * `tkeo::Array{Float64, 3}`
 
-<a id='NeuroAnalyzer.eeg_wspectrum-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_wspectrum-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_wspectrum`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_mwpsd-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_mwpsd-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_mwpsd`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_wspectrum(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc)
+eeg_mwpsd(eeg; channel, pad, norm, frq_lim, frq_n, frq, ncyc)
 ```
 
 Return power spectrogram using Morlet wavelet convolution.

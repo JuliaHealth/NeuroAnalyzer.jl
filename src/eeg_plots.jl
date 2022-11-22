@@ -1307,7 +1307,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
             s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -1514,7 +1514,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; e
             s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = s_wspectrum(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
@@ -1747,7 +1747,11 @@ Plots spectrogram.
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
-- `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `method::Symbol=:standard`: method of calculating spectrogram:
+    - `:standard`: standard
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -1865,7 +1869,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mw
-            s_p, s_f = s_wspectrum(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_p, s_f = s_mwpsd(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
             s_f = linspace(0, frq_lim[2], size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
@@ -1891,7 +1895,11 @@ Plots spectrogram of embedded or external component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
-- `method::Symbol=:standard`: method of calculating spectrogram: standard (`:standard`), short-time Fourier transform (`:stft`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `method::Symbol=:standard`: method of calculating spectrogram:
+    - `:standard`: standard
+    - `:stft`: short-time Fourier transform
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -2012,7 +2020,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mw
-            s_p, s_f = s_wspectrum(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
+            s_p, s_f = s_mwpsd(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
             s_f = linspace(0, frq_lim[2], size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end

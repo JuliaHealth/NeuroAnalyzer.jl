@@ -2320,7 +2320,7 @@ function eeg_delete_marker(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     nn = size(eeg_new.eeg_markers, 1)
-    n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
+    (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     deleteat!(eeg_new.eeg_markers, n)
     size(eeg_new.eeg_markers, 1) == 0 && (eeg_new.eeg_header[:markers] = false)
     eeg_reset_components!(eeg_new)
@@ -2371,11 +2371,11 @@ Add marker.
 """
 function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
 
-    start < 1 && throw(ArgumentError("Marker start must be > 0."))
-    len < 1 && throw(ArgumentError("Marker length must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    start < 1 && throw(ArgumentError("start must be > 0."))
+    len < 1 && throw(ArgumentError("len must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("len must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("start + len must be ≤ $(eeg_epoch_len(eeg) + 1)."))
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:markers] = true
@@ -2495,11 +2495,11 @@ Edit EEG marker.
 function eeg_edit_marker(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
 
     eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
-    start < 1 && throw(ArgumentError("Marker start must be > 0."))
-    len < 1 && throw(ArgumentError("Marker length must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("Marker length must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("Marker start + length must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    start < 1 && throw(ArgumentError("start must be > 0."))
+    len < 1 && throw(ArgumentError("len must be > 0."))
+    start > eeg_epoch_len(eeg) && throw(ArgumentError("start must be ≤ $(eeg_epoch_len(eeg))."))
+    len > eeg_epoch_len(eeg) && throw(ArgumentError("len must be ≤ $(eeg_epoch_len(eeg))."))
+    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("start + len must be ≤ $(eeg_epoch_len(eeg) + 1)."))
 
     nn = size(eeg.eeg_markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))

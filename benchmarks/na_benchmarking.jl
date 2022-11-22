@@ -148,6 +148,9 @@ eeg_psd(e10);
 print(rpad("PSD: mt", 36))
 eeg_psd(e10, mt=true);
 @time eeg_psd(e10, mt=true);
+print(rpad("PSD: mwavelet ", 36))
+eeg_mwpsd(e10);
+@time eeg_mwpsd(e10);
 print(rpad("Stationarity: mean", 36))
 eeg_stationarity(e10, method=:mean);
 @time eeg_stationarity(e10, method=:mean);
@@ -187,15 +190,21 @@ eeg_difference(e10, e10; method=:diff2int);
 print(rpad("Epoch stats", 36))
 eeg_epochs_stats(e10);
 @time eeg_epochs_stats(e10);
-print(rpad("Spectrogram", 36))
+print(rpad("Spectrogram: standard", 36))
 eeg_spectrogram(e10);
 @time eeg_spectrogram(e10);
 print(rpad("Spectrogram: mt", 36))
-eeg_spectrogram(e10, mt=true);
-@time eeg_spectrogram(e10, mt=true);
-print(rpad("Spectrogram: st", 36))
-eeg_spectrogram(e10, st=true);
-@time eeg_spectrogram(e10, st=true);
+eeg_spectrogram(e10, method=:mt);
+@time eeg_spectrogram(e10, method=:mt);
+print(rpad("Spectrogram: stft", 36))
+eeg_spectrogram(e10, method=:stft);
+@time eeg_spectrogram(e10, method=:stft);
+print(rpad("Spectrogram: mw", 36))
+eeg_spectrogram(e10, method=:mw);
+@time eeg_spectrogram(e10, method=:mw);
+print(rpad("Spectrogram: cwt", 36))
+eeg_spectrogram(e10, method=:cwt);
+@time eeg_spectrogram(e10, method=:cwt);
 print(rpad("Spectrum: FFT", 36))
 eeg_spectrum(e10);
 @time eeg_spectrum(e10);
@@ -295,15 +304,9 @@ eeg_ged(e10, e10);
 print(rpad("Instant frequency", 36))
 eeg_frqinst(e10);
 @time eeg_frqinst(e10);
-print(rpad("Wavelet spectrogram", 36))
-eeg_wspectrogram(e10, frq_lim=(10, 20), frq_n=11);
-@time eeg_wspectrogram(e10, frq_lim=(10, 20), frq_n=11);
 print(rpad("TKEO", 36))
 eeg_tkeo(e10);
 @time eeg_tkeo(e10);
-print(rpad("Wavelet spectrum", 36))
-eeg_wspectrum(e10, frq_lim=(10, 20), frq_n=11);
-@time eeg_wspectrum(e10, frq_lim=(10, 20), frq_n=11);
 print(rpad("Frequency coherence", 36))
 eeg_fcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_fcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);

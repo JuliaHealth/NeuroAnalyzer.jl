@@ -212,6 +212,17 @@ c = eeg_list_components(e)
 e = eeg_epochs(edf, epoch_len=2560, average=true)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
+p, f, t = eeg_spectrogram(e, method=:mt)
+@test size(p) == (257, 15, 19, 1)
+p, f, t = eeg_spectrogram(e, method=:mw)
+@test size(p) == (129, 2560, 19, 1)
+p, f, t = eeg_spectrogram(e, method=:stft)
+@test size(p) == (1281, 61, 19, 1)
+p, f, t = eeg_spectrogram(e, method=:gh)
+@test size(p) == (129, 2560, 19, 1)
+p, f, t = eeg_spectrogram(e, method=:cwt)
+@test size(p) == (18, 2560, 19, 1)
+
 f, a, p, ph = eeg_spectrum(e)
 @test size(p) == (19, 1280, 1)
 
@@ -261,34 +272,24 @@ e10 = eeg_epochs(edf, epoch_len=10*256)
 @test size(eeg_tenv(e10)[1]) == (19, 2560, 121)
 @test size(eeg_tenv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_tenv_median(e10, dims=1)[1]) == (2560, 121)
-
 @test size(eeg_penv(e10)[1]) == (19, 513, 121)
 @test size(eeg_penv_mean(e10, dims=1)[1]) == (513, 121)
 @test size(eeg_penv_median(e10, dims=1)[1]) == (513, 121)
-
 @test size(eeg_senv(e10)[1]) == (19, 61, 121)
 @test size(eeg_senv_mean(e10, dims=1)[1]) == (61, 121)
 @test size(eeg_senv_median(e10, dims=1)[1]) == (61, 121)
-
 @test size(eeg_wdenoise(edf, wt=wavelet(WT.haar)).eeg_signals) == (19, 309760, 1)
-
 @test length(eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
 @test length(eeg_itpc(e10, channel=1, t=12)) == 4
 @test length(eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
 @test size(eeg_pli(e10)) == (19, 19, 121)
 @test size(eeg_ispc(e10)) == (19, 19, 121)
-
 @test length(eeg_aec(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
-
 @test length(eeg_ged(edf, edf)) == 3
 @test size(eeg_frqinst(edf)) == size(edf.eeg_signals)
-
 @test size(eeg_fftdenoise(edf).eeg_signals) == (19, 309760, 1)
-
 @test size(eeg_tkeo(edf)) == (19, 309760, 1)
-
-@test length(eeg_wspectrum(edf, frq_lim=(0, 20), frq_n=21)) == 2
-@test length(eeg_wspectrogram(edf, frq_lim=(0, 20), frq_n=21)) == 3
+@test length(eeg_mwpsd(edf, frq_lim=(0, 20), frq_n=21)) == 2
 
 c, msc, f = eeg_fcoherence(edf, edf, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
@@ -372,7 +373,6 @@ eeg_add_marker!(bdf, id="event", start=1, len=1, desc="test", channel=0)
 eeg_edit_marker!(bdf, n=2, id="event2", start=1, len=1, desc="test2", channel=0)
 
 @test size(eeg_vch(e10, f="fp1 + fp2")) == (1, 2560, 121)
-
 @test size(eeg_dwt(e10, wt=wavelet(WT.haar), type=:sdwt)) == (19, 10, 2560, 121)
 @test size(eeg_cwt(e10, wt=wavelet(Morlet(π), β=2))) == (19, 33, 2560, 121)
 
@@ -382,7 +382,6 @@ _, _, f = eeg_psdslope(edf)
 @test size(eeg_henv(e10)[1]) == (19, 2560, 121)
 @test size(eeg_henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_henv_median(e10, dims=1)[1]) == (2560, 121)
-
 @test size(eeg_apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
 
 true
