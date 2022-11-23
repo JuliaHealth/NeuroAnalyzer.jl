@@ -14,103 +14,19 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org)
 
-## Installation
-
-First, download [Julia](https://julialang.org/downloads/) v1.7.0 or later. 
-
-There are two branches of NeuroAnalyzer:
-- [stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/master): released once per month, recommended for research tasks
-- [devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/devel): a rolling release for NeuroAnalyzer developers, not for production use
-
-You can add NeuroAnalyzer using Julia package manager, by typing:
-
-```Julia
-using Pkg
-Pkg.update()
-# for master branch:
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#master")
-# for development branch:
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
-# activate the package
-using NeuroAnalyzer
-# check if correctly installed
-na_info()
-```
-
-Another option is to initialize a new Julia environment for the package:
-```shell
-git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
-cd NeuroAnalyzer.jl
-julia --project
-```
-
-Next, in Julia REPL do the following:
-```Julia
-using Pkg
-Pkg.activate(@__DIR__)
-Pkg.instantiate()
-# if necessary:
-Pkg.resolve()
-Pkg.update()
-# activate the package
-using NeuroAnalyzer
-# check if NeuroAnalyzer has been correctly installed
-na_info()
-```
-
-## Requirements
-
-See [https://neuroanalyzer.org/requirements.html](https://neuroanalyzer.org/requirements.html) for more details.
-
-## General remarks
-
-NeuroAnalyzer functions operate on NeuroAnalyzer objects.
-
-For EEG this is NeuroAnalyzer.EEG (EEG metadata header + time + epoched signals + components + annotations). EEG signal is `Array{Float64, 3}` (channels × signals × epochs). If epochs are not defined, the whole signal is an epoch, i.e. there is always at least one epoch.
-
-Functions name prefix:
-- `eeg_` functions taking EEG object as an argument
-- `eeg_plot_` plotting functions
-
-There are also low level functions operating on single-/multi-channel signal vector/matrix/array (`s_` and `s2_`).
-
-The majority of `eeg_` functions will process all channels and epochs of the input EEG object. To process individual channels/epochs, you need to extract them from the EEG object first (`eeg_keep_epoch()`, `eeg_keep_channel()` to process as NeuroAnalyzer.EEG object or `eeg_extract_channel()`, `eeg_extract_epoch()` to process as multi-channel array).
-
-`eeg_` functions use named arguments for all arguments other than input signal(s), e.g. `eeg_delete_epoch!(my_eeg, epoch=12)`.
-
-EEG object (headers + time + epochs time + EEG signal + (optional) components + annotations) is stored in the EEG structure:
-```julia
-mutable struct EEG
-    eeg_header::Dict
-    eeg_time::Vector{Float64}
-    eeg_epochs_time::Vector{Float64}
-    eeg_signals::Array{Float64, 3}
-    eeg_components::Vector{Any}
-    eeg_markers::DataFrame
-    eeg_locs::DataFrame
-end
-```
-
-Study object is stored in the STUDY structure:
-```julia
-mutable struct STUDY
-    study_header::Dict{Symbol, Any}
-    study_eeg::Vector{NeuroAnalyzer.EEG}
-    study_group::Vector{Symbol}
-end
-```
-
-Certain `eeg_` functions use multiple dispatch mechanism to analyze STUDY object inter- and intra- groups.
-
-Many `eeg_` functions have a mutator variant (e.g. `eeg_delete_epoch!()`). These functions modifies the input EEG object in-place, e.g. you may use `eeg_delete_channel!(my_eeg, channel=1)` instead of `my_eeg = eeg_delete_channel(my_eeg, channel=1)`.
-
 ## Documentation
 
 Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html) formats.
 
+Changelog and commit details are available at [https://neuroanalyzer.org](https://neuroanalyzer.org/changelog.html).
+
+## Tutorials
+
 NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
 
-Changelog and commit details are available at [https://neuroanalyzer.org/changelog.htm](https://neuroanalyzer.org/changelog.html).
+## Requirements
+
+See [https://neuroanalyzer.org](https://neuroanalyzer.org/requirements.html) for more details.
 
 ## What's next
 
@@ -124,7 +40,7 @@ For testing performance between individual machines, a complete set of benchmark
 
 ## Plugins (extensions)
 
-See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
+See [https://neuroanalyzer.org](https://neuroanalyzer.org/plugins.html) for more details.
 
 ## Known bugs
 
