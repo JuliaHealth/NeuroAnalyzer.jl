@@ -107,15 +107,27 @@ eeg_reference_car(e10);
 print(rpad("Channel referencing", 36))
 eeg_reference_ch(e10, channel=1);
 @time eeg_reference_ch(e10, channel=1);
-print(rpad("Filter notch", 36))
-eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
-@time eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
-print(rpad("Filter LP", 36))
+print(rpad("Filter: LP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
-print(rpad("Filter HP", 36))
+print(rpad("Filter: HP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
+print(rpad("Filter: IIR notch", 36))
+eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
+@time eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
+print(rpad("Filter: Remez", 36))
+eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
+@time eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
+print(rpad("Filter: FIR", 36))
+eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
+@time eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
+print(rpad("Filter: polynomial (8)", 36))
+eeg_filter(e10, fprototype=:poly, order=8);
+@time eeg_filter(e10, fprototype=:poly, order=8);
+print(rpad("Filter: moving average", 36))
+eeg_filter(e10, fprototype=:mavg);
+@time eeg_filter(e10, fprototype=:mavg);
 
 @info "Benchmarking: eeg_analyze.jl"
 println()
