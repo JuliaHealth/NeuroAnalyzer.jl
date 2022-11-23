@@ -1647,6 +1647,7 @@ Apply filtering.
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
+    - `:conv`: convolution
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -1654,12 +1655,12 @@ Apply filtering.
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-- `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-- `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed 
+- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+- `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
 
 # Returns
 
@@ -1667,7 +1668,7 @@ Apply filtering.
 """
 function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
 
-    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
+    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :conv], "fprototype")
     typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
 
@@ -1691,7 +1692,6 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         if ftype === :hp || ftype === :bp || ftype === :bs
             mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
         end
-        fprototype = FIRWindow(window)
     end
 
     order < 1 && throw(ArgumentError("order must be > 1."))
@@ -1762,7 +1762,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
     end
 
     if fprototype === :conv
-        s_filtered = s_tconv(signal, window)
+        s_filtered = s_tconv(signal, kernel=window)
         return _chop(s_filtered)
     end
 
@@ -1780,22 +1780,20 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
     end
 
-    fprototype === :butterworth && (prototype = Butterworth(order))
-    if fprototype === :fir
-        prototype = FIRWindow(window)
-    end
-    if fprototype === :chebyshev1
+    if fprototype === :butterworth
+        prototype = Butterworth(order)
+    elseif fprototype === :chebyshev1
         (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev1(order, rs)
-    end
-    if fprototype === :chebyshev2
+    elseif fprototype === :chebyshev2
         (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Chebyshev2(order, rp)
-    end
-    if fprototype === :elliptic
+    elseif fprototype === :elliptic
         (rs < 0 || rs > fs / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(fs / 2)."))
         (rp < 0 || rp > fs / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(fs / 2)."))
         prototype = Elliptic(order, rp, rs)
+    elseif fprototype === :fir
+        prototype = FIRWindow(window)
     end
 
     if fprototype === :iirnotch

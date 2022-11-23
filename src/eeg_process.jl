@@ -504,20 +504,20 @@ Apply filtering to EEG channel(s).
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
+    - `:conv`: convolution
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
-- `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Vector{<:Real}, Nothing} - window, required for `:fir` filter
-- `preview::Bool=false`: plot filter response
+- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
 
 # Returns
 
@@ -531,6 +531,7 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     fs = eeg_sr(eeg)
 
     if preview == true
+        verbose == true && @info "When `preview=true`, signal is not being filtered."
         fprototype === :iirnotch && (ftype = :bs)    
         p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -587,6 +588,7 @@ Apply filtering to EEG channel(s).
 function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing, preview::Bool=false)
 
     if preview == true
+        verbose == true && @info "When `preview=true`, signal is not being filtered."
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=eeg_sr(eeg), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -1561,14 +1563,14 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 
 - `eeg::NeuroAnalyzer.EEG`
 - `nn::Int64=4`: use `nn` adjacent electrodes
-- `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+- `weights::Bool=false`: use mean of `nn` nearest channels if false; if true, mean of `nn` nearest channels is weighted by distance to the referenced channel
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true, med::Bool=false)
+function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
@@ -1595,15 +1597,18 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
             d[idx1, idx2] = euclidean([loc_x[idx1], loc_y[idx1]], [loc_x[idx2], loc_y[idx2]])
         end
     end
+    # set weights not to reference to itself
+    d[d .== 0] .= Inf
+
     # nn nearest neighbors index matrix
     nn_idx = zeros(Int64, channel_n, nn)
     for idx1 in 1:channel_n
-        nn_idx[idx1, :] = sortperm(d[idx1, :])[2:(nn + 1)] # 1st neighbor is the electrode itself
+        # nn_idx[idx1, :] = sortperm(d[idx1, :])[2:(nn + 1)] # 1st neighbor is the electrode itself
+        nn_idx[idx1, :] = sortperm(d[idx1, :])[1:nn]
     end
 
-    s_ref = zeros(size(eeg_tmp.eeg_signals))
+    s_ref = zeros(size(signal))
 
-    eeg_tmp = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             reference_channels = @view signal[nn_idx[channel_idx, :], :, epoch_idx]
@@ -1618,7 +1623,11 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=t
                 for idx1 in 1:nn
                     push!(g, 1 / d[channel_idx, nn_idx[channel_idx, idx1]] / sum(1 / d[channel_idx, nn_idx[channel_idx, :]]))
                 end
-                reference_channel = vec(sum(g .* reference_channels, dims=1))
+                if med == false
+                    reference_channel = vec(mean(g .* reference_channels, dims=1))
+                else
+                    reference_channel = vec(median(g .* reference_channels, dims=1))
+                end
             end
             s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
         end
@@ -1641,10 +1650,10 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 
 - `eeg::NeuroAnalyzer.EEG`
 - `nn::Int64=4`: use `nn` adjacent electrodes
-- `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+- `weights::Bool=false`: use distance weights; use mean of nearest channels if false
 - `med::Bool=false`: use median instead of mean
 """
-function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=true, med::Bool=false)
+function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
     eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights, med=med).eeg_signals
     eeg.eeg_header[:reference] = "PLAP ($nn)"
