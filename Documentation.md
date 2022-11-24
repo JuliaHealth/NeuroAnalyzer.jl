@@ -1443,6 +1443,7 @@ Apply filtering.
       * `:mavg`: moving average (with threshold)
       * `:mmed`: moving median (with threshold)
       * `:poly`: polynomial of `order`
+      * `:conv`: convolution
   * `ftype::Symbol`: filter type:
 
       * `:lp`: low pass
@@ -1451,12 +1452,12 @@ Apply filtering.
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
   * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
-  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for :elliptic, 2 dB for others
-  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for :elliptic, 20 dB for others
-  * `bw::Real=-1`: bandwidth for :iirnotch and :remez filters
-  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, :twopass), for causal filter use :onepass
-  * `t::Real`: threshold for :mavg and :mmed filters; threshold = threshold * std(signal) + mean(signal) for :mavg or threshold = threshold * std(signal) + median(signal) for :mmed filter
-  * `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for :mavg and :mmed
+  * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+  * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+  * `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+  * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
+  * `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for`:mavg`and`:mmed`
 
 **Returns**
 
@@ -1615,6 +1616,26 @@ Remove segment from the signal.
 **Returns**
 
   * `s_trimmed::Vector{Float64}`
+
+<a id='NeuroAnalyzer.s_trim-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_trim-Tuple{AbstractArray}'>#</a>
+**`NeuroAnalyzer.s_trim`** &mdash; *Method*.
+
+
+
+```julia
+s_trim(signal; segment)
+```
+
+Remove segment from the signal.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `segment::Tuple{Int64, Int64}`: segment (from, to) in samples
+
+**Returns**
+
+  * `s_trimmed::Array{Float64}`
 
 <a id='NeuroAnalyzer.s2_mi-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.s2_mi-Tuple{AbstractVector, AbstractVector}'>#</a>
 **`NeuroAnalyzer.s2_mi`** &mdash; *Method*.
@@ -4882,7 +4903,7 @@ Extract EEG epoch.
 
 
 ```julia
-eeg_trim(eeg; segment, keep_epochs)
+eeg_trim(eeg; segment, remove_epochs)
 ```
 
 Trim EEG signal by removing parts of the signal.
@@ -4891,7 +4912,7 @@ Trim EEG signal by removing parts of the signal.
 
   * EEG
   * `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
-  * `keep_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and remove epoching
+  * `remove_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 **Returns**
 
@@ -4903,7 +4924,7 @@ Trim EEG signal by removing parts of the signal.
 
 
 ```julia
-eeg_trim!(eeg; segment, keep_epochs)
+eeg_trim!(eeg; segment, remove_epochs)
 ```
 
 Trim EEG signal by removing parts of the signal.
@@ -4912,7 +4933,7 @@ Trim EEG signal by removing parts of the signal.
 
   * `eeg::NeuroAnalyzer.EEG`
   * `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
-  * `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+  * `remove_epochs::Bool=true`: remove epochs containing signal to trim (remove_epochs=true) or remove signal and remove epoching
 
 <a id='NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_edit_header-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_edit_header`** &mdash; *Method*.
@@ -6286,6 +6307,7 @@ Apply filtering to EEG channel(s).
       * `:mavg`: moving average (with threshold)
       * `:mmed`: moving median (with threshold)
       * `:poly`: polynomial of `order`
+      * `:conv`: convolution
   * `ftype::Symbol`: filter type:
 
       * `:lp`: low pass
@@ -6293,14 +6315,13 @@ Apply filtering to EEG channel(s).
       * `:bp`: band pass
       * `:bs`: band stop
   * `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-  * `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+  * `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
   * `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
   * `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-  * `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
-  * `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+  * `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+  * `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
   * `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-  * `window::Union{Vector{<:Real}, Nothing} - window, required for`:fir` filter
-  * `preview::Bool=false`: plot filter response
+  * `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for`:mavg`and`:mmed`
 
 **Returns**
 
@@ -6946,7 +6967,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 
   * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: use `nn` adjacent electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+  * `weights::Bool=false`: use mean of `nn` nearest channels if false; if true, mean of `nn` nearest channels is weighted by distance to the referenced channel
   * `med::Bool=false`: use median instead of mean
 
 **Returns**
@@ -6968,7 +6989,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 
   * `eeg::NeuroAnalyzer.EEG`
   * `nn::Int64=4`: use `nn` adjacent electrodes
-  * `weights::Bool=true`: use distance weights; use mean of nearest channels if false
+  * `weights::Bool=false`: use distance weights; use mean of nearest channels if false
   * `med::Bool=false`: use median instead of mean
 
 <a id='NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_zero-Tuple{NeuroAnalyzer.EEG}'>#</a>

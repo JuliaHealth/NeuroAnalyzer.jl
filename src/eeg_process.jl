@@ -1762,11 +1762,11 @@ Perform wavelet bandpass filtering.
 """
 function eeg_wbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
-    eeg.eeg_signals = eeg_wbp(eeg, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean).eeg_signals
+    eeg_tmp = eeg_wbp(eeg, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_wbp!(EEG, channel=$channel, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
-
     return nothing
 end
 
@@ -1822,11 +1822,11 @@ Perform convolution bandpass filtering.
 """
 function eeg_cbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, frq::Real, demean::Bool=true)
 
-    eeg.eeg_signals = eeg_cbp(eeg, channel=channel, pad=pad, frq=frq, demean=demean).eeg_signals
+    eeg_tmp = eeg_cbp(eeg, channel=channel, pad=pad, frq=frq, demean=demean)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_cbp!(EEG, channel=$channel, pad=$pad, frq=$frq, demean=$demean)")
-
     return nothing
 end
 
@@ -1867,10 +1867,11 @@ Perform Wiener deconvolution denoising.
 """
 function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals[channel, :, :] = s_denoise_wien(eeg.eeg_signals[channel, :, :])
-    eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_denoise_wien!(EEG, channel=$channel)")
+    eeg_tmp = eeg_denoise_wien(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
 
+    eeg_reset_components!(eeg)
     return nothing
 end
 
@@ -1916,7 +1917,10 @@ function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 
     _check_channels(eeg, channel)
 
-    eeg.eeg_signals[channel, :, :] = @views eeg.eeg_signals[channel, :, :] .* factor
+    eeg_tmp = eeg_scale(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
+
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_scale!(EEG, channel=$channel, factor=$factor)")
+    return nothing
 end

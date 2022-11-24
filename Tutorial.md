@@ -7,90 +7,75 @@ eeg_view_markers(edf)
 
 ### EEG Process
 
-Any analysis data (e.g. ICA, PCA) can be stored within the EEG object (see `eeg_add_component()`, `eeg_delete_component()`, `eeg_rename_component()`, `eeg_component_type()`) for later use (see `eeg_extract_component()`). Note: any function that changes EEG signal data (e.g. channel removal, filtering) resets embedded components (see `eeg_reset_components()`.
-
-Show components (e.g. ICA, PCA):
-```julia
-eeg_list_components(edf)
-```
-
-Add component:
-```julia
-e = eeg_epochs_stats(edf)
-eeg_add_component!(edf, c=:epoch_mean, v=e[1])
-```
-
-Get component type:
-```julia
-eeg_component_type(edf, c=:epoch_mean)
-```
-
-Get component content:
-```julia
-eeg_extract_component(edf, c=:epoch_mean)
-```
-
-Delete component:
-```julia
-edf = eeg_delete_component(edf, c=:ica)
-eeg_delete_component!(edf, c=:ica)
-eeg_reset_components!(edf)
-```
-
 Normalize:
 ```julia
-eeg_normalize!(edf, method=:zscore)
-eeg_normalize!(edf, method=:minmax)
+eeg_normalize!(eeg, method=:zscore)
+eeg_normalize!(eeg, method=:minmax)
 ```
 
 Remove DC:
 ```julia
-eeg_demean(edf)
-eeg_demean!(edf)
+eeg_demean!(eeg)
 ```
 
 Taper:
 ```julia
-eeg_taper!(edf, taper=hann(eeg_epoch_len(edf)))
+eeg_taper!(eeg, taper=hann(eeg_epoch_len(eeg)))
 ```
 
 Calculate signal derivative:
 ```julia
-eeg_derivative(edf)
-eeg_derivative!(edf)
+eeg_derivative!(eeg)
 ```
 
 Detrend:
 ```julia
-eeg_detrend(edf, type=:linear)
-eeg_detrend!(edf, type=:constant)
+eeg_detrend!(eeg, type=:constant)
 ```
 
 Time-domain convolution:
 ```julia
 mw = generate_morlet(256, 1, 32, complex=true)
-eeg_tconv(e10, kernel=mw)
-eeg_tconv!(e10, kernel=mw)
+eeg_tconv!(eeg, kernel=mw)
 ```
 
 Frequency-domain convolution:
 ```julia
 mw = generate_morlet(256, 1, 32, complex=true)
-eeg_fconv(e10, kernel=mw)
-eeg_fconv!(e10, kernel=mw)
+eeg_fconv!(eeg, kernel=mw)
 ```
 
 Denoising using Wiener deconvolution:
 ```julia
-eeg_denoise_wien(edf)
+eeg_denoise_wien!(edf)
+```
+
+Generate PCA:
+```julia
+pc, pc_m, pc_var = eeg_pca(edf, n=4)
+```
+
+Generate ICAs:
+```julia
+i, i_mw = eeg_ica(edf, n=15, tol=1.0)
+```
+
+Remove ICA #001 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ic=1)
+```
+
+Remove ICA #001-007 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ic=1:7)
+```
+
+Remove ICA #001, 003 and 007 component from the signal:
+```julia
+eeg_ica_reconstruct!(edf, ic=[1, 3, 7])
 ```
 
 ### EEG Analyze
-
-Calculate virtual channel:
-```julia
-vc = eeg_vch(edf, f="mean(fp1 + fp2) / cz")
-```
 
 Channels stats:
 ```julia
@@ -187,31 +172,6 @@ c, msc, f = eeg_fcoherence(edf_alpha, edf_alpha, channel1=9, channel2=10, epoch1
 plot(f[1, :], c[1, :, 1])
 ```
 
-Generate PCA:
-```julia
-pc, pc_m, pc_var = eeg_pca(edf, n=4)
-```
-
-Generate ICAs:
-```julia
-i, i_mw = eeg_ica(edf, n=15, tol=1.0)
-```
-
-Remove ICA #001 component from the signal:
-```julia
-eeg_ica_reconstruct!(edf, ic=1)
-```
-
-Remove ICA #001-007 component from the signal:
-```julia
-eeg_ica_reconstruct!(edf, ic=1:7)
-```
-
-Remove ICA #001, 003 and 007 component from the signal:
-```julia
-eeg_ica_reconstruct!(edf, ic=[1, 3, 7])
-```
-
 Comparing two signals:
 ```julia
 edf1 = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:delta), order=8)
@@ -268,31 +228,6 @@ f, psd_slope, frq = eeg_psdslope(eeg, f=(8, 14), norm=true, mt=false)
 
 ### EEG Plots
 
-Plot electrodes:
-
-```julia
-eeg_load_electrodes!(edf, file_name="locs/standard-10-20-cap19-elmiko.ced")
-p = plot_electrodes(edf.eeg_locs, channel=1:19, selected=1:19, labels=true)
-eeg_plot_save(p, file_name="images/edf_electrodes.png")
-```
-
-![](images/edf_electrodes.png)
-
-Plot multi-channel:
-```julia
-p = eeg_plot(edf, channel=1:19)
-eeg_plot_save(p, file_name="images/edf_channels.png")
-```
-
-![edf channels](images/edf_channels.png)
-
-Plot single-channel using time-points:
-```julia
-p = eeg_plot(edf, channel=1, segment=(10*eeg_sr(edf), 12*eeg_sr(edf)))
-eeg_plot_save(p, file_name="images/edf_channel_1_simple.png")
-```
-![edf channel1](images/edf_channel_1_simple.png)
-
 ```julia
 eeg_epochs!(edf, epoch_len = 2560)
 p1 = eeg_plot(edf, channel=1, epoch=1)
@@ -304,21 +239,6 @@ eeg_plot_save(p, file_name="images/edf_channel_1.png")
 ```
 
 ![edf channel1](images/edf_channel_1.png)
-
-Plot averaged signal:
-```julia
-p = eeg_plot(edf, channel=1:4, mc=:mean)
-eeg_plot_save(p, file_name="images/edf_avg_simple.png")
-```
-
-![edf avg](images/edf_avg_simple.png)
-
-```julia
-p = eeg_plot(edf, channel=1:8, type=:butterfly)
-eeg_plot_save(p, file_name="images/edf_butterfly_simple.png")
-```
-
-![edf butterfly](images/edf_butterfly_simple.png)
 
 ```julia
 p1 = eeg_plot(edf, channel=1:4, epoch=1, type=:butterfly)
@@ -389,14 +309,6 @@ eeg_plot_save(p, file_name="images/edf_spec3.png")
 
 ![edf mc-spectrogram](images/edf_spec3.png)
 
-Plot PSD, x and y axes are log10-scaled:
-```julia
-p = eeg_plot_psd(edf, epoch=1, channel=1, norm=false, ax=:loglog)
-eeg_plot_save(p, file_name="images/edf_psd.png")
-```
-
-![edf topo :amp](images/edf_psd.png)
-
 Plot PSD relative to alpha band power:
 ```julia
 p = eeg_plot_psd(edf, epoch=1, channel=1, ref=:alpha)
@@ -413,29 +325,6 @@ p = eeg_plot(e10, pt, epoch=1, c_idx=1:4, scale=false, emarkers=false)
 eeg_plot_save(p, file_name="images/e10_tconv_phases.png")
 ```
 ![](images/e10_tconv_phases.png)
-
-Plot PSD 3d waterfall:
-```julia
-p = eeg_plot_psd(edf, channel=1:5, epoch=1, method=:mw, variant=:w3d)
-eeg_plot_save(p, file_name="images/edf_psd3d.png")
-```
-
-![edf PSD 3d](images/edf_psd3d.png)
-
-Plot PSD 3d waterfall:
-```julia
-p = eeg_plot_psd(edf, epoch=1, channel=1:10, variant=:w3d)
-eeg_plot_save(p, file_name="images/edf_psd_3d.png")
-```
-![](images/edf_psd_3d.png)
-
-Plot PSD 3d surface:
-```julia
-p = eeg_plot_psd(edf, epoch=1, channel=1:10, variant=:s3d, psd=:mw, ncyc=(2, 32), frq_lim=(0, 45))
-eeg_plot_save(p, file_name="images/edf_psd_s3d.png")
-```
-
-![](images/edf_psd_s3d.png)
 
 Topographical plot:
 ```julia
@@ -485,7 +374,6 @@ eeg_plot_save(p, file_name="images/edf_ica_1_10.png")
 ```
 
 ![edf amplitude :ica](images/edf_ica_1_10.png)
-
 
 ```julia
 ic, icm = eeg_ica(edf, n=16, tol=0.99)
@@ -740,26 +628,4 @@ my_study.study_eeg[1].eeg_signals
 
 ### EEG Misc
 
-Any external formula/operation/function may be applied to EEG signal using `eeg_apply()` function:
-```julia
-eeg_apply(edf, f="mean(eeg, dims=1)", channel=1:4)
-```
-`eeg` indicates EEG signal channels. Function `f` will be applied to all channels indicated by `channel` (default is all EEG/MEG channels).
-
-Using band names and picks:
-```julia
-eeg_band(edf, band=:alpha)
-edf = eeg_filter(edf, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(edf, band=:alpha), order=8)
-hz, nyq = eeg_freqs(edf)
-
-e = eeg_pick(edf, pick=:left)
-eeg_labels(edf)[e]
-e = eeg_pick(edf, pick=[:l, :f, :t])
-eeg_labels(edf)[e]
-```
-
-Convert samples to seconds/seconds to samples:
-```julia
-eeg_s2t(edf, t=1234)
-eeg_t2s(edf, t=10)
-```
+hz, nyq = eeg_freqs(eeg)

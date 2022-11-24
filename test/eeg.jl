@@ -1,6 +1,7 @@
 using NeuroAnalyzer
 using Test
 using Wavelets
+using ContinuousWavelets
 
 edf = eeg_import_edf("eeg-test-edf.edf")
 @test size(edf.eeg_signals) == (24, 309760, 1)
@@ -136,8 +137,8 @@ p = eeg_stationarity(edf, method=:hilbert)
 p = eeg_stationarity(edf, window=10000, method=:euclid)
 @test size(p) == (32, 1)
 
-e = eeg_trim(edf, segment=(10 * eeg_sr(edf), 20 * eeg_sr(edf)), keep_epochs=false)
-@test size(e.eeg_signals) == (19, 309760, 0)
+e = eeg_trim(edf, segment=(10 * eeg_sr(edf), 20 * eeg_sr(edf)), remove_epochs=false)
+@test eeg_signal_len(e) == 307199
 
 m = eeg_mi(edf)
 @test size(m) == (19, 19, 1)

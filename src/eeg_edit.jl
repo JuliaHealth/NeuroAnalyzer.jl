@@ -810,8 +810,6 @@ function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=noth
     eeg.eeg_signals = eeg_tmp.eeg_signals
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_epochs!(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
-
     return nothing
 end
 
@@ -848,7 +846,7 @@ function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
 end
 
 """
-    eeg_trim(eeg; segment, keep_epochs)
+    eeg_trim(eeg; segment, remove_epochs)
 
 Trim EEG signal by removing parts of the signal.
 
@@ -856,50 +854,48 @@ Trim EEG signal by removing parts of the signal.
 
 - EEG
 - `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
-- `keep_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and remove epoching
+- `remove_epochs::Bool=true`: if true, remove epochs containing signal to trim or remove signal and re-epoch trimmed signal
 
 # Returns
 
 - EEG
 """
-function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, keep_epochs::Bool=true)
+function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_epochs::Bool=true)
 
-    if keep_epochs == false
+    if remove_epochs == false
         eeg_new = deepcopy(eeg)
         eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg_new, epoch_n=1))
         _check_segment(eeg_new, segment[1], segment[2])
-        channel_n = eeg_channel_n(eeg_new)
-        epoch_n = eeg_epoch_n(eeg_new)
-        s_trimmed = zeros(channel_n, (size(eeg_new.eeg_signals, 2) - length(segment[1]:segment[2])), epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for idx in 1:channel_n
-                s_trimmed[idx, :, epoch_idx] = @views s_trim(eeg_new.eeg_signals[idx, :, epoch_idx], segment=segment)
-            end
-        end
-        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(s_trimmed, 2) / eeg_sr(eeg)))[1:(end - 1)]
-        eeg_new.eeg_signals = s_trimmed
+        eeg_new.eeg_signals = s_trim(eeg_new.eeg_signals, segment=segment)
+        t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_time = t_trimmed
         eeg_new.eeg_epochs_time = t_trimmed
         eeg_new.eeg_header[:eeg_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:eeg_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
         eeg_new.eeg_header[:epoch_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:epoch_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
-        eeg_epochs!(eeg_new, epoch_len=eeg_epoch_len(eeg))
+        if eeg_epoch_n(eeg) > 1
+            if eeg_epoch_len(eeg) <= eeg_signal_len(eeg_new)
+                eeg_epochs!(eeg_new, epoch_len=eeg_epoch_len(eeg))
+            else
+                verbose == true && @info "Cannot apply original epoch length, returning single-epoch EEG."
+            end
+        end
     else
-        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use keep_epochs=true."))
+        eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use remove_epochs=true."))
         epochs = _t2epoch(eeg, segment[1], segment[2])
-        verbose == true && @info "Removing epochs: $epochs"
+        verbose == true && @info "Removing $epochs epochs."
         eeg_new = eeg_delete_epoch(eeg, epoch=epochs)
     end
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_trim(EEG, segment=$segment, keep_epochs=$keep_epochs)")
+    push!(eeg_new.eeg_header[:history], "eeg_trim(EEG, segment=$segment, remove_epochs=$remove_epochs)")
 
     return eeg_new
 end
 
 """
-    eeg_trim!(eeg; segment, keep_epochs)
+    eeg_trim!(eeg; segment, remove_epochs)
 
 Trim EEG signal by removing parts of the signal.
 
@@ -907,17 +903,15 @@ Trim EEG signal by removing parts of the signal.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `segment::Tuple{Int64, Int64}`: segment to be removed (from, to) in samples
-- `keep_epochs::Bool=true`: remove epochs containing signal to trim (keep_epochs=true) or remove signal and remove epoching
+- `remove_epochs::Bool=true`: remove epochs containing signal to trim (remove_epochs=true) or remove signal and remove epoching
 """
-function eeg_trim!(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, keep_epochs::Bool=true)
+function eeg_trim!(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_epochs::Bool=true)
 
-    eeg_tmp = eeg_trim(eeg, segment=segment, keep_epochs=keep_epochs)
+    eeg_tmp = eeg_trim(eeg, segment=segment, remove_epochs=remove_epochs)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_trim!(EEG, segment=$segment, keep_epochs=$keep_epochs)")
-
     return nothing
 end
 
@@ -1502,12 +1496,9 @@ Edit EEG epochs time start.
 """
 function eeg_epochs_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
 
-    epoch_len = eeg_epoch_len(eeg)
-    fs = eeg_sr(eeg)
-    new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
-    eeg.eeg_epochs_time = new_epochs_time
-
-    push!(eeg.eeg_header[:history], "eeg_epochs_time!(EEG, ts=$ts)")
+    eeg_tmp = eeg_epochs_time(eeg, ts=ts)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_epochs_time = eeg_tmp.eeg_epochs_time
 
     return nothing
 end
@@ -1975,7 +1966,7 @@ Change EEG channel type.
 function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
     eeg.eeg_header[:channel_type] = eeg_channel_idx(eeg, channel=channel, type=type)[:channel_type]
-    push!(eeg.eeg_header[:history], "eeg_channel_type!(EEG, channel=$channel, type=$type)")
+    push!(eeg.eeg_header[:history], "eeg_channel_type(EEG, channel=$channel, type=$type)")
 
     return nothing
 end
@@ -2056,8 +2047,6 @@ function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int6
     eeg.eeg_locs = eeg_tmp.eeg_locs
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_edit_electrode(EEG; channel=$channel, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
-
     return nothing
 end
 
@@ -2346,8 +2335,6 @@ function eeg_delete_marker!(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg.eeg_markers = eeg_tmp.eeg_markers
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_delete_marker!(EEG; n=$n)")
-
     return nothing
 end
 
@@ -2408,8 +2395,6 @@ function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::
     eeg.eeg_markers = eeg_tmp.eeg_markers
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_add_marker!(EEG; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
-
     return nothing
 end
 
@@ -2533,7 +2518,5 @@ function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::I
     eeg.eeg_markers = eeg_tmp.eeg_markers
 
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_edit_marker!(EEG; id=$id, start=$start, length=$len, desc=$desc, channel=$channel)")
-
     return nothing
 end

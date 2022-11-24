@@ -317,6 +317,11 @@ function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=not
     else
         epoch_len = size(signal, 2) ÷ epoch_n
     end
+
+    epoch_len > size(signal, 2) && throw(ArgumentError("epoch_len must be ≤ $(size(signal, 2))."))
+    epoch_len < 1 && throw(ArgumentError("epoch_len must be ≥ 1."))
+    epoch_n < 1 && throw(ArgumentError("epoch_n must be ≥ 1."))
+
     epochs = reshape(signal[:, 1:(epoch_len * epoch_n)], channel_n, epoch_len, epoch_n)
 
     average == true && (epochs = mean(epochs, dims=3)[:, :])
@@ -494,7 +499,7 @@ function _check_var(s1::Symbol, s2::Vector{Symbol}, var::String)
     for idx in 1:(length(s2) - 2)
         m *= ":" * string(s2[idx]) * ", "
     end
-    m *= ":" * string(s2[end - 1]) * " or " * string(s2[end]) * "."
+    m *= ":" * string(s2[end - 1]) * " or :" * string(s2[end]) * "."
     s1 in s2 || throw(ArgumentError(m))
 end
 

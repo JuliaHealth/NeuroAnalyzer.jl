@@ -1183,10 +1183,10 @@ Standardize channels.
 """
 function eeg_standardize!(eeg::NeuroAnalyzer.EEG)
 
-    eeg.eeg_signals = eeg_standardize(eeg, channel=channel).eeg_signals
-
+    eeg_tmp, scaler = eeg_standardize(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_standardize!(EEG)")
 
     return scaler
 end
