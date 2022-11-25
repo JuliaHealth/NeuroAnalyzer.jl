@@ -1602,29 +1602,28 @@ end
 """
     s_tconv(signal; kernel)
 
-Performs convolution in the time domain between `signal` and `kernel`.
+Performs convolution in the time domain.
 
 # Arguments
 
 - `signal::AbstractVector`
-- `kernel::Union{AbstractVector, Vector{ComplexF64}}`
+- `kernel::AbstractVector`
 
 # Returns
 
-- `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
+- `s_conv::Vector{Float64}`
 """
-function s_tconv(signal::AbstractVector; kernel::Union{AbstractVector, Vector{ComplexF64}})
+function s_tconv(signal::AbstractVector; kernel::AbstractVector)
 
-    signal = Vector(signal)
     s_conv = conv(signal, kernel)
 
     half_kernel = floor(Int, length(kernel) / 2)
 
     # remove in- and out- edges
     if mod(length(kernel), 2) == 0 
-        return s_conv[half_kernel:(end - half_kernel)]
+        return real.(s_conv)[half_kernel:(end - half_kernel)]
     else
-        return s_conv[(half_kernel + 1):(end - half_kernel)]
+        return real.(s_conv)[(half_kernel + 1):(end - half_kernel)]
     end
 end
 
@@ -2241,20 +2240,20 @@ end
 """
     s_fconv(signal; kernel, norm)
 
-Perform convolution in the frequency domain between `signal` and `kernel`.
+Perform convolution in the frequency domain.
 
 # Arguments
 
 - `signal::AbstractArray`
-- `kernel::Union{AbstractVector, Vector{ComplexF64}}`
+- `kernel::AbstractVector`
 - `pad::Int64=0`: number of zeros to add
-- `norm::Bool=false`: normalize kernel
+- `norm::Bool=true`: normalize kernel
 
 # Returns
 
-- `s_conv::Vector{ComplexF64}`
+- `s_conv::Vector{Float64}`
 """
-function s_fconv(signal::AbstractArray; pad::Int64=0, kernel::Union{AbstractVector, Vector{ComplexF64}}, norm::Bool=false)
+function s_fconv(signal::AbstractArray; pad::Int64=0, kernel::AbstractVector, norm::Bool=true)
 
     n_signal = length(signal)
     n_kernel = length(kernel)
@@ -2262,8 +2261,8 @@ function s_fconv(signal::AbstractArray; pad::Int64=0, kernel::Union{AbstractVect
     s_fft = fft0(signal, pad + n_kernel - 1)
     kernel_fft = fft0(kernel, pad + n_signal - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = ifft0(s_fft .* kernel_fft, pad)
-    
+    s_conv = @views real.(ifft0(s_fft .* kernel_fft))[1:(end - pad)]
+
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
         return s_conv[half_kernel:(end - half_kernel)]

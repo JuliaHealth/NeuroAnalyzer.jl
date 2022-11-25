@@ -94,9 +94,6 @@ edf10 = eeg_epochs(edf, epoch_n=10)
 edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
-s_conv = eeg_tconv(edf, kernel=generate_window(:hann, 256))
-@test size(s_conv) == (19, 309760, 1)
-
 f, s = eeg_dft(edf)
 @test size(f) == (19, 309760, 1)
 
@@ -160,7 +157,9 @@ hz, nyq = eeg_freqs(edf)
 @test nyq == 128.0
 
 e10 = eeg_epochs(edf, epoch_len=2560)
-s_conv = eeg_fconv(e10, kernel=[1, 2, 3, 4])
+s_conv = eeg_fconv(e10, kernel=generate_window(:hann, 256))
+@test size(s_conv) == (19, 2560, 121)
+s_conv = eeg_tconv(e10, kernel=generate_window(:hann, 256))
 @test size(s_conv) == (19, 2560, 121)
 
 p, v, m, pca = eeg_pca(edf, n=2)

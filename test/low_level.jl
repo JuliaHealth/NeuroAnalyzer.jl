@@ -59,7 +59,6 @@ s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0
 
 @test s_derivative(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-@test s_tconv(ones(10), kernel=[1.0, 1.0]) == [1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 @test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
 
 p, f = s_psd(ones(10), fs=10)
@@ -82,7 +81,8 @@ p, w, m, pca = s_pca(ones(2, 10, 1), n=1)
 s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
 @test s == ones(2, 10, 1)
 
-@test round.(s_fconv(ones(10), kernel=[1.0, 2.0])) == [1.00 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im, 3.0 + 0.0im]
+@test s_tconv(ones(5), kernel=[1.0, 2.0]) == [1.0, 3.0, 3.0, 3.0, 3.0]
+@test round.(s_fconv(ones(5), kernel=[1.0, 2.0])) == [0.0, 1.0, 1.0, 1.0]
 
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)

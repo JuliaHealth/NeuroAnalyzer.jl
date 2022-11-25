@@ -1201,20 +1201,20 @@ Perform convolution in the frequency domain.
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
-- `norm::Bool=false`: normalize kernel
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 - `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
-- `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+- `s_convoluted::Array{Float64, 3}`: convoluted signal
 """
-function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=false, pad::Int64=0)
+function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    s_convoluted = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
+    s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
@@ -1244,7 +1244,7 @@ Perform convolution in the time domain.
 
 # Returns
 
-- `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+- `s_convoluted::Array{Float64, 3}`: convoluted signal
 """
 function eeg_tconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 

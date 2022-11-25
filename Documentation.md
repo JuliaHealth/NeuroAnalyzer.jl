@@ -1406,16 +1406,16 @@ Return derivative of the same length.
 s_tconv(signal; kernel)
 ```
 
-Performs convolution in the time domain between `signal` and `kernel`.
+Performs convolution in the time domain.
 
 **Arguments**
 
   * `signal::AbstractVector`
-  * `kernel::Union{AbstractVector, Vector{ComplexF64}}`
+  * `kernel::AbstractVector`
 
 **Returns**
 
-  * `s_conv::Union{Vector{Float64}, Vector{ComplexF64}}`
+  * `s_conv::Vector{Float64}`
 
 <a id='NeuroAnalyzer.s_filter-Tuple{AbstractVector}' href='#NeuroAnalyzer.s_filter-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.s_filter`** &mdash; *Method*.
@@ -1816,18 +1816,18 @@ Reconstructs `signal` using PCA components.
 s_fconv(signal; kernel, norm)
 ```
 
-Perform convolution in the frequency domain between `signal` and `kernel`.
+Perform convolution in the frequency domain.
 
 **Arguments**
 
   * `signal::AbstractArray`
-  * `kernel::Union{AbstractVector, Vector{ComplexF64}}`
+  * `kernel::AbstractVector`
   * `pad::Int64=0`: number of zeros to add
-  * `norm::Bool=false`: normalize kernel
+  * `norm::Bool=true`: normalize kernel
 
 **Returns**
 
-  * `s_conv::Vector{ComplexF64}`
+  * `s_conv::Vector{Float64}`
 
 <a id='NeuroAnalyzer.s_ica-Tuple{AbstractArray}' href='#NeuroAnalyzer.s_ica-Tuple{AbstractArray}'>#</a>
 **`NeuroAnalyzer.s_ica`** &mdash; *Method*.
@@ -7860,12 +7860,12 @@ Perform convolution in the frequency domain.
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
   * `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
-  * `norm::Bool=false`: normalize kernel
+  * `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
   * `pad::Int64=0`: number of zeros to add signal for FFT
 
 **Returns**
 
-  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+  * `s_convoluted::Array{Float64, 3}`: convoluted signal
 
 <a id='NeuroAnalyzer.eeg_tconv-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_tconv-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_tconv`** &mdash; *Method*.
@@ -7886,7 +7886,7 @@ Perform convolution in the time domain.
 
 **Returns**
 
-  * `s_convoluted::Union{Array{Float64, 3}, Array{ComplexF64, 3}}`: convoluted signal
+  * `s_convoluted::Array{Float64, 3}`: convoluted signal
 
 <a id='NeuroAnalyzer.eeg_dft-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_dft-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_dft`** &mdash; *Method*.
