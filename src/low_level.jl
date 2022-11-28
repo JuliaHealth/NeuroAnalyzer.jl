@@ -298,14 +298,14 @@ Zeros-padded FFT.
 
 # Arguments
 
-- `x::AbstractArray`
+- `x::AbstractVector`
 - `n::Int64`: number of zeros to add
 
 # Returns
 
 - `fft0::Vector{ComplexF64}`
 """
-function fft0(x::AbstractArray, n::Int64=0)
+function fft0(x::AbstractVector, n::Int64=0)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
@@ -330,36 +330,28 @@ end
 """
     ifft0(x, n)
 
-Zeros-padded IFFT.
+IFFT of zero-padded vector.
 
 # Arguments
 
-- `x::AbstractArray`
+- `x::AbstractVector`
 - `n::Int64`: number of zeros to add
 
 # Returns
 
-- `ifft0::Vector{ComplexF64}`
+- `signal::Vector{Float64}`: real part of the signal trimmed to original length
 """
-function ifft0(x::AbstractArray, n::Int64=0)
+function ifft0(x::AbstractVector, n::Int64=0)
 
     n < 0 && throw(ArgumentError("n must be ≥ 0."))
 
     if CUDA.functional() && use_cuda
         # _free_gpumem()
-        if n == 0
-            cx = CuArray(x)
-        else
-            cx = CuArray(vcat(x, zeros(eltype(x), n)))
-        end
-        return Vector(ifft(cx))
+        x = Vector(ifft(CuArray(x)))
     else
-        if n == 0
-            return ifft(x)
-        else
-            return ifft(vcat(x, zeros(eltype(x), n)))
-        end
+        x = ifft(x)
     end
+    return round.(real.(x[1:(length(x) - n)]))
 end
 
 """
@@ -369,33 +361,15 @@ Zeros-padded FFT, so the length of padded vector is a power of 2.
 
 # Arguments
 
-- `x::AbstractArray`
+- `x::AbstractVector`
 
 # Returns
 
 - `fft2::Vector{ComplexF64}`
 """
-function fft2(x::AbstractArray)
+function fft2(x::AbstractVector)
     n = nextpow2(length(x)) - length(x)
     fft0(x, n)
-end
-
-"""
-    ifft2(x)
-
-Calculate IFFT for the vector `x` padded with zeros, so the length of padded `x` is a power of 2.
-
-# Arguments
-
-- `x::AbstractArray`
-
-# Returns
-
-- `ifft0::Vector{ComplexF64}`
-"""
-function ifft2(x::AbstractArray)
-    n = nextpow2(length(x)) - length(x)
-    ifft0(x, n)
 end
 
 """
@@ -2261,7 +2235,7 @@ function s_fconv(signal::AbstractArray; pad::Int64=0, kernel::AbstractVector, no
     s_fft = fft0(signal, pad + n_kernel - 1)
     kernel_fft = fft0(kernel, pad + n_signal - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = @views real.(ifft0(s_fft .* kernel_fft))[1:(end - pad)]
+    s_conv = @views ifft0(s_fft .* kernel_fft, pad)
 
     # remove in- and out- edges
     if mod(n_kernel, 2) == 0 
@@ -2867,7 +2841,7 @@ function s_fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
     frq_idx = s_pow .> threshold
     s_fft[frq_idx] .= Complex(0, 0)
 
-    return (s_denoised=real.(ifft0(s_fft, pad)), frq_idx=frq_idx)
+    return (s_denoised=ifft0(s_fft, pad), frq_idx=frq_idx)
 end
 
 """
@@ -2906,7 +2880,7 @@ function s_gfilter(signal::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw:
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_f = 2 .* real.(ifft0(fft0(s_r, pad).*g))
+    s_f = 2 .* ifft0(fft0(s_r, pad) .* g, pad)
     
     # remove reflected part of the signal
     return _chop(s_f)

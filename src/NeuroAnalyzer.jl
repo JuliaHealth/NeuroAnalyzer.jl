@@ -112,7 +112,6 @@ export generate_window
 export fft0
 export fft2
 export ifft0
-export ifft2
 export nextpow2
 export vsplit
 export s_rms
