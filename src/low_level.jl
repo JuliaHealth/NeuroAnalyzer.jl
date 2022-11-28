@@ -335,7 +335,7 @@ IFFT of zero-padded vector.
 # Arguments
 
 - `x::AbstractVector`
-- `n::Int64`: number of zeros to add
+- `n::Int64`: number of zeros added to `x`
 
 # Returns
 
