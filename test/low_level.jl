@@ -17,7 +17,7 @@ using ContinuousWavelets
 @test cart2sph(1, 1, 1) == (1.73, 45.0, 54.69)
 @test generate_window(:hann, 3) == [0.0, 1.0, 0.0]
 @test length(fft0(ones(10), 10)) == 20
-@test length(ifft0(ones(10), 10)) == 20
+@test length(ifft0(ones(20), 10)) == 10
 @test nextpow2(5) == 8
 @test vsplit(ones(4), 2) == [[1.0, 1.0], [1.0, 1.0]]
 @test length(s_rms(ones(10))) == 1
@@ -82,7 +82,7 @@ s = s_pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
 @test s == ones(2, 10, 1)
 
 @test s_tconv(ones(5), kernel=[1.0, 2.0]) == [1.0, 3.0, 3.0, 3.0, 3.0]
-@test round.(s_fconv(ones(5), kernel=[1.0, 2.0])) == [0.0, 1.0, 1.0, 1.0]
+@test round.(s_fconv(ones(5), kernel=[1.0, 2.0])) == [0.0, 1.0, 1.0, 1.0, 1.0]
 
 i, m = s_ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)

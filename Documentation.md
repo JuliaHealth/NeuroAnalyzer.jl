@@ -434,7 +434,7 @@ Zeros-padded FFT.
 
 **Arguments**
 
-  * `x::AbstractArray`
+  * `x::AbstractVector`
   * `n::Int64`: number of zeros to add
 
 **Returns**
@@ -450,18 +450,18 @@ Zeros-padded FFT.
 ifft0(x, n)
 ```
 
-Zeros-padded IFFT.
+IFFT of zero-padded vector.
 
 **Arguments**
 
-  * `x::AbstractArray`
+  * `x::AbstractVector`
   * `n::Int64`: number of zeros to add
 
 **Returns**
 
-  * `ifft0::Vector{ComplexF64}`
+  * `signal::Vector{Float64}`: real part of the signal trimmed to original length
 
-<a id='NeuroAnalyzer.fft2-Tuple{AbstractArray}' href='#NeuroAnalyzer.fft2-Tuple{AbstractArray}'>#</a>
+<a id='NeuroAnalyzer.fft2-Tuple{AbstractVector}' href='#NeuroAnalyzer.fft2-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.fft2`** &mdash; *Method*.
 
 
@@ -474,30 +474,11 @@ Zeros-padded FFT, so the length of padded vector is a power of 2.
 
 **Arguments**
 
-  * `x::AbstractArray`
+  * `x::AbstractVector`
 
 **Returns**
 
   * `fft2::Vector{ComplexF64}`
-
-<a id='NeuroAnalyzer.ifft2-Tuple{AbstractArray}' href='#NeuroAnalyzer.ifft2-Tuple{AbstractArray}'>#</a>
-**`NeuroAnalyzer.ifft2`** &mdash; *Method*.
-
-
-
-```julia
-ifft2(x)
-```
-
-Calculate IFFT for the vector `x` padded with zeros, so the length of padded `x` is a power of 2.
-
-**Arguments**
-
-  * `x::AbstractArray`
-
-**Returns**
-
-  * `ifft0::Vector{ComplexF64}`
 
 <a id='NeuroAnalyzer.nextpow2-Tuple{Int64}' href='#NeuroAnalyzer.nextpow2-Tuple{Int64}'>#</a>
 **`NeuroAnalyzer.nextpow2`** &mdash; *Method*.
