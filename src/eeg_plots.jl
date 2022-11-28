@@ -773,6 +773,136 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
     return p
 end
 
+
+"""
+    plot_psd(s_frq, s_pow; <keyword arguments>)
+
+Plot multi-channel PSD (power spectrum density).
+
+# Arguments
+
+- `s_frq::Vector{Float64}`: frequencies
+- `s_pow::Matrix{Float64}`: powers
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `norm::Bool=true`: whether powers are normalized to dB
+- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for the Y-axis
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+
+    channel_n = size(s_pow, 1)
+    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
+
+    # reverse so 1st channel is on top
+    s_pow = @views reverse(s_pow[:, 1:length(s_frq)], dims = 1)
+    # also, reverse colors if palette is not mono
+    if mono == true
+        pal = :grays
+        channel_color = Vector{Symbol}()
+        for idx in 1:channel_n
+            push!(channel_color, :black)
+        end
+    else
+        pal = :darktest
+        channel_color = channel_n:-1:1
+    end
+
+    # channel labels
+    labels == [""] && (labels = repeat([""], size(s_pow, 1)))
+
+    # get range of the original s_pow for the scale
+    range = _get_range(s_pow)
+
+    # normalize and shift so all channels are visible
+    # each channel is between -1.0 and +1.0
+    for idx in 1:channel_n
+        # scale by 0.5 so maxima do not overlap
+        s_pow[idx, :] = @views s_normalize(s_pow[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
+    end
+
+    frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
+    frq_lim = tuple_order(frq_lim)
+
+    if ax === :linlin
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = :identity
+    elseif ax === :loglin
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
+    elseif ax === :linlog
+        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        xticks = _ticks(frq_lim)
+        xscale = :identity
+        yscale = :identity
+    elseif ax === :loglog
+        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        if frq_lim[1] == 0
+            frq_lim = (0.1, frq_lim[2])
+            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+        end
+        s_frq[1] == 0 && (s_frq[1] = 0.1)
+        xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
+        xscale = :log10
+        yscale = :identity
+    end
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   legend=false,
+                   xlims=frq_lim,
+                   title=title,
+                   palette=pal,
+                   t=:line,
+                   c=:black,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6)
+
+    # plot zero line
+    p = Plots.hline!(collect((channel_n - 1):-1:0),
+                     color=:grey,
+                     lw=0.5,
+                     label="")
+
+    # plot channels
+    for idx in 1:channel_n
+        p = @views Plots.plot!(s_frq,
+                               s_pow[idx, :],
+                               linewidth=1,
+                               label="",
+                               xticks=xticks,
+                               xscale=xscale,
+                               color=channel_color[idx])
+    end
+
+    # plot labels
+    p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
+
+    return p
+end
+
 """
     plot_psd_avg(s_frq, s_pow; <keyword arguments>)
 
@@ -1339,8 +1469,9 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     end
 
     if type === :normal
-        ndims(s_pow) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
-        p = plot_psd(s_frq,
+        # ndims(s_pow) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
+        if ndims(s_pow) == 1
+            p = plot_psd(s_frq,
                      s_pow,
                      xlabel=xlabel,
                      ylabel=ylabel,
@@ -1350,6 +1481,19 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
                      ax=ax,
                      mono=mono;
                      kwargs...)
+        else
+            p = plot_psd(s_frq,
+                     s_pow,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     labels=labels,
+                     title=title,
+                     norm=norm,
+                     frq_lim=frq_lim,
+                     ax=ax,
+                     mono=mono;
+                     kwargs...)
+        end
     elseif type === :butterfly
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
         title = replace(title, "channel" => "channels")
