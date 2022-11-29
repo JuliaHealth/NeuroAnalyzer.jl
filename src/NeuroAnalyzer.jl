@@ -253,6 +253,7 @@ export prank
 export linreg
 export s2_cmp
 export s2_cor
+export dprime
 
 include("eeg_io.jl")
 export eeg_export_csv

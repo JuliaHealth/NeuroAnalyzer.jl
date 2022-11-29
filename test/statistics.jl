@@ -44,4 +44,7 @@ _, _, _, _, df, _ = s2_cor(ones(5), zeros(5))
 _, _, c, _, _, _, _ = linreg(ones(100), zeros(100))
 @test c == [0.0, 0.0]
 
+@test dprime(0.5, 0.5) == (dprime=0.0, rb=-0.0)
+@test norminv(0.5) == 0.0
+
 true

@@ -682,3 +682,44 @@ function s2_cor(s1::AbstractVector, s2::AbstractVector)
 
     return (t=t, r=t.r, rc=confint(t), ts=(t.t, "t"), df=df, p=p)
 end
+
+"""
+    dprime(p1::Real, p2::Real)
+
+Calculate d' and response bias for two proportions.
+
+# Arguments
+
+- `p1::Real`
+- `p2::Real`
+
+# Returns
+
+Named tuple containing:
+- `dprime::Float64`
+- `rb::Float64`: response bias
+"""
+function dprime(p1::Real, p2::Real)
+    p1 in [0, 1] && throw(ArgumentError("p1 must be > 0 and < 1."))
+    p2 in [0, 1] && throw(ArgumentError("p2 must be > 0 and < 1."))
+    p1_zscore = quantile(Normal(), p1)
+    p2_zscore = quantile(Normal(), p2)
+    return (dprime=(p1_zscore - p2_zscore), rb=(-(p1_zscore + p2_zscore) / 2))
+end
+
+"""
+    norminv(x::Real)
+
+Convert probability to a normal distribution with a peak at 0.5.
+
+# Arguments
+
+- `x::Real`
+
+# Returns
+
+- `z::Float64`
+"""
+function norminv(x::Real)
+    return quantile(Normal(), x)
+end
