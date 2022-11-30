@@ -490,7 +490,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
         end
     elseif type === :butterfly
         size(signal, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Channels $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Channels $(_channel2channel_name(channel)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   signal,
                                   labels=labels,
@@ -504,7 +504,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
                                   kwargs...)
     elseif type === :mean
         size(signal, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Averaged channels $(_channel2channel_name(channel)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Averaged channels $(_channel2channel_name(channel)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             signal,
                             xlabel=xlabel,
@@ -627,7 +627,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
                         kwargs...)
     elseif type === :butterfly
         size(signal, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   signal,
                                   labels=labels,
@@ -641,7 +641,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
                                   kwargs...)
     elseif type === :mean
         size(signal, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             signal,
                             labels=labels,
@@ -1968,6 +1968,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
         end
 
         norm == true && (s_p = pow2db.(s_p))
+        s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
         p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
 
         # plot markers if available
@@ -2019,6 +2020,8 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
         end
 
         norm == true && (s_p = pow2db.(s_p))
+        s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
+        s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
         p = plot_spectrogram(labels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
     end
 
@@ -2119,6 +2122,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
         end
 
         norm == true && (s_p = pow2db.(s_p))
+        s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
         p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
 
         # plot markers if available
@@ -2170,6 +2174,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
         end
 
         norm == true && (s_p = pow2db.(s_p))
+        s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
         p = plot_spectrogram(labels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
     end
 
@@ -2227,7 +2232,7 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
                    border=:none,
                    aspect_ratio=1,
                    right_margin=-30 * Plots.px,
-                   bottom_margin=-30 * Plots.px,
+                   bottom_margin=-20 * Plots.px,
                    top_margin=-30 * Plots.px,
                    left_margin=-50 * Plots.px,
                    xlim=(-1.22, 1.23),

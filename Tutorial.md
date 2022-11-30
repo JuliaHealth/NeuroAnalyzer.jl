@@ -228,29 +228,6 @@ f, psd_slope, frq = eeg_psdslope(eeg, f=(8, 14), norm=true, mt=false)
 
 ### EEG Plots
 
-```julia
-eeg_epochs!(edf, epoch_len = 2560)
-p1 = eeg_plot(edf, channel=1, epoch=1)
-p2 = eeg_plot_psd(edf, channel=1, epoch=1)
-p3 = eeg_plot_spectrogram(edf, channel=1, epoch=1, frq_lim=(0, 40))
-p4 = eeg_plot_electrodes(edf, channel=1, selected=1, labels=false)
-p = plot(p1, p2, p3, p4, layout=(4, 1))
-eeg_plot_save(p, file_name="images/edf_channel_1.png")
-```
-
-![edf channel1](images/edf_channel_1.png)
-
-```julia
-p1 = eeg_plot(edf, channel=1:4, epoch=1, type=:butterfly)
-p2 = eeg_plot_psd(edf, channel=1:4, epoch=1, type=:butterfly)
-p3 = eeg_plot_spectrogram(edf, channel=1:4, epoch=1, frq_lim=(0, 40))
-p4 = eeg_plot_electrodes(edf, channel=1:4, selected=1:4, labels=false)
-p = plot(p1, p2, p3, p4, layout=(4, 1))
-eeg_plot_save(p, file_name="images/edf_butterfly.png")
-
-```
-![edf butterfly](images/edf_butterfly.png)
-
 Plot filter response:
 ```julia
 p = plot_filter_response(fs=eeg_sr(edf), fprototype=:butterworth, ftype=:bs, cutoff=(45, 55), order=8)
@@ -277,37 +254,6 @@ eeg_plot_save(p, file_name="images/edf_bands.png")
 
 ![edf bands](images/edf_bands.png)
 
-Plot spectrogram:
-```julia
-p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true)
-eeg_plot_save(p, file_name="images/edf_spec1.png")
-```
-
-![spectrogram](images/edf_spec1.png)
-
-Plot spectrogram using wavelet convolution and variable number of Morlet-wavelet cycles:
-```julia
-p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true, method=:mw, ncyc=(2, 32))
-eeg_plot_save(p, file_name="images/edf_spec2.png")
-```
-
-![spectrogram MW](images/edf_spec2.png)
-
-Plot spectrogram using STFT:
-```julia
-p = eeg_plot_spectrogram(e10, epoch=1, channel=9, norm=true, method=:stft)
-eeg_plot_save(p, file_name="images/edf_spec4.png")
-```
-
-![spectrogram ST](images/edf_spec4.png)
-
-Plot multi-channel spectrogram:
-```julia
-p = eeg_plot_spectrogram(e10, epoch=1, channel=1:19, norm=true, frq_lim=(0, 50))
-eeg_plot_save(p, file_name="images/edf_spec3.png")
-```
-
-![edf mc-spectrogram](images/edf_spec3.png)
 
 Plot PSD relative to alpha band power:
 ```julia
