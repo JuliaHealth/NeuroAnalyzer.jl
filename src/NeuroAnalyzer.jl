@@ -2,7 +2,7 @@ __precompile__()
 
 module NeuroAnalyzer
 
-const na_ver = v"0.22.11"
+const na_ver = v"0.22.12"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
@@ -254,6 +254,7 @@ export linreg
 export s2_cmp
 export s2_cor
 export dprime
+export norminv
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -421,7 +422,6 @@ export eeg_scale
 export eeg_scale!
 export eeg_gfilter
 
-
 include("eeg_analyze.jl")
 export eeg_total_power
 export eeg_band_power
@@ -524,8 +524,5 @@ export plot_topo
 export eeg_plot_topo
 export eeg_plot_compose
 export plot_empty
-
-include("nstim.jl")
-export tes_dose
 
 end # NeuroAnalyzer

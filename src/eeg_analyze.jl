@@ -1252,15 +1252,11 @@ function eeg_tconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    if typeof(kernel) == Vector{ComplexF64}
-        s_convoluted = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
-    else
-        s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
-    end
+    s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            s_convoluted[channel_idx, :, epoch_idx] = @views s_tconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel)
+            s_convoluted[channel_idx, :, epoch_idx] = s_tconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel)
         end
     end
 
@@ -2707,7 +2703,7 @@ function eeg_mwpsd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            w_pow[channel_idx, :, epoch_idx], w_frq[:, epoch_idx] = @views s_mwpsd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+            w_pow[channel_idx, :, epoch_idx], _ = @views s_mwpsd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
             # update progress bar
             progress_bar == true && next!(p)

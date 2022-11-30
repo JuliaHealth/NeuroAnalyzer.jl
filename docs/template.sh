@@ -14,7 +14,7 @@ echo "\`\`\`@docs"
 cat ../src/low_level.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
-echo "## statistics"
+echo "## Statistics"
 echo ""
 echo "\`\`\`@docs"
 cat ../src/statistics.jl | grep ^function | sed s/"function "//g
@@ -48,22 +48,4 @@ echo "## EEG plots"
 echo ""
 echo "\`\`\`@docs"
 cat ../src/eeg_plots.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## Neurostimulation"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/nstim.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## NIRS"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/nirs.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## MRI"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/mri.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"

@@ -165,7 +165,7 @@ t2s(t::Real, fs::Int64)
 s2t(s::Int64, fs::Int64)
 ```
 
-## statistics
+## Statistics
 
 ```@docs
 hildebrand_rule(x::AbstractVector)
@@ -196,6 +196,8 @@ prank(x::AbstractVector)
 linreg(x::AbstractVector, y::AbstractVector)
 s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false)
 s2_cor(s1::AbstractVector, s2::AbstractVector)
+dprime(p1::Real, p2::Real)
+norminv(x::Real)
 ```
 
 ## EEG I/O
@@ -465,6 +467,7 @@ plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractA
 eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
 plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
@@ -492,20 +495,4 @@ eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, chan
 eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String="", layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 plot_empty()
-```
-
-## Neurostimulation
-
-```@docs
-tes_dose(current::Real, pad_area::Real, duration::Int64)
-```
-
-## NIRS
-
-```@docs
-```
-
-## MRI
-
-```@docs
 ```

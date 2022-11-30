@@ -3198,11 +3198,11 @@ Convert sample number to time.
   * `t::Float64`: time in s
 
 
-<a id='statistics'></a>
+<a id='Statistics'></a>
 
-<a id='statistics-1'></a>
+<a id='Statistics-1'></a>
 
-## statistics
+## Statistics
 
 <a id='NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}' href='#NeuroAnalyzer.hildebrand_rule-Tuple{AbstractVector}'>#</a>
 **`NeuroAnalyzer.hildebrand_rule`** &mdash; *Method*.
@@ -3795,6 +3795,48 @@ Named tuple containing:
   * `tt::Tuple{Float64, String}`: t-statistics
   * `df::Int64`: degrees of freedom
   * `p::Float64`: p-value
+
+<a id='NeuroAnalyzer.dprime-Tuple{Real, Real}' href='#NeuroAnalyzer.dprime-Tuple{Real, Real}'>#</a>
+**`NeuroAnalyzer.dprime`** &mdash; *Method*.
+
+
+
+```julia
+dprime(p1::Real, p2::Real)
+```
+
+Calculate d' and response bias for two proportions.
+
+**Arguments**
+
+  * `p1::Real`
+  * `p2::Real`
+
+**Returns**
+
+Named tuple containing:
+
+  * `dprime::Float64`
+  * `rb::Float64`: response bias
+
+<a id='NeuroAnalyzer.norminv-Tuple{Real}' href='#NeuroAnalyzer.norminv-Tuple{Real}'>#</a>
+**`NeuroAnalyzer.norminv`** &mdash; *Method*.
+
+
+
+```julia
+norminv(x::Real)
+```
+
+Convert probability to a normal distribution with a peak at 0.5.
+
+**Arguments**
+
+  * `x::Real`
+
+**Returns**
+
+  * `z::Float64`
 
 
 <a id='EEG-I/O'></a>
@@ -9205,6 +9247,35 @@ Plot PSD (power spectrum density).
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroAnalyzer.plot_psd-Tuple{Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd-Tuple{Vector{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_psd`** &mdash; *Method*.
+
+
+
+```julia
+plot_psd(s_frq, s_pow; <keyword arguments>)
+```
+
+Plot multi-channel PSD (power spectrum density).
+
+**Arguments**
+
+  * `s_frq::Vector{Float64}`: frequencies
+  * `s_pow::Matrix{Float64}`: powers
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `norm::Bool=true`: whether powers are normalized to dB
+  * `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limit for the Y-axis
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
 <a id='NeuroAnalyzer.plot_psd_avg-Tuple{Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_psd_avg-Tuple{Vector{Float64}, Matrix{Float64}}'>#</a>
 **`NeuroAnalyzer.plot_psd_avg`** &mdash; *Method*.
 
@@ -10021,52 +10092,4 @@ Return an empty plot, useful for filling matrices of plots.
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
-
-
-<a id='Neurostimulation'></a>
-
-<a id='Neurostimulation-1'></a>
-
-## Neurostimulation
-
-<a id='NeuroAnalyzer.tes_dose-Tuple{Real, Real, Int64}' href='#NeuroAnalyzer.tes_dose-Tuple{Real, Real, Int64}'>#</a>
-**`NeuroAnalyzer.tes_dose`** &mdash; *Method*.
-
-
-
-```julia
-tes_dose(current, pad_area, duration)
-```
-
-Converts `current`, `pad_area` and stimulation `duration` into `charge`, `current_density` and `charge_ density`.
-
-**Arguments**
-
-  * `current::Real`: stimulation current [mA]
-  * `pad_area::Real`: electrode pad area [cm^2]
-  * `duration::Int64`: stimulation duration [s]
-
-**Returns**
-
-  * `charge::Float64`: charge [C]
-  * `current_density::Float64`: current density [A/m^2]
-  * `charge_density::Float64`: delibvered charge density [kC/m^2]
-
-**Source**
-
-Chhatbar PY, George MS, Kautz SA, Feng W. Quantitative reassessment of safety limits of tDCS for two animal studies. Brain Stimulation. 2017;10(5):1011–2.
-
-
-<a id='NIRS'></a>
-
-<a id='NIRS-1'></a>
-
-## NIRS
-
-
-<a id='MRI'></a>
-
-<a id='MRI-1'></a>
-
-## MRI
 

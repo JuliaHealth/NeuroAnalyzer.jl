@@ -52,6 +52,7 @@ eeg_import_bv("test/eeg-test-bv.vhdr");
 print(rpad("Save HDF5", 36))
 tmp = tempname()
 eeg_save(edf, file_name=tmp);
+tmp = tempname()
 @time eeg_save(edf, file_name=tmp);
 print(rpad("Load HDF5", 36))
 eeg_load(tmp);
