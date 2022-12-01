@@ -1,6 +1,6 @@
 ![NeuroAnalyzer.jl](images/neuroanalyzer.png)
 
-[![DOI: 10.5281](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648)
+[![DOI: 10.5281/zenodo.7372648](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648)
 
 Welcome fellow researcher!
 
