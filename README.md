@@ -36,7 +36,7 @@ This [roadmap](https://neuroanalyzer.org/roadmap.html) of the future development
 
 ## Performance
 
-For testing performance between individual machines, a complete set of benchmarks is available [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md).
+For testing performance between individual machines, a [complete set of benchmarks](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Benchmarking.md) is available.
 
 ## Plugins (extensions)
 
