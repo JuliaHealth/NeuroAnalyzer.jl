@@ -14,7 +14,7 @@ Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other 
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
-NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org)
+NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
 ## Documentation
 
@@ -24,7 +24,7 @@ Changelog and commit details are available at [https://neuroanalyzer.org](https:
 
 ## Tutorials
 
-NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
+NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials).
 
 ## Requirements
 

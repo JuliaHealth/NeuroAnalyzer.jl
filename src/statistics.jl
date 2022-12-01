@@ -723,3 +723,24 @@ Convert probability to a normal distribution with a peak at 0.5.
 function norminv(x::Real)
     return quantile(Normal(), x)
 end
+
+"""
+    dranks(x, nbins)
+
+Calculate ranks scaled in 0..nbins. Number of bins is calculated automatically using Sturges' formula.
+
+# Arguments
+
+- `x::AbstractArray`: some continuous variable such as reaction time (the time it takes to indicate the response)
+- `nbins::Int64`: number of bins, default is Sturges' formula
+
+# Returns
+
+- `caf::Array{Float64}`
+"""
+function dranks(x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x))))
+    # scale ranks in 0..1
+    ranks = tiedrank(x) ./ length(x)
+    # scale ranks in 0..nbins
+    return ceil.(Int64, ranks .* nbins)
+end

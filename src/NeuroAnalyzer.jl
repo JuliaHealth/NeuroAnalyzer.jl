@@ -255,6 +255,7 @@ export s2_cmp
 export s2_cor
 export dprime
 export norminv
+export dranks
 
 include("eeg_io.jl")
 export eeg_export_csv

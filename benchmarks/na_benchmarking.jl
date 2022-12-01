@@ -47,8 +47,8 @@ print(rpad("Import Digitrack", 36))
 eeg_import_digitrack("test/eeg-test-digitrack.txt");
 @time eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import BrainVision", 36))
-eeg_import_bv("test/eeg-test-bv.vhdr");
-@time eeg_import_bv("test/eeg-test-bv.vhdr");
+eeg_import_bv("test/eeg-test-bv.vhdr")
+@time eeg_import_bv("test/eeg-test-bv.vhdr")
 print(rpad("Save HDF5", 36))
 tmp = tempname()
 eeg_save(edf, file_name=tmp);
@@ -369,3 +369,33 @@ eeg_psdslope(e10);
 print(rpad("eeg_apply()", 36))
 eeg_apply(e10, f="mean(eeg, dims=1)", channel=1:4);
 @time eeg_apply(e10, f="mean(eeg, dims=1)", channel=1:4);
+print(rpad("Normalize", 36))
+eeg_normalize(e10, method=:zscore);
+@time eeg_normalize(e10, method=:zscore);
+print(rpad("Demean", 36))
+eeg_demean(e10);
+@time eeg_demean(e10);
+print(rpad("Taper", 36))
+eeg_taper(e10, taper=generate_window(:hann, eeg_epoch_len(e10)));
+@time eeg_taper(e10, taper=generate_window(:hann, eeg_epoch_len(e10)));
+print(rpad("Derivative", 36))
+eeg_derivative(e10);
+@time eeg_derivative(e10);
+print(rpad("Detrend", 36))
+eeg_detrend(e10, type=:constant);
+@time eeg_detrend(e10, type=:constant);
+print(rpad("Wiener denoising", 36))
+eeg_denoise_wien(e10);
+@time eeg_denoise_wien(e10);
+print(rpad("Generate PCA", 36))
+eeg_pca(e10, n=4);
+@time eeg_pca(e10, n=4);
+print(rpad("Generate ICA", 36))
+eeg_ica(e10, n=15, tol=1.0);
+@time eeg_ica(e10, n=15, tol=1.0);
+i, i_mw = eeg_ica(e10, n=15, tol=1.0)
+e10_ica = eeg_add_component(e10, c=:ica, v=i)
+eeg_add_component!(e10_ica, c=:ica_mw, v=i_mw)
+print(rpad("Remove ICA", 36))
+eeg_ica_reconstruct!(e10_ica, ic=1);
+@time eeg_ica_reconstruct!(e10_ica, ic=1);
