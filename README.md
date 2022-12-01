@@ -20,15 +20,15 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html) formats.
 
-Changelog and commit details are available at [https://neuroanalyzer.org](https://neuroanalyzer.org/changelog.html).
+Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
 ## Tutorials
 
-NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials).
+NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org#tutorials](https://neuroanalyzer.org#tutorials).
 
 ## Requirements
 
-See [https://neuroanalyzer.org](https://neuroanalyzer.org/requirements.html) for more details.
+See [https://neuroanalyzer.org/requirements.html](https://neuroanalyzer.org/requirements.html) for more details.
 
 ## What's next
 
@@ -40,7 +40,7 @@ For testing performance between individual machines, a complete set of benchmark
 
 ## Plugins (extensions)
 
-See [https://neuroanalyzer.org](https://neuroanalyzer.org/plugins.html) for more details.
+See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
 
 ## Known bugs
 
