@@ -1,6 +1,6 @@
-![](images/neuroanalyzer.png)
+![NeuroAnalyzer.jl](images/neuroanalyzer.png)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648) 
+[![DOI: 10.5281](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648)
 
 Welcome fellow researcher!
 
@@ -14,7 +14,7 @@ Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other 
 
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
-NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org)
+NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
 ## Documentation
 
@@ -24,7 +24,7 @@ Changelog and commit details are available at [https://neuroanalyzer.org](https:
 
 ## Tutorials
 
-NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials)
+NeuroAnalyzer tutorials are available at [https://neuroanalyzer.org](https://neuroanalyzer.org#tutorials).
 
 ## Requirements
 
@@ -52,7 +52,7 @@ If you have contributed, please add your name below.
 
 [Adam Wysokiński](mailto:adam.wysokinski@umed.lodz.pl)
 
-![umed](images/umed.png)
+![Medical University of Lodz](images/umed.png)
 
 ## License
 
