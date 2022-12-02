@@ -145,7 +145,7 @@ export s_detrend
 export s_demean
 export s_normalize_zscore
 export s_normalize_minmax
-export s_normalize_max
+export s_normalize_n
 export s_normalize_log
 export s_add_noise
 export s_resample
