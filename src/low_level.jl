@@ -1436,6 +1436,25 @@ function s_normalize_minmax(signal::AbstractArray)
 end
 
 """
+    s_normalize_n(signal, n)
+
+Normalize in [0, n].
+
+# Arguments
+
+- `signal::AbstractArray`
+
+# Returns
+
+- `s_normalized::AbstractArray`
+"""
+function s_normalize_n(signal::AbstractArray, n::Real=1)
+    max_x = maximum(signal)
+    min_x = minimum(signal)
+    return n .* (signal .- min_x) ./ (max_x - min_x)
+end
+
+"""
     s_normalize_max(signal)
 
 Normalize in [0, +1].
@@ -1449,8 +1468,9 @@ Normalize in [0, +1].
 - `s_normalized::AbstractArray`
 """
 function s_normalize_max(signal::AbstractArray)
-    mx = maximum(signal)
-    return signal ./ mx
+    max_x = maximum(signal)
+    min_x = minimum(signal)
+    return (signal .- min_x) ./ (max_x - min_x)
 end
 
 """
@@ -3909,22 +3929,23 @@ function s_normalize_perc(signal::AbstractArray)
 end
 
 """
-    s_normalize(signal; method)
+    s_normalize(signal, n; method)
 
 Normalize.
 
 # Arguments
 
 - `signal::AbstractArray`
+- `n::Real`
 - `method::Symbol`: :zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none
 
 # Returns
 
 - `s_normalized::Vector{Float64}`
 """
-function s_normalize(signal::AbstractArray; method::Symbol)
+function s_normalize(signal::AbstractArray, n::Real=1; method::Symbol)
 
-    _check_var(method, [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :none], "method")
+    _check_var(method, [:zscore, :minmax, :max, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :none], "method")
 
     if method === :zscore
         return s_normalize_zscore(signal)
@@ -3950,6 +3971,8 @@ function s_normalize(signal::AbstractArray; method::Symbol)
         return s_normalize_gauss(signal)
     elseif method === :invroot
         return s_normalize_invroot(signal)
+    elseif method === :n
+        return s_normalize_n(signal, n)
     elseif method === :none
         return signal
     end
