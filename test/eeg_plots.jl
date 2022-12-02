@@ -78,14 +78,20 @@ p = eeg_plot_topo(e10, segment=(1, 2), amethod=:median)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_topo(e10, segment=(1, 2), amethod=:median, imethod=:nn)
 
-stats = rand(19, 10)
-p = eeg_plot_stats(e10, stats, plot_by=:channels, channel=1:10, epoch=1, type=:hist)
+stats = rand(2, 10)
+p = plot_histogram(stats[1, :])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_stats(e10, stats, plot_by=:channels, channel=1:10, epoch=1, type=:kd)
+p = plot_bar(stats[:, 1], labels=["1", "2"])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_stats(e10, stats, plot_by=:channels, channel=1:10, epoch=1, type=:bar)
+p = plot_line(stats[:, 1], labels=["1", "2"])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_stats(e10, stats, plot_by=:epochs, channel=1:10, epoch=1:10, type=:line)
+p = plot_dots([stats[1, :], stats[2, :]], labels=["1", "2"])
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = plot_paired([stats[1, :], stats[2, :]], labels=["1", "2"])
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = plot_polar(stats')
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = plot_stack(rand(100, 10), 1:100)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p1 = eeg_plot(e10, epoch=1, xlabel="")

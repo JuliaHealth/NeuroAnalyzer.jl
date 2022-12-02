@@ -544,14 +544,15 @@ function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vec
     return s_normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
 end
 
-function _dict2labeled_matrix(d::Dict)
+function _dict2labeled_matrix(d::Dict; rev::Bool=true)
     l = Vector{String}()
     v = Vector{Vector{Float64}}()
     for (kk, vv) in d
         push!(l, kk)
         push!(v, vv)
     end
-    return l, v
+    rev == true && return reverse!(l), reverse!(c)
+    rev == false && return l, c
 end
 
 function _labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{Float64}})

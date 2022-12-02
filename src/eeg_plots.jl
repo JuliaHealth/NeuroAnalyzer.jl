@@ -601,6 +601,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     labels = _gen_clabels(c)[c_idx]
+    length(c_idx) == 1 && (labels = [labels])
 
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg)
@@ -1801,7 +1802,7 @@ function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::A
     size(s_pow, 2) == length(s_t) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and time vector $(length(s_t)) do not match."))
     size(s_pow, 1) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and frequencies vector $(length(s_frq)) do not match."))
 
-    palette = mono == true ? :grays : :darktest
+    pal = mono == true ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
 
     p = Plots.heatmap(s_t,
@@ -1815,7 +1816,7 @@ function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::A
                       title=title,
                       size=(1200, 800),
                       left_margin=20Plots.px,
-                      seriescolor=palette,
+                      seriescolor=pal,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -1854,7 +1855,7 @@ function plot_spectrogram(s_ch::Vector{String}, s_frq::Vector{Float64}, s_pow::A
     size(s_pow, 1) == length(s_ch) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and channels vector $(length(s_ch)) do not match."))
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and frequencies vector $(length(s_frq)) do not match."))
 
-    palette = mono == true ? :grays : :darktest
+    pal = mono == true ? :grays : :darktest
     cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
     
     ch = collect(1:length(s_ch)) .- 0.5
@@ -1868,7 +1869,7 @@ function plot_spectrogram(s_ch::Vector{String}, s_frq::Vector{Float64}, s_pow::A
                       title=title,
                       size=(1200, 800),
                       left_margin=20Plots.px,
-                      seriescolor=:darktest,
+                      seriescolor=pal,
                       colorbar_title=cb_title,
                       titlefontsize=8,
                       xlabelfontsize=8,
@@ -2531,7 +2532,7 @@ end
 """
     plot_histogram(signal; <keyword arguments>)
 
-Plot histogram of `signal`.
+Plot histogram.
 
 # Arguments
 
@@ -2587,6 +2588,537 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::Strin
                    kwargs...)
     p = Plots.vline!([round(mean(signal), digits=1)], lw=1, ls=:dot, lc=:black, label="mean")
     p = Plots.vline!([round(median(signal), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median")
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_bar(signal; <keyword arguments>)
+
+Bar plot.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `labels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_bar(signal::AbstractVector; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    length(signal) == length(labels) || throw(ArgumentError("signal length ($(length(signal))) must be equal to labels length ($(length(labels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :lightblue
+
+    p = Plots.plot(signal,
+                   seriestype=:bar,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_line(signal; <keyword arguments>)
+
+Line plot.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `labels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_line(signal::AbstractVector; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    length(signal) == length(labels) || throw(ArgumentError("signal length ($(length(signal))) must be equal to x-ticks length ($(length(labels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(signal,
+                   seriestype=:line,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_line(signal; <keyword arguments>)
+
+Line plot.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `labels::Vector{String}`: signal rows labels
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_line(signal::AbstractArray; labels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to labels length ($(length(labels)))."))
+    size(signal, 2) == length(xlabels) || throw(ArgumentError("Number of signal columns ($(size(signal, 2))) must be equal to x-ticks length ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(signal[1, :],
+                   seriestype=:line,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=:topright,
+                   label=labels[1],
+                   xticks=(1:length(xlabels), xlabels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+    for idx in 2:size(signal, 1)
+        p = Plots.plot!(signal[idx, :],
+                        seriestype=:line,
+                        color=idx,
+                        label=labels[idx])
+    end
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_box(signal; <keyword arguments>)
+
+Box plot.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `labels::Vector{String}`: group labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_box(signal::AbstractArray; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(signal',
+                   seriestype=:box,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_violin(signal; <keyword arguments>)
+
+Violin plot.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `labels::Vector{String}`: group labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_violin(signal::AbstractArray; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(signal',
+                   seriestype=:violin,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_dots(signal; <keyword arguments>)
+
+Dots plot.
+
+# Arguments
+
+- `signal::Vector{Vector{Float64}}`
+- `labels::Vector{String}`: group labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+
+    p = Plots.plot(size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs...)
+    for idx1 in 1:length(labels)
+        for idx2 in 1:length(signal[idx1])
+            if mono == false
+                p = Plots.scatter!((idx1, signal[idx1][idx2]),
+                                   color=idx1)
+            else
+                p = Plots.scatter!((idx1, signal[idx1][idx2]),
+                                   color=:black)
+            end
+        end
+    end
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_paired(signal; <keyword arguments>)
+
+Plot paired data.
+
+# Arguments
+
+- `signal::Vector{Vector{Float64}}`
+- `labels::Vector{String}`: group labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+    ll = Vector{Int64}()
+    for idx in 1:length(labels)
+        push!(ll, length(signal[idx]))
+    end
+    length(unique(ll)) == 1 || throw(ArgumentError("Each group must have the same number of values."))
+
+    pal = mono == true ? :grays : :darktest
+
+    p = Plots.plot(size=(1200, 800),
+                   left_margin=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(labels), labels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs...)
+    for idx1 in 1:length(signal[1])
+        c_tmp = zeros(length(labels))
+        for idx2 in 1:length(labels)
+            c_tmp[idx2] = signal[idx2][idx1]
+        end
+        p = Plots.plot!(c_tmp,
+                        color=:black)
+    end
+    for idx1 in 1:length(labels)
+        for idx2 in 1:length(signal[idx1])
+            if mono == false
+                p = Plots.scatter!((idx1, signal[idx1][idx2]),
+                                   color=idx1)
+            else
+                p = Plots.scatter!((idx1, signal[idx1][idx2]),
+                                   color=:black)
+            end
+        end
+    end
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_polar(signal; <keyword arguments>)
+
+Polar plot.
+
+# Arguments
+
+- `signal::Union{AbstractVector, AbstractArray}`
+- `m::Bool=true`: plot mean value
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Bool=true, title::String="", mono::Bool=false, kwargs...)
+
+    length(m) > 2 && throw(ArgumentError("m must have exactly 2 values: phases and lengths."))
+    ndims(signal) > 1 && size(signal, 2) > 2 && throw(ArgumentError("signal must have exactly 2 columns: phases and lengths."))
+
+    pal = mono == true ? :grays : :darktest
+
+    if ndims(signal) == 1
+        p = Plots.plot([0, signal[1]], [0, 1],
+                       size=(800, 800),
+                       projection=:polar,
+                       left_margin=50Plots.px,
+                       right_margin=50Plots.px,
+                       bottom_margin=30Plots.px,
+                       legend=false,
+                       xticks=false,
+                       yticks=false, 
+                       title=title,
+                       color=:black,
+                       palette=pal,
+                       linewidth=0.5,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8;
+                       kwargs...)
+        for idx in 2:length(c)
+            p = Plots.plot!([0, signal[idx]], [0, 1],
+                            projection=:polar,
+                            color=:black)
+        end
+        if m == true
+            p = Plots.plot!([0, mean(signal)], [0, 1],
+                            lw=2,
+                            projection=:polar,
+                            color=:red)
+        end
+    else
+        p = Plots.plot([0, signal[1, 1]], [0, signal[1, 2]],
+                       size=(800, 800),
+                       projection=:polar,
+                       left_margin=50Plots.px,
+                       right_margin=50Plots.px,
+                       bottom_margin=30Plots.px,
+                       legend=false,
+                       xticks=false,
+                       yticks=false, 
+                       title=title,
+                       color=:black,
+                       palette=pal,
+                       linewidth=0.5,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=8,
+                       ytickfontsize=8;
+                       kwargs...)
+        for idx in 2:size(signal, 1)
+            p = Plots.plot!([0, signal[idx, 1]], [0, signal[idx, 2]],
+                            projection=:polar,
+                            color=:black)
+        end
+        if m == true
+            p = Plots.plot!([0, mean(signal[:, 1])], [0, mean(signal[:, 2])],
+                            lw=2,
+                            projection=:polar,
+                            color=:red)
+        end
+    end
+
+
+    Plots.plot(p)
+
+    return p
+end
+
+"""
+    plot_stack(signal; <keyword arguments>)
+
+Plot stacked data. Data are stacked by 3rd dimension.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `t::AbstractVector`: x-axis values
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_stack(signal::AbstractArray, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(signal) == 2 || throw(ArgumentError("signal must have 2 dimensions."))
+    length(t) == size(signal, 1) || throw(ArgumentError("Number of signal rows ($(size(signal, 1))) must be equal to length of x-axis values ($(length(t)))."))
+
+    pal = mono == true ? :grays : :darktest
+
+    p = Plots.heatmap(t,
+                      1:size(signal, 2),
+                      signal,
+                      size=(1200, 800),
+                      left_margin=20Plots.px,
+                      legend=false,
+                      xticks=_ticks(t),
+                      yticks=round.(Int64, range(1, size(signal, 2), length=10)),
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      seriescolor=pal,
+                      linewidth=0.5,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=8,
+                      ytickfontsize=8;
+                      kwargs...)
 
     Plots.plot(p)
 
@@ -3210,444 +3742,6 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
 end
 
 """
-    eeg_plot(eeg, c; <keyword arguments>)
-
-Plot channel/epoch data.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`: EEG object
-- `c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}`: component to plot
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=0`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: channel to display
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `plot_by::Symbol`: c values refer to: :labels, :channels or :epochs
-- `type::Symbol`: plot type:
-    - `:hist`: histogram
-    - `:kd`: kernel density
-    - `:bar`: bar plot
-    - `:heat`: heatmap; rows of `c` must be time points, columns must be either channels or epochs
-    - `:box`: box plot; `c` must contain ≥ 2 values per group
-    - `:violin`: violin plot; `c` must contain ≥ 2 values per group
-    - `:paired`: paired
-    - `:polar`: polar
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-
-# Notes
-
-Labeled matrix is a dictionary of labels and vectors associated with these labels. This way plotting of vectors non-equal length is possible. Labeled matrix is created using `_labeled_matrix2dict(l::Vector{String}, v::Vector{Vector{<:Real}})` and converted back to keys and values using `_dict2labeled_matrix(d::Dict)`.
-
-For `:polar plot` if `c` is a vector, than it contains phases in radians. If `c` is a two column matrix, than first column contains phases in radians and second column contains lengths.
-"""
-function eeg_plot_stats(eeg::NeuroAnalyzer.EEG, c::Union{Vector{<:Real}, Matrix{<:Real}, Symbol, Dict}; channel::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", plot_by::Symbol, type::Symbol, mono::Bool=false, kwargs...)
-
-    _check_var(plot_by, [:channels, :epochs, :labels], "plot_by")
-    _check_var(type, [:hist, :kd, :line, :bar, :box, :violin, :dots, :paired, :polar, :heat], "type")
-
-    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
-
-    if plot_by === :channels
-        channel == 0 && throw(ArgumentError("channel must be specified for plot by :channels."))
-        _check_channels(eeg, channel)
-        labels = eeg_labels(eeg)[channel]
-        if epoch != 0
-            _check_epochs(eeg, epoch)
-            if ndims(c) == 2
-                c = c[channel, epoch]
-            else
-                length(c) < length(channel) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of channels ($(length(channel)))"))
-                c = c[channel]
-            end
-        end
-    elseif plot_by === :epochs
-        epoch == 0 && throw(ArgumentError("epoch must be specified for plot by :epochs."))
-        _check_epochs(eeg, epoch)
-        labels = "e" .* string.(collect(epoch))
-        if channel != 0
-            _check_channels(eeg, channel)
-            if ndims(c) == 2
-                c = c[channel, epoch]
-            else
-                length(c) < length(epoch) && throw(ArgumentError("Length of c ($(length(c))) does not match the number of epochs ($(length(epoch)))"))
-                c = c[epoch]
-            end
-        end
-    elseif plot_by === :labels
-        if typeof(c) <: Dict
-            l_tmp, c = _dict2labeled_matrix(c)
-            l_tmp = reverse!(l_tmp)
-            c = reverse!(c)
-            labels == [""] && (labels = l_tmp)
-            length(c) == length(labels) || throw(ArgumentError("Number of rows of c ($(length(c))) does not match number of labels ($(length(labels)))"))
-        else
-            if ndims(c) == 1
-                length(c) == length(labels) || throw(ArgumentError("Length c ($(length(c))) does not match the number of labels ($(length(epoch)))"))
-            else
-                size(c, 1) == length(labels) || throw(ArgumentError("Number of rows of c ($(size(c, 1))) does not match number of labels ($(length(labels)))"))
-            end
-        end
-    end
-
-    pal = mono == true ? :grays : :darktest
-
-    if type in [:bar, :hist, :kd]
-        if plot_by === :epochs
-            length(channel) > 1 && throw(ArgumentError("For :bar, :hist and :kd plots and plot by :epochs only one channel may be specified."))
-            length(epoch) == 1 && throw(ArgumentError("More than 1 epoch must be specified."))
-        elseif plot_by === :channels
-            plot_by === :channels && length(epoch) > 1 && throw(ArgumentError("For :bar, :hist and :kd plots and plot by :channels only one epoch may be specified."))
-            length(channel) == 1 && throw(ArgumentError("More than 1 channel must be specified."))
-        end
-    end
-
-    if type === :hist
-        p = plot_histogram(c,
-                           type=:hist,
-                            mono=mono,
-                            xlabel=xlabel,
-                            title=title;
-                            kwargs)
-    elseif type === :kd
-        p = plot_histogram(c,
-                           type=:kd,
-                           mono=mono,
-                           xlabel=xlabel,
-                           title=title;
-                           kwargs)
-    elseif type === :line
-        if ndims(c) == 1
-            color = mono == true ? :lightgrey : :lightblue
-            p = Plots.plot(c,
-                           seriestype=:line,
-                           size=(1200, 800),
-                           left_margin=20Plots.px,
-                           legend=false,
-                           xticks=(1:length(labels), labels),
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           color=color,
-                           title=title,
-                           palette=pal,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8,
-                           kwargs=kwargs)
-        else
-            if plot_by === :channels
-                p = Plots.plot(c[:, 1],
-                               seriestype=:line,
-                               size=(1200, 800),
-                               left_margin=20Plots.px,
-                               label="e 1",
-                               legend=true,
-                               xticks=(1:length(labels), labels),
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               color=1,
-                               title=title,
-                               palette=pal,
-                               titlefontsize=8,
-                               xlabelfontsize=8,
-                               ylabelfontsize=8,
-                               xtickfontsize=8,
-                               ytickfontsize=8,
-                               kwargs=kwargs)
-                for idx in 2:size(c, 2)
-                    p = Plots.plot!(c[:, idx],
-                                    seriestype=:line,
-                                    label="e $idx",
-                                    color=idx)
-                end
-            elseif plot_by === :epochs
-                p = Plots.plot(c[1, :],
-                               seriestype=:line,
-                               size=(1200, 800),
-                               left_margin=20Plots.px,
-                               label="ch 1",
-                               legend=true,
-                               xticks=(1:length(labels), labels),
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               color=1,
-                               title=title,
-                               palette=pal,
-                               titlefontsize=8,
-                               xlabelfontsize=8,
-                               ylabelfontsize=8,
-                               xtickfontsize=8,
-                               ytickfontsize=8,
-                               kwargs=kwargs)
-                for idx in 2:size(c, 1)
-                    p = Plots.plot!(c[idx, :],
-                                    seriestype=:line,
-                                    label="ch $idx",
-                                    color=idx)
-                end
-            else
-                p = Plots.plot(c,
-                               seriestype=:line,
-                               size=(1200, 800),
-                               left_margin=20Plots.px,
-                               legend=false,
-                               xticks=(1:length(labels), labels),
-                               xlabel=xlabel,
-                               ylabel=ylabel,
-                               color=1,
-                               title=title,
-                               palette=pal,
-                               titlefontsize=8,
-                               xlabelfontsize=8,
-                               ylabelfontsize=8,
-                               xtickfontsize=8,
-                               ytickfontsize=8,
-                               kwargs=kwargs)
-            end
-        end
-    elseif type === :bar
-        color = mono == true ? :lightgrey : :lightblue
-        p = Plots.plot(c,
-                       seriestype=:bar,
-                       size=(1200, 800),
-                       left_margin=20Plots.px,
-                       legend=false,
-                       xticks=(1:length(labels), labels),
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       color=color,
-                       palette=pal,
-                       linewidth=0.5,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8,
-                       kwargs=kwargs)
-    elseif type in [:box, :violin]
-        color = mono == true ? :lightgrey : :auto
-        if plot_by !== :labels
-            p = Plots.plot(c',
-                           seriestype=type,
-                           size=(1200, 800),
-                           left_margin=20Plots.px,
-                           legend=false,
-                           xticks=(1:length(labels), labels),
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           title=title,
-                           color=color,
-                           palette=pal,
-                           linewidth=0.5,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8;
-                           kwargs...)
-        else
-            p = Plots.plot(c,
-                           seriestype=type,
-                           size=(1200, 800),
-                           left_margin=20Plots.px,
-                           legend=false,
-                           xticks=(1:length(labels), labels),
-                           xlabel=xlabel,
-                           ylabel=ylabel,
-                           title=title,
-                           color=color,
-                           palette=pal,
-                           linewidth=0.5,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8;
-                           kwargs...)
-        end
-    elseif type === :dots
-        p = Plots.plot(size=(1200, 800),
-                       left_margin=20Plots.px,
-                       legend=false,
-                       xticks=(1:length(labels), labels),
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       palette=pal,
-                       linewidth=0.5,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8;
-                       kwargs...)
-        for idx1 in 1:length(labels)
-            for idx2 in 1:length(c[idx1])
-                if mono == false
-                    p = Plots.scatter!((idx1, c[idx1][idx2]),
-                                       color=idx1)
-                else
-                    p = Plots.scatter!((idx1, c[idx1][idx2]),
-                                       color=:black)
-                end
-            end
-        end
-    elseif type === :paired
-        ll = Vector{Int64}()
-        for idx in 1:length(labels)
-            push!(ll, length(c[idx]))
-        end
-        length(unique(ll)) == 1 || throw(ArgumentError("For :paired plot each label must have the same number of values."))
-        p = Plots.plot(size=(1200, 800),
-                       left_margin=20Plots.px,
-                       legend=false,
-                       xticks=(1:length(labels), labels),
-                       xlabel=xlabel,
-                       ylabel=ylabel,
-                       title=title,
-                       palette=pal,
-                       linewidth=0.5,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8;
-                       kwargs...)
-        for idx1 in 1:length(labels)
-            for idx2 in 1:length(c[idx1])
-                if mono == false
-                    p = Plots.scatter!((idx1, c[idx1][idx2]),
-                                       color=idx2)
-                else
-                    p = Plots.scatter!((idx1, c[idx1][idx2]),
-                                       color=:black)
-                end
-            end
-        end
-        for idx1 in 1:length(c[1])
-            c_tmp = zeros(length(labels))
-            for idx2 in 1:length(labels)
-                c_tmp[idx2] = c[idx2][idx1]
-            end
-            p = Plots.plot!(c_tmp,
-                            color=:black)
-        end
-    elseif type === :polar
-        if ndims(c) == 1
-            p = Plots.plot([0, c[1]], [0, 1],
-                           size=(800, 800),
-                           projection=:polar,
-                           left_margin=50Plots.px,
-                           right_margin=50Plots.px,
-                           bottom_margin=30Plots.px,
-                           legend=false,
-                           xticks=false,
-                           yticks=false, 
-                           title=title,
-                           color=:black,
-                           palette=pal,
-                           linewidth=0.5,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8;
-                           kwargs...)
-            for idx in 2:length(c)
-                p = Plots.plot!([0, c[idx]], [0, 1],
-                                projection=:polar,
-                                color=:black)
-            end
-        else
-            size(c, 2) > 2 && throw(ArgumentError("c must have exactly 2 columns: phases and lengths."))
-            p = Plots.plot([0, c[1, 1]], [0, c[1, 2]],
-                           size=(800, 800),
-                           projection=:polar,
-                           left_margin=50Plots.px,
-                           right_margin=50Plots.px,
-                           bottom_margin=30Plots.px,
-                           legend=false,
-                           xticks=false,
-                           yticks=false, 
-                           title=title,
-                           color=:black,
-                           palette=pal,
-                           linewidth=0.5,
-                           titlefontsize=8,
-                           xlabelfontsize=8,
-                           ylabelfontsize=8,
-                           xtickfontsize=8,
-                           ytickfontsize=8;
-                           kwargs...)
-            for idx in 2:size(c, 1)
-                p = Plots.plot!([0, c[idx, 1]], [0, c[idx, 2]],
-                                projection=:polar,
-                                color=:black)
-            end
-        end
-    elseif type === :heat
-        ndims(c) == 1 && throw(ArgumentError("For :heat plot data must have 2 dimensions."))
-        plot_by === :labels && throw(ArgumentError("For :heat plot_by :labels is not available."))
-        if plot_by === :epochs
-            c = @views c[:, epoch]
-            size(c, 2) == length(epoch) || throw(ArgumentError("Number of columns in c ($(size(c, 2))) must be equal to number of epochs ($length(epoch))."))
-            p = Plots.heatmap(eeg.eeg_epochs_time,
-                              epoch,                              
-                              c,
-                              size=(1200, 800),
-                              left_margin=20Plots.px,
-                              legend=false,
-                              xticks=_ticks(eeg.eeg_epochs_time),
-                              yticks=round.(Int64, range(1, epoch[end], length=10)),
-                              xlabel=xlabel,
-                              ylabel=ylabel,
-                              title=title,
-                              palette=pal,
-                              linewidth=0.5,
-                              titlefontsize=8,
-                              xlabelfontsize=8,
-                              ylabelfontsize=8,
-                              xtickfontsize=8,
-                              ytickfontsize=8;
-                              kwargs...)
-        elseif plot_by === :channels
-            c = @views c[:, channel]
-            size(c, 2) == length(channel) || throw(ArgumentError("Number of columns in c ($(size(c, 2))) must be equal to number of channels ($length(channel))."))
-            p = Plots.heatmap(channel,
-                              eeg.eeg_epochs_time,
-                              c,
-                              size=(1200, 800),
-                              left_margin=20Plots.px,
-                              legend=false,
-                              xticks=_ticks(eeg.eeg_epochs_time),
-                              yticks=round.(Int64, range(1, channel[end], length=10)),
-                              title=title,
-                              palette=pal,
-                              linewidth=0.5,
-                              titlefontsize=8,
-                              xlabelfontsize=8,
-                              ylabelfontsize=8,
-                              xtickfontsize=8,
-                              ytickfontsize=8;
-                              kwargs...)
-        end
-    end
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
     plot_topo(c; <keyword arguments>)
 
 Plot topographical view.
@@ -3916,6 +4010,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
     labels = _gen_clabels(c)[c_idx]
+    length(c_idx) == 1 && (labels = [labels])
 
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg_tmp)
