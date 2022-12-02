@@ -2577,7 +2577,8 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, bins::Union{
                    fillcolor=:grey,
                    fillalpha=0.5,
                    linewidth=1,
-                   size=(600, 400),
+                   size=(800, 800),
+                   left_margin=30*Plots.px,
                    xaxis=(tickfontrotation=90),
                    margins=10Plots.px,
                    xticks=xticks,
@@ -2990,7 +2991,7 @@ Polar plot.
 # Arguments
 
 - `signal::Union{AbstractVector, AbstractArray}`
-- `m::Bool=true`: plot mean value
+- `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
@@ -2999,7 +3000,7 @@ Polar plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Bool=true, title::String="", mono::Bool=false, kwargs...)
+function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)
 
     length(m) > 2 && throw(ArgumentError("m must have exactly 2 values: phases and lengths."))
     ndims(signal) > 1 && size(signal, 2) > 2 && throw(ArgumentError("signal must have exactly 2 columns: phases and lengths."))
@@ -3019,23 +3020,15 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Bool=true, 
                        title=title,
                        color=:black,
                        palette=pal,
-                       linewidth=0.5,
+                       linewidth=0.2,
                        titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8;
+                       xtickfontsize=4,
+                       ytickfontsize=4;
                        kwargs...)
-        for idx in 2:length(c)
+        for idx in 2:length(signal)
             p = Plots.plot!([0, signal[idx]], [0, 1],
                             projection=:polar,
                             color=:black)
-        end
-        if m == true
-            p = Plots.plot!([0, mean(signal)], [0, 1],
-                            lw=2,
-                            projection=:polar,
-                            color=:red)
         end
     else
         p = Plots.plot([0, signal[1, 1]], [0, signal[1, 2]],
@@ -3050,26 +3043,23 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Bool=true, 
                        title=title,
                        color=:black,
                        palette=pal,
-                       linewidth=0.5,
+                       linewidth=0.2,
                        titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=8,
-                       ytickfontsize=8;
+                       xtickfontsize=4,
+                       ytickfontsize=4;
                        kwargs...)
         for idx in 2:size(signal, 1)
             p = Plots.plot!([0, signal[idx, 1]], [0, signal[idx, 2]],
                             projection=:polar,
                             color=:black)
         end
-        if m == true
-            p = Plots.plot!([0, mean(signal[:, 1])], [0, mean(signal[:, 2])],
-                            lw=2,
-                            projection=:polar,
-                            color=:red)
-        end
     end
-
+    if m != (0, 0)
+        p = Plots.plot!([0, m[1]], [0, m[2]],
+                        lw=2,
+                        projection=:polar,
+                        color=:red)
+    end
 
     Plots.plot(p)
 
@@ -4062,7 +4052,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
 end
 
 """
-    eeg_plot_compose(p; <keyword arguments>)
+    plot_compose(p; <keyword arguments>)
 
 Compose a complex plot of various plots contained in vector `p` using layout `layout`. Layout scheme is:
 - `(2, 2)`: 2 × 2 plots, regular layout
@@ -4073,14 +4063,13 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 - `p::Vector{Plots.Plot{Plots.GRBackend}}`: vector of plots
 - `layout::Union(Matrix{Any}, Tuple{Int64, Int64}}`: layout
 - `mono::Bool=false`: use color or grey palette
-- `title::String=""`: plot title
 - `kwargs`: optional arguments for `p` vector plots
 
 # Returns
 
 - `pc::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String="", layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
+function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 
     palette = mono == true ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
@@ -4092,7 +4081,7 @@ function eeg_plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; title::String=
                     framestyle=:none,
                     border=:none,
                     margins=0Plots.px)
-    pc = Plots.plot!(p..., title=title, layout=layout, palette=palette; kwargs...)
+    pc = Plots.plot!(p..., layout=layout, palette=palette; kwargs...)
     Plots.plot(pc)
 
     return pc

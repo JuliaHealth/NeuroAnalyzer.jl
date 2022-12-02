@@ -530,7 +530,7 @@ export plot_connections
 export eeg_plot_connections
 export plot_topo
 export eeg_plot_topo
-export eeg_plot_compose
+export plot_compose
 export plot_empty
 
 end # NeuroAnalyzer
