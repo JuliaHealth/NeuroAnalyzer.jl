@@ -2538,6 +2538,7 @@ Plot histogram.
 
 - `signal::AbstractVector`
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
+- `bins::Union{Int64, Symbol, AbstractVector}=(length(signal) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
 - `label::String=""`: channel label
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -2549,7 +2550,7 @@ Plot histogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_histogram(signal::AbstractVector; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(signal) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -2570,6 +2571,7 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, label::Strin
                    label=label,
                    title=title,
                    palette=pal,
+                   bins=bins,
                    grid=false,
                    linecolor=:black,
                    fillcolor=:grey,
