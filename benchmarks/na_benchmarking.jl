@@ -1,11 +1,13 @@
-# using BenchmarkTools
 using Wavelets
 using ContinuousWavelets
 
 #=
-@time na_benchmark();
-b = @benchmarkable na_benchmark() evals=20 samples=1
+using BenchmarkTools
+
+BenchmarkTools.DEFAULT_PARAMETERS.samples = 1
+b = @benchmarkable eeg_import_edf("test/eeg-test-edf.edf") evals=20
 run(b)
+
 =#
 
 @info "Reporting system data"

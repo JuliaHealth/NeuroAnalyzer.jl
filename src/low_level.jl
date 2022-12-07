@@ -1173,7 +1173,7 @@ function s2_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1,
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    @simd for idx in 1:length(lags)
+    @simd for idx in eachindex(lags)
         # no lag
         @inbounds @fastmath lags[idx] == 0 && (xcov[idx] = sum(signal1 .* signal2))
         # positive lag
@@ -1349,7 +1349,7 @@ function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0,
         t = collect(1:1:length(signal))        
         p = Polynomials.fit(t, signal, order)
         trend = zeros(length(signal))
-        for idx in 1:length(signal)
+        for idx in eachindex(signal)
             trend[idx] = p(t[idx])
         end
         return signal .- trend
@@ -1730,7 +1730,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         t = collect(0:1/fs:(length(signal) - 1) / fs)        
         p = Polynomials.fit(t, signal, order)
         s_filtered = zeros(length(signal))
-        @inbounds @simd for idx in 1:length(signal)
+        @inbounds @simd for idx in eachindex(signal)
             s_filtered[idx] = p(t[idx])
         end
         return _chop(s_filtered)
@@ -2313,8 +2313,8 @@ function s_ica_reconstruct(signal::AbstractArray; ica::AbstractArray, ica_mw::Ab
     typeof(ic) <: AbstractRange && (ic = collect(ic))
     if typeof(ic) == Vector{Int64}
         sort!(ic)
-        for idx in 1:length(ic)
-            (ic[idx] < 1 || ic[idx] > size(ica_mw, 2)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica_mw, 2))"))
+        for idx in ic
+            (idx < 1 || idx > size(ica_mw, 2)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica_mw, 2))"))
         end
     else
         (ic < 1 || ic > size(ica_mw, 2)) && throw(ArgumentError("ic must be ≥ 1 and ≤ $(size(ica_mw, 2))"))
@@ -2931,7 +2931,7 @@ function s_ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq
     demean == true && (signal = s_demean(signal))
     s_pow = zeros(length(s_frq), length(signal))
     s_ph = zeros(length(s_frq), length(signal))
-    @inbounds @simd for frq_idx in 1:length(s_frq)
+    @inbounds @simd for frq_idx in eachindex(s_frq)
         s = s_gfilter(signal, fs=fs, f=s_frq[frq_idx], gw=gw)
         s_pow[frq_idx, :] = abs.(hilbert(s)).^2
         s_ph[frq_idx, :] = angle.(hilbert(s))

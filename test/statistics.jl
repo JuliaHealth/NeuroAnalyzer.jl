@@ -47,6 +47,5 @@ _, _, c, _, _, _, _ = linreg(ones(100), zeros(100))
 @test dprime(0.5, 0.5) == (dprime=0.0, rb=-0.0)
 @test norminv(0.5) == 0.0
 @test dranks(1:4) == [1, 2, 3, 3]
-@test caf(1:4) == [1.0, 2.0, 3.5]
 
 true

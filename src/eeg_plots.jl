@@ -537,7 +537,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
                          linewidth=0.5,
                          linecolor=:black,
                          label=false)
-        for idx in 1:length(markers_desc)
+        for idx in eachindex(markers_desc)
             p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
@@ -676,7 +676,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
                          linewidth=0.5,
                          linecolor=:black,
                          label=false)
-        for idx in 1:length(markers_desc)
+        for idx in eachindex(markers_desc)
             p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
@@ -1982,7 +1982,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
                              linewidth=0.5,
                              linecolor=:black,
                              label=false)
-            for idx in 1:length(markers_desc)
+            for idx in eachindex(markers_desc)
                 p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
@@ -2136,7 +2136,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
                              linewidth=0.5,
                              linecolor=:black,
                              label=false)
-            for idx in 1:length(markers_desc)
+            for idx in eachindex(markers_desc)
                 p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
@@ -2242,7 +2242,7 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
     hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
     p = Plots.plot!(hd)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if idx in channel
             if selected != 0
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
@@ -2297,7 +2297,7 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
     end
 
     if labels == true
-        for idx in 1:length(locs[!, :labels])
+        for idx in eachindex(locs[!, :labels])
             if idx in channel
                 Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
@@ -2364,22 +2364,22 @@ function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64},
     end
 
     if labels == true
-        for idx in 1:length(locs[!, :labels])
+        for idx in eachindex(locs[!, :labels])
             if idx in channel
-                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
+                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), fontsize=font_size)
             end
             if idx in selected
-                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), textsize=font_size)
+                GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), fontsize=font_size)
             end
         end
     end
 
     if head_labels == true
-        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), textsize = font_size)
-        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), textsize = font_size)
-        GLMakie.text!(ax, "top", position=(0, 0, 1.025), textsize = font_size)
+        GLMakie.text!(ax, "Nz", position=(0, 1.025, 0), fontsize = font_size)
+        GLMakie.text!(ax, "Iz", position=(0, -1.025, 0), fontsize = font_size)
+        GLMakie.text!(ax, "LPA", position=(-1.025, 0, 0), fontsize = font_size)
+        GLMakie.text!(ax, "RPA", position=(1.025, 0, 0), fontsize = font_size)
+        GLMakie.text!(ax, "top", position=(0, 0, 1.025), fontsize = font_size)
     end
     fig
 
@@ -2896,8 +2896,8 @@ function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlab
                    xtickfontsize=8,
                    ytickfontsize=8;
                    kwargs...)
-    for idx1 in 1:length(labels)
-        for idx2 in 1:length(signal[idx1])
+    for idx1 in eachindex(labels)
+        for idx2 in eachindex(signal[idx1])
             if mono == false
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
                                    color=idx1)
@@ -2936,7 +2936,7 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
 
     size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
     ll = Vector{Int64}()
-    for idx in 1:length(labels)
+    for idx in eachindex(labels)
         push!(ll, length(signal[idx]))
     end
     length(unique(ll)) == 1 || throw(ArgumentError("Each group must have the same number of values."))
@@ -2958,16 +2958,16 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
                    xtickfontsize=8,
                    ytickfontsize=8;
                    kwargs...)
-    for idx1 in 1:length(signal[1])
+    for idx1 in eachindex(signal[1])
         c_tmp = zeros(length(labels))
-        for idx2 in 1:length(labels)
+        for idx2 in eachindex(labels)
             c_tmp[idx2] = signal[idx2][idx1]
         end
         p = Plots.plot!(c_tmp,
                         color=:black)
     end
-    for idx1 in 1:length(labels)
-        for idx2 in 1:length(signal[idx1])
+    for idx1 in eachindex(labels)
+        for idx2 in eachindex(signal[idx1])
             if mono == false
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
                                    color=idx1)
@@ -3493,7 +3493,7 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, Abst
     end
     loc_x, loc_y = _locnorm(loc_x, loc_y)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if idx in channel
             p = Plots.plot!((loc_x[idx], loc_y[idx]),
                             color=:black,
@@ -3506,7 +3506,7 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, Abst
         end
     end
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if idx in channel
             Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(string(weights[idx]), pointsize=font_size)))
         end
@@ -3655,7 +3655,7 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     end
     loc_x, loc_y = _locnorm(loc_x, loc_y)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if idx in channel
             p = Plots.plot!((loc_x[idx], loc_y[idx]),
                             color=:gray,
@@ -3669,7 +3669,7 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     end
 
     if labels == true
-        for idx in 1:length(locs[!, :labels])
+        for idx in eachindex(locs[!, :labels])
             if idx in channel
                 Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
@@ -3679,10 +3679,7 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
     p = Plots.plot!(hd)
 
-    m_tmp = s_normalize_max(connections)
-
-#    loc_x = loc_x[channel]
-#    loc_y = loc_y[channel]
+    m_tmp = s_normalize_n(connections)
 
     for idx1 in 1:size(connections, 1)
         for idx2 in 1:size(connections, 1)

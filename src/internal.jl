@@ -19,42 +19,42 @@ _pl(x::Real) = x > 1 ? "s" : ""
 _get_range(signal::Union{AbstractVector, AbstractArray}) = round(abs(minimum(signal)) + abs(maximum(signal)), digits=0)
 
 function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange})
-    for idx in 1:length(channel)
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    for idx in channel
+        (idx < 1 || idx > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 end
 
 function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, type::Symbol)
     channels = eeg_channel_idx(eeg, type=type)
-    for idx in 1:length(channel)
-        channel[idx] in channels || throw(ArgumentError("Channel $(channel[idx]) does not match type: $(uppercase(string(type))) signal channels."))
-        (channel[idx] < 1 || channel[idx] > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    for idx in channel
+        idx in channels || throw(ArgumentError("Channel $idx does not match type: $(uppercase(string(type))) signal channels."))
+        (idx < 1 || idx > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 end
 
 function _check_channels(channels::Union{Int64, Vector{Int64}, AbstractRange}, channel::Union{Int64, Vector{Int64}, AbstractRange})
-    for idx in 1:length(channel)
-        channel[idx] in channels || throw(ArgumentError("Channel $(channel[idx]) does not match signal channels."))
-        (channel[idx] < 1 || channel[idx] > length(channels)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
+    for idx in channel
+        idx in channels || throw(ArgumentError("Channel $idx does not match signal channels."))
+        (idx < 1 || idx > length(channels)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))
     end
 end
 
 function _check_epochs(eeg::NeuroAnalyzer.EEG, epoch::Union{Int64, Vector{Int64}, AbstractRange})
-    for idx in 1:length(epoch)
-        (epoch[idx] < 1 || epoch[idx] > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
+    for idx in epoch
+        (idx < 1 || idx > eeg_epoch_n(eeg)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(eeg_epoch_n(eeg))."))
     end
 end
 
 function _check_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange})
     c, _ = _get_component(eeg, c)
-    for idx in 1:length(c_idx)
-        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    for idx in c_idx
+        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
 end
 
 function _check_cidx(c::Array{Float64, 3}, c_idx::Union{Int64, Vector{Int64}, AbstractRange})
-    for idx in 1:length(c_idx)
-        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    for idx in c_idx
+        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
 end
 
@@ -100,11 +100,11 @@ function _select_cidx(eeg::NeuroAnalyzer.EEG, c::Symbol, c_idx::Union{Int64, Vec
     c, _ = _get_component(eeg, c)
     def_cidx > size(c, 1) && (def_cidx = size(c, 1))
     def_cidx == 0 && (def_cidx = size(c, 1))
-    c_idx == 0 && (channel = 1:def_cidx)
+    c_idx == 0 && (c_idx = 1:def_cidx)
     typeof(c_idx) <: AbstractRange && (c_idx = collect(c_idx))
     length(c_idx) > 1 && sort!(c_idx)
-    for idx in 1:length(c_idx)
-        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    for idx in c_idx
+        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
     return c_idx
 end
@@ -116,8 +116,8 @@ function _select_cidx(c::AbstractArray, c_idx::Union{Int64, Vector{Int64}, Abstr
     c_idx == 0 && (c_idx = 1:def_cidx)
     typeof(c_idx) <: AbstractRange && (c_idx = collect(c_idx))
     length(c_idx) > 1 && sort!(c_idx)
-    for idx in 1:length(c_idx)
-        (c_idx[idx] < 1 || c_idx[idx] > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
+    for idx in c_idx
+        (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("c_idx must be ≥ 1 and ≤ $(size(c, 1))."))
     end
     return c_idx
 end
@@ -352,7 +352,7 @@ end
 function _get_channel_idx(labels::Vector{String}, channel::Union{String, Int64})
     if typeof(channel) == String
         channel_found = nothing
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 channel_found = idx
             end
@@ -422,8 +422,8 @@ function _m2df(markers::Vector{String})
     a_start = Vector{Float64}()
     a_event = Vector{String}()
     # what about markers containing event duration?
-    for ann_idx in 1:length(markers)
-        s = split(markers[ann_idx], "|")
+    for idx in eachindex(markers)
+        s = split(markers[idx], "|")
         if length(s) > 2
             push!(a_start, parse(Float64, strip(s[2])))
             push!(a_event, strip(s[3]))
@@ -439,15 +439,15 @@ function _clean_labels(labels::Vector{String})
     return labels
 end
 
-function _has_markers(channel_type::Vector{String})
-    if "mrk" in channel_type
+function _has_markers(channel_types::Vector{String})
+    markers = false
+    markers_channel = 0
+    if "mrk" in channel_types
         markers = true
-        for channel_idx in 1:length(channel_type)
-            channel_type[channel_idx] == "mrk" && (markers_channel = channel_idx)
+        markers_channel = nothing
+        for channel_idx in eachindex(channel_types)
+            channel_types[channel_idx] == "mrk" && (markers_channel = channel_idx)
         end
-    else
-        markers = false
-        markers_channel = 0
     end
     return markers, markers_channel
 end
@@ -457,9 +457,9 @@ function _set_channel_types(labels::Vector{String})
     ref_channels = ["a1", "a2", "m1", "m2", "pg1", "pg2"]
     eog_channel = ["e", "e1", "e2"]
     channel_type = repeat(["???"], length(labels))
-    for idx in 1:length(labels)
+    for idx in eachindex(labels)
         in(lowercase(labels[idx]), eeg_channels) && (channel_type[idx] = "eeg")
-        for idx2 in 1:length(eeg_channels)
+        for idx2 in eachindex(eeg_channels)
             occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eeg")
         end
         lowercase(labels[idx])[1] == 'c' && (channel_type[idx] = "eeg")
@@ -474,12 +474,12 @@ function _set_channel_types(labels::Vector{String})
         occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("eog", lowercase(labels[idx])) && (channel_type[idx] = "eog")
-        for idx2 in 1:length(eog_channel)
+        for idx2 in eachindex(eog_channel)
             occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eog")
         end
         occursin("emg", lowercase(labels[idx])) && (channel_type[idx] = "emg")
         in(lowercase(labels[idx]), ref_channels) && (channel_type[idx] = "ref")
-        for idx2 in 1:length(ref_channels)
+        for idx2 in eachindex(ref_channels)
             occursin(ref_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "ref")
         end
         occursin("mark", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
@@ -565,7 +565,7 @@ function _map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, chan
     if typeof(channel) == Int64
         channel = vsearch(channel, channels)
     else
-        for idx in 1:length(channel)
+        for idx in eachindex(channel)
             channel[idx] = vsearch(channel[idx], channels)
         end
     end

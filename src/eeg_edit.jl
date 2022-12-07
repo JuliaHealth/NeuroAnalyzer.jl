@@ -80,7 +80,7 @@ function eeg_extract_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
 
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     
-    for idx in 1:length(eeg.eeg_header[:components])
+    for idx in eachindex(eeg.eeg_header[:components])
         if c == eeg.eeg_header[:components][idx]
             return eeg.eeg_components[idx]
         end
@@ -106,7 +106,7 @@ function eeg_delete_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
     c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
     
     eeg_new = deepcopy(eeg)
-    for idx in 1:length(eeg.eeg_header[:components])
+    for idx in eachindex(eeg.eeg_header[:components])
         if c == eeg_new.eeg_header[:components][idx]
             deleteat!(eeg_new.eeg_components, idx)
             deleteat!(eeg_new.eeg_header[:components], idx)
@@ -430,7 +430,7 @@ function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
     labels = eeg_labels(eeg)
     if typeof(channel) == String
         channel_idx = nothing
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 channel_idx = idx
             end
@@ -469,7 +469,7 @@ function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String
 
     if typeof(channel) == String
         channel_found = nothing
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 labels[idx] = name
                 channel_found = idx
@@ -528,7 +528,7 @@ function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
     labels = eeg_labels(eeg)
     if typeof(channel) == String
         channel_idx = nothing
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 channel_idx = idx
             end
@@ -735,7 +735,7 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
         println("             Components: no")
     end
     println("Channels:")
-    for idx in 1:length(eeg.eeg_header[:labels])
+    for idx in eachindex(eeg.eeg_header[:labels])
         println("\tchannel: $idx\tlabel: $(rpad(eeg.eeg_header[:labels][idx], 16, " "))\ttype: $(uppercase(eeg.eeg_header[:channel_type][idx]))")
     end
 end
@@ -1591,7 +1591,7 @@ function eeg_replace_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
     channel_idx = nothing
     labels = eeg_labels(eeg)
     if typeof(channel) == String
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 channel_idx = idx
             end
@@ -1681,10 +1681,10 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * epoch_len, 1))
 
-    Threads.@threads for epoch_idx in 1:length(epoch)
+    Threads.@threads for epoch_idx in eachindex(epoch)
         @inbounds @simd for length_idx in 1:epoch_len
             s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], loc_x2, loc_y2, interpolation_factor, imethod, :none)
-            for channel_idx in 1:length(channel)
+            for channel_idx in eachindex(channel)
                 x_idx = vsearch(loc_x1[channel[channel_idx]], x)
                 y_idx = vsearch(loc_y1[channel[channel_idx]], y)
                 s_interpolated[channel_idx, length_idx, epoch_idx] = s_tmp[x_idx, y_idx]
@@ -1744,7 +1744,7 @@ function loc_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs_new[!, :loc_theta][idx]
             q = _angle_quadrant(t)
@@ -1775,7 +1775,7 @@ Flip channel locations along y axis.
 """
 function loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs[!, :loc_theta][idx]
             q = _angle_quadrant(t)
@@ -1812,7 +1812,7 @@ function loc_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs_new[!, :loc_theta][idx]
             q = _angle_quadrant(t)
@@ -1843,7 +1843,7 @@ Flip channel locations along x axis.
 """
 function loc_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = locs[!, :loc_theta][idx]
             q = _angle_quadrant(t)
@@ -1878,7 +1878,7 @@ function loc_flipz(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         locs_new[!, :loc_z][idx] = -locs_new[!, :loc_z][idx]
     end
     loc_cart2sph!(locs_new)
@@ -1897,7 +1897,7 @@ Flip channel locations along z axis.
 """
 function loc_flipz!(locs::DataFrame)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         locs[!, :loc_z][idx] = -locs[!, :loc_z][idx]
     end
     loc_cart2sph!(locs)
@@ -1931,7 +1931,7 @@ function eeg_channel_type(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String},
     
     if typeof(channel) == String
         channel_found = nothing
-        for idx in 1:length(labels)
+        for idx in eachindex(labels)
             if channel == labels[idx]
                 types[idx] = type
                 channel_found = idx
@@ -2123,7 +2123,7 @@ function loc_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = deg2rad(locs_new[!, :loc_theta][idx])
             t += pi / 2
@@ -2151,7 +2151,7 @@ Swap channel locations x and y axes.
 """
 function loc_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         if planar == true
             t = deg2rad(locs[!, :loc_theta][idx])
             t += pi / 2
@@ -2183,7 +2183,7 @@ function loc_sph2cart(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         r = locs_new[!, :loc_radius_sph][idx]
         t = locs_new[!, :loc_theta_sph][idx]
         p = locs_new[!, :loc_phi_sph][idx]
@@ -2207,7 +2207,7 @@ Convert spherical locations to Cartesian.
 """
 function loc_sph2cart!(locs::DataFrame)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         r = locs[!, :loc_radius_sph][idx]
         t = locs[!, :loc_theta_sph][idx]
         p = locs[!, :loc_phi_sph][idx]
@@ -2237,8 +2237,7 @@ function loc_cart2sph(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in 1:length(locs[!, :labels])
-        idx = 2
+    for idx in eachindex(locs[!, :labels])
         x = locs_new[!, :loc_x][idx]
         y = locs_new[!, :loc_y][idx]
         z = locs_new[!, :loc_z][idx]
@@ -2262,7 +2261,7 @@ Convert Cartesian locations to spherical.
 """
 function loc_cart2sph!(locs::DataFrame)
 
-    for idx in 1:length(locs[!, :labels])
+    for idx in eachindex(locs[!, :labels])
         x = locs[!, :loc_x][idx]
         y = locs[!, :loc_y][idx]
         z = locs[!, :loc_z][idx]

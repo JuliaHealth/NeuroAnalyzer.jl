@@ -52,7 +52,6 @@ Calculate Z-scores for each value of the vector `x`.
 - `z_score::Vector{Float64}`
 """
 function z_score(x::AbstractVector)
-
     return (x .- mean(x)) ./ std(x)
 end
 

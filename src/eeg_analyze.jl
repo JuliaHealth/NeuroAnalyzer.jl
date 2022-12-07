@@ -729,38 +729,38 @@ function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
     length(eeg_labels(eeg)) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
 
     if typeof(pick) == Vector{Symbol}
-        for idx in 1:length(pick)
-            _check_var(pick[idx], [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "pick")
+        for idx in pick
+            _check_var(idx, [:list, :central, :c, :left, :l, :right, :r, :frontal, :f, :temporal, :t, :parietal, :p, :occipital, :o], "pick")
         end
 
         c = Vector{Char}()
-        for idx in 1:length(pick)
-            (pick[idx] === :central || pick[idx] === :c) && push!(c, 'z')
-            (pick[idx] === :frontal || pick[idx] === :f) && push!(c, 'F')
-            (pick[idx] === :temporal || pick[idx] === :t) && push!(c, 'T')
-            (pick[idx] === :parietal || pick[idx] === :p) && push!(c, 'P')
-            (pick[idx] === :occipital || pick[idx] === :o) && push!(c, 'O')
+        for idx in pick
+            (idx === :central || idx === :c) && push!(c, 'z')
+            (idx === :frontal || idx === :f) && push!(c, 'F')
+            (idx === :temporal || idx === :t) && push!(c, 'T')
+            (idx === :parietal || idx === :p) && push!(c, 'P')
+            (idx === :occipital || idx === :o) && push!(c, 'O')
         end
         
         labels = eeg_labels(eeg)
         channels = Vector{Int64}()
-        for idx1 in 1:length(labels)
-            for idx2 in 1:length(c)
+        for idx1 in eachindex(labels)
+            for idx2 in eachindex(c)
                 in(c[idx2], labels[idx1]) && push!(channels, idx1)
             end
         end
 
         # check for both :l and :r
-        for idx1 in 1:length(pick)
+        for idx1 in eachindex(pick)
             if (pick[idx1] === :left || pick[idx1] === :l)
-                for idx2 in 1:length(pick)
+                for idx2 in eachindex(pick)
                     if (pick[idx2] === :right || pick[idx2] === :r)
                         return channels
                     end
                 end
             end
             if (pick[idx1] === :right || pick[idx1] === :r)
-                for idx2 in 1:length(pick)
+                for idx2 in eachindex(pick)
                     if (pick[idx2] === :left || pick[idx2] === :l)
                         return channels
                     end
@@ -771,11 +771,11 @@ function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
         labels = eeg_labels(eeg)
         labels = labels[channels]
         pat = nothing
-        for idx in 1:length(pick)
+        for idx in pick
             # for :right remove lefts
-            (pick[idx] === :right || pick[idx] === :r) && (pat = r"[z13579]$")
+            (idx === :right || idx === :r) && (pat = r"[z13579]$")
             # for :left remove rights
-            (pick[idx] === :left || pick[idx] === :l) && (pat = r"[z02468]$")
+            (idx === :left || idx === :l) && (pat = r"[z02468]$")
         end
         if typeof(pat) == Regex
             for idx in length(labels):-1:1
@@ -798,8 +798,8 @@ function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
 
         labels = eeg_labels(eeg)
         channels = Vector{Int64}()
-        for idx1 in 1:length(c)
-            for idx2 in 1:length(labels)
+        for idx1 in eachindex(c)
+            for idx2 in eachindex(labels)
                 in(c[idx1], labels[idx2]) && push!(channels, idx2)
             end
         end
@@ -2001,7 +2001,7 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
             
             f_idx = zeros(length(spec.time))
             m = maximum(s_p, dims=1)
-            for idx2 in 1:length(m)
+            for idx2 in eachindex(m)
                 f_idx[idx2] = s_frq[vsearch(m[idx2], s_p[:, idx2])]
             end
             p_idx = s_findpeaks(f_idx, d=d)
@@ -2757,8 +2757,8 @@ function eeg_fcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     c = zeros(length(channel1), length(c_tmp), length(epoch1))
     msc = zeros(length(channel1), length(c_tmp), length(epoch1))
     f = zeros(length(channel1), length(c_tmp), length(epoch1))
-    @inbounds @simd for epoch_idx in 1:length(epoch1)
-        Threads.@threads for channel_idx in 1:length(channel1)
+    @inbounds @simd for epoch_idx in eachindex(epoch1)
+        Threads.@threads for channel_idx in eachindex(channel1)
             c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], _ = @views s2_fcoherence(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]], fs=eeg_sr(eeg1), frq_lim=frq_lim)
         end
     end
@@ -2982,7 +2982,7 @@ function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for band_idx in 1:length(band)
+        Threads.@threads for band_idx in eachindex(band)
             band_f = eeg_band(eeg, band=band[band_idx])
             push!(band_frq, band_f)
             for channel_idx in 1:channel_n
@@ -3182,7 +3182,7 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
             Threads.@threads for channel_idx in 1:channel_n
                 ref_channels = setdiff(channel, channel_idx)
                 ph_ref = zeros(length(ref_channels), eeg_epoch_len(eeg))
-                for ref_idx in 1:length(ref_channels)
+                for ref_idx in eachindex(ref_channels)
                     if h
                         _, _, _, ph = @views s_hspectrum(eeg.eeg_signals[ref_channels[ref_idx], :, epoch_idx], pad=pad)
                     else

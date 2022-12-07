@@ -98,7 +98,7 @@ p1 = eeg_plot(e10, epoch=1, xlabel="")
 p2 = plot_empty()
 pp = [p1, p2]
 l = (2, 1)
-p = eeg_plot_compose(pp, layout=l)
+p = plot_compose(pp, layout=l)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 #####

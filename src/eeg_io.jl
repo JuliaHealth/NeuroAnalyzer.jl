@@ -187,7 +187,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
             if idx2 != markers_channel
                 signal = map(ltoh, reinterpret(Int16, signal))
                 if channel_type[idx2] == "markers"
-                    for idx3 in 1:length(signal)
+                    for idx3 in eachindex(signal)
                         if signal[idx3] == digital_minimum[idx2]
                             signal[idx3] = 0
                         else
@@ -392,7 +392,7 @@ function eeg_import_elc(file_name::String)
     close(f)
     locs_n = 0
     locs_l = 0
-    for idx in 1:length(elc_file)
+    for idx in eachindex(elc_file)
         if occursin("NumberPositions", elc_file[idx]) == true
             locs_n = parse(Int64, replace(elc_file[idx], "NumberPositions=" => ""))
             locs_l = idx + 2
@@ -627,8 +627,8 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
     length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) not found in $file_name."
 
     labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in 1:length(e_labels)
-        for idx2 in 1:length(f_labels)
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
             e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
         end
     end
@@ -720,8 +720,8 @@ function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
     length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) were not found in $file_name."
 
     labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in 1:length(e_labels)
-        for idx2 in 1:length(f_labels)
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
             e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
         end
     end
@@ -847,7 +847,7 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
         file_name = replace(file_name, ".csv" => "_components.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
-        for idx in 1:length(eeg.eeg_header[:components])
+        for idx in eachindex(eeg.eeg_header[:components])
             println(f, "component: $(eeg.eeg_header[:components][idx])")
             println(f, eeg.eeg_components[idx])
             println(f, "---")
@@ -989,8 +989,8 @@ function eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
     labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in 1:length(e_labels)
-        for idx2 in 1:length(f_labels)
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
             e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
         end
     end
@@ -1037,8 +1037,8 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
     labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in 1:length(e_labels)
-        for idx2 in 1:length(f_labels)
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
             e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
         end
     end
@@ -1209,7 +1209,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                     push!(signal, Float64(((b1 | b2 | b3) >> 8) * gain[idx2]))
                 end
                 if channel_type[idx2] == "markers"
-                    for idx3 in 1:length(signal)
+                    for idx3 in eachindex(signal)
                         if signal[idx3] == digital_minimum[idx2]
                             signal[idx3] = 0
                         else
@@ -1384,7 +1384,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
     close(fid)
 
     eeg_signals = zeros(channel_n, length(data), 1)
-    Threads.@threads for idx in 1:length(data)
+    Threads.@threads for idx in eachindex(data)
         signals = split(data[idx], "\t")
         deleteat!(signals, length(signals))
         signals = replace.(signals, "," => ".")
@@ -1490,7 +1490,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
     segmentation = false
     channels_idx = 0
     locs_idx = 0
-    for idx in 1:length(vhdr)
+    for idx in eachindex(vhdr)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "datafile=") && (eeg_file = split(vhdr[idx], '=')[2])
         replace(eeg_file, raw"$b" => split(file_name)[1])
         startswith(lowercase(replace(vhdr[idx], " " => "")), "markerfile=") && (marker_file = split(vhdr[idx], '=')[2])
@@ -1577,11 +1577,11 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         end
         startswith(lowercase(replace(vmrk[1], " " => "")), "brainvision") == false && throw(ArgumentError("This is not a BrainVision .VMRK file."))
         markers_idx = 0
-        for idx in 1:length(vmrk)
+        for idx in eachindex(vmrk)
             startswith(lowercase(replace(vmrk[idx], " " => "")), "[markerinfos]") && (markers_idx = idx)
         end
         markers = repeat([""], length(vmrk) - markers_idx)
-        for idx in 1:length(markers)
+        for idx in eachindex(markers)
             markers[idx] = vmrk[markers_idx + idx]
         end
         # remove non-markers
@@ -1593,7 +1593,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         m_pos = zeros(Int64, length(markers))
         m_len = zeros(Int64, length(markers))
         m_ch = zeros(Int64, length(markers))
-        for idx in 1:length(markers)
+        for idx in eachindex(markers)
             m_id[idx] = replace(split(split(markers[idx], '=')[2], ',')[1], "\1" => ",")
             m_desc[idx] = replace(split(split(markers[idx], '=')[2], ',')[2], "\1" => ",")
             m_pos[idx] = parse(Int64, split(split(markers[idx], '=')[2], ',')[3])
