@@ -427,11 +427,11 @@ Return EEG channel number (if provided by name) or name (if provided by number).
 """
 function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
-    labels = eeg_labels(eeg)
+    labels = lowercase.(eeg_labels(eeg))
     if typeof(channel) == String
         channel_idx = nothing
         for idx in eachindex(labels)
-            if channel == labels[idx]
+            if lowercase(channel) == labels[idx]
                 channel_idx = idx
             end
         end

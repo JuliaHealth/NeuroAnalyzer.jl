@@ -178,8 +178,7 @@ e9 = eeg_delete_epoch(e, epoch=10)
 e1 = eeg_keep_epoch(e, epoch=1)
 @test size(e1.eeg_signals) == (19, 30976, 1)
 
-e = eeg_pick(edf, pick=:left)
-@test length(e) == 8
+@test length(eeg_channel_pick(edf, pick=:left)) == 8
 
 e = eeg_epochs(edf, epoch_len=20*256)
 v = eeg_epochs_stats(e)
@@ -381,5 +380,7 @@ _, _, f = eeg_psdslope(edf)
 @test size(eeg_henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_henv_median(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
+
+@test eeg_channel_cluster(eeg, cluster=:f1) == [3, 11]
 
 true

@@ -712,7 +712,7 @@ function eeg_difference(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
 end
 
 """
-    eeg_picks(eeg; pick)
+    eeg_channel_pick(eeg; pick)
 
 Return set of channel indices corresponding with `pick` of electrodes
 
@@ -724,7 +724,7 @@ Return set of channel indices corresponding with `pick` of electrodes
 
 - `channels::Vector{Int64}`: channel numbers
 """
-function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
+function eeg_channel_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
 
     length(eeg_labels(eeg)) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
 
@@ -809,7 +809,7 @@ function eeg_pick(eeg::NeuroAnalyzer.EEG; pick::Union{Symbol, Vector{Symbol}})
 end
 
 """
-    eeg_epochs_stats(eeg)
+    eeg_epoch_stats(eeg)
 
 Calculate epochs statistics.
 
@@ -831,7 +831,7 @@ Named tuple containing:
 - `e_max_dif::Vector(Float64)`: max difference
 - `e_dev_mean::Vector(Float64)`: deviation from channel mean
 """
-function eeg_epochs_stats(eeg::NeuroAnalyzer.EEG)
+function eeg_epoch_stats(eeg::NeuroAnalyzer.EEG)
 
     epoch_n = eeg_epoch_n(eeg)
 
@@ -1046,7 +1046,7 @@ function eeg_t2s(eeg::NeuroAnalyzer.EEG; t::Real)
 end
 
 """
-    eeg_channels_stats(eeg)
+    eeg_channel_stats(eeg)
 
 Calculate channels statistics per epoch.
 
@@ -1068,7 +1068,7 @@ Named tuple containing:
 - `c_max_dif::Matrix(Float64)`: max difference
 - `c_dev_mean::Matrix(Float64)`: deviation from channel mean
 """
-function eeg_channels_stats(eeg::NeuroAnalyzer.EEG)
+function eeg_channel_stats(eeg::NeuroAnalyzer.EEG)
 
     channel_n = eeg_channel_n(eeg)
     epoch_n = eeg_epoch_n(eeg)
@@ -3621,4 +3621,52 @@ function eeg_apply(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
         end
     end
     return out
+end
+
+"""
+    eeg_channels_cluster(eeg, cluster)
+
+Return channels belonging to a `cluster` of channels.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `cluster::Symbol`: available clusters are:
+    - `:f1`: left frontal (F1, F3, F5, F7, AF3, AF7)
+    - `:f2`: right frontal (F2, F4, F6, F8, AF4, AF8)
+    - `:t1`: left temporal (C3, C5, T7, FC3, FC5, FT7)
+    - `:t2`: right temporal (C4, C6, T8, FC4, FC6, FT8)
+    - `:c1`: anterior central (Cz, C1, C2, FC1, FC2, FCz)
+    - `:c2`: posterior central (Pz, P1, P2, CP1, CP2, CPz)
+    - `:p1`: left parietal (P3, P5, P7, CP3, CP5, TP7)
+    - `:p2`: right parietal (P4, P6, P8, CP4, CP6, TP8)
+    - `:o`: occipital (Oz, O1, O2, POz, PO3, PO4)
+
+# Returns
+
+- `channels::Vector{Int64}`: list of channel numbers belonging to a given cluster of channels
+"""
+function eeg_channel_cluster(eeg::NeuroAnalyzer.EEG; cluster::Symbol)
+
+    length(eeg_labels(eeg)) == 0 && throw(ArgumentError("EEG does not contain channel labels."))
+
+    _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
+    labels = lowercase.(eeg_labels(eeg))
+    channels = Int64[]
+
+    cluster === :f1 && (cluster = ["fp1", "f1", "f3", "f5", "f7", "f9", "af3", "af7"])
+    cluster === :f2 && (cluster = ["fp2", "f2", "f4", "f6", "f8", "f10", "af4", "af8"])
+    cluster === :t1 && (cluster = ["c3", "c5", "t7", "t9" "fc3", "fc5", "ft7", "ft9"])
+    cluster === :t2 && (cluster = ["c4", "c6", "t8", "t10", "fc4", "fc6", "ft8", "ft10"])
+    cluster === :c1 && (cluster = ["cz", "c1", "c2", "fc1", "fc2", "fcz"])
+    cluster === :c2 && (cluster = ["pz", "p1", "p2", "cp1", "cp2", "cpz"])
+    cluster === :p1 && (cluster = ["p3", "p5", "p7", "p9", "cp3", "cp5", "tp7", "tp9"])
+    cluster === :p2 && (cluster = ["p4", "p6", "p8", "p10", "cp4", "cp6", "tp8", "tp10"])
+    cluster === :o && (cluster = ["o1", "o2", "poz", "po3", "po4", "po7", "po8", "po9", "po10"])
+
+    for idx in cluster
+        idx in labels && push!(channels, eeg_get_channel(eeg, channel=idx))
+    end
+
+    return channels
 end

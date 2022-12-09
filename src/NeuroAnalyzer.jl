@@ -364,6 +364,7 @@ export eeg_channel_idx
 export eeg_vch
 export eeg_edit_marker
 export eeg_edit_marker!
+export eeg_channel_cluster
 
 include("eeg_process.jl")
 export eeg_reference_ch
@@ -439,13 +440,13 @@ export eeg_band
 export eeg_tcoherence
 export eeg_freqs
 export eeg_difference
-export eeg_pick
-export eeg_epochs_stats
+export eeg_channel_pick
+export eeg_epoch_stats
 export eeg_spectrogram
 export eeg_spectrum
 export eeg_s2t
 export eeg_t2s
-export eeg_channels_stats
+export eeg_channel_stats
 export eeg_snr
 export eeg_standardize
 export eeg_standardize!
