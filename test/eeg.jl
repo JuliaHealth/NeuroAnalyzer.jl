@@ -181,7 +181,7 @@ e1 = eeg_keep_epoch(e, epoch=1)
 @test length(eeg_channel_pick(edf, pick=:left)) == 8
 
 e = eeg_epochs(edf, epoch_len=20*256)
-v = eeg_epochs_stats(e)
+v = eeg_epoch_stats(e)
 @test length(v) == 10
 
 e = eeg_epochs(edf, epoch_len=20, average=true)
@@ -246,7 +246,7 @@ eeg_keep_channel_type!(e, type=:eeg)
 e = eeg_invert_polarity(edf, channel=1)
 @test e.eeg_signals[1, 1, 1] == -edf.eeg_signals[1, 1, 1]
 
-v = eeg_channels_stats(edf)
+v = eeg_channel_stats(edf)
 @test length(v) == 10
 
 edf = eeg_import_edf("eeg-test-edf.edf")
