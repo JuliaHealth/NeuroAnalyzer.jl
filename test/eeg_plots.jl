@@ -57,7 +57,7 @@ p = eeg_plot_electrodes(e10, threed=true)
 @test typeof(p) == Makie.Figure
 
 edf_cor = eeg_cor(e10)
-channels = eeg_channel_idx(e10, type=Symbol(e10.eeg_header[:signal_type]))
+channels = eeg_get_channel_bytype(e10, type=Symbol(e10.eeg_header[:signal_type]))
 p = plot_matrix(edf_cor[:, :, 1], xlabels=eeg_labels(e10)[channels], ylabels=eeg_labels(e10)[channels])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 ac, lags = eeg_acov(edf, lag=5, norm=false)

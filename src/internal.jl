@@ -25,7 +25,7 @@ function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{In
 end
 
 function _check_channels(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}, type::Symbol)
-    channels = eeg_channel_idx(eeg, type=type)
+    channels = eeg_get_channel_bytype(eeg, type=type)
     for idx in channel
         idx in channels || throw(ArgumentError("Channel $idx does not match type: $(uppercase(string(type))) signal channels."))
         (idx < 1 || idx > eeg_channel_n(eeg)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(eeg_channel_n(eeg))."))

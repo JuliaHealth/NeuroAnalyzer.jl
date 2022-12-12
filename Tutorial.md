@@ -161,7 +161,7 @@ eeg_plot_save(p, file_name="images/eeg_cov.png")
 Plot auto-covariance matrix:
 ```julia
 ac, lags = eeg_acov(eeg, lag=5, norm=false)
-p = plot_covmatrix(ac[1, :, 1], lags, xlabel="", title=eeg_labels(eeg)[eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))][1])
+p = plot_covmatrix(ac[1, :, 1], lags, xlabel="", title=eeg_labels(eeg)[eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))][1])
 eeg_plot_save(p, file_name="images/eeg_autocov.png")
 ```
 ![eeg autocov](images/eeg_autocov.png)

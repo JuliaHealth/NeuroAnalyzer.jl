@@ -1100,7 +1100,7 @@ Detect bad EEG channels and epochs.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
@@ -1120,7 +1120,7 @@ Named tuple containing:
 - `bad_m::Matrix{Bool}`: matrix of bad channels × epochs
 - `bad_epochs::Vector{Int64}`: list of bad epochs
 """
-function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.95, tc::Float64=0.2)
+function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.95, tc::Float64=0.2)
 
     for idx in method
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p], "method")
@@ -1671,7 +1671,7 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     eeg_delete_channel!(eeg, channel=channel)
     loc_x2 = eeg.eeg_locs[!, :loc_x]
     loc_y2 = eeg.eeg_locs[!, :loc_y]
-    channels = eeg_channel_idx(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 
     epoch_n = length(epoch)
     epoch_len = eeg_epoch_len(eeg)
@@ -1965,7 +1965,7 @@ Change EEG channel type.
 """
 function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
-    eeg.eeg_header[:channel_type] = eeg_channel_idx(eeg, channel=channel, type=type)[:channel_type]
+    eeg.eeg_header[:channel_type] = eeg_get_channel_bytype(eeg, channel=channel, type=type)[:channel_type]
     push!(eeg.eeg_header[:history], "eeg_channel_type(EEG, channel=$channel, type=$type)")
 
     return nothing
@@ -2398,9 +2398,9 @@ function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::
 end
 
 """
-    eeg_channel_idx(eeg; type=:eeg)
+    eeg_get_channel_bytype(eeg; type=:eeg)
 
-Return index of EEG channels of `type` type.
+Return EEG channel number(s) for channel of `type` type.
 
 # Arguments
 
@@ -2411,7 +2411,7 @@ Return index of EEG channels of `type` type.
 
 - `channel_n::Int64`
 """
-function eeg_channel_idx(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
+function eeg_get_channel_bytype(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
     channel_idx = Vector{Int64}()

@@ -360,7 +360,7 @@ export eeg_delete_marker
 export eeg_delete_marker!
 export eeg_add_marker
 export eeg_add_marker!
-export eeg_channel_idx
+export eeg_get_channel_bytype
 export eeg_vch
 export eeg_edit_marker
 export eeg_edit_marker!
