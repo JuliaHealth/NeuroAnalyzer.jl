@@ -5472,8 +5472,8 @@ Interpolate EEG channel(s) using planar interpolation.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
-  * `channel::Union{Int64, Vector{Int64}, Abstractrange}`: channel number(s) to interpolate
-  * `epoch::Union{Int64, Vector{Int64}, Abstractrange}`: epoch number(s) within to interpolate
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
   * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
   * `interpolation_factor::Int64=100`: interpolation quality
 
@@ -5921,7 +5921,7 @@ Add marker.
 eeg_get_channel_bytype(eeg; type=:eeg)
 ```
 
-Return index of EEG channels of `type` type.
+Return EEG channel number(s) for channel of `type` type.
 
 **Arguments**
 
@@ -5997,6 +5997,48 @@ Edit EEG marker.
   * `len::Int64`: marker length in samples
   * `desc::String`: marker description
   * `channel::Int64`: channel number, if 0 then marker is related to all channels
+
+<a id='NeuroAnalyzer.eeg_lrinterpolate_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_lrinterpolate_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_lrinterpolate_channel`** &mdash; *Method*.
+
+
+
+```julia
+eeg_lrinterpolate_channel(eeg; channel, epoch)
+```
+
+Interpolate EEG channel using linear regression.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_lrinterpolate_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_lrinterpolate_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_lrinterpolate_channel!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_lrinterpolate_channel!(eeg; channel, epoch)
+```
+
+Interpolate EEG channel using linear regression.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
+  * `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
 
 
 <a id='EEG-process'></a>

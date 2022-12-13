@@ -287,7 +287,7 @@ eeg_delete_note!(eeg::NeuroAnalyzer.EEG)
 eeg_replace_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
-eeg_plinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, interpolation_factor::Int64=100)
+eeg_plinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, interpolation_factor::Int64=100)
 loc_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 loc_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 loc_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
@@ -314,6 +314,8 @@ eeg_get_channel_bytype(eeg::NeuroAnalyzer.EEG; type::Symbol=:all)
 eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
 eeg_edit_marker(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
 eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+eeg_lrinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
 ```
 
 ## EEG process
