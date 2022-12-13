@@ -302,7 +302,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg_new.eeg_header[:labels][idx])), lowercase.(string.(eeg_new.eeg_locs[!, :labels])))
-        loc !== nothing && deleteat!(eeg_new.eeg_locs, loc)
+        loc !== nothing && delete!(eeg_new.eeg_locs, loc)
         deleteat!(eeg_new.eeg_header[:labels], idx)
         deleteat!(eeg_new.eeg_header[:channel_type], idx)
         deleteat!(eeg_new.eeg_header[:transducers], idx)
@@ -343,7 +343,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg.eeg_header[:labels][idx])), lowercase.(string.(eeg.eeg_locs[!, :labels])))
-        loc !== nothing && deleteat!(eeg.eeg_locs, loc)
+        loc !== nothing && delete!(eeg.eeg_locs, loc)
         deleteat!(eeg.eeg_header[:labels], idx)
         deleteat!(eeg.eeg_header[:channel_type], idx)
         deleteat!(eeg.eeg_header[:transducers], idx)
@@ -427,11 +427,11 @@ Return EEG channel number (if provided by name) or name (if provided by number).
 """
 function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
-    labels = lowercase.(eeg_labels(eeg))
+    labels = eeg_labels(eeg)
     if typeof(channel) == String
         channel_idx = nothing
         for idx in eachindex(labels)
-            if lowercase(channel) == labels[idx]
+            if lowercase(channel) == lowercase(labels[idx])
                 channel_idx = idx
             end
         end
@@ -1638,7 +1638,7 @@ function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Stri
 end
 
 """
-    eeg_interpolate_channel(eeg; channel, epoch, m, q)
+    eeg_plinterpolate_channel(eeg; channel, epoch, m, q)
 
 Interpolate EEG channel(s) using planar interpolation.
 
@@ -1654,7 +1654,11 @@ Interpolate EEG channel(s) using planar interpolation.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
+function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
+
+    for idx in channel
+        idx in eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])) || throw(ArgumentError("channel must be EEG/MEG signal channel(s); cannot interpolate non-EEG/MEG channels."))
+    end
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
@@ -1698,29 +1702,29 @@ function eeg_interpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, V
     eeg_new.eeg_signals[channel, :, epoch] = s_interpolated
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_interpolate_channel(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
+    push!(eeg_new.eeg_header[:history], "eeg_plinterpolate_channel(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return eeg_new
 end
 
 """
-    eeg_interpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
+    eeg_plinterpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
 
 Interpolate EEG channel(s) using planar interpolation.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, Abstractrange}`: channel number(s) to interpolate
-- `epoch::Union{Int64, Vector{Int64}, Abstractrange}`: epoch number(s) within to interpolate
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `interpolation_factor::Int64=100`: interpolation quality
 """
-function eeg_interpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, m::Symbol=:shepard, interpolation_factor::Int64=100)
+function eeg_plinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, interpolation_factor::Int64=100)
 
-    eeg.eeg_signals = eeg_interpolate_channel(eeg, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
+    eeg.eeg_signals = eeg_plinterpolate_channel(eeg, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_interpolate_channel!(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
+    push!(eeg.eeg_header[:history], "eeg_plinterpolate_channel!(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return nothing
 end
@@ -2309,7 +2313,7 @@ function eeg_delete_marker(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_new.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     nn = size(eeg_new.eeg_markers, 1)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    deleteat!(eeg_new.eeg_markers, n)
+    delete!(eeg_new.eeg_markers, n)
     size(eeg_new.eeg_markers, 1) == 0 && (eeg_new.eeg_header[:markers] = false)
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_delete_marker(EEG; n=$n)")
@@ -2517,5 +2521,84 @@ function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::I
     eeg.eeg_markers = eeg_tmp.eeg_markers
 
     eeg_reset_components!(eeg)
+    return nothing
+end
+
+"""
+    eeg_lrinterpolate_channel(eeg; channel, epoch)
+
+Interpolate EEG channel using linear regression.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channel in channels || throw(ArgumentError("channel must be EEG/MEG signal channel; cannot interpolate non-EEG/MEG channels."))
+
+    bad_signal = eeg.eeg_signals[:, :, epoch]
+    good_epochs = setdiff(1:eeg_epoch_n(eeg), epoch)
+    good_channels = setdiff(channels, channel)
+    good_signal = _make_epochs(eeg.eeg_signals[:, :, good_epochs], epoch_n=1)
+
+    # train
+    df = @views DataFrame(hcat(good_signal[channel, :, :], good_signal[good_channels, :, ]'), :auto)
+    train, test = preprocess.TrainTestSplit(df, .80)
+    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[:, Not(:x1)]))))
+    linear_regressor = lm(fm, train)
+    acc_r2 = r2(linear_regressor)
+    prediction = GLM.predict(linear_regressor, test)
+    accuracy_testdf = DataFrame(signal_actual = test[!, :x1], signal_predicted = prediction)
+    accuracy_testdf.error = accuracy_testdf[!, :signal_actual] 
+    accuracy_testdf[!, :signal_predicted]
+    acc_mae = mean(abs.(accuracy_testdf.error))
+    aic, bic = infcrit(linear_regressor)
+    verbose == true && @info "R² for the linear regressor: $(round(acc_r2, digits=3))"
+    verbose == true && @info "MAE (test dataset): $(round(acc_mae, digits=3))"
+    verbose == true && @info "AIC: $(round(aic, digits=3))"
+    verbose == true && @info "BIC: $(round(bic, digits=3))"
+
+    # predict
+    eeg_new = eeg_copy(eeg) 
+    @inbounds @simd for epoch_idx in epoch
+        df = @views DataFrame(hcat(bad_signal[channel, :, epoch_idx], bad_signal[good_channels, :, epoch_idx]'), :auto)
+        eeg_new.eeg_signals[channel, :, epoch_idx] = GLM.predict(linear_regressor, df)
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_lrinterpolate_channel(EEG, channel=$channel, epoch=$epoch)")
+
+    return eeg_new
+end
+
+"""
+    eeg_lrinterpolate_channel!(eeg; channel, epoch)
+
+Interpolate EEG channel using linear regression.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_lrinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+
+    eeg.eeg_signals = eeg_lrinterpolate_channel(eeg, channel=channel, epoch=epoch).eeg_signals
+    eeg_reset_components!(eeg)
+    push!(eeg.eeg_header[:history], "eeg_lrinterpolate_channel!(EEG, channel=$channel, epoch=$epoch)")
+
     return nothing
 end

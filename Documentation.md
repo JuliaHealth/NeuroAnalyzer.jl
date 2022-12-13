@@ -5435,13 +5435,13 @@ Replace EEG channel.
   * `channel::Union{Int64, String}`: channel number or name
   * `signal::Array{Float64, 3}
 
-<a id='NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_interpolate_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_interpolate_channel`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plinterpolate_channel-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plinterpolate_channel-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plinterpolate_channel`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_interpolate_channel(eeg; channel, epoch, m, q)
+eeg_plinterpolate_channel(eeg; channel, epoch, m, q)
 ```
 
 Interpolate EEG channel(s) using planar interpolation.
@@ -5458,13 +5458,13 @@ Interpolate EEG channel(s) using planar interpolation.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_interpolate_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_interpolate_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_interpolate_channel!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_plinterpolate_channel!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plinterpolate_channel!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plinterpolate_channel!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_interpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
+eeg_plinterpolate_channel!(eeg; channel, epoch, imethod, interpolation_factor)
 ```
 
 Interpolate EEG channel(s) using planar interpolation.

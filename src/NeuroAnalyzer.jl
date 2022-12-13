@@ -26,6 +26,7 @@ using HypothesisTests
 using InformationMeasures
 using Interpolations
 using JLD2
+using Lathe.preprocess
 using LinearAlgebra
 using Loess
 using MultivariateStats
@@ -336,8 +337,8 @@ export eeg_delete_note
 export eeg_delete_note!
 export eeg_replace_channel
 export eeg_replace_channel!
-export eeg_interpolate_channel
-export eeg_interpolate_channel!
+export eeg_plinterpolate_channel
+export eeg_plinterpolate_channel!
 export eeg_channel_type
 export eeg_channel_type!
 export eeg_edit_electrode
@@ -365,6 +366,8 @@ export eeg_vch
 export eeg_edit_marker
 export eeg_edit_marker!
 export eeg_channel_cluster
+export eeg_lrinterpolate_channel
+export eeg_lrinterpolate_channel!
 
 include("eeg_process.jl")
 export eeg_reference_ch

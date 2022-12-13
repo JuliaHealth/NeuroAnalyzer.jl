@@ -189,7 +189,7 @@ i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
 e = eeg_copy(edf)
-e_stats = eeg_epochs_stats(e)
+e_stats = eeg_epoch_stats(e)
 @test length(e_stats) == (10)
 eeg_add_component!(e, c=:epochs_mean, v=e_stats[1])
 v = eeg_extract_component(e, c=:epochs_mean)
@@ -302,14 +302,14 @@ edf1 = eeg_add_note(edf, note="test")
 eeg_delete_note!(edf1)
 @test eeg_view_note(edf1) == ""
 
-edf1 = eeg_epochs(edf, epoch_len=2560, average=true)
+edf1 = eeg_epochs(edf, epoch_len=2560)
 new_channel = zeros(1, eeg_epoch_len(edf1), eeg_epoch_n(edf1))
 edf1 = eeg_replace_channel(edf1, channel=1, signal=new_channel);
-edf1 = eeg_replace_channel(edf1, channel=2, signal=new_channel);
-edf1 = eeg_replace_channel(edf1, channel=5, signal=new_channel);
 @test edf1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(edf1), eeg_epoch_n(edf1))
-edf2 = eeg_interpolate_channel(edf1, channel=[1, 2, 5], epoch=1)
-@test edf2.eeg_signals[1, :, :] != zeros(eeg_epoch_len(edf), eeg_epoch_n(edf))
+edf2 = eeg_plinterpolate_channel(edf1, channel=1, epoch=1)
+@test edf2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(edf1))
+edf2 = eeg_lrinterpolate_channel(edf1, channel=1, epoch=1)
+@test edf2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(edf1))
 
 @test length(eeg_band_mpower(edf, f=(1,4))) == 3
 
@@ -381,6 +381,6 @@ _, _, f = eeg_psdslope(edf)
 @test size(eeg_henv_median(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
 
-@test eeg_channel_cluster(eeg, cluster=:f1) == [3, 11]
+@test eeg_channel_cluster(e10, cluster=:f1) == [1, 3, 11]
 
 true

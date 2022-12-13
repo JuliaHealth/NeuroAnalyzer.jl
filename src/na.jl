@@ -41,6 +41,7 @@ function na_info()
         "InformationMeasures",
         "Interpolations",
         "JLD2",
+        "Lathe",
         "Loess",
         "MultivariateStats",
         "Plots",
