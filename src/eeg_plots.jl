@@ -3523,7 +3523,6 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, Abst
     return p
 end
 
-
 """
     eeg_plot_weights(eeg; <keyword arguments>)
 
@@ -4081,7 +4080,7 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
                     framestyle=:none,
                     border=:none,
                     margins=0Plots.px)
-    pc = Plots.plot!(p..., layout=layout, palette=palette; kwargs...)
+    pc = Plots.plot!(p..., layout=layout, palette=pal; kwargs...)
     Plots.plot(pc)
 
     return pc
@@ -4386,7 +4385,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; epoch::Union{Vector{Int64}, Abstra
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
 
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
         signal = vec(mean(signal, dims=2))
         p = plot_erp(t,
                      signal,
@@ -4396,7 +4395,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; epoch::Union{Vector{Int64}, Abstra
                      mono=mono;
                      kwargs...)
     elseif type === :butterfly
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
         p = plot_erp_butterfly(t,
                                signal,
                                labels=labels,
@@ -4406,7 +4405,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; epoch::Union{Vector{Int64}, Abstra
                                mono=mono;
                                kwargs...)
     elseif type === :mean
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          signal,
                          xlabel=xlabel,
