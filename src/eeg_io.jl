@@ -267,7 +267,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
-    eeg_epochs_time = eeg_time
+    eeg_epoch_time = eeg_time
     eeg_locs = DataFrame(:channel => Int64,
                          :labels => String[],
                          :loc_theta => Float64[],
@@ -279,7 +279,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1291,7 +1291,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
-    eeg_epochs_time = eeg_time
+    eeg_epoch_time = eeg_time
     eeg_locs = DataFrame(:channel => Int64,
                          :labels => String[],
                          :loc_theta => Float64[],
@@ -1303,7 +1303,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1430,7 +1430,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
-    eeg_epochs_time = eeg_time
+    eeg_epoch_time = eeg_time
     eeg_locs = DataFrame(:channel => Int64,
                          :labels => String[],
                          :loc_theta => Float64[],
@@ -1442,7 +1442,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1691,7 +1691,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
-    eeg_epochs_time = eeg_time
+    eeg_epoch_time = eeg_time
     if channel_locations == false
         eeg_locs = DataFrame(:channel => Int64,
                              :labels => String[],
@@ -1716,7 +1716,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                              :loc_phi_sph => loc_phi_sph)
     end
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epochs_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end

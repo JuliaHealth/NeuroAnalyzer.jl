@@ -63,7 +63,7 @@ eeg_filter!(eeg, fprototype=:butterworth, ftype=:lp, cutoff=45, order=8)
 eeg_reference_car!(eeg)
 
 # ╔═╡ 1028224e-38fd-4dde-861e-98d5eb2c85c9
-eeg_epochs!(eeg, epoch_len=10*eeg_sr(eeg))
+eeg_epoch!(eeg, epoch_len=10*eeg_sr(eeg))
 
 # ╔═╡ 15ca8e97-7d4f-4993-a13f-bb6fc9e12889
 # Check epochs visually, remove bad epochs 

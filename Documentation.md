@@ -4882,35 +4882,36 @@ Show EEG info.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_epochs-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epochs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+eeg_epoch(eeg; marker, epoch_offset, epoch_n, epoch_len)
 ```
 
-Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
+Split EEG into epochs. Return signal that is split either by markers (if specified ) epoch length or by number of epochs. 
 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `marker::String="": marker name to split at
+  * `epoch*offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch*offset)
   * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
-  * `average::Bool=false`: average all epochs, return one averaged epoch
 
 **Returns**
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_epochs!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epochs!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+eeg_epoch!(eeg; marker, epoch_offset, epoch_n, epoch_len)
 ```
 
 Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
@@ -4918,9 +4919,44 @@ Split EEG into epochs. Return signal that is split either by epoch length or by 
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `marker::String="": marker name to split at
+  * `epoch*offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch*offset)
   * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
-  * `average::Bool=false`: average all epochs, return one averaged epoch
+
+<a id='NeuroAnalyzer.eeg_epoch_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_avg`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_avg(eeg)
+```
+
+Average EEG epochs.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+**Returns**
+
+  * `eeg::NeuroAnalyzer.EEG`
+
+<a id='NeuroAnalyzer.eeg_epoch_avg!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_avg!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_avg!`** &mdash; *Method*.
+
+
+
+```julia
+eeg_epoch_avg!(eeg)
+```
+
+Average EEG epochs.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`
 
 <a id='NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_extract_epoch`** &mdash; *Method*.
@@ -5141,13 +5177,13 @@ Named tuple containing:
   * `bad_m::Matrix{Bool}`: matrix of bad channels × epochs
   * `bad_epochs::Vector{Int64}`: list of bad epochs
 
-<a id='NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}' href='#NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG, Vector{String}}'>#</a>
+<a id='NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_labels-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_add_labels`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_labels(eeg, labels)
+eeg_add_labels(eeg; labels)
 ```
 
 Add EEG channel labels.
@@ -5161,13 +5197,13 @@ Add EEG channel labels.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG, Vector{String}}' href='#NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG, Vector{String}}'>#</a>
+<a id='NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_add_labels!-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_add_labels!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+eeg_add_labels!(eeg::NeuroAnalyzer.EEG; labels::Vector{String})
 ```
 
 Add EEG channel labels.
@@ -5287,13 +5323,13 @@ Make copy of EEG.
 
   * `eeg_copy::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_epochs_time-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_time-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epochs_time`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch_time-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_time-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_time`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epochs_time(eeg; ts)
+eeg_epoch_time(eeg; ts)
 ```
 
 Edit EEG epochs time start.
@@ -5307,13 +5343,13 @@ Edit EEG epochs time start.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_epochs_time!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epochs_time!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epochs_time!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_epoch_time!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_time!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_epoch_time!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epochs_time!(eeg; ts)
+eeg_epoch_time!(eeg; ts)
 ```
 
 Edit EEG epochs time start.
@@ -5817,13 +5853,13 @@ Convert Cartesian locations to spherical.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_view_markers-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_markers-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_view_markers`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_view_marker-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_view_marker-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_view_marker`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_view_markers(eeg)
+eeg_view_marker(eeg)
 ```
 
 Show markers.
@@ -5874,7 +5910,7 @@ Delete marker.
 
 
 ```julia
-eeg_add_marker(eeg; id, start, len, desc)
+eeg_add_marker(eeg; id, start, len, desc, channel)
 ```
 
 Add marker.
@@ -5886,7 +5922,7 @@ Add marker.
   * `start::Int64`: marker time in samples
   * `len::Int64`: marker length in samples
   * `desc::String`: marker description
-  * `channel::Int64`: channel number, if 0 then marker is related to all channels
+  * `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
 **Returns**
 
@@ -5898,7 +5934,7 @@ Add marker.
 
 
 ```julia
-eeg_add_marker!(eeg; id, start, len, desc)
+eeg_add_marker!(eeg; id, start, len, desc, channel)
 ```
 
 Add marker.
@@ -5910,7 +5946,7 @@ Add marker.
   * `start::Int64`: marker time in samples
   * `len::Int64`: marker length in samples
   * `desc::String`: marker description
-  * `channel::Int64`: channel number, if 0 then marker is related to all channels
+  * `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
 <a id='NeuroAnalyzer.eeg_get_channel_bytype-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_get_channel_bytype-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_get_channel_bytype`** &mdash; *Method*.
@@ -6665,8 +6701,8 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
   * `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 
-<a id='NeuroAnalyzer.eeg_average' href='#NeuroAnalyzer.eeg_average'>#</a>
-**`NeuroAnalyzer.eeg_average`** &mdash; *Function*.
+<a id='NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_average`** &mdash; *Method*.
 
 
 
@@ -6685,8 +6721,8 @@ Return the average signal of EEG channels.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_average!' href='#NeuroAnalyzer.eeg_average!'>#</a>
-**`NeuroAnalyzer.eeg_average!`** &mdash; *Function*.
+<a id='NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_average!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_average!`** &mdash; *Method*.
 
 
 
@@ -7008,7 +7044,7 @@ Reference to mastoid (M1, M2) channels. Only signal (EEG/MEG, depending on `eeg.
 eeg_fftdenoise(eeg; channel, pad, threshold)
 ```
 
-Perform wavelet denoising.
+Perform FFT denoising.
 
 **Arguments**
 
@@ -7030,7 +7066,7 @@ Perform wavelet denoising.
 eeg_fftdenoise!(eeg; channel, pad, threshold)
 ```
 
-Perform wavelet denoising.
+Perform FFT denoising.
 
 **Arguments**
 
@@ -9175,6 +9211,8 @@ Plot amplitude of single- or multi-channel `signal`.
 
   * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
   * `signal::Union{AbstractVector, AbstractArray}`: data to plot
+  * `norm::Bool=false`: normalize signal for butterfly and averaged plots
+  * `bad::Vector{Bool}}`: list of bad channels
   * `labels::Vector{String}=[""]`: signal channel labels vector
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
@@ -10361,6 +10399,111 @@ plot_empty()
 ```
 
 Return an empty plot, useful for filling matrices of plots. 
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_erp-Tuple{AbstractVector, AbstractVector}' href='#NeuroAnalyzer.plot_erp-Tuple{AbstractVector, AbstractVector}'>#</a>
+**`NeuroAnalyzer.plot_erp`** &mdash; *Method*.
+
+
+
+```julia
+plot_erp(t, signal, bad; <keyword arguments>)
+```
+
+Plot ERP.
+
+**Arguments**
+
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::AbstractVector`: data to plot
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_erp_avg-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_erp_avg-Tuple{AbstractVector, AbstractArray}'>#</a>
+**`NeuroAnalyzer.plot_erp_avg`** &mdash; *Method*.
+
+
+
+```julia
+plot_erp_avg(t, signal; <keyword arguments>)
+```
+
+Plot amplitude mean and ±95% CI of averaged `signal` channels.
+
+**Arguments**
+
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::AbstractArray`: data to plot
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_erp_butterfly-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_erp_butterfly-Tuple{AbstractVector, AbstractArray}'>#</a>
+**`NeuroAnalyzer.plot_erp_butterfly`** &mdash; *Method*.
+
+
+
+```julia
+plot_erp_butterfly(t, signal; <keyword arguments>)
+```
+
+Butterfly plot of ERP.
+
+**Arguments**
+
+  * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+  * `signal::AbstractArray`: data to plot
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `avg::Bool=false`: plot average ERP
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_plot_erp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_erp(eeg; <keyword arguments>)
+```
+
+Plot ERP.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg)`: epoch to display, default is all epochs
+  * `channel::Int64`: channel to plot
+  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
+  * `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: 0 ms:20 s]
+  * `mono::Bool=false`: use color or grey palette
+  * `markers::Bool`: draw markers if available
+  * `avg::Bool=false`: plot average ERP
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+  * `kwargs`: optional arguments for plot() function
 
 **Returns**
 

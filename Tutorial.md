@@ -2,7 +2,7 @@
 
 View markers:
 ```julia
-eeg_view_markers(eeg)
+eeg_view_marker(eeg)
 ```
 ### EEG Analyze
 
@@ -178,7 +178,7 @@ eeg_plot_save(p, file_name="images/eeg_xcov.png")
 Plot channels stats:
 ```julia
 c = eeg_channels_stats(eeg)
-e = eeg_epochs_stats(eeg)
+e = eeg_epoch_stats(eeg)
 eeg_add_component!(eeg, c=:channels_var, v=c[4])
 eeg_add_component!(eeg, c=:epochs_var, v=e[4])
 p = eeg_plot_stats(eeg, :channels_var, epoch=1, title="Channels variance\n[epoch: 1]", plot_by=:channels, type=:line)
@@ -310,10 +310,12 @@ eeg_plot_save(p, file_name="images/kwargs.png")
 Comparing two signals:
 ```julia
 eeg1 = eeg_filter(eeg, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(eeg, band=:delta), order=8)
-eeg1 = eeg_epochs(eeg1, epoch_len=10*eeg_sr(eeg1), average=true)
+eeg1 = eeg_epoch(eeg1, epoch_len=10*eeg_sr(eeg1))
+eeg_epoch_avg!(eeg1)
 eeg1 = eeg_keep_channel(eeg1, 4)
 eeg2 = eeg_filter(eeg, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(eeg, band=:beta), order=8)
-eeg2 = eeg_epochs(eeg2, epoch_len=10*eeg_sr(eeg2), average=true)
+eeg2 = eeg_epoch(eeg2, epoch_len=10*eeg_sr(eeg2))
+eeg_epoch_avg!(eeg2)
 eeg2 = eeg_keep_channel(eeg2, 4)
 s, ss, p = eeg_difference(eeg1, eeg2, n=10, method=:absdiff)
 s, ss, p = eeg_difference(eeg1, eeg2, n=10, method=:diff2int)

@@ -6,7 +6,7 @@ using Test
 edf = eeg_import_edf("eeg-test-edf.edf")
 eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko-correct.ced")
 isfile("test.png") && rm("test.png")
-e10 = eeg_epochs(edf, epoch_n=10)
+e10 = eeg_epoch(edf, epoch_n=10)
 
 p = plot_filter_response(fs=eeg_sr(edf), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
@@ -101,11 +101,18 @@ l = (2, 1)
 p = plot_compose(pp, layout=l)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
+p = eeg_plot_erp(e10, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, channel=1, type=:mean)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, channel=1, type=:butterfly)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
 #####
 
 #=
 
-e10=eeg_epochs(edf, epoch_len=10*256)
+e10=eeg_epoch(edf, epoch_len=10*256)
 ic, icm = eeg_ica(e10, n=16, tol=0.99)
 eeg_add_component!(e10, c=:ica, v=ic)
 eeg_add_component!(e10, c=:ica_mw, v=icm)

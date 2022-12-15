@@ -694,11 +694,6 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
     println("         File size [MB]: $(eeg.eeg_header[:eeg_filesize_mb])")
     println("       Memory size [MB]: $(round(Base.summarysize(eeg) / 1024^2, digits=2))")
     println("     Sampling rate (Hz): $(eeg_sr(eeg))")
-    if eeg.eeg_header[:markers] == false
-        println("            markers: no")
-    else
-        println("            markers: yes")
-    end
     println("Signal length (samples): $(eeg_signal_len(eeg))")
     println("Signal length (seconds): $(round(eeg.eeg_header[:eeg_duration_seconds], digits=2))")
     println("     Number of channels: $(eeg_channel_n(eeg))")
@@ -714,6 +709,11 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
         println("                 Labels: no")
     else
         println("                 Labels: yes")
+    end
+    if eeg.eeg_header[:markers] == false
+        println("                Markers: no")
+    else
+        println("                Markers: yes")
     end
     if eeg.eeg_header[:channel_locations] == false
         println("      Channel locations: no")
@@ -741,25 +741,52 @@ function eeg_info(eeg::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_epochs(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+    eeg_epoch(eeg; marker, epoch_offset, epoch_n, epoch_len)
 
-Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
+Split EEG into epochs. Return signal that is split either by markers (if specified ) epoch length or by number of epochs. 
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `marker::String="": marker name to split at
+- `epoch_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch_offset)
 - `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
-- `average::Bool=false`: average all epochs, return one averaged epoch
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real=0, epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
 
-    # split into epochs
-    epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
+    eeg_new = deepcopy(eeg)
+
+    if marker != ""
+        if eeg.eeg_header[:markers] == true
+            epoch_len === nothing && throw(ArgumentError("epoch_len must be specified."))
+            epoch_offset == 0 && throw(ArgumentError("epoch_offset must be specified."))
+            _check_markers(eeg, marker)
+
+            marker_idx = []
+            for idx in 1:length(eeg.eeg_markers[!, :description])
+                eeg_new.eeg_markers[!, :description][idx] == marker && push!(marker_idx, idx)
+            end
+            marker_start = eeg_new.eeg_markers[!, :start][marker_idx]
+
+            # split into epochs
+            epochs, eeg_new.eeg_markers = _make_epochs_bymarkers(eeg.eeg_signals, markers=eeg_new.eeg_markers, marker_start=marker_start, epoch_offset=epoch_offset, epoch_len=epoch_len)
+        else
+            throw(ArgumentError("EEG does not contain markers."))
+        end
+    else
+        # split into epochs
+        epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len)
+
+        # delete markers outside epochs
+        for marker_idx in nrow(eeg_new.eeg_markers):-1:1
+            eeg_new.eeg_markers[!, :start][marker_idx] in 1:size(epochs, 2) * size(epochs, 3) || delete!(eeg_new.eeg_markers, marker_idx)
+        end
+    end
 
     # create new dataset
     epoch_n = size(epochs, 3)
@@ -767,17 +794,16 @@ function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothi
     epoch_duration_seconds = size(epochs, 2) / eeg.eeg_header[:sampling_rate]
     eeg_duration_samples = size(epochs, 2) * size(epochs, 3)
     eeg_duration_seconds = eeg_duration_samples / eeg.eeg_header[:sampling_rate]
-    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):epoch_duration_seconds)
+    eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):eeg_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
-    eeg_new = deepcopy(eeg)
+
     eeg_new.eeg_signals = epochs
     eeg_new.eeg_time = eeg_time
 
     # update epochs time
     fs = eeg_sr(eeg_new)
-    ts = eeg.eeg_epochs_time[1]
-    new_epochs_time = linspace(ts, ts + (epoch_duration_samples / fs), epoch_duration_samples)
-    eeg_new.eeg_epochs_time = new_epochs_time
+    new_epochs_time = linspace(-s2t(epoch_offset, fs), epoch_duration_seconds - s2t(epoch_offset, fs), epoch_duration_samples)
+    eeg_new.eeg_epoch_time = new_epochs_time
 
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
@@ -786,30 +812,90 @@ function eeg_epochs(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothi
     eeg_new.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_epochs(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len, average=$average)")
+    push!(eeg_new.eeg_header[:history], "eeg_epoch(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len)")
 
     return eeg_new
 end
 
 """
-    eeg_epochs!(eeg; epoch_n=nothing, epoch_len=nothing, average=false)
+    eeg_epoch!(eeg; marker, epoch_offset, epoch_n, epoch_len)
 
 Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `marker::String="": marker name to split at
+- `epoch_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch_offset)
 - `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
-- `average::Bool=false`: average all epochs, return one averaged epoch
 """
-function eeg_epochs!(eeg::NeuroAnalyzer.EEG; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function eeg_epoch!(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real=0, epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
 
-    eeg_tmp = eeg_epochs(eeg, epoch_n=epoch_n, epoch_len=epoch_len, average=average)
+    eeg_tmp = eeg_epoch(eeg, marker=marker, epoch_offset=epoch_offset, epoch_n=epoch_n, epoch_len=epoch_len)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
-
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_epoch_time = eeg_tmp.eeg_epoch_time
     eeg_reset_components!(eeg)
+
+    return nothing
+end
+
+"""
+    eeg_epoch_avg(eeg)
+
+Average EEG epochs.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_epoch_avg(eeg::NeuroAnalyzer.EEG)
+
+    eeg_new = deepcopy(eeg)
+    eeg_new.eeg_signals = mean(eeg_new.eeg_signals, dims=3)[:, :, :]
+    eeg_duration_samples = size(eeg_new.eeg_signals, 2)
+    eeg_duration_seconds = eeg_duration_samples / eeg_sr(eeg)
+    eeg_time = collect(0:(1 / eeg_sr(eeg)):eeg_duration_seconds)
+    eeg_new.eeg_time = eeg_time[1:(end - 1)]
+    eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
+    eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
+    eeg_new.eeg_header[:epoch_n] = 1
+
+    # remove markers of deleted epochs
+    for marker_idx in nrow(eeg_new.eeg_markers):-1:1
+        eeg_new.eeg_markers[!, :start][marker_idx] > eeg_duration_samples && delete!(eeg_new.eeg_markers, marker_idx)
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_epoch_avg(EEG)")
+
+    return eeg_new
+end
+
+"""
+    eeg_epoch_avg!(eeg)
+
+Average EEG epochs.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_epoch_avg!(eeg::NeuroAnalyzer.EEG)
+
+    eeg_tmp = eeg_epoch_avg(eeg)
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_markers = eeg_tmp.eeg_markers
+    eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -834,7 +920,7 @@ function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
     s_new = reshape(eeg.eeg_signals[:, :, epoch], eeg_channel_n(eeg), eeg_signal_len(eeg), 1)
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_new
-    eeg_new.eeg_epochs_time = eeg.eeg_epochs_time
+    eeg_new.eeg_epoch_time = eeg.eeg_epoch_time
     eeg_new.eeg_header[:epoch_n] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
@@ -864,26 +950,26 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
 
     if remove_epochs == false
         eeg_new = deepcopy(eeg)
-        eeg_epoch_n(eeg) > 1 && (eeg_epochs!(eeg_new, epoch_n=1))
+        eeg_epoch_n(eeg) > 1 && (eeg_epoch!(eeg_new, epoch_n=1))
         _check_segment(eeg_new, segment[1], segment[2])
         eeg_new.eeg_signals = s_trim(eeg_new.eeg_signals, segment=segment)
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_time = t_trimmed
-        eeg_new.eeg_epochs_time = t_trimmed
+        eeg_new.eeg_epoch_time = t_trimmed
         eeg_new.eeg_header[:eeg_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:eeg_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
         eeg_new.eeg_header[:epoch_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:epoch_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
         if eeg_epoch_n(eeg) > 1
             if eeg_epoch_len(eeg) <= eeg_signal_len(eeg_new)
-                eeg_epochs!(eeg_new, epoch_len=eeg_epoch_len(eeg))
+                eeg_epoch!(eeg_new, epoch_len=eeg_epoch_len(eeg))
             else
                 verbose == true && @info "Cannot apply original epoch length, returning single-epoch EEG."
             end
         end
     else
         eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use remove_epochs=true."))
-        epochs = _t2epoch(eeg, segment[1], segment[2])
+        epochs = _s2epoch(eeg, segment[1], segment[2])
         verbose == true && @info "Removing $epochs epochs."
         eeg_new = eeg_delete_epoch(eeg, epoch=epochs)
     end
@@ -1001,6 +1087,14 @@ function eeg_delete_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int
     # remove epoch
     eeg_new.eeg_signals = eeg_new.eeg_signals[:, :, setdiff(1:end, (epoch))]
 
+    # remove markers of deleted epochs
+    for epoch_idx in epoch
+        t1, t2 = _epoch2s(eeg, epoch_idx)
+        for marker_idx in nrow(eeg_new.eeg_markers):-1:1
+            eeg_new.eeg_markers[!, :start][marker_idx] in t1:t2 || delete!(eeg_new.eeg_markers, marker_idx)
+        end
+    end
+
     # update headers
     eeg_new.eeg_header[:epoch_n] -= length(epoch)
     epoch_n = eeg_new.eeg_header[:epoch_n]
@@ -1030,9 +1124,9 @@ function eeg_delete_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{In
     eeg_tmp = eeg_delete_epoch(eeg, epoch=epoch)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
-
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_markers = eeg_tmp.eeg_markers
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_delete_epoch!(EEG, $epoch)")
 
     return nothing
 end
@@ -1085,9 +1179,9 @@ function eeg_keep_epoch!(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int6
     eeg_tmp = eeg_keep_epoch(eeg, epoch=epoch)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
-
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_markers = eeg_tmp.eeg_markers
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_keep_epoch(EEG, $epoch)")
 
     return nothing
 end
@@ -1133,7 +1227,6 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)    
 
-    #signal = eeg_demean(eeg, channel=channel).eeg_signals
     signal = eeg.eeg_signals
 
     bad_m = zeros(Bool, channel_n, epoch_n)
@@ -1275,7 +1368,7 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
 end
 
 """
-    eeg_add_labels(eeg, labels)
+    eeg_add_labels(eeg; labels)
 
 Add EEG channel labels.
 
@@ -1288,7 +1381,7 @@ Add EEG channel labels.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+function eeg_add_labels(eeg::NeuroAnalyzer.EEG; labels::Vector{String})
 
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
     
@@ -1301,7 +1394,7 @@ function eeg_add_labels(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
 end
 
 """
-    eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+    eeg_add_labels!(eeg::NeuroAnalyzer.EEG; labels::Vector{String})
 
 Add EEG channel labels.
 
@@ -1310,11 +1403,11 @@ Add EEG channel labels.
 - `eeg::NeuroAnalyzer.EEG`
 - `labels::Vector{String}`
 """
-function eeg_add_labels!(eeg::NeuroAnalyzer.EEG, labels::Vector{String})
+function eeg_add_labels!(eeg::NeuroAnalyzer.EEG; labels::Vector{String})
 
     length(labels) == eeg_channel_n(eeg) || throw(ArgumentError("labels length must be $(eeg_channel_n(eeg))."))
-    eeg.eeg_header[:labels] = labels
-    push!(eeg.eeg_header[:history], "eeg_add_labels(EEG, labels=$labels")
+    eeg_tmp = eeg_add_labels(eeg, labels=labels)
+    eeg.eeg_header = eeg_tmp.eeg_header
 
     return nothing
 end
@@ -1368,8 +1461,6 @@ function eeg_edit_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, field::Symbol
     eeg_tmp = eeg_edit_channel(eeg, channel=channel, field=field, value=value)
     eeg.eeg_header = eeg_tmp.eeg_header
 
-    push!(eeg.eeg_header[:history], "eeg_edit_channel(EEG, channel=$channel, field=$field, value=$value)")
-
     return nothing
 end
 
@@ -1417,8 +1508,7 @@ function eeg_keep_channel_type!(eeg::NeuroAnalyzer.EEG; type::Symbol=:eeg)
     eeg_tmp = eeg_keep_channel_type(eeg, type=type)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
-
-    push!(eeg.eeg_header[:history], "eeg_keep_channel_type!(EEG, type=$type")
+    eeg_reset_components!(eeg)
 
     return nothing
 end
@@ -1454,7 +1544,7 @@ function eeg_copy(eeg::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_epochs_time(eeg; ts)
+    eeg_epoch_time(eeg; ts)
 
 Edit EEG epochs time start.
 
@@ -1467,21 +1557,21 @@ Edit EEG epochs time start.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs_time(eeg::NeuroAnalyzer.EEG; ts::Real)
+function eeg_epoch_time(eeg::NeuroAnalyzer.EEG; ts::Real)
 
     epoch_len = eeg_epoch_len(eeg)
     fs = eeg_sr(eeg)
     new_epochs_time = linspace(ts, ts + (epoch_len / fs), epoch_len)
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_epochs_time = new_epochs_time
+    eeg_new.eeg_epoch_time = new_epochs_time
 
-    push!(eeg_new.eeg_header[:history], "eeg_epochs_time(EEG, ts=$ts)")
+    push!(eeg_new.eeg_header[:history], "eeg_epoch_time(EEG, ts=$ts)")
 
     return eeg_new
 end
 
 """
-    eeg_epochs_time!(eeg; ts)
+    eeg_epoch_time!(eeg; ts)
 
 Edit EEG epochs time start.
 
@@ -1494,11 +1584,11 @@ Edit EEG epochs time start.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epochs_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
+function eeg_epoch_time!(eeg::NeuroAnalyzer.EEG; ts::Real)
 
-    eeg_tmp = eeg_epochs_time(eeg, ts=ts)
+    eeg_tmp = eeg_epoch_time(eeg, ts=ts)
     eeg.eeg_header = eeg_tmp.eeg_header
-    eeg.eeg_epochs_time = eeg_tmp.eeg_epochs_time
+    eeg.eeg_epoch_time = eeg_tmp.eeg_epoch_time
 
     return nothing
 end
@@ -1629,10 +1719,7 @@ function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Stri
     eeg_tmp = eeg_replace_channel(eeg, channel=chanel, signal=signal)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
-
     eeg_reset_components!(eeg)
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_replace_channel(EEG, channel=$channel, signal=$signal")
 
     return nothing
 end
@@ -1722,9 +1809,10 @@ Interpolate EEG channel(s) using planar interpolation.
 """
 function eeg_plinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, interpolation_factor::Int64=100)
 
-    eeg.eeg_signals = eeg_plinterpolate_channel(eeg, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor).eeg_signals
+    eeg_tmp = eeg_plinterpolate_channel(eeg, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_plinterpolate_channel!(EEG, channel=$channel, epoch=$epoch, imethod=$imethod, interpolation_factor=$interpolation_factor)")
 
     return nothing
 end
@@ -1969,8 +2057,8 @@ Change EEG channel type.
 """
 function eeg_channel_type!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, type::String)
 
-    eeg.eeg_header[:channel_type] = eeg_get_channel_bytype(eeg, channel=channel, type=type)[:channel_type]
-    push!(eeg.eeg_header[:history], "eeg_channel_type(EEG, channel=$channel, type=$type)")
+    eeg_tmp = eeg_channel_type(eeg, channel=channel, type=type)
+    eeg.eeg_header = eeg_tmp.eeg_header
 
     return nothing
 end
@@ -2049,8 +2137,8 @@ function eeg_edit_electrode!(eeg::NeuroAnalyzer.EEG; channel::Union{String, Int6
     eeg_tmp = eeg_edit_electrode(eeg, channel=channel, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_locs = eeg_tmp.eeg_locs
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -2279,7 +2367,7 @@ function loc_cart2sph!(locs::DataFrame)
 end
 
 """
-    eeg_view_markers(eeg)
+    eeg_view_marker(eeg)
 
 Show markers.
 
@@ -2287,7 +2375,7 @@ Show markers.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_view_markers(eeg::NeuroAnalyzer.EEG)
+function eeg_view_marker(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     for marker_idx in 1:size(eeg.eeg_markers, 1)
         println("ID: $(rpad(("'" * eeg.eeg_markers[!, :id][marker_idx] * "'"), 24, " ")) start [sample]: $(rpad(eeg.eeg_markers[!, :start][marker_idx], 8, " ")) length [samples]: $(rpad(eeg.eeg_markers[!, :length][marker_idx], 8, " ")) description: $(rpad(("'" * eeg.eeg_markers[!, :description][marker_idx] * "'"), 24, " ")) channel: $(eeg.eeg_markers[!, :channel][marker_idx])")
@@ -2336,13 +2424,13 @@ function eeg_delete_marker!(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_tmp = eeg_delete_marker(eeg, n=n)
     eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
     eeg.eeg_markers = eeg_tmp.eeg_markers
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
 """
-    eeg_add_marker(eeg; id, start, len, desc)
+    eeg_add_marker(eeg; id, start, len, desc, channel)
 
 Add marker.
 
@@ -2353,19 +2441,17 @@ Add marker.
 - `start::Int64`: marker time in samples
 - `len::Int64`: marker length in samples
 - `desc::String`: marker description
-- `channel::Int64`: channel number, if 0 then marker is related to all channels
+- `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64=0)
 
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("len must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len > eeg_epoch_len(eeg) + 1 && throw(ArgumentError("start + len must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    start + len > eeg_signal_len(eeg) + 1 && throw(ArgumentError("start + len must be ≤ $(eeg_signal_len(eeg) + 1)."))
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:markers] = true
@@ -2378,7 +2464,7 @@ function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::I
 end
 
 """
-    eeg_add_marker!(eeg; id, start, len, desc)
+    eeg_add_marker!(eeg; id, start, len, desc, channel)
 
 Add marker.
 
@@ -2389,15 +2475,15 @@ Add marker.
 - `start::Int64`: marker time in samples
 - `len::Int64`: marker length in samples
 - `desc::String`: marker description
-- `channel::Int64`: channel number, if 0 then marker is related to all channels
+- `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 """
-function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64=0)
 
     eeg_tmp = eeg_add_marker(eeg, id=id, start=start, len=len, desc=desc, channel=channel)
     eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
     eeg.eeg_markers = eeg_tmp.eeg_markers
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -2519,8 +2605,8 @@ function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::I
     eeg_tmp = eeg_edit_marker(eeg, n=n, id=id, start=start, len=len, desc=desc, channel=channel)
     eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
     eeg.eeg_markers = eeg_tmp.eeg_markers
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -2596,9 +2682,11 @@ Interpolate EEG channel using linear regression.
 """
 function eeg_lrinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg.eeg_signals = eeg_lrinterpolate_channel(eeg, channel=channel, epoch=epoch).eeg_signals
+    eeg_tmp = eeg_lrinterpolate_channel(eeg, channel=channel, epoch=epoch)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_lrinterpolate_channel!(EEG, channel=$channel, epoch=$epoch)")
 
     return nothing
 end
+

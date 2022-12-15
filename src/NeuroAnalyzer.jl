@@ -50,7 +50,7 @@ using ContinuousWavelets
 mutable struct EEG
     eeg_header::Dict
     eeg_time::Vector{Float64}
-    eeg_epochs_time::Vector{Float64}
+    eeg_epoch_time::Vector{Float64}
     eeg_signals::Array{Float64, 3}
     eeg_components::Vector{Any}
     eeg_markers::DataFrame
@@ -309,8 +309,10 @@ export eeg_epoch_n
 export eeg_signal_len
 export eeg_epoch_len
 export eeg_info
-export eeg_epochs
-export eeg_epochs!
+export eeg_epoch
+export eeg_epoch!
+export eeg_epoch_avg
+export eeg_epoch_avg!
 export eeg_extract_epoch
 export eeg_trim
 export eeg_trim!
@@ -329,8 +331,8 @@ export eeg_edit_channel!
 export eeg_keep_channel_type
 export eeg_keep_channel_type!
 export eeg_view_note
-export eeg_epochs_time
-export eeg_epochs_time!
+export eeg_epoch_time
+export eeg_epoch_time!
 export eeg_add_note
 export eeg_add_note!
 export eeg_delete_note
@@ -356,7 +358,7 @@ export loc_sph2cart
 export loc_sph2cart!
 export loc_cart2sph
 export loc_cart2sph!
-export eeg_view_markers
+export eeg_view_marker
 export eeg_delete_marker
 export eeg_delete_marker!
 export eeg_add_marker
@@ -536,5 +538,9 @@ export plot_topo
 export eeg_plot_topo
 export plot_compose
 export plot_empty
+export plot_erp
+export plot_erp_avg
+export plot_erp_butterfly
+export eeg_plot_erp
 
 end # NeuroAnalyzer

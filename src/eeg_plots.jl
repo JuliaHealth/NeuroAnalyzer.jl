@@ -128,6 +128,8 @@ Plot amplitude of single- or multi-channel `signal`.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `signal::Union{AbstractVector, AbstractArray}`: data to plot
+- `norm::Bool=false`: normalize signal for butterfly and averaged plots
+- `bad::Vector{Bool}}`: list of bad channels
 - `labels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -153,7 +155,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     signal = @views reverse(signal[:, 1:length(t)], dims = 1)
     bad = reverse(bad)
 
-    pal = :darktest
+    pal = mono == true ? :grays : :darktest
 
     # get range of the original signal for the scale
     range = _get_range(signal)
@@ -240,7 +242,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="default", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
+function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -425,6 +427,7 @@ Plot signal.
 """
 function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
+    eeg_signal_len(eeg) < 10*eeg_sr(eeg) && (segment=(1, eeg_signal_len(eeg)))
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
 
@@ -453,12 +456,12 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
     if segment[2] <= eeg_epoch_len(eeg)
         signal = eeg.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        signal = eeg_epochs(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+        signal = eeg_epoch(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg, segment[1], segment[2])
+    epoch = _s2epoch(eeg, segment[1], segment[2])
 
     if type === :normal
         if bad == false
@@ -538,7 +541,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
                          linecolor=:black,
                          label=false)
         for idx in eachindex(markers_desc)
-            p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
+            p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
 
@@ -612,7 +615,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg, segment[1], segment[2])
+    epoch = _s2epoch(eeg, segment[1], segment[2])
 
     if type === :normal
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
@@ -677,7 +680,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
                          linecolor=:black,
                          label=false)
         for idx in eachindex(markers_desc)
-            p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
+            p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
         end
     end
 
@@ -1428,7 +1431,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     signal = eeg.eeg_signals[channel, :, epoch]
 
     # get time vector
-    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epoch_time[1], eeg.eeg_epoch_time[end])
 
     if ref === :abs
         if method === :welch
@@ -1649,7 +1652,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; e
     signal = c[c_idx, :, epoch]
 
     # get time vector
-    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epoch_time[1], eeg.eeg_epoch_time[end])
 
     if ref === :abs
         if method === :welch
@@ -1931,7 +1934,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
     length(channel) > 1 && length(signal) / length(channel) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
 
     # get time vector
-    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epoch_time[1], eeg.eeg_epoch_time[end])
 
     if length(channel) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -1983,7 +1986,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
 
@@ -2085,7 +2088,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
     length(c_idx) > 1 && length(signal) / length(c_idx) < 4 * eeg_sr(eeg) && throw(ArgumentError("For multi-channel plot, signal length must be ≥ 4 × EEG sampling rate (4 × $(eeg_sr(eeg)) samples)."))
 
     # get time vector
-    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epochs_time[1], eeg.eeg_epochs_time[end])
+    _, t_s1, _, t_s2 = _convert_t(eeg.eeg_epoch_time[1], eeg.eeg_epoch_time[end])
 
     if length(c_idx) == 1
         ylabel == "default" && (ylabel = "Frequency [Hz]")
@@ -2137,7 +2140,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
                              linecolor=:black,
                              label=false)
             for idx in eachindex(markers_desc)
-                p = Plots.plot!(annotation=(markers_pos[idx], -0.95, Plots.text("$(markers_desc[idx])", pointsize=4, halign=:left, valign=:top, rotation=90)), label=false)
+                p = Plots.plot!(annotation=(markers_pos[idx], -0.92, Plots.text("$(markers_desc[idx])", pointsize=5, halign=:left, valign=:top, rotation=90)), label=false)
             end
         end
 
@@ -3892,11 +3895,11 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     if segment[2] <= eeg_epoch_len(eeg_tmp)
         signal = eeg_tmp.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        signal = eeg_epochs(eeg_tmp, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+        signal = eeg_epoch(eeg_tmp, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
+    epoch = _s2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -4013,7 +4016,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
         t = _get_t(segment[1], segment[2] + 1, eeg_sr(eeg_tmp))
     end
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    epoch = _t2epoch(eeg_tmp, segment[1], segment[2])
+    epoch = _s2epoch(eeg_tmp, segment[1], segment[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -4068,7 +4071,7 @@ Compose a complex plot of various plots contained in vector `p` using layout `la
 """
 function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matrix{Any}, Tuple{Int64, Int64}}, mono::Bool=false, kwargs...)
 
-    palette = mono == true ? :grays : :darktest
+    pal = mono == true ? :grays : :darktest
     if typeof(layout) == Tuple{Int64, Int64} && length(p) < layout[1] * layout[2]
         for idx in 1:(layout[1] * layout[2]) - length(p)
             push!(p, Plots.plot(border=:none, title=""))
@@ -4095,4 +4098,325 @@ Return an empty plot, useful for filling matrices of plots.
 """
 function plot_empty()
     return Plots.plot(grid=false, border=:none, title="")
+end
+
+"""
+    plot_erp(t, signal, bad; <keyword arguments>)
+
+Plot ERP.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::AbstractVector`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    pal = mono == true ? :grays : :darktest
+
+    # get limits
+    ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   bottom_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+    
+    # plot 0 h-line
+    p = Plots.hline!([0],
+                     color=:grey,
+                     lw=0.5,
+                     labels="")
+
+    # plot ERP
+    p = Plots.plot!(t,
+                    signal,
+                    linewidth=1,
+                    label="",
+                    color=:black)
+
+    # plot 0 v-line
+    p = Plots.vline!([0],
+                     linestyle=:dash,
+                     linewidth=0.5,
+                     linecolor=:black,
+                     label=false)
+
+    return p
+end
+
+"""
+    plot_erp_avg(t, signal; <keyword arguments>)
+
+Plot amplitude mean and ±95% CI of averaged `signal` channels.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::AbstractArray`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    pal = mono == true ? :grays : :darktest
+
+    # get mean and 95%CI
+    s_m, _, s_u, s_l = s_msci95(signal')
+
+    # get limits
+    ylim = (floor(minimum(s_l), digits=0), ceil(maximum(s_u), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # prepare plot
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+
+    # plot 0 h-line
+    p = Plots.hline!([0],
+                     color=:grey,
+                     lw=0.5,
+                     labels="")
+
+    # plot upper 95% CI
+    p = Plots.plot!(t,
+                    s_u,
+                    fillrange=s_l,
+                    fillalpha=0.35, 
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot lower 95% CI
+    p = Plots.plot!(t,
+                    s_l,
+                    label=false,
+                    t=:line,
+                    c=:grey,
+                    lw=0.5)
+    # plot mean
+    p = Plots.plot!(t,
+                    s_m,
+                    label=false,
+                    t=:line,
+                    c=:black,
+                    lw=0.5)
+
+    # plot 0 v-line
+    p = Plots.vline!([0],
+                     linestyle=:dash,
+                     linewidth=0.5,
+                     linecolor=:black,
+                     label=false)
+
+    return p
+end
+
+"""
+    plot_erp_butterfly(t, signal; <keyword arguments>)
+
+Butterfly plot of ERP.
+
+# Arguments
+
+- `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
+- `signal::AbstractArray`: data to plot
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `avg::Bool=false`: plot average ERP
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
+
+    pal = mono == true ? :grays : :darktest
+
+    channel_n = size(signal, 2)
+
+    # get limits
+    ylim = (floor(minimum(signal), digits=0), ceil(maximum(signal), digits=0))
+    ylim = _tuple_max(ylim)
+    yticks = [ylim[1], 0, ylim[2]]
+
+    # plot channels
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=ylim,
+                   yticks=yticks,
+                   title=title,
+                   palette=pal,
+                   size=(1200, 800),
+                   left_margin=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
+
+    # plot 0 h-line
+    p = Plots.hline!([0],
+                     color=:grey,
+                     lw=0.5,
+                     labels="")
+
+    # plot signals
+    for idx in 1:channel_n
+        p = Plots.plot!(t,
+                        signal'[idx, :],
+                        t=:line,
+                        linecolor=idx,
+                        linewidth=0.2,
+                        alpha=0.2,
+                        legend=false)
+    end
+
+    # plot averaged ERP
+    if avg == true
+        signal = vec(mean(signal, dims=2))
+        p = Plots.plot!(t,
+                        signal,
+                        linewidth=1,
+                        linecolor=:black,
+                        label=false)
+    end
+
+    # plot 0 v-line
+    p = Plots.vline!([0],
+                     linestyle=:dash,
+                     linewidth=0.5,
+                     linecolor=:black,
+                     label=false)
+
+    return p
+end
+
+"""
+    eeg_plot_erp(eeg; <keyword arguments>)
+
+Plot ERP.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg)`: epoch to display, default is all epochs
+- `channel::Int64`: channel to plot
+- `xlabel::String="default"`: x-axis label, default is Time [s]
+- `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
+- `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: 0 ms:20 s]
+- `mono::Bool=false`: use color or grey palette
+- `markers::Bool`: draw markers if available
+- `avg::Bool=false`: plot average ERP
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg), channel::Int64, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, avg::Bool=true, type::Symbol=:normal, kwargs...)
+
+    _check_var(type, [:normal, :butterfly, :mean], "type")
+
+    # check channels
+    _check_channels(eeg, channel)
+    labels = eeg_labels(eeg)[channel]
+
+    length(epoch) < 2 && throw(ArgumentError("For ERP plot ≥ 2 epochs must be specified."))
+    _check_epochs(eeg, epoch)
+
+    signal = eeg.eeg_signals[channel, :, epoch]
+
+    # get time vector
+    t = eeg.eeg_epoch_time
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+
+    if type === :normal
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+        signal = vec(mean(signal, dims=2))
+        p = plot_erp(t,
+                     signal,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title,
+                     mono=mono;
+                     kwargs...)
+    elseif type === :butterfly
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+        p = plot_erp_butterfly(t,
+                               signal,
+                               labels=labels,
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               title=title,
+                               mono=mono;
+                               kwargs...)
+    elseif type === :mean
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_erp_avg(t,
+                         signal,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         mono=mono;
+                         kwargs...)
+    end
+
+    Plots.plot(p)
+
+    return p
 end

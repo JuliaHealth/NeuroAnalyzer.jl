@@ -950,7 +950,7 @@ function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
 
     s_frq = round.(s_frq, digits=2)
     s_t = round.(s_t, digits=2)
-    s_t .+= eeg.eeg_epochs_time[1]
+    s_t .+= eeg.eeg_epoch_time[1]
 
     return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
 end
@@ -1510,7 +1510,7 @@ function eeg_tenv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     epoch_n = eeg_epoch_n(eeg)
 
     t_env = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
-    s_t = eeg.eeg_epochs_time
+    s_t = eeg.eeg_epoch_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
@@ -1979,7 +1979,7 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
         spec_tmp = mt_spectrogram(s_tmp, fs=fs)
     end
     sp_t = collect(spec_tmp.time)
-    sp_t .+= eeg.eeg_epochs_time[1]
+    sp_t .+= eeg.eeg_epoch_time[1]
 
     s_env = zeros(channel_n, length(sp_t), epoch_n)
 
@@ -3389,7 +3389,7 @@ function eeg_henv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     channel_n = size(signal, 1)
     epoch_n = size(signal, 3)
     h_env = similar(signal)
-    s_t = eeg.eeg_epochs_time
+    s_t = eeg.eeg_epoch_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n

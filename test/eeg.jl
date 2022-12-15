@@ -85,10 +85,11 @@ edf1 = eeg_upsample(edf, new_sr=512)
 
 @test eeg_sr(edf) == 256
 
-edf1 = eeg_epochs(edf, epoch_len=10, average=true)
-@test size(edf1.eeg_signals) == (19, 10, 1)
+edf1 = eeg_epoch(edf, epoch_len=1000)
+eeg_epoch_avg!(edf1)
+@test size(edf1.eeg_signals) == (19, 1000, 1)
 
-edf10 = eeg_epochs(edf, epoch_n=10)
+edf10 = eeg_epoch(edf, epoch_n=10)
 edf1 = eeg_extract_epoch(edf, epoch=1)
 @test size(edf1.eeg_signals) == (19, 309760, 1)
 
@@ -154,7 +155,7 @@ c, msc, ic = eeg_tcoherence(edf, edf)
 hz, nyq = eeg_freqs(edf)
 @test nyq == 128.0
 
-e10 = eeg_epochs(edf, epoch_len=2560)
+e10 = eeg_epoch(edf, epoch_len=2560)
 s_conv = eeg_fconv(e10, kernel=generate_window(:hann, 256))
 @test size(s_conv) == (19, 2560, 121)
 s_conv = eeg_tconv(e10, kernel=generate_window(:hann, 256))
@@ -172,7 +173,7 @@ e2 = eeg_pca_reconstruct(edf, p, pca)
 e = eeg_edit_header(edf, field=:patient, value="unknown")
 @test e.eeg_header[:patient] == "unknown"
 
-e = eeg_epochs(edf, epoch_n=10)
+e = eeg_epoch(edf, epoch_n=10)
 e9 = eeg_delete_epoch(e, epoch=10)
 @test size(e9.eeg_signals) == (19, 30976, 9)
 e1 = eeg_keep_epoch(e, epoch=1)
@@ -180,11 +181,12 @@ e1 = eeg_keep_epoch(e, epoch=1)
 
 @test length(eeg_channel_pick(edf, pick=:left)) == 8
 
-e = eeg_epochs(edf, epoch_len=20*256)
+e = eeg_epoch(edf, epoch_len=20*256)
 v = eeg_epoch_stats(e)
 @test length(v) == 10
 
-e = eeg_epochs(edf, epoch_len=20, average=true)
+e = eeg_epoch(edf, epoch_len=20)
+eeg_epoch_avg!(e)
 i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
@@ -206,7 +208,8 @@ eeg_reset_components!(e)
 c = eeg_list_components(e)
 @test size(c) == (0, )
 
-e = eeg_epochs(edf, epoch_len=2560, average=true)
+e = eeg_epoch(edf, epoch_len=2560)
+eeg_epoch_avg!(e)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:mt)
@@ -262,10 +265,10 @@ s, _ = eeg_standardize(edf)
 snr = eeg_snr(edf)
 @test length(snr) == 19
 
-edf1 = eeg_epochs_time(edf, ts=-10.0)
-edf1.eeg_epochs_time[1, 1] == -10.0
+edf1 = eeg_epoch_time(edf, ts=-10.0)
+edf1.eeg_epoch_time[1, 1] == -10.0
 
-e10 = eeg_epochs(edf, epoch_len=10*256)
+e10 = eeg_epoch(edf, epoch_len=10*256)
 @test size(eeg_tenv(e10)[1]) == (19, 2560, 121)
 @test size(eeg_tenv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(eeg_tenv_median(e10, dims=1)[1]) == (2560, 121)
@@ -302,7 +305,7 @@ edf1 = eeg_add_note(edf, note="test")
 eeg_delete_note!(edf1)
 @test eeg_view_note(edf1) == ""
 
-edf1 = eeg_epochs(edf, epoch_len=2560)
+edf1 = eeg_epoch(edf, epoch_len=2560)
 new_channel = zeros(1, eeg_epoch_len(edf1), eeg_epoch_n(edf1))
 edf1 = eeg_replace_channel(edf1, channel=1, signal=new_channel);
 @test edf1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(edf1), eeg_epoch_n(edf1))

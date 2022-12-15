@@ -61,7 +61,7 @@ eeg_load(tmp);
 @time eeg_load(tmp);
 
 eeg_delete_channel!(edf, channel=20:24)
-e10 = eeg_epochs(edf, epoch_len=2560)
+e10 = eeg_epoch(edf, epoch_len=2560)
 
 @info "Benchmarking: eeg_edit.jl"
 println()
@@ -96,7 +96,7 @@ println()
 print(rpad("A referencing", 36))
 edf_am = eeg_import_edf("test/eeg-test-edf.edf")
 eeg_delete_channel!(edf_am, channel=[22, 23, 24])
-e10_am = eeg_epochs(edf_am, epoch_len=2560)
+e10_am = eeg_epoch(edf_am, epoch_len=2560)
 eeg_reference_a(e10_am)
 @time eeg_reference_a(e10_am);
 print(rpad("M referencing", 36))
@@ -131,6 +131,12 @@ eeg_filter(e10, fprototype=:poly, order=8);
 print(rpad("Filter: moving average", 36))
 eeg_filter(e10, fprototype=:mavg);
 @time eeg_filter(e10, fprototype=:mavg);
+print(rpad("Interpolate: PL", 36))
+eeg_plinterpolate_channel(e10, channel=1, epoch=1);
+@time eeg_plinterpolate_channel(e10, channel=1, epoch=1);
+print(rpad("Interpolate: LR", 36))
+eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
+@time eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
 
 @info "Benchmarking: eeg_analyze.jl"
 println()
@@ -210,8 +216,8 @@ print(rpad("Signal difference: diff2int", 36))
 eeg_difference(e10, e10; method=:diff2int);
 @time eeg_difference(e10, e10; method=:diff2int);
 print(rpad("Epoch stats", 36))
-eeg_epochs_stats(e10);
-@time eeg_epochs_stats(e10);
+eeg_epoch_stats(e10);
+@time eeg_epoch_stats(e10);
 print(rpad("Spectrogram: standard", 36))
 eeg_spectrogram(e10);
 @time eeg_spectrogram(e10);

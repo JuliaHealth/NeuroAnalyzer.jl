@@ -222,7 +222,7 @@ function _draw_head(p::Plots.Plot{Plots.GRBackend}; head_labels::Bool=true, head
 end
 
 function _get_epoch_markers(eeg::NeuroAnalyzer.EEG)
-    return round.(s2t.(collect(1:eeg_epoch_len(eeg):eeg_epoch_len(eeg) * eeg_epoch_n(eeg)), eeg_sr(eeg)), digits=0)
+    return round.(s2t.(collect(1:eeg_epoch_len(eeg):eeg_epoch_len(eeg) * eeg_epoch_n(eeg)), eeg_sr(eeg)), digits=2)
 end
 
 function _get_t(from::Int64, to::Int64, fs::Int64)
@@ -282,12 +282,18 @@ function _channel2channel_name(channel::Union{Int64, Vector{Int64}, AbstractRang
     return channel_name
 end
 
-function _t2epoch(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
+function _s2epoch(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
     epoch = floor(Int64, from / eeg_epoch_len(eeg)):ceil(Int64, to / eeg_epoch_len(eeg))
     from / eeg_epoch_len(eeg) > from ÷ eeg_epoch_len(eeg) && (epoch = epoch[1] + 1:epoch[end])
     epoch[1] == 0 && (epoch = 1:epoch[end])
     epoch[1] == epoch[end] && (epoch = epoch[1])
     return epoch
+end
+
+function _epoch2s(eeg::NeuroAnalyzer.EEG, epoch::Int64)
+    t1 = (epoch - 1) * eeg_epoch_len(eeg) * epoch + 1
+    t2 = epoch * eeg_epoch_len(eeg) * epoch
+    return t1, t2
 end
 
 function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
@@ -305,7 +311,8 @@ function _fir_response(f::Vector{<:Real}, w=range(0, stop=π, length=1024))
     return h
 end
 
-function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
+
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
     (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
     (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
@@ -324,12 +331,11 @@ function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=not
 
     epochs = reshape(signal[:, 1:(epoch_len * epoch_n)], channel_n, epoch_len, epoch_n)
 
-    average == true && (epochs = mean(epochs, dims=3)[:, :])
-
     return epochs
 end
 
-function _make_epochs(signal::Array{<:Real, 3}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing, average::Bool=false)
+function _make_epochs(signal::Array{T, 3}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing) where {T <: Real}
+
     (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
     (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
     (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
@@ -344,9 +350,64 @@ function _make_epochs(signal::Array{<:Real, 3}; epoch_n::Union{Int64, Nothing}=n
     signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
     epochs = reshape(signal[:, 1:(epoch_len * epoch_n), 1], channel_n, epoch_len, epoch_n)
 
-    average == true && (epochs = mean(epochs, dims=3)[:, :, :])
-
     return epochs
+end
+
+function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, epoch_len::Int64)
+
+    if size(signal, 3) > 1
+        @info "EEG has already been epoched, parts of the signal might have been removed."
+        signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
+    end
+
+    marker_n = length(marker_start)
+    epoch_start = marker_start .- epoch_offset
+    epoch_end = epoch_start .+ epoch_len .- 1
+
+    # delete epochs outside signal limits
+    for marker_idx in marker_n:-1:1
+        if epoch_start[marker_idx] < 1
+            deleteat!(epoch_start, marker_idx)
+            deleteat!(epoch_end, marker_idx)
+            marker_n -= 1
+        elseif epoch_end[marker_idx] > size(signal, 2)
+            deleteat!(epoch_start, marker_idx)
+            deleteat!(epoch_end, marker_idx)
+            marker_n -= 1
+        end
+    end
+
+    (epoch_offset < 1) && throw(ArgumentError("epoch_offset must be ≥ 1."))
+    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
+
+    (epoch_offset + epoch_len > size(signal, 2)) && throw(ArgumentError("epoch_offset + epoch_len must be ≤ signal length $(size(signal, 2))."))
+
+    epochs = zeros(size(signal, 1), epoch_len, marker_n)
+    for marker_idx in 1:marker_n
+        epochs[:, :, marker_idx] = reshape(signal[:, epoch_start[marker_idx]:epoch_end[marker_idx], :],
+                                           size(signal, 1), 
+                                           epoch_len)
+    end
+
+    # remove markers outside epoch limits
+    for marker_idx in nrow(markers):-1:1
+        within_epoch = false
+        for epoch_idx in 1:marker_n
+            markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx] && (within_epoch = true)
+        end
+        within_epoch == false && delete!(markers, marker_idx)
+    end
+
+    # calculate marker offsets
+    for epoch_idx in 1:marker_n
+        for marker_idx in 1:nrow(markers)
+            if markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx]
+                markers[!, :start][marker_idx] = (epoch_idx - 1) * epoch_len + markers[!, :start][marker_idx] .- epoch_start[epoch_idx]
+            end
+        end
+    end
+
+    return epochs, markers
 end
 
 function _get_channel_idx(labels::Vector{String}, channel::Union{String, Int64})
@@ -585,3 +646,11 @@ function _sort_channels(ch_t::Vector{String})
 end
 
 _c(n) = collect(1:n)
+
+function _check_markers(markers::Vector{String}, marker::String)
+    marker in markers || throw(ArgumentError("Marker: $marker not found in markers."))
+end
+
+function _check_markers(eeg::NeuroAnalyzer.EEG, marker::String)
+    marker in unique(eeg.eeg_markers[!, :description]) || throw(ArgumentError("Marker: $marker not found in markers."))
+end

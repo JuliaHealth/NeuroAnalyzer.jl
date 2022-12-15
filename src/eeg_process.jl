@@ -63,10 +63,10 @@ Reference to selected channel(s). Only signal (EEG/MEG, depending on `eeg.eeg_he
 """
 function eeg_reference_ch!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_ch(eeg, channel=channel, med=med).eeg_signals
-    eeg.eeg_header[:reference] = "channel: $channel"
+    eeg_tmp = eeg_reference_ch(eeg, channel=channel, med=med)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_ch!(EEG, channel=$channel, med=$med)")
 
     return nothing
 end
@@ -140,10 +140,10 @@ Reference to common average reference. Only signal (EEG/MEG, depending on `eeg.e
 """
 function eeg_reference_car!(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med).eeg_signals
-    eeg.eeg_header[:reference] = "CAR"
+    eeg_tmp = eeg_reference_car(eeg, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_car!(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med)")
 
     return nothing
 end
@@ -191,9 +191,10 @@ Return the derivative of EEG channel(s) with length same as the signal.
 """
 function eeg_derivative!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_derivative(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_derivative(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_derivative!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -264,9 +265,10 @@ Perform piecewise detrending of EEG channel(s).
 """
 function eeg_detrend!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
-    eeg.eeg_signals = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, f=f).eeg_signals
+    eeg_tmp = eeg_detrend(eeg, channel=channel, type=type, offset=offset, order=order, f=f)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_detrend!(EEG, channel=$channel, type=$type, offset=$offset, order=$order, f=$f)")
 
     return nothing
 end
@@ -318,9 +320,10 @@ Taper EEG channel(s).
 """
 function eeg_taper!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
-    eeg.eeg_signals = eeg_taper(eeg, channel=channel, taper=taper).eeg_signals
+    eeg_tmp = eeg_taper(eeg, channel=channel, taper=taper)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_taper!(EEG, taper=$taper)")
 
     return nothing
 end
@@ -370,9 +373,10 @@ Remove mean value (DC offset).
 """
 function eeg_demean!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_demean(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_demean(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_demean!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -424,9 +428,10 @@ Normalize EEG channel(s)
 """
 function eeg_normalize!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), method::Symbol)
 
-    eeg.eeg_signals = eeg_normalize(eeg, channel=channel, method=method).eeg_signals
+    eeg_tmp = eeg_normalize(eeg, channel=channel, method=method)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_normalize!(EEG, channel=$channel, method=$method)")
 
     return nothing
 end
@@ -477,9 +482,10 @@ Add random noise to EEG channel(s).
 """
 function eeg_add_noise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_add_noise(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_add_noise(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_add_noise!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -595,20 +601,22 @@ function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
         return p
     end
 
-    eeg.eeg_signals = eeg_filter(eeg,
-                                 channel=channel,
-                                 fprototype=fprototype,
-                                 ftype=ftype,
-                                 cutoff=cutoff,
-                                 order=order,
-                                 rp=rp,
-                                 rs=rs,
-                                 bw=bw,
-                                 dir=dir,
-                                 t=t,
-                                 window=window).eeg_signals
+    eeg_tmp = eeg_filter(eeg,
+                         channel=channel,
+                         fprototype=fprototype,
+                         ftype=ftype,
+                         cutoff=cutoff,
+                         order=order,
+                         rp=rp,
+                         rs=rs,
+                         bw=bw,
+                         dir=dir,
+                         t=t,
+                         window=window)
+
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_filter!(EEG, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 
     return nothing
 end
@@ -684,9 +692,10 @@ Reconstruct EEG signals using embedded PCA components (`:pc`) and model (`:pca`)
 """
 function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_pca_reconstruct(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_pca_reconstruct(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_pca_reconstruct!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -733,9 +742,10 @@ Reconstruct EEG signals using external PCA components (`pc` and `pca`).
 """
 function eeg_pca_reconstruct!(eeg::NeuroAnalyzer.EEG, pc::Array{Float64, 3}, pca::MultivariateStats.PCA{Float64}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_pca_reconstruct(eeg, pc, pca).eeg_signals
+    eeg_tmp = eeg_pca_reconstruct(eeg, pc, pca, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_pca_reconstruct!(EEG, channel=$channel, pc=$pc, pca=$pca)")
 
     return nothing
 end
@@ -814,9 +824,10 @@ Reconstruct EEG signals using embedded ICA components (`:ica` and `:ica_mw`).
 """
 function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg.eeg_signals = eeg_ica_reconstruct(eeg, channel=channel, ic=ic).eeg_signals
+    eeg_tmp = eeg_ica_reconstruct(eeg, channel=channel, ic=ic)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, channel=$channel, ic=$ic)")
 
     return nothing
 end
@@ -846,7 +857,7 @@ function eeg_ica_reconstruct(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica
     eeg_new.eeg_signals[channel, :, :] = @views s_ica_reconstruct(eeg_new.eeg_signals[channel, :, :], ica=ica, ica_mw=ica_mw, ic=ic)
     
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ic=$ica, ica_mw=$ica_mw, ic=$ic)")
+    push!(eeg_new.eeg_header[:history], "eeg_ica_reconstruct(EEG, ic=$ica, ica_mw=$ica_mw, channel=$channel, ic=$ic)")
 
     return eeg_new
 end
@@ -864,11 +875,12 @@ Reconstruct EEG signals using external ICA components (`ica` and `ica_mw`).
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 - `ic::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
 """
-function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange}, )
+function eeg_ica_reconstruct!(eeg::NeuroAnalyzer.EEG, ica::Array{Float64, 3}, ica_mw::Array{Float64, 3}; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), ic::Union{Int64, Vector{Int64}, AbstractRange})
 
-    eeg.eeg_signals = eeg_ica_reconstruct(eeg, ica, ica_mw, channel=channel, ic=ic).eeg_signals
+    eeg_tmp = eeg_ica_reconstruct(eeg, ica, ica_mw, channel=channel, ic=ic)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_ica_reconstruct!(EEG, ic=$ica, ica_mw=$ica_mw, ic=$ic)")
 
     return nothing
 end
@@ -887,7 +899,7 @@ Return the average signal of EEG channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_average(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
+function eeg_average(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
     _check_channels(eeg, channel)
 
@@ -911,11 +923,12 @@ Return the average signal of EEG channels.
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
 """
-function eeg_average!(eeg::NeuroAnalyzer.EEG, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
+function eeg_average!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    eeg.eeg_signals = eeg_average(eeg, channel=channel).eeg_signals
+    eeg_tmp = eeg_average(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_average!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -991,11 +1004,10 @@ Invert polarity.
 """
 function eeg_invert_polarity!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)))
 
-    _check_channels(eeg, channel)
-
-    eeg.eeg_signals[channel, :, :] = .- eeg.eeg_signals[channel, :, :]
+    eeg_tmp = eeg_invert_polarity(eeg, channel=channel)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_invert_polarity!(EEG, channel=$channel)")
 
     return nothing
 end
@@ -1017,11 +1029,10 @@ Resample (up- or down-sample).
 function eeg_resample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
-    new_sr > eeg_sr(eeg) && (eeg_new = eeg_upsample(eeg, new_sr=new_sr))
-    new_sr < eeg_sr(eeg) && (eeg_new = eeg_downsample(eeg, new_sr=new_sr))
-    new_sr == eeg_sr(eeg) && (eeg_new = eeg)
+    new_sr > eeg_sr(eeg) && return eeg_upsample(eeg, new_sr=new_sr)
+    new_sr < eeg_sr(eeg) && return eeg_downsample(eeg, new_sr=new_sr)
+    new_sr == eeg_sr(eeg) && return eeg
 
-    return eeg_new
 end
 
 """
@@ -1036,9 +1047,10 @@ Resample (up- or down-sample).
 """
 function eeg_resample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
-    new_sr > eeg_sr(eeg) && eeg_upsample!(eeg, new_sr=new_sr)
-    new_sr < eeg_sr(eeg) && eeg_downsample!(eeg, new_sr=new_sr)
+    eeg_tmp = eeg_resample(eeg, new_sr=new_sr)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg_reset_components!(eeg)
 
     return nothing
 end
@@ -1095,19 +1107,11 @@ Upsample EEG.
 """
 function eeg_upsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
-
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
-    eeg.eeg_signals, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
-
-    eeg.eeg_time = collect(t_upsampled)
-    eeg.eeg_header[:eeg_duration_samples] = eeg_signal_len(eeg) * eeg_epoch_n(eeg)
-    eeg.eeg_header[:eeg_duration_seconds] = (eeg_signal_len(eeg) * eeg_epoch_n(eeg)) / new_sr
-    eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg) / new_sr
-    eeg.eeg_header[:sampling_rate] = new_sr
+    eeg_tmp = eeg_upsample(eeg, new_sr=new_sr)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_upsample!(EEG, new_sr=$new_sr)")
 
     return nothing
 end
@@ -1162,21 +1166,11 @@ Downsample EEG.
 """
 function eeg_downsample!(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr < eeg_sr(eeg) && verbose == true) && @info "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz)."
-
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
-
-    t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
-    eeg.eeg_signals, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
-
-    eeg.eeg_time = collect(t_downsampled)
-    eeg.eeg_header[:eeg_duration_samples] = eeg_signal_len(eeg) * eeg_epoch_n(eeg)
-    eeg.eeg_header[:eeg_duration_seconds] = (eeg_signal_len(eeg) * eeg_epoch_n(eeg)) / new_sr
-    eeg.eeg_header[:epoch_duration_samples] = eeg_signal_len(eeg)
-    eeg.eeg_header[:epoch_duration_seconds] = eeg_signal_len(eeg) / new_sr
-    eeg.eeg_header[:sampling_rate] = new_sr
+    eeg_tmp = eeg_downsample(eeg, new_sr=new_sr)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_time = eeg_tmp.eeg_time
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_downsample!(EEG, new_sr=$new_sr)")
 
     return nothing
 end
@@ -1228,10 +1222,11 @@ Perform wavelet denoising.
 """
 function eeg_wdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), wt::T) where {T <: DiscreteWavelet}
 
-    eeg.eeg_signals = eeg_wdenoise(eeg, channel=channel, wt=wt).eeg_signals
-
+    eeg_tmp = eeg_wdenoise(eeg, channel=channel, wt=wt)
+    eeg_tmp = eeg_upsample(eeg, new_sr=new_sr)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_wdenoise!(EEG, wt=$wt)")
 
     return nothing
 end
@@ -1359,10 +1354,10 @@ Reference to auricular (A1, A2) channels. Only signal (EEG/MEG, depending on `ee
 """
 function eeg_reference_a!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_a(eeg, type=type, med=med).eeg_signals
-    eeg.eeg_header[:reference] = "A ($type)"
+    eeg_tmp = eeg_reference_a(eeg, type=type, med=med)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_a!(EEG, type=$type, med=$med)")
 
     return nothing
 end
@@ -1490,10 +1485,10 @@ Reference to mastoid (M1, M2) channels. Only signal (EEG/MEG, depending on `eeg.
 """
 function eeg_reference_m!(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_m(eeg, type=type, med=med).eeg_signals
-    eeg.eeg_header[:reference] = "M ($type)"
+    eeg_tmp = eeg_reference_m(eeg, type=type, med=med)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_m!(EEG, type=$type, med=$med)")
 
     return nothing
 end
@@ -1501,7 +1496,7 @@ end
 """
     eeg_fftdenoise(eeg; channel, pad, threshold)
 
-Perform wavelet denoising.
+Perform FFT denoising.
 
 # Arguments
 
@@ -1536,7 +1531,7 @@ end
 """
     eeg_fftdenoise!(eeg; channel, pad, threshold)
 
-Perform wavelet denoising.
+Perform FFT denoising.
 
 # Arguments
 
@@ -1547,9 +1542,10 @@ Perform wavelet denoising.
 """
 function eeg_fftdenoise!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), pad::Int64=0, threshold::Int64=100)
 
-    eeg.eeg_signals = eeg_fftdenoise(eeg, channel=channel, pad=pad, threshold=threshold).eeg_signals
+    eeg_tmp = eeg_fftdenoise(eeg, channel=channel, pad=pad, threshold=threshold)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_fftdenoise!(EEG, channel=$channel, pad=$pad, threshold=$threshold)")
 
     return nothing
 end
@@ -1655,10 +1651,10 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 """
 function eeg_reference_plap!(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
-    eeg.eeg_signals = eeg_reference_plap(eeg, nn=nn, weights=weights, med=med).eeg_signals
-    eeg.eeg_header[:reference] = "PLAP ($nn)"
+    eeg_tmp = eeg_reference_plap(eeg, nn=nn, weights=weights, med=med)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_reference_plap!(EEG, nn=$nn, med=$med)")
 
     return nothing
 end
@@ -1699,11 +1695,10 @@ Zero EEG channels at the beginning and at the end.
 """
 function eeg_zero!(eeg::NeuroAnalyzer.EEG)
 
-    eeg.eeg_signals[:, 1, :] .= 0
-    eeg.eeg_signals[:, end, :] .= 0
-
+    eeg_tmp = eeg_zero(eeg)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)
-    push!(eeg.eeg_header[:history], "eeg_zero(EEG)")
 
     return nothing
 end
@@ -1765,8 +1760,8 @@ function eeg_wbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     eeg_tmp = eeg_wbp(eeg, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean)
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_header = eeg_tmp.eeg_header
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -1825,8 +1820,8 @@ function eeg_cbp!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     eeg_tmp = eeg_cbp(eeg, channel=channel, pad=pad, frq=frq, demean=demean)
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_header = eeg_tmp.eeg_header
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -1870,8 +1865,8 @@ function eeg_denoise_wien!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
     eeg_tmp = eeg_denoise_wien(eeg, channel=channel)
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_header = eeg_tmp.eeg_header
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
 
@@ -1915,12 +1910,10 @@ Multiply EEG channel(s) by `factor`.
 """
 function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), factor::Real)
 
-    _check_channels(eeg, channel)
-
-    eeg_tmp = eeg_scale(eeg, channel=channel)
+    eeg_tmp = eeg_scale(eeg, channel=channel, factor=factor)
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_header = eeg_tmp.eeg_header
-
     eeg_reset_components!(eeg)
+
     return nothing
 end
