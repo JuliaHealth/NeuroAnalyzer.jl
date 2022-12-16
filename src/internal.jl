@@ -13,6 +13,9 @@ _xlims(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2), ceil(t[
 _ticks(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2):((ceil(t[end]) - floor(t[1])) / 10):ceil(t[end], digits=2)
 _ticks(t::Tuple{Real, Real}) = floor(t[1], digits=2):((ceil(t[2]) - floor(t[1])) / 10):ceil(t[2], digits=2)
 
+_erpticks(t::Union{Vector{<:Real}, AbstractRange}) = [floor(t[1], digits=2), 0, ceil(t[end], digits=2)]
+_erpticks(t::Tuple{Real, Real}) = [floor(t[1], digits=2), 0, ceil(t[2], digits=2)]
+
 _pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
 _pl(x::Real) = x > 1 ? "s" : ""
 
@@ -291,8 +294,8 @@ function _s2epoch(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
 end
 
 function _epoch2s(eeg::NeuroAnalyzer.EEG, epoch::Int64)
-    t1 = (epoch - 1) * eeg_epoch_len(eeg) * epoch + 1
-    t2 = epoch * eeg_epoch_len(eeg) * epoch
+    t1 = (epoch - 1) * eeg_epoch_len(eeg) + 1
+    t2 = epoch * eeg_epoch_len(eeg)
     return t1, t2
 end
 
@@ -653,4 +656,19 @@ end
 
 function _check_markers(eeg::NeuroAnalyzer.EEG, marker::String)
     marker in unique(eeg.eeg_markers[!, :description]) || throw(ArgumentError("Marker: $marker not found in markers."))
+end
+
+function _delete_markers(markers::DataFrame, segment::Tuple{Int64, Int64})
+    for marker_idx in nrow(markers):-1:1
+        markers[marker_idx, :start] in segment[1]:segment[2] && delete!(markers, marker_idx)
+    end
+    return markers
+end
+
+function _shift_markers(m::DataFrame, pos::Int64, offset::Int64)
+    markers = deepcopy(m)
+    for marker_idx in 1:nrow(markers)
+        markers[marker_idx, :start] > pos && (markers[marker_idx, :start] -= offset)
+    end
+    return markers
 end

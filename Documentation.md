@@ -4924,13 +4924,13 @@ Split EEG into epochs. Return signal that is split either by epoch length or by 
   * `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
   * `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
 
-<a id='NeuroAnalyzer.eeg_epoch_avg-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_avg-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epoch_avg`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_erp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_erp-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_erp`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epoch_avg(eeg)
+eeg_erp(eeg)
 ```
 
 Average EEG epochs.
@@ -4943,13 +4943,13 @@ Average EEG epochs.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.eeg_epoch_avg!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_epoch_avg!-Tuple{NeuroAnalyzer.EEG}'>#</a>
-**`NeuroAnalyzer.eeg_epoch_avg!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.eeg_erp!-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_erp!-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_erp!`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_epoch_avg!(eeg)
+eeg_erp!(eeg)
 ```
 
 Average EEG epochs.

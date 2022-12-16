@@ -311,11 +311,11 @@ Comparing two signals:
 ```julia
 eeg1 = eeg_filter(eeg, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(eeg, band=:delta), order=8)
 eeg1 = eeg_epoch(eeg1, epoch_len=10*eeg_sr(eeg1))
-eeg_epoch_avg!(eeg1)
+eeg_erp!(eeg1)
 eeg1 = eeg_keep_channel(eeg1, 4)
 eeg2 = eeg_filter(eeg, fprototype=:butterworth, ftype=:bp, cutoff=eeg_band(eeg, band=:beta), order=8)
 eeg2 = eeg_epoch(eeg2, epoch_len=10*eeg_sr(eeg2))
-eeg_epoch_avg!(eeg2)
+eeg_erp!(eeg2)
 eeg2 = eeg_keep_channel(eeg2, 4)
 s, ss, p = eeg_difference(eeg1, eeg2, n=10, method=:absdiff)
 s, ss, p = eeg_difference(eeg1, eeg2, n=10, method=:diff2int)

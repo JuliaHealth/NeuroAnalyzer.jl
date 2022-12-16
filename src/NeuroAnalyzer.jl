@@ -311,8 +311,8 @@ export eeg_epoch_len
 export eeg_info
 export eeg_epoch
 export eeg_epoch!
-export eeg_epoch_avg
-export eeg_epoch_avg!
+export eeg_erp
+export eeg_erp!
 export eeg_extract_epoch
 export eeg_trim
 export eeg_trim!
@@ -497,6 +497,7 @@ export eeg_henv
 export eeg_henv_mean
 export eeg_henv_median
 export eeg_apply
+export eeg_erp_peaks
 
 include("eeg_study.jl")
 export eeg_study_create

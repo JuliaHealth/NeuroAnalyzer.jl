@@ -3670,3 +3670,32 @@ function eeg_channel_cluster(eeg::NeuroAnalyzer.EEG; cluster::Symbol)
 
     return channels
 end
+
+"""
+    eeg_erp_peaks(eeg)
+
+Detect a pair of positive and negative peaks of ERP.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`:
+
+# Returns
+ 
+- `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
+"""
+function eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
+
+    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    erp = eeg_erp(eeg).eeg_signals[channels, :]
+
+    channel_n = size(erp, 1)
+    p = zeros(Int64, channel_n, 2)
+    @inbounds @simd for channel_idx in 1:channel_n
+        pp_pos = @views maximum(erp[channel_idx, :])
+        pp_neg = @views minimum(erp[channel_idx, :])
+        p[channel_idx, :] = @views [vsearch(pp_pos, erp[channel_idx, :]), vsearch(pp_neg, erp[channel_idx, :])]
+    end
+
+    return p
+end

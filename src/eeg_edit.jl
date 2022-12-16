@@ -769,7 +769,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
 
             marker_idx = []
             for idx in 1:length(eeg.eeg_markers[!, :description])
-                eeg_new.eeg_markers[!, :description][idx] == marker && push!(marker_idx, idx)
+                eeg_new.eeg_markers[idx, :description] == marker && push!(marker_idx, idx)
             end
             marker_start = eeg_new.eeg_markers[!, :start][marker_idx]
 
@@ -784,7 +784,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
 
         # delete markers outside epochs
         for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-            eeg_new.eeg_markers[!, :start][marker_idx] in 1:size(epochs, 2) * size(epochs, 3) || delete!(eeg_new.eeg_markers, marker_idx)
+            eeg_new.eeg_markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || delete!(eeg_new.eeg_markers, marker_idx)
         end
     end
 
@@ -843,7 +843,7 @@ function eeg_epoch!(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Rea
 end
 
 """
-    eeg_epoch_avg(eeg)
+    eeg_erp(eeg)
 
 Average EEG epochs.
 
@@ -855,7 +855,7 @@ Average EEG epochs.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epoch_avg(eeg::NeuroAnalyzer.EEG)
+function eeg_erp(eeg::NeuroAnalyzer.EEG)
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = mean(eeg_new.eeg_signals, dims=3)[:, :, :]
@@ -869,27 +869,28 @@ function eeg_epoch_avg(eeg::NeuroAnalyzer.EEG)
 
     # remove markers of deleted epochs
     for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-        eeg_new.eeg_markers[!, :start][marker_idx] > eeg_duration_samples && delete!(eeg_new.eeg_markers, marker_idx)
+        eeg_new.eeg_markers[marker_idx, :start] > eeg_duration_samples && delete!(eeg_new.eeg_markers, marker_idx)
     end
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_epoch_avg(EEG)")
+    push!(eeg_new.eeg_header[:history], "eeg_erp(EEG)")
 
     return eeg_new
 end
 
 """
-    eeg_epoch_avg!(eeg)
+    eeg_erp!(eeg)
 
 Average EEG epochs.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
+- `epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg)`: epochs to average; default is all epochs
 """
-function eeg_epoch_avg!(eeg::NeuroAnalyzer.EEG)
+function eeg_erp!(eeg::NeuroAnalyzer.EEG)
 
-    eeg_tmp = eeg_epoch_avg(eeg)
+    eeg_tmp = eeg_erp(eeg)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_time = eeg_tmp.eeg_time
@@ -967,10 +968,12 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
                 verbose == true && @info "Cannot apply original epoch length, returning single-epoch EEG."
             end
         end
+        eeg_new.eeg_markers = _delete_markers(eeg_new.eeg_markers, segment)
+        eeg_new.eeg_markers = _shift_markers(eeg_new.eeg_markers, segment[1], length(segment[1]:segment[2]))
     else
         eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use remove_epochs=true."))
         epochs = _s2epoch(eeg, segment[1], segment[2])
-        verbose == true && @info "Removing $epochs epochs."
+        verbose == true && @info "Removing epochs: $epochs."
         eeg_new = eeg_delete_epoch(eeg, epoch=epochs)
     end
 
@@ -1087,12 +1090,11 @@ function eeg_delete_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int
     # remove epoch
     eeg_new.eeg_signals = eeg_new.eeg_signals[:, :, setdiff(1:end, (epoch))]
 
-    # remove markers of deleted epochs
+    # remove markers within deleted epochs and shift markers after the deleted epoch
     for epoch_idx in epoch
         t1, t2 = _epoch2s(eeg, epoch_idx)
-        for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-            eeg_new.eeg_markers[!, :start][marker_idx] in t1:t2 || delete!(eeg_new.eeg_markers, marker_idx)
-        end
+        eeg_new.eeg_markers = _delete_markers(eeg_new.eeg_markers, (t1, t2))
+        eeg_new.eeg_markers = _shift_markers(eeg_new.eeg_markers, t1, length(t1:t2))
     end
 
     # update headers
@@ -2378,7 +2380,7 @@ Show markers.
 function eeg_view_marker(eeg::NeuroAnalyzer.EEG)
     eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     for marker_idx in 1:size(eeg.eeg_markers, 1)
-        println("ID: $(rpad(("'" * eeg.eeg_markers[!, :id][marker_idx] * "'"), 24, " ")) start [sample]: $(rpad(eeg.eeg_markers[!, :start][marker_idx], 8, " ")) length [samples]: $(rpad(eeg.eeg_markers[!, :length][marker_idx], 8, " ")) description: $(rpad(("'" * eeg.eeg_markers[!, :description][marker_idx] * "'"), 24, " ")) channel: $(eeg.eeg_markers[!, :channel][marker_idx])")
+        println("ID: $(rpad(("'" * eeg.eeg_markers[marker_idx, :id] * "'"), 24, " ")) start [sample]: $(rpad(eeg.eeg_markers[marker_idx, :start], 8, " ")) length [samples]: $(rpad(eeg.eeg_markers[marker_idx, :length], 8, " ")) description: $(rpad(("'" * eeg.eeg_markers[marker_idx, :description] * "'"), 24, " ")) channel: $(eeg.eeg_markers[marker_idx, :channel])")
     end
 end
 

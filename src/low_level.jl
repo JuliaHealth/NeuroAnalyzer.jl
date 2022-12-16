@@ -4175,7 +4175,7 @@ Convert time to sample number.
 
 # Returns
 
-- `s::Int6464`: sample number
+- `s::Int64`: sample number
 """
 function t2s(t::Real, fs::Int64)
     t < 0 && throw(ArgumentError("t must be ≥ 0."))

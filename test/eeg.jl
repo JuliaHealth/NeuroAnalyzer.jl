@@ -86,7 +86,7 @@ edf1 = eeg_upsample(edf, new_sr=512)
 @test eeg_sr(edf) == 256
 
 edf1 = eeg_epoch(edf, epoch_len=1000)
-eeg_epoch_avg!(edf1)
+eeg_erp!(edf1)
 @test size(edf1.eeg_signals) == (19, 1000, 1)
 
 edf10 = eeg_epoch(edf, epoch_n=10)
@@ -186,7 +186,7 @@ v = eeg_epoch_stats(e)
 @test length(v) == 10
 
 e = eeg_epoch(edf, epoch_len=20)
-eeg_epoch_avg!(e)
+eeg_erp!(e)
 i, _ = eeg_ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
@@ -209,7 +209,7 @@ c = eeg_list_components(e)
 @test size(c) == (0, )
 
 e = eeg_epoch(edf, epoch_len=2560)
-eeg_epoch_avg!(e)
+eeg_erp!(e)
 p, f, t = eeg_spectrogram(e)
 @test size(p) == (1281, 61, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:mt)
@@ -385,5 +385,18 @@ _, _, f = eeg_psdslope(edf)
 @test size(eeg_apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
 
 @test eeg_channel_cluster(e10, cluster=:f1) == [1, 3, 11]
+
+e1 = eeg_copy(edf)
+eeg_add_marker!(e1, id="1", start=100, len=1, desc="test")
+eeg_add_marker!(e1, id="1", start=1000, len=1, desc="test")
+eeg_add_marker!(e1, id="1", start=2000, len=1, desc="test")
+eeg_add_marker!(e1, id="1", start=3000, len=1, desc="test")
+eeg_add_marker!(e1, id="1", start=4000, len=1, desc="test")
+eeg_add_marker!(e1, id="1", start=5000, len=1, desc="test")
+e2 = eeg_trim(e1, segment=(1, 400), remove_epochs=false)
+@test e2.eeg_markers[1, :start] == 600
+e2 = eeg_epoch(e1, epoch_len=200)
+eeg_delete_epoch!(e2, epoch=1)
+@test e2.eeg_markers[1, :start] == 800
 
 true
