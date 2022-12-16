@@ -3699,3 +3699,20 @@ function eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
 
     return p
 end
+
+"""
+    eeg_signal_channels(eeg)
+
+Return all signal (EEG/MEG) channels
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`:
+
+# Returns
+ 
+- `channels::Vector{Int64}`
+"""
+function eeg_signal_channels(eeg::NeuroAnalyzer.EEG)
+    return eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+end

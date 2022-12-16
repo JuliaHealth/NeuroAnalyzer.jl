@@ -498,6 +498,7 @@ export eeg_henv_mean
 export eeg_henv_median
 export eeg_apply
 export eeg_erp_peaks
+export eeg_signal_channels
 
 include("eeg_study.jl")
 export eeg_study_create
@@ -542,6 +543,7 @@ export plot_empty
 export plot_erp
 export plot_erp_avg
 export plot_erp_butterfly
+export plot_erp_topo
 export eeg_plot_erp
 
 end # NeuroAnalyzer

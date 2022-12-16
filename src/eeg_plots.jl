@@ -1253,16 +1253,16 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
 end
 
 """
-    plot_psd_topo(s_frq, s_pow; <keyword arguments>)
+    plot_psd_topo(locs, s_frq, s_pow; <keyword arguments>)
 
-Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+Plot topographical map PSDs. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `s_frq::Vector{Float64}`: frequencies
 - `s_pow::Array{Float64, 3}`: powers
-- `Union{Vector{Int64}, AbstractRange}`: which channels to plot
+- `channel::Union{Vector{Int64}, AbstractRange}`: which channels to plot
 - `labels::Vector{String}=[""]`: signal channel labels vector
 - `norm::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
@@ -1277,7 +1277,7 @@ Plot topographical map `eeg` PSD. It uses polar :loc_radius and :loc_theta locat
 
 - `fig::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; channels=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -1332,8 +1332,8 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
-    loc_x = loc_x[channels]
-    loc_y = loc_y[channels]
+    loc_x = loc_x[channel]
+    loc_y = loc_y[channel]
 
     fig = Figure(; resolution=(plot_size, plot_size))
     fig_axis = Axis(fig[1, 1])
@@ -1573,7 +1573,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
         p = plot_psd_topo(eeg.eeg_locs,
                           s_frq,
                           s_pow,
-                          channels=channel,
+                          channel=channel,
                           labels=labels,
                           xlabel=xlabel,
                           ylabel=ylabel,
@@ -4348,6 +4348,115 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
 end
 
 """
+    plot_erp_topo(locs, t, erp; <keyword arguments>)
+
+Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
+
+# Arguments
+
+- `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
+- `t::Vector{Float64}`: time vector
+- `signal::Array{Float64, 2}`: ERPs
+- `channels::Union{Vector{Int64}, AbstractRange}`: which channels to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `fig::GLMakie.Figure`
+"""
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    size(signal, 2) == length(t) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+
+    pal = mono == true ? :grays : :darktest
+    
+    # channel labels
+    labels == [""] && (labels = repeat([""], size(s_pow, 1)))
+
+    # get limits
+    ylim = (floor(minimum(signal) * 1.1, digits=0), ceil(maximum(signal) * 1.1, digits=0))
+    ylim = _tuple_max(ylim)
+
+    # plot parameters
+    plot_size = 1200
+    marker_size = (150, 75)
+    
+    # get locations
+    loc_x = zeros(size(locs, 1))
+    loc_y = zeros(size(locs, 1))
+    for idx in 1:size(locs, 1)
+        loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+    end
+    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    # get marker centers
+    loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
+    loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
+    loc_x = loc_x[channel]
+    loc_y = loc_y[channel]
+
+    fig = Figure(; resolution=(plot_size, plot_size))
+    fig_axis = Axis(fig[1, 1])
+    fig_axis.aspect = AxisAspect(1)
+    fig_axis.title = title
+    GLMakie.xlims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
+    GLMakie.ylims!(fig_axis, [-plot_size / 1.75, plot_size / 1.75])
+    hidedecorations!(fig_axis, grid=true, ticks=true)
+
+    for idx in 1:size(signal, 1)
+        p = Plots.plot(xlabel=xlabel,
+                       ylabel=ylabel,
+                       legend=false,
+                       xticks=false,
+                       yticks=false,
+                       grid=false,
+                       border=:none, 
+                       xlims=(t[1], t[end]),
+                       ylims=ylim,
+                       title=labels[idx],
+                       palette=pal,
+                       size=marker_size,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6;
+                       kwargs...)
+        # plot 0 h-line
+        p = Plots.hline!([0],
+                         color=:grey,
+                         linewidth=0.5,
+                         labels="")
+
+        # plot ERP
+        p = Plots.plot!(t,
+                        signal[idx, :],
+                        t=:line,
+                        color=:black,
+                        linewidth=0.5)
+
+        # plot 0 v-line
+        p = Plots.vline!([0],
+                         linestyle=:dash,
+                         linewidth=0.5,
+                         linecolor=:black,
+                         label=false)
+
+        marker_img = tempname() * ".png"
+        savefig(p, marker_img)
+        marker = load(marker_img)
+        GLMakie.scatter!(fig_axis, (loc_x[idx], loc_y[idx]), marker=marker, markersize=marker_size)
+        rm(marker_img)
+    end
+
+    return fig
+end
+
+"""
     eeg_plot_erp(eeg; <keyword arguments>)
 
 Plot ERP.
@@ -4355,22 +4464,24 @@ Plot ERP.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
-- `channel::Int64`: channel to plot
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `mono::Bool=false`: use color or grey palette
 - `peaks::Bool`: draw peaks
-- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Int64, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, type::Symbol=:normal, kwargs...)
 
-    _check_var(type, [:normal, :butterfly, :mean], "type")
+    _check_var(type, [:normal, :butterfly, :mean, :topo], "type")
+
+    type !== :topo && length(channel) > 1 && throw(ArgumentError("For :normal, :butterfly and :mean plot types, only one channel must be specified."))
 
     # check channels
     _check_channels(eeg, channel)
@@ -4412,6 +4523,24 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Int64, xlabel::String="de
                          title=title,
                          mono=mono;
                          kwargs...)
+    elseif type === :topo
+        eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        peaks = false
+        signal = mean(signal, dims=3)[:, :]
+        ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
+        labels = eeg_labels(eeg)[channel]
+        typeof(labels) == String && (labels = [labels])
+        p = plot_erp_topo(eeg.eeg_locs,
+                          t,
+                          signal,
+                          channel=channel,
+                          labels=labels,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          mono=mono;
+                          kwargs...)
     end
 
     # plot peaks
@@ -4431,7 +4560,11 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Int64, xlabel::String="de
         verbose == true && @info "Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2))"
     end
 
-    Plots.plot(p)
+    if type !== :topo
+        Plots.plot(p)
+    else
+        GLMakie.show(p)
+    end
 
     return p
 end

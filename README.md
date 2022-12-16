@@ -10,8 +10,6 @@ NeuroAnalyzer contains a set of separate (high-level) functions, it does not hav
 
 NeuroAnalyzer is a collaborative, non-commercial project, developed for researchers in psychiatry, neurology and neuroscience.
 
-Currently NeuroAnalyzer is focused on resting-state EEG analysis. ERP and other type of analyses will be developed in future versions. The goal is to make a powerful, expandable and flexible environment for EEG/MEG/NIRS/NIBS processing workflows.
-
 Every contribution (bug reports, fixes, new ideas, feature requests or additions, documentation improvements, etc.) to the project is highly welcomed.
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
