@@ -3177,7 +3177,7 @@ Convert time to sample number.
 
 **Returns**
 
-  * `s::Int6464`: sample number
+  * `s::Int64`: sample number
 
 <a id='NeuroAnalyzer.s2t-Tuple{Int64, Int64}' href='#NeuroAnalyzer.s2t-Tuple{Int64, Int64}'>#</a>
 **`NeuroAnalyzer.s2t`** &mdash; *Method*.
@@ -4957,6 +4957,7 @@ Average EEG epochs.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`
+  * `epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg)`: epochs to average; default is all epochs
 
 <a id='NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_extract_epoch-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_extract_epoch`** &mdash; *Method*.
@@ -9145,6 +9146,25 @@ Return channels belonging to a `cluster` of channels.
 
   * `channels::Vector{Int64}`: list of channel numbers belonging to a given cluster of channels
 
+<a id='NeuroAnalyzer.eeg_erp_peaks-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_erp_peaks-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_erp_peaks`** &mdash; *Method*.
+
+
+
+```julia
+eeg_erp_peaks(eeg)
+```
+
+Detect a pair of positive and negative peaks of ERP.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`:
+
+**Returns**
+
+  * `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
+
 
 <a id='EEG-plots'></a>
 
@@ -10494,14 +10514,12 @@ Plot ERP.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg)`: epoch to display, default is all epochs
   * `channel::Int64`: channel to plot
-  * `xlabel::String="default"`: x-axis label, default is Time [s]
+  * `xlabel::String="default"`: x-axis label, default is Time [ms]
   * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
-  * `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: 0 ms:20 s]
+  * `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
   * `mono::Bool=false`: use color or grey palette
-  * `markers::Bool`: draw markers if available
-  * `avg::Bool=false`: plot average ERP
+  * `peaks::Bool`: draw peaks
   * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
   * `kwargs`: optional arguments for plot() function
 

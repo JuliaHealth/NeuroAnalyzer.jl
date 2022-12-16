@@ -460,6 +460,7 @@ eeg_henv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Abstr
 eeg_henv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), dims::Int64, d::Int64=32)
 eeg_apply(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::String)
 eeg_channel_cluster(eeg::NeuroAnalyzer.EEG; cluster::Symbol)
+eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
 ```
 
 ## EEG plots
@@ -512,5 +513,5 @@ plot_empty()
 plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
-eeg_plot_erp(eeg::NeuroAnalyzer.EEG; epoch::Union{Vector{Int64}, AbstractRange}=1:eeg_epoch_n(eeg), channel::Int64, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, avg::Bool=true, type::Symbol=:normal, kwargs...)
+eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Int64, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, type::Symbol=:normal, kwargs...)
 ```
