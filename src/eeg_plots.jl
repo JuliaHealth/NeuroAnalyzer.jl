@@ -427,7 +427,8 @@ Plot signal.
 """
 function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
-    eeg_signal_len(eeg) < 10*eeg_sr(eeg) && (segment=(1, eeg_signal_len(eeg)))
+    eeg_signal_len(eeg) < 10 * eeg_sr(eeg) && segment == (1, 10*eeg_sr(eeg)) && (segment=(1, eeg_signal_len(eeg)))
+
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
 
@@ -579,6 +580,8 @@ Plot embedded or external component.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
+
+    eeg_signal_len(eeg) < 10 * eeg_sr(eeg) && segment == (1, 10*eeg_sr(eeg)) && (segment=(1, eeg_signal_len(eeg)))
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
     _check_segment(eeg, segment[1], segment[2])
@@ -3863,6 +3866,8 @@ Topographical plot.
 """
 function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
+    eeg_signal_len(eeg) < 10 * eeg_sr(eeg) && segment == (1, 10*eeg_sr(eeg)) && (segment=(1, eeg_signal_len(eeg)))
+
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
@@ -3956,6 +3961,8 @@ Topographical plot of embedded or external component.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*eeg_sr(eeg)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+
+    eeg_signal_len(eeg) < 10 * eeg_sr(eeg) && segment == (1, 10*eeg_sr(eeg)) && (segment=(1, eeg_signal_len(eeg)))
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -4269,6 +4276,7 @@ Butterfly plot of ERP.
 
 - `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
 - `signal::AbstractArray`: data to plot
+- `labels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -4280,11 +4288,11 @@ Butterfly plot of ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
+function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
-    channel_n = size(signal, 2)
+    channel_n = size(signal, 1)
 
     # get limits
     ylim = (floor(minimum(signal) * 1.1, digits=0), ceil(maximum(signal) * 1.1, digits=0))
@@ -4318,18 +4326,42 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
 
     # plot signals
     for idx in 1:channel_n
-        p = Plots.plot!(t,
-                        signal'[idx, :],
-                        t=:line,
-                        linecolor=idx,
-                        linewidth=0.2,
-                        alpha=0.2,
-                        legend=false)
+        if labels == [""]
+            p = Plots.plot!(t,
+                            signal[idx, :],
+                            t=:line,
+                            linecolor=idx,
+                            linewidth=0.2,
+                            alpha=0.2,
+                            legend=false)
+        else
+            if labels == repeat([""], channel_n)
+                p = Plots.plot!(t,
+                                signal[idx, :],
+                                t=:line,
+                                legend=false,
+                                linecolor=idx,
+                                linewidth=0.5,
+                                alpha=0.5)
+            else
+                p = Plots.plot!(t,
+                                signal[idx, :],
+                                t=:line,
+                                label=labels[idx],
+                                linecolor=idx,
+                                linewidth=0.5,
+                                alpha=0.5)
+            end
+        end
     end
 
     # plot averaged ERP
     if avg == true
-        signal = vec(mean(signal, dims=2))
+        if channel_n == 1
+            signal = mean(signal, dims=2)[:]
+        else
+            signal = mean(signal, dims=1)[:]
+        end
         p = Plots.plot!(t,
                         signal,
                         linewidth=1,
@@ -4465,11 +4497,13 @@ Plot ERP.
 
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `mono::Bool=false`: use color or grey palette
-- `peaks::Bool`: draw peaks
+- `peaks::Bool=true`: draw peaks
+- `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`)
 - `kwargs`: optional arguments for plot() function
 
@@ -4477,11 +4511,11 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo], "type")
 
-    type !== :topo && length(channel) > 1 && throw(ArgumentError("For :normal, :butterfly and :mean plot types, only one channel must be specified."))
+    type !== :topo && type !== :butterfly && length(channel) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one channel must be specified."))
 
     # check channels
     _check_channels(eeg, channel)
@@ -4495,9 +4529,17 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
     t = eeg.eeg_epoch_time
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
 
+    if tm != 0
+        for tm_idx in eachindex(tm)
+            tm[tm_idx] / 1000 < t[1] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] / 1000 > t[end] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
+        end
+    end
+
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
-        signal = vec(mean(signal, dims=2))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        signal = mean(signal, dims=2)[:]
         p = plot_erp(t,
                      signal,
                      xlabel=xlabel,
@@ -4506,12 +4548,24 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                      mono=mono;
                      kwargs...)
     elseif type === :butterfly
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        if length(channel) > 1
+            signal = mean(signal, dims=3)[:, :]
+            if labels == true
+                labels = eeg_labels(eeg)[channel]
+            else
+                labels = repeat([""], length(channel))
+            end
+        else
+            signal = signal'
+            labels = [""]
+        end
         p = plot_erp_butterfly(t,
                                signal,
                                xlabel=xlabel,
                                ylabel=ylabel,
                                title=title,
+                               labels=labels,
                                mono=mono;
                                kwargs...)
     elseif type === :mean
@@ -4543,21 +4597,49 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                           kwargs...)
     end
 
-    # plot peaks
-    if peaks == true
-        erp = eeg_erp(eeg).eeg_signals
-        pp = eeg_erp_peaks(eeg)
-        if mono == false
-            Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=5, label=false)
-            Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=5, label=false)
-        else
-            Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
-            Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+    # draw time markers
+    if tm != 0
+        for tm_idx in eachindex(tm)
+            p = Plots.vline!([t[tm[tm_idx]]],
+                             linewidth=1,
+                             linecolor=:black,
+                             label=false)
         end
-        verbose == true && @info "Positive peak time: $(round(t[pp[channel, 1]], digits=2))"
-        verbose == true && @info "Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2))"
-        verbose == true && @info "Negative peak time: $(round(t[pp[channel, 2]], digits=2))"
-        verbose == true && @info "Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2))"
+    end
+
+    # draw peaks
+    if peaks == true
+        if length(channel) == 1
+            erp = eeg_erp(eeg).eeg_signals
+            pp = eeg_erp_peaks(eeg)
+            if mono == false
+                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=5, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=5, label=false)
+            else
+                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+            end
+            verbose == true && @info "Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms"
+            verbose == true && @info "Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV"
+            verbose == true && @info "Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms"
+            verbose == true && @info "Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV"
+        else
+            erp = mean(eeg_erp(eeg).eeg_signals[channel, :], dims=1)[:]
+            eeg_tmp = eeg_keep_channel(eeg, channel=1)
+            eeg_tmp.eeg_signals = reshape(erp, 1, length(erp), 1)
+            pp = eeg_erp_peaks(eeg_tmp)
+            if mono == false
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=5, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=5, label=false)
+            else
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+            end
+            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
+            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
+            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
+            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+        end
     end
 
     if type !== :topo

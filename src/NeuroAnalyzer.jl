@@ -263,12 +263,12 @@ export eeg_export_csv
 export eeg_import
 export eeg_import_edf
 export eeg_import_bdf
-export eeg_import_ced
-export eeg_import_locs
-export eeg_import_elc
-export eeg_import_tsv
-export eeg_import_sfp
-export eeg_import_csd
+export locs_import_ced
+export locs_import_locs
+export locs_import_elc
+export locs_import_tsv
+export locs_import_sfp
+export locs_import_csd
 export eeg_load
 export eeg_load_electrodes
 export eeg_load_electrodes!
@@ -358,6 +358,8 @@ export loc_sph2cart
 export loc_sph2cart!
 export loc_cart2sph
 export loc_cart2sph!
+export loc_cart2pol
+export loc_cart2pol!
 export eeg_view_marker
 export eeg_delete_marker
 export eeg_delete_marker!

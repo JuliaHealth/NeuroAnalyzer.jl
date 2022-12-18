@@ -32,17 +32,17 @@ eeg_delete_channel!(edf, channel=20)
 @test edf.eeg_header[:channel_locations] == false
 @test edf.eeg_header[:channel_locations] == false
 
-s = eeg_import_ced("test.ced")
+s = locs_import_ced("test.ced")
 @test typeof(s) == DataFrame
-s = eeg_import_locs("test.locs")
+s = locs_import_locs("test.locs")
 @test typeof(s) == DataFrame
-s = eeg_import_elc("test.elc")
+s = locs_import_elc("test.elc")
 @test typeof(s) == DataFrame
-s = eeg_import_tsv("test.tsv")
+s = locs_import_tsv("test.tsv")
 @test typeof(s) == DataFrame
-s = eeg_import_sfp("test.sfp")
+s = locs_import_sfp("test.sfp")
 @test typeof(s) == DataFrame
-s = eeg_import_csd("test.csd")
+s = locs_import_csd("test.csd")
 @test typeof(s) == DataFrame
 
 edf = eeg_load_electrodes(edf, file_name="standard-10-20-cap19-elmiko.ced")
@@ -72,7 +72,7 @@ eeg_save_electrodes(edf, file_name="test_out.locs")
 @test isfile("test_out.locs") == true
 isfile("test_out.locs") && rm("test_out.locs")
 
-locs = eeg_import_ced("standard-10-20-cap19-elmiko.ced")
+locs = locs_import_ced("standard-10-20-cap19-elmiko.ced")
 edf2 = eeg_add_electrodes(edf, locs=locs)
 @test typeof(edf2) == NeuroAnalyzer.EEG
 

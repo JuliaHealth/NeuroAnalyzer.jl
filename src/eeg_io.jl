@@ -285,7 +285,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
 end
 
 """
-    eeg_import_ced(file_name)
+    locs_import_ced(file_name)
 
 Load electrode positions from CED file.
 
@@ -297,7 +297,7 @@ Load electrode positions from CED file.
 
 - `locs::DataFrame`
 """
-function eeg_import_ced(file_name::String)
+function locs_import_ced(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".ced" || throw(ArgumentError("Not a CED file."))
@@ -332,7 +332,7 @@ function eeg_import_ced(file_name::String)
 end
 
 """
-    eeg_import_locs(file_name)
+    locs_import_locs(file_name)
 
 Load electrode positions from LOCS file.
 
@@ -344,7 +344,7 @@ Load electrode positions from LOCS file.
 
 - `locs::DataFrame`
 """
-function eeg_import_locs(file_name::String)
+function locs_import_locs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".locs" || throw(ArgumentError("Not a LOCS file."))
@@ -371,7 +371,7 @@ function eeg_import_locs(file_name::String)
 end
 
 """
-    eeg_import_elc(file_name)
+    locs_import_elc(file_name)
 
 Load electrode positions from ELC file.
 
@@ -383,7 +383,7 @@ Load electrode positions from ELC file.
 
 - `locs::DataFrame`
 """
-function eeg_import_elc(file_name::String)
+function locs_import_elc(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".elc" || throw(ArgumentError("Not a ELC file."))
@@ -428,7 +428,7 @@ function eeg_import_elc(file_name::String)
 end
 
 """
-    eeg_import_tsv(file_name)
+    locs_import_tsv(file_name)
 
 Load electrode positions from TSV file.
 
@@ -440,7 +440,7 @@ Load electrode positions from TSV file.
 
 - `locs::DataFrame`
 """
-function eeg_import_tsv(file_name::String)
+function locs_import_tsv(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".tsv" || throw(ArgumentError("Not a TSV file."))
@@ -480,7 +480,7 @@ function eeg_import_tsv(file_name::String)
 end
 
 """
-    eeg_import_sfp(file_name)
+    locs_import_sfp(file_name)
 
 Load electrode positions from SFP file.
 
@@ -492,7 +492,7 @@ Load electrode positions from SFP file.
 
 - `locs::DataFrame`
 """
-function eeg_import_sfp(file_name::String)
+function locs_import_sfp(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".sfp" || throw(ArgumentError("Not a SFP file."))
@@ -521,7 +521,7 @@ function eeg_import_sfp(file_name::String)
 end
 
 """
-    eeg_import_csd(file_name)
+    locs_import_csd(file_name)
 
 Load electrode positions from CSD file.
 
@@ -533,7 +533,7 @@ Load electrode positions from CSD file.
 
 - `locs::DataFrame`
 """
-function eeg_import_csd(file_name::String)
+function locs_import_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a csd file."))
@@ -594,17 +594,17 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
-        locs = eeg_import_ced(file_name)
+        locs = locs_import_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = eeg_import_elc(file_name)
+        locs = locs_import_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = eeg_import_locs(file_name)
+        locs = locs_import_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = eeg_import_tsv(file_name)
+        locs = locs_import_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = eeg_import_sfp(file_name)
+        locs = locs_import_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = eeg_import_csd(file_name)
+        locs = locs_import_csd(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -639,7 +639,7 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
     # create new dataset
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:channel_locations] = true
-    eeg_new.eeg_locs = DataFrame(:channel => 1:length(e_labels),
+    eeg_new.eeg_locs = DataFrame(:channel => 1:length(f_labels[labels_idx]),
                                  :labels => f_labels[labels_idx],
                                  :loc_theta => loc_theta[labels_idx],
                                  :loc_radius => loc_radius[labels_idx],
@@ -684,66 +684,11 @@ Electrode locations:
 - `file_name::String`
 """
 function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
-    
-    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
-    if splitext(file_name)[2] == ".ced"
-        locs = eeg_import_ced(file_name)
-    elseif splitext(file_name)[2] == ".elc"
-        locs = eeg_import_elc(file_name)
-    elseif splitext(file_name)[2] == ".locs"
-        locs = eeg_import_locs(file_name)
-    elseif splitext(file_name)[2] == ".tsv"
-        locs = eeg_import_tsv(file_name)
-    elseif splitext(file_name)[2] == ".sfp"
-        locs = eeg_import_sfp(file_name)
-    else
-        throw(ArgumentError("Unknown file format."))
-    end
-
-    f_labels = locs[!, :labels]
-
-    loc_theta = float.(locs[!, :loc_theta])
-    loc_radius = float.(locs[!, :loc_radius])
-
-    loc_radius_sph = float.(locs[!, :loc_radius_sph])
-    loc_theta_sph = float.(locs[!, :loc_theta_sph])
-    loc_phi_sph = float.(locs[!, :loc_phi_sph])
-
-    loc_x = float.(locs[!, :loc_x])
-    loc_y = float.(locs[!, :loc_y])
-    loc_z = float.(locs[!, :loc_z])
-
-    e_labels = lowercase.(eeg.eeg_header[:labels])
-    no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) were not found in $file_name."
-
-    labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in eachindex(e_labels)
-        for idx2 in eachindex(f_labels)
-            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
-        end
-    end
-    for idx in length(labels_idx):-1:1
-        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
-    end
-
-    # create new dataset
-    eeg.eeg_locs = DataFrame(:channel => 1:length(f_labels),
-                             :labels => f_labels,
-                             :loc_theta => loc_theta[labels_idx],
-                             :loc_radius => loc_radius[labels_idx],
-                             :loc_x => loc_x[labels_idx],
-                             :loc_y => loc_y[labels_idx],
-                             :loc_z => loc_z[labels_idx],
-                             :loc_radius_sph => loc_radius_sph[labels_idx],
-                             :loc_theta_sph => loc_theta_sph[labels_idx],
-                             :loc_phi_sph => loc_phi_sph[labels_idx])
+    eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name)
+    eeg.eeg_locs = eeg_tmp.eeg_locs
     eeg.eeg_header[:channel_locations] = true
 
-    # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_load_electrodes!(EEG, $file_name)")
     nothing
  end
 

@@ -3925,13 +3925,13 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
 3. https://www.edfplus.info/specs/
 
-<a id='NeuroAnalyzer.eeg_import_ced-Tuple{String}' href='#NeuroAnalyzer.eeg_import_ced-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_ced`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_ced-Tuple{String}' href='#NeuroAnalyzer.locs_import_ced-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_ced`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_ced(file_name)
+locs_import_ced(file_name)
 ```
 
 Load electrode positions from CED file.
@@ -3944,13 +3944,13 @@ Load electrode positions from CED file.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_locs-Tuple{String}' href='#NeuroAnalyzer.eeg_import_locs-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_locs`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_locs-Tuple{String}' href='#NeuroAnalyzer.locs_import_locs-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_locs`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_locs(file_name)
+locs_import_locs(file_name)
 ```
 
 Load electrode positions from LOCS file.
@@ -3963,13 +3963,13 @@ Load electrode positions from LOCS file.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_elc-Tuple{String}' href='#NeuroAnalyzer.eeg_import_elc-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_elc`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_elc-Tuple{String}' href='#NeuroAnalyzer.locs_import_elc-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_elc`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_elc(file_name)
+locs_import_elc(file_name)
 ```
 
 Load electrode positions from ELC file.
@@ -3982,13 +3982,13 @@ Load electrode positions from ELC file.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_tsv-Tuple{String}' href='#NeuroAnalyzer.eeg_import_tsv-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_tsv`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_tsv-Tuple{String}' href='#NeuroAnalyzer.locs_import_tsv-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_tsv`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_tsv(file_name)
+locs_import_tsv(file_name)
 ```
 
 Load electrode positions from TSV file.
@@ -4001,13 +4001,13 @@ Load electrode positions from TSV file.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_sfp-Tuple{String}' href='#NeuroAnalyzer.eeg_import_sfp-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_sfp`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_sfp-Tuple{String}' href='#NeuroAnalyzer.locs_import_sfp-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_sfp`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_sfp(file_name)
+locs_import_sfp(file_name)
 ```
 
 Load electrode positions from SFP file.
@@ -4020,13 +4020,13 @@ Load electrode positions from SFP file.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.eeg_import_csd-Tuple{String}' href='#NeuroAnalyzer.eeg_import_csd-Tuple{String}'>#</a>
-**`NeuroAnalyzer.eeg_import_csd`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_import_csd-Tuple{String}' href='#NeuroAnalyzer.locs_import_csd-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import_csd`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_import_csd(file_name)
+locs_import_csd(file_name)
 ```
 
 Load electrode positions from CSD file.
