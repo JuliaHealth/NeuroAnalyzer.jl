@@ -10,7 +10,7 @@ e10 = eeg_epoch(edf, epoch_n=10)
 
 p = plot_filter_response(fs=eeg_sr(edf), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-eeg_plot_save(p, file_name="test.png")
+plot_save(p, file_name="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 

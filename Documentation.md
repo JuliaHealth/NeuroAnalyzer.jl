@@ -9172,13 +9172,13 @@ Detect a pair of positive and negative peaks of ERP.
 
 ## EEG plots
 
-<a id='NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.eeg_plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
-**`NeuroAnalyzer.eeg_plot_save`** &mdash; *Method*.
+<a id='NeuroAnalyzer.plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}' href='#NeuroAnalyzer.plot_save-Tuple{Union{Figure, Plots.Plot{Plots.GRBackend}}}'>#</a>
+**`NeuroAnalyzer.plot_save`** &mdash; *Method*.
 
 
 
 ```julia
-eeg_plot_save(p; file_name::String)
+plot_save(p; file_name::String)
 ```
 
 Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.

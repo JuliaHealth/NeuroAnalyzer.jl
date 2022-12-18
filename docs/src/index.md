@@ -466,7 +466,7 @@ eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
 ## EEG plots
 
 ```@docs
-eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
+plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
 plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{AbstractVector, AbstractArray}; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", kwargs...)
 plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{AbstractVector, AbstractArray}, bad::Vector{Bool}; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="μV", kwargs...)
 plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)

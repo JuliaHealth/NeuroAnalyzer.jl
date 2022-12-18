@@ -507,7 +507,7 @@ include("eeg_study.jl")
 export eeg_study_create
 
 include("eeg_plots.jl")
-export eeg_plot_save
+export plot_save
 export plot_signal
 export plot_signal_avg
 export plot_signal_butterfly

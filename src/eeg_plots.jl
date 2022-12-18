@@ -1,5 +1,5 @@
 """
-    eeg_plot_save(p; file_name::String)
+    plot_save(p; file_name::String)
 
 Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` extension.
 
@@ -8,7 +8,7 @@ Saves plot as file (PDF/PNG/TIFF). File format is determined using `file_name` e
 - `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 - `file_name::String`
 """
-function eeg_plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
+function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_name::String)
 
     ext = splitext(file_name)[2]
     _check_var(ext, [".png", ".pdf", ".jpg", ".tiff"], "File format")
@@ -75,42 +75,23 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     end
 
     # prepare plot
-    if channel_n == 1
-        p = Plots.plot(xlabel=xlabel,
-                       ylabel=ylabel,
-                       xlims=_xlims(t),
-                       xticks=_ticks(t),
-                       ylims=(-1, channel_n),
-                       title=title,
-                       palette=pal,
-                       size=(1200, 500),
-                       top_margin=10Plots.px,
-                       left_margin=20Plots.px,
-                       bottom_margin=20Plots.px,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6;
-                       kwargs...)
-    else
-        p = Plots.plot(xlabel=xlabel,
-                       ylabel=ylabel,
-                       xlims=_xlims(t),
-                       xticks=_ticks(t),
-                       ylims=(-1, channel_n),
-                       title=title,
-                       palette=pal,
-                       size=(1200, 800),
-                       left_margin=20Plots.px,
-                       bottom_margin=20Plots.px,
-                       titlefontsize=8,
-                       xlabelfontsize=8,
-                       ylabelfontsize=8,
-                       xtickfontsize=6,
-                       ytickfontsize=6;
-                       kwargs...)
-    end
+    channel_n == 1 && (plot_size = (1200, 500))
+    channel_n > 1 && (plot_size = (1200, 800))
+    p = Plots.plot(xlabel=xlabel,
+                   ylabel=ylabel,
+                   xlims=_xlims(t),
+                   xticks=_ticks(t),
+                   ylims=(-1, channel_n),
+                   title=title,
+                   palette=pal,
+                   size=plot_size,
+                   margins=20Plots.px,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=6,
+                   ytickfontsize=6;
+                   kwargs...)
 
     # plot zero line
     p = Plots.hline!(collect((channel_n - 1):-1:0),
@@ -188,6 +169,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     end
 
     # prepare plot
+    channel_n == 1 && (plot_size = (1200, 500))
+    channel_n > 1 && (plot_size = (1200, 800))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
@@ -195,9 +178,8 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
                    ylims=(-1, channel_n),
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
-                   bottom_margin=20Plots.px,
+                   size=plot_size,
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -294,8 +276,8 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::Abstra
                    yticks=yticks,
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -390,8 +372,8 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::
                    yticks=yticks,
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -781,8 +763,8 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -900,7 +882,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
                    t=:line,
                    c=:black,
                    size=(1200, 800),
-                   left_margin=20Plots.px,
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -1003,8 +985,8 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -1115,8 +1097,8 @@ function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; la
                    palette=pal,
                    t=:line,
                    c=:black,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -1226,7 +1208,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
                        st=:line,
                        lc=:black,
                        size=(1200, 800),
-                       left_margin=20Plots.px,
+                       margins=20Plots.px,
                        titlefontsize=8,
                        xlabelfontsize=8,
                        ylabelfontsize=8,
@@ -1262,7 +1244,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
                        st=:surface,
                        lc=:black,
                        size=(1200, 800),
-                       left_margin=20Plots.px,
+                       margins=20Plots.px,
                        titlefontsize=8,
                        xlabelfontsize=8,
                        ylabelfontsize=8,
@@ -1841,7 +1823,7 @@ function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::A
                       yticks=_ticks(frq_lim),
                       title=title,
                       size=(1200, 800),
-                      left_margin=20Plots.px,
+                      margins=20Plots.px,
                       seriescolor=pal,
                       colorbar_title=cb_title,
                       titlefontsize=8,
@@ -1894,7 +1876,7 @@ function plot_spectrogram(s_ch::Vector{String}, s_frq::Vector{Float64}, s_pow::A
                       yticks=(ch, s_ch),
                       title=title,
                       size=(1200, 800),
-                      left_margin=20Plots.px,
+                      margins=20Plots.px,
                       seriescolor=pal,
                       colorbar_title=cb_title,
                       titlefontsize=8,
@@ -2651,8 +2633,8 @@ function plot_bar(signal::AbstractVector; labels::Vector{String}, xlabel::String
 
     p = Plots.plot(signal,
                    seriestype=:bar,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -2701,8 +2683,8 @@ function plot_line(signal::AbstractVector; labels::Vector{String}, xlabel::Strin
 
     p = Plots.plot(signal,
                    seriestype=:line,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -2754,8 +2736,8 @@ function plot_line(signal::AbstractArray; labels::Vector{String}, xlabels::Vecto
 
     p = Plots.plot(signal[1, :],
                    seriestype=:line,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    legend=:topright,
                    label=labels[1],
                    xticks=(1:length(xlabels), xlabels),
@@ -2811,8 +2793,8 @@ function plot_box(signal::AbstractArray; labels::Vector{String}, xlabel::String=
 
     p = Plots.plot(signal',
                    seriestype=:box,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -2861,8 +2843,8 @@ function plot_violin(signal::AbstractArray; labels::Vector{String}, xlabel::Stri
 
     p = Plots.plot(signal',
                    seriestype=:violin,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
+                   size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -2907,8 +2889,8 @@ function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlab
 
     pal = mono == true ? :grays : :darktest
 
-    p = Plots.plot(size=(1200, 800),
-                   left_margin=20Plots.px,
+    p = Plots.plot(size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -2969,8 +2951,8 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
 
     pal = mono == true ? :grays : :darktest
 
-    p = Plots.plot(size=(1200, 800),
-                   left_margin=20Plots.px,
+    p = Plots.plot(size=(1200, 500),
+                   margins=20Plots.px,
                    legend=false,
                    xticks=(1:length(labels), labels),
                    xlabel=xlabel,
@@ -3121,8 +3103,8 @@ function plot_stack(signal::AbstractArray, t::AbstractVector; xlabel::String="",
     p = Plots.heatmap(t,
                       1:size(signal, 2),
                       signal,
-                      size=(1200, 800),
-                      left_margin=20Plots.px,
+                      size=(1200, 500),
+                      margins=20Plots.px,
                       legend=false,
                       xticks=_ticks(t),
                       yticks=round.(Int64, range(1, size(signal, 2), length=10)),
@@ -3372,7 +3354,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                              lc=:green)
         end
 
-        p = Plots.plot(p1, p2, p3, size=(1200, 800), left_margin=20*Plots.px, layout=(3, 1), palette=pal; kwargs...)
+        p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
     else
         w = range(0, stop=pi, length=1024)
         H = _fir_response(ffilter, w)
@@ -3462,7 +3444,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                              lc=:green)
         end
 
-        p = Plots.plot(p1, p2, size=(1200, 800), left_margin=20*Plots.px, layout=(2, 1), palette=pal; kwargs...)
+        p = Plots.plot(p1, p2, size=(1200, 800), margins=20*Plots.px, layout=(2, 1), palette=pal; kwargs...)
     end
 
     return p
@@ -3842,7 +3824,8 @@ function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, 
                         seriestype=:scatter,
                         grid=true,
                         label="",
-                        markersize=5,
+                        markersize=2,
+                        markeralpha=0.5,
                         markerstrokewidth=0,
                         markerstrokealpha=0)
     end
@@ -4164,10 +4147,7 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVecto
                    title=title,
                    palette=pal,
                    size=(1200, 400),
-                   top_margin=10Plots.px,
-                   left_margin=20Plots.px,
-                   right_margin=20Plots.px,
-                   bottom_margin=20Plots.px,
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -4239,9 +4219,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractA
                    title=title,
                    palette=pal,
                    size=(1200, 400),
-                   top_margin=10Plots.px,
-                   left_margin=20Plots.px,
-                   right_margin=20Plots.px,
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
@@ -4331,9 +4309,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
                    title=title,
                    palette=pal,
                    size=(1200, 400),
-                   top_margin=10Plots.px,
-                   left_margin=20Plots.px,
-                   right_margin=20Plots.px,
+                   margins=20Plots.px,
                    titlefontsize=8,
                    xlabelfontsize=8,
                    ylabelfontsize=8,
