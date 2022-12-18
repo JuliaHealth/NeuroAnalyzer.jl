@@ -3925,6 +3925,34 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.EEG` object.
 2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
 3. https://www.edfplus.info/specs/
 
+<a id='NeuroAnalyzer.locs_import-Tuple{String}' href='#NeuroAnalyzer.locs_import-Tuple{String}'>#</a>
+**`NeuroAnalyzer.locs_import`** &mdash; *Method*.
+
+
+
+```julia
+locs_import(file_name)
+```
+
+Load electrode positions. Supported formats:
+
+  * CED
+  * ELC
+  * LOCS
+  * TSV
+  * SFP
+  * CSD
+
+This is a meta-function that triggers appropriate `locs_import_*()` function. File format is detected based on file extension.
+
+**Arguments**
+
+  * `file_name::String`
+
+**Returns**
+
+  * `locs::DataFrame`
+
 <a id='NeuroAnalyzer.locs_import_ced-Tuple{String}' href='#NeuroAnalyzer.locs_import_ced-Tuple{String}'>#</a>
 **`NeuroAnalyzer.locs_import_ced`** &mdash; *Method*.
 
@@ -5514,13 +5542,13 @@ Interpolate EEG channel(s) using planar interpolation.
   * `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
   * `interpolation_factor::Int64=100`: interpolation quality
 
-<a id='NeuroAnalyzer.loc_flipy-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipy-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipy-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipy-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipy`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipy(locs; planar, spherical)
+locs_flipy(locs; planar, spherical)
 ```
 
 Flip channel locations along y axis.
@@ -5535,13 +5563,13 @@ Flip channel locations along y axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroAnalyzer.loc_flipy!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipy!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipy!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipy!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipy!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipy!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipy!(locs; planar, spherical)
+locs_flipy!(locs; planar, spherical)
 ```
 
 Flip channel locations along y axis.
@@ -5552,13 +5580,13 @@ Flip channel locations along y axis.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroAnalyzer.loc_flipx-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipx-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipx`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipx-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipx-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipx`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipx(locs; planar, spherical)
+locs_flipx(locs; planar, spherical)
 ```
 
 Flip channel locations along x axis.
@@ -5573,13 +5601,13 @@ Flip channel locations along x axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroAnalyzer.loc_flipx!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipx!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipx!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipx!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipx!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipx!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipx!(locs; planar, spherical)
+locs_flipx!(locs; planar, spherical)
 ```
 
 Flip channel locations along x axis.
@@ -5590,13 +5618,13 @@ Flip channel locations along x axis.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroAnalyzer.loc_flipz-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipz-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipz`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipz-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipz-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipz`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipz(locs)
+locs_flipz(locs)
 ```
 
 Flip channel locations along z axis.
@@ -5609,13 +5637,13 @@ Flip channel locations along z axis.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroAnalyzer.loc_flipz!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_flipz!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_flipz!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_flipz!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_flipz!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_flipz!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_flipz!(eeg)
+locs_flipz!(eeg)
 ```
 
 Flip channel locations along z axis.
@@ -5748,13 +5776,13 @@ Named tuple containing:
   * `radius_sph::Float64`: spherical radius, the distance from the origin to the point
   * `phi_sph::Float64`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
 
-<a id='NeuroAnalyzer.loc_swapxy-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_swapxy-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_swapxy`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_swapxy-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_swapxy-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_swapxy`** &mdash; *Method*.
 
 
 
 ```julia
-loc_swapxy(locs; planar, spherical)
+locs_swapxy(locs; planar, spherical)
 ```
 
 Swap channel locations x and y axes.
@@ -5769,13 +5797,13 @@ Swap channel locations x and y axes.
 
   * `eeg::NeuroAnalyzer.EEG`
 
-<a id='NeuroAnalyzer.loc_swapxy!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_swapxy!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_swapxy!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_swapxy!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_swapxy!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_swapxy!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_swapxy!(locs; planar, spherical)
+locs_swapxy!(locs; planar, spherical)
 ```
 
 Swap channel locations x and y axes.
@@ -5786,13 +5814,13 @@ Swap channel locations x and y axes.
   * `planar::Bool=true`: modify planar coordinates
   * `spherical::Bool=true`: modify spherical coordinates
 
-<a id='NeuroAnalyzer.loc_sph2cart-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_sph2cart-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_sph2cart`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_sph2cart-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_sph2cart-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_sph2cart`** &mdash; *Method*.
 
 
 
 ```julia
-loc_sph2cart(locs)
+locs_sph2cart(locs)
 ```
 
 Convert spherical locations to Cartesian.
@@ -5805,13 +5833,13 @@ Convert spherical locations to Cartesian.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroAnalyzer.loc_sph2cart!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_sph2cart!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_sph2cart!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_sph2cart!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_sph2cart!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_sph2cart!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_sph2cart!(locs)
+locs_sph2cart!(locs)
 ```
 
 Convert spherical locations to Cartesian.
@@ -5820,13 +5848,13 @@ Convert spherical locations to Cartesian.
 
   * `locs::DataFrame`
 
-<a id='NeuroAnalyzer.loc_cart2sph-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_cart2sph-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_cart2sph`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_cart2sph-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_cart2sph-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_cart2sph`** &mdash; *Method*.
 
 
 
 ```julia
-loc_cart2sph(locs)
+locs_cart2sph(locs)
 ```
 
 Convert Cartesian locations to spherical.
@@ -5839,16 +5867,50 @@ Convert Cartesian locations to spherical.
 
   * `locs_new::DataFrame`
 
-<a id='NeuroAnalyzer.loc_cart2sph!-Tuple{DataFrame}' href='#NeuroAnalyzer.loc_cart2sph!-Tuple{DataFrame}'>#</a>
-**`NeuroAnalyzer.loc_cart2sph!`** &mdash; *Method*.
+<a id='NeuroAnalyzer.locs_cart2sph!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_cart2sph!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_cart2sph!`** &mdash; *Method*.
 
 
 
 ```julia
-loc_cart2sph!(locs)
+locs_cart2sph!(locs)
 ```
 
 Convert Cartesian locations to spherical.
+
+**Arguments**
+
+  * `locs::DataFrame`
+
+<a id='NeuroAnalyzer.locs_cart2pol-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_cart2pol-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_cart2pol`** &mdash; *Method*.
+
+
+
+```julia
+locs_cart2pol(locs)
+```
+
+Convert Cartesian locations to polar.
+
+**Arguments**
+
+  * `locs::DataFrame`
+
+**Returns**
+
+  * `locs_new::DataFrame`
+
+<a id='NeuroAnalyzer.locs_cart2pol!-Tuple{DataFrame}' href='#NeuroAnalyzer.locs_cart2pol!-Tuple{DataFrame}'>#</a>
+**`NeuroAnalyzer.locs_cart2pol!`** &mdash; *Method*.
+
+
+
+```julia
+locs_cart2pol!(locs)
+```
+
+Convert Cartesian locations to polar.
 
 **Arguments**
 
@@ -9165,6 +9227,25 @@ Detect a pair of positive and negative peaks of ERP.
 
   * `p::Array{Int64, 2}`: peaks: channels × positive peak position, negative peak position
 
+<a id='NeuroAnalyzer.eeg_signal_channels-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_signal_channels-Tuple{NeuroAnalyzer.EEG}'>#</a>
+**`NeuroAnalyzer.eeg_signal_channels`** &mdash; *Method*.
+
+
+
+```julia
+eeg_signal_channels(eeg)
+```
+
+Return all signal (EEG/MEG) channels
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`:
+
+**Returns**
+
+  * `channels::Vector{Int64}`
+
 
 <a id='EEG-plots'></a>
 
@@ -9520,17 +9601,17 @@ Plot 3-d waterfall PSD plot.
 
 
 ```julia
-plot_psd_topo(s_frq, s_pow; <keyword arguments>)
+plot_psd_topo(locs, s_frq, s_pow; <keyword arguments>)
 ```
 
-Plot topographical map `eeg` PSD. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+Plot topographical map PSDs. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
 
 **Arguments**
 
   * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
   * `s_frq::Vector{Float64}`: frequencies
   * `s_pow::Array{Float64, 3}`: powers
-  * `Union{Vector{Int64}, AbstractRange}`: which channels to plot
+  * `channel::Union{Vector{Int64}, AbstractRange}`: which channels to plot
   * `labels::Vector{String}=[""]`: signal channel labels vector
   * `norm::Bool=true`: whether powers are normalized to dB
   * `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the x-axis
@@ -10489,6 +10570,7 @@ Butterfly plot of ERP.
 
   * `t::Union{AbstractVector, AbstractRange}`: x-axis values (usually time)
   * `signal::AbstractArray`: data to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
@@ -10499,6 +10581,34 @@ Butterfly plot of ERP.
 **Returns**
 
   * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_erp_topo-Tuple{DataFrame, Vector{Float64}, Matrix{Float64}}' href='#NeuroAnalyzer.plot_erp_topo-Tuple{DataFrame, Vector{Float64}, Matrix{Float64}}'>#</a>
+**`NeuroAnalyzer.plot_erp_topo`** &mdash; *Method*.
+
+
+
+```julia
+plot_erp_topo(locs, t, erp; <keyword arguments>)
+```
+
+Plot topographical map ERPs. It uses polar :loc*radius and :loc*theta locations, which are translated into Cartesian x and y positions.
+
+**Arguments**
+
+  * `locs::DataFrame`: columns: channel, labels, loc*theta, loc*radius, loc*x, loc*y, loc*z, loc*radius*sph, loc*theta*sph, loc*phi_sph
+  * `t::Vector{Float64}`: time vector
+  * `signal::Array{Float64, 2}`: ERPs
+  * `channels::Union{Vector{Int64}, AbstractRange}`: which channels to plot
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `fig::GLMakie.Figure`
 
 <a id='NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG}' href='#NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG}'>#</a>
 **`NeuroAnalyzer.eeg_plot_erp`** &mdash; *Method*.
@@ -10514,13 +10624,15 @@ Plot ERP.
 **Arguments**
 
   * `eeg::NeuroAnalyzer.EEG`: EEG object
-  * `channel::Int64`: channel to plot
+  * `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+  * `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
   * `xlabel::String="default"`: x-axis label, default is Time [ms]
   * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
   * `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
   * `mono::Bool=false`: use color or grey palette
-  * `peaks::Bool`: draw peaks
-  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
+  * `peaks::Bool=true`: draw peaks
+  * `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`)
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
