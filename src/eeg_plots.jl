@@ -75,23 +75,43 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     end
 
     # prepare plot
-    p = Plots.plot(xlabel=xlabel,
-                   ylabel=ylabel,
-                   xlims=_xlims(t),
-                   xticks=_ticks(t),
-                   ylims=(-1, channel_n),
-                   title=title,
-                   palette=pal,
-                   size=(1200, 800),
-                   left_margin=20Plots.px,
-                   bottom_margin=20Plots.px,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=6,
-                   ytickfontsize=6;
-                   kwargs...)
-    
+    if channel_n == 1
+        p = Plots.plot(xlabel=xlabel,
+                       ylabel=ylabel,
+                       xlims=_xlims(t),
+                       xticks=_ticks(t),
+                       ylims=(-1, channel_n),
+                       title=title,
+                       palette=pal,
+                       size=(1200, 500),
+                       top_margin=10Plots.px,
+                       left_margin=20Plots.px,
+                       bottom_margin=20Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6;
+                       kwargs...)
+    else
+        p = Plots.plot(xlabel=xlabel,
+                       ylabel=ylabel,
+                       xlims=_xlims(t),
+                       xticks=_ticks(t),
+                       ylims=(-1, channel_n),
+                       title=title,
+                       palette=pal,
+                       size=(1200, 800),
+                       left_margin=20Plots.px,
+                       bottom_margin=20Plots.px,
+                       titlefontsize=8,
+                       xlabelfontsize=8,
+                       ylabelfontsize=8,
+                       xtickfontsize=6,
+                       ytickfontsize=6;
+                       kwargs...)
+    end
+
     # plot zero line
     p = Plots.hline!(collect((channel_n - 1):-1:0),
                      color=:grey,
@@ -4143,7 +4163,8 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVecto
                    yticks=yticks,
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
+                   size=(1200, 400),
+                   top_margin=10Plots.px,
                    left_margin=20Plots.px,
                    right_margin=20Plots.px,
                    bottom_margin=20Plots.px,
@@ -4217,7 +4238,8 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractA
                    yticks=yticks,
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
+                   size=(1200, 400),
+                   top_margin=10Plots.px,
                    left_margin=20Plots.px,
                    right_margin=20Plots.px,
                    titlefontsize=8,
@@ -4308,7 +4330,8 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
                    yticks=yticks,
                    title=title,
                    palette=pal,
-                   size=(1200, 800),
+                   size=(1200, 400),
+                   top_margin=10Plots.px,
                    left_margin=20Plots.px,
                    right_margin=20Plots.px,
                    titlefontsize=8,
@@ -4469,7 +4492,8 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float6
                         signal[idx, :],
                         t=:line,
                         color=:black,
-                        linewidth=0.5)
+                        linewidth=0.5,
+                        alpha=0.75)
 
         # plot 0 v-line
         p = Plots.vline!([0],
@@ -4613,11 +4637,11 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
             erp = eeg_erp(eeg).eeg_signals
             pp = eeg_erp_peaks(eeg)
             if mono == false
-                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=5, label=false)
-                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=5, label=false)
+                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
-                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             verbose == true && @info "Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms"
             verbose == true && @info "Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV"
@@ -4629,11 +4653,11 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
             eeg_tmp.eeg_signals = reshape(erp, 1, length(erp), 1)
             pp = eeg_erp_peaks(eeg_tmp)
             if mono == false
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=5, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=5, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=5, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
             verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
