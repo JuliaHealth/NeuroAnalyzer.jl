@@ -372,6 +372,9 @@ function locs_import_ced(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
+
     return locs
 end
 
@@ -410,6 +413,9 @@ function locs_import_locs(file_name::String)
     radius = Float64.(locs[!, "radius"])
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
 
     return locs
 end
@@ -468,6 +474,9 @@ function locs_import_elc(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
+
     return locs
 end
 
@@ -520,6 +529,9 @@ function locs_import_tsv(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
+
     return locs
 end
 
@@ -561,6 +573,9 @@ function locs_import_sfp(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
+
     return locs
 end
 
@@ -597,6 +612,9 @@ function locs_import_csd(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs_swapxy!(locs)
+    locs_flipx!(locs)
+    
     return locs
 end
 

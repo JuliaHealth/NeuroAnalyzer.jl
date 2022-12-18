@@ -1868,7 +1868,7 @@ Flip channel locations along y axis.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
-    locs = locs_flipy(locs, planar=planar, spherical=sphreical)
+    locs[!, :] = locs_flipy(locs, planar=planar, spherical=sphreical)[!, :]
     return nothing
 end
 
@@ -1921,7 +1921,7 @@ Flip channel locations along x axis.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_flipx!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
-    locs = locs_flipx(locs, planar=planar, spherical=spherical)
+    locs[!, :] = locs_flipx(locs, planar=planar, spherical=spherical)[!, :]
     return nothing
 end
 
@@ -1960,7 +1960,7 @@ Flip channel locations along z axis.
 - `locs::DataFrame`
 """
 function locs_flipz!(locs::DataFrame)
-    locs = locs_flipz!(locs)
+    locs[!, :] = locs_flipz!(locs)[!, :]
     return nothing
 end
 
@@ -2209,7 +2209,7 @@ Swap channel locations x and y axes.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_swapxy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
-    locs = locs_swapxy(locs, planar=planar, spherical=spherical)
+    locs[!, :] = locs_swapxy(locs, planar=planar, spherical=spherical)[!, :]
     return nothing
 end
 
@@ -2253,7 +2253,7 @@ Convert spherical locations to Cartesian.
 - `locs::DataFrame`
 """
 function locs_sph2cart!(locs::DataFrame)
-    locs = locs_sph2cart(locs)
+    locs[!, :] = locs_sph2cart(locs)[!, :]
     return nothing
 end
 
@@ -2297,7 +2297,7 @@ Convert Cartesian locations to spherical.
 - `locs::DataFrame`
 """
 function locs_cart2sph!(locs::DataFrame)
-    locs = locs_cart2sph(locs)
+    locs[!, :] = locs_cart2sph(locs)[!, :]
     return nothing
 end
 
@@ -2339,7 +2339,7 @@ Convert Cartesian locations to polar.
 - `locs::DataFrame`
 """
 function locs_cart2pol!(locs::DataFrame)
-    locs = locs_cart2pol(locs)
+    locs[!, :] = locs_cart2pol(locs)[!, :]
     return nothing
 end
 
