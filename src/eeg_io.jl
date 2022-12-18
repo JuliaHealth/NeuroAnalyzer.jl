@@ -285,6 +285,50 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
 end
 
 """
+    locs_import(file_name)
+
+Load electrode positions. Supported formats:
+- CED
+- ELC
+- LOCS
+- TSV
+- SFP
+- CSD
+
+This is a meta-function that triggers appropriate `locs_import_*()` function. File format is detected based on file extension.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function locs_import(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    if splitext(file_name)[2] == ".ced"
+        locs = locs_import_ced(file_name)
+    elseif splitext(file_name)[2] == ".elc"
+        locs = locs_import_elc(file_name)
+    elseif splitext(file_name)[2] == ".locs"
+        locs = locs_import_locs(file_name)
+    elseif splitext(file_name)[2] == ".tsv"
+        locs = locs_import_tsv(file_name)
+    elseif splitext(file_name)[2] == ".sfp"
+        locs = locs_import_sfp(file_name)
+    elseif splitext(file_name)[2] == ".csd"
+        locs = locs_import_csd(file_name)
+    else
+        throw(ArgumentError("Unknown file format."))
+    end
+
+    return locs
+end
+
+"""
     locs_import_ced(file_name)
 
 Load electrode positions from CED file.
