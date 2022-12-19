@@ -107,6 +107,8 @@ p = eeg_plot_erp(e10, channel=1, type=:mean)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_erp(e10, channel=1, type=:butterfly)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, channel=1, type=:stack)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 #####
 
