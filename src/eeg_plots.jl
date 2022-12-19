@@ -4450,6 +4450,8 @@ Plot ERP.
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+- `cb::Bool=true`: plot color bar
+- `cb_title::String="default"`: color bar title, default is Amplitude [μV] 
 - `mono::Bool=false`: use color or grey palette
 - `peaks::Bool=true`: draw peaks
 - `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
@@ -4460,7 +4462,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -4547,6 +4549,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                           kwargs...)
     elseif type === :stack
         peaks = false
+        cb_title == "default" && (cb_title = "Amplitude [μV]")
         if length(channel) > 1
             xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
@@ -4568,6 +4571,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                            ylabel=ylabel,
                            title=title,
                            labels=labels,
+                           cb=cb,
+                           cb_title=cb_title,
                            mono=mono;
                            kwargs...)
     end
@@ -4639,6 +4644,8 @@ Plot EPRs stacked by channels or by epochs.
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
+- `cb::Bool=true`: plot color bar
+- `cb_title::String=""`: color bar title
 - `mono::Bool=false`: use color or grey palette
 - `kwargs`: optional arguments for plot() function
 
@@ -4646,7 +4653,7 @@ Plot EPRs stacked by channels or by epochs.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_stack(t::AbstractVector, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_erp_stack(t::AbstractVector, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", cb::Bool=true, cb_title::String="", mono::Bool=false, kwargs...)
 
     ndims(signal) == 2 || throw(ArgumentError("signal must have 2 dimensions."))
     length(t) == size(signal, 2) || throw(ArgumentError("Number of signal columns ($(size(signal, 2))) must be equal to length of x-axis values ($(length(t)))."))
@@ -4668,6 +4675,8 @@ function plot_erp_stack(t::AbstractVector, signal::AbstractArray; labels::Vector
                       yticks=yticks,
                       xlabel=xlabel,
                       ylabel=ylabel,
+                      cb=cb,
+                      cbtitle=cb_title,
                       title=title,
                       seriescolor=pal,
                       linewidth=0.5,
@@ -4704,6 +4713,8 @@ Plot ERP.
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
 - `title::String="default"`: plot title, default is ERP amplitude [component: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+- `cb::Bool=true`: plot color bar
+- `cb_title::String="default"`: color bar title
 - `mono::Bool=false`: use color or grey palette
 - `peaks::Bool=true`: draw peaks
 - `labels::Bool=true`: draw labels legend (using EEG component labels) for multi-channel `:butterfly` plot
@@ -4714,7 +4725,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -4807,6 +4818,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                           mono=mono;
                           kwargs...)
     elseif type === :stack
+        cb_title == "default" && (cb_title = "Amplitude [μV]")
         peaks = false
         if length(c_idx) > 1
             xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
@@ -4824,6 +4836,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                            ylabel=ylabel,
                            title=title,
                            labels=labels,
+                           cb=cb,
+                           cb_title=cb_title,
                            mono=mono;
                            kwargs...)
     end

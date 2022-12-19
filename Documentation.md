@@ -10514,7 +10514,7 @@ Plot ERP.
 plot_erp_avg(t, signal; <keyword arguments>)
 ```
 
-Plot amplitude mean and ±95% CI of averaged `signal` channels.
+Plot ERP amplitude mean and ±95% CI.
 
 **Arguments**
 
@@ -10604,6 +10604,8 @@ Plot ERP.
   * `xlabel::String="default"`: x-axis label, default is Time [ms]
   * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
   * `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+  * `cb::Bool=true`: plot color bar
+  * `cb_title::String="default"`: color bar title, default is Amplitude [μV]
   * `mono::Bool=false`: use color or grey palette
   * `peaks::Bool=true`: draw peaks
   * `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
@@ -10623,16 +10625,18 @@ Plot ERP.
 plot_erp_stack(signal; <keyword arguments>)
 ```
 
-Plot stacked data. Data are stacked by 3rd dimension.
+Plot EPRs stacked by channels or by epochs.
 
 **Arguments**
 
-  * `signal::AbstractArray`
   * `t::AbstractVector`: x-axis values
+  * `signal::AbstractArray`
   * `labels::Vector{String}=[""]`: signal channel labels vector
   * `xlabel::String=""`: x-axis label
   * `ylabel::String=""`: y-axis label
   * `title::String=""`: plot title
+  * `cb::Bool=true`: plot color bar
+  * `cb_title::String=""`: color bar title
   * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
@@ -10660,6 +10664,8 @@ Plot ERP.
   * `xlabel::String="default"`: x-axis label, default is Time [ms]
   * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
   * `title::String="default"`: plot title, default is ERP amplitude [component: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+  * `cb::Bool=true`: plot color bar
+  * `cb_title::String="default"`: color bar title
   * `mono::Bool=false`: use color or grey palette
   * `peaks::Bool=true`: draw peaks
   * `labels::Bool=true`: draw labels legend (using EEG component labels) for multi-channel `:butterfly` plot
