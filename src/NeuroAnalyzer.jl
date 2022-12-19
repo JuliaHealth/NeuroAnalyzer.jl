@@ -533,7 +533,6 @@ export plot_violin
 export plot_dots
 export plot_paired
 export plot_polar
-export plot_stack
 export plot_filter_response
 export plot_weights
 export eeg_plot_weights
@@ -548,5 +547,6 @@ export plot_erp_avg
 export plot_erp_butterfly
 export plot_erp_topo
 export eeg_plot_erp
+export plot_erp_stack
 
 end # NeuroAnalyzer

@@ -3075,57 +3075,6 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real,
 end
 
 """
-    plot_stack(signal; <keyword arguments>)
-
-Plot stacked data. Data are stacked by 3rd dimension.
-
-# Arguments
-
-- `signal::AbstractArray`
-- `t::AbstractVector`: x-axis values
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_stack(signal::AbstractArray, t::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    ndims(signal) == 2 || throw(ArgumentError("signal must have 2 dimensions."))
-    length(t) == size(signal, 1) || throw(ArgumentError("Number of signal rows ($(size(signal, 1))) must be equal to length of x-axis values ($(length(t)))."))
-
-    pal = mono == true ? :grays : :darktest
-
-    p = Plots.heatmap(t,
-                      1:size(signal, 2),
-                      signal,
-                      size=(1200, 500),
-                      margins=20Plots.px,
-                      legend=false,
-                      xticks=_ticks(t),
-                      yticks=round.(Int64, range(1, size(signal, 2), length=10)),
-                      xlabel=xlabel,
-                      ylabel=ylabel,
-                      title=title,
-                      seriescolor=pal,
-                      linewidth=0.5,
-                      titlefontsize=8,
-                      xlabelfontsize=8,
-                      ylabelfontsize=8,
-                      xtickfontsize=8,
-                      ytickfontsize=8;
-                      kwargs...)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
     plot_filter_response(<keyword arguments>)
 
 Plot filter response.
@@ -4504,7 +4453,7 @@ Plot ERP.
 - `mono::Bool=false`: use color or grey palette
 - `peaks::Bool=true`: draw peaks
 - `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
-- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`)
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
 - `kwargs`: optional arguments for plot() function
 
 # Returns
@@ -4513,9 +4462,9 @@ Plot ERP.
 """
 function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
 
-    _check_var(type, [:normal, :butterfly, :mean, :topo], "type")
+    _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
-    type !== :topo && type !== :butterfly && length(channel) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one channel must be specified."))
+    type in [:normal, :mean] && length(channel) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one channel must be specified."))
 
     # check channels
     _check_channels(eeg, channel)
@@ -4548,8 +4497,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                      mono=mono;
                      kwargs...)
     elseif type === :butterfly
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
         if length(channel) > 1
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
             if labels == true
                 labels = eeg_labels(eeg)[channel]
@@ -4557,6 +4506,7 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                 labels = repeat([""], length(channel))
             end
         else
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
             signal = signal'
             labels = [""]
         end
@@ -4595,6 +4545,31 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                           title=title,
                           mono=mono;
                           kwargs...)
+    elseif type === :stack
+        peaks = false
+        if length(channel) > 1
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = mean(signal, dims=3)[:, :]
+            if labels == true
+                labels = eeg_labels(eeg)[channel]
+            else
+                labels = repeat([""], length(channel))
+            end
+            ylabel = "Channel"
+        else
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = signal'
+            labels = [""]
+            ylabel = "Epoch"
+        end
+        p = plot_erp_stack(t,
+                           signal,
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           labels=labels,
+                           mono=mono;
+                           kwargs...)
     end
 
     # draw time markers
@@ -4647,6 +4622,70 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
     else
         GLMakie.show(p)
     end
+
+    return p
+end
+
+"""
+    plot_erp_stack(signal; <keyword arguments>)
+
+Plot stacked data. Data are stacked by 3rd dimension.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `t::AbstractVector`: x-axis values
+- `labels::Vector{String}=[""]`: signal channel labels vector
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_erp_stack(t::AbstractVector, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(signal) == 2 || throw(ArgumentError("signal must have 2 dimensions."))
+    length(t) == size(signal, 2) || throw(ArgumentError("Number of signal columns ($(size(signal, 2))) must be equal to length of x-axis values ($(length(t)))."))
+
+    pal = mono == true ? :grays : :darktest
+
+    if labels == [""]
+        yticks = round.(Int64, range(1, size(signal, 1), length=10))
+    else
+        yticks = (1:size(signal, 1), labels)
+    end
+    p = Plots.heatmap(t,
+                      1:size(signal, 1),
+                      signal,
+                      size=(1200, 500),
+                      margins=20Plots.px,
+                      legend=false,
+                      xticks=(_erpticks(t), string.(_erpticks(t) .* 1000)),
+                      yticks=yticks,
+                      xlabel=xlabel,
+                      ylabel=ylabel,
+                      title=title,
+                      seriescolor=pal,
+                      linewidth=0.5,
+                      titlefontsize=8,
+                      xlabelfontsize=8,
+                      ylabelfontsize=8,
+                      xtickfontsize=8,
+                      ytickfontsize=8;
+                      kwargs...)
+
+    # plot 0 v-line
+    p = Plots.vline!([0],
+                     linestyle=:dash,
+                     linewidth=0.5,
+                     linecolor=:black,
+                     label=false)
+
+    Plots.plot(p)
 
     return p
 end

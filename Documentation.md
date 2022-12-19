@@ -10190,31 +10190,6 @@ Polar plot.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
-<a id='NeuroAnalyzer.plot_stack-Tuple{AbstractArray, AbstractVector}' href='#NeuroAnalyzer.plot_stack-Tuple{AbstractArray, AbstractVector}'>#</a>
-**`NeuroAnalyzer.plot_stack`** &mdash; *Method*.
-
-
-
-```julia
-plot_stack(signal; <keyword arguments>)
-```
-
-Plot stacked data. Data are stacked by 3rd dimension.
-
-**Arguments**
-
-  * `signal::AbstractArray`
-  * `t::AbstractVector`: x-axis values
-  * `xlabel::String=""`: x-axis label
-  * `ylabel::String=""`: y-axis label
-  * `title::String=""`: plot title
-  * `mono::Bool=false`: use color or grey palette
-  * `kwargs`: optional arguments for plot() function
-
-**Returns**
-
-  * `p::Plots.Plot{Plots.GRBackend}`
-
 <a id='NeuroAnalyzer.plot_filter_response-Tuple{}' href='#NeuroAnalyzer.plot_filter_response-Tuple{}'>#</a>
 **`NeuroAnalyzer.plot_filter_response`** &mdash; *Method*.
 
@@ -10632,7 +10607,33 @@ Plot ERP.
   * `mono::Bool=false`: use color or grey palette
   * `peaks::Bool=true`: draw peaks
   * `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
-  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`)
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
+<a id='NeuroAnalyzer.plot_erp_stack-Tuple{AbstractVector, AbstractArray}' href='#NeuroAnalyzer.plot_erp_stack-Tuple{AbstractVector, AbstractArray}'>#</a>
+**`NeuroAnalyzer.plot_erp_stack`** &mdash; *Method*.
+
+
+
+```julia
+plot_erp_stack(signal; <keyword arguments>)
+```
+
+Plot stacked data. Data are stacked by 3rd dimension.
+
+**Arguments**
+
+  * `signal::AbstractArray`
+  * `t::AbstractVector`: x-axis values
+  * `labels::Vector{String}=[""]`: signal channel labels vector
+  * `xlabel::String=""`: x-axis label
+  * `ylabel::String=""`: y-axis label
+  * `title::String=""`: plot title
+  * `mono::Bool=false`: use color or grey palette
   * `kwargs`: optional arguments for plot() function
 
 **Returns**
