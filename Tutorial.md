@@ -1,11 +1,5 @@
 # Neuro.jl Tutorial
 
-View markers:
-```julia
-eeg_view_marker(eeg)
-```
-### EEG Analyze
-
 ### EEG Plots
 
 Plot filter response:

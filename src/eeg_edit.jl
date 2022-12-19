@@ -2416,7 +2416,7 @@ Add marker.
 - `eeg::NeuroAnalyzer.EEG`
 - `id::String`: marker ID
 - `start::Int64`: marker time in samples
-- `len::Int64`: marker length in samples
+- `len::Int64=1`: marker length in samples
 - `desc::String`: marker description
 - `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
@@ -2424,11 +2424,12 @@ Add marker.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64=0)
+function eeg_add_marker(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64=1, desc::String, channel::Int64=0)
 
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
-    start + len > eeg_signal_len(eeg) + 1 && throw(ArgumentError("start + len must be ≤ $(eeg_signal_len(eeg) + 1)."))
+    start >= eeg_signal_len(eeg) && throw(ArgumentError("start must be < $(eeg_signal_len(eeg) - 1)."))
+    start + len > eeg_signal_len(eeg) && throw(ArgumentError("start + len must be ≤ $(eeg_signal_len(eeg))."))
 
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_header[:markers] = true
@@ -2450,11 +2451,11 @@ Add marker.
 - `eeg::NeuroAnalyzer.EEG`
 - `id::String`: marker ID
 - `start::Int64`: marker time in samples
-- `len::Int64`: marker length in samples
+- `len::Int64=1`: marker length in samples
 - `desc::String`: marker description
 - `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 """
-function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64, desc::String, channel::Int64=0)
+function eeg_add_marker!(eeg::NeuroAnalyzer.EEG; id::String, start::Int64, len::Int64=1, desc::String, channel::Int64=0)
 
     eeg_tmp = eeg_add_marker(eeg, id=id, start=start, len=len, desc=desc, channel=channel)
     eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
@@ -2535,7 +2536,7 @@ Edit EEG marker.
 - `n::Int64`: marker number
 - `id::String`: marker ID
 - `start::Int64`: marker time in samples
-- `len::Int64`: marker length in samples
+- `len::Int64=1`: marker length in samples
 - `desc::String`: marker description
 - `channel::Int64`: channel number, if 0 then marker is related to all channels
 
@@ -2543,14 +2544,13 @@ Edit EEG marker.
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_edit_marker(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+function eeg_edit_marker(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, channel::Int64)
 
     eeg.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
-    start > eeg_epoch_len(eeg) && throw(ArgumentError("start must be ≤ $(eeg_epoch_len(eeg))."))
-    len > eeg_epoch_len(eeg) && throw(ArgumentError("len must be ≤ $(eeg_epoch_len(eeg))."))
-    start + len + 1 > eeg_epoch_len(eeg) && throw(ArgumentError("start + len must be ≤ $(eeg_epoch_len(eeg) + 1)."))
+    start >= eeg_signal_len(eeg) && throw(ArgumentError("start must be < $(eeg_signal_len(eeg))."))
+    start + len > eeg_signal_len(eeg) && throw(ArgumentError("start + len must be ≤ $(eeg_signal_len(eeg))."))
 
     nn = size(eeg.eeg_markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
@@ -2573,11 +2573,11 @@ Edit EEG marker.
 - `n::Int64`: marker number
 - `id::String`: marker ID
 - `start::Int64`: marker time in samples
-- `len::Int64`: marker length in samples
+- `len::Int64=1`: marker length in samples
 - `desc::String`: marker description
 - `channel::Int64`: channel number, if 0 then marker is related to all channels
 """
-function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64, desc::String, channel::Int64)
+function eeg_edit_marker!(eeg::NeuroAnalyzer.EEG; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, channel::Int64)
 
     eeg_tmp = eeg_edit_marker(eeg, n=n, id=id, start=start, len=len, desc=desc, channel=channel)
     eeg.eeg_header[:markers] = eeg_tmp.eeg_header[:markers]
