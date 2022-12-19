@@ -91,8 +91,6 @@ p = plot_paired([stats[1, :], stats[2, :]], labels=["1", "2"])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = plot_polar(stats')
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = plot_stack(rand(100, 10), 1:100)
-@test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p1 = eeg_plot(e10, epoch=1, xlabel="")
 p2 = plot_empty()
@@ -108,6 +106,16 @@ p = eeg_plot_erp(e10, channel=1, type=:mean)
 p = eeg_plot_erp(e10, channel=1, type=:butterfly)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = eeg_plot_erp(e10, channel=1, type=:stack)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+
+c = e10.eeg_signals .^ 2
+p = eeg_plot_erp(e10, c, channel=1)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, c, channel=1, type=:mean)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, c, channel=1, type=:butterfly)
+@test typeof(p) == Plots.Plot{Plots.GRBackend}
+p = eeg_plot_erp(e10, c, channel=1, type=:stack)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 #####

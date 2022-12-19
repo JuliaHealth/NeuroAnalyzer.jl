@@ -4130,7 +4130,7 @@ end
 """
     plot_erp_avg(t, signal; <keyword arguments>)
 
-Plot amplitude mean and ±95% CI of averaged `signal` channels.
+Plot ERP amplitude mean and ±95% CI.
 
 # Arguments
 
@@ -4629,12 +4629,12 @@ end
 """
     plot_erp_stack(signal; <keyword arguments>)
 
-Plot stacked data. Data are stacked by 3rd dimension.
+Plot EPRs stacked by channels or by epochs.
 
 # Arguments
 
-- `signal::AbstractArray`
 - `t::AbstractVector`: x-axis values
+- `signal::AbstractArray`
 - `labels::Vector{String}=[""]`: signal channel labels vector
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -4686,6 +4686,201 @@ function plot_erp_stack(t::AbstractVector, signal::AbstractArray; labels::Vector
                      label=false)
 
     Plots.plot(p)
+
+    return p
+end
+
+"""
+    eeg_plot_erp(eeg, c; <keyword arguments>)
+
+Plot ERP.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`: EEG object
+- `c::Union{Symbol, AbstractArray}`: component to plot
+- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
+- `xlabel::String="default"`: x-axis label, default is Time [ms]
+- `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
+- `title::String="default"`: plot title, default is ERP amplitude [component: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+- `mono::Bool=false`: use color or grey palette
+- `peaks::Bool=true`: draw peaks
+- `labels::Bool=true`: draw labels legend (using EEG component labels) for multi-channel `:butterfly` plot
+- `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
+
+    _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
+
+    type in [:normal, :mean] && length(c_idx) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one component channel must be specified."))
+
+    # select component channels, default is all channels
+    typeof(c) == Symbol && (c = _get_component(eeg, c).c)
+    c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
+    _check_cidx(c, c_idx)
+    if labels == true
+        labels = _gen_clabels(c)[c_idx]
+    else
+        labels = repeat([""], length(c_idx))
+    end
+    length(c_idx) == 1 && (labels = [labels])
+
+    # average all epochs
+    epoch = 1:eeg_epoch_n(eeg)
+
+    signal = c[c_idx, :, epoch]
+
+    # get time vector
+    t = eeg.eeg_epoch_time
+    _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
+
+    if tm != 0
+        for tm_idx in eachindex(tm)
+            tm[tm_idx] / 1000 < t[1] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] / 1000 > t[end] && throw(ArgumentError("tm value ($(tm[tm_idx])) is out of epoch time segment ($(t[1]):$(t[end]))."))
+            tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
+        end
+    end
+
+    if type === :normal
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        signal = mean(signal, dims=2)[:]
+        p = plot_erp(t,
+                     signal,
+                     xlabel=xlabel,
+                     ylabel=ylabel,
+                     title=title,
+                     mono=mono;
+                     kwargs...)
+    elseif type === :butterfly
+        if length(c_idx) > 1
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = mean(signal, dims=3)[:, :]
+            if labels == true
+                labels = _gen_clabels(c)[c_idx]
+            else
+                labels = repeat([""], length(c_idx))
+            end
+        else
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = signal'
+            labels = [""]
+        end
+        p = plot_erp_butterfly(t,
+                               signal,
+                               xlabel=xlabel,
+                               ylabel=ylabel,
+                               title=title,
+                               labels=labels,
+                               mono=mono;
+                               kwargs...)
+    elseif type === :mean
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        p = plot_erp_avg(t,
+                         signal,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         mono=mono;
+                         kwargs...)
+    elseif type === :topo
+        eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        peaks = false
+        signal = mean(signal, dims=3)[:, :]
+        ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
+        typeof(labels) == String && (labels = [labels])
+        p = plot_erp_topo(eeg.eeg_locs,
+                          t,
+                          signal,
+                          channel=c_idx,
+                          labels=labels,
+                          xlabel=xlabel,
+                          ylabel=ylabel,
+                          title=title,
+                          mono=mono;
+                          kwargs...)
+    elseif type === :stack
+        peaks = false
+        if length(c_idx) > 1
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = mean(signal, dims=3)[:, :]
+            ylabel = "Component channel"
+        else
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            signal = signal'
+            labels = [""]
+            ylabel = "Epoch"
+        end
+        p = plot_erp_stack(t,
+                           signal,
+                           xlabel=xlabel,
+                           ylabel=ylabel,
+                           title=title,
+                           labels=labels,
+                           mono=mono;
+                           kwargs...)
+    end
+
+    # draw time markers
+    if tm != 0
+        for tm_idx in eachindex(tm)
+            p = Plots.vline!([t[tm[tm_idx]]],
+                             linewidth=1,
+                             linecolor=:black,
+                             label=false)
+        end
+    end
+
+    # draw peaks
+    if peaks == true
+        signal = c[c_idx, :, epoch]
+        if length(c_idx) == 1
+            erp = mean(signal, dims=2)[:]
+            eeg_tmp = eeg_keep_channel(eeg, channel=1)
+            eeg_tmp.eeg_signals = reshape(erp, 1, length(erp), 1)
+            pp = eeg_erp_peaks(eeg_tmp)
+            if mono == false
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+            else
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+            end
+            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
+            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
+            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
+            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+        else         
+            erp = mean(mean(signal, dims=3), dims=1)[:]
+            eeg_tmp = eeg_keep_channel(eeg, channel=1)
+            eeg_tmp.eeg_signals = reshape(erp, 1, length(erp), 1)
+            pp = eeg_erp_peaks(eeg_tmp)
+            if mono == false
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+            else
+                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+            end
+            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
+            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
+            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
+            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+        end
+    end
+
+    if type !== :topo
+        Plots.plot(p)
+    else
+        GLMakie.show(p)
+    end
 
     return p
 end

@@ -10640,3 +10640,33 @@ Plot stacked data. Data are stacked by 3rd dimension.
 
   * `p::Plots.Plot{Plots.GRBackend}`
 
+<a id='NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}' href='#NeuroAnalyzer.eeg_plot_erp-Tuple{NeuroAnalyzer.EEG, Union{Symbol, AbstractArray}}'>#</a>
+**`NeuroAnalyzer.eeg_plot_erp`** &mdash; *Method*.
+
+
+
+```julia
+eeg_plot_erp(eeg, c; <keyword arguments>)
+```
+
+Plot ERP.
+
+**Arguments**
+
+  * `eeg::NeuroAnalyzer.EEG`: EEG object
+  * `c::Union{Symbol, AbstractArray}`: component to plot
+  * `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+  * `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+  * `xlabel::String="default"`: x-axis label, default is Time [ms]
+  * `ylabel::String="default"`: y-axis label, default is Amplitude [μV]
+  * `title::String="default"`: plot title, default is ERP amplitude [component: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
+  * `mono::Bool=false`: use color or grey palette
+  * `peaks::Bool=true`: draw peaks
+  * `labels::Bool=true`: draw labels legend (using EEG component labels) for multi-channel `:butterfly` plot
+  * `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+  * `kwargs`: optional arguments for plot() function
+
+**Returns**
+
+  * `p::Plots.Plot{Plots.GRBackend}`
+
