@@ -6,11 +6,12 @@ pipeline:
       - mkdir ~/NeuroAnalyzer
       - mkdir ~/NeuroAnalyzer/plugins
       - apt-get update
-      - apt-get upgrade
       - apt-get install -y xvfb
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test(); exit()"
   docs:
     image: julia
     commands:
       - cd docs
       - julia make_md.jl
+      - julia make_html.jl
+      - apt-get install ncftp

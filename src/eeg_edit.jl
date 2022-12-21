@@ -1776,10 +1776,10 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
 
     Threads.@threads for epoch_idx in eachindex(epoch)
         @inbounds @simd for length_idx in 1:epoch_len
-            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], loc_x2, loc_y2, interpolation_factor, imethod, :none)
+            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for channel_idx in eachindex(channel)
-                x_idx = vsearch(loc_x1[channel[channel_idx]], x)
-                y_idx = vsearch(loc_y1[channel[channel_idx]], y)
+                x_idx = vsearch(locs_x1[channel[channel_idx]], x)
+                y_idx = vsearch(locs_y1[channel[channel_idx]], y)
                 s_interpolated[channel_idx, length_idx, epoch_idx] = s_tmp[x_idx, y_idx]
             end
 
