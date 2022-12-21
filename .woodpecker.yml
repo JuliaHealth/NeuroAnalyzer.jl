@@ -2,7 +2,7 @@ pipeline:
   test:
     image: julia
     commands:
-      - julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.resolve(); Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
+      - julia --startup-file=no --project=. -e "using Pkg; Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
   docs:
     image: julia
     commands:
