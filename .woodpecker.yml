@@ -4,8 +4,8 @@ pipeline:
     pull: true
     commands:
       - export DISPLAY=$DISPLAY
-      - RUN apt-get update
-      - RUN apt-get upgrade
+      - apt-get update
+      - apt-get upgrade
       - julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
   docs:
     image: julia
