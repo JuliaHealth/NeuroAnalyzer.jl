@@ -12,6 +12,7 @@ pipeline:
     image: julia
     commands:
       - cd docs
+      - julia --startup-file=no --project=. -e "using Pkg; Pkg.add([\"Documenter\", \"DocumenterMarkdown\"]); exit()"
       - julia make_md.jl
       - julia make_html.jl
       - apt-get install ncftp
