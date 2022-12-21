@@ -1,8 +1,10 @@
 pipeline:
   test:
     image: julia
+    pull: true
     commands:
-      - julia --startup-file=no --project=. -e "using Pkg; Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
+      - xhost +"local:docker@"
+      - julia --startup-file=no --project=. -e "using Pkg; Pkg.resolve(); Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
   docs:
     image: julia
     commands:
