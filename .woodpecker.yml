@@ -1,9 +1,9 @@
 pipeline:
   test:
-    image: julia
+    image: bullseye
     pull: true
     commands:
-      - apt install x11-xserver-utils
+      - apt-get install x11-xserver-utils
       - xhost +"local:docker@"
       - julia --startup-file=no --project=. -e "using Pkg; Pkg.resolve(); Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
   docs:
