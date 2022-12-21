@@ -5,7 +5,7 @@ pipeline:
     commands:
       - apt-get update
       - apt-get upgrade
-      - sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+      - apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
   docs:
     image: julia
