@@ -109,13 +109,13 @@ p = eeg_plot_erp(e10, channel=1, type=:stack)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 c = e10.eeg_signals .^ 2
-p = eeg_plot_erp(e10, c, channel=1)
+p = eeg_plot_erp(e10, c, c_idx=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_erp(e10, c, channel=1, type=:mean)
+p = eeg_plot_erp(e10, c, c_idx=1, type=:mean)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_erp(e10, c, channel=1, type=:butterfly)
+p = eeg_plot_erp(e10, c, c_idx=1, type=:butterfly)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = eeg_plot_erp(e10, c, channel=1, type=:stack)
+p = eeg_plot_erp(e10, c, c_idx=1, type=:stack)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 #####

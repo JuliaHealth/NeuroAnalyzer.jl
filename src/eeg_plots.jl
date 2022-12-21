@@ -4729,8 +4729,6 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
-    type in [:normal, :mean] && length(c_idx) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one component channel must be specified."))
-
     # select component channels, default is all channels
     typeof(c) == Symbol && (c = _get_component(eeg, c).c)
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
@@ -4741,6 +4739,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
         labels = repeat([""], length(c_idx))
     end
     length(c_idx) == 1 && (labels = [labels])
+
+    type in [:normal, :mean] && length(c_idx) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one component channel must be specified."))
 
     # average all epochs
     epoch = 1:eeg_epoch_n(eeg)
