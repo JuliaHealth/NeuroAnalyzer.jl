@@ -1,7 +1,11 @@
 pipeline:
-  build:
-    image: julia:latest
+  test:
+    image: julia
     commands:
-      - go test
+      - julia -e "println("testing..")
+  docs:
+    image: julia
+    commands:
+      - julia -e "println("build docs..")
 
 +branches: devel
