@@ -3,7 +3,8 @@ pipeline:
     image: julia
     pull: true
     commands:
-      - docker --network=host
+      - apt install x11-xserver-utils
+      - xhost +"local:docker@"
       - julia --startup-file=no --project=. -e "using Pkg; Pkg.resolve(); Pkg.instantiate(); Pkg.precompile(); Pkg.test()"
   docs:
     image: julia
