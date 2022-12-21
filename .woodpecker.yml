@@ -2,10 +2,10 @@ pipeline:
   test:
     image: julia
     commands:
-      - julia -e "println("testing..")
+      - julia -e "println("testing..")"
   docs:
     image: julia
     commands:
-      - julia -e "println("build docs..")
+      - julia -e "println("build docs..")"
 
 +branches: devel
