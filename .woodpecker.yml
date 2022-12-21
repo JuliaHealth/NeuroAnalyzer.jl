@@ -1,6 +1,6 @@
 pipeline:
   test:
-    image: bullseye
+    image: julia
     pull: true
     commands:
       - apt-get install x11-xserver-utils
