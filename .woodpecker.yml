@@ -4,7 +4,8 @@ pipeline:
     pull: true
     commands:
       - export DISPLAY=$DISPLAY
-      - julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
+      - apt-get install -y cmake xorg-dev mesa-utils xvfb libgl1 freeglut3-dev
+      - xvfb-run -s '-screen 0 1024x768x24' julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
   docs:
     image: julia
     commands:
