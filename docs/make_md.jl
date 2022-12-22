@@ -1,14 +1,6 @@
 using Pkg
-Pkg.add("Documenter")
-Pkg.add("DocumenterMarkdown")
-Pkg.add("Plots")
-Pkg.add("GLMakie")
-Pkg.add("DataFrames")
-Pkg.add("Wavelets")
-Pkg.add("ContinuousWavelets")
-Pkg.add("StatsModels")
-Pkg.add("MultivariateStats")
-Pkg.activate(@__DIR__)
+Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
+Pkg.activate("..")
 Pkg.instantiate()
 
 @info "Loading package: Documenter"
