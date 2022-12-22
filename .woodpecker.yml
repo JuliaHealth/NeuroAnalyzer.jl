@@ -7,12 +7,13 @@ pipeline:
       - mkdir ~/NeuroAnalyzer/plugins
       - apt-get update
       - apt-get install -y xvfb
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia --startup-file=no --project=. -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test(); exit()"
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test(); exit()"
   docs:
     image: julia
     commands:
+      - apt-get install ncftp
       - cd docs
-      - julia --startup-file=no --project=. -e "using Pkg; Pkg.add([\"Documenter\", \"DocumenterMarkdown\"]); exit()"
       - julia make_md.jl
       - julia make_html.jl
-      - apt-get install ncftp
+
++branches: master

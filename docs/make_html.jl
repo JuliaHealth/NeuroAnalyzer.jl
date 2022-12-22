@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Documenter")
+
 @info "Loading package: Documenter"
 using Documenter
 @info "Loading package: Plots"

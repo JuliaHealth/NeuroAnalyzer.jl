@@ -1,3 +1,7 @@
+using Pkg
+Pkg.add("Documenter")
+Pkg.add("DocumenterMarkdown")
+
 @info "Loading package: Documenter"
 using Documenter
 @info "Loading package: DocumenterMarkdown"

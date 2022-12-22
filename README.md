@@ -1,6 +1,6 @@
 ![NeuroAnalyzer.jl](images/neuroanalyzer.png)
 
-[![DOI: 10.5281/zenodo.7372648](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg?branch=devel)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/branches/devel)
+[![DOI: 10.5281/zenodo.7372648](https://zenodo.org/badge/DOI/10.5281/zenodo.7372648.svg)](https://doi.org/10.5281/zenodo.7372648) [![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl)
 
 Welcome fellow researcher!
 
