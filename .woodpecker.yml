@@ -3,11 +3,17 @@ pipeline:
     image: julia
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
-      - git --version
       - apt-get update
-      - apt-get install -y xvfb ncftp
+      - apt-get install -y xvfb ncftp git
+
       - cd docs
+      - rm -rf build
+      - rm -rf src/index.md
+      - cat header.md > src/index.md
+      - ./template.sh >> src/index.md
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - cp build/index.md ../Documentation.md
+      - rm -rf build
       - cd ..
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
@@ -16,8 +22,16 @@ pipeline:
       - git add --all
       - git commit -m "Woodpecker CI Franklin Build"
       - git push
+
       - cd docs
+      - rm -rf build/
+      - rm -f src/index.md
+      - cat header.md > src/index.md
+      - ./template.sh >> src/index.md
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - mv build docs
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
+      - sed -i 's///g' docs/index.html
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs
 
 branches: [ master, devel ]
