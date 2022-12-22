@@ -16,7 +16,7 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 ## Documentation
 
-Complete NeuroAnalyzer documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) (stable/devel branches) and [HTML](https://neuroanalyzer.org/docs/index.html) (stable branch only) formats.
+Complete NeuroAnalyzer (stable branch) documentation is available in [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/master/Documentation.md) and [HTML](https://neuroanalyzer.org/docs/index.html) formats.
 
 Changelog and commit details are available at [https://neuroanalyzer.org/changelog.html](https://neuroanalyzer.org/changelog.html).
 
