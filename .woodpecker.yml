@@ -2,12 +2,7 @@ pipeline:
   test:
     image: julia
     pull: true
-    commands:
-      - mkdir ~/NeuroAnalyzer
-      - mkdir ~/NeuroAnalyzer/plugins
-      - apt-get update
-      - apt-get install -y xvfb
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test(); exit()"
+
   docs:
     image: julia
     secrets: [ ftp, ftp_pass, ftp_user ]
@@ -18,4 +13,4 @@ pipeline:
       - julia make_html.jl
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs/
 
-branches: [ master, devel ]
+branches: master
