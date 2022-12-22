@@ -16,4 +16,4 @@ pipeline:
       - julia make_md.jl
       - julia make_html.jl
 
-+branches: master
+branches: master
