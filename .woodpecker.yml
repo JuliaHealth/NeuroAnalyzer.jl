@@ -11,7 +11,7 @@ pipeline:
   docs:
     image: julia
     commands:
-      - apt-get install ncftp
+      - apt-get install -y ncftp
       - cd docs
       - julia make_md.jl
       - julia make_html.jl
