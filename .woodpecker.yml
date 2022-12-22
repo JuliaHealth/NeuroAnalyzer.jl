@@ -13,4 +13,4 @@ pipeline:
       - julia make_html.jl
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs/
 
-branches: master
+branches: [ master, devel ]
