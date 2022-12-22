@@ -1,12 +1,9 @@
 pipeline:
-  test:
-    image: julia
-    pull: true
-
   docs:
     image: julia
     secrets: [ ftp, ftp_pass, ftp_user ]
     commands:
+      - apt-get update
       - apt-get install -y ncftp
       - cd docs
       - julia make_md.jl
