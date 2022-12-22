@@ -3,6 +3,7 @@ pipeline:
     image: julia
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
+      - git --version
       - apt-get update
       - apt-get install -y xvfb ncftp
       - cd docs
@@ -11,12 +12,12 @@ pipeline:
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
       - git config --global init.defaultBranch pages
-      - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/BBJ.git
+      - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl
       - git add --all
       - git commit -m "Woodpecker CI Franklin Build"
       - git push
       - cd docs
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
-      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs/
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs
 
 branches: [ master, devel ]
