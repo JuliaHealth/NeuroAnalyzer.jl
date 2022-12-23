@@ -14,19 +14,17 @@ pipeline:
       - cat header.md > src/index.md
       - ./template.sh >> src/index.md
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
-      - ls -la ..
       - cp build/index.md ../Documentation.md
-      - ls -la ..
       - rm -rf build
       - cd ..
-      #- git branch
-      #- echo $CI_COMMIT_SOURCE_BRANCH
-      #- echo $CI_COMMIT_TARGET_BRANCH 
-      #- git config --global user.email "$CBMAIL"
-      #- git config --global user.name "CI Builder"
-      #- git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
+      - git branch
+      - echo $CI_COMMIT_SOURCE_BRANCH
+      - echo $CI_COMMIT_TARGET_BRANCH 
+      - git config --global user.email "$CBMAIL"
+      - git config --global user.name "CI Builder"
+      - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
       - git add --all
-      - git commit -m "Woodpecker CI: Documentation.md"
+      - git commit -m "Woodpecker CI Documentation.md"
       - git push
 
       - cd docs
