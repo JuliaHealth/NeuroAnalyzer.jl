@@ -17,10 +17,11 @@ pipeline:
       - cp build/index.md ../Documentation.md
       - rm -rf build
       - cd ..
+      - git branch
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
-      - git add --all
+      - git add .
       - git commit -m "Woodpecker CI Franklin Build"
       - git push
 
