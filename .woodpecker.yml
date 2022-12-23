@@ -19,7 +19,6 @@ pipeline:
       - cd ..
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
-      - git config --global init.defaultBranch pages
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
       - git add --all
       - git commit -m "Woodpecker CI Franklin Build"
@@ -45,4 +44,4 @@ pipeline:
       - apt-get install -y xvfb
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
 
-branches: master
+branches: [ master, devel ]
