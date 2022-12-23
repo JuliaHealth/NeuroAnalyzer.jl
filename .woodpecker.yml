@@ -26,7 +26,7 @@ pipeline:
       #- git config --global user.name "CI Builder"
       #- git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
       - git add --all
-      - git commit -m "Woodpecker CI Franklin Build"
+      - git commit -m "Woodpecker CI: Documentation.md"
       - git push
 
       - cd docs
