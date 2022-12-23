@@ -35,6 +35,7 @@ pipeline:
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
       - sed -i 's///g' docs/index.html
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs
+
   test:
     image: julia
     commands:

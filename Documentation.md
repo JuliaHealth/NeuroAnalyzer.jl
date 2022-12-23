@@ -4,6 +4,9 @@
 ![](assets/neuroanalyzer.png)
 
 
+[![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl)
+
+
 <a id='NeuroAnalyzer.jl-documentation'></a>
 
 <a id='NeuroAnalyzer.jl-documentation-1'></a>
@@ -5983,7 +5986,7 @@ Add marker.
   * `eeg::NeuroAnalyzer.EEG`
   * `id::String`: marker ID
   * `start::Int64`: marker time in samples
-  * `len::Int64`: marker length in samples
+  * `len::Int64=1`: marker length in samples
   * `desc::String`: marker description
   * `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
@@ -6007,7 +6010,7 @@ Add marker.
   * `eeg::NeuroAnalyzer.EEG`
   * `id::String`: marker ID
   * `start::Int64`: marker time in samples
-  * `len::Int64`: marker length in samples
+  * `len::Int64=1`: marker length in samples
   * `desc::String`: marker description
   * `channel::Int64=0`: channel number, if 0 then marker is related to all channels
 
@@ -6068,7 +6071,7 @@ Edit EEG marker.
   * `n::Int64`: marker number
   * `id::String`: marker ID
   * `start::Int64`: marker time in samples
-  * `len::Int64`: marker length in samples
+  * `len::Int64=1`: marker length in samples
   * `desc::String`: marker description
   * `channel::Int64`: channel number, if 0 then marker is related to all channels
 
@@ -6093,7 +6096,7 @@ Edit EEG marker.
   * `n::Int64`: marker number
   * `id::String`: marker ID
   * `start::Int64`: marker time in samples
-  * `len::Int64`: marker length in samples
+  * `len::Int64=1`: marker length in samples
   * `desc::String`: marker description
   * `channel::Int64`: channel number, if 0 then marker is related to all channels
 

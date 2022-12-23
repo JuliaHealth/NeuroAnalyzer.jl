@@ -3,6 +3,8 @@ EditURL = "https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/maste
 ```
 
 ![](assets/neuroanalyzer.png)
+
+[![status-badge](https://ci.codeberg.org/api/badges/AdamWysokinski/NeuroAnalyzer.jl/status.svg)](https://ci.codeberg.org/AdamWysokinski/NeuroAnalyzer.jl)
 # NeuroAnalyzer.jl documentation
 
 This documentation has been generated using [Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
