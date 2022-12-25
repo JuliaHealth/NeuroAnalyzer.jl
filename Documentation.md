@@ -6278,7 +6278,7 @@ Perform piecewise detrending of EEG channel(s).
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
-  * `type::Symbol=:linear`
+  * `type::Symbol=:linear`: detrending method
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
       * `:linear`: linear trend is subtracted from `signal`
@@ -6309,7 +6309,7 @@ Perform piecewise detrending of EEG channel(s).
 
   * `eeg::NeuroAnalyzer.EEG`
   * `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg))`: index of channels, default is all channels
-  * `type::Symbol=:linear`
+  * `type::Symbol=:linear`: detrending method
 
       * `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
       * `:linear`: linear trend is subtracted from `signal`
