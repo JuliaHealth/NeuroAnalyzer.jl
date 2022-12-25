@@ -23,7 +23,7 @@ pipeline:
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
       - git add --all
       - git commit -m "Woodpecker CI Documentation.md"
-      - git push
+      - git push --set-upstream origin master
       - cd docs
       - rm -rf build/
       - rm -f src/index.md
