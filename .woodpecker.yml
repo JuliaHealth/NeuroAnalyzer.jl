@@ -8,6 +8,7 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
       - git clone -b master https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA
+      - cd NA
 
       - cd docs
       - rm -rf build
