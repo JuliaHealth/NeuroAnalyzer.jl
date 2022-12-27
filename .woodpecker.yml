@@ -7,36 +7,48 @@ pipeline:
       - mkdir ~/NeuroAnalyzer/plugins
       - apt-get update
       - apt-get install -y xvfb ncftp git
-      - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA
-      - cd NA
 
-      - cd docs
-      - rm -rf build
-      - rm -rf src/index.md
-      - cat header.md > src/index.md
-      - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
-      - cp build/index.md ../Documentation.md
-      - rm -rf build
-      - cd ..
-      - git config --global user.email "$CBMAIL"
-      - git config --global user.name "CI Builder"
-      - git config --global init.defaultBranch master
-      - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer.jl.git
-      - git add --all
-      - git commit -m "Woodpecker CI Documentation.md"
-      - git push
-
+      - git clone -b stable https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-stable
+      - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
+      - cd NA-stable
       - cd docs
       - rm -rf build/
       - rm -f src/index.md
-      - cat header.md > src/index.md
+      - cat header-stable.md > src/index.md
       - ./template.sh >> src/index.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - cp build/index.md ../../NA-docs/Documentation-stable.md
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
       - mv build docs
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
       - sed -i 's///g' docs/index.html
-      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP /docs-stable docs
+      - cd ../../
+
+      - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel
+      - cd NA-devel
+      - cd docs
+      - rm -rf build/
+      - rm -f src/index.md
+      - cat header-devel.md > src/index.md
+      - ./template.sh >> src/index.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - cp build/index.md ../../NA-docs/Documentation-devel.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - mv build docs
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
+      - sed -i 's///g' docs/index.html
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP /docs-devel docs
+      - cd ../../
+
+      - cd NA-docs
+      - git config --global user.email "$CBMAIL"
+      - git config --global user.name "CI Builder"
+      - git config --global init.defaultBranch master
+      - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
+      - git add --all
+      - git commit -m "Woodpecker CI Documentation Build"
+      - git push
 
   test:
     image: julia
@@ -47,4 +59,4 @@ pipeline:
       - apt-get install -y xvfb
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.test()"
 
-branches: [ master, devel ]
+branches: master
