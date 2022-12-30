@@ -21,7 +21,7 @@ pipeline:
       - mv build docs-stable
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
       - sed -i 's///g' docs-stable/index.html
-      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable/
 
       - cd ../../
 
@@ -34,7 +34,9 @@ pipeline:
       - mv build docs-devel
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html
       - sed -i 's///g' docs-devel/index.html
-      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel/
+
+      - cd ../../
 
       - cd NA-docs
       - git config --global user.email "$CBMAIL"
