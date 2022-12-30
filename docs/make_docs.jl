@@ -31,9 +31,6 @@ println()
 @info "Generate Markdown documentation: STABLE branch"
 cd("NA-stable/docs")
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
-println()
-run(`pwd`)
-run(`ls -la build/`)
 @info "Create Documentation-stable.md file"
 run(`cp build/index.md ../../NA-docs/Documentation-stable.md`);
 @info "Delete build/ folder"
