@@ -39,9 +39,9 @@ run(`rm -rf build`);
 @info "Delete index.md file"
 run(`rm -f src/index.md`);
 @info "Create new index.md file (1)"
-run(`cat header-stable.md > src/index.md`);
+run(`cat header-stable.md ">" src/index.md`);
 @info "Create new index.md file (2)"
-run(`./template.sh >> src/index.md`);
+run(`./template.sh ">>" src/index.md`);
 ## MD
 @info "Generate Markdown documentation"
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
@@ -74,9 +74,9 @@ run(`rm -rf build`);
 @info "Delete index.md file"
 run(`rm -f src/index.md`);
 @info "Create new index.md file (1)"
-run(`cat header-devel.md > src/index.md`);
+run(`cat header-devel.md ">" src/index.md`);
 @info "Create new index.md file (2)"
-run(`./template.sh >> src/index.md`);
+run(`./template.sh ">>" src/index.md`);
 ## MD
 @info "Generate Markdown documentation"
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
