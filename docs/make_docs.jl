@@ -34,11 +34,11 @@ makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-stable.md file"
 run(`pwd`)
 run(`ls -la`)
-run(`cp docs/build/index.md ../../NA-docs/Documentation-stable.md`)
+run(`cp docs/build/index.md ../NA-docs/Documentation-stable.md`)
 ## HTML
 @info "Generate HTML documentation: STABLE branch"
 makedocs(sitename="NeuroAnalyzer.jl", clean=true)
-cd("../..")
+cd("..")
 
 ## DEVEL
 
@@ -48,8 +48,8 @@ cd("NA-devel")
 run(`rm -rf src/index.md`)
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-devel.md file"
-run(`cp docs/build/index.md ../../NA-docs/Documentation-devel.md`)
+run(`cp docs/build/index.md ../NA-docs/Documentation-devel.md`)
 ## HTML
 @info "Generate HTML documentation: DEVEL branch"
 makedocs(sitename="NeuroAnalyzer.jl", clean=true)
-cd("../..")
+cd("..")
