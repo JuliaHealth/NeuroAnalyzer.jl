@@ -1,3 +1,8 @@
+using Pkg
+Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
+Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
+Pkg.instantiate()
+
 @info "Loading package: Documenter"
 using Documenter
 @info "Loading package: DocumenterMarkdown"
