@@ -16,12 +16,10 @@ NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroana
 
 ## Documentation
 
-Complete NeuroAnalyzer documentation is available:
-
-1. [Stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/stable) branch
+1. [Stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/stable) branch:
     - [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/stable/Documentation-stable.md)
     - [HTML](https://neuroanalyzer.org/docs-stable) 
-2. [Devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/devel) branch
+2. [Devel](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/devel) branch:
     - [Markdown](https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs/src/branch/stable/Documentation-devel.md)
     - [HTML](https://neuroanalyzer.org/docs-devel)
 
@@ -46,10 +44,6 @@ For testing performance between individual machines, a [complete set of benchmar
 ## Plugins (extensions)
 
 See [https://neuroanalyzer.org/plugins.html](https://neuroanalyzer.org/plugins.html) for more details.
-
-## Known bugs
-
-List of reported bugs is [here](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/issues?labels=70759).
 
 ## Contributors
 

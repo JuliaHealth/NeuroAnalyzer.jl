@@ -439,11 +439,11 @@ end
 """
     generate_sine(f, t, a, p)
 
-Generates sine wave of `f` frequency over `t` time; optional arguments are: `a` amplitude and  `p` phase.
+Generates sine wave.
 
 # Arguments
 
-- `f::Real`: frequency
+- `f::Real`: frequency [Hz]
 - `t::Union{AbstractVector, AbstractRange}`: time vector
 - `a::Real`: amplitude
 - `p::Real`: initial phase

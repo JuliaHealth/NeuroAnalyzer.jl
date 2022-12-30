@@ -2,7 +2,7 @@ __precompile__()
 
 module NeuroAnalyzer
 
-const na_ver = v"0.22.12"
+const na_ver = v"0.23.01"
 
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
