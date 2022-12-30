@@ -8,7 +8,7 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
-      - julia make_docs.jl
+      - julia docs/make_docs.jl
 
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel

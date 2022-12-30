@@ -42,10 +42,10 @@ makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
 
 @info "Generate HTML documentation"
 makedocs(sitename="NeuroAnalyzer.jl")
-@info "Rename build => docs-stable" run(`mv build docs-stable`)
-@info "Replace GitHub => Codeberg" run(`sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html`)
-@info "Remove GitHub logo" run(`sed -i 's///g' docs-stable/index.html`)
-@info "Move docs-stable to outside NA-stable folder" run(`mv docs-stable ../../`)
+@info "Rename build => docs-stable" run(`mv build docs-stable`);
+@info "Replace GitHub => Codeberg" run(`sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html`);
+@info "Remove GitHub logo" run(`sed -i 's///g' docs-stable/index.html`);
+@info "Move docs-stable to outside NA-stable folder" run(`mv docs-stable ../../`);
 @info "Leave NA-stable/docs/ folder" cd("../..");
 
 @info "Clone NA-devel" run(`git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel`);
@@ -62,8 +62,8 @@ makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
 
 @info "Generate HTML documentation"
 makedocs(sitename="NeuroAnalyzer.jl")
-@info "Rename build => docs-devel" run(`mv build docs-devel`)
-@info "Replace GitHub => Codeberg" run(`sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html`)
-@info "Remove GitHub logo" run(`sed -i 's///g' docs-devel/index.html`)
-@info "Move docs-devel to outside NA-devel folder" run(`mv docs-devel ../../`)
+@info "Rename build => docs-devel" run(`mv build docs-devel`);
+@info "Replace GitHub => Codeberg" run(`sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html`);
+@info "Remove GitHub logo" run(`sed -i 's///g' docs-devel/index.html`);
+@info "Move docs-devel to outside NA-devel folder" run(`mv docs-devel ../../`);
 @info "Leave NA-devel/docs/ folder" cd("../..");
