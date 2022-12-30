@@ -8,7 +8,7 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
-      - julia docs/make_docs.jl
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia docs/make_docs.jl
 
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel
