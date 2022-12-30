@@ -8,43 +8,10 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
-      - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
+      - julia make_docs.jl
 
-      - git clone -b stable https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-stable
-      - cd NA-stable
-      - cd docs
-      - rm -rf build
-      - rm -f src/index.md
-      - cat header-stable.md > src/index.md
-      - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
-      - cp build/index.md ../../NA-docs/Documentation-stable.md
-      - rm -rf build
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
-      - mv build docs
-      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
-      - sed -i 's///g' docs/index.html
-      - mv docs docs-stable
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
-      - cd ../../
-
-      - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel
-      - cd NA-devel
-      - cd docs
-      - rm -rf build
-      - rm -f src/index.md
-      - cat header-devel.md > src/index.md
-      - ./template.sh >> src/index.md
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
-      - cp build/index.md ../../NA-docs/Documentation-devel.md
-      - rm -rf build
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
-      - mv build docs
-      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs/index.html
-      - sed -i 's///g' docs/index.html
-      - mv docs docs-devel
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel
-      - cd ../../
 
       - cd NA-docs
       - git config --global user.email "$CBMAIL"

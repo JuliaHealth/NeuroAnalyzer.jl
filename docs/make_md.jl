@@ -26,3 +26,7 @@ using NeuroAnalyzer
 println()
 
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
+
+run(`ls -la`)
+
+makedocs(sitename="NeuroAnalyzer.jl")
