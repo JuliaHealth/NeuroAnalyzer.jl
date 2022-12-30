@@ -15,25 +15,25 @@ pipeline:
       - cd NA-stable/docs
       - cat header-stable.md > src/index.md
       - ./template.sh >> src/index.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - cp build/index.md ../../NA-docs/Documentation-stable.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - mv build docs-stable
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
+      - sed -i 's///g' docs-stable/index.html
+      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
+
       - cd ../../
 
       - cd NA-devel/docs
       - cat header-devel.md > src/index.md
       - ./template.sh >> src/index.md
-      - cd ../../
-
-      - cp NA-devel/docs/make_docs.jl .
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_docs.jl
-
-      - mv NA-stable/docs/build docs-stable
-      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
-      - sed -i 's///g' docs-stable/index.html
-
-      - mv NA-devel/docs/build docs-devel
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_md.jl
+      - cp build/index.md ../../NA-docs/Documentation-devel.md
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_html.jl
+      - mv build docs-devel
       - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html
       - sed -i 's///g' docs-devel/index.html
-
-      - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel
 
       - cd NA-docs
