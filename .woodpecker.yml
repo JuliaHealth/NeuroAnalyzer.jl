@@ -8,9 +8,8 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia -e "using Pkg; Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"]); Pkg.activate(@__DIR__); Pkg.instantiate()"
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia docs/init.jl
       - cd docs
-      
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_docs.jl
 
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
