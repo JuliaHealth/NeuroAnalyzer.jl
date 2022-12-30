@@ -27,7 +27,7 @@ pipeline:
       - ./template.sh >> src/index.md
       - cd ../../
 
-      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_docs.jl
+      - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia NA-devel/docs/make_docs.jl
 
       - cd NA-stable/docs
       - mv build docs-stable
