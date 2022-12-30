@@ -13,15 +13,11 @@ pipeline:
       - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel
 
       - cd NA-stable/docs
-      - rm -rf build
-      - rm -f src/index-stable.md
       - cat header-stable.md > src/index.md
       - ./template.sh >> src/index.md
       - cd ../../
 
       - cd NA-devel/docs
-      - rm -rf build
-      - rm -f index-devel.md
       - cat header-devel.md > src/index.md
       - ./template.sh >> src/index.md
       - cd ../../

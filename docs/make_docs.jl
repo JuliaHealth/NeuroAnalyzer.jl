@@ -1,6 +1,6 @@
 using Pkg
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
-Pkg.add(url="https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl#devel")
+Pkg.activate(@__DIR__)
 Pkg.instantiate()
 
 @info "Loading package: Documenter"
@@ -29,27 +29,23 @@ println()
 
 ## MD
 @info "Generate Markdown documentation: STABLE branch"
-cd("NA-stable")
+cd("NA-stable/docs")
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-stable.md file"
-run(`pwd`)
-run(`ls -la`)
-run(`cp docs/build/index.md ../NA-docs/Documentation-stable.md`)
+run(`cp build/index.md ../../NA-docs/Documentation-stable.md`)
 ## HTML
 @info "Generate HTML documentation: STABLE branch"
 makedocs(sitename="NeuroAnalyzer.jl", clean=true)
-cd("..")
+cd("../..")
 
 ## DEVEL
 
 ## MD
 @info "Generate Markdown documentation: DEVEL branch"
-cd("NA-devel")
-run(`rm -rf src/index.md`)
+cd("NA-devel/docs")
 makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-devel.md file"
-run(`cp docs/build/index.md ../NA-docs/Documentation-devel.md`)
+run(`cp build/index.md ../../NA-docs/Documentation-devel.md`)
 ## HTML
 @info "Generate HTML documentation: DEVEL branch"
 makedocs(sitename="NeuroAnalyzer.jl", clean=true)
-cd("..")
