@@ -1,7 +1,7 @@
 @info "Import packages"
 using Pkg
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
-Pkg.activate("..")
+Pkg.activate(@__DIR__)
 Pkg.instantiate()
 
 @info "Loading package: Documenter"
