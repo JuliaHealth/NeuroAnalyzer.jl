@@ -8,8 +8,40 @@ pipeline:
       - apt-get update
       - apt-get install -y xvfb ncftp git
 
-      - cd docs
+      - git clone https://codeberg.org/AdamWysokinski/NeuroAnalyzer-docs NA-docs
+
+      - git clone -b stable https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-stable
+      - git clone -b devel https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl NA-devel
+
+      - cd NA-stable/docs
+      - rm -rf build
+      - rm -f src/index-stable.md
+      - cat header-stable.md > src/index.md
+      - ./template.sh >> src/index.md
+      - cd ../../
+
+      - cd NA-devel/docs
+      - rm -rf build
+      - rm -f index-devel.md
+      - cat header-devel.md > src/index.md
+      - ./template.sh >> src/index.md
+      - cd ../../
+
       - DISPLAY=:0 xvfb-run -s '-screen 0 1024x768x24' julia make_docs.jl
+
+      - cd NA-stable/docs
+      - mv build docs-stable
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-stable/index.html
+      - sed -i 's///g' docs-stable/index.html
+      - mv docs-stable ../../
+      - cd ../../
+
+      - cd NA-devel/docs
+      - mv build docs-devel
+      - sed -i 's/Edit on GitHub/Edit on Codeberg/g' docs-devel/index.html
+      - sed -i 's///g' docs-devel/index.html
+      - mv docs-devel ../../
+      - cd ../../
 
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-stable
       - ncftpput -R -u $FTP_USER -p $FTP_PASS $FTP / docs-devel
