@@ -1,6 +1,6 @@
 using Pkg
 Pkg.add(["Documenter", "DocumenterMarkdown", "Plots", "GLMakie", "DataFrames", "Wavelets", "ContinuousWavelets", "StatsModels", "MultivariateStats"])
-Pkg.activate(@__DIR__)
+Pkg.activate("..")
 Pkg.instantiate()
 
 @info "Loading package: Documenter"
@@ -49,3 +49,4 @@ run(`cp build/index.md ../../NA-docs/Documentation-devel.md`)
 ## HTML
 @info "Generate HTML documentation: DEVEL branch"
 makedocs(sitename="NeuroAnalyzer.jl", clean=true)
+cd("../..")
