@@ -29,31 +29,27 @@ println()
 
 ## MD
 @info "Generate Markdown documentation: STABLE branch"
-cd("NA-stable/docs")
-makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
+cd("NA-stable")
+makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-stable.md file"
-pwd()
+run(`pwd`)
 run(`ls -la`)
-run(`cp build/index.md ../../NA-docs/Documentation-stable.md`);
-@info "Delete build/ folder"
-run(`rm -rf build`);
+run(`cp docs/build/index.md ../../NA-docs/Documentation-stable.md`)
 ## HTML
 @info "Generate HTML documentation: STABLE branch"
-makedocs(sitename="NeuroAnalyzer.jl")
+makedocs(sitename="NeuroAnalyzer.jl", clean=true)
 cd("../..")
 
 ## DEVEL
 
 ## MD
 @info "Generate Markdown documentation: DEVEL branch"
-cd("NA-devel/docs")
+cd("NA-devel")
 run(`rm -rf src/index.md`)
-makedocs(sitename="NeuroAnalyzer.jl", format=Markdown())
+makedocs(sitename="NeuroAnalyzer.jl", format=Markdown(), clean=true)
 @info "Create Documentation-devel.md file"
-run(`cp build/index.md ../../NA-docs/Documentation-devel.md`);
-@info "Delete build/ folder"
-run(`rm -rf build`);
+run(`cp docs/build/index.md ../../NA-docs/Documentation-devel.md`)
 ## HTML
 @info "Generate HTML documentation: DEVEL branch"
-makedocs(sitename="NeuroAnalyzer.jl")
+makedocs(sitename="NeuroAnalyzer.jl", clean=true)
 cd("../..")
