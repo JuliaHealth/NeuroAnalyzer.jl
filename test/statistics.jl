@@ -22,6 +22,9 @@ m = lm(@formula(y ~ x), df)
 @test seg2_mean(ones(5,5,5), ones(5, 5, 5)) == (seg1=ones(5), seg2=ones(5))
 _, _, _, df, _ = s2_cmp(ones(5), zeros(5), paired=true, type=:p)
 @test df == 4
+_, p1, p2 = s2_cmp(ones(1000), zeros(1000), paired=false, type=:perm)
+@test p1 == 0.0
+@test p2 == 0.0
 _, _, _, _, df, _ = s2_cor(ones(5), zeros(5))
 @test df == 8
 
