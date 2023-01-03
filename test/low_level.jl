@@ -52,7 +52,7 @@ using ContinuousWavelets
 @test s_normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test s_normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test s_normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
-@test length(s_add_noise(ones(10))) == 10
+@test length(s_add_noise(ones(10), randn(10))) == 10
 
 s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0
@@ -155,5 +155,6 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test length(s_icwt(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
 @test t2s(1, 256) == 256
 @test s2t(256, 256) == 1.0
+@test length(generate_noise(256, 10)) == 256
 
 true

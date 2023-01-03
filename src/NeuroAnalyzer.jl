@@ -117,6 +117,7 @@ export nextpow2
 export vsplit
 export s_rms
 export generate_sine
+export generate_csine
 export s_freqs
 export m_sortperm
 export m_sort
@@ -225,6 +226,7 @@ export s_cwt
 export s_icwt
 export t2s
 export s2t
+export generate_noise
 
 include("statistics.jl")
 export hildebrand_rule

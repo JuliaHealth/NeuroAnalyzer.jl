@@ -454,7 +454,26 @@ Generates sine wave.
 """
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
     return @. a * sin(2 * pi * f * t + p)
- end
+end
+
+"""
+    generate_csine(f, t, a)
+
+Generates complex sine wave.
+
+# Arguments
+
+- `f::Real`: frequency [Hz]
+- `t::Union{AbstractVector, AbstractRange}`: time vector
+- `a::Real`: amplitude
+
+# Returns
+
+- sine::Vector{Float64}`
+"""
+function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
+    return @. a * exp(1im * 2 * pi * f * t)
+end
 
 """
     s_freqs(t)
@@ -1474,20 +1493,22 @@ function s_normalize_log(signal::AbstractArray)
 end
 
 """
-    s_add_noise(signal)
+    s_add_noise(signal, noise)
 
-Adds random noise.
+Adds noise to signal.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `signal::AbstractVector`
+- `noise::AbstractVector`
 
 # Returns
 
-- `s_noisy::AbstractArray`
+- `s_noisy::AbstractVector`
 """
-function s_add_noise(signal::AbstractArray)
-    return signal .+ rand(length(signal))
+function s_add_noise(signal::AbstractVector, noise::AbstractVector)
+    length(signal) == length(noise) || throw(ArgumentError("Length of signal and noise must be equal."))
+    return signal .+ noise
 end
 
 """
@@ -4203,4 +4224,31 @@ Convert sample number to time.
 function s2t(s::Int64, fs::Int64)
     s < 0 && throw(ArgumentError("s must be > 0."))
     return s / fs
+end
+
+"""
+    generate_noise(n, amp; type)
+
+Generate noise.
+
+# Arguments
+
+- `n::Int64`: length (in samples)
+- `amp::Real=1.0`: amplitude, signal will be [-amp..+amp]
+- `type::Symbol=:white`: noise type: `:white`, `:pink`
+
+# Returns
+
+- `noise::Float64`
+"""
+function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:white)
+    _check_var(type, [:white, :pink], "type")
+    if type === :white
+        noise = randn(n)
+    elseif type === :pink
+        noise = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
+    end
+    noise = s_normalize_minmax(noise)
+    noise .*= amp
+    return noise
 end
