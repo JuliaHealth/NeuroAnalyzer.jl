@@ -22,6 +22,7 @@ using ContinuousWavelets
 @test vsplit(ones(4), 2) == [[1.0, 1.0], [1.0, 1.0]]
 @test length(s_rms(ones(10))) == 1
 @test length(generate_sine(2, collect(1:10))) == 10
+@test length(generate_csine(2, collect(1:10))) == 10
 @test length(s_freqs(rand(10))) == 2
 @test m_sortperm([1 2; 4 6]) == [1 1; 2 2]
 @test m_sort([1 2; 4 6], [2, 1]) == [4 6; 1 2]

@@ -471,7 +471,7 @@ Generates complex sine wave.
 
 - sine::Vector{Float64}`
 """
-function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
+function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
     return @. a * exp(1im * 2 * pi * f * t)
 end
 
