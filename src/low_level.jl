@@ -253,9 +253,12 @@ Return the `n`-point long symmetric window `type`.
 - `w::Vector{Float64}`:: generated window
 """
 function generate_window(type::Symbol, n::Int64; even::Bool=false)
+    _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
+
     even == true && mod(n, 2) != 0 && (n += 1)
     t = range(0, 1, n)
+
     if type === :hann
         return @. 0.5 * (1 - cos.(2 * pi * t))
     elseif type === :bh
@@ -269,7 +272,6 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     elseif type === :nutall
         return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
     elseif type === :triangle
-        mod(n, 2) == 0 && (n += 1)
         w = zeros(n)
         @inbounds @simd for idx in 1:((n ÷ 2) + 1)
             w[idx] = @. (idx * (idx + 1)) / 2
@@ -278,16 +280,21 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         w .= w ./ maximum(w)
         return w
     elseif type === :exp
-        mod(n, 2) == 0 && (n += 1)
         w = ones(n)
-        @inbounds @simd for idx in 1:((n ÷ 2) + 1)
-            w[idx] = 1 / idx
+        if mod(n, 2) == 0
+            @inbounds @simd for idx in 1:(n ÷ 2)
+                w[idx] = 1 / idx
+            end
+            w[1:((n ÷ 2))] = reverse(w[1:((n ÷ 2))])
+            w[((n ÷ 2) + 1):n] = reverse(w[1:(n ÷ 2)])
+        else
+            @inbounds @simd for idx in 1:((n ÷ 2) + 1)
+                w[idx] = 1 / idx
+            end
+            w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
+            w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
         end
-        w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
-        w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
         return w
-    else
-        throw(ArgumentError("Window type must be :hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp."))
     end
 end
 
