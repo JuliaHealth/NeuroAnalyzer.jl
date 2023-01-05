@@ -270,11 +270,11 @@ Calculate stationarity.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `window::Int64=10`: time window in samples
 - `method::Symbol=:euclid`: stationarity method:
-    - `:mean`
-    - `:var`: variance stationarity
-    - `:euclid`
-    - `:hilbert`
-    - `:adf`
+    - `:mean`: mean across `window`-long windows
+    - `:var`: variance across `window`-long windows
+    - `:cov`: covariance stationarity based on Euclidean distance between covariance matrix of adjacent time windows
+    - `:hilbert`: phase stationarity using Hilbert transformation
+    - `:adf`: Augmented Dickey–Fuller test; returns ADF-test value and p-value (H0: signal is non-stationary; p-value < alpha means that signal is stationary)
 
 # Returns
 
@@ -282,7 +282,7 @@ Calculate stationarity.
 """
 function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), window::Int64=10, method::Symbol=:hilbert)
 
-    _check_var(method, [:mean, :var, :euclid, :hilbert, :adf], "method")
+    _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
     window < 1 && throw(ArgumentError("window must be ≥ 1."))
     window > eeg_epoch_len(eeg) && throw(ArgumentError("window must be ≤ $(eeg_epoch_len(eeg))."))
 
@@ -317,12 +317,12 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
         end
     end
 
-    if method === :euclid
+    if method === :cov
         # number of time windows per epoch
         window_n = eeg_epoch_len(eeg)
         cov_mat = zeros(channel_n, channel_n, window_n, epoch_n)
         s_stationarity = zeros(1 + length(2:window:window_n), epoch_n)
-
+        channel_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for window_idx = 1:window_n
                 cov_mat[:, :, window_idx, epoch_idx] = @views s2_cov(eeg.eeg_signals[channel, window_idx, epoch_idx], eeg.eeg_signals[channel, window_idx, epoch_idx])
@@ -330,16 +330,20 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
         end
 
         @inbounds @simd for epoch_idx in 1:epoch_n
-            phase_idx = 1
+            w_idx = 1
             Threads.@threads for window_idx = 2:window:window_n
-                s_stationarity[phase_idx, epoch_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, epoch_idx], cov_mat[:, :, window_idx, epoch_idx])
-                phase_idx += 1
+                s_stationarity[w_idx, epoch_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, epoch_idx], cov_mat[:, :, window_idx, epoch_idx])
+                w_idx += 1
             end
         end
     end
 
     if method === :adf
         s_stationarity = zeros(channel_n, 2, epoch_n)
+
+        # initialize progress bar
+        progress_bar == true && (pb = Progress(epoch_n * channel_n, 1))
+
         @inbounds @simd for epoch_idx in 1:epoch_n
             Threads.@threads for channel_idx = 1:channel_n
                 adf = @views ADFTest(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], :constant, window)
@@ -350,6 +354,9 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
                 p = round(p, digits=4)
                 p == 0.0 && (p = 0.0001)
                 s_stationarity[channel_idx, :, epoch_idx] = [a, p]
+
+                # update progress bar
+                progress_bar == true && next!(pb)
             end
         end
     end

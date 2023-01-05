@@ -1930,9 +1930,9 @@ function s_stationarity_hilbert(signal::AbstractVector)
 end
 
 """
-    s_stationarity_mean(signal)
+    s_stationarity_mean(signal; window)
 
-Calculate mean stationarity.
+Calculate mean stationarity. Signal is split into `window`-long windows and averaged across windows.
 
 # Arguments
 
@@ -1948,13 +1948,13 @@ function s_stationarity_mean(signal::AbstractVector; window::Int64)
     window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
-    return mean(signal, dims=1)
+    return mean(signal, dims=1)[:]
 end
 
 """
-    s_stationarity_var(signal)
+    s_stationarity_var(signal; window)
 
-Calculate variance stationarity.
+Calculate variance stationarity. Signal is split into `window`-long windows and variance is calculated across windows.
 
 # Arguments
 
@@ -1970,7 +1970,7 @@ function s_stationarity_var(signal::AbstractVector; window::Int64)
     window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
     signal = signal[1:(window * floor(Int64, length(signal) / window))]
     signal = reshape(signal, Int(length(signal) / window), window)
-    return var(signal, dims=1)
+    return var(signal, dims=1)[:]
 end
 
 """
@@ -4235,16 +4235,18 @@ Generate noise.
 
 - `n::Int64`: length (in samples)
 - `amp::Real=1.0`: amplitude, signal will be [-amp..+amp]
-- `type::Symbol=:white`: noise type: `:white`, `:pink`
+- `type::Symbol=:whiten`: noise type: `:whiten` (normal distributed), `:whiteu` (uniformly distributed), `:pink`
 
 # Returns
 
 - `noise::Float64`
 """
-function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:white)
-    _check_var(type, [:white, :pink], "type")
-    if type === :white
+function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
+    _check_var(type, [:whiten, :whiteu, :pink], "type")
+    if type === :whiten
         noise = randn(n)
+    elseif type === :whiteu
+        noise = rand(n)
     elseif type === :pink
         noise = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
     end
