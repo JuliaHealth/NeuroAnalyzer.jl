@@ -130,7 +130,7 @@ p = eeg_stationarity(edf, method=:var)
 @test size(p) == (19, 10, 1)
 p = eeg_stationarity(edf, method=:hilbert)
 @test size(p) == (19, 309759, 1)
-p = eeg_stationarity(edf, window=10000, method=:euclid)
+p = eeg_stationarity(edf, window=10000, method=:cov)
 @test size(p) == (32, 1)
 
 e = eeg_trim(edf, segment=(10 * eeg_sr(edf), 20 * eeg_sr(edf)), remove_epochs=false)
@@ -154,6 +154,7 @@ c, msc, ic = eeg_tcoherence(edf, edf)
 
 hz, nyq = eeg_freqs(edf)
 @test nyq == 128.0
+@test length(hz) == 154880
 
 e10 = eeg_epoch(edf, epoch_len=2560)
 s_conv = eeg_fconv(e10, kernel=generate_window(:hann, 256))
@@ -256,8 +257,8 @@ edf = eeg_import_edf("eeg-test-edf.edf")
 eeg_delete_channel!(edf, channel=20:24)
 eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 
-v = eeg_snr(edf)
-@test size(v) == (19, 1)
+s, h = eeg_snr(e10)
+@test size(s) == (19, 1280)
 
 s, _ = eeg_standardize(edf)
 @test size(s.eeg_signals) == (19, 309760, 1)

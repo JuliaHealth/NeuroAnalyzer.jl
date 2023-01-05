@@ -36,6 +36,7 @@ using Plots.PlotMeasures
 using Polynomials
 using Preferences
 using ProgressMeter
+using Random
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -507,6 +508,11 @@ export eeg_signal_channels
 
 include("eeg_study.jl")
 export eeg_study_create
+export eeg_study_n
+export eeg_study_channel_n
+export eeg_study_epoch_n
+export eeg_study_epoch_len
+export eeg_study_sr
 
 include("eeg_plots.jl")
 export plot_save

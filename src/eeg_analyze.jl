@@ -1121,7 +1121,9 @@ Calculate SNR of `eeg` channels.
 
 # Returns
 
-- `snr::Matrix(Float64)`: SNR for each channel per epoch
+Named tuple containing:
+- `snr::Matrix(Float64)`: SNR for each channel over frequencies 1:Nyquist
+- `hz::Vector(Float64)`: frequencies
 """
 function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])))
 
@@ -1129,15 +1131,25 @@ function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    snr = zeros(channel_n, epoch_n)
+    epoch_n == 1 && throw(ArgumentError("EEG must contain ≥ 2 epochs."))
+
+    hz, _ = s_freqs(eeg.eeg_epoch_time)
+    amp = zeros(channel_n, length(hz), epoch_n)
+    snr = zeros(channel_n, length(hz))
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            snr[channel_idx, epoch_idx] = @views s_snr(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
+            _, amp[channel_idx, :, epoch_idx], _, _ = @views s_spectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
 
-    return snr
+    @inbounds @simd for hz_idx in 1:length(hz)
+        Threads.@threads for channel_idx in 1:channel_n
+            snr[channel_idx, hz_idx] = @views s_snr(amp[channel_idx, hz_idx, :])
+        end
+    end
+
+    return (snr=snr, hz=hz)
 end
 
 """

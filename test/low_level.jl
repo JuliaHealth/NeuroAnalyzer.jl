@@ -65,8 +65,8 @@ p, f = s_psd(ones(10), fs=10)
 @test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-@test s_stationarity_mean(ones(10), window=1) == [1.0;;]
-@test s_stationarity_var(ones(10), window=1) == [0.0;;]
+@test s_stationarity_mean(ones(10), window=1) == [1.0]
+@test s_stationarity_var(ones(10), window=1) == [0.0]
 @test s_trim(ones(10), segment=(1,5)) == ones(5)
 @test s2_mi(ones(10), ones(10)) == 0.0
 @test s_entropy([1.0, 2.0, 3.0]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)

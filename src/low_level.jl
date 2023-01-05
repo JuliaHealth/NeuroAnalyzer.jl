@@ -503,13 +503,11 @@ function s_freqs(t::Union{AbstractVector, AbstractRange})
     # sampling interval
     dt = t[2] - t[1]
     # sampling rate
-    fs = 1 / dt
-    # frequency step size
-    df = 1 / (length(t) * dt)
+    fs = round(Int64, 1 / dt)
     # Nyquist frequency
     nyquist_freq = fs / 2
     # frequency array
-    hz = collect(0:df:nyquist_freq)
+    hz = linspace(0, nyquist_freq, floor(Int64, length(t) / 2))
 
     return hz, nyquist_freq
 end
@@ -1345,7 +1343,7 @@ Perform piecewise detrending.
 # Arguments
 
 - `signal::AbstractVector`
-- `type::Symbol`:
+- `type::Symbol=:ls`:
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
     - `:constant`: `offset` or the mean of `signal` (if `offset` = 0) is subtracted
@@ -1368,7 +1366,7 @@ function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0,
 
     if type === :loess
         t = collect(1.0:1:length(signal))
-        model = loess(t, signal, span=span)
+        model = loess(t, signal, span=f)
         trend = Loess.predict(model, t)
         return signal .- trend
     elseif type === :poly
@@ -2461,8 +2459,6 @@ Calculate SNR.
 D. J. Schroeder (1999). Astronomical optics (2nd ed.). Academic Press. ISBN 978-0-12-629810-9, p.278
 """
 function s_snr(signal::AbstractVector)
-    # make signal positive
-    signal .+= abs(minimum(signal))
     return mean(signal) / std(signal)
 end
 
