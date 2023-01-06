@@ -3,12 +3,12 @@ using Plots
 using GLMakie
 using Test
 
-edf = eeg_import_edf("eeg-test-edf.edf")
-eeg_load_electrodes!(edf, file_name="../locs/standard-10-20-cap19-elmiko-correct.ced")
+eeg = eeg_import_edf("eeg-test-edf.edf")
+eeg_load_electrodes!(eeg, file_name="../locs/standard-10-20-cap19-elmiko-correct.ced")
 isfile("test.png") && rm("test.png")
-e10 = eeg_epoch(edf, epoch_n=10)
+e10 = eeg_epoch(eeg, epoch_n=10)
 
-p = plot_filter_response(fs=eeg_sr(edf), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
+p = plot_filter_response(fs=eeg_sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 plot_save(p, file_name="test.png")
 @test isfile("test.png") == true
@@ -56,14 +56,14 @@ p = eeg_plot_electrodes(e10, selected=1:4)
 p = eeg_plot_electrodes(e10, threed=true)
 @test typeof(p) == Makie.Figure
 
-edf_cor = eeg_cor(e10)
+c = eeg_cor(e10)
 channels = eeg_get_channel_bytype(e10, type=Symbol(e10.eeg_header[:signal_type]))
-p = plot_matrix(edf_cor[:, :, 1], xlabels=eeg_labels(e10)[channels], ylabels=eeg_labels(e10)[channels])
+p = plot_matrix(c[:, :, 1], xlabels=eeg_labels(e10)[channels], ylabels=eeg_labels(e10)[channels])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-ac, lags = eeg_acov(edf, lag=5, norm=false)
+ac, lags = eeg_acov(eeg, lag=5, norm=false)
 p = plot_covmatrix(ac[1, :, 1], lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-cc, lags = eeg_xcov(edf, lag=5, norm=false)
+cc, lags = eeg_xcov(eeg, lag=5, norm=false)
 p = plot_covmatrix(cc[1, :, 1], lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
@@ -122,7 +122,7 @@ p = eeg_plot_erp(e10, c, c_idx=1, type=:stack)
 
 #=
 
-e10=eeg_epoch(edf, epoch_len=10*256)
+e10=eeg_epoch(eeg, epoch_len=10*256)
 ic, icm = eeg_ica(e10, n=16, tol=0.99)
 eeg_add_component!(e10, c=:ica, v=ic)
 eeg_add_component!(e10, c=:ica_mw, v=icm)

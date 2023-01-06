@@ -688,7 +688,7 @@ function s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Flo
     else
         if pks < alpha
             verbose == true && @info "H0 has non-normal distribution; p-value for KS-test: $(round(pks, digits=3))"
-            p_one_tailed = 1 - (sum(perm_diff .> observed_difference) / nperm)
+            p_one_tailed = sum(perm_diff .> observed_difference) / nperm
         else
             z = (observed_difference - mean(perm_diff)) / std(perm_diff)
             z = round(z, digits=3)

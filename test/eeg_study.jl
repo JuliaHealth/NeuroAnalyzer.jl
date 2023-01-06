@@ -16,3 +16,4 @@ s = eeg_study_create([eeg1, eeg2], [:a, :b])
 @test eeg_study_epoch_len(s) == 1280
 @test eeg_study_channel_n(s) == 24
 
+true
