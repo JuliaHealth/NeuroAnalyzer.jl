@@ -37,11 +37,11 @@ println("# IO")
 println()
 
 print(rpad("Import EDF", 36))
-edf = eeg_import_edf("test/eeg-test-edf.edf");
-@time edf = eeg_import_edf("test/eeg-test-edf.edf");
+eeg = eeg_import_edf("test/eeg-test-edf.edf");
+@time eeg_import_edf("test/eeg-test-edf.edf");
 print(rpad("Import EDF+", 36))
 eeg_import_edf("test/eeg-test-edfplus.edf");
-@time edf = eeg_import_edf("test/eeg-test-edfplus.edf");
+@time eeg_import_edf("test/eeg-test-edfplus.edf");
 print(rpad("Import BDF+", 36))
 eeg_import_bdf("test/eeg-test-bdf.bdf");
 @time eeg_import_bdf("test/eeg-test-bdf.bdf");
@@ -53,15 +53,17 @@ eeg_import_bv("test/eeg-test-bv.vhdr")
 @time eeg_import_bv("test/eeg-test-bv.vhdr")
 print(rpad("Save HDF5", 36))
 tmp = tempname()
-eeg_save(edf, file_name=tmp);
+eeg_save(eeg, file_name=tmp);
 tmp = tempname()
-@time eeg_save(edf, file_name=tmp);
+@time eeg_save(eeg, file_name=tmp);
 print(rpad("Load HDF5", 36))
 eeg_load(tmp);
 @time eeg_load(tmp);
 
-eeg_delete_channel!(edf, channel=20:24)
-e10 = eeg_epoch(edf, epoch_len=2560)
+eeg = eeg_import_edf("test/eeg-test-edf.edf");
+eeg_delete_channel!(eeg, channel=20:24)
+e10 = eeg_epoch(eeg, epoch_len=2560)
+eeg_load_electrodes!(e10, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
 @info "Benchmarking: eeg_edit.jl"
 println()
@@ -176,7 +178,7 @@ eeg_psd(e10);
 print(rpad("PSD: mt", 36))
 eeg_psd(e10, mt=true);
 @time eeg_psd(e10, mt=true);
-print(rpad("PSD: mwavelet ", 36))
+print(rpad("PSD: mw ", 36))
 eeg_mwpsd(e10);
 @time eeg_mwpsd(e10);
 print(rpad("Stationarity: mean", 36))
@@ -185,9 +187,9 @@ eeg_stationarity(e10, method=:mean);
 print(rpad("Stationarity: var", 36))
 eeg_stationarity(e10, method=:var);
 @time eeg_stationarity(e10, method=:var);
-print(rpad("Stationarity: euclid", 36))
-eeg_stationarity(e10, method=:euclid);
-@time eeg_stationarity(e10, method=:euclid);
+print(rpad("Stationarity: cov", 36))
+eeg_stationarity(e10, method=:cov);
+@time eeg_stationarity(e10, method=:cov);
 print(rpad("Stationarity: hilbert", 36))
 eeg_stationarity(e10, method=:hilbert);
 @time eeg_stationarity(e10, method=:hilbert);
@@ -240,8 +242,8 @@ print(rpad("Spectrum: Hilbert", 36))
 eeg_spectrum(e10, h=true);
 @time eeg_spectrum(e10, h=true);
 print(rpad("Channel stats", 36))
-eeg_channels_stats(e10);
-@time eeg_channels_stats(e10);
+eeg_channel_stats(e10);
+@time eeg_channel_stats(e10);
 print(rpad("SNR", 36))
 eeg_snr(e10);
 @time eeg_snr(e10);
@@ -269,42 +271,43 @@ eeg_mean(e10, e10);
 print(rpad("Subtract channels", 36))
 eeg_chdiff(e10, e10); 
 @time eeg_chdiff(e10, e10); 
-print(rpad("Temporal envelope", 36))
-eeg_tenv(e10);
-@time eeg_tenv(e10);
-print(rpad("Temporal envelope: mean", 36))
-eeg_tenv_mean(e10, dims=1);
-@time eeg_tenv_mean(e10, dims=1);
-print(rpad("Temporal envelope: median", 36))
-eeg_tenv_median(e10, dims=1);
-@time eeg_tenv_median(e10, dims=1);
-print(rpad("Power envelope", 36))
-eeg_penv(e10);
-@time eeg_penv(e10);
-print(rpad("Power envelope: mean", 36))
-eeg_penv_mean(e10, dims=1);
-@time eeg_penv_mean(e10, dims=1);
-print(rpad("Power envelope: median", 36))
-eeg_penv_median(e10, dims=1);
-@time eeg_penv_median(e10, dims=1);
-print(rpad("Spectral envelope", 36))
-eeg_senv(e10);
-@time eeg_senv(e10);
-print(rpad("Spectral envelope: mean", 36))
-eeg_senv_mean(e10, dims=1);
-@time eeg_senv_mean(e10, dims=1);
-print(rpad("Spectral envelope: median", 36))
-eeg_senv_median(e10, dims=1);
-@time eeg_senv_median(e10, dims=1);
-print(rpad("Hilbert amplitude envelope", 36))
-eeg_henv(e10);
-@time eeg_henv(e10);
-print(rpad("Hilbert amplitude envelope: mean", 36))
-eeg_henv_mean(e10, dims=1);
-@time eeg_henv_mean(e10, dims=1);
-print(rpad("Hilbert amplitude envelope: median", 36))
-eeg_henv_median(e10, dims=1);
-@time eeg_henv_median(e10, dims=1);
+# temporarily disabled due to an error in FindPeaks1D.jl
+# print(rpad("Temporal envelope", 36))
+# eeg_tenv(e10);
+# @time eeg_tenv(e10);
+# print(rpad("Temporal envelope: mean", 36))
+# eeg_tenv_mean(e10, dims=1);
+# @time eeg_tenv_mean(e10, dims=1);
+# print(rpad("Temporal envelope: median", 36))
+# eeg_tenv_median(e10, dims=1);
+# @time eeg_tenv_median(e10, dims=1);
+# print(rpad("Power envelope", 36))
+# eeg_penv(e10);
+# @time eeg_penv(e10);
+# print(rpad("Power envelope: mean", 36))
+# eeg_penv_mean(e10, dims=1);
+# @time eeg_penv_mean(e10, dims=1);
+# print(rpad("Power envelope: median", 36))
+# eeg_penv_median(e10, dims=1);
+# @time eeg_penv_median(e10, dims=1);
+# print(rpad("Spectral envelope", 36))
+# eeg_senv(e10);
+# @time eeg_senv(e10);
+# print(rpad("Spectral envelope: mean", 36))
+# eeg_senv_mean(e10, dims=1);
+# @time eeg_senv_mean(e10, dims=1);
+# print(rpad("Spectral envelope: median", 36))
+# eeg_senv_median(e10, dims=1);
+# @time eeg_senv_median(e10, dims=1);
+# print(rpad("Hilbert amplitude envelope", 36))
+# eeg_henv(e10);
+# @time eeg_henv(e10);
+# print(rpad("Hilbert amplitude envelope: mean", 36))
+# eeg_henv_mean(e10, dims=1);
+# @time eeg_henv_mean(e10, dims=1);
+# print(rpad("Hilbert amplitude envelope: median", 36))
+# eeg_henv_median(e10, dims=1);
+# @time eeg_henv_median(e10, dims=1);
 print(rpad("ISPC 1", 36))
 eeg_ispc(e10);
 @time eeg_ispc(e10);
@@ -323,9 +326,10 @@ eeg_pli(e10);
 print(rpad("PLI 2", 36))
 eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-print(rpad("AEC", 36))
-eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-@time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+# temporarily disabled due to an error in FindPeaks1D.jl
+# print(rpad("AEC", 36))
+# eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+# @time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("GED", 36))
 eeg_ged(e10, e10);
 @time eeg_ged(e10, e10);
@@ -402,8 +406,8 @@ print(rpad("Generate ICA", 36))
 eeg_ica(e10, n=15, tol=1.0);
 @time eeg_ica(e10, n=15, tol=1.0);
 i, i_mw = eeg_ica(e10, n=15, tol=1.0)
-e10_ica = eeg_add_component(e10, c=:ica, v=i)
-eeg_add_component!(e10_ica, c=:ica_mw, v=i_mw)
+e10_ica = eeg_add_component(e10, c=:ica, v=i);
+eeg_add_component!(e10_ica, c=:ica_mw, v=i_mw);
 print(rpad("Remove ICA", 36))
-eeg_ica_reconstruct!(e10_ica, ic=1);
-@time eeg_ica_reconstruct!(e10_ica, ic=1);
+eeg_ica_reconstruct(e10_ica, ic=1);
+@time eeg_ica_reconstruct(e10_ica, ic=1);
