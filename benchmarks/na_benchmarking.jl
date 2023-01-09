@@ -271,43 +271,42 @@ eeg_mean(e10, e10);
 print(rpad("Subtract channels", 36))
 eeg_chdiff(e10, e10); 
 @time eeg_chdiff(e10, e10); 
-# temporarily disabled due to an error in FindPeaks1D.jl
-# print(rpad("Temporal envelope", 36))
-# eeg_tenv(e10);
-# @time eeg_tenv(e10);
-# print(rpad("Temporal envelope: mean", 36))
-# eeg_tenv_mean(e10, dims=1);
-# @time eeg_tenv_mean(e10, dims=1);
-# print(rpad("Temporal envelope: median", 36))
-# eeg_tenv_median(e10, dims=1);
-# @time eeg_tenv_median(e10, dims=1);
-# print(rpad("Power envelope", 36))
-# eeg_penv(e10);
-# @time eeg_penv(e10);
-# print(rpad("Power envelope: mean", 36))
-# eeg_penv_mean(e10, dims=1);
-# @time eeg_penv_mean(e10, dims=1);
-# print(rpad("Power envelope: median", 36))
-# eeg_penv_median(e10, dims=1);
-# @time eeg_penv_median(e10, dims=1);
-# print(rpad("Spectral envelope", 36))
-# eeg_senv(e10);
-# @time eeg_senv(e10);
-# print(rpad("Spectral envelope: mean", 36))
-# eeg_senv_mean(e10, dims=1);
-# @time eeg_senv_mean(e10, dims=1);
-# print(rpad("Spectral envelope: median", 36))
-# eeg_senv_median(e10, dims=1);
-# @time eeg_senv_median(e10, dims=1);
-# print(rpad("Hilbert amplitude envelope", 36))
-# eeg_henv(e10);
-# @time eeg_henv(e10);
-# print(rpad("Hilbert amplitude envelope: mean", 36))
-# eeg_henv_mean(e10, dims=1);
-# @time eeg_henv_mean(e10, dims=1);
-# print(rpad("Hilbert amplitude envelope: median", 36))
-# eeg_henv_median(e10, dims=1);
-# @time eeg_henv_median(e10, dims=1);
+print(rpad("Temporal envelope", 36))
+eeg_tenv(e10);
+@time eeg_tenv(e10);
+print(rpad("Temporal envelope: mean", 36))
+eeg_tenv_mean(e10, dims=1);
+@time eeg_tenv_mean(e10, dims=1);
+print(rpad("Temporal envelope: median", 36))
+eeg_tenv_median(e10, dims=1);
+@time eeg_tenv_median(e10, dims=1);
+print(rpad("Power envelope", 36))
+eeg_penv(e10);
+@time eeg_penv(e10);
+print(rpad("Power envelope: mean", 36))
+eeg_penv_mean(e10, dims=1);
+@time eeg_penv_mean(e10, dims=1);
+print(rpad("Power envelope: median", 36))
+eeg_penv_median(e10, dims=1);
+@time eeg_penv_median(e10, dims=1);
+print(rpad("Spectral envelope", 36))
+eeg_senv(e10);
+@time eeg_senv(e10);
+print(rpad("Spectral envelope: mean", 36))
+eeg_senv_mean(e10, dims=1);
+@time eeg_senv_mean(e10, dims=1);
+print(rpad("Spectral envelope: median", 36))
+eeg_senv_median(e10, dims=1);
+@time eeg_senv_median(e10, dims=1);
+print(rpad("Hilbert amplitude envelope", 36))
+eeg_henv(e10);
+@time eeg_henv(e10);
+print(rpad("Hilbert amplitude envelope: mean", 36))
+eeg_henv_mean(e10, dims=1);
+@time eeg_henv_mean(e10, dims=1);
+print(rpad("Hilbert amplitude envelope: median", 36))
+eeg_henv_median(e10, dims=1);
+@time eeg_henv_median(e10, dims=1);
 print(rpad("ISPC 1", 36))
 eeg_ispc(e10);
 @time eeg_ispc(e10);
@@ -326,10 +325,9 @@ eeg_pli(e10);
 print(rpad("PLI 2", 36))
 eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-# temporarily disabled due to an error in FindPeaks1D.jl
-# print(rpad("AEC", 36))
-# eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-# @time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+print(rpad("AEC", 36))
+eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+@time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("GED", 36))
 eeg_ged(e10, e10);
 @time eeg_ged(e10, e10);
