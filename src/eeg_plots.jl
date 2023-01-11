@@ -1277,12 +1277,13 @@ Plot topographical map PSDs. It uses polar :loc_radius and :loc_theta locations,
 - `mono::Bool=false`: use color or grey palette
 - `ax::Symbol=:linlin`: type of axes scaling: linear-linear (`:linlin`), log10-linear (`:loglin`), linear-log10 (`:linlog`), log10-log10 (:loglog)
 - `kwargs`: optional arguments for plot() function
+- `elpnorm::Bool=true`: normalize electrode positions
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
+function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, elpnorm::Bool=true, kwargs...)
 
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
@@ -1333,12 +1334,14 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
+    loc_x = loc_x[channel]
+    loc_y = loc_y[channel]
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
-    loc_x = loc_x[channel]
-    loc_y = loc_y[channel]
 
     fig = Figure(; resolution=(plot_size, plot_size))
     fig_axis = Axis(fig[1, 1])
@@ -2206,13 +2209,15 @@ Preview of electrode locations. It uses polar :loc_radius and :loc_theta locatio
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
+- `grid::Bool=false`: draw grid, useful for locating electrode positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+- `elpnorm::Bool=true`: normalize electrode positions
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
+function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400, elpnorm::Bool=true)
 
     pal = mono == true ? :grays : :darktest
 
@@ -2221,7 +2226,9 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
 
     if plot_size > 300
         marker_size = plot_size ÷ 75
@@ -2232,21 +2239,37 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
         labels = false
     end
 
-    loc_x .*= 0.9
-    loc_y .*= 0.9
-    p = Plots.plot(grid=true,
-                   framestyle=:none,
-                   palette=pal,
-                   size=(plot_size, plot_size),
-                   border=:none,
-                   aspect_ratio=1,
-                   right_margin=-30 * Plots.px,
-                   bottom_margin=-20 * Plots.px,
-                   top_margin=-30 * Plots.px,
-                   left_margin=-50 * Plots.px,
-                   xlim=(-1.22, 1.23),
-                   ylim=(-1.1, 1.2))
+    length(channel) > 64 && (font_size = plot_size ÷ 100)
 
+    if grid == false
+        p = Plots.plot(grid=false,
+                       framestyle=:none,
+                       palette=pal,
+                       size=(plot_size, plot_size),
+                       border=:none,
+                       aspect_ratio=1,
+                       right_margin=-30 * Plots.px,
+                       bottom_margin=-20 * Plots.px,
+                       top_margin=-30 * Plots.px,
+                       left_margin=-50 * Plots.px,
+                       xlim=(-1.22, 1.23),
+                       ylim=(-1.1, 1.2))
+    else
+        p = Plots.plot(grid=true,
+                       palette=pal,
+                       size=(plot_size, plot_size),
+                       aspect_ratio=1,
+                       right_margin=-30 * Plots.px,
+                       bottom_margin=-50 * Plots.px,
+                       top_margin=-50 * Plots.px,
+                       left_margin=-5 * Plots.px,
+                       xticks=-1:0.1:1,
+                       yticks=-1:0.1:1,
+                       xtickfontsize=4,
+                       ytickfontsize=4;
+                       xlim=(-1.22, 1.23),
+                       ylim=(-1.1, 1.2))
+    end
     hd = _draw_head(p, head_labels=head_labels, head_details=head_details)
     p = Plots.plot!(hd)
 
@@ -2333,13 +2356,14 @@ end
 - `labels::Bool=true`: plot electrode labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
+- `plot_size::Int64=800`: plot dimensions in pixels (plot_size×plot_size)
+c
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
+function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800, elpnorm::Bool=true)
 
     # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
     # channel = setdiff(channel, selected)
@@ -2350,7 +2374,7 @@ function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64},
     loc_y = locs[!, :loc_y]
     loc_z = locs[!, :loc_z]
 
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y, loc_z = _locnorm(loc_x, loc_y, loc_z))
     x_lim = (-1.1, 1.1)
     y_lim = (-1.1, 1.1)
     z_lim = extrema(loc_z)
@@ -2411,13 +2435,15 @@ Preview of electrode locations.
 - `head_details::Bool=true`: draw nose and ears
 - `mono::Bool=false`: use color or grey palette
 - `threed::Bool=false`: 3-dimensional plot
+- `grid::Bool=false`: draw grid, useful for locating electrode positions
+- `elpnorm::Bool=true`: normalize electrode positions
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, kwargs...)
+function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, elpnorm::Bool=true, kwargs...)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
@@ -2426,9 +2452,9 @@ function eeg_plot_electrodes(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
     selected != 0 && _check_channels(eeg, selected)
 
     if threed == false
-        p = plot_electrodes(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size)
+        p = plot_electrodes(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid, elpnorm=elpnorm)
     else
-        p = plot_electrodes3d(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+        p = plot_electrodes3d(eeg.eeg_locs, channel=channel, selected=selected, labels=labels, head_labels=head_labels, mono=mono, plot_size=plot_size, elpnorm=elpnorm)
     end
 
     return p
@@ -3415,12 +3441,13 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
+- `elpnorm::Bool=true`: normalize electrode positions
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, weights::Vector{<:Real}=[], labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
+function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, weights::Vector{<:Real}=[], labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400, elpnorm::Bool=true)
 
     length(weights) > length(channel) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(channel)))."))
     length(weights) < 1 && throw(ArgumentError("weights must contain at least one value."))
@@ -3448,7 +3475,9 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, Abst
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
 
     for idx in eachindex(locs[!, :labels])
         if idx in channel
@@ -3580,13 +3609,14 @@ Plot connections between channels. It uses polar :loc_radius and :loc_theta loca
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
+- `elpnorm::Bool=true`: normalize electrode positions
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, kwargs...)
+function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, elpnorm::Bool=true, kwargs...)
 
     size(connections, 1) == length(channel) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
@@ -3609,7 +3639,9 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
 
     for idx in eachindex(locs[!, :labels])
         if idx in channel
@@ -3707,13 +3739,14 @@ Plot topographical view.
 - `plot_electrodes::Bools=true`: plot electrodes over topo plot
 - `head_labels::Bool=false`: plot head labels
 - `head_details::Bool=true`: draw nose and ears
+- `elpnorm::Bool=true`: normalize electrode positions
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, elpnorm::Bool=true, kwargs...)
     
     pal = mono == true ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -3723,9 +3756,11 @@ function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, 
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
     loc_x = loc_x[channel]
     loc_y = loc_y[channel]
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
 
     s_interpolated, interpolated_x, interpolated_y = _interpolate(signal, loc_x, loc_y, 100, imethod, nmethod)
 
@@ -4343,13 +4378,14 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `elpnorm::Bool=true`: normalize electrode positions
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, elpnorm::Bool=true, kwargs...)
 
     size(signal, 2) == length(t) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
 
@@ -4372,12 +4408,14 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float6
     for idx in 1:size(locs, 1)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
-    loc_x, loc_y = _locnorm(loc_x, loc_y)
+    elpnorm == true && (loc_x, loc_y = _locnorm(loc_x, loc_y))
+    loc_x = loc_x[channel]
+    loc_y = loc_y[channel]
+    loc_x = _s2v(loc_x)
+    loc_y = _s2v(loc_y)
     # get marker centers
     loc_x .*= ((plot_size / 2) - marker_size[1] / 2)
     loc_y .*= ((plot_size / 2) - marker_size[2] / 2)
-    loc_x = loc_x[channel]
-    loc_y = loc_y[channel]
 
     fig = Figure(; resolution=(plot_size, plot_size))
     fig_axis = Axis(fig[1, 1])

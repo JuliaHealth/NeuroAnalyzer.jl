@@ -1583,9 +1583,13 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
     loc_x = zeros(channel_n)
     loc_y = zeros(channel_n)
     for idx in 1:channel_n
-        loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_locs[!, :loc_theta][idx],
-                                          eeg.eeg_locs[!, :loc_radius][idx])
+        # loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_locs[!, :loc_theta][idx], eeg.eeg_locs[!, :loc_radius][idx])
+        # loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
+        loc_x[idx] = eeg.eeg_locs[idx, :loc_x]
+        loc_y[idx] = eeg.eeg_locs[idx, :loc_y]
     end
+    # loc_x, loc_y = _locnorm(loc_x, loc_y)
+
     # Euclidean distance matrix
     d = zeros(channel_n, channel_n)
     for idx1 in 1:channel_n

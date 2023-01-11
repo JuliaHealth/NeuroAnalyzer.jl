@@ -134,10 +134,10 @@ function cart2pol(x::Real, y::Real)
 
     radius = round(hypot(x, y), digits=2)
     theta = round(atand(y, x), digits=1)
-    q = _angle_quadrant(theta)
-    q == 2 && (theta += 180)
-    q == 3 && (theta += 180)
-    q == 4 && (theta += 360)
+    # q = _angle_quadrant(theta)
+    # q == 2 && (theta += 180)
+    # q == 3 && (theta += 180)
+    # q == 4 && (theta += 360)
     # add 2π (360° in radians) to make theta positive
     theta < 0 && (theta += 2 * pi)
 
@@ -227,6 +227,32 @@ function cart2sph(x::Real, y::Real, z::Real)
     theta < 0 && (theta += 2 * pi)
     
     return radius, theta, phi
+end
+
+"""
+    sph2pol(radius, theta, phi)
+
+Convert spherical coordinates to polar.
+
+# Arguments
+
+- `radius::Real`: spherical radius, the distance from the origin to the point
+- `theta::Real`: spherical horizontal angle, the angle in the xy plane with respect to the x-axis, in degrees
+- `phi::Real`: spherical azimuth angle, the angle with respect to the z-axis (elevation), in degrees
+
+# Returns
+
+- `r::Float64`
+- `t::Float64`
+"""
+function sph2pol(radius::Real, theta::Real, phi::Real)
+    t = theta
+    if phi == 90 || phi == -90
+        r = 0
+    else
+        r = round(radius * cos(deg2rad(abs(phi))), digits=2)
+    end
+    return r, t
 end
 
 """
@@ -1544,7 +1570,7 @@ function s_resample(signal::AbstractVector; t::AbstractRange, new_sr::Int64)
 
     # interpolate
     sr_ratio = new_sr / sr
-    s_upsampled = resample(signal, sr_ratio)
+    s_upsampled = DSP.resample(signal, sr_ratio)
     # s_interpolation = CubicSplineInterpolation(t, signal)
     t_upsampled = t[1]:1/new_sr:t[end]
     # s_upsampled = s_interpolation(t_upsampled)
@@ -1617,7 +1643,7 @@ Performs convolution in the time domain.
 """
 function s_tconv(signal::AbstractVector; kernel::AbstractVector)
 
-    s_conv = conv(signal, kernel)
+    s_conv = DSP.conv(signal, kernel)
 
     half_kernel = floor(Int, length(kernel) / 2)
 

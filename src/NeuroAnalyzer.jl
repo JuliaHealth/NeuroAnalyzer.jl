@@ -19,6 +19,7 @@ using DSP
 using FFTW
 using FileIO
 using FindPeaks1D
+using FourierTools
 using Git
 using GLM
 using GLMakie
@@ -110,6 +111,7 @@ export cart2pol
 export pol2cart
 export sph2cart
 export cart2sph
+export sph2pol
 export generate_window
 export fft0
 export fft2
@@ -282,6 +284,7 @@ export eeg_add_electrodes
 export eeg_add_electrodes!
 export eeg_import_digitrack
 export eeg_import_bv
+export eeg_import_alice4
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -364,6 +367,8 @@ export locs_cart2sph
 export locs_cart2sph!
 export locs_cart2pol
 export locs_cart2pol!
+export locs_sph2pol
+export locs_sph2pol!
 export eeg_view_marker
 export eeg_delete_marker
 export eeg_delete_marker!

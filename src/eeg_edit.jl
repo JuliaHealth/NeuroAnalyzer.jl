@@ -2344,6 +2344,49 @@ function locs_cart2pol!(locs::DataFrame)
 end
 
 """
+    locs_sph2pol(locs)
+
+Convert spherical locations to polar.
+
+# Arguments
+
+- `locs::DataFrame`
+
+# Returns
+
+- `locs_new::DataFrame`
+"""
+function locs_sph2pol(locs::DataFrame)
+
+    locs_new = deepcopy(locs)
+
+    for idx in eachindex(locs[!, :labels])
+        r_sph = locs_new[!, :loc_radius_sph][idx]
+        t_sph = locs_new[!, :loc_theta_sph][idx]
+        p_sph = locs_new[!, :loc_phi_sph][idx]
+        r_pol, t_pol = round.(sph2pol(r_sph, t_sph, p_sph), digits=2)
+        locs_new[!, :loc_radius][idx] = r_pol
+        locs_new[!, :loc_theta][idx] = t_pol
+    end
+
+    return locs_new
+end
+
+"""
+    locs_sph2pol!(locs)
+
+Convert Cartesian locations to polar.
+
+# Arguments
+
+- `locs::DataFrame`
+"""
+function locs_sph2pol!(locs::DataFrame)
+    locs[!, :] = locs_sph2pol(locs)[!, :]
+    return nothing
+end
+
+"""
     eeg_view_marker(eeg)
 
 Show markers.

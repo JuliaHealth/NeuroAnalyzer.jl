@@ -238,8 +238,8 @@ function _get_t(from::Int64, to::Int64, fs::Int64)
 end
 
 function _check_segment(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
-    from < 0 && throw(ArgumentError("from must be > 0."))
-    to < 0 && throw(ArgumentError("to must be > 0."))
+    from < 1 && throw(ArgumentError("from must be > 0."))
+    to < 1 && throw(ArgumentError("to must be > 0."))
     to < from && throw(ArgumentError("to must be ≥ $from."))
     (from > eeg_signal_len(eeg)) && throw(ArgumentError("from must be ≤ $(eeg_signal_len(eeg))."))
     (to > eeg_signal_len(eeg)) && throw(ArgumentError("to must be ≤ $(eeg_signal_len(eeg))."))
@@ -454,7 +454,6 @@ function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
     xy = s_normalize_minmax(hcat(x, y))
     x = xy[:, 1]
     y = xy[:, 2]
-
     return x, y
 end
 
@@ -463,7 +462,6 @@ function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
     x = xyz[:, 1]
     y = xyz[:, 2]
     z = xyz[:, 3]
-
     return x, y, z
 end
 
@@ -522,22 +520,20 @@ function _set_channel_types(labels::Vector{String})
     eog_channel = ["e", "e1", "e2"]
     channel_type = repeat(["???"], length(labels))
     for idx in eachindex(labels)
-        in(lowercase(labels[idx]), eeg_channels) && (channel_type[idx] = "eeg")
-        for idx2 in eachindex(eeg_channels)
-            occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eeg")
-        end
-        lowercase(labels[idx])[1] == 'c' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 'f' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 'n' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 'o' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 'p' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 't' && (channel_type[idx] = "eeg")
-        lowercase(labels[idx])[1] == 'i' && (channel_type[idx] = "eeg")
-        (length(labels[idx]) > 1 && lowercase(labels[idx])[1:2] == "af") && (channel_type[idx] = "eeg")
         occursin("meg", lowercase(labels[idx])) && (channel_type[idx] = "meg")
         occursin("ecg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("ekg", lowercase(labels[idx])) && (channel_type[idx] = "ecg")
         occursin("eog", lowercase(labels[idx])) && (channel_type[idx] = "eog")
+        occursin("rr", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("mic", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("flw", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("tho", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("abd", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("sao2", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("sa02", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("plr", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("body", lowercase(labels[idx])) && (channel_type[idx] = "misc")
+        occursin("ux", lowercase(labels[idx])) && (channel_type[idx] = "misc")
         for idx2 in eachindex(eog_channel)
             occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eog")
         end
@@ -554,6 +550,19 @@ function _set_channel_types(labels::Vector{String})
         occursin("annotation", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
         occursin("annotations", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
         occursin("status", lowercase(labels[idx])) && (channel_type[idx] = "mrk")
+        # eeg channels should have priority, e.g. C3A1 (C3 referenced to A1 should be of eeg type, not ref)
+        in(lowercase(labels[idx]), eeg_channels) && (channel_type[idx] = "eeg")
+        for idx2 in eachindex(eeg_channels)
+            occursin(eeg_channels[idx2], lowercase(labels[idx])) && (channel_type[idx] = "eeg")
+        end
+        lowercase(labels[idx])[1] == 'c' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 'f' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 'n' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 'o' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 'p' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 't' && (channel_type[idx] = "eeg")
+        lowercase(labels[idx])[1] == 'i' && (channel_type[idx] = "eeg")
+        (length(labels[idx]) > 1 && lowercase(labels[idx])[1:2] == "af") && (channel_type[idx] = "eeg")
     end
     return channel_type
 end
@@ -671,4 +680,12 @@ function _shift_markers(m::DataFrame, pos::Int64, offset::Int64)
         markers[marker_idx, :start] > pos && (markers[marker_idx, :start] -= offset)
     end
     return markers
+end
+
+function _s2v(s::Union{<:Number, Vector{<:Number}})
+    if typeof(s) <: Number
+        return [s]
+    else
+        return s
+    end
 end
