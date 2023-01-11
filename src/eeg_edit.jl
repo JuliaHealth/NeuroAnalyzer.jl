@@ -1960,9 +1960,45 @@ Flip channel locations along z axis.
 - `locs::DataFrame`
 """
 function locs_flipz!(locs::DataFrame)
-    locs[!, :] = locs_flipz!(locs)[!, :]
+    locs[!, :] = locs_flipz(locs)[!, :]
     return nothing
 end
+
+"""
+    locs_scale(locs, r)
+
+Scale channel locations.
+
+# Arguments
+
+- `locs::DataFrame`
+- `r::Real`: scaling factor
+
+# Returns
+
+- `locs_new::DataFrame`
+"""
+function locs_scale(locs::DataFrame, r::Real)
+    locs_new = deepcopy(locs)
+    locs_new[!, :loc_radius] .*= r
+    return locs_new
+end
+
+"""
+    locs_scale!(eeg)
+
+Scale channel locations.
+
+# Arguments
+
+- `locs::DataFrame`
+- `r::Real`: scaling factor
+"""
+function locs_scale!(locs::DataFrame, r::Real)
+    locs[!, :] = locs_scale(locs, r)[!, :]
+    return nothing
+end
+
 
 """
     eeg_channel_type(eeg; channel, type)
