@@ -558,7 +558,18 @@ function locs_import_sfp(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".sfp" || throw(ArgumentError("Not a SFP file."))
-    locs = CSV.read(file_name, header=false, delim=" ", ignorerepeated=true, DataFrame)
+    
+    locs = CSV.read(file_name, header=false, DataFrame)
+    if size(locs, 2) != 4
+        locs = CSV.read(file_name, header=false, delim="/t", ignorerepeated=true, DataFrame)
+    end
+    if size(locs, 2) != 4
+        locs = CSV.read(file_name, header=false, delim=" ", ignorerepeated=true, DataFrame)
+    end
+    if size(locs, 2) != 4
+        throw(ArgumentError("File $file_name cannot be opened, check delimeters."))
+    end
+
     DataFrames.rename!(locs, [:label, :x, :y, :z])
 
     labels = lstrip.(locs[!, "label"])
