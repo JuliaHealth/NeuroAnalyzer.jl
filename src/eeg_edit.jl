@@ -1944,6 +1944,7 @@ function locs_flipz(locs::DataFrame)
 
     for idx in eachindex(locs[!, :labels])
         locs_new[!, :loc_z][idx] = -locs_new[!, :loc_z][idx]
+        locs_new[!, :loc_phi_sph][idx] = -locs_new[!, :loc_phi_sph][idx]
     end
     locs_cart2sph!(locs_new)
 
@@ -1965,7 +1966,7 @@ function locs_flipz!(locs::DataFrame)
 end
 
 """
-    locs_scale(locs, r)
+    locs_scale(locs; r, planar, spherical)
 
 Scale channel locations.
 
@@ -1973,14 +1974,17 @@ Scale channel locations.
 
 - `locs::DataFrame`
 - `r::Real`: scaling factor
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 
 # Returns
 
 - `locs_new::DataFrame`
 """
-function locs_scale(locs::DataFrame, r::Real)
+function locs_scale(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
     locs_new = deepcopy(locs)
-    locs_new[!, :loc_radius] .*= r
+    planar == true && (locs_new[!, :loc_radius] .*= r)
+    spherical == true && (locs_new[!, :loc_radius_sph] .*= r)
     return locs_new
 end
 
@@ -1993,12 +1997,13 @@ Scale channel locations.
 
 - `locs::DataFrame`
 - `r::Real`: scaling factor
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_scale!(locs::DataFrame, r::Real)
-    locs[!, :] = locs_scale(locs, r)[!, :]
+function locs_scale!(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
+    locs[!, :] = locs_scale(locs, r=r, planar=planar, spherical=spherical)[!, :]
     return nothing
 end
-
 
 """
     eeg_channel_type(eeg; channel, type)

@@ -446,7 +446,6 @@ function _angle_quadrant(a::Real)
         (a < -180 && a >= -270) && (q = 2)
         (a < -270 && a > -360) && (q = 1)
     end
-
     return q    
 end 
 
