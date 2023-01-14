@@ -233,6 +233,7 @@ Calculate power spectrum density.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 
 # Returns
 
@@ -240,7 +241,7 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`:powers
 - `psd_frq::Vector{Float64}`: frequencies
 """
-function eeg_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), norm::Bool=false, mt::Bool=false)
+function eeg_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     fs = eeg_sr(eeg)
 
@@ -248,11 +249,11 @@ function eeg_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
     
-    _, psd_frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt)
+    _, psd_frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
     psd_pow = zeros(length(channel), length(psd_frq), epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            psd_pow[channel_idx, :, epoch_idx], _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt)
+            psd_pow[channel_idx, :, epoch_idx], _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
         end
     end
 
@@ -1731,6 +1732,7 @@ Calculate power (in dB) envelope.
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 
 # Returns
 
@@ -1738,7 +1740,7 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), d::Int64=8, mt::Bool=false)
+function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), d::Int64=8, mt::Bool=false, nt::Int64=8)
     
     _check_channels(eeg, channel)
     channel_n = length(channel)
@@ -1746,12 +1748,12 @@ function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
 
     fs = eeg_sr(eeg)
 
-    psd_tmp, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, mt=mt)
+    psd_tmp, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, mt=mt, nt=nt)
     p_env = zeros(channel_n, length(psd_tmp), epoch_n)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            psd_pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true)
+            psd_pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true, nt=nt)
             p_idx = s_findpeaks(psd_pow, d=d)
             pushfirst!(p_idx, 1)
             push!(p_idx, length(psd_pow))
@@ -1990,7 +1992,7 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     fs = eeg_sr(eeg)
     s_tmp = @view eeg.eeg_signals[1, :, 1]
     interval = fs
-    overlap = round(Int64, fs * 0.85)
+    overlap = round(Int64, fs * 0.75)
     length(s_tmp) < 4 * fs && (mt = true)
     if mt == false
         spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
@@ -3345,6 +3347,7 @@ Calculate PSD linear fit and slope.
 - `f::Union{Real, Real}=(0, 0)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 
 # Returns
 
@@ -3353,7 +3356,7 @@ Named tuple containing:
 - `psd_slope::Array{Float64, 2}`: slopes of each linear fit
 - `frq::Vector{Float64}`: range of frequencies for the linear fits
 """
-function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false)
+function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     fs = eeg_sr(eeg)
     length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
@@ -3366,7 +3369,7 @@ function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
 
-    _, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt)
+    _, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
     f1_idx = vsearch(f[1], frq)
     f2_idx = vsearch(f[2], frq)
     lf = zeros(channel_n, length(frq[f1_idx:f2_idx]), epoch_n)
@@ -3374,7 +3377,7 @@ function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt)
+            pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
             _, _, _, _, _, _, lf[channel_idx, :, epoch_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
             psd_slope[channel_idx, epoch_idx] = lf[channel_idx, 2, epoch_idx] - lf[channel_idx, 1, epoch_idx]
         end

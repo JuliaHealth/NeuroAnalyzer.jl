@@ -1851,6 +1851,7 @@ Calculate power spectrum density.
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 
 # Returns
 
@@ -1858,13 +1859,14 @@ Named tuple containing:
 - `psd_pow::Vector{Float64}`
 - `psd_frq::Vector{Float64}`
 """
-function s_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false)
+function s_psd(signal::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
+    nt < 1 && throw(ArgumentError("nt must be ≥ 1."))
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     length(signal) < 4 * fs && (mt = true)
 
     if mt == true
-        psd = mt_pgram(signal, fs=fs)
+        psd = mt_pgram(signal, fs=fs, nw=(nt÷2+1), ntapers=nt)
     else
         psd = welch_pgram(signal, 4*fs, fs=fs)
     end
@@ -2414,7 +2416,7 @@ function s_spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::B
 
     nfft = length(signal)
     interval = fs
-    overlap = round(Int64, fs * 0.85)
+    overlap = round(Int64, fs * 0.75)
 
     if st == true
         s_pow = abs.(stft(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))

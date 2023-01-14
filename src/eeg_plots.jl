@@ -1395,7 +1395,11 @@ Plot power spectrum density.
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
-- `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `method::Symbol=:welch`: method of calculating PSD:
+    - `:welch`: Welch's periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
@@ -1412,7 +1416,7 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
 """
-function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -1445,7 +1449,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
             s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
             s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
@@ -1613,7 +1617,11 @@ Plot power spectrum density of embedded or external component.
 - `epoch::Int64`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
-- `method::Symbol=:welch`: method of calculating PSD: Welch's periodogram, (`:welch`), multi-tapered periodogram (`:mt`), Morlet wavelet convolution (`:mw`)
+- `method::Symbol=:welch`: method of calculating PSD:
+    - `:welch`: Welch's periodogram
+    - `:mt`: multi-tapered periodogram
+    - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: x-axis limit
 - `ref::Symbol=:abs`: type of PSD reference: absolute power (no reference) (`:abs`) or relative to EEG band: total power (`:total`), `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower` or `:gamma_higher` 
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
@@ -1630,7 +1638,7 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -1666,7 +1674,7 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; e
             s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
             s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
@@ -1907,6 +1915,7 @@ Plots spectrogram.
     - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -1920,7 +1929,7 @@ Plots spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
@@ -2010,7 +2019,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mt
-            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true)
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true, nt=nt)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
@@ -2058,6 +2067,7 @@ Plots spectrogram of embedded or external component.
     - `:stft`: short-time Fourier transform
     - `:mt`: multi-tapered periodogram
     - `:mw`: Morlet wavelet convolution
+- `nt::Int64=8`: number of Slepian tapers
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: y-axis limits
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet
 - `xlabel::String="default"`: x-axis label, default is Time [s]
@@ -2071,7 +2081,7 @@ Plots spectrogram of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
@@ -2164,7 +2174,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mt
-            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true)
+            s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=true, nt=nt)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
