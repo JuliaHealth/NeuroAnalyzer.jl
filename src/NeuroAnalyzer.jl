@@ -361,6 +361,8 @@ export locs_flipz
 export locs_flipz!
 export locs_scale
 export locs_scale!
+export locs_rotx
+export locs_rotx!
 export locs_swapxy
 export locs_swapxy!
 export locs_sph2cart
