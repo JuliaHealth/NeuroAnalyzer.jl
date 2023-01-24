@@ -1617,6 +1617,8 @@ function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     epoch_n = size(s_a, 3)
 
     if dims == 1
+        # mean over channels
+
         t_env_m = zeros(length(s_t), epoch_n)
         t_env_u = zeros(length(s_t), epoch_n)
         t_env_l = zeros(length(s_t), epoch_n)
@@ -1628,6 +1630,8 @@ function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # mean over epochs
+
         t_env_m = zeros(length(s_t), channel_n)
         t_env_u = zeros(length(s_t), channel_n)
         t_env_l = zeros(length(s_t), channel_n)
@@ -1639,10 +1643,14 @@ function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # mean over channels and epochs
+
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_mean(eeg, dims=1, d=d)
+
         t_env_m = mean(t_env_m, dims=2)
         t_env_u = mean(t_env_u, dims=2)
         t_env_l = mean(t_env_l, dims=2)
+
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
         t_env_l = reshape(t_env_l, size(t_env_l, 1))
@@ -1660,7 +1668,7 @@ Calculate temporal envelope of `eeg`: median and 95% CI.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -1687,6 +1695,8 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     epoch_n = size(s_a, 3)
 
     if dims == 1
+        # median over channels
+
         t_env_m = zeros(length(s_t), epoch_n)
         t_env_u = zeros(length(s_t), epoch_n)
         t_env_l = zeros(length(s_t), epoch_n)
@@ -1709,6 +1719,8 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # median over epochs
+
         t_env_m = zeros(length(s_t), channel_n)
         t_env_u = zeros(length(s_t), channel_n)
         t_env_l = zeros(length(s_t), channel_n)
@@ -1731,10 +1743,14 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # median over channels and epochs
+
         t_env_m, t_env_u, t_env_l, _ = eeg_tenv_median(eeg, dims=1, d=d)
+
         t_env_m = median(t_env_m, dims=2)
         t_env_u = median(t_env_u, dims=2)
         t_env_l = median(t_env_l, dims=2)
+        
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
         t_env_l = reshape(t_env_l, size(t_env_l, 1))
