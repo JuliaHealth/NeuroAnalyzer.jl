@@ -1750,7 +1750,7 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
         t_env_m = median(t_env_m, dims=2)
         t_env_u = median(t_env_u, dims=2)
         t_env_l = median(t_env_l, dims=2)
-        
+
         t_env_m = reshape(t_env_m, size(t_env_m, 1))
         t_env_u = reshape(t_env_u, size(t_env_u, 1))
         t_env_l = reshape(t_env_l, size(t_env_l, 1))
@@ -1792,9 +1792,13 @@ function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             psd_pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true, nt=nt)
+            # find peaks of PSD
             p_idx = s_findpeaks(psd_pow, d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(psd_pow))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(frq[p_idx], psd_pow[p_idx])
                 try
@@ -1849,16 +1853,21 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     epoch_n = size(s_p, 3)
 
     if dims == 1
+        # mean over channels
+
         p_env_m = zeros(length(s_f), epoch_n)
         p_env_u = zeros(length(s_f), epoch_n)
         p_env_l = zeros(length(s_f), epoch_n)
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             p_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
-
+            # find peaks of PSD
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(p_env_m[:, epoch_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
@@ -1872,16 +1881,21 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # mean over epochs
+
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
 
         @inbounds @simd for channel_idx in 1:channel_n
             p_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
-
+            # find peaks of PSD
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(p_env_m[:, channel_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
@@ -1895,6 +1909,8 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # mean over channels and epochs
+
         p_env_m, p_env_u, p_env_l, _ = eeg_penv_mean(eeg, dims=1, d=d)
         p_env_m = mean(p_env_m, dims=2)
         p_env_u = mean(p_env_u, dims=2)
@@ -1944,16 +1960,21 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     epoch_n = size(s_p, 3)
 
     if dims == 1
+        # median over channels
+
         p_env_m = zeros(length(s_f), epoch_n)
         p_env_u = zeros(length(s_f), epoch_n)
         p_env_l = zeros(length(s_f), epoch_n)
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             p_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
-
+            # find peaks of PSD
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(p_env_m[:, epoch_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
@@ -1967,16 +1988,21 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # median over epochs
+
         p_env_m = zeros(length(s_f), channel_n)
         p_env_u = zeros(length(s_f), channel_n)
         p_env_l = zeros(length(s_f), channel_n)
 
         @inbounds @simd for channel_idx in 1:channel_n
             p_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
-
+            # find peaks of PSD
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(p_env_m[:, channel_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
@@ -1990,6 +2016,8 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # median over channels and epochs
+        
         p_env_m, p_env_u, p_env_l, _ = eeg_penv_median(eeg, dims=1, d=d)
         p_env_m = median(p_env_m, dims=2)
         p_env_u = median(p_env_u, dims=2)
