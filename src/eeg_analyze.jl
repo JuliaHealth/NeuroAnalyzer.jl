@@ -1527,7 +1527,7 @@ end
 """
     eeg_tenv(eeg; channel, d)
 
-Calculate temporal envelope.
+Calculate temporal envelope (amplitude).
 
 # Arguments
 
@@ -1551,9 +1551,9 @@ function eeg_tenv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     s_t = eeg.eeg_epoch_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+        Threads.@threads for channel_idx in 1:channer_l_n
             s = @view eeg.eeg_signals[channel[channel_idx], :, epoch_idx]
-            # find peaks of the signal amplitude
+            # find peaks
             p_idx = s_findpeaks(s, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -1584,7 +1584,7 @@ end
 """
     eeg_tenv_mean(eeg; channel, dims, d)
 
-Calculate temporal envelope: mean and 95% CI.
+Calculate temporal envelope (amplitude): mean and 95% CI.
 
 # Arguments
 
@@ -1662,7 +1662,7 @@ end
 """
     eeg_tenv_median(eeg; channel, dims, d)
 
-Calculate temporal envelope of `eeg`: median and 95% CI.
+Calculate temporal envelope (amplitude): median and 95% CI.
 
 # Arguments
 
@@ -1792,7 +1792,7 @@ function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
             psd_pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true, nt=nt)
-            # find peaks of PSD
+            # find peaks
             p_idx = s_findpeaks(psd_pow, d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -1861,7 +1861,7 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             p_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
-            # find peaks of PSD
+            # find peaks
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -1889,7 +1889,7 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
 
         @inbounds @simd for channel_idx in 1:channel_n
             p_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
-            # find peaks of PSD
+            # find peaks
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -1968,7 +1968,7 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             p_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
-            # find peaks of PSD
+            # find peaks
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -1996,7 +1996,7 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
 
         @inbounds @simd for channel_idx in 1:channel_n
             p_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
-            # find peaks of PSD
+            # find peaks
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
@@ -2059,11 +2059,12 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     s_tmp = @view eeg.eeg_signals[1, :, 1]
     interval = fs
     overlap = round(Int64, fs * 0.75)
+    # for short signals always use multi-taper
     length(s_tmp) < 4 * fs && (mt = true)
-    if mt == false
-        spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
-    else
+    if mt == true
         spec_tmp = mt_spectrogram(s_tmp, fs=fs)
+    else
+        spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
     end
     sp_t = collect(spec_tmp.time)
     sp_t .+= eeg.eeg_epoch_time[1]
@@ -2072,14 +2073,16 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            if mt == false
-                spec = @views spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
-            else
+            # prepare spectrogram
+            if mt == true
                 spec = @views mt_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs)
+            else
+                spec = @views spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
             end
-
             s_frq = Vector(spec.freq)
             s_p = pow2db.(spec.power)
+
+            # maximize all powers above threshold (t)
             if t !== nothing
                 s_p[s_p .> t] .= 0
                 reverse!(s_p)
@@ -2091,9 +2094,13 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
             for idx2 in eachindex(m)
                 f_idx[idx2] = s_frq[vsearch(m[idx2], s_p[:, idx2])]
             end
+            # find peaks
             p_idx = s_findpeaks(f_idx, d=d)
+            # add first time-point
             pushfirst!(p_idx, 1)
+            # add last time-point
             push!(p_idx, length(spec.time))
+            # interpolate peaks using cubic spline or loess
             if length(p_idx) > 4
                 model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
                 try
@@ -2149,15 +2156,19 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     epoch_n = size(s_p, 3)
 
     if dims == 1
+        # mean over channels
+
         s_env_m = zeros(length(s_t), epoch_n)
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             s_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
-
+            # find peaks
             s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
+            # add first time-point
             pushfirst!(s_idx, 1)
+            # interpolate peaks using cubic spline or loess
             push!(s_idx, length(s_env_m[:, epoch_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
@@ -2172,16 +2183,21 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # mean over epochs
+
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
         @inbounds @simd for channel_idx in 1:channel_n
             s_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
-
+            # find peaks
             s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
+            # add first time-point
             pushfirst!(s_idx, 1)
+            # add last time-point
             push!(s_idx, length(s_env_m[:, channel_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
@@ -2195,6 +2211,8 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
             s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # mean over channels and epochs
+
         s_env_m, s_env_u, s_env_l, _ = eeg_senv_mean(eeg, dims=1, d=d, mt=mt)
         s_env_m = mean(s_env_m, dims=2)
         s_env_u = mean(s_env_u, dims=2)
@@ -2216,7 +2234,7 @@ Calculate spectral envelope: median and 95% CI.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `dims::Int64`: mean over chan (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -2245,16 +2263,21 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     epoch_n = size(s_p, 3)
 
     if dims == 1
+        # median over channels
+
         s_env_m = zeros(length(s_t), epoch_n)
         s_env_u = zeros(length(s_t), epoch_n)
         s_env_l = zeros(length(s_t), epoch_n)
 
         @inbounds @simd for epoch_idx in 1:epoch_n
             s_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
-
+            # find peaks
             s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
+            # add first time-point
             pushfirst!(s_idx, 1)
+            # add last time-point
             push!(s_idx, length(s_env_m[:, epoch_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
@@ -2268,16 +2291,21 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
         end
     elseif dims == 2
+        # median over epochs
+
         s_env_m = zeros(length(s_t), channel_n)
         s_env_u = zeros(length(s_t), channel_n)
         s_env_l = zeros(length(s_t), channel_n)
 
         @inbounds @simd for channel_idx in 1:channel_n
             s_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
-
+            # find peaks
             s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
+            # add first time-point
             pushfirst!(s_idx, 1)
+            # add last time-point
             push!(s_idx, length(s_env_m[:, channel_idx]))
+            # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
@@ -2291,6 +2319,8 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
             s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
         end
     else
+        # median over channels and epochs
+
         s_env_m, s_env_u, s_env_l, _ = eeg_senv_median(eeg, dims=1, d=d, mt=mt)
         s_env_m = median(s_env_m, dims=2)
         s_env_u = median(s_env_u, dims=2)
@@ -2329,12 +2359,10 @@ Named tuple containing:
 """
 function eeg_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -2424,12 +2452,10 @@ Named tuple containing:
 """
 function eeg_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -2531,14 +2557,15 @@ function eeg_ispc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
 end
 
 """
-    eeg_aec(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
+    eeg_aec(eeg1, eeg2; type, channel1, channel2, epoch1, epoch2)
 
-Calculate amplitude envelope correlation.
+Calculate envelope correlation.
 
 # Arguments
 
 - `eeg1::NeuroAnalyzer.EEG`
 - `eeg2::NeuroAnalyzer.EEG`
+- `type::Symbol=:amp`: envelope type: `:amp` (amplitude), `:pow` (power), `:spec` (spectrogram) or `:hamp` (Hilbert spectrum amplitude)
 - `channel1::Int64`
 - `channel2::Int64`
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
@@ -2550,8 +2577,9 @@ Named tuple containing:
 - `aec::Vector{Float64}`: power correlation value
 - `aec_p::Vector{Float64}`: power correlation p-value
 """
-function eeg_aec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int64, channel2::Int64, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
+function eeg_aec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:amp, channel1::Int64, channel2::Int64, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
+    _check_var(type, [:amp, :pow, :spec, :hamp], "type")
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 must have the same epoch length."))
@@ -2561,8 +2589,19 @@ function eeg_aec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Int
     aec_r = zeros(epoch_n)
     aec_p = zeros(epoch_n)
     Threads.@threads for epoch_idx in 1:epoch_n
-        s1, _ = eeg_tenv(eeg1, channel=channel1)
-        s2, _ = eeg_tenv(eeg2, channel=channel2)
+        if type === :amp
+            s1, _ = eeg_tenv(eeg1, channel=channel1)
+            s2, _ = eeg_tenv(eeg2, channel=channel2)
+        elseif type === :pow
+            s1, _ = eeg_penv(eeg1, channel=channel1)
+            s2, _ = eeg_penv(eeg2, channel=channel2)
+        elseif type === :spec
+            s1, _ = eeg_senv(eeg1, channel=channel1)
+            s2, _ = eeg_senv(eeg2, channel=channel2)
+        elseif type === :hamp
+            s1, _ = eeg_henv(eeg1, channel=channel1)
+            s2, _ = eeg_henv(eeg2, channel=channel2)
+        end
         aec = CorrelationTest(vec(s1), vec(s2))
         @inbounds aec_r[epoch_idx] = aec.r
         @inbounds aec_p[epoch_idx] = pvalue(aec)
@@ -2574,7 +2613,7 @@ end
 """
     eeg_ged(eeg1, eeg2; channel1, channel2, epoch1, epoch2)
 
-Perform generalized eigendecomposition..
+Perform generalized eigendecomposition.
 
 # Arguments
 
@@ -2593,12 +2632,10 @@ Perform generalized eigendecomposition..
 """
 function eeg_ged(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -2621,7 +2658,7 @@ end
 """
     eeg_frqinst(eeg; channel)
 
-Calculate instantaneous frequency of `eeg`.
+Calculate instantaneous frequency.
 
 # Arguments
 
@@ -3585,7 +3622,7 @@ Calculate Hilbert spectrum amplitude envelope of `eeg`: median and 95% CI.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
+- `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns

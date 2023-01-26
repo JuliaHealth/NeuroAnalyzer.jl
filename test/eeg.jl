@@ -289,7 +289,7 @@ e10 = eeg_epoch(eeg, epoch_len=10*256)
 @test length(eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
 @test size(eeg_pli(e10)) == (19, 19, 121)
 @test size(eeg_ispc(e10)) == (19, 19, 121)
-@test length(eeg_aec(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
+@test length(eeg_ec(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
 @test length(eeg_ged(eeg, eeg)) == 3
 @test size(eeg_frqinst(eeg)) == size(eeg.eeg_signals)
 @test size(eeg_fftdenoise(eeg).eeg_signals) == (19, 309760, 1)

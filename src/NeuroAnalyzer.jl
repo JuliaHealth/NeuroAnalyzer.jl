@@ -490,7 +490,7 @@ export eeg_ispc
 export eeg_itpc
 export eeg_pli
 export eeg_ispc_m
-export eeg_aec
+export eeg_ec
 export eeg_ged
 export eeg_frqinst
 export eeg_itpc_s
