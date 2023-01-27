@@ -464,6 +464,18 @@ function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real}
     return x, y, z
 end
 
+function _round_locs(locs::DataFrame)
+    locs[!, :loc_x] = round.(locs[!, :loc_x], digits=3)
+    locs[!, :loc_y] = round.(locs[!, :loc_y], digits=3)
+    locs[!, :loc_z] = round.(locs[!, :loc_z], digits=3)
+    locs[!, :loc_radius] = round.(locs[!, :loc_radius], digits=3)
+    locs[!, :loc_theta] = round.(locs[!, :loc_theta], digits=3)
+    locs[!, :loc_radius_sph] = round.(locs[!, :loc_radius_sph], digits=3)
+    locs[!, :loc_theta_sph] = round.(locs[!, :loc_theta_sph], digits=3)
+    locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=3)
+    return locs
+end
+
 function _free_gpumem(threshold::Real=0.95)
     m = CUDA.MemoryInfo()
     usedmem = m.total_bytes - m.free_bytes

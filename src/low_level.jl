@@ -56,8 +56,10 @@ function m_pad0(m::Matrix{<:Number})
     nr, nc = size(m)
 
     if nr > nc
+        # horizontal
         return hcat(m, repeat(zeros(eltype(m), 1), nr, nr - nc))
     elseif nr < nc
+        # vertical
         return vcat(m, repeat(zeros(eltype(m), 1), nc - nr, nc))
     else
         return m
@@ -118,7 +120,7 @@ end
 """
     cart2pol(x, y)
 
-Convert cartographic coordinates to polar.
+Convert Cartesian coordinates to polar.
 
 # Arguments
 
@@ -132,14 +134,16 @@ Convert cartographic coordinates to polar.
 """
 function cart2pol(x::Real, y::Real)
 
-    radius = round(hypot(x, y), digits=2)
-    theta = round(atand(y, x), digits=1)
+    radius = round(hypot(x, y), digits=3)
+    theta = round(atand(y, x), digits=3)
+
     # q = _angle_quadrant(theta)
     # q == 2 && (theta += 180)
     # q == 3 && (theta += 180)
     # q == 4 && (theta += 360)
-    # add 2π (360° in radians) to make theta positive
-    theta < 0 && (theta += 2 * pi)
+
+    # make theta positive - should not be required
+    # theta < 0 && (theta = 360 - abs(theta))
 
     return radius, theta
 end
@@ -147,7 +151,7 @@ end
 """
     pol2cart(radius, theta)
 
-Convert polar coordinates to cartographic.
+Convert polar coordinates to Cartesian.
 
 # Arguments
 
@@ -161,9 +165,9 @@ Convert polar coordinates to cartographic.
 """
 function pol2cart(radius::Real, theta::Real)
     
-    theta = mod(theta, 360)
-    x = round(radius * cosd(theta), digits=2)
-    y = round(radius * sind(theta), digits=2)
+    # theta = mod(theta, 360)
+    x = round(radius * cosd(theta), digits=3)
+    y = round(radius * sind(theta), digits=3)
 
     return x, y
 end
@@ -171,7 +175,7 @@ end
 """
     sph2cart(radius, theta, phi)
 
-Convert spherical coordinates to cartographic.
+Convert spherical coordinates to Cartesian.
 
 # Arguments
 
@@ -187,12 +191,9 @@ Convert spherical coordinates to cartographic.
 """
 function sph2cart(radius::Real, theta::Real, phi::Real)
     
-    # add 2π (360° in radians) to make theta positive
-    theta < 0 && (theta += 2 * pi)
-
-    x = round(radius * sind(phi) * cosd(theta), digits=2)
-    y = round(radius * sind(phi) * sind(theta), digits=2)
-    z = round(radius * cosd(phi), digits=2)
+    x = round(radius * sind(90 - phi) * cosd(theta), digits=3)
+    y = round(radius * sind(90 - phi) * sind(theta), digits=3)
+    z = round(radius * cosd(90 - phi), digits=3)
 
     return x, y, z
 end
@@ -200,7 +201,7 @@ end
 """
     cart2sph(x, y, z)
 
-Convert spherical coordinates to cartographic.
+Convert spherical coordinates to Cartesian.
 
 # Arguments
 
@@ -216,15 +217,15 @@ Convert spherical coordinates to cartographic.
 """
 function cart2sph(x::Real, y::Real, z::Real)
     
-    round(x, digits=1)
-    round(y, digits=1)
-    round(z, digits=1)
-    
-    radius = round(hypot(x, y, z), digits=2)
-    x != 0 ? theta = round(rad2deg(atan(y / x)), digits=1) : theta = round(rad2deg(atan(y)), digits=1)
-    phi = round(rad2deg(acos(z / radius)), digits=2)
-    # add 2π (360° in radians) to make theta positive
-    theta < 0 && (theta += 2 * pi)
+    # radius = sqrt(x^2 + y^2 + z^2)    
+    radius = round(hypot(x, y, z), digits=3)
+    # theta = tan^-1(x, y)
+    theta = round(atand(y, x), digits=3)
+    # phi = cos^-1(z / sqrt(x^2 + y^2 + z^2))
+    phi = 90 - round(acosd(z / radius), digits=3)
+
+    # make theta positive - should not be required
+    # theta < 0 && (theta = 360 - abs(theta))
     
     return radius, theta, phi
 end
@@ -242,17 +243,12 @@ Convert spherical coordinates to polar.
 
 # Returns
 
-- `r::Float64`
-- `t::Float64`
+- `radius::Float64`
+- `theta::Float64`
 """
 function sph2pol(radius::Real, theta::Real, phi::Real)
-    t = theta
-    if phi == 90 || phi == -90
-        r = 0
-    else
-        r = round(radius * cos(deg2rad(abs(phi))), digits=2)
-    end
-    return r, t
+    radius = round(radius * abs(cosd(phi)), digits=3)
+    return radius, theta
 end
 
 """

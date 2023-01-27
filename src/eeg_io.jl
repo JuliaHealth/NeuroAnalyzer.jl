@@ -374,8 +374,10 @@ function locs_import_ced(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs = _round_locs(locs)
+
     locs_swapxy!(locs)
-    locs_flipx!(locs)
+    locs_flipx!(locs, planar=true, spherical=false)
 
     return locs
 end
@@ -416,8 +418,11 @@ function locs_import_locs(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs = _round_locs(locs)
+
     locs_swapxy!(locs)
-    locs_flipx!(locs)
+    locs_flipx!(locs, planar=true, spherical=false)
+
     locs[!, :loc_phi_sph] = zeros(length(labels))
 
     return locs
@@ -480,6 +485,8 @@ function locs_import_elc(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs = _round_locs(locs)
+
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
@@ -535,6 +542,8 @@ function locs_import_tsv(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs = _round_locs(locs)
+
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
 
@@ -577,6 +586,14 @@ function locs_import_sfp(file_name::String)
     x = Float64.(locs[!, :x])
     y = Float64.(locs[!, :y])
     z = Float64.(locs[!, :z])
+
+    # x, y, z positions must be within -1..+1
+    t = x[1]
+    x, y, z = _locnorm(x, y, z)
+    t -= x[1]
+    # sometimes positions are shifted along x-axis, remove the shift
+    x .+= abs(t)
+
     radius = zeros(length(labels))
     theta = zeros(length(labels))
     radius_sph = zeros(length(labels))
@@ -585,9 +602,11 @@ function locs_import_sfp(file_name::String)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
+    locs = _round_locs(locs)
+
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
-    
+
     return locs
 end
 
@@ -627,6 +646,8 @@ function locs_import_csd(file_name::String)
     end
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    locs = _round_locs(locs)
 
     return locs
 end

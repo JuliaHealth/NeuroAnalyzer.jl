@@ -2354,7 +2354,7 @@ end
 """
     plot_electrodes3d(locs; <keyword arguments>)
 
-3D interactive preview of electrode locations. It uses spherical :loc_x, :loc_y and :loc_z locations.
+3D interactive preview of electrode locations. It uses spherical :loc_radius_sph, :loc_theta_sph and :loc_phi_sph locations.
 
 # Arguments
 
@@ -2378,9 +2378,13 @@ function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64},
 
     pal = mono == true ? :grays : :darktest
 
-    loc_x = locs[!, :loc_x]
-    loc_y = locs[!, :loc_y]
-    loc_z = locs[!, :loc_z]
+    loc_x = zeros(nrow(locs))
+    loc_y = zeros(nrow(locs))
+    loc_z = zeros(nrow(locs))
+
+    for idx in 1:nrow(locs)
+        loc_x[idx], loc_y[idx], loc_z[idx] = sph2cart(locs[idx, :loc_radius_sph], locs[idx, :loc_theta_sph], locs[idx, :loc_phi_sph])
+    end
 
     # loc_x, loc_y = _locnorm(loc_x, loc_y)
     x_lim = (-1.1, 1.1)

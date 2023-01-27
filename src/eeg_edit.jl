@@ -1840,18 +1840,28 @@ function locs_flipy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     for idx in eachindex(locs[!, :labels])
         if planar == true
-            t = locs_new[!, :loc_theta][idx]
+            t = locs_new[idx, :loc_theta]
             q = _angle_quadrant(t)
             q == 1 && (t = 360 - t)
             q == 2 && (t = 180 + (180 - t))
             q == 3 && (t = 180 - (t - 180))
             q == 4 && (t = 360 - t)
             t = mod(t, 360)
-            locs_new[!, :loc_theta][idx] = t
+            locs_new[idx, :loc_theta] = t
         end
-        spherical == true && (locs_new[!, :loc_y][idx] = -locs_new[!, :loc_y][idx])
+        if spherical == true
+            locs_new[idx, :loc_y] = -locs_new[idx, :loc_y]
+            t = locs_new[idx, :loc_theta_sph]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 360 - t)
+            q == 2 && (t = 180 + (180 - t))
+            q == 3 && (t = 180 - (t - 180))
+            q == 4 && (t = 360 - t)
+            t = mod(t, 360)
+            locs_new[idx, :loc_theta_sph] = t
+        end            
     end
-    locs_cart2sph!(locs_new)
+    # locs_cart2sph!(locs_new)
 
     return locs_new
 end
@@ -1868,7 +1878,7 @@ Flip channel locations along y axis.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_flipy!(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
-    locs[!, :] = locs_flipy(locs, planar=planar, spherical=sphreical)[!, :]
+    locs[!, :] = locs_flipy(locs, planar=planar, spherical=spherical)[!, :]
     return nothing
 end
 
@@ -1902,9 +1912,18 @@ function locs_flipx(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
             t = mod(t, 360)
             locs_new[!, :loc_theta][idx] = t
         end
-        spherical == true && (locs_new[!, :loc_x][idx] = -locs_new[!, :loc_x][idx])
+        if spherical == true
+            locs_new[idx, :loc_x] = -locs_new[idx, :loc_x]
+            t = locs_new[idx, :loc_theta_sph]
+            q = _angle_quadrant(t)
+            q == 1 && (t = 90 + (90 - t))
+            q == 2 && (t = 90 - (t - 90))
+            q == 3 && (t = 270 + (270 - t))
+            q == 4 && (t = 270 - (t - 270))
+            t = mod(t, 360)
+            locs_new[idx, :loc_theta_sph] = t
+        end
     end
-    locs_cart2sph!(locs_new)
 
     return locs_new
 end
@@ -1985,6 +2004,7 @@ function locs_scale(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool
     locs_new = deepcopy(locs)
     planar == true && (locs_new[!, :loc_radius] .*= r)
     spherical == true && (locs_new[!, :loc_radius_sph] .*= r)
+    locs_sph2cart!(locs_new)
     return locs_new
 end
 
@@ -2021,7 +2041,7 @@ Rotate channel locations in the x-plane.
 
 - `locs_new::DataFrame`
 """
-function locs_rotx(locs::DataFrame; a::Int64, planar::Bool=true, spherical::Bool=true)
+function locs_rotx(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
     locs_new = deepcopy(locs)
     planar == true && (locs_new[!, :loc_theta] .+= a)
     spherical == true && (locs_new[!, :loc_theta_sph] .+= a)
@@ -2044,7 +2064,7 @@ Rotate channel locations in the x-plane.
 - `planar::Bool=true`: modify planar coordinates
 - `spherical::Bool=true`: modify spherical coordinates
 """
-function locs_rotx!(locs::DataFrame; a::Int64, planar::Bool=true, spherical::Bool=true)
+function locs_rotx!(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=true)
     locs[!, :] = locs_rotx(locs, a=a, planar=planar, spherical=spherical)[!, :]
     return nothing
 end
@@ -2269,15 +2289,17 @@ function locs_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 
     for idx in eachindex(locs[!, :labels])
         if planar == true
-            t = deg2rad(locs_new[!, :loc_theta][idx])
+            t = deg2rad(locs_new[idx, :loc_theta])
             t += pi / 2
-            locs_new[!, :loc_theta][idx] = rad2deg(t)
+            locs_new[idx, :loc_theta] = rad2deg(t)
         end
         if spherical == true
-            locs_new[!, :loc_x][idx], locs_new[!, :loc_y][idx] = locs_new[!, :loc_y][idx], locs_new[!, :loc_x][idx]
+            locs_new[idx, :loc_x], locs_new[idx, :loc_y] = locs_new[idx, :loc_y], locs_new[idx, :loc_x]
+            t = deg2rad(locs_new[idx, :loc_theta_sph])
+            t += pi / 2
+            locs_new[idx, :loc_theta_sph] = rad2deg(t)
         end
     end
-    locs_cart2sph!(locs_new)
 
     return locs_new
 end
@@ -2316,13 +2338,13 @@ function locs_sph2cart(locs::DataFrame)
     locs_new = deepcopy(locs)
 
     for idx in eachindex(locs[!, :labels])
-        r = locs_new[!, :loc_radius_sph][idx]
-        t = locs_new[!, :loc_theta_sph][idx]
-        p = locs_new[!, :loc_phi_sph][idx]
+        r = locs_new[idx, :loc_radius_sph]
+        t = locs_new[idx, :loc_theta_sph]
+        p = locs_new[idx, :loc_phi_sph]
         x, y, z = sph2cart(r, t, p)
-        locs_new[!, :loc_x][idx] = x
-        locs_new[!, :loc_y][idx] = y
-        locs_new[!, :loc_z][idx] = z
+        locs_new[idx, :loc_x] = x
+        locs_new[idx, :loc_y] = y
+        locs_new[idx, :loc_z] = z
     end
 
     return locs_new
@@ -2363,7 +2385,7 @@ function locs_cart2sph(locs::DataFrame)
         x = locs_new[!, :loc_x][idx]
         y = locs_new[!, :loc_y][idx]
         z = locs_new[!, :loc_z][idx]
-        r, t, p = round.(cart2sph(x, y, z), digits=2)
+        r, t, p = cart2sph(x, y, z)
         locs_new[!, :loc_radius_sph][idx] = r
         locs_new[!, :loc_theta_sph][idx] = t
         locs_new[!, :loc_phi_sph][idx] = p
@@ -2406,7 +2428,7 @@ function locs_cart2pol(locs::DataFrame)
     for idx in eachindex(locs[!, :labels])
         x = locs_new[!, :loc_x][idx]
         y = locs_new[!, :loc_y][idx]
-        r, t = round.(cart2pol(x, y), digits=2)
+        r, t = cart2pol(x, y)
         locs_new[!, :loc_radius][idx] = r
         locs_new[!, :loc_theta][idx] = t
     end
@@ -2449,7 +2471,7 @@ function locs_sph2pol(locs::DataFrame)
         r_sph = locs_new[!, :loc_radius_sph][idx]
         t_sph = locs_new[!, :loc_theta_sph][idx]
         p_sph = locs_new[!, :loc_phi_sph][idx]
-        r_pol, t_pol = round.(sph2pol(r_sph, t_sph, p_sph), digits=2)
+        r_pol, t_pol = sph2pol(r_sph, t_sph, p_sph)
         locs_new[!, :loc_radius][idx] = r_pol
         locs_new[!, :loc_theta][idx] = t_pol
     end

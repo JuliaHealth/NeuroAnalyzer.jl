@@ -11,10 +11,10 @@ using ContinuousWavelets
 @test size(pad2(ones(3, 3))) == (3, 4)
 @test size(m_pad0(ones(3, 4))) == (4, 4)
 @test vsearch([1, 2], [1, 2, 3, 4]) == [1, 2]
-@test cart2pol(1, 1) == (1.41, 45.0)
-@test pol2cart(1, 1) == (1.0, 0.02)
-@test sph2cart(1, 45, 45) == (0.5, 0.5, 0.71)
-@test cart2sph(1, 1, 1) == (1.73, 45.0, 54.69)
+@test cart2pol(1, 1) == (1.414, 45.0)
+@test pol2cart(1.414, 45.0) == (1.0, 1.0)
+@test sph2cart(1, 45, 45) == (0.5, 0.5, 0.707)
+@test cart2sph(0.5, 0.5, 0.707) == (1.0, 45.0, 44.991)
 @test generate_window(:hann, 3) == [0.0, 1.0, 0.0]
 @test length(fft0(ones(10), 10)) == 20
 @test length(ifft0(ones(20), 10)) == 10
@@ -61,8 +61,9 @@ s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test s_derivative(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
 
-p, f = s_psd(ones(10), fs=10)
-@test f == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+p, f = s_psd(ones(100), fs=10)
+@test p[1] == 0.0
+@test f[end] == 5.0
 
 @test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0]
@@ -131,7 +132,7 @@ p, f = s_rel_psd(ones(10), fs=10)
 
 sp, sf, st = s_spectrogram(rand(2560), fs=256)
 segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
-@test size(segp) == (101, 10)
+@test size(segp) == (101, 6)
 
 @test size(s_denoise_wien(ones(2, 4, 1))) == (2, 4, 1)
 

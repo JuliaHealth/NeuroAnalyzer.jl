@@ -219,13 +219,13 @@ c = eeg_list_components(e)
 e = eeg_epoch(eeg, epoch_len=2560)
 eeg_erp!(e)
 p, f, t = eeg_spectrogram(e)
-@test size(p) == (1281, 61, 19, 1)
+@test size(p) == (1281, 37, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:mt)
 @test size(p) == (257, 15, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:mw)
 @test size(p) == (129, 2560, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:stft)
-@test size(p) == (1281, 61, 19, 1)
+@test size(p) == (1281, 37, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:gh)
 @test size(p) == (129, 2560, 19, 1)
 p, f, t = eeg_spectrogram(e, method=:cwt)
@@ -280,9 +280,9 @@ e10 = eeg_epoch(eeg, epoch_len=10*256)
 @test size(eeg_penv(e10)[1]) == (19, 513, 121)
 @test size(eeg_penv_mean(e10, dims=1)[1]) == (513, 121)
 @test size(eeg_penv_median(e10, dims=1)[1]) == (513, 121)
-@test size(eeg_senv(e10)[1]) == (19, 61, 121)
-@test size(eeg_senv_mean(e10, dims=1)[1]) == (61, 121)
-@test size(eeg_senv_median(e10, dims=1)[1]) == (61, 121)
+@test size(eeg_senv(e10)[1]) == (19, 37, 121)
+@test size(eeg_senv_mean(e10, dims=1)[1]) == (37, 121)
+@test size(eeg_senv_median(e10, dims=1)[1]) == (37, 121)
 @test size(eeg_wdenoise(eeg, wt=wavelet(WT.haar)).eeg_signals) == (19, 309760, 1)
 @test length(eeg_ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
 @test length(eeg_itpc(e10, channel=1, t=12)) == 4
@@ -363,7 +363,7 @@ locs2 = locs_flipz(locs)
 locs2 = locs_swapxy(locs)
 @test locs2[1, 3] == 198.0
 locs2 = locs_sph2cart(locs)
-@test locs2[1, 5] == 0.51
+@test locs2[1, 5] == -0.309
 locs2 = locs_cart2sph(locs)
 @test locs2[1, 3] == 108.0
 

@@ -1551,7 +1551,7 @@ function eeg_tenv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     s_t = eeg.eeg_epoch_time
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channer_l_n
+        Threads.@threads for channel_idx in 1:channel_n
             s = @view eeg.eeg_signals[channel[channel_idx], :, epoch_idx]
             # find peaks
             p_idx = s_findpeaks(s, d=d)
@@ -2557,7 +2557,7 @@ function eeg_ispc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
 end
 
 """
-    eeg_aec(eeg1, eeg2; type, channel1, channel2, epoch1, epoch2)
+    eeg_ec(eeg1, eeg2; type, channel1, channel2, epoch1, epoch2)
 
 Calculate envelope correlation.
 
@@ -2577,7 +2577,7 @@ Named tuple containing:
 - `aec::Vector{Float64}`: power correlation value
 - `aec_p::Vector{Float64}`: power correlation p-value
 """
-function eeg_aec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:amp, channel1::Int64, channel2::Int64, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
+function eeg_ec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:amp, channel1::Int64, channel2::Int64, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
     _check_var(type, [:amp, :pow, :spec, :hamp], "type")
     _check_channels(eeg1, channel1)
@@ -2740,13 +2740,15 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     progress_bar == true && (p = Progress(frq_n, 1))
 
     Threads.@threads for frq_idx in 1:frq_n
+        # create Morlet wavelet
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float64, 1, epoch_len, epoch_n)
+        # convolute with Morlet wavelet
         @inbounds @simd for epoch_idx in 1:epoch_n
             s_conv[1, :, epoch_idx] = @views conv(eeg.eeg_signals[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
-
+        # calculate ITPC of the convoluted signals
         @inbounds @simd for t_idx in 1:epoch_len
             itpc, itpc_z, _, _ = s_itpc(s_conv, t=t_idx, w=w)
             itpc_s[frq_idx, t_idx] = itpc
@@ -2861,19 +2863,14 @@ Named tuple containing:
 """
 function eeg_fcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=0, channel2::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=0, epoch2::Union{Int64, Vector{Int64}, AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
-
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
 
     eeg_sr(eeg1) == eeg_sr(eeg2) || throw(ArgumentError("EEG1 and EEG2 must have the same sampling rate."))
 
@@ -2916,12 +2913,14 @@ function eeg_vartest(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     p = zeros(channel_n, channel_n, epoch_n)
     @inbounds @simd for epoch_idx in 1:epoch_n
        Threads.@threads for channel_idx1 in 1:channel_n
+            # create half of the matrix
            for channel_idx2 in 1:channel_idx1
                 ftest = @views VarianceFTest(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
             end
         end
+        # copy to the other half
         Threads.@threads for channel_idx1 in 1:(channel_n - 1)
             for channel_idx2 in (channel_idx1 + 1):channel_n
                 f[channel_idx1, channel_idx2, epoch_idx] = @views f[channel_idx2, channel_idx1, epoch_idx]
@@ -2955,12 +2954,10 @@ Named tuple containing:
 """
 function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -3007,7 +3004,6 @@ Named tuple containing:
 function eeg_band_mpower(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}, mt::Bool=false)
 
     fs = eeg_sr(eeg)
-    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
@@ -3052,7 +3048,6 @@ function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
 
     fs = eeg_sr(eeg)
     if f !== nothing
-        length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
         f = tuple_order(f)
         f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
         f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
@@ -3447,7 +3442,7 @@ Calculate PSD linear fit and slope.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
-- `f::Union{Real, Real}=(0, 0)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
+- `f::Tuple{Real, Real}=(0, eeg_sr(eeg)/2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -3459,11 +3454,9 @@ Named tuple containing:
 - `psd_slope::Array{Float64, 2}`: slopes of each linear fit
 - `frq::Vector{Float64}`: range of frequencies for the linear fits
 """
-function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}=(0, 0), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type])), f::Tuple{Real, Real}=(0, eeg_sr(eeg)/2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     fs = eeg_sr(eeg)
-    length(f) != 2 && throw(ArgumentError("f must contain two frequencies."))
-    f == (0, 0) && (f = (0, fs/2))
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be be ≥ 0."))
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
