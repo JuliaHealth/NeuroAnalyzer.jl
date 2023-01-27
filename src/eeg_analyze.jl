@@ -2609,6 +2609,7 @@ function eeg_ec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:
     end
     s1 = s1[:, :, epoch1]
     s2 = s2[:, :, epoch2]
+    
     # compare envelopes per epochs
     Threads.@threads for epoch_idx in 1:epoch_n
         ec = CorrelationTest(vec(s1[:, :, epoch_idx]), vec(s2[:, :, epoch_idx]))
