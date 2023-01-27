@@ -45,7 +45,7 @@ pipeline:
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
       - git add --all
       - git diff --exit-code || git commit -m "Woodpecker CI Documentation Build"
-      - git push
+      - git push origin HEAD:main
 
   test:
     image: julia
