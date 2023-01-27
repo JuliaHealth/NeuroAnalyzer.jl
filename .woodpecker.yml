@@ -39,8 +39,6 @@ pipeline:
       - cd ../../
 
       - cd NA-docs
-      - ls -la
-      - exit -1
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
       - git config --global init.defaultBranch master
