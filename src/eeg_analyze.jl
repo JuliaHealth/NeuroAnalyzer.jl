@@ -742,7 +742,15 @@ Return set of channel indices corresponding with `pick` of electrodes
 
 # Arguments
 
-- `pick::Vector{Symbol}`: pick of electrodes, e.g. `:list`, `:central` (or `:c`), `:left` (or `:l`), `:right` (or `:r`), `:frontal` (or `:f`), `:temporal` (or `:t`), `:parietal` (or `:p`), `:occipital` (or `:o`); picks may be combined, e.g. `[:left, :frontal]`
+- `pick::Vector{Symbol}`: pick of electrodes; picks may be combined, e.g. `[:left, :frontal]`
+    - `:list`
+    - `:central` (or `:c`)
+    - `:left` (or `:l`)
+    - `:right` (or `:r`)
+    - `:frontal` (or `:f`)
+    - `:temporal` (or `:t`)
+    - `:parietal` (or `:p`)
+    - `:occipital` (or `:o`)
 
 # Returns
 
@@ -2563,7 +2571,11 @@ Calculate envelope correlation.
 
 - `eeg1::NeuroAnalyzer.EEG`
 - `eeg2::NeuroAnalyzer.EEG`
-- `type::Symbol=:amp`: envelope type: `:amp` (amplitude), `:pow` (power), `:spec` (spectrogram) or `:hamp` (Hilbert spectrum amplitude)
+- `type::Symbol=:amp`: envelope type:
+    - `:amp`: amplitude
+    - `:pow`: power
+    - `:spec`: spectrogram
+    - `:hamp`: Hilbert spectrum amplitude
 - `channel1::Int64`
 - `channel2::Int64`
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1))`: default use all epochs
@@ -2924,7 +2936,7 @@ function eeg_vartest(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     @inbounds @simd for epoch_idx in 1:epoch_n
        Threads.@threads for channel_idx1 in 1:channel_n
             # create half of the matrix
-           for channel_idx2 in 1:channel_idx1
+            for channel_idx2 in 1:channel_idx1
                 ftest = @views VarianceFTest(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
@@ -2981,7 +2993,7 @@ function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1:
 
     Threads.@threads for epoch_idx in 1:epoch_n
        @inbounds @simd for channel_idx1 in 1:channel_n
-           for channel_idx2 in 1:channel_idx1
+            for channel_idx2 in 1:channel_n
                 ftest = @views VarianceFTest(eeg1.eeg_signals[channel1[channel_idx1], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
