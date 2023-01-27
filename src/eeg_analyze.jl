@@ -1461,12 +1461,10 @@ Named tuple containing:
 """
 function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)), n::Int64=3, method::Symbol=:absdiff)
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -1479,7 +1477,7 @@ function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     p = zeros(epoch_n)
 
     Threads.@threads for epoch_idx in 1:epoch_n
-        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(eeg1.eeg_signals[channel1, :, epoch_idx], eeg2.eeg_signals[channel2, :, epoch_idx], n=n, method=method)
+        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(eeg1.eeg_signals[channel1, :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2, :, epoch2[epoch_idx]], n=n, method=method)
     end
 
     return (s_stat=s_stat, statsitic_single=s_stat_single, p=p)
@@ -2574,40 +2572,51 @@ Calculate envelope correlation.
 # Returns
 
 Named tuple containing:
-- `aec::Vector{Float64}`: power correlation value
-- `aec_p::Vector{Float64}`: power correlation p-value
+- `ec::Vector{Float64}`: power correlation value
+- `ec_p::Vector{Float64}`: power correlation p-value
 """
 function eeg_ec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:amp, channel1::Int64, channel2::Int64, epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
     _check_var(type, [:amp, :pow, :spec, :hamp], "type")
+
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
-    eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 must have the same epoch length."))
-    length(epoch1) == length(epoch1) || throw(ArgumentError("Lengths of epoch1 and epoch2 must be equal."))
+    length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
+
+    _check_epochs(eeg1, epoch1)
+    _check_epochs(eeg2, epoch2)
+    length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
+    eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
+
     epoch_n = length(epoch1)
     
-    aec_r = zeros(epoch_n)
-    aec_p = zeros(epoch_n)
+    ec_r = zeros(epoch_n)
+    ec_p = zeros(epoch_n)
+
+    # calculate envelopes
+    if type === :amp
+        s1, _ = eeg_tenv(eeg1, channel=channel1)
+        s2, _ = eeg_tenv(eeg2, channel=channel2)
+    elseif type === :pow
+        s1, _ = eeg_penv(eeg1, channel=channel1)
+        s2, _ = eeg_penv(eeg2, channel=channel2)
+    elseif type === :spec
+        s1, _ = eeg_senv(eeg1, channel=channel1)
+        s2, _ = eeg_senv(eeg2, channel=channel2)
+    elseif type === :hamp
+        s1, _ = eeg_henv(eeg1, channel=channel1)
+        s2, _ = eeg_henv(eeg2, channel=channel2)
+    end
+    s1 = s1[:, :, epoch1]
+    s2 = s2[:, :, epoch2]
+    # compare envelopes per epochs
     Threads.@threads for epoch_idx in 1:epoch_n
-        if type === :amp
-            s1, _ = eeg_tenv(eeg1, channel=channel1)
-            s2, _ = eeg_tenv(eeg2, channel=channel2)
-        elseif type === :pow
-            s1, _ = eeg_penv(eeg1, channel=channel1)
-            s2, _ = eeg_penv(eeg2, channel=channel2)
-        elseif type === :spec
-            s1, _ = eeg_senv(eeg1, channel=channel1)
-            s2, _ = eeg_senv(eeg2, channel=channel2)
-        elseif type === :hamp
-            s1, _ = eeg_henv(eeg1, channel=channel1)
-            s2, _ = eeg_henv(eeg2, channel=channel2)
-        end
-        aec = CorrelationTest(vec(s1), vec(s2))
-        @inbounds aec_r[epoch_idx] = aec.r
-        @inbounds aec_p[epoch_idx] = pvalue(aec)
+        ec = CorrelationTest(vec(s1[:, :, epoch_idx]), vec(s2[:, :, epoch_idx]))
+        @inbounds ec_r[epoch_idx] = ec.r
+        @inbounds ec_p[epoch_idx] = pvalue(ec)
     end
 
-    return (aec=aec_r, aec_p=aec_p)
+    return (ec=ec_r, ec_p=ec_p)
 end
 
 """
@@ -2649,7 +2658,7 @@ function eeg_ged(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Uni
     ress_normalized = zeros(channel_n, epoch_n)
 
     Threads.@threads for epoch_idx in 1:epoch_n
-        sged[:, :, epoch_idx], ress[:, epoch_idx], ress_normalized[:, epoch_idx] = @views s2_ged(eeg1.eeg_signals[channel1, :, epoch_idx], eeg2.eeg_signals[channel2, :, epoch_idx])
+        sged[:, :, epoch_idx], ress[:, epoch_idx], ress_normalized[:, epoch_idx] = @views s2_ged(eeg1.eeg_signals[channel1, :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2, :, epoch2[epoch_idx]])
     end
 
     return (sged=sged, ress=ress, ress_normalized=ress_normalized)
@@ -3136,12 +3145,10 @@ Subtract channels.
 """
 function eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)))
 
-    # check channels
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
@@ -3241,12 +3248,11 @@ Named tuple containing:
 function eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg1, type=Symbol(eeg1.eeg_header[:signal_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg2, type=Symbol(eeg2.eeg_header[:signal_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_epoch_n(eeg2)), norm::Bool=true)
 
     eeg_sr(eeg1) == eeg_sr(eeg2) || throw(ArgumentError("EEG1 and EEG2 must have the same sampling rate."))
-    # check channels
+
     _check_channels(eeg1, channel1)
     _check_channels(eeg2, channel2)
     length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
     
-    # check epochs
     _check_epochs(eeg1, epoch1)
     _check_epochs(eeg2, epoch2)
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
