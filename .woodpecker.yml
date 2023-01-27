@@ -41,7 +41,7 @@ pipeline:
       - cd NA-docs
       - git config --global user.email "$CBMAIL"
       - git config --global user.name "CI Builder"
-      - git config --global init.defaultBranch master
+      - git config --global init.defaultBranch stable
       - git remote set-url origin https://$CBTOKEN@codeberg.org/AdamWysokinski/NeuroAnalyzer-docs.git
       - git add --all
       - git diff --exit-code || git commit -m "Woodpecker CI Documentation Build"
