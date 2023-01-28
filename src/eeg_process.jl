@@ -18,7 +18,7 @@ function eeg_reference_ch(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     # keep EEG channels
     _check_channels(eeg, channel)
     eeg_new = deepcopy(eeg)
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_signal_channels(eeg)
     signal = @view eeg_new.eeg_signals[channels, :, :]
 
     channel_n = size(signal, 1)
@@ -91,7 +91,7 @@ function eeg_reference_car(eeg::NeuroAnalyzer.EEG; exclude_fpo::Bool=false, excl
 
     # keep EEG channels
     eeg_new = deepcopy(eeg)
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_signal_channels(eeg)
     signal = @view eeg_new.eeg_signals[channels, :, :]
 
     channel_n = size(signal, 1)
@@ -1256,7 +1256,7 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     all(iszero, occursin.("a2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain A2 channel."))
 
     # keep EEG channels
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_signal_channels(eeg)
     signal = @view eeg.eeg_signals[channels, :, :]
 
     a1_idx = findfirst(isequal("A1"), eeg.eeg_header[:labels])
@@ -1387,7 +1387,7 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     all(iszero, occursin.("m2", lowercase.(eeg.eeg_header[:labels]))) == false || throw(ArgumentError("EEG does not contain M2 channel."))
 
     # keep EEG channels
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_signal_channels(eeg)
     signal = @view eeg.eeg_signals[channels, :, :]
 
     m1_idx = findfirst(isequal("M1"), eeg.eeg_header[:labels])
@@ -1572,7 +1572,7 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
 
     # keep EEG channels
     eeg_tmp = deepcopy(eeg)
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    channels = eeg_signal_channels(eeg)
     signal = eeg.eeg_signals[channels, :, :]
 
     channel_n = size(signal, 1)
