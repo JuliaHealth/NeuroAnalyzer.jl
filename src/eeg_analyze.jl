@@ -539,8 +539,19 @@ Return frequency limits for a `band`.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `band::Symbol`: band range name: `:list`, `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
-
+- `band::Symbol`: band range name:
+    - `:list`
+    - `:total`
+    - `:delta`
+    - `:theta`
+    - `:alpha`
+    - `:beta`
+    - `:beta_high`
+    - `:gamma`
+    - `:gamma_1`
+    - `:gamma_2`
+    - `:gamma_lower`
+    - `:gamma_higher`.
 # Returns
 
 - `band_frequency::Tuple{Real, Real}`
@@ -583,12 +594,24 @@ end
 """
     eeg_band(fs, band)
 
-Return frequency limits for a `band`.
+Return frequency limits of a `band`.
 
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `band::Symbol`: band range name: `:list`, `:total`, `:delta`, `:theta`, `:alpha`, `:beta`, `:beta_high`, `:gamma`, `:gamma_1`, `:gamma_2`, `:gamma_lower`, `:gamma_higher`.
+- `band::Symbol`: band range name:
+    - `:list`
+    - `:total`
+    - `:delta`
+    - `:theta`
+    - `:alpha`
+    - `:beta`
+    - `:beta_high`
+    - `:gamma`
+    - `:gamma_1`
+    - `:gamma_2`
+    - `:gamma_lower`
+    - `:gamma_higher`.
 
 # Returns
 
@@ -2725,7 +2748,7 @@ Calculate spectrogram of ITPC (Inter-Trial-Phase Clustering).
 - `channel::Int64`
 - `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
 - `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
 # Returns
@@ -2827,7 +2850,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 - `norm::Bool`=true: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency bounds for the spectrogram
 - `frq_n::Int64=10`: number of frequencies
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
 
 # Returns
@@ -3223,6 +3246,7 @@ function eeg_cps(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
         progress_bar == true && next!(p)
         end
     end
+
     @inbounds @simd for time_idx in 1:size(cps_pw, 3)
         Threads.@threads for epoch_idx in 1:epoch_n
             for channel_idx1 in 1:(channel_n - 1)
@@ -3298,7 +3322,9 @@ Calculate phase difference between EEG channels and mean phase of reference `cha
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of reference channels, default is all EEG/MEG channels except the analyzed one
-- `avg::Symbol=:phase`: method of averaging: `:phase` or `:signal`; for `:signal` `channel` signals are averaged prior to phase calculation; for `:phase` phase is calculated for each reference channel separately and then averaged
+- `avg::Symbol=:phase`: method of averaging:
+    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:signal`: signals are averaged prior to phase calculation
 - `pad::Int64=0`: pad signals with 0s
 - `h::Bool=false`: use FFT or Hilbert transformation
 
@@ -3321,7 +3347,7 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
                 ref_channels = setdiff(channel, channel_idx)
                 ph_ref = zeros(length(ref_channels), eeg_epoch_len(eeg))
                 for ref_idx in eachindex(ref_channels)
-                    if h
+                    if h == true
                         _, _, _, ph = @views s_hspectrum(eeg.eeg_signals[ref_channels[ref_idx], :, epoch_idx], pad=pad)
                     else
                         _, _, _, ph = @views s_spectrum(eeg.eeg_signals[ref_channels[ref_idx], :, epoch_idx], pad=pad)
@@ -3329,7 +3355,7 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
                     ph_ref[ref_idx, :] = ph
                 end
                 ph_ref = vec(mean(ph_ref, dims=1))
-                if h
+                if h == true
                     _, _, _, ph = @views s_hspectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad)
                 else
                     _, _, _, ph = @views s_spectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad)
@@ -3353,7 +3379,7 @@ end
 """
     eeg_ampdiff(eeg; channel)
 
-Calculate amplitude difference between each `eeg` channel and mean amplitude of `channel`.
+Calculate amplitude difference between each channel and mean amplitude.
 
 # Arguments
 
@@ -3392,8 +3418,10 @@ Perform discrete wavelet transformation (DWT).
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: Stationary Wavelet Transforms (`:sdwt`) or Autocorrelation Wavelet Transforms (`:acdwt`)
-- `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
+- `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
 
 # Returns
  
@@ -3504,7 +3532,7 @@ end
 """
     eeg_henv(eeg; channel, d)
 
-Calculate Hilbert spectrum amplitude envelope of `eeg`.
+Calculate Hilbert spectrum amplitude envelope.
 
 # Arguments
 
