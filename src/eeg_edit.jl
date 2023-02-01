@@ -17,7 +17,9 @@ function eeg_add_component(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
 
     eeg_new = deepcopy(eeg)
     c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
+    # add component name
     push!(eeg_new.eeg_header[:components], c)
+    # add component values
     push!(eeg_new.eeg_components, v)
     push!(eeg_new.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
 
@@ -38,7 +40,9 @@ Add component.
 function eeg_add_component!(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
 
     c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component!() to remove it prior the operation."))
+    # add component name
     push!(eeg.eeg_header[:components], c)
+    # add component values
     push!(eeg.eeg_components, v)
     push!(eeg.eeg_header[:history], "eeg_add_component!(EEG, c=$c, v=$v)")
 
@@ -108,7 +112,9 @@ function eeg_delete_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
     eeg_new = deepcopy(eeg)
     for idx in eachindex(eeg.eeg_header[:components])
         if c == eeg_new.eeg_header[:components][idx]
+            # delete component values
             deleteat!(eeg_new.eeg_components, idx)
+            # delete component name
             deleteat!(eeg_new.eeg_header[:components], idx)
             push!(eeg_new.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
             return eeg_new
@@ -132,7 +138,9 @@ function eeg_delete_component!(eeg::NeuroAnalyzer.EEG; c::Symbol)
     
     for idx in length(eeg.eeg_header[:components]):-1:1
         if c == eeg.eeg_header[:components][idx]
+            # delete component values
             deleteat!(eeg.eeg_components, idx)
+            # delete component name
             deleteat!(eeg.eeg_header[:components], idx)
             push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
         end
@@ -405,7 +413,6 @@ function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
 
     channel_n = eeg_channel_n(eeg)
     channels_to_remove = setdiff(collect(1:channel_n), channel)
-    # length(channels_to_remove) > 1 && sort!(channels_to_remove, rev=true)
     length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
 
     eeg_delete_channel!(eeg, channel=channels_to_remove)
@@ -429,6 +436,7 @@ function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
 
     labels = eeg_labels(eeg)
     if typeof(channel) == String
+        # get channel by name
         channel_idx = nothing
         for idx in eachindex(labels)
             if lowercase(channel) == lowercase(labels[idx])
@@ -440,6 +448,7 @@ function eeg_get_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String})
         end
         return channel_idx
     else
+        # get channel by number
         _check_channels(eeg, channel)
         return labels[channel]
     end
@@ -468,6 +477,7 @@ function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String
     name in labels && throw(ArgumentError("Channel $name already exist."))
 
     if typeof(channel) == String
+        # get channel by name
         channel_found = nothing
         for idx in eachindex(labels)
             if channel == labels[idx]
@@ -479,6 +489,7 @@ function eeg_rename_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String
             throw(ArgumentError("Channel name ($channel )does not match channel labels."))
         end
     else
+        # get channel by number
         _check_channels(eeg, channel)
         labels[channel] = name
     end
@@ -527,6 +538,7 @@ function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
 
     labels = eeg_labels(eeg)
     if typeof(channel) == String
+        # get channel by name
         channel_idx = nothing
         for idx in eachindex(labels)
             if channel == labels[idx]
@@ -537,6 +549,7 @@ function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
             throw(ArgumentError("Channel name ($channel )does not match channel labels."))
         end
     else
+        # get channel by number
         _check_channels(eeg, channel)
         channel_idx = channel
     end    
@@ -743,7 +756,7 @@ end
 """
     eeg_epoch(eeg; marker, epoch_offset, epoch_n, epoch_len)
 
-Split EEG into epochs. Return signal that is split either by markers (if specified ) epoch length or by number of epochs. 
+Split EEG into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
 # Arguments
 
@@ -762,11 +775,13 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
     eeg_new = deepcopy(eeg)
 
     if marker != ""
+        # split by markers
         if eeg.eeg_header[:markers] == true
             epoch_len === nothing && throw(ArgumentError("epoch_len must be specified."))
             epoch_offset == 0 && throw(ArgumentError("epoch_offset must be specified."))
             _check_markers(eeg, marker)
 
+            # get marker positions
             marker_idx = []
             for idx in 1:length(eeg.eeg_markers[!, :description])
                 eeg_new.eeg_markers[idx, :description] == marker && push!(marker_idx, idx)
@@ -779,7 +794,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
             throw(ArgumentError("EEG does not contain markers."))
         end
     else
-        # split into epochs
+        # split by epoch_len or epoch_n
         epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len)
 
         # delete markers outside epochs
@@ -797,7 +812,10 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
     eeg_time = collect(0:(1 / eeg.eeg_header[:sampling_rate]):eeg_duration_seconds)
     eeg_time = eeg_time[1:(end - 1)]
 
+    # update signal
     eeg_new.eeg_signals = epochs
+
+    # update time
     eeg_new.eeg_time = eeg_time
 
     # update epochs time
@@ -805,6 +823,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
     new_epochs_time = linspace(-s2t(epoch_offset, fs), epoch_duration_seconds - s2t(epoch_offset, fs), epoch_duration_samples)
     eeg_new.eeg_epoch_time = new_epochs_time
 
+    # update header
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
     eeg_new.eeg_header[:epoch_n] = epoch_n
@@ -820,7 +839,7 @@ end
 """
     eeg_epoch!(eeg; marker, epoch_offset, epoch_n, epoch_len)
 
-Split EEG into epochs. Return signal that is split either by epoch length or by number of epochs. 
+Split EEG into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
 # Arguments
 
