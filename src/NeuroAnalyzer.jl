@@ -68,6 +68,7 @@ end
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
+# NA functions
 include("na.jl")
 export na_info
 export na_plugins_reload
@@ -98,8 +99,10 @@ na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress
 # reload plugins
 na_plugins_reload()
 
+# internal functions are not available outside NA
 include("internal.jl")
 
+# load sub-modules
 include("low_level.jl")
 export linspace
 export logspace
@@ -516,14 +519,6 @@ export eeg_apply
 export eeg_erp_peaks
 export eeg_signal_channels
 
-include("eeg_study.jl")
-export eeg_study_create
-export eeg_study_n
-export eeg_study_channel_n
-export eeg_study_epoch_n
-export eeg_study_epoch_len
-export eeg_study_sr
-
 include("eeg_plots.jl")
 export plot_save
 export plot_signal
@@ -566,5 +561,17 @@ export plot_erp_butterfly
 export plot_erp_topo
 export eeg_plot_erp
 export plot_erp_stack
+
+include("eeg_study.jl")
+export eeg_study_create
+export eeg_study_n
+export eeg_study_channel_n
+export eeg_study_epoch_n
+export eeg_study_epoch_len
+export eeg_study_sr
+
+include("tes.jl")
+export tes_dose
+export ect_charge
 
 end # NeuroAnalyzer

@@ -342,9 +342,9 @@ function fft0(x::AbstractVector, n::Int64=0)
         # _free_gpumem()
         CUDA.memory_status()
         if n == 0
-            cx = CuArray(x)
+            cx = CuArray(Float32(x))
         else
-            cx = CuArray(pad0(x, n))
+            cx = CuArray(pad0(Float32(x), n))
         end
         return Vector(fft(cx))
     else
@@ -376,7 +376,7 @@ function ifft0(x::AbstractVector, n::Int64=0)
 
     if CUDA.functional() && use_cuda
         # _free_gpumem()
-        x = Vector(ifft(CuArray(x)))
+        x = Vector(ifft(CuArray(Float32(x))))
     else
         x = ifft(x)
     end
