@@ -262,6 +262,7 @@ export s2_cor
 export dprime
 export norminv
 export dranks
+export res_norm
 
 include("eeg_io.jl")
 export eeg_export_csv
