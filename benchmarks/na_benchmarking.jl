@@ -139,6 +139,9 @@ eeg_plinterpolate_channel(e10, channel=1, epoch=1);
 print(rpad("Interpolate: LR", 36))
 eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
 @time eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
+print(rpad("Surface Laplacian", 36))
+eeg_slaplacian(e10);
+@time eeg_slaplacian(e10);
 
 @info "Benchmarking: eeg_analyze.jl"
 println()

@@ -1921,3 +1921,133 @@ function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 
     return nothing
 end
+
+"""
+    eeg_slaplacian(eeg; channel, factor)
+
+Transform signal channels using surface Laplacian.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `m::Int64=8`: constant positive integer for smoothness
+- `n::Int64=8`: Legendre polynomial order
+- `lambda::Float64=10^-5`: smoothing factor
+
+# Returns
+
+- `eeg_new::NeuroAnalyzer.EEG`
+- `G::Matrix{Float64}`: transformation matrix
+- `H::Matrix{Float64}`: transformation matrix
+
+# Source
+
+Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
+"""
+function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+
+    m < 1 && throw(ArgumentError("m must be ≥ 1."))
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    lambda <= 0 && throw(ArgumentError("lambda must be > 0."))
+
+    channels = eeg_signal_channels(eeg)
+    locs = eeg.eeg_locs
+    channel_n = nrow(locs)
+    epoch_n = eeg_epoch_n(eeg)
+
+    G = zeros(channel_n, channel_n)
+    H = zeros(channel_n, channel_n)
+    cosdist = zeros(channel_n, channel_n)
+
+    # r = locs[!, :loc_radius_sph]
+    # x = locs[!, :loc_x] ./ maximum(r)
+    # y = locs[!, :loc_y] ./ maximum(r)
+    # z = locs[!, :loc_z] ./ maximum(r)
+
+    x = locs[!, :loc_x]
+    y = locs[!, :loc_y]
+    z = locs[!, :loc_z]
+    x, y, z = _locnorm(x, y, z)
+
+    # cosine distance
+    Threads.@threads for i = 1:channel_n
+        @inbounds @simd  for j = 1:channel_n
+            cosdist[i, j]  =  1 - (( (x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2 ) / 2 )
+        end
+    end
+
+    # compute Legendre polynomial
+    legpoly = zeros(n, channel_n, channel_n)
+    Threads.@threads for idx1 in 1:n
+        @inbounds @simd for idx2 in 1:channel_n
+            legpoly[idx1, idx2, :] = @views legendre.(cosdist[idx2, :], idx1)
+        end
+    end
+
+    # compute G and H
+    Threads.@threads for i = 1:channel_n
+        @inbounds @simd for j = 1:channel_n
+            g = 0
+            h = 0
+            @inbounds @simd for idx_n = 1:n
+                g = g + ((2 * idx_n + 1) * legpoly[idx_n, i, j] / ((idx_n * (idx_n + 1))^m))
+                h = h - ((2 * (idx_n + 1) * legpoly[idx_n, i, j]) / ((idx_n * (idx_n + 1))^(m - 1)))
+            end
+            G[i, j] =  g / (4 * pi)
+            H[i, j] = -h / (4 * pi)
+        end
+    end
+
+    # add smoothing factor to the diagonal
+    Gs = G + I(channel_n) * lambda
+    GsinvS = sum(inv(Gs))
+
+    eeg_new = deepcopy(eeg)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        data = @views eeg.eeg_signals[channels, :, epoch_idx]
+        # dataGs = data[channels, :]' / Gs
+        dataGs = Gs / data'
+        # C = dataGs .- (sum(dataGs,dims=2)/sum(GsinvS))*GsinvS
+        C = data .- (sum(dataGs, dims=2) / sum(GsinvS)) * GsinvS
+        # compute surface Laplacian
+        eeg_new.eeg_signals[channels, :, epoch_idx] = (C'*H)'
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_surface_laplacian(EEG, m=m, n=n, lambda=lambda)")
+
+    return eeg_new, G, H
+end
+
+"""
+    eeg_slaplacian!(eeg; channel, factor)
+
+Transform signal channels using surface Laplacian.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `m::Int64=8`: constant positive integer for smoothness
+- `n::Int64=8`: Legendre polynomial order
+- `lambda::Float64=10^-5`: smoothing factor
+
+# Returns
+
+- `G::Matrix{Float64}`: transformation matrix
+- `H::Matrix{Float64}`: transformation matrix
+
+# Source
+
+Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
+"""
+function eeg_slaplacian!(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+
+    eeg_tmp, G, H = eeg_slaplacian(eeg, m=m, n=n, lambda=lambda)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg_reset_components!(eeg)
+
+    return G, H
+end

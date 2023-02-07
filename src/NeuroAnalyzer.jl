@@ -14,6 +14,7 @@ using CubicSplines
 using CUDA
 using DataFrames
 using Deconvolution
+using DICOM
 using Distances
 using DSP
 using FFTW
@@ -26,6 +27,7 @@ using GLMakie
 using HypothesisTests
 using InformationMeasures
 using Interpolations
+using Jacobi
 using JLD2
 using Lathe.preprocess
 using LinearAlgebra
@@ -447,6 +449,8 @@ export eeg_denoise_wien!
 export eeg_scale
 export eeg_scale!
 export eeg_gfilter
+export eeg_slaplacian
+export eeg_slaplacian!
 
 include("eeg_analyze.jl")
 export eeg_total_power

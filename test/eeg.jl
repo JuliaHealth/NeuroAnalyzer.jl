@@ -397,4 +397,9 @@ e2 = eeg_epoch(e1, epoch_len=200)
 eeg_delete_epoch!(e2, epoch=1)
 @test e2.eeg_markers[1, :start] == 800
 
+eeg1, g, h = eeg_slaplacian(eeg)
+@test size(eeg1.eeg_signals) == (24, 309760, 1)
+@test size(g) == (19, 19)
+@test size(h) == (19, 19)
+
 true
