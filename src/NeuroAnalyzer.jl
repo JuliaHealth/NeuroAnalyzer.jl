@@ -391,6 +391,8 @@ export eeg_edit_marker!
 export eeg_channel_cluster
 export eeg_lrinterpolate_channel
 export eeg_lrinterpolate_channel!
+export locs_maximize
+export locs_maximize!
 
 include("eeg_process.jl")
 export eeg_reference_ch

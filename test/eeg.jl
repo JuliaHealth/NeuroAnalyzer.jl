@@ -366,6 +366,8 @@ locs2 = locs_sph2cart(locs)
 @test locs2[1, 5] == -0.309
 locs2 = locs_cart2sph(locs)
 @test locs2[1, 3] == 108.0
+locs2 = locs_maximize(locs)
+@test locs2[1, :loc_radius] == 1.0
 
 @test size(eeg_phdiff(eeg)) == (19, 309760, 1)
 @test size(eeg_scale(eeg, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)

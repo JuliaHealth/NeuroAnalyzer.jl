@@ -2784,7 +2784,7 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     # train
     df = @views DataFrame(hcat(good_signal[channel, :, :], good_signal[good_channels, :, ]'), :auto)
     train, test = preprocess.TrainTestSplit(df, .80)
-    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[:, Not(:x1)]))))
+    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)
     acc_r2 = r2(linear_regressor)
     prediction = GLM.predict(linear_regressor, test)
@@ -2836,3 +2836,55 @@ function eeg_lrinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, epoc
     return nothing
 end
 
+"""
+    locs_maximize(locs; planar, spherical)
+
+Maximize channel locations to the unit sphere.
+
+# Arguments
+
+- `locs::DataFrame`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=false`: modify spherical coordinates
+
+# Returns
+
+- `locs_new::DataFrame`
+"""
+function locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+
+    locs_new = deepcopy(locs)
+
+    if planar == true
+        r1 = locs_new[!, :loc_radius]
+        r2 = s_normalize_minmax(locs_new[!, :loc_radius])
+        r = maximum(r2) / maximum(r1)
+        locs_new[!, :loc_radius] .*= r
+    end
+
+    if spherical == true
+        r1 = locs_new[!, :loc_radius_sph]
+        r2 = s_normalize_minmax(r1)
+        r = maximum(r2) / maximum(r1)
+        locs_new[!, :loc_radius_sph] .*= r
+    end
+    locs_sph2cart!(locs_new)
+
+    return locs_new
+end
+
+"""
+    locs_maximize!(locs; planar, spherical)
+
+Maximize channel locations to the unit sphere.
+
+# Arguments
+
+- `locs::DataFrame`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=false`: modify spherical coordinates
+"""
+function locs_maximize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+    locs[!, :] = locs_maximize(locs, planar=planar, spherical=spherical)[!, :]
+    return nothing
+end
