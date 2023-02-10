@@ -1575,6 +1575,8 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
     channels = eeg_signal_channels(eeg)
     signal = eeg.eeg_signals[channels, :, :]
 
+    length(channels) > nrow(eeg.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
+
     channel_n = size(signal, 1)
     nn < 1 && throw(ArgumentError("nn must be ≥ 1"))
     nn > channel_n - 1 && throw(ArgumentError("nn must be < $(channel_n - 1)"))
@@ -1583,12 +1585,9 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
     loc_x = zeros(channel_n)
     loc_y = zeros(channel_n)
     for idx in 1:channel_n
-        # loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_locs[!, :loc_theta][idx], eeg.eeg_locs[!, :loc_radius][idx])
-        # loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         loc_x[idx] = eeg.eeg_locs[idx, :loc_x]
         loc_y[idx] = eeg.eeg_locs[idx, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
 
     # Euclidean distance matrix
     d = zeros(channel_n, channel_n)
@@ -1956,6 +1955,8 @@ function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float
     locs = eeg.eeg_locs
     channel_n = nrow(locs)
     epoch_n = eeg_epoch_n(eeg)
+
+    length(_map_channels) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
 
     G = zeros(channel_n, channel_n)
     H = zeros(channel_n, channel_n)

@@ -2135,6 +2135,7 @@ function locs_import_geo(file_name::String)
     # center x at 0
     x_adj = x[findfirst(isequal("Cz"), labels)]
     x .-= x_adj
+    x, y, z = _locnorm(x, y, z)
 
     radius = zeros(length(labels))
     theta = zeros(length(labels))

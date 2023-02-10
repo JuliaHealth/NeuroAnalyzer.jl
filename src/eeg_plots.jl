@@ -1287,6 +1287,8 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
+    length(channel) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+
     frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
 
@@ -3890,6 +3892,8 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     length(channel) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
     _check_channels(eeg_tmp, channel)
 
+    length(channel) > nrow(eeg_tmp.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
+
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg_tmp)
         signal = eeg_tmp.eeg_signals[channel, segment[1]:segment[2], 1]
@@ -4004,6 +4008,9 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     _check_cidx(c, c_idx)
     labels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (labels = [labels])
+
+    length(c_idx) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
+    length(channel) > nrow(eeg_tmp.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
 
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg_tmp)
@@ -4395,6 +4402,7 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     size(signal, 2) == length(t) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    length(channel) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
 
     pal = mono == true ? :grays : :darktest
     
