@@ -664,6 +664,7 @@ Accepted formats:
 - TSV
 - SFP
 - CSD
+- GEO
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -701,6 +702,8 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
         locs = locs_import_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
         locs = locs_import_csd(file_name)
+    elseif splitext(file_name)[2] == ".geo"
+        locs = locs_import_geo(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -763,6 +766,8 @@ Accepted formats:
 - ELC
 - TSV
 - SFP
+- CSD
+- GEO
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -2079,4 +2084,70 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
+end
+
+"""
+    locs_import_geo(file_name)
+
+Load electrode positions from GEO file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function locs_import_geo(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
+    splitext(file_name)[2] == ".geo" || throw(ArgumentError("Not a GEO file."))
+
+    f = open(file_name, "r")
+    locs = readlines(f)
+    close(f)
+
+    l1 = 0
+    l2 = 0
+    for idx in 1:length(locs)
+        locs[idx] == "View\"\"{" && (l1 = idx + 1)
+        locs[idx] == "};" && (l2 = idx - 1)
+    end
+    locs = locs[l1+1:2:l2]
+
+    labels = repeat([""], length(locs))
+    x = zeros(length(locs))
+    y = zeros(length(locs))
+    z = zeros(length(locs))
+
+    p = r"(.+)(\(.+\)){(.+)}"
+    for idx in 1:length(labels)
+        m = match(p, locs[idx])
+        labels[idx] = replace(m[3], "\"" => "")
+        tmp = replace(m[2], "(" => "")
+        tmp = replace(tmp, ")" => "")
+        x[idx], y[idx], z[idx], = parse.(Float64, split(tmp, ", "))
+    end
+
+    x, y, z = _locnorm(x, y, z)
+
+    # center x at 0
+    x_adj = x[findfirst(isequal("Cz"), labels)]
+    x .-= x_adj
+
+    radius = zeros(length(labels))
+    theta = zeros(length(labels))
+    radius_sph = zeros(length(labels))
+    theta_sph = zeros(length(labels))
+    phi_sph = zeros(length(labels))
+
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    locs = _round_locs(locs)
+
+    locs = locs_cart2sph(locs)
+    locs = locs_cart2pol(locs)
+
+    return locs
 end

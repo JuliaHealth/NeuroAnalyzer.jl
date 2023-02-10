@@ -19,4 +19,7 @@ using Test
 
     println("\tRunning eeg_study.jl tests.. ")
     @test include("eeg_study.jl")
+
+    println("\tRunning tes.jl tests.. ")
+    @test include("tes.jl")
 end

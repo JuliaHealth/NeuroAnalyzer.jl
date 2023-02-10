@@ -1923,7 +1923,7 @@ function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 end
 
 """
-    eeg_slaplacian(eeg; channel, factor)
+    eeg_slaplacian(eeg; m, n, s)
 
 Transform signal channels using surface Laplacian.
 
@@ -1932,7 +1932,7 @@ Transform signal channels using surface Laplacian.
 - `eeg::NeuroAnalyzer.EEG`
 - `m::Int64=8`: constant positive integer for smoothness
 - `n::Int64=8`: Legendre polynomial order
-- `lambda::Float64=10^-5`: smoothing factor
+- `s::Float64=10^-5`: smoothing factor
 
 # Returns
 
@@ -1944,13 +1944,13 @@ Transform signal channels using surface Laplacian.
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float64=10^-5)
 
     eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
 
     m < 1 && throw(ArgumentError("m must be ≥ 1."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    lambda <= 0 && throw(ArgumentError("lambda must be > 0."))
+    s <= 0 && throw(ArgumentError("s must be > 0."))
 
     channels = eeg_signal_channels(eeg)
     locs = eeg.eeg_locs
@@ -2001,7 +2001,7 @@ function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::
     end
 
     # add smoothing factor to the diagonal
-    Gs = G + I(channel_n) * lambda
+    Gs = G + I(channel_n) * s
     GsinvS = sum(inv(Gs))
 
     eeg_new = deepcopy(eeg)
@@ -2016,13 +2016,13 @@ function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::
     end
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_surface_laplacian(EEG, m=m, n=n, lambda=lambda)")
+    push!(eeg_new.eeg_header[:history], "eeg_surface_laplacian(EEG, m=m, n=n, s=s)")
 
     return eeg_new, G, H
 end
 
 """
-    eeg_slaplacian!(eeg; channel, factor)
+    eeg_slaplacian!(eeg; m, n, s)
 
 Transform signal channels using surface Laplacian.
 
@@ -2031,7 +2031,7 @@ Transform signal channels using surface Laplacian.
 - `eeg::NeuroAnalyzer.EEG`
 - `m::Int64=8`: constant positive integer for smoothness
 - `n::Int64=8`: Legendre polynomial order
-- `lambda::Float64=10^-5`: smoothing factor
+- `s::Float64=10^-5`: smoothing factor
 
 # Returns
 
@@ -2042,9 +2042,9 @@ Transform signal channels using surface Laplacian.
 
 Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
 """
-function eeg_slaplacian!(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, lambda::Float64=10^-5)
+function eeg_slaplacian!(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float64=10^-5)
 
-    eeg_tmp, G, H = eeg_slaplacian(eeg, m=m, n=n, lambda=lambda)
+    eeg_tmp, G, H = eeg_slaplacian(eeg, m=m, n=n, s=s)
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg_reset_components!(eeg)

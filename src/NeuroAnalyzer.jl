@@ -291,6 +291,7 @@ export eeg_add_electrodes!
 export eeg_import_digitrack
 export eeg_import_bv
 export eeg_import_alice4
+export locs_import_geo
 
 include("eeg_edit.jl")
 export eeg_copy

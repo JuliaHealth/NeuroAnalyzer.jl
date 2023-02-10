@@ -44,6 +44,8 @@ s = locs_import_sfp("test.sfp")
 @test typeof(s) == DataFrame
 s = locs_import_csd("test.csd")
 @test typeof(s) == DataFrame
+s = locs_import_geo("test.geo")
+@test typeof(s) == DataFrame
 
 eeg = eeg_load_electrodes(eeg, file_name="standard-10-20-cap19-elmiko.ced")
 @test typeof(eeg) == NeuroAnalyzer.EEG
