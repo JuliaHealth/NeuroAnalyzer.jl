@@ -2783,7 +2783,7 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
 
     # train
     df = @views DataFrame(hcat(good_signal[channel, :, :], good_signal[good_channels, :, ]'), :auto)
-    train, test = preprocess.TrainTestSplit(df, .80)
+    train, test = _split(df, 0.80)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)
     acc_r2 = r2(linear_regressor)

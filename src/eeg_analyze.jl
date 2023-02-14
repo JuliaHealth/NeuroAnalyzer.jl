@@ -3897,3 +3897,46 @@ Return all signal (EEG/MEG) channels; signal is determined by `:signal_type` var
 function eeg_signal_channels(eeg::NeuroAnalyzer.EEG)
     return eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 end
+
+"""
+    eeg_bands_dwt(eeg; channel, wt, type, n)
+
+Split EEG channel into bands using discrete wavelet transformation (DWT).
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64}`: channel number
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
+- `n::Int64=0`: number of bands, default is maximum number of bands available or total transformation
+
+# Returns
+ 
+- `bands::Array{Float64, 4}`: bands from lowest to highest frequency (by rows)
+"""
+function eeg_bands_dwt(eeg::NeuroAnalyzer.EEG; channel::Int64, wt::T, type::Symbol, n::Int64=0) where {T <: DiscreteWavelet}
+
+    n -= 1
+    if n == 0
+        n = maxtransformlevels(eeg.eeg_signals[1, :, 1])
+        verbose == true && @info "Calculating DWT using maximum level: $n."
+    end
+    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+
+    _check_channels(eeg, channel)
+    epoch_n = eeg_epoch_n(eeg)
+
+    dwt_c = zeros((n + 1), eeg_epoch_len(eeg), epoch_n)
+    Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds dwt_c[:, :, epoch_idx] = @views s_dwt(eeg.eeg_signals[channel, :, epoch_idx], wt=wt, type=type, l=n)
+    end
+    
+    bands = similar(dwt_c)
+    bands[1, :, :] = dwt_c[1, :, :]
+    bands[2:end, :, :] = dwt_c[end:-1:2, :, :]
+
+    return bands
+end

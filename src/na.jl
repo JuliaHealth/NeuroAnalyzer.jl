@@ -51,6 +51,7 @@ function na_info()
         "Polynomials",
         "Preferences",
         "ProgressMeter",
+        "SavitzkyGolay",
         "ScatteredInterpolation",
         "Simpson",
         "StatsFuns",

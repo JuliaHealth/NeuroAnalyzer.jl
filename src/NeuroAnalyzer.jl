@@ -29,7 +29,6 @@ using InformationMeasures
 using Interpolations
 using Jacobi
 using JLD2
-using Lathe.preprocess
 using LinearAlgebra
 using Loess
 using MultivariateStats
@@ -40,6 +39,7 @@ using Polynomials
 using Preferences
 using ProgressMeter
 using Random
+using SavitzkyGolay
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -525,6 +525,7 @@ export eeg_henv_median
 export eeg_apply
 export eeg_erp_peaks
 export eeg_signal_channels
+export eeg_bands_dwt
 
 include("eeg_plots.jl")
 export plot_save

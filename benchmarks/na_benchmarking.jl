@@ -412,3 +412,6 @@ eeg_add_component!(e10_ica, c=:ica_mw, v=i_mw);
 print(rpad("Remove ICA", 36))
 eeg_ica_reconstruct(e10_ica, ic=1);
 @time eeg_ica_reconstruct(e10_ica, ic=1);
+print(rpad("Split using DWT", 36))
+eeg_bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);
+@time eeg_bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);

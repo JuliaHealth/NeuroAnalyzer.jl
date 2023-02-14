@@ -1671,6 +1671,7 @@ Apply filtering.
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
+    - `:sg`: Savitzky-Golay
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -1683,15 +1684,15 @@ Apply filtering.
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
+- `window::Union{Nothing, AbstractVector, Int64} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
 
 # Returns
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{AbstractVector, Nothing}=nothing)
+function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
-    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :conv], "fprototype")
+    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :conv, :sg], "fprototype")
     typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
     fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
 
@@ -1706,6 +1707,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
         bw == -1 && throw(ArgumentError("bw must be specified."))
     end
+    (fprototype === :sg && window === nothing) && throw(ArgumentError("window must be specified."))
 
     if fprototype === :fir
         if window === nothing
@@ -1719,7 +1721,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
 
     order < 1 && throw(ArgumentError("order must be > 1."))
     window !== nothing && length(window) > length(signal) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
-    (fprototype !== :mavg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+    (fprototype !== :mavg && fprototype !== :sg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
     (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs <= 0 && throw(ArgumentError("fs must be > 0.")))
     dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
     ((order < 2 && fprototype !== :poly && fprototype !== :remez) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
@@ -1743,6 +1745,12 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
     end
 
     signal = _reflect(signal)
+
+    if fprototype === :sg
+        isodd(window) || throw(ArgumentError("window must be an odd number."))
+        s_filtered = savitzky_golay(signal, window, order)
+        return _chop(s_filtered.y)
+    end
 
     if fprototype === :mavg
         s_filtered = zeros(length(signal))
@@ -4075,7 +4083,7 @@ Perform discrete wavelet transformation (DWT).
 
 - `signal::AbstractVector`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: Stationary Wavelet Transforms (:sdwt) or Autocorrelation Wavelet Transforms (:acdwt)
+- `type::Symbol`: transformation type: Stationary Wavelet Transforms (`:sdwt`) or Autocorrelation Wavelet Transforms (`:acdwt`)
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
 
 # Returns

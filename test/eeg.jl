@@ -404,4 +404,7 @@ eeg1, g, h = eeg_slaplacian(eeg)
 @test size(g) == (19, 19)
 @test size(h) == (19, 19)
 
+b = eeg_bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
+@test size(b) == (5, 309760)
+
 true

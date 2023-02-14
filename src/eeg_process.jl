@@ -511,6 +511,7 @@ Apply filtering to EEG channel(s).
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
+    - `:sg`: Savitzky-Golay
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -523,13 +524,14 @@ Apply filtering to EEG channel(s).
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
 - `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
+- `window::Union{Nothing, AbstractVector, Int64} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
+- `preview::Bool=false`: plot filter response
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing, preview::Bool=false)
+function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     _check_channels(eeg, channel)
 
@@ -576,6 +578,8 @@ Apply filtering to EEG channel(s).
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
+    - `:conv`: convolution
+    - `:sg`: Savitzky-Golay
 - `ftype::Symbol`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -588,10 +592,10 @@ Apply filtering to EEG channel(s).
 - `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
 - `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Vector{<:Real}, Nothing} - window, required for `:fir` filter
+- `window::Union{Nothing, AbstractVector, Int64} - window, required for `:fir` filter
 - `preview::Bool=false`: plot filter response
 """
-function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing, preview::Bool=false)
+function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
         verbose == true && @info "When `preview=true`, signal is not being filtered."
