@@ -44,7 +44,6 @@ function na_info()
         "Interpolations",
         "Jacobi",
         "JLD2",
-        "Lathe",
         "Loess",
         "MultivariateStats",
         "Plots",
