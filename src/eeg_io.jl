@@ -57,7 +57,13 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -178,7 +184,12 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    fid = open(file_name)
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -1126,7 +1137,13 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -1237,7 +1254,12 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    fid = open(file_name)
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -1374,7 +1396,11 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
  
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    fid = open(file_name)
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
 
     buffer = readline(fid)
     occursin("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
@@ -1672,7 +1698,13 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         else
             @error("Only Float32 and Int16 BVCDF binary formats are supported.")
         end
-        fid = open(eeg_file)
+
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         signal = zeros(filesize(eeg_file) ÷ bytes)
         for idx in 1:(filesize(eeg_file) ÷ bytes)
             buf = zeros(UInt8, bytes)
@@ -1798,7 +1830,13 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -1922,7 +1960,12 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     if length(unique(samples_per_datarecord)) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
 
-        fid = open(file_name)
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
         eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -1962,7 +2005,12 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
         sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
         max_sampling_rate = maximum(sampling_rate)
 
-        fid = open(file_name)
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
 

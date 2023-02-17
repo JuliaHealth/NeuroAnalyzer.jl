@@ -14,6 +14,8 @@ Every contribution (bug reports, fixes, new ideas, feature requests or additions
 
 NeuroAnalyzer website is located at [https://neuroanalyzer.org](https://neuroanalyzer.org).
 
+Note: this package is under active development and is subject to change.
+
 ## Documentation
 
 1. [Stable](https://codeberg.org/AdamWysokinski/NeuroAnalyzer.jl/src/branch/stable) branch:
