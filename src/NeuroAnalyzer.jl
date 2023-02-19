@@ -584,5 +584,6 @@ export eeg_study_sr
 include("tes.jl")
 export tes_dose
 export ect_charge
+export tes_protocol
 
 end # NeuroAnalyzer
