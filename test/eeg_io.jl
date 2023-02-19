@@ -18,6 +18,8 @@ eeg = eeg_import_csv("eeg-test_txch.csv.gz")
 @test typeof(eeg) == NeuroAnalyzer.EEG
 eeg = eeg_import_csv("eeg-test_chxt.csv.gz")
 @test typeof(eeg) == NeuroAnalyzer.EEG
+eeg = eeg_import_set("eeg-test.set")
+@test typeof(eeg) == NeuroAnalyzer.EEG
 
 eeg = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(eeg, channel=24)

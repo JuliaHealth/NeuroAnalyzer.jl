@@ -6,8 +6,9 @@ Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 - BDF/BDF+
 - BrainVision
 - CSV
+- SET (EEGLAB dataset)
 
-This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz).
+This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set).
 
 # Arguments
 
@@ -26,7 +27,8 @@ function eeg_import(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".bdf" && return eeg_import_bdf(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".vhdr" && return eeg_import_bv(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".csv" && return eeg_import_csv(file_name, detect_type=detect_type)
-    splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv" && return eeg_import_csv(file_name, detect_type=detect_type)
+    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return eeg_import_csv(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".set" && return eeg_import_set(file_name, detect_type=detect_type)
 end
 
 """
@@ -2281,6 +2283,103 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
                       :patient => "",
+                      :recording => "",
+                      :recording_date => "",
+                      :recording_time => "",
+                      :channel_n => channel_n,
+                      :channel_type => channel_type[channel_order],
+                      :reference => "",
+                      :channel_locations => false,
+                      :history => String[],
+                      :components => Symbol[],
+                      :eeg_duration_samples => eeg_duration_samples,
+                      :eeg_duration_seconds => eeg_duration_seconds,
+                      :epoch_n => 1,
+                      :epoch_duration_samples => eeg_duration_samples,
+                      :epoch_duration_seconds => eeg_duration_seconds,
+                      :labels => labels[channel_order],
+                      :transducers => repeat([""], channel_n),
+                      :physical_dimension => repeat([""], channel_n),
+                      :prefiltering => repeat([""], channel_n),
+                      :sampling_rate => sampling_rate,
+                      :gain => gain[channel_order],
+                      :note => "",
+                      :markers => has_markers)
+
+    eeg_components = Vector{Any}()
+    eeg_epoch_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
+
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+
+    return eeg
+end
+
+"""
+    eeg_import_set(file_name; detect_type)
+
+Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
+
+# Returns
+
+- `eeg:EEG`
+"""
+function eeg_import_set(file_name::String; detect_type::Bool=true)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg_filetype = "SET"
+
+    dataset = matread(file_name)
+    eeg_time = dataset["times"][:]
+    eeg_signals = dataset["data"]
+    eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1)
+    channel_n = size(eeg_signals, 1)
+    labels = String.(dataset["chanlocs"]["labels"][:])
+
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
+
+    # TODO: import locations, events and other data
+    has_markers = false
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    sampling_rate = round(Int64, 1 / eeg_time[2] * 1000)
+    gain = ones(channel_n)
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+
+    eeg_duration_samples = size(eeg_signals, 2)
+    eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate
+    eeg_time = collect(0:(1 / sampling_rate):eeg_duration_seconds)
+    eeg_time = eeg_time[1:end - 1]
+    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
+
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
+                      :eeg_filesize_mb => eeg_filesize_mb,
+                      :eeg_filetype => eeg_filetype,
+                      :patient => dataset["subject"],
                       :recording => "",
                       :recording_date => "",
                       :recording_time => "",

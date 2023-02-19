@@ -49,8 +49,17 @@ print(rpad("Import Digitrack", 36))
 eeg_import_digitrack("test/eeg-test-digitrack.txt");
 @time eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import BrainVision", 36))
-eeg_import_bv("test/eeg-test-bv.vhdr")
-@time eeg_import_bv("test/eeg-test-bv.vhdr")
+eeg_import_bv("test/eeg-test-bv.vhdr");
+@time eeg_import_bv("test/eeg-test-bv.vhdr");
+print(rpad("Import CSV ch×t", 36))
+eeg_import_csv("test/eeg-test_chxt.csv.gz");
+@time eeg_import_csv("test/eeg-test_chxt.csv.gz");
+print(rpad("Import CSV t×ch", 36))
+eeg_import_csv("test/eeg-test_txch.csv.gz");
+@time eeg_import_csv("test/eeg-test_txch.csv.gz");
+print(rpad("Import EEGLAB dataset", 36))
+eeg_import_set("test/eeg-test.set");
+@time eeg_import_set("test/eeg-test.set");
 print(rpad("Save HDF5", 36))
 tmp = tempname()
 eeg_save(eeg, file_name=tmp);
