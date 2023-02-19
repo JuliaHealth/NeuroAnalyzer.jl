@@ -2348,11 +2348,17 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     eeg_time = dataset["times"][:]
     eeg_signals = dataset["data"]
 
-    # if matrix, then there are no epochs
+    # there are no epochs if signal is matrix, not array
     ndims(eeg_signals) == 2 && (eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1))
 
     channel_n = size(eeg_signals, 1)
-    labels = String.(dataset["chanlocs"]["labels"][:])
+    
+    # get channel labels
+    if length(dataset["chanlocs"]["labels"][:]) == channel_n
+        labels = String.(dataset["chanlocs"]["labels"][:])
+    else
+        labels = repeat([""], channel_n)
+    end
 
     labels = _clean_labels(labels)
     if detect_type == true
@@ -2363,22 +2369,26 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     channel_order = _sort_channels(copy(channel_type))
 
     # TODO: import locations, events and other data
-    # keys(dataset) = ["event", "icawinv", "pnts", "chaninfo", "epoch", "data", "times", "stats", "xmin", "subject", "chanlocs", "reject", "icaact", "icaweights", "history", "saved", "srate", "comments", "ref", "eventdescription", "urchanlocs", "urevent", "nbchan", "icachansind", "specicaact", "icasplinefile", "splinefile", "etc", "condition", "dipfit", "group", "icasphere", "session", "datfile", "trials", "epochdescription", "setname", "specdata", "run", "filename", "xmax", "filepath"]
+    # keys(dataset) = ["event", "icawinv", "chaninfo", "epoch", "stats", "chanlocs", "reject", "icaact", "icaweights", "ref", "eventdescription", "urchanlocs", "urevent", "nbchan", "icachansind", "specicaact", "icasplinefile", "splinefile", "condition", "dipfit", "group", "icasphere", "session", "datfile", "trials", "epochdescription", "setname", "specdata", "run"]
     # epochs data: dataset["epoch"]
     # events data: dataset["event"]
     # channel data: dataset["chaninfo"]
     # locs data: dataset["chanlocs"]
     # ICA weights: dataset["icaweights"]
     # ICA weights: dataset["icaweights"]
+    # ignore: xmin, xmax, filename, filepath, etc, setname, saved, pnts
 
-    # EEGLAB history
+    # EEGLAB metadata
+    patient = dataset["subject"]
+    note = dataset["comments"]
     history = split(dataset["history"], "\n")
     # remove first two entries, 1st is empty, second is EEGLAB version
     length(history) > 2 && (history = history[3:end])
 
+    sampling_rate = round(Int64, dataset["srate"])
+
     has_markers = false
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
-    sampling_rate = round(Int64, 1 / eeg_time[2] * 1000)
     gain = ones(channel_n)
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
 
@@ -2395,7 +2405,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
-                      :patient => dataset["subject"],
+                      :patient => patient,
                       :recording => "",
                       :recording_date => "",
                       :recording_time => "",
@@ -2416,7 +2426,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :prefiltering => repeat([""], channel_n),
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
-                      :note => "",
+                      :note => note,
                       :markers => has_markers)
 
     eeg_components = Vector{Any}()
