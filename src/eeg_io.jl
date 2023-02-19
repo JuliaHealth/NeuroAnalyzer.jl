@@ -2347,7 +2347,10 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     dataset = matread(file_name)
     eeg_time = dataset["times"][:]
     eeg_signals = dataset["data"]
-    eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1)
+
+    # if matrix, then there are no epochs
+    ndims(eeg_signals) == 2 && (eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1))
+
     channel_n = size(eeg_signals, 1)
     labels = String.(dataset["chanlocs"]["labels"][:])
 
@@ -2360,6 +2363,19 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     channel_order = _sort_channels(copy(channel_type))
 
     # TODO: import locations, events and other data
+    # keys(dataset) = ["event", "icawinv", "pnts", "chaninfo", "epoch", "data", "times", "stats", "xmin", "subject", "chanlocs", "reject", "icaact", "icaweights", "history", "saved", "srate", "comments", "ref", "eventdescription", "urchanlocs", "urevent", "nbchan", "icachansind", "specicaact", "icasplinefile", "splinefile", "etc", "condition", "dipfit", "group", "icasphere", "session", "datfile", "trials", "epochdescription", "setname", "specdata", "run", "filename", "xmax", "filepath"]
+    # epochs data: dataset["epoch"]
+    # events data: dataset["event"]
+    # channel data: dataset["chaninfo"]
+    # locs data: dataset["chanlocs"]
+    # ICA weights: dataset["icaweights"]
+    # ICA weights: dataset["icaweights"]
+
+    # EEGLAB history
+    history = split(dataset["history"], "\n")
+    # remove first two entries, 1st is empty, second is EEGLAB version
+    length(history) > 2 && (history = history[3:end])
+
     has_markers = false
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
     sampling_rate = round(Int64, 1 / eeg_time[2] * 1000)
@@ -2387,7 +2403,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => false,
-                      :history => String[],
+                      :history => history,
                       :components => Symbol[],
                       :eeg_duration_samples => eeg_duration_samples,
                       :eeg_duration_seconds => eeg_duration_seconds,
