@@ -31,6 +31,7 @@ using Jacobi
 using JLD2
 using LinearAlgebra
 using Loess
+using MAT
 using MultivariateStats
 using Pkg
 using Plots
@@ -49,7 +50,7 @@ using StatsPlots
 using TOML
 using Wavelets
 using WaveletsExt
-using ContinuousWavelets   
+using ContinuousWavelets
 
 mutable struct EEG
     eeg_header::Dict
@@ -292,6 +293,7 @@ export eeg_import_digitrack
 export eeg_import_bv
 export eeg_import_alice4
 export locs_import_geo
+export eeg_import_csv
 
 include("eeg_edit.jl")
 export eeg_copy

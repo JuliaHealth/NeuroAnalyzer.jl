@@ -624,6 +624,7 @@ function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vec
             signal_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
     end
+    signal_interpolated = signal_interpolated'
     
     return s_normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
 end

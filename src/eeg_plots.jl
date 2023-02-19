@@ -3743,7 +3743,13 @@ Plot topographical view.
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
@@ -3847,8 +3853,16 @@ Topographical plot.
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
-- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `amethod::Symbol=:mean`: averaging method:
+    - `:mean`
+    - `:median`
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
@@ -3945,8 +3959,16 @@ Topographical plot of embedded or external component.
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
-- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `amethod::Symbol=:mean`: averaging method:
+    - `:mean`
+    - `:median`
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot

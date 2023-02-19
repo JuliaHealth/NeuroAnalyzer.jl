@@ -1755,7 +1755,13 @@ Interpolate EEG channel(s) using planar interpolation.
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `interpolation_factor::Int64=100`: interpolation quality
 
 # Returns
@@ -1774,19 +1780,20 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
     typeof(channel) == Vector{Int64} && sort!(channel, rev=true)
 
     eeg_new = deepcopy(eeg)
+    eeg_tmp = deepcopy(eeg)
     _check_channels(eeg, channel)
     _check_epochs(eeg, epoch)
 
     locs_x1 = eeg.eeg_locs[!, :loc_x]
     locs_y1 = eeg.eeg_locs[!, :loc_y]
     
-    eeg_delete_channel!(eeg, channel=channel)
-    locs_x2 = eeg.eeg_locs[!, :loc_x]
-    locs_y2 = eeg.eeg_locs[!, :loc_y]
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = eeg_delete_channel(eeg, channel=channel)
+    locs_x2 = eeg_tmp.eeg_locs[!, :loc_x]
+    locs_y2 = eeg_tmp.eeg_locs[!, :loc_y]
+    channels = eeg_get_channel_bytype(eeg_tmp, type=Symbol(eeg.eeg_header[:signal_type]))
 
     epoch_n = length(epoch)
-    epoch_len = eeg_epoch_len(eeg)
+    epoch_len = eeg_epoch_len(eeg_tmp)
 
     s_interpolated = zeros(Float64, length(channel), epoch_len, epoch_n)
 
@@ -1795,7 +1802,7 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
 
     Threads.@threads for epoch_idx in eachindex(epoch)
         @inbounds @simd for length_idx in 1:epoch_len
-            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
+            s_tmp, x, y = @views _interpolate(eeg_tmp.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for channel_idx in eachindex(channel)
                 x_idx = vsearch(locs_x1[channel[channel_idx]], x)
                 y_idx = vsearch(locs_y1[channel[channel_idx]], y)
@@ -2860,7 +2867,6 @@ function locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false
         r2 = s_normalize_minmax(locs_new[!, :loc_radius])
         r = maximum(r2) / maximum(r1)
         locs_new[!, :loc_radius] .*= r
-        @show r
     end
 
     if spherical == true

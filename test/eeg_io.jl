@@ -14,7 +14,11 @@ eeg = eeg_import_digitrack("eeg-test-digitrack.txt")
 @test typeof(eeg) == NeuroAnalyzer.EEG
 eeg = eeg_import_bv("eeg-test-bv.vhdr")
 @test typeof(eeg) == NeuroAnalyzer.EEG
-eeg
+eeg = eeg_import_csv("eeg-test_txch.csv.gz")
+@test typeof(eeg) == NeuroAnalyzer.EEG
+eeg = eeg_import_csv("eeg-test_chxt.csv.gz")
+@test typeof(eeg) == NeuroAnalyzer.EEG
+
 eeg = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(eeg, channel=24)
 eeg_delete_channel!(eeg, channel=24)

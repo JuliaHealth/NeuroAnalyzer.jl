@@ -45,6 +45,7 @@ function na_info()
         "Jacobi",
         "JLD2",
         "Loess",
+        "MAT",
         "MultivariateStats",
         "Plots",
         "Polynomials",
