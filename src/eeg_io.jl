@@ -329,6 +329,9 @@ function locs_import(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
+    verbose == true && @info "Send standard location for your channels to adam.wysokinski@neuroanalyzer.org"
+    verbose == true && @info "Nose direction is set at '+Y'."
+
     if splitext(file_name)[2] == ".ced"
         locs = locs_import_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
