@@ -407,4 +407,8 @@ eeg1, g, h = eeg_slaplacian(eeg)
 b = eeg_bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
 @test size(b) == (5, 309760)
 
+eeg_r = eeg_reflect(eeg)
+eeg_c = eeg_chop(eeg_r)
+@test size(eeg.eeg_signals) == size(eeg_c.eeg_signals)
+
 true

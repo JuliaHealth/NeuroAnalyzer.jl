@@ -1682,7 +1682,10 @@ Apply filtering.
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:onepass` 
+    - `:onepass_reverse`
+    - `:twopass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
 
@@ -1744,12 +1747,10 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         end
     end
 
-    signal = _reflect(signal)
-
     if fprototype === :sg
         isodd(window) || throw(ArgumentError("window must be an odd number."))
         s_filtered = savitzky_golay(signal, window, order)
-        return _chop(s_filtered.y)
+        return s_filtered.y
     end
 
     if fprototype === :mavg
@@ -1764,7 +1765,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
                 s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
             end
         end
-        return _chop(s_filtered)
+        return s_filtered
     end
 
     if fprototype === :mmed
@@ -1779,7 +1780,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
                 s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
             end
         end
-        return _chop(s_filtered)
+        return s_filtered
     end
 
     if fprototype === :poly
@@ -1789,12 +1790,12 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         @inbounds @simd for idx in eachindex(signal)
             s_filtered[idx] = p(t[idx])
         end
-        return _chop(s_filtered)
+        return s_filtered
     end
 
     if fprototype === :conv
         s_filtered = s_tconv(signal, kernel=window)
-        return _chop(s_filtered)
+        return s_filtered
     end
 
     if ftype === :lp
@@ -1842,7 +1843,8 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
     dir === :twopass && (s_filtered = filtfilt(flt, signal))
     dir === :onepass && (s_filtered = filt(flt, signal))
     dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
-    return _chop(s_filtered)
+
+    return s_filtered
 end
 
 """
@@ -2172,14 +2174,11 @@ function s2_tcoherence(signal1::AbstractVector, signal2::AbstractVector; pad::In
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    signal1 = _reflect(signal1)
-    signal2 = _reflect(signal2)
-
     s1_fft = fft0(signal1, pad) ./ length(signal1)
     s2_fft = fft0(signal2, pad) ./ length(signal2)
 
     coh = @. (abs((s1_fft) * conj.(s2_fft))^2) / (s1_fft * s2_fft)
-    coh = _chop(coh)
+
     msc = @. abs(coh)^2
 
     return (c=real.(coh), msc=msc, ic=imag.(coh))
@@ -2819,9 +2818,6 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
         ncyc[2] < 1 && throw(ArgumentError("ncyc[2] must be ≥ 1."))
     end
 
-    # add reflected signal to reduce edge artifacts
-    signal = _reflect(signal)
-
     # get frequency range
     fs < 1 && throw(ArgumentError("fs must be > 1."))
     frq_lim = tuple_order(frq_lim)
@@ -2861,11 +2857,13 @@ function s_wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, f
     end
 
     # remove reflected part of the signal
-    w_conv = w_conv[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    w_amp = w_amp[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    w_powers = w_powers[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    w_phases = w_phases[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    
+    # if reflect == true
+    #     w_conv = w_conv[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    #     w_amp = w_amp[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    #     w_powers = w_powers[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    #     w_phases = w_phases[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    # end
+
     norm == true && (w_powers = pow2db.(w_powers))
 
     return (w_conv=w_conv, w_powers=w_powers, w_phases=w_phases, frq_list=frq_list)
@@ -2926,11 +2924,8 @@ function s_gfilter(signal::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw:
     f <= 0 && throw(ArgumentError("f must be > 0."))
     gw <= 0 && throw(ArgumentError("gw must be > 0."))
 
-    # add reflected signal to reduce edge artifacts
-    s_r = _reflect(signal)
-    
     # create Gaussian in frequency domain
-    gf = linspace(0, fs, length(s_r))
+    gf = linspace(0, fs, length(signal))
     gs = (gw * (2 * pi - 1)) / (4 * pi)     # normalized width
     gf .-= f                                # shifted frequencies
     # g = @. exp(-0.5 * (gf / gs)^2)        # Gaussian
@@ -2938,10 +2933,8 @@ function s_gfilter(signal::AbstractVector; fs::Int64, pad::Int64=0, f::Real, gw:
     g ./= abs(maximum(g))                   # gain-normalized
 
     # filter
-    s_f = 2 .* ifft0(fft0(s_r, pad) .* g, pad)
+    return 2 .* ifft0(fft0(signal, pad) .* g, pad)
     
-    # remove reflected part of the signal
-    return _chop(s_f)
 end
 
 """
@@ -3614,15 +3607,11 @@ function s_wbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, ncyc:
 
     pad > 0 && (signal = pad0(signal, pad))
 
-    # add reflected signal to reduce edge artifacts
-    signal = _reflect(signal)
-
     demean == true && (signal = s_demean(signal))
 
     kernel = generate_morlet(fs, frq, 1, ncyc=ncyc, complex=true)
 
-    # remove reflected part of the signal
-    return _chop(real.(s_fconv(signal, kernel=kernel, norm=true)))
+    return real.(s_fconv(signal, kernel=kernel, norm=true))
 end
 
 """
@@ -3670,15 +3659,11 @@ function s_cbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, demea
 
     pad > 0 && (signal = pad0(signal, pad))
 
-    # add reflected signal to reduce edge artifacts
-    signal = _reflect(signal)
-
     demean == true && (signal = s_demean(signal))
 
     kernel = generate_sine(frq, -1:1/fs:1)
 
-    # remove reflected part of the signal
-    return _chop(s_tconv(signal, kernel=kernel))
+    return s_tconv(signal, kernel=kernel)
 end
 
 """
@@ -3786,11 +3771,11 @@ function s_denoise_wien(signal::AbstractArray)
     signal_new = similar(signal)
 
     @inbounds @simd for epoch_idx in 1:epoch_n
-        s_m = @views _reflect(mean(signal[:, :, epoch_idx], dims=1)'[:, 1])
+        s_m = @views mean(signal[:, :, epoch_idx], dims=1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
         Threads.@threads for channel_idx in 1:channel_n
-            signal_new[channel_idx, :, epoch_idx] = @views _chop(wiener(_reflect(signal[channel_idx, :, epoch_idx]), s_m, noise))
+            signal_new[channel_idx, :, epoch_idx] = @views wiener(signal[channel_idx, :, epoch_idx], s_m, noise)
         end
     end
 

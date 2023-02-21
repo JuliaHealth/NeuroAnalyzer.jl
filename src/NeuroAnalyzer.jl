@@ -397,6 +397,10 @@ export eeg_lrinterpolate_channel
 export eeg_lrinterpolate_channel!
 export locs_maximize
 export locs_maximize!
+export eeg_reflect
+export eeg_reflect!
+export eeg_chop
+export eeg_chop!
 
 include("eeg_process.jl")
 export eeg_reference_ch

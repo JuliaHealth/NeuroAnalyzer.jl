@@ -975,7 +975,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
         eeg_new.eeg_signals = s_trim(eeg_new.eeg_signals, segment=segment)
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_time = t_trimmed
-        eeg_new.eeg_epoch_time = t_trimmed
+        eeg_new.eeg_epoch_time = t_trimmed .+ eeg.eeg_epoch_time[1]
         eeg_new.eeg_header[:eeg_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:eeg_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
         eeg_new.eeg_header[:epoch_duration_samples] -= length(segment[1]:segment[2])
@@ -2893,5 +2893,139 @@ Maximize channel locations to the unit sphere.
 """
 function locs_maximize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
     locs[!, :] = locs_maximize(locs, planar=planar, spherical=spherical)[!, :]
+    return nothing
+end
+
+"""
+    eeg_reflect(eeg; n)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to add, default is 1 second
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_reflect(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    # add up to one epoch
+    n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
+
+    eeg_new = deepcopy(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s = zeros(channel_n, eeg_epoch_len(eeg) + 2 * n, epoch_n)
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for channel_idx in 1:channel_n
+            s1 = eeg_new.eeg_signals[:, 1:n, epoch_idx]
+            s2 = eeg_new.eeg_signals[:, end:-1:(end - n + 1), epoch_idx]
+            @views s[channel_idx, :, epoch_idx] = _reflect(eeg.eeg_signals[channel_idx, :, epoch_idx], s1[channel_idx, :], s2[channel_idx, :])
+        end
+    end
+    eeg_new.eeg_signals = s
+
+    t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
+    eeg_new.eeg_time = t
+    eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
+
+    push!(eeg_new.eeg_header[:history], "eeg_reflect(EEG, n=$n)")
+
+    return eeg_new
+end
+
+"""
+    eeg_reflect!(eeg; n)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to add, default is 1 second
+"""
+function eeg_reflect!(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    eeg_tmp = eeg_reflect(eeg, n=n)
+
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+
+    eeg_reset_components!(eeg)
+
+    return nothing
+end
+
+"""
+    eeg_chop(eeg; n)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to remove, default is 1 second
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_chop(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    # add up to one epoch
+    n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
+
+    eeg_new = deepcopy(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s = zeros(channel_n, eeg_epoch_len(eeg) - 2 * n, epoch_n)
+
+    Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for channel_idx in 1:channel_n
+            @views s[channel_idx, :, epoch_idx] = _chop(eeg.eeg_signals[channel_idx, :, epoch_idx], n)
+        end
+    end
+    eeg_new.eeg_signals = s
+
+    t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
+    eeg_new.eeg_time = t
+    eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
+
+    push!(eeg_new.eeg_header[:history], "eeg_chop(EEG, n=$n)")
+
+    return eeg_new
+end
+
+"""
+    eeg_chop!(eeg; c, v)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to remove, default is 1 second
+"""
+function eeg_chop!(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    eeg_tmp = eeg_chop(eeg, n=n)
+
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+
+    eeg_reset_components!(eeg)
+
     return nothing
 end
