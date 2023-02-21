@@ -518,7 +518,7 @@ Apply filtering to EEG channel(s).
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
+- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
@@ -527,7 +527,7 @@ Apply filtering to EEG channel(s).
     - `:onepass_reverse`
     - `:twopass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window, required for FIR filter, weighting window for `:mavg` and `:mmed`; for `:fir` filter default is Hamming window of `order` taps for `:lp` and `:hp` filters and fred harris' rule-of-thumb number of taps for `:bp` and `:bs` filters
 - `preview::Bool=false`: plot filter response
 
 # Returns
@@ -589,7 +589,7 @@ Apply filtering to EEG channel(s).
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
@@ -598,7 +598,7 @@ Apply filtering to EEG channel(s).
     - `:onepass_reverse`
     - `:twopass`
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64} - window, required for `:fir` filter
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window, required for FIR filter, weighting window for `:mavg` and `:mmed`; for `:fir` filter default is Hamming window of `order` taps for `:lp` and `:hp` filters and fred harris' rule-of-thumb number of taps for `:bp` and `:bs` filters
 - `preview::Bool=false`: plot filter response
 """
 function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
