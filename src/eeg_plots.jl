@@ -3167,16 +3167,81 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
     end
 
     fprototype === :butterworth && (prototype = Butterworth(order))
+
     if fprototype === :fir
         if window === nothing
-            verbose == true && @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
-            window = hanning(3 * floor(Int64, fs / cutoff[1]))
+            if ftype === :bp
+                f1_stop = cutoff[1] - ((cutoff[2] - cutoff[1]) / fs) / 2
+                f1_pass = cutoff[1]
+                f2_stop = cutoff[2] + ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_pass = cutoff[2]
+                trans_bandwidth = (f2_stop - f1_stop) / fs
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+            elseif ftype === :bs
+                # TO DO: CHECK
+                f1_pass = cutoff[1]
+                f1_stop = cutoff[1] + ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_stop = cutoff[2] - ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_pass = cutoff[2]
+                trans_bandwidth = (f2_stop - f1_stop) / fs
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+            elseif ftype === :lp
+                f_pass = cutoff[1]
+                f_stop = cutoff[1] + minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
+                trans_bandwidth = (f_stop - f_pass) / fs
+                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
+            elseif ftype === :hp
+                f_pass = cutoff[1]
+                f_stop = cutoff[1] - minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
+                trans_bandwidth = (f_pass - f_stop) / fs
+                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
+            end
+
+            # next power of 2
+            n_taps = 2 ^ ceil(Int64, log2(n_taps))
+
+            window = DSP.hamming(n_taps)
+
+            if ftype === :hp || ftype === :bp || ftype === :bs
+                mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+            end
+
+            if ftype === :lp || ftype === :hp
+                ftype === :lp && verbose == true && @info "Creating LP filter"
+                ftype === :hp && verbose == true && @info "Creating HP filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F_pass: $(round(f_pass, digits=4)) Hz"
+                verbose == true && @info "F_stop: $(round(f_stop, digits=4)) Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            elseif ftype === :bp
+                verbose == true && @info "Creating BP filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
+                verbose == true && @info "F1_pass: $f1_pass Hz"
+                verbose == true && @info "F2_pass: $f2_pass Hz"
+                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            elseif ftype === :bs
+                verbose == true && @info "Creating BS filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F1_pass: $f1_pass Hz"
+                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
+                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
+                verbose == true && @info "F2_pass: $f2_pass Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            end
         end
-        if ftype === :hp || ftype === :bp || ftype === :bs
-            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
-        end
+
         prototype = FIRWindow(window)
     end
+
+
     if fprototype === :chebyshev1
         (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
         prototype = Chebyshev1(order, rs)

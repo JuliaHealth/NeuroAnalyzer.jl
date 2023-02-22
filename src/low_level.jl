@@ -1654,110 +1654,42 @@ end
 """
     s_filter(signal; <keyword arguments>)
 
-Apply filtering.
+Filter signal.
 
 # Arguments
 
 - `signal::AbstractVector`
 - `fprototype::Symbol`: filter prototype:
-    - `:butterworth`
-    - `:chebyshev1`
-    - `:chebyshev2`
-    - `:elliptic`
-    - `:fir`
-    - `:iirnotch`: second-order IIR notch filter
-    - `:remez`: Remez FIR filter
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
     - `:sg`: Savitzky-Golay
-- `ftype::Symbol`: filter type:
-    - `:lp`: low pass
-    - `:hp`: high pass
-    - `:bp`: band pass
-    - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
-- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
-- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
-    - `:onepass` 
-    - `:onepass_reverse`
-    - `:twopass`
+- `fs::Int64=0`: sampling rate
+- `order::Int64=8`: k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window, required for FIR filter, weighting window for `:mavg` and `:mmed`; for `:fir` filter default is Hamming window of `order` taps for `:lp` and `:hp` filters and fred harris' rule-of-thumb number of taps for `:bp` and `:bs` filters
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window length for `:sg` filter, weighting window for `:mavg` and `:mmed`
 
 # Returns
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, fs::Int64=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
+function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order::Int64=8, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
-    _check_var(fprototype, [:mavg, :mmed, :poly, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :conv, :sg], "fprototype")
-    typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
+    _check_var(fprototype, [:mavg, :mmed, :poly, :conv, :sg], "fprototype")
+    (fs <= 0 && fprototype === :poly) && throw(ArgumentError("fs must be ≥ 1."))
 
-    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
-        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
-        bw != -1 && throw(ArgumentError("bw must not be specified."))
-    end
-    if fprototype === :iirnotch
-        ftype !== nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
-    end
-    if fprototype in [:irrnotch, :remez]
-        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
-        bw == -1 && throw(ArgumentError("bw must be specified."))
-    end
     (fprototype === :sg && window === nothing) && throw(ArgumentError("window must be specified."))
-
-    if fprototype === :fir
-        if window === nothing
-            # TO DO: calculate FIR order automatically: fred harris' rule-of-thumb for LP and HP filters
-            if length(cutoff) == 2
-                transition_band = (cutoff[2] - cutoff[1]) / fs
-                n_taps = round(Int64, order * 4 / (22 * transition_band))
-            else
-                n_taps = 3 * floor(Int64, fs / cutoff[1])
-            end
-            window = hamming(n_taps)
-            verbose == true && @info "Using default window for :fir filter: hamming($(length(window)))."
-        end
-        if ftype === :hp || ftype === :bp || ftype === :bs
-            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
-        end
+    
+    if fprototype === :poly
+        order < 1 && throw(ArgumentError("order must be > 1."))
+    else
+        (order < 2 && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
     end
-
-    order < 1 && throw(ArgumentError("order must be > 1."))
-    window !== nothing && length(window) > length(signal) && throw(ArgumentError("For :fir filter window must be shorter than signal."))
-    (fprototype !== :mavg && fprototype !== :sg && fprototype !== :mmed && fprototype !== :poly && fprototype !== :conv && fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
-    (fprototype !== :mavg && fprototype !== :conv && fprototype !== :mmed) && (fs <= 0 && throw(ArgumentError("fs must be > 0.")))
-    dir in [:onepass, :onepass_reverse, :twopass] || throw(ArgumentError("direction must be :onepass, :onepass_reverse or :twopass."))
-    ((order < 2 && fprototype !== :poly && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    (window !== nothing && length(window) != (2 * order + 1) && (fprototype === :mavg || fprototype === :mmed)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
     order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
-    
-    if rp == -1
-        if fprototype === :elliptic
-            rp = 0.0025
-        else
-            rp = 2
-        end
-    end
-    
-    if rs == -1
-        if fprototype === :elliptic
-            rp = 40
-        else
-            rp = 20
-        end
-    end
 
-    if fprototype === :sg
-        isodd(window) || throw(ArgumentError("window must be an odd number."))
-        s_filtered = savitzky_golay(signal, window, order)
-        return s_filtered.y
+    if fprototype === :mavg || fprototype === :mmed
+        (window !== nothing && length(window) != (2 * order + 1)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
     end
 
     if fprototype === :mavg
@@ -1805,6 +1737,166 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         return s_filtered
     end
 
+    if fprototype === :sg
+        isodd(window) || throw(ArgumentError("window must be an odd number."))
+        s_filtered = savitzky_golay(signal, window, order)
+        return s_filtered.y
+    end
+
+end
+
+"""
+    s_create_filter(signal; <keyword arguments>)
+
+Create IIR or FIR filter.
+
+# Arguments
+
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
+    - `:iirnotch`: second-order IIR notch filter
+    - `:remez`: Remez FIR filter
+- `ftype::Symbol`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
+- `n::Int64`: signal length in samples
+- `fs::Int64`: sampling rate
+- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters
+- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
+
+# Returns
+
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}`
+"""
+function s_create_filter(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Nothing, AbstractVector, Int64}=nothing)
+
+    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
+    typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+    fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
+
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
+        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
+        bw != -1 && throw(ArgumentError("bw must not be specified."))
+    end
+
+    if fprototype === :iirnotch
+        ftype !== nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
+    end
+
+    if fprototype in [:irrnotch, :remez]
+        cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
+        bw == -1 && throw(ArgumentError("bw must be specified."))
+    end
+
+    if fprototype === :remez
+        bw > cutoff[1] && throw(ArgumentError("For :remez filter bw must be ≤ $(cutoff[1])."))
+        (length(cutoff) == 2 && bw > cutoff[2] - cutoff[1]) && throw(ArgumentError("For :remez filter bw must be ≤ $(cutoff[2] - cutoff[1])."))
+    end
+
+    if fprototype === :fir
+        if window === nothing
+            if ftype === :bp
+                f1_stop = cutoff[1] - ((cutoff[2] - cutoff[1]) / fs) / 2
+                f1_pass = cutoff[1]
+                f2_stop = cutoff[2] + ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_pass = cutoff[2]
+                trans_bandwidth = (f2_stop - f1_stop) / fs
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+            elseif ftype === :bs
+                # TO DO: CHECK
+                f1_pass = cutoff[1]
+                f1_stop = cutoff[1] + ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_stop = cutoff[2] - ((cutoff[2] - cutoff[1]) / fs) / 2
+                f2_pass = cutoff[2]
+                trans_bandwidth = (f2_stop - f1_stop) / fs
+                n_taps = round(Int64, order * 4 / (22 * trans_bandwidth))   
+            elseif ftype === :lp
+                f_pass = cutoff[1]
+                f_stop = cutoff[1] + minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
+                trans_bandwidth = (f_stop - f_pass) / fs
+                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
+            elseif ftype === :hp
+                f_pass = cutoff[1]
+                f_stop = cutoff[1] - minimum([maximum([0.25 * cutoff[1], 2.0]), cutoff[1]])
+                trans_bandwidth = (f_pass - f_stop) / fs
+                n_taps = ceil(Int64, ((order * 4) / (22 * trans_bandwidth)))
+            end
+
+            # next power of 2
+            n_taps = 2 ^ ceil(Int64, log2(n_taps))
+
+            window = DSP.hamming(n_taps)
+
+            if ftype === :hp || ftype === :bp || ftype === :bs
+                mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
+            end
+
+            if ftype === :lp || ftype === :hp
+                ftype === :lp && verbose == true && @info "Creating LP filter"
+                ftype === :hp && verbose == true && @info "Creating HP filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F_pass: $(round(f_pass, digits=4)) Hz"
+                verbose == true && @info "F_stop: $(round(f_stop, digits=4)) Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            elseif ftype === :bp
+                verbose == true && @info "Creating BP filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
+                verbose == true && @info "F1_pass: $f1_pass Hz"
+                verbose == true && @info "F2_pass: $f2_pass Hz"
+                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            elseif ftype === :bs
+                verbose == true && @info "Creating BS filter"
+                verbose == true && @info "Using default window: hamming($n_taps)"
+                verbose == true && @info "Attenuation: $(order * 4) dB"
+                verbose == true && @info "F1_pass: $f1_pass Hz"
+                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
+                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
+                verbose == true && @info "F2_pass: $f2_pass Hz"
+                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
+                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+            end
+        end
+    end
+
+    order < 1 && throw(ArgumentError("order must be > 1."))
+    (fprototype !== :fir && window !== nothing && length(window) > n) && throw(ArgumentError("For :fir filter window must be ≤ signal length ($n)."))
+    (fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+    fs <= 0 && throw(ArgumentError("fs must be > 0."))
+    ((order < 2 && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
+    order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
+    
+    if rp == -1
+        if fprototype === :elliptic
+            rp = 0.0025
+        else
+            rp = 2
+        end
+    end
+    
+    if rs == -1
+        if fprototype === :elliptic
+            rp = 40
+        else
+            rp = 20
+        end
+    end
+
     if ftype === :lp
         length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
         responsetype = Lowpass(cutoff; fs=fs)
@@ -1847,9 +1939,32 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, ftype::Union{Symbo
         flt = digitalfilter(responsetype, prototype)
     end
 
-    dir === :twopass && (s_filtered = filtfilt(flt, signal))
-    dir === :onepass && (s_filtered = filt(flt, signal))
-    dir === :onepass_reverse && (s_filtered = filt(flt, reverse(signal)))
+    return flt
+end
+
+"""
+    s_apply_filter(signal; <keyword arguments>)
+
+Apply IIR or FIR filter.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}`: filter
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:onepass` 
+    - `:onepass_reverse`
+    - `:twopass`
+
+# Returns
+
+- `s_filtered::Vector{Float64}`
+"""
+function s_apply_filter(signal::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}, dir::Symbol=:twopass)
+
+    dir === :twopass && (return filtfilt(flt, signal))
+    dir === :onepass && (return filt(flt, signal))
+    dir === :onepass_reverse && (return filt(flt, reverse(signal)))
 
     return s_filtered
 end

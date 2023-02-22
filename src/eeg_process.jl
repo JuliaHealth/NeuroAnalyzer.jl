@@ -550,9 +550,19 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     end
 
     eeg_new = deepcopy(eeg)
+
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
+        n = eeg_epoch_len(eeg)
+        flt = s_create_filter(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+    end
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw, dir=dir, t=t, window=window)
+            if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_apply_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
+            else
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, fs=fs, order=order, t=t, window=window)
+            end
         end
     end
 

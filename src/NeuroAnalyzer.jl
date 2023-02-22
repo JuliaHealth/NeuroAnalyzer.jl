@@ -68,6 +68,7 @@ mutable struct STUDY
     study_group::Vector{Symbol}
 end
 
+FFTW.set_provider!("mkl")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
