@@ -87,21 +87,25 @@ export na_set_prefs
 export na_set_verbose
 export na_version
 
-# preferences
-if Sys.isunix() || Sys.isapple()
-    def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
-elseif Sys.iswindows()
-    def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
-end
-const use_cuda = @load_preference("use_cuda", false)
-const progress_bar = @load_preference("progress_bar", true)
-const plugins_path = @load_preference("plugins_path", def_plugins_path)
-const verbose = @load_preference("verbose", true)
-isdir(plugins_path) || mkdir(plugins_path)
-na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
+function __init__()
+    @info "Loading preferences."
+    # preferences
+    if Sys.isunix() || Sys.isapple()
+        def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
+    elseif Sys.iswindows()
+        def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+    end
+    const use_cuda = @load_preference("use_cuda", false)
+    const progress_bar = @load_preference("progress_bar", true)
+    const plugins_path = @load_preference("plugins_path", def_plugins_path)
+    const verbose = @load_preference("verbose", true)
+    isdir(plugins_path) || mkdir(plugins_path)
+    na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
 
-# reload plugins
-na_plugins_reload()
+    @info "Loading plugins."
+    # reload plugins
+    na_plugins_reload()
+end
 
 # internal functions are not available outside NA
 include("internal.jl")
