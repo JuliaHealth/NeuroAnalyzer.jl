@@ -270,6 +270,7 @@ export dprime
 export norminv
 export dranks
 export res_norm
+export mcc
 
 include("eeg_io.jl")
 export eeg_export_csv

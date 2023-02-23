@@ -51,5 +51,5 @@ _, _, c, _, _, _, _ = linreg(ones(100), zeros(100))
 @test norminv(0.5) == 0.0
 @test dranks(1:4) == [1, 2, 3, 3]
 @test res_norm(ones(2))[2] == [0.5]
-
+@test mcc(90, 90, 10, 10) == 0.8
 true
