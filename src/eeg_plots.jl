@@ -12,7 +12,7 @@ function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_n
 
     ext = splitext(file_name)[2]
     _check_var(ext, [".png", ".pdf", ".jpg", ".tiff"], "File format")
-    (isfile(file_name) && verbose == true) && @info "File $file_name will be overwritten."
+    (isfile(file_name) && verbose == true) && _info("File $file_name will be overwritten.")
     if typeof(p) == Plots.Plot{Plots.GRBackend}
         savefig(p, file_name)
     else
@@ -733,7 +733,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -746,7 +746,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -849,22 +849,22 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
         xscale = :log10
         yscale = :identity
     elseif ax === :linlog
-        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        _info("For multi-channel PSD plots, y-axis log-scale is ignored.")
         xticks = _ticks(frq_lim)
         xscale = :identity
         yscale = :identity
     elseif ax === :loglog
-        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        _info("For multi-channel PSD plots, y-axis log-scale is ignored.")
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -952,7 +952,7 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -965,7 +965,7 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1064,7 +1064,7 @@ function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; la
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1077,7 +1077,7 @@ function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; la
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1169,7 +1169,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1182,7 +1182,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1304,7 +1304,7 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1317,7 +1317,7 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -2028,7 +2028,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
@@ -2183,7 +2183,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
@@ -3207,34 +3207,34 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
             end
 
             if ftype === :lp || ftype === :hp
-                ftype === :lp && verbose == true && @info "Creating LP filter"
-                ftype === :hp && verbose == true && @info "Creating HP filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F_pass: $(round(f_pass, digits=4)) Hz"
-                verbose == true && @info "F_stop: $(round(f_stop, digits=4)) Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                ftype === :lp && _info("Creating LP filter")
+                ftype === :hp && _info("Creating HP filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F_pass: $(round(f_pass, digits=4)) Hz")
+                _info("F_stop: $(round(f_stop, digits=4)) Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bp
-                verbose == true && @info "Creating BP filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
-                verbose == true && @info "F1_pass: $f1_pass Hz"
-                verbose == true && @info "F2_pass: $f2_pass Hz"
-                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                _info("Creating BP filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("F1_pass: $f1_pass Hz")
+                _info("F2_pass: $f2_pass Hz")
+                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bs
-                verbose == true && @info "Creating BS filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F1_pass: $f1_pass Hz"
-                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
-                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
-                verbose == true && @info "F2_pass: $f2_pass Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                _info("Creating BS filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F1_pass: $f1_pass Hz")
+                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("F2_pass: $f2_pass Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
         end
 
@@ -4739,10 +4739,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                 Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV")
         else
             erp = mean(eeg_erp(eeg).eeg_signals[channel, :], dims=1)[:]
             eeg_tmp = eeg_keep_channel(eeg, channel=1)
@@ -4755,10 +4755,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         end
     end
 
@@ -5007,10 +5007,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         else         
             erp = mean(mean(signal, dims=3), dims=1)[:]
             eeg_tmp = eeg_keep_channel(eeg, channel=1)
@@ -5023,10 +5023,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         end
     end
 

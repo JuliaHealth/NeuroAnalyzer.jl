@@ -91,7 +91,7 @@ function na_plugins_reload()
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
                 if Sys.isunix() || Sys.isapple()
-                    verbose == true && @info "Loading plugin: $(plugin[idx2])"
+                    _info("Loading plugin: $(plugin[idx2])")
                     include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
                 elseif Sys.iswindows()
                     include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
@@ -125,7 +125,7 @@ Remove NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin name
 """
 function na_plugins_remove(plugin::String)
-    verbose == true && @info "This will remove the whole $plugin directory, along with its file contents."
+    _info("This will remove the whole $plugin directory, along with its file contents.")
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     cd(plugins_path)
     plugins = readdir(plugins_path)
@@ -206,7 +206,7 @@ Change `use_cuda` preference.
 """
 function na_set_use_cuda(use_cuda::Bool)
     @set_preferences!("use_cuda" => use_cuda)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -220,7 +220,7 @@ Change `progress_bar` preference.
 """
 function na_set_progress_bar(progress_bar::Bool)
     @set_preferences!("progress_bar" => progress_bar)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -237,7 +237,7 @@ function na_set_plugins_path(plugins_path::String)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     plugins_path[end] == '/' || (plugins_path *= '/')
     @set_preferences!("plugins_path" => plugins_path)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -273,7 +273,7 @@ Change `verbose` preference.
 """
 function na_set_verbose(verbose::Bool)
     @set_preferences!("verbose" => verbose)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """

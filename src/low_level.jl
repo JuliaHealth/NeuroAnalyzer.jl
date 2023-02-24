@@ -1842,34 +1842,34 @@ function s_create_filter(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
             end
 
             if ftype === :lp || ftype === :hp
-                ftype === :lp && verbose == true && @info "Creating LP filter"
-                ftype === :hp && verbose == true && @info "Creating HP filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F_pass: $(round(f_pass, digits=4)) Hz"
-                verbose == true && @info "F_stop: $(round(f_stop, digits=4)) Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                ftype === :lp && _info("Creating LP filter")
+                ftype === :hp && _info("Creating HP filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F_pass: $(round(f_pass, digits=4)) Hz")
+                _info("F_stop: $(round(f_stop, digits=4)) Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bp
-                verbose == true && @info "Creating BP filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
-                verbose == true && @info "F1_pass: $f1_pass Hz"
-                verbose == true && @info "F2_pass: $f2_pass Hz"
-                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                _info("Creating BP filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("F1_pass: $f1_pass Hz")
+                _info("F2_pass: $f2_pass Hz")
+                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bs
-                verbose == true && @info "Creating BS filter"
-                verbose == true && @info "Using default window: hamming($n_taps)"
-                verbose == true && @info "Attenuation: $(order * 4) dB"
-                verbose == true && @info "F1_pass: $f1_pass Hz"
-                verbose == true && @info "F1_stop: $(round(f1_stop, digits=4)) Hz"
-                verbose == true && @info "F2_stop: $(round(f2_stop, digits=4)) Hz"
-                verbose == true && @info "F2_pass: $f2_pass Hz"
-                verbose == true && @info "Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz"
-                verbose == true && @info "Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz"
+                _info("Creating BS filter")
+                _info("Using default window: hamming($n_taps)")
+                _info("Attenuation: $(order * 4) dB")
+                _info("F1_pass: $f1_pass Hz")
+                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("F2_pass: $f2_pass Hz")
+                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
         end
     end
@@ -4205,7 +4205,7 @@ function s_dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T
 
     if l == 0
         l = maxtransformlevels(signal)
-        verbose == true && @info "Calculating DWT using maximum level: $l."
+        _info("Calculating DWT using maximum level: $l.")
     end
 
     if type === :sdwt

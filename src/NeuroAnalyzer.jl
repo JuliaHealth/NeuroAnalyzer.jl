@@ -2,11 +2,17 @@ __precompile__()
 
 module NeuroAnalyzer
 
-const na_ver = v"0.23.02"
-
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
 end
+
+const na_ver = v"0.23.02 (devel)"
+
+# initialize preferences
+use_cuda = nothing
+progress_bar = nothing
+plugins_path = nothing
+verbose = nothing
 
 using ColorSchemes
 using CSV
@@ -88,23 +94,27 @@ export na_set_verbose
 export na_version
 
 function __init__()
-    @info "Loading preferences."
-    # preferences
+
+    @info "Loading NeuroAnalyzer v$na_ver"
+
+    # load preferences
+    @info "Loading preferences..."
     if Sys.isunix() || Sys.isapple()
         def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
     elseif Sys.iswindows()
         def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
     end
-    const use_cuda = @load_preference("use_cuda", false)
-    const progress_bar = @load_preference("progress_bar", true)
-    const plugins_path = @load_preference("plugins_path", def_plugins_path)
-    const verbose = @load_preference("verbose", true)
-    isdir(plugins_path) || mkdir(plugins_path)
+    global use_cuda = @load_preference("use_cuda", false)
+    global progress_bar = @load_preference("progress_bar", true)
+    global plugins_path = @load_preference("plugins_path", def_plugins_path)
+    global verbose = @load_preference("verbose", true)
     na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
 
-    @info "Loading plugins."
-    # reload plugins
+    # load plugins
+    @info "Loading plugins..."
+    isdir(plugins_path) || mkdir(plugins_path)
     na_plugins_reload()
+
 end
 
 # internal functions are not available outside NA

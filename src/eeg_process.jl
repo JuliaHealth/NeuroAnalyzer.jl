@@ -542,7 +542,7 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     fs = eeg_sr(eeg)
 
     if preview == true
-        verbose == true && @info "When `preview=true`, signal is not being filtered."
+        _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)    
         p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -614,7 +614,7 @@ Apply filtering to EEG channel(s).
 function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
-        verbose == true && @info "When `preview=true`, signal is not being filtered."
+        _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=eeg_sr(eeg), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -1091,7 +1091,7 @@ Upsample EEG.
 """
 function eeg_upsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && _info("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
     
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     s_upsampled, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
@@ -1152,9 +1152,9 @@ Downsample EEG.
 """
 function eeg_downsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr < eeg_sr(eeg) && verbose == true) && @info "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz)."
+    new_sr < eeg_sr(eeg) && _info("To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
 
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && _info("New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
     s_downsampled, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)

@@ -984,7 +984,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
             if eeg_epoch_len(eeg) <= eeg_signal_len(eeg_new)
                 eeg_epoch!(eeg_new, epoch_len=eeg_epoch_len(eeg))
             else
-                verbose == true && @info "Cannot apply original epoch length, returning single-epoch EEG."
+                _info("Cannot apply original epoch length, returning single-epoch EEG.")
             end
         end
         eeg_new.eeg_markers = _delete_markers(eeg_new.eeg_markers, segment)
@@ -992,7 +992,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
     else
         eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use remove_epochs=true."))
         epochs = _s2epoch(eeg, segment[1], segment[2])
-        verbose == true && @info "Removing epochs: $epochs."
+        _info("Removing epochs: $epochs.")
         eeg_new = eeg_delete_epoch(eeg, epoch=epochs)
     end
 
@@ -2800,10 +2800,10 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     accuracy_testdf[!, :signal_predicted]
     acc_mae = mean(abs.(accuracy_testdf.error))
     aic, bic = infcrit(linear_regressor)
-    verbose == true && @info "R² for the linear regressor: $(round(acc_r2, digits=3))"
-    verbose == true && @info "MAE (test dataset): $(round(acc_mae, digits=3))"
-    verbose == true && @info "AIC: $(round(aic, digits=3))"
-    verbose == true && @info "BIC: $(round(bic, digits=3))"
+    _info("R² for the linear regressor: $(round(acc_r2, digits=3))")
+    _info("MAE (test dataset): $(round(acc_mae, digits=3))")
+    _info("AIC: $(round(aic, digits=3))")
+    _info("BIC: $(round(bic, digits=3))")
 
     # predict
     eeg_new = eeg_copy(eeg) 

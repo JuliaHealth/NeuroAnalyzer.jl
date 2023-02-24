@@ -329,8 +329,8 @@ function locs_import(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    verbose == true && @info "Send standard location for your channels to adam.wysokinski@neuroanalyzer.org"
-    verbose == true && @info "Nose direction is set at '+Y'."
+    _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info("Nose direction is set at '+Y'.")
 
     if splitext(file_name)[2] == ".ced"
         locs = locs_import_ced(file_name)
@@ -744,7 +744,7 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) not found in $file_name."
+    length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in $file_name.")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
@@ -1591,7 +1591,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "segmentation=") && (segmentation = lowercase(split(vhdr[idx], '=')[2]) == "markerbased" ? true : false) # YES|NO
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[channelinfos]") && (channels_idx = idx)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[coordinates]") && (locs_idx = idx)
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && @info "Software filters are not supported yet."
+        startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && _info("Software filters are not supported yet.")
     end
 
     patient = ""
@@ -2072,7 +2072,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
                 markers[idx1] = String(Char.(signal))
             end
         end
-        verbose == true && @info "Channels upsampled to $max_sampling_rate Hz."
+        _info("Channels upsampled to $max_sampling_rate Hz.")
         sampling_rate = max_sampling_rate
         close(fid)
     end

@@ -361,7 +361,7 @@ end
 function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, epoch_len::Int64)
 
     if size(signal, 3) > 1
-        @info "EEG has already been epoched, parts of the signal might have been removed."
+        _info("EEG has already been epoched, parts of the signal might have been removed.")
         signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
     end
 
@@ -710,4 +710,8 @@ function _split(df::DataFrame, ratio::Float64=0.8)
     train_idx = view(idx, 1:floor(Int, ratio * n))
     test_idx = view(idx, (floor(Int, ratio * n) + 1):n)
     return df[train_idx, :], df[test_idx, :]
+end
+
+function _info(s::String)
+    verbose == true && @info s
 end
