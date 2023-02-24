@@ -525,7 +525,7 @@ Apply filtering to EEG channel(s).
     - `:onepass` 
     - `:onepass_reverse`
     - `:twopass`
-- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 - `preview::Bool=false`: plot filter response
@@ -564,7 +564,7 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
             if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
                 eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter_apply(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
             else
-                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, fs=fs, order=order, t=t, window=window)
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, order=order, t=t, window=window)
             end
             # update progress bar
             progress_bar == true && next!(pb)
@@ -611,7 +611,7 @@ Apply filtering to EEG channel(s).
     - `:onepass` 
     - `:onepass_reverse`
     - `:twopass`
-- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 - `preview::Bool=false`: plot filter response
@@ -1981,7 +1981,7 @@ function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float
     channel_n = nrow(locs)
     epoch_n = eeg_epoch_n(eeg)
 
-    length(_map_channels) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+    length(channels) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
 
     G = zeros(channel_n, channel_n)
     H = zeros(channel_n, channel_n)

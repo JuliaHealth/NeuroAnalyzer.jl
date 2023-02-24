@@ -1712,6 +1712,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
             @error("Only Float32 and Int16 BVCDF binary formats are supported.")
         end
 
+        fid = ""
         try
             fid = open(file_name, "r")
         catch
@@ -1974,6 +1975,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     if length(unique(samples_per_datarecord)) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
 
+        fid = ""
         try
             fid = open(file_name, "r")
         catch
@@ -2019,6 +2021,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
         sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
         max_sampling_rate = maximum(sampling_rate)
 
+        fid = ""
         try
             fid = open(file_name, "r")
         catch

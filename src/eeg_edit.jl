@@ -310,7 +310,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg_new.eeg_header[:labels][idx])), lowercase.(string.(eeg_new.eeg_locs[!, :labels])))
-        loc !== nothing && delete!(eeg_new.eeg_locs, loc)
+        loc !== nothing && deleteat!(eeg_new.eeg_locs, loc)
         deleteat!(eeg_new.eeg_header[:labels], idx)
         deleteat!(eeg_new.eeg_header[:channel_type], idx)
         deleteat!(eeg_new.eeg_header[:transducers], idx)
@@ -351,7 +351,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg.eeg_header[:labels][idx])), lowercase.(string.(eeg.eeg_locs[!, :labels])))
-        loc !== nothing && delete!(eeg.eeg_locs, loc)
+        loc !== nothing && deleteat!(eeg.eeg_locs, loc)
         deleteat!(eeg.eeg_header[:labels], idx)
         deleteat!(eeg.eeg_header[:channel_type], idx)
         deleteat!(eeg.eeg_header[:transducers], idx)
@@ -799,7 +799,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
 
         # delete markers outside epochs
         for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-            eeg_new.eeg_markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || delete!(eeg_new.eeg_markers, marker_idx)
+            eeg_new.eeg_markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || deleteat!(eeg_new.eeg_markers, marker_idx)
         end
     end
 
@@ -888,7 +888,7 @@ function eeg_erp(eeg::NeuroAnalyzer.EEG)
 
     # remove markers of deleted epochs
     for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-        eeg_new.eeg_markers[marker_idx, :start] > eeg_duration_samples && delete!(eeg_new.eeg_markers, marker_idx)
+        eeg_new.eeg_markers[marker_idx, :start] > eeg_duration_samples && deleteat!(eeg_new.eeg_markers, marker_idx)
     end
 
     eeg_reset_components!(eeg_new)
@@ -1691,7 +1691,7 @@ Replace EEG channel.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel number or name
-- `signal::Array{Float64, 3}
+- `signal::Array{Float64, 3}`
 
 # Returns
 
@@ -1733,7 +1733,7 @@ Replace EEG channel.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel number or name
-- `signal::Array{Float64, 3}
+- `signal::Array{Float64, 3}`
 """
 function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
@@ -2554,7 +2554,7 @@ function eeg_delete_marker(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_new.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     nn = size(eeg_new.eeg_markers, 1)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    delete!(eeg_new.eeg_markers, n)
+    deleteat!(eeg_new.eeg_markers, n)
     size(eeg_new.eeg_markers, 1) == 0 && (eeg_new.eeg_header[:markers] = false)
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_delete_marker(EEG; n=$n)")
@@ -2789,7 +2789,7 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     good_signal = _make_epochs(eeg.eeg_signals[:, :, good_epochs], epoch_n=1)
 
     # train
-    df = @views DataFrame(hcat(good_signal[channel, :, :], good_signal[good_channels, :, ]'), :auto)
+    df = @views DataFrame(hcat(good_signal[channel, :, 1], good_signal[good_channels, :, 1]'), :auto)
     train, test = _split(df, 0.80)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)

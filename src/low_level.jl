@@ -1419,8 +1419,8 @@ function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0,
         trend = linspace(signal[1], signal[end], length(signal))
         return signal .- trend
     elseif type === :hp
-        fs <= 0 && throw(ArgumentError("fs must be > 0."))
-        return s_filter(signal, fprototype=:butterworth, ftype=:hp, cutoff=f, fs=fs, order=8)
+        fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+        return s_filter(signal, fprototype=:fir, ftype=:hp, cutoff=f, fs=fs)
     end
 end
 
@@ -1665,7 +1665,6 @@ Filter signal.
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
     - `:sg`: Savitzky-Golay
-- `fs::Int64=0`: sampling rate
 - `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
@@ -1674,10 +1673,9 @@ Filter signal.
 
 - `s_filtered::Vector{Float64}`
 """
-function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order::Int64=8, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
+function s_filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
     _check_var(fprototype, [:mavg, :mmed, :poly, :conv, :sg], "fprototype")
-    (fs <= 0 && fprototype === :poly) && throw(ArgumentError("fs must be ≥ 1."))
     order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
 
     (fprototype === :sg && window === nothing) && throw(ArgumentError("For :sg filter window must be specified."))
@@ -1730,7 +1728,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
         s_filtered = zeros(length(signal))
         for window_idx in 1:window_n - 1
             s = signal[((window_idx - 1) * window + 1):window_idx * window]
-            t = collect(0:1/fs:(length(s) - 1) / fs)        
+            t = 1:length(s)       
             p = Polynomials.fit(t, s, order)
             @inbounds for idx in eachindex(s)
                 s[idx] = p(t[idx])
@@ -1738,7 +1736,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
             @inbounds s_filtered[((window_idx - 1) * window + 1):window_idx * window] = s
         end
         s = signal[((window_n - 1) * window + 1):window_n * window + window_last]
-        t = collect(0:1/fs:(length(s) - 1) / fs)        
+        t = 1:length(s)
         p = Polynomials.fit(t, s, order)
         @inbounds for idx in eachindex(s)
             s[idx] = p(t[idx])
@@ -1754,7 +1752,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
         end
         # for window_idx in window:window:window * (window_n - 1)
         #     s = s_filtered[window_idx - window ÷ 2 + 1:window_idx + window ÷ 2]
-        #     t = collect(0:1/fs:(length(s) - 1) / fs)        
+        #     t = 1:length(s)        
         #     p = Polynomials.fit(t, s, order)
         #     @inbounds for idx in eachindex(s)
         #         s[idx] = p(t[idx])
@@ -1803,7 +1801,7 @@ Create IIR or FIR filter.
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `n::Int64`: signal length in samples
 - `fs::Int64`: sampling rate
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters
+- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters

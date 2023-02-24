@@ -3114,7 +3114,7 @@ function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
 end
 
 """
-    eeg_fbsplit(eeg; channel, order)
+    eeg_fbsplit(eeg; channel, order, window)
 
 Split EEG signal into frequency bands.
 
@@ -3122,7 +3122,8 @@ Split EEG signal into frequency bands.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG/MEG channels
-- `order::Int64=8`: band-pass filter order
+- `order::Int64=8`: number of taps for FIR band-pass filter
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
 
 # Returns
 
@@ -3131,7 +3132,7 @@ Named tuple containing:
 - `band_frq::Vector{Tuple{Real, Real}}`
 - `signal_split::Array{Float64, 4}`
 """
-function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), order::Int64=8)
+function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), order::Int64=8, window::Union{Nothing, AbstractVector, Int64}=nothing)
     
     band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
@@ -3143,17 +3144,18 @@ function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     signal_split = zeros(length(band), channel_n, eeg_epoch_len(eeg), epoch_n)
     band_frq = Vector{Tuple{Real, Real}}()
 
+
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for band_idx in eachindex(band)
             band_f = eeg_band(eeg, band=band[band_idx])
             push!(band_frq, band_f)
+            flt = s_filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=eeg_epoch_len(eeg))
             for channel_idx in 1:channel_n
-                signal_split[band_idx, channel_idx, :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, fprototype=:butterworth, ftype=:bp, cutoff=band_f, order=order)
-
-            # update progress bar
-            progress_bar == true && next!(p)
+                signal_split[band_idx, channel_idx, :, epoch_idx] = @views s_filter_apply(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt)
+                # update progress bar
+                progress_bar == true && next!(p)
             end
         end
     end

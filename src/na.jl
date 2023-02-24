@@ -93,10 +93,11 @@ function na_plugins_reload()
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
                 if Sys.isunix() || Sys.isapple()
-                    _info("Loading plugin: $(plugin[idx2])")
                     include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
+                    _info("Loaded: $(plugin[idx2])")
                 elseif Sys.iswindows()
                     include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
+                    _info("Loaded: $(plugin[idx2])")
                 end
             end
         end
@@ -272,7 +273,6 @@ function na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool
     @set_preferences!("plugins_path" => plugins_path)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
-    _info("New option values set, restart your Julia session for this change to take effect!")
 end
 
 """
