@@ -1800,8 +1800,8 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * epoch_len, 1))
 
-    Threads.@threads for epoch_idx in eachindex(epoch)
-        @inbounds @simd for length_idx in 1:epoch_len
+    @inbounds @simd for epoch_idx in eachindex(epoch)
+        Threads.@threads for length_idx in 1:epoch_len
             s_tmp, x, y = @views _interpolate(eeg_tmp.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for channel_idx in eachindex(channel)
                 x_idx = vsearch(locs_x1[channel[channel_idx]], x)
@@ -2686,9 +2686,9 @@ function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
     f = lowercase(f)
     labels = lowercase.(eeg_labels(eeg))
     vc = zeros(1, eeg_epoch_len(eeg), epoch_n)
-    Threads.@threads for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
         f_tmp = f
-        for channel_idx in eachindex(labels)
+        Threads.@threads for channel_idx in eachindex(labels)
             occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(eeg.eeg_signals[channel_idx, :, epoch_idx])"))
         end
         try
@@ -2920,8 +2920,8 @@ function eeg_reflect(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     epoch_n = eeg_epoch_n(eeg)
     s = zeros(channel_n, eeg_epoch_len(eeg) + 2 * n, epoch_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
-        @inbounds @simd for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
             s1 = eeg_new.eeg_signals[:, 1:n, epoch_idx]
             s2 = eeg_new.eeg_signals[:, end:-1:(end - n + 1), epoch_idx]
             @views s[channel_idx, :, epoch_idx] = _reflect(eeg.eeg_signals[channel_idx, :, epoch_idx], s1[channel_idx, :], s2[channel_idx, :])
@@ -2988,8 +2988,8 @@ function eeg_chop(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     epoch_n = eeg_epoch_n(eeg)
     s = zeros(channel_n, eeg_epoch_len(eeg) - 2 * n, epoch_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
-        @inbounds @simd for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
             @views s[channel_idx, :, epoch_idx] = _chop(eeg.eeg_signals[channel_idx, :, epoch_idx], n)
         end
     end

@@ -2727,8 +2727,8 @@ function eeg_frqinst(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
 
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
-    Threads.@threads for epoch_idx in 1:epoch_n
-       @inbounds @simd  for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
             frqinst[channel_idx, :, epoch_idx] = @views s_frqinst(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs)
         end
         # update progress bar
@@ -3014,8 +3014,8 @@ function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1:
     f = zeros(channel_n, channel_n, epoch_n)
     p = zeros(channel_n, channel_n, epoch_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
-       @inbounds @simd for channel_idx1 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:epoch_n
+       Threads.@threads for channel_idx1 in 1:channel_n
             for channel_idx2 in 1:channel_n
                 ftest = @views VarianceFTest(eeg1.eeg_signals[channel1[channel_idx1], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F

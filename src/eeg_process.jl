@@ -518,7 +518,6 @@ Apply filtering to EEG channel(s).
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
@@ -526,8 +525,9 @@ Apply filtering to EEG channel(s).
     - `:onepass` 
     - `:onepass_reverse`
     - `:twopass`
+- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window, required for FIR filter, weighting window for `:mavg` and `:mmed`; for `:fir` filter default is Hamming window of `order` taps for `:lp` and `:hp` filters and fred harris' rule-of-thumb number of taps for `:bp` and `:bs` filters
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 - `preview::Bool=false`: plot filter response
 
 # Returns
@@ -556,13 +556,18 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
         flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
+    # initialize progress bar
+    progress_bar == true && (pb = Progress(epoch_n * length(channel), 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
             if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter_apply(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter_apply(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
             else
-                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, fs=fs, order=order, t=t, window=window)
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, fs=fs, order=order, t=t, window=window)
             end
+            # update progress bar
+            progress_bar == true && next!(pb)
         end
     end
 
@@ -599,7 +604,6 @@ Apply filtering to EEG channel(s).
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez` and `:fir` filters, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
@@ -607,8 +611,9 @@ Apply filtering to EEG channel(s).
     - `:onepass` 
     - `:onepass_reverse`
     - `:twopass`
+- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window, required for FIR filter, weighting window for `:mavg` and `:mmed`; for `:fir` filter default is Hamming window of `order` taps for `:lp` and `:hp` filters and fred harris' rule-of-thumb number of taps for `:bp` and `:bs` filters
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 - `preview::Bool=false`: plot filter response
 """
 function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
@@ -1289,61 +1294,61 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     s_ref = similar(signal)
 
     if type === :l
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
-            @inbounds @simd for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
@@ -1420,61 +1425,61 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     s_ref = similar(signal)
 
     if type === :l
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
-            @inbounds @simd for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m1[:, :, epoch_idx])
-            for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end

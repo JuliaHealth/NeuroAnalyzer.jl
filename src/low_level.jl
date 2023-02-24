@@ -1696,7 +1696,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
     if fprototype === :mavg
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
-        @inbounds @simd for idx in (1 + order):(length(signal) - order)
+        @inbounds for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + mean(signal)
                     s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
@@ -1711,7 +1711,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
     if fprototype === :mmed
         s_filtered = zeros(length(signal))
         window === nothing && (window = ones(2 * order + 1))
-        @inbounds @simd for idx in (1 + order):(length(signal) - order)
+        @inbounds for idx in (1 + order):(length(signal) - order)
             if t > 0
                 if signal[idx] > t * std(signal) + median(signal)
                     s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
@@ -1728,24 +1728,40 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
         window_n = length(signal) ÷ window
         window_last = length(signal) - (window_n * window)
         s_filtered = zeros(length(signal))
-        @Threads.threads for window_idx in 1:window_n
+        for window_idx in 1:window_n - 1
             s = signal[((window_idx - 1) * window + 1):window_idx * window]
             t = collect(0:1/fs:(length(s) - 1) / fs)        
             p = Polynomials.fit(t, s, order)
-            @inbounds @simd for idx in eachindex(s)
+            @inbounds for idx in eachindex(s)
                 s[idx] = p(t[idx])
             end
             @inbounds s_filtered[((window_idx - 1) * window + 1):window_idx * window] = s
         end
-        if window_last > 0
-            s = signal[(end - window_last + 1):end]
-            t = collect(0:1/fs:(length(s) - 1) / fs)        
-            p = Polynomials.fit(t, s, order)
-            @inbounds @simd for idx in eachindex(s)
-                s[idx] = p(t[idx])
-            end
-            @inbounds s_filtered[(end - window_last + 1):end] = s
+        s = signal[((window_n - 1) * window + 1):window_n * window + window_last]
+        t = collect(0:1/fs:(length(s) - 1) / fs)        
+        p = Polynomials.fit(t, s, order)
+        @inbounds for idx in eachindex(s)
+            s[idx] = p(t[idx])
         end
+        @inbounds s_filtered[((window_n - 1) * window + 1):window_n * window + window_last] = s
+
+        for window_idx in window:window:window * (window_n - 1)
+            s_filtered[window_idx-2] = median(s_filtered[window_idx-3:window_idx])
+            s_filtered[window_idx-1] = median(s_filtered[window_idx-2:window_idx])
+            s_filtered[window_idx] = median(s_filtered[window_idx-2:window_idx+2])
+            s_filtered[window_idx+1] = median(s_filtered[window_idx:window_idx+2])
+            s_filtered[window_idx+2] = median(s_filtered[window_idx:window_idx+3])
+        end
+        # for window_idx in window:window:window * (window_n - 1)
+        #     s = s_filtered[window_idx - window ÷ 2 + 1:window_idx + window ÷ 2]
+        #     t = collect(0:1/fs:(length(s) - 1) / fs)        
+        #     p = Polynomials.fit(t, s, order)
+        #     @inbounds for idx in eachindex(s)
+        #         s[idx] = p(t[idx])
+        #     end
+        #     s_filtered[window_idx - window ÷ 2 + 1:window_idx + window ÷ 2] = s
+        # end        
+        
         return s_filtered
     end
 
