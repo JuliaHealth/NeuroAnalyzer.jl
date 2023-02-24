@@ -6,7 +6,7 @@ if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
 end
 
-const na_ver = v"0.23.02 (devel)"
+const na_ver = v"0.23.02"
 
 # initialize preferences
 use_cuda = nothing
