@@ -179,6 +179,8 @@ export s_invert_polarity
 export s_derivative
 export s_tconv
 export s_filter
+export s_filter_create
+export s_filter_apply
 export s_psd
 export s_stationarity_hilbert
 export s_stationarity_mean

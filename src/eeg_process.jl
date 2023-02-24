@@ -537,7 +537,7 @@ Apply filtering to EEG channel(s).
 function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     _check_channels(eeg, channel)
-
+    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :mavg, :mmed, :poly, :conv, :sg], "fprototype")
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
 
@@ -553,13 +553,13 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
         n = eeg_epoch_len(eeg)
-        flt = s_create_filter(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
             if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_apply_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter_apply(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
             else
                 eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, fs=fs, order=order, t=t, window=window)
             end
@@ -1139,8 +1139,8 @@ end
 """
     eeg_downsample(eeg; new_sr)
 
-Downsample EEG.
-
+Downsample EEG
+.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`

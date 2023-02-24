@@ -24,6 +24,7 @@ function na_info()
     println("Imported packages:")
     required_packages = [
         "ColorSchemes",
+        "ContinuousWavelets",
         "CSV",
         "CubicSplines",
         "CUDA",
@@ -59,8 +60,8 @@ function na_info()
         "StatsModels",
         "StatsPlots",
         "Wavelets",
-        "WaveletsExt",
-        "ContinuousWavelets"]
+        "WaveletsExt"]
+
     if isfile("Manifest.toml")
         versions = TOML.parsefile("Manifest.toml")["deps"]
         for idx in 1:length(required_packages)

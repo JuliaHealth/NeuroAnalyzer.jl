@@ -1666,9 +1666,9 @@ Filter signal.
     - `:conv`: convolution
     - `:sg`: Savitzky-Golay
 - `fs::Int64=0`: sampling rate
-- `order::Int64=8`: k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
+- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window length for `:sg` filter, weighting window for `:mavg` and `:mmed`
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 
 # Returns
 
@@ -1678,15 +1678,16 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
 
     _check_var(fprototype, [:mavg, :mmed, :poly, :conv, :sg], "fprototype")
     (fs <= 0 && fprototype === :poly) && throw(ArgumentError("fs must be ≥ 1."))
+    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
 
-    (fprototype === :sg && window === nothing) && throw(ArgumentError("window must be specified."))
+    (fprototype === :sg && window === nothing) && throw(ArgumentError("For :sg filter window must be specified."))
     
     if fprototype === :poly
         order < 1 && throw(ArgumentError("order must be > 1."))
+        typeof(window) == Int64 || throw(ArgumentError("For :poly filter window must be an integer number."))
     else
-        (order < 2 && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
+        (order < 2 || mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
     end
-    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
 
     if fprototype === :mavg || fprototype === :mmed
         (window !== nothing && length(window) != (2 * order + 1)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
@@ -1723,22 +1724,40 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
     end
 
     if fprototype === :poly
-        t = collect(0:1/fs:(length(signal) - 1) / fs)        
-        p = Polynomials.fit(t, signal, order)
+        # TO DO: smooth spikes between windows
+        window_n = length(signal) ÷ window
+        window_last = length(signal) - (window_n * window)
         s_filtered = zeros(length(signal))
-        @inbounds @simd for idx in eachindex(signal)
-            s_filtered[idx] = p(t[idx])
+        @Threads.threads for window_idx in 1:window_n
+            s = signal[((window_idx - 1) * window + 1):window_idx * window]
+            t = collect(0:1/fs:(length(s) - 1) / fs)        
+            p = Polynomials.fit(t, s, order)
+            @inbounds @simd for idx in eachindex(s)
+                s[idx] = p(t[idx])
+            end
+            @inbounds s_filtered[((window_idx - 1) * window + 1):window_idx * window] = s
+        end
+        if window_last > 0
+            s = signal[(end - window_last + 1):end]
+            t = collect(0:1/fs:(length(s) - 1) / fs)        
+            p = Polynomials.fit(t, s, order)
+            @inbounds @simd for idx in eachindex(s)
+                s[idx] = p(t[idx])
+            end
+            @inbounds s_filtered[(end - window_last + 1):end] = s
         end
         return s_filtered
     end
 
     if fprototype === :conv
+        window === nothing && throw(ArgumentError("For :conv filter window must be specified."))
         s_filtered = s_tconv(signal, kernel=window)
         return s_filtered
     end
 
     if fprototype === :sg
-        isodd(window) || throw(ArgumentError("window must be an odd number."))
+        typeof(window) == Int64 || throw(ArgumentError("For :sg filter window must be an integer number."))
+        isodd(window) || throw(ArgumentError("For :sg filter window must be an odd number."))
         s_filtered = savitzky_golay(signal, window, order)
         return s_filtered.y
     end
@@ -1746,7 +1765,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, fs::Int64=0, order
 end
 
 """
-    s_create_filter(signal; <keyword arguments>)
+    s_filter_create(signal; <keyword arguments>)
 
 Create IIR or FIR filter.
 
@@ -1776,13 +1795,13 @@ Create IIR or FIR filter.
 
 # Returns
 
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}`
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`
 """
-function s_create_filter(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Nothing, AbstractVector, Int64}=nothing)
+function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
     typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-    fs < 0 && throw(ArgumentError("fs must be ≥ 1."))
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
@@ -1790,10 +1809,10 @@ function s_create_filter(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
     end
 
     if fprototype === :iirnotch
-        ftype !== nothing && throw(ArgumentError("Do not provide ftype for :irrnotch filter."))
+        ftype !== nothing && _info("For :iirnotch filter ftype is ignored.")
     end
 
-    if fprototype in [:irrnotch, :remez]
+    if fprototype in [:iirnotch, :remez]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
         bw == -1 && throw(ArgumentError("bw must be specified."))
     end
@@ -1943,14 +1962,14 @@ function s_create_filter(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
 end
 
 """
-    s_apply_filter(signal; <keyword arguments>)
+    s_filter_apply(signal; <keyword arguments>)
 
 Apply IIR or FIR filter.
 
 # Arguments
 
 - `signal::AbstractVector`
-- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}`: filter
+- `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:onepass` 
     - `:onepass_reverse`
@@ -1960,7 +1979,7 @@ Apply IIR or FIR filter.
 
 - `s_filtered::Vector{Float64}`
 """
-function s_apply_filter(signal::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}}, dir::Symbol=:twopass)
+function s_filter_apply(signal::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)
 
     dir === :twopass && (return filtfilt(flt, signal))
     dir === :onepass && (return filt(flt, signal))
