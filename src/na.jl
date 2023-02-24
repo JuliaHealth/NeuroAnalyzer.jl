@@ -80,6 +80,7 @@ Reload NeuroAnalyzer plugins.
 """
 function na_plugins_reload()
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     for idx1 in 1:length(plugins)
@@ -99,6 +100,7 @@ function na_plugins_reload()
             end
         end
     end
+    cd(path_tmp)
 end
 
 """
@@ -108,11 +110,14 @@ List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
+    @info "Available plugins:"
     for idx in 1:length(plugins)
-        println("$idx. $(replace(plugins[idx]))")
+        println("\t$idx. $(replace(plugins[idx]))")
     end
+    cd(path_tmp)
 end
 
 """
@@ -127,6 +132,7 @@ Remove NeuroAnalyzer `plugin`.
 function na_plugins_remove(plugin::String)
     _info("This will remove the whole $plugin directory, along with its file contents.")
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
@@ -136,6 +142,7 @@ function na_plugins_remove(plugin::String)
         @error "Cannot remove $plugin directory."
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -149,6 +156,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_install(plugin::String)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     try
         run(`$(git()) clone $plugin`)
@@ -156,6 +164,7 @@ function na_plugins_install(plugin::String)
         @error "Cannot install $plugin."
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -169,12 +178,13 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     if plugin === nothing
         for idx in 1:length(plugins)
             cd(plugins[idx])
-            println(plugins[idx])
+            @info "Updating: $(plugins[idx])"
             try
                 run(`$(git()) pull`)
             catch
@@ -193,6 +203,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
         cd(plugins_path)
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -260,6 +271,7 @@ function na_set_prefs(; use_cuda::Bool, plugins_path::String, progress_bar::Bool
     @set_preferences!("plugins_path" => plugins_path)
     @set_preferences!("progress_bar" => progress_bar)
     @set_preferences!("verbose" => verbose)
+    _info("New option values set, restart your Julia session for this change to take effect!")
 end
 
 """
