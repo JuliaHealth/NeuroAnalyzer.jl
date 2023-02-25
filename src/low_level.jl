@@ -342,9 +342,9 @@ function fft0(x::AbstractVector, n::Int64=0)
         # _free_gpumem()
         CUDA.memory_status()
         if n == 0
-            cx = CuArray(Float32(x))
+            cx = CuArray(x)
         else
-            cx = CuArray(pad0(Float32(x), n))
+            cx = CuArray(pad0(x, n))
         end
         return Vector(fft(cx))
     else
@@ -376,7 +376,7 @@ function ifft0(x::AbstractVector, n::Int64=0)
 
     if CUDA.functional() && use_cuda
         # _free_gpumem()
-        x = Vector(ifft(CuArray(Float32(x))))
+        x = Vector(ifft(CuArray(x)))
     else
         x = ifft(x)
     end
@@ -1815,7 +1815,14 @@ function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
     typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    order < 1 && throw(ArgumentError("order must be > 1."))
+    order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
+    ((order < 2 && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
+    window !== nothing && length(window) > n && throw(ArgumentError("For :fir filter window must be ≤ signal length ($n)."))
+    (fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
+
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
@@ -1868,6 +1875,12 @@ function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
             # next power of 2
             n_taps = 2 ^ ceil(Int64, log2(n_taps))
 
+            # filter cannot be longer than signal
+            if n_taps > n
+                n_taps = n
+                _info("Reducing window length to $n_taps taps.")
+            end
+
             window = DSP.hamming(n_taps)
 
             if ftype === :hp || ftype === :bp || ftype === :bs
@@ -1875,45 +1888,38 @@ function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
             end
 
             if ftype === :lp || ftype === :hp
-                ftype === :lp && _info("Creating LP filter")
-                ftype === :hp && _info("Creating HP filter")
-                _info("Using default window: hamming($n_taps)")
-                _info("Attenuation: $(order * 4) dB")
-                _info("F_pass: $(round(f_pass, digits=4)) Hz")
-                _info("F_stop: $(round(f_stop, digits=4)) Hz")
-                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                ftype === :lp && _info("Creating LP filter:")
+                ftype === :hp && _info("Creating HP filter:")
+                _info("\tUsing default window: hamming($n_taps)")
+                _info("\tAttenuation: $(order * 4) dB")
+                _info("\tF_pass: $(round(f_pass, digits=4)) Hz")
+                _info("\tF_stop: $(round(f_stop, digits=4)) Hz")
+                _info("\tTransition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("\tCutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bp
-                _info("Creating BP filter")
-                _info("Using default window: hamming($n_taps)")
-                _info("Attenuation: $(order * 4) dB")
-                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info("F1_pass: $f1_pass Hz")
-                _info("F2_pass: $f2_pass Hz")
-                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info("Creating BP filter:")
+                _info("\tUsing default window: hamming($n_taps)")
+                _info("\tAttenuation: $(order * 4) dB")
+                _info("\tF1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("\tF1_pass: $f1_pass Hz")
+                _info("\tF2_pass: $f2_pass Hz")
+                _info("\tF2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("\tTransition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("\tCutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bs
-                _info("Creating BS filter")
-                _info("Using default window: hamming($n_taps)")
-                _info("Attenuation: $(order * 4) dB")
-                _info("F1_pass: $f1_pass Hz")
-                _info("F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info("F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info("F2_pass: $f2_pass Hz")
-                _info("Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info("Creating BS filter:")
+                _info("\tUsing default window: hamming($n_taps)")
+                _info("\tAttenuation: $(order * 4) dB")
+                _info("\tF1_pass: $f1_pass Hz")
+                _info("\tF1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info("\tF2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info("\tF2_pass: $f2_pass Hz")
+                _info("\tTransition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info("\tCutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
         end
     end
 
-    order < 1 && throw(ArgumentError("order must be > 1."))
-    (fprototype !== :fir && window !== nothing && length(window) > n) && throw(ArgumentError("For :fir filter window must be ≤ signal length ($n)."))
-    (fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
-    fs <= 0 && throw(ArgumentError("fs must be > 0."))
-    ((order < 2 && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
-    
     if rp == -1
         if fprototype === :elliptic
             rp = 0.0025
@@ -1985,9 +1991,9 @@ Apply IIR or FIR filter.
 - `signal::AbstractVector`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
-    - `:onepass` 
-    - `:onepass_reverse`
     - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
 
 # Returns
 
@@ -1995,11 +2001,12 @@ Apply IIR or FIR filter.
 """
 function s_filter_apply(signal::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)
 
+    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
+
     dir === :twopass && (return filtfilt(flt, signal))
     dir === :onepass && (return filt(flt, signal))
-    dir === :onepass_reverse && (return filt(flt, reverse(signal)))
+    dir === :reverse && (return filt(flt, reverse(signal)))
 
-    return s_filtered
 end
 
 """

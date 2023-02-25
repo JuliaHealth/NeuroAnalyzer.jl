@@ -2686,9 +2686,9 @@ function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
     f = lowercase(f)
     labels = lowercase.(eeg_labels(eeg))
     vc = zeros(1, eeg_epoch_len(eeg), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:epoch_n
         f_tmp = f
-        Threads.@threads for channel_idx in eachindex(labels)
+        @inbounds for channel_idx in eachindex(labels)
             occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(eeg.eeg_signals[channel_idx, :, epoch_idx])"))
         end
         try

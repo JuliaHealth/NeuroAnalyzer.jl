@@ -2791,7 +2791,7 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
         s_conv = zeros(Float64, 1, epoch_len, epoch_n)
         # convolute with Morlet wavelet
         @inbounds @simd for epoch_idx in 1:epoch_n
-            s_conv[1, :, epoch_idx] = @views conv(eeg.eeg_signals[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
+            s_conv[1, :, epoch_idx] = @views DSP.conv(eeg.eeg_signals[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
         @inbounds @simd for t_idx in 1:epoch_len
@@ -3144,18 +3144,13 @@ function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     signal_split = zeros(length(band), channel_n, eeg_epoch_len(eeg), epoch_n)
     band_frq = Vector{Tuple{Real, Real}}()
 
-
-    # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for band_idx in eachindex(band)
-            band_f = eeg_band(eeg, band=band[band_idx])
-            push!(band_frq, band_f)
-            flt = s_filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=eeg_epoch_len(eeg))
-            for channel_idx in 1:channel_n
+    @inbounds for band_idx in eachindex(band)
+        band_f = eeg_band(eeg, band=band[band_idx])
+        push!(band_frq, band_f)
+        flt = s_filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=eeg_epoch_len(eeg))
+        @inbounds @simd for epoch_idx in 1:epoch_n
+            Threads.@threads for channel_idx in 1:channel_n
                 signal_split[band_idx, channel_idx, :, epoch_idx] = @views s_filter_apply(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt)
-                # update progress bar
-                progress_bar == true && next!(p)
             end
         end
     end

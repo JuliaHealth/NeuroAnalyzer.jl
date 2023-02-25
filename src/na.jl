@@ -8,7 +8,7 @@ function na_info()
     println("    NeuroAnalyzer: $na_ver")
     println("            Julia: $VERSION")
     if CUDA.functional()
-        println("             CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
+        println("             CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
     else
         println("             CUDA: not available (use_cuda = $use_cuda)")
     end

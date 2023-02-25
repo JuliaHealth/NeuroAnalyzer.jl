@@ -522,9 +522,9 @@ Apply filtering to EEG channel(s).
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
-    - `:onepass` 
-    - `:onepass_reverse`
     - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
 - `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
@@ -608,9 +608,9 @@ Apply filtering to EEG channel(s).
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
-    - `:onepass` 
-    - `:onepass_reverse`
     - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
 - `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`

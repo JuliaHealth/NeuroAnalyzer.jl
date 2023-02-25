@@ -70,8 +70,8 @@ eeg_load(tmp);
 @time eeg_load(tmp);
 
 eeg = eeg_import_edf("test/eeg-test-edf.edf");
-eeg_delete_channel!(eeg, channel=20:24)
-e10 = eeg_epoch(eeg, epoch_len=2560)
+eeg_delete_channel!(eeg, channel=20:24);
+e10 = eeg_epoch(eeg, epoch_len=2560);
 eeg_load_electrodes!(e10, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
 @info "Benchmarking: eeg_edit.jl"
@@ -79,19 +79,19 @@ println()
 println("# EDIT")
 println()
 
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Delete channel", 36))
 eeg_delete_channel(e10_tmp, channel=1);
 @time eeg_delete_channel(e10_tmp, channel=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Keep channel", 36))
 eeg_keep_channel(e10_tmp, channel=1);
 @time eeg_keep_channel(e10_tmp, channel=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Delete epoch", 36))
 eeg_delete_epoch(e10_tmp, epoch=1);
 @time eeg_delete_epoch(e10_tmp, epoch=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Keep epoch", 36))
 eeg_keep_epoch(e10_tmp, epoch=1);
 @time eeg_keep_epoch(e10_tmp, epoch=1);
@@ -121,10 +121,16 @@ eeg_reference_car(e10);
 print(rpad("Channel referencing", 36))
 eeg_reference_ch(e10, channel=1);
 @time eeg_reference_ch(e10, channel=1);
-print(rpad("Filter: LP", 36))
+print(rpad("Filter: FIR LP", 36))
+eeg_filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+@time eeg_filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+print(rpad("Filter: FIR HP", 36))
+eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+@time eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+print(rpad("Filter: IIR LP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
-print(rpad("Filter: HP", 36))
+print(rpad("Filter: IIR HP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 print(rpad("Filter: IIR notch", 36))
@@ -133,12 +139,9 @@ eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
 print(rpad("Filter: Remez", 36))
 eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
 @time eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
-print(rpad("Filter: FIR", 36))
-eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
-@time eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
 print(rpad("Filter: polynomial (8)", 36))
-eeg_filter(e10, fprototype=:poly, order=8);
-@time eeg_filter(e10, fprototype=:poly, order=8);
+eeg_filter(e10, fprototype=:poly, order=8, window=256);
+@time eeg_filter(e10, fprototype=:poly, order=8, window=256);
 print(rpad("Filter: moving average", 36))
 eeg_filter(e10, fprototype=:mavg);
 @time eeg_filter(e10, fprototype=:mavg);
@@ -337,9 +340,18 @@ eeg_pli(e10);
 print(rpad("PLI 2", 36))
 eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-print(rpad("AEC", 36))
-eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-@time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+print(rpad("Envelope correlation: amp", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+print(rpad("Envelope correlation: pow", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+print(rpad("Envelope correlation: spec", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+print(rpad("Envelope correlation: hamp", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
 print(rpad("GED", 36))
 eeg_ged(e10, e10);
 @time eeg_ged(e10, e10);
