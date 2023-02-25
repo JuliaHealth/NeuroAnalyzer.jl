@@ -894,7 +894,11 @@ Calculate covariance of `signal * signal'`.
 function s_cov(signal::AbstractVector; norm::Bool=false)
 
     # channels-vs-channels
-    cov_mat = cov(signal * signal')
+    if CUDA.functional() && use_cuda
+        cov_mat = Matrix(cov(CuVector(signal) * CuVector(signal)'))
+    else
+        cov_mat = cov(signal * signal')
+    end
 
     # normalize
     norm == true && (cov_mat = m_norm(cov_mat))
@@ -922,7 +926,11 @@ function s2_cov(signal1::AbstractVector, signal2::AbstractVector; norm::Bool=fal
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same length."))
 
     # channels-vs-channels
-    cov_mat = cov(signal1 * signal2')
+    if CUDA.functional() && use_cuda
+        cov_mat = Matrix(cov(CuVector(signal1) * CuVector(signal2)'))
+    else
+        cov_mat = cov(signal1 * signal2')
+    end
 
     # normalize
     norm == true && (cov_mat = cov_mat ./ (size(cov_mat, 2) - 1))
