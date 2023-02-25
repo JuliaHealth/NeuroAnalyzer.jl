@@ -1428,7 +1428,8 @@ function s_detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0,
         return signal .- trend
     elseif type === :hp
         fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-        return s_filter(signal, fprototype=:fir, ftype=:hp, cutoff=f, fs=fs)
+        flt = s_filter_create(fprototype=:fir, ftype=:hp, cutoff=f, fs=fs, n=length(signal))
+        return s_filter_apply(signal, flt=flt)
     end
 end
 
@@ -4354,7 +4355,10 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 
 - `cwt_coefs::AbstractArray`: CWT coefficients (by rows)
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
-- `type::Symbol=df`: inverse style type: NaiveDelta (:nd), PenroseDelta (:pd) or DualFrames (:df)
+- `type::Symbol=df`: inverse style type:
+    - `:nd`: NaiveDelta
+    - `:pd`: PenroseDelta
+    - `:df`: DualFrames
 
 # Returns
 
