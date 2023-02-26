@@ -1690,8 +1690,9 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t:
     (fprototype === :sg && window === nothing) && throw(ArgumentError("For :sg filter window must be specified."))
     
     if fprototype === :poly
-        order < 1 && throw(ArgumentError("order must be > 1."))
-        typeof(window) == Int64 || throw(ArgumentError("For :poly filter window must be an integer number."))
+        order < 1 && throw(ArgumentError("For :poly filter order must be > 1."))
+        window === nothing && throw(ArgumentError("For :poly filter window must be specified."))
+        window < 1 && throw(ArgumentError("For :poly filter window must be ≥ 1."))
     else
         (order < 2 || mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
     end
@@ -1931,6 +1932,8 @@ function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
                 _info("\tTransition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
                 _info("\tCutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
+        else
+            ftype in [:bp, :bs] && length(window) % 2 == 0 && throw(ArgumentError("For :bp and :bs filters window length must be odd."))
         end
     end
 
