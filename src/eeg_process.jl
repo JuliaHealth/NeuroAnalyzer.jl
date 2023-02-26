@@ -512,7 +512,7 @@ Apply filtering to EEG channel(s).
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
     - `:sg`: Savitzky-Golay
-- `ftype::Symbol`: filter type:
+- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
@@ -540,11 +540,12 @@ function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :mavg, :mmed, :poly, :conv, :sg], "fprototype")
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
+    n = eeg_epoch_len(eeg)
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)    
-        p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
         return p
     end
@@ -598,7 +599,7 @@ Apply filtering to EEG channel(s).
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
     - `:sg`: Savitzky-Golay
-- `ftype::Symbol`: filter type:
+- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass

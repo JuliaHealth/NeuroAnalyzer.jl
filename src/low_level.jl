@@ -1182,13 +1182,13 @@ function s_acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::
     acov = zeros(length(lags))
     l = length(signal)
 
-    @simd for idx in eachindex(lags)
+    @inbounds @simd for idx in eachindex(lags)
         # no lag
-        @inbounds @fastmath lags[idx] == 0 && (acov[idx] = sum(s_demeaned.^2))
+        lags[idx] == 0 && (acov[idx] = sum(s_demeaned.^2))
         # positive lag
-        @inbounds @fastmath lags[idx] > 0 && (acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
+        lags[idx] > 0 && (acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
         # negative lag
-        @inbounds @fastmath lags[idx] < 0 && (acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
+        lags[idx] < 0 && (acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
     end
     norm == true && (acov ./ l)
 
@@ -1227,13 +1227,13 @@ function s2_xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1,
     xcov = zeros(length(lags))
     l = length(signal1)
 
-    @simd for idx in eachindex(lags)
+    @inbounds @fastmath @simd for idx in eachindex(lags)
         # no lag
-        @inbounds @fastmath lags[idx] == 0 && (xcov[idx] = sum(signal1 .* signal2))
+        lags[idx] == 0 && (xcov[idx] = sum(signal1 .* signal2))
         # positive lag
-        @inbounds @fastmath lags[idx] > 0 && (xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])]))
+        lags[idx] > 0 && (xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])]))
         # negative lag
-        @inbounds @fastmath lags[idx] < 0 && (xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end]))
+        lags[idx] < 0 && (xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end]))
     end
     norm == true && (xcov ./ l)
 
@@ -1823,15 +1823,16 @@ Create IIR or FIR filter.
 function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, n::Int64, fs::Int64, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
-    typeof(ftype) == Symbol && _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+    if fprototype !== :iirnotch
+        ftype === nothing && throw(ArgumentError("ftype must be specified."))
+        _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
+    end
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    order < 1 && throw(ArgumentError("order must be > 1."))
+    fprototype !== :iirnotch && order < 1 && throw(ArgumentError("order must be > 1."))
     order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
-    ((order < 2 && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
+    ((order < 2 && fprototype !== :iirnotch && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
     window !== nothing && length(window) > n && throw(ArgumentError("For :fir filter window must be ≤ signal length ($n)."))
-    (fprototype !== :iirnotch && fprototype !== :remez) && (ftype in [:lp, :hp, :bp, :bs] || throw(ArgumentError("ftype must be :bp, :hp, :bp or :bs.")))
-
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
@@ -1839,7 +1840,11 @@ function s_filter_create(;fprototype::Symbol, ftype::Union{Symbol, Nothing}=noth
     end
 
     if fprototype === :iirnotch
-        ftype !== nothing && _info("For :iirnotch filter ftype is ignored.")
+        if ftype !== nothing
+            _info("For :iirnotch filter ftype is ignored.")
+            ftype = nothing
+        end
+        length(cutoff) == 2 && throw(ArgumentError("For :iirnotch filter cutoff must contain only one frequency."))
     end
 
     if fprototype in [:iirnotch, :remez]
