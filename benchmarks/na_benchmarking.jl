@@ -217,12 +217,12 @@ eeg_mi(e10);
 print(rpad("Mutual information 2", 36))
 eeg_mi(e10, e10);
 @time eeg_mi(e10, e10);
-# print(rpad("Entropy", 36))
-# eeg_entropy(e10);
-# @time eeg_entropy(e10);
-# print(rpad("Negentropy", 36))
-# eeg_negentropy(e10);
-# @time eeg_negentropy(e10);
+print(rpad("Entropy", 36))
+eeg_entropy(e10);
+@time eeg_entropy(e10);
+print(rpad("Negentropy", 36))
+eeg_negentropy(e10);
+@time eeg_negentropy(e10);
 print(rpad("Time coherence", 36))
 eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
