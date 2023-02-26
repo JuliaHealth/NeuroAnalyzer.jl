@@ -3700,7 +3700,7 @@ function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool
     psd_pow = power(psd)
     psd_frq = Vector(freq(psd))
     psd_pow[1] = psd_pow[2]
-    psd_pow ./= ref_pow
+    psd_pow = psd_pow / ref_pow
 
     norm == true && (psd_pow = pow2db.(psd_pow))
 
@@ -3749,7 +3749,7 @@ function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Boo
             psd = welch_pgram(signal[channel_idx, :], 4*fs, fs=fs)
         end
         psd_pow[channel_idx, :] = power(psd)
-        psd_pow[channel_idx, :] ./= ref_pow
+        psd_pow[channel_idx, :] = psd_pow[channel_idx, :] / ref_pow
         psd_pow[channel_idx, 1] = psd_pow[channel_idx, 2]
     end
 

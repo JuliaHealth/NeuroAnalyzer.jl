@@ -1396,7 +1396,7 @@ Plot power spectrum density.
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-- `norm::Bool=true`: normalize powers to dB
+- `norm::Bool=false`: normalize powers to dB
 - `method::Symbol=:welch`: method of calculating PSD:
     - `:welch`: Welch's periodogram
     - `:mt`: multi-tapered periodogram
@@ -1418,7 +1418,7 @@ Plot power spectrum density.
 
 - `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
 """
-function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=false, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -1468,16 +1468,19 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     else
         if method === :welch
             s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
-            title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
             s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
-            title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end
 
     # set labels
     if type !== :w3d && type !== :s3d && type !== :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
+        if ref !== :abs
+            ylabel == "default" && (ylabel = "Power ratio")
+        end
         if norm == true
             ylabel == "default" && (ylabel = "Power [dB]")
         else
