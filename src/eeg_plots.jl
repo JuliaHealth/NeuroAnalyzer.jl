@@ -1144,7 +1144,7 @@ Plot 3-d waterfall PSD plot.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
 function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
@@ -1396,7 +1396,7 @@ Plot power spectrum density.
 - `eeg::NeuroAnalyzer.EEG`: EEG object
 - `epoch::Int64`: epoch to display
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-- `norm::Bool=false`: normalize powers to dB
+- `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method of calculating PSD:
     - `:welch`: Welch's periodogram
     - `:mt`: multi-tapered periodogram
@@ -1416,9 +1416,9 @@ Plot power spectrum density.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
+- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
-function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=false, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -4939,5 +4939,62 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
         GLMakie.show(p)
     end
 
+    return p
+end
+
+"""
+    plot_dipole3d(eeg, c; <keyword arguments>)
+
+Plot dipole in 3D.
+
+# Arguments
+
+- `d::NeuroAnalyzer.DIPOLE)`
+
+# Returns
+- `p::GLMakie.Figure`
+"""
+function plot_dipole3d(d::NeuroAnalyzer.DIPOLE)
+
+    brain_top = Point3f[[-1.5,-1.5,-0.5],[1.5,-1.5,-0.5], [1.5,1.5,-0.5], [-1.5,1.5,-0.5]]
+    brain_top_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_top_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_top_mesh = GeometryBasics.Mesh(meta(brain_top, uv = brain_top_uvs, normals = normals(brain_top, brain_top_fs)), brain_top_fs)
+
+    brain_side = Point3f[[-1.5,-1.5,-0.5],[-1.5,1.5,-0.5], [-1.5,1.5,1.0], [-1.5,-1.5,1.0]]
+    brain_side_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_side_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_side_mesh = GeometryBasics.Mesh(meta(brain_side, uv = brain_side_uvs, normals = normals(brain_side, brain_side_fs)), brain_side_fs)
+
+    brain_front = Point3f[[-1.5,1.5,-0.5],[-1.5,1.5,1.0], [1.5,1.5,1.0], [1.5,1.5,-0.5]]
+    brain_front_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_front_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_front_mesh = GeometryBasics.Mesh(meta(brain_front, uv = brain_front_uvs, normals = normals(brain_front, brain_front_fs)), brain_front_fs)
+
+    brain_top_texture = FileIO.load("images/brain_top.png")
+    brain_side_texture = FileIO.load("images/brain_side.png")
+    brain_front_texture = FileIO.load("images/brain_front.png")
+
+    x = d.loc[1]
+    y = d.loc[2]
+    z = d.loc[3]
+
+    p = Figure()
+    ax = Axis3(p[1, 1])
+    mesh!(ax, brain_side_mesh, color=brain_side_texture)
+    mesh!(ax, brain_top_mesh, color=brain_top_texture)
+    mesh!(ax, brain_front_mesh, color=brain_front_texture)
+
+    # draw dipole
+    GLMakie.scatter!(ax, x, y, z, markersize=20, color=:red)
+
+    # project at top-plane
+    GLMakie.lines!(ax, [x, x], [y, y], [z, -0.5], linestyle=:dash, color=:blue)
+    # project at side-axis
+    GLMakie.lines!(ax, [x, -1.5], [y, y], [z, z], linestyle=:dash, color=:blue)
+    # project at front-axis
+    GLMakie.lines!(ax, [x, x], [y, 1.5], [z, z], linestyle=:dash, color=:blue)
+    
+    GLMakie.show(p)
     return p
 end

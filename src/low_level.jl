@@ -1685,20 +1685,22 @@ Filter signal.
 function s_filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
 
     _check_var(fprototype, [:mavg, :mmed, :poly, :conv, :sg], "fprototype")
-    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
 
-    (fprototype === :sg && window === nothing) && throw(ArgumentError("For :sg filter window must be specified."))
+    # check window
+    if fprototype === :sg
+        window === nothing && throw(ArgumentError("For :sg filter window must be specified."))
+    elseif fprototype === :mavg || fprototype === :mmed
+        (window !== nothing && length(window) != (2 * order + 1)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
+    end
     
+    # check order
+    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
     if fprototype === :poly
         order < 1 && throw(ArgumentError("For :poly filter order must be > 1."))
         window === nothing && throw(ArgumentError("For :poly filter window must be specified."))
         window < 1 && throw(ArgumentError("For :poly filter window must be ≥ 1."))
     else
         (order < 2 || mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    end
-
-    if fprototype === :mavg || fprototype === :mmed
-        (window !== nothing && length(window) != (2 * order + 1)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
     end
 
     if fprototype === :mavg
@@ -1737,7 +1739,7 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t:
         window_last = length(signal) - (window_n * window)
         s_filtered = zeros(length(signal))
         for window_idx in 1:window_n - 1
-            s = signal[((window_idx - 1) * window + 1):window_idx * window]
+            s = @views signal[((window_idx - 1) * window + 1):window_idx * window]
             t = 1:length(s)       
             p = Polynomials.fit(t, s, order)
             @inbounds for idx in eachindex(s)
@@ -1753,22 +1755,25 @@ function s_filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t:
         end
         @inbounds s_filtered[((window_n - 1) * window + 1):window_n * window + window_last] = s
 
+        # smooth peaks using Loess
         for window_idx in window:window:window * (window_n - 1)
-            s_filtered[window_idx-2] = median(s_filtered[window_idx-3:window_idx])
-            s_filtered[window_idx-1] = median(s_filtered[window_idx-2:window_idx])
-            s_filtered[window_idx] = median(s_filtered[window_idx-2:window_idx+2])
-            s_filtered[window_idx+1] = median(s_filtered[window_idx:window_idx+2])
-            s_filtered[window_idx+2] = median(s_filtered[window_idx:window_idx+3])
+            s = @views s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1]
+            t = collect(1.0:1:length(s))
+            model = loess(t, s, span=1.0)
+            s_smoothed = Loess.predict(model, t)
+            s_smoothed[1] = s[1]
+            s_smoothed[end] = s[end]
+            @inbounds s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1] = s_smoothed
         end
+        
+        # smooth peaks using median/mean
         # for window_idx in window:window:window * (window_n - 1)
-        #     s = s_filtered[window_idx - window ÷ 2 + 1:window_idx + window ÷ 2]
-        #     t = 1:length(s)        
-        #     p = Polynomials.fit(t, s, order)
-        #     @inbounds for idx in eachindex(s)
-        #         s[idx] = p(t[idx])
-        #     end
-        #     s_filtered[window_idx - window ÷ 2 + 1:window_idx + window ÷ 2] = s
-        # end        
+        #     s_filtered[window_idx-2] = mean(s_filtered[window_idx-3:window_idx])
+        #     s_filtered[window_idx-1] = mean(s_filtered[window_idx-2:window_idx])
+        #     s_filtered[window_idx] = mean(s_filtered[window_idx-2:window_idx+2])
+        #     s_filtered[window_idx+1] = mean(s_filtered[window_idx:window_idx+2])
+        #     s_filtered[window_idx+2] = mean(s_filtered[window_idx:window_idx+3])
+        # end
         
         return s_filtered
     end

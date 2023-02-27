@@ -27,6 +27,7 @@ using FFTW
 using FileIO
 using FindPeaks1D
 using FourierTools
+using GeometryBasics
 using Git
 using GLM
 using GLMakie
@@ -72,6 +73,10 @@ mutable struct STUDY
     study_header::Dict{Symbol, Any}
     study_eeg::Vector{NeuroAnalyzer.EEG}
     study_group::Vector{Symbol}
+end
+
+mutable struct DIPOLE
+    loc::Tuple{Real, Real, Real}
 end
 
 FFTW.set_provider!("mkl")
