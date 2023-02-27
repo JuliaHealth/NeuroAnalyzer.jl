@@ -599,6 +599,7 @@ export plot_erp_butterfly
 export plot_erp_topo
 export eeg_plot_erp
 export plot_erp_stack
+export plot_dipole3d
 
 include("eeg_study.jl")
 export eeg_study_create
