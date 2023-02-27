@@ -4958,17 +4958,17 @@ Plot dipole in 3D.
 function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 
     # prepare meshes
-    brain_top = Point3f[[-1.5,-1.5,-0.5],[1.5,-1.5,-0.5], [1.5,1.5,-0.5], [-1.5,1.5,-0.5]]
+    brain_top = Point3f[[-1.2, -1.2, 0.0], [1.2, -1.2, 0.0], [1.2, 1.2, 0.0], [-1.2, 1.2, 0.0]]
     brain_top_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
     brain_top_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
     brain_top_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_top, uv = brain_top_uvs, normals = normals(brain_top, brain_top_fs)), brain_top_fs)
 
-    brain_side = Point3f[[-1.5,-1.5,-0.5],[-1.5,1.5,-0.5], [-1.5,1.5,1.0], [-1.5,-1.5,1.0]]
+    brain_side = Point3f[[-1.2, -1.2, 0],[-1.2, 1.2, 0], [-1.2, 1.2, 1.2], [-1.2, -1.2, 1.2]]
     brain_side_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
     brain_side_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
     brain_side_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_side, uv = brain_side_uvs, normals = normals(brain_side, brain_side_fs)), brain_side_fs)
 
-    brain_front = Point3f[[-1.5,1.5,-0.5],[-1.5,1.5,1.0], [1.5,1.5,1.0], [1.5,1.5,-0.5]]
+    brain_front = Point3f[[-1.2, 1.2, 0],[-1.2, 1.2, 1.2], [1.2, 1.2, 1.2], [1.2, 1.2, 0]]
     brain_front_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
     brain_front_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
     brain_front_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_front, uv = brain_front_uvs, normals = normals(brain_front, brain_front_fs)), brain_front_fs)
@@ -4996,11 +4996,11 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 
     if project == true
         # project at top-plane
-        GLMakie.lines!(ax, [x, x], [y, y], [z, -0.5], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, x], [y, y], [z, 0], linestyle=:dash, color=:blue)
         # project at side-axis
-        GLMakie.lines!(ax, [x, -1.5], [y, y], [z, z], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, -1.2], [y, y], [z, z], linestyle=:dash, color=:blue)
         # project at front-axis
-        GLMakie.lines!(ax, [x, x], [y, 1.5], [z, z], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, x], [y, 1.2], [z, z], linestyle=:dash, color=:blue)
     end
 
     GLMakie.show(p)
