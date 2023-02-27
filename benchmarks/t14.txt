@@ -1,8 +1,8 @@
 # System info
 
-OS: Linux samurai 6.1.0-0.2-liquorix-amd64 #1 ZEN SMP PREEMPT_DYNAMIC liquorix 6.1-2.1~bookworm (2022-12-20 x86_64 GNU/Linux
-CPU: AMD Ryzen 5 PRO 4650U with Radeon Graphics 6 cores (2.05 GHz)
-RAM: 14.4 GB free / 22.7 GB
+OS: Linux samurai 6.1.12-3-liquorix-amd64 #1 ZEN SMP PREEMPT_DYNAMIC liquorix 6.1-27.1~bookworm (2023-02-1 x86_64 GNU/Linux
+CPU: AMD Ryzen 5 PRO 4650U with Radeon Graphics 6 cores (3.9 GHz)
+RAM: 9.8 GB free / 22.7 GB
 
 # Loading NeuroAnalyzer.jl
 
@@ -10,8 +10,8 @@ RAM: 14.4 GB free / 22.7 GB
 
 # NeuroAnalyzer info
 
-    NeuroAnalyzer: 0.23.1
-            Julia: 1.9.0-beta2
+    NeuroAnalyzer: 0.23.3
+            Julia: 1.9.0-beta3
              CUDA: not available (use_cuda = false)
      Plugins path: /home/eb/NeuroAnalyzer/plugins/
 Show progress bar: true
@@ -20,158 +20,173 @@ Show progress bar: true
 
 Imported packages:
             ColorSchemes 3.20.0
+      ContinuousWavelets 1.1.2
                      CSV 0.10.9
             CubicSplines 0.2.1
-                    CUDA 3.12.1
-              DataFrames 0.22.7
+                    CUDA 4.0.1
+              DataFrames 1.5.0
            Deconvolution 1.1.1
+                   DICOM 0.10.1
                Distances 0.10.7
                      DSP 0.7.8
                     FFTW 1.5.0
                   FileIO 1.16.0
              FindPeaks1D 0.1.8
-                     Git 1.2.1
+            FourierTools 0.4.0
+                     Git 1.3.0
                      GLM 1.8.1
-                 GLMakie 0.8.1
+                 GLMakie 0.8.2
          HypothesisTests 0.10.11
      InformationMeasures 0.3.1
           Interpolations 0.14.7
-                    JLD2 0.4.29
-                   Lathe 0.1.6
+                  Jacobi 0.5.1
+                    JLD2 0.4.30
                    Loess 0.5.4
-       MultivariateStats 0.10.0
-                   Plots 1.38.1
-             Polynomials 3.2.1
+                     MAT 0.10.3
+       MultivariateStats 0.10.1
+                   Plots 1.38.5
+             Polynomials 2.0.25
              Preferences 1.3.0
            ProgressMeter 1.7.2
+           SavitzkyGolay 0.6.2
   ScatteredInterpolation 0.3.6
                  Simpson 1.0.1
-               StatsFuns 0.9.18
+               StatsFuns 1.2.0
                 StatsKit 0.3.1
              StatsModels 0.6.33
               StatsPlots 0.15.4
                 Wavelets 0.9.5
              WaveletsExt 0.2.1
-      ContinuousWavelets 1.1.2
 
 # IO
 
-Import EDF                            0.146623 seconds (42.45 k allocations: 207.130 MiB, 16.84% gc time)
-Import EDF+                           0.419424 seconds (3.42 M allocations: 614.731 MiB, 19.98% gc time)
-Import BDF+                           0.049331 seconds (20.91 k allocations: 122.751 MiB, 11.24% gc time)
-Import Digitrack                      0.681611 seconds (19.13 M allocations: 1.330 GiB, 49.30% gc time)
-Import BrainVision                    0.023175 seconds (33.01 k allocations: 2.794 MiB, 90.98% gc time)
-Save HDF5                             0.049311 seconds (8.85 k allocations: 406.047 KiB)
-Load HDF5                             0.040767 seconds (5.65 k allocations: 59.892 MiB, 40.66% gc time)
+Import EDF                            0.153124 seconds (43.65 k allocations: 207.187 MiB, 18.11% gc time)
+Import EDF+                           0.432588 seconds (3.42 M allocations: 614.802 MiB, 21.26% gc time)
+Import BDF+                           0.062957 seconds (21.76 k allocations: 122.792 MiB, 13.03% gc time)
+Import Digitrack                      0.781123 seconds (19.13 M allocations: 1.330 GiB, 50.56% gc time)
+Import BrainVision                    0.006245 seconds (33.11 k allocations: 2.799 MiB)
+Import CSV ch×t                       7.398846 seconds (69.40 M allocations: 1.702 GiB, 16.06% gc time)
+Import CSV t×ch                       0.403229 seconds (27.27 k allocations: 240.710 MiB)
+Import EEGLAB dataset                 0.050352 seconds (16.52 k allocations: 123.714 MiB)
+Save HDF5                             0.055238 seconds (8.85 k allocations: 406.047 KiB)
+Load HDF5                             0.029305 seconds (5.73 k allocations: 59.912 MiB)
 
 # EDIT
 
-Delete channel                        0.050170 seconds (362 allocations: 89.847 MiB, 39.22% gc time)
-Keep channel                          0.031171 seconds (2.45 k allocations: 49.741 MiB, 42.08% gc time)
-Delete epoch                          0.046226 seconds (185 allocations: 91.837 MiB, 34.64% gc time)
-Keep epoch                            0.031554 seconds (4.14 k allocations: 47.918 MiB, 49.27% gc time)
-Virtual channel                       1.712591 seconds (2.50 M allocations: 385.067 MiB, 2.19% gc time, 0.01% compilation time)
+Delete channel                        0.038359 seconds (331 allocations: 89.846 MiB)
+Keep channel                          0.027254 seconds (2.26 k allocations: 49.736 MiB)
+Delete epoch                          0.088941 seconds (179 allocations: 91.837 MiB, 52.06% gc time)
+Keep epoch                            0.020187 seconds (4.14 k allocations: 47.917 MiB)
+Virtual channel                       2.224312 seconds (2.50 M allocations: 385.067 MiB, 0.01% compilation time)
 
 # PROCESS
 
-A referencing                         0.092211 seconds (6.41 k allocations: 153.822 MiB, 43.02% gc time)
-M referencing                         0.093255 seconds (6.41 k allocations: 153.823 MiB, 32.91% gc time)
-CAR referencing                       0.183071 seconds (85.17 k allocations: 145.533 MiB, 52.14% gc time)
-Channel referencing                   0.116902 seconds (9.38 k allocations: 93.109 MiB, 32.51% gc time)
-Filter: LP                            0.283167 seconds (1.15 M allocations: 653.165 MiB, 33.65% gc time)
-Filter: HP                            0.189118 seconds (1.15 M allocations: 653.446 MiB, 11.59% gc time)
-Filter: IIR notch                     0.209901 seconds (148.75 k allocations: 594.365 MiB, 20.22% gc time)
-Filter: Remez                         1.134693 seconds (706.92 k allocations: 1006.506 MiB, 4.62% gc time)
-Filter: FIR                           0.806614 seconds (551.70 k allocations: 902.564 MiB, 5.08% gc time)
-Filter: polynomial (8)                1.069847 seconds (394.86 k allocations: 5.348 GiB, 6.47% gc time)
-Filter: moving average                1.558952 seconds (35.37 M allocations: 6.749 GiB, 26.19% gc time)
-Interpolate: PL                      54.337922 seconds (460.98 M allocations: 38.060 GiB, 4.71% gc time)
-Interpolate: LR                       0.280146 seconds (3.73 k allocations: 477.140 MiB, 35.69% gc time)
+A referencing                         0.113591 seconds (16.23 k allocations: 154.763 MiB)
+M referencing                         0.101229 seconds (16.28 k allocations: 154.764 MiB)
+CAR referencing                       0.099302 seconds (85.11 k allocations: 145.531 MiB)
+Channel referencing                   0.074991 seconds (9.41 k allocations: 93.109 MiB)
+Filter: FIR LP                        0.446904 seconds (391.75 k allocations: 279.008 MiB)
+Filter: FIR HP                        4.752695 seconds (424.87 k allocations: 1.461 GiB)
+Filter: IIR LP                        0.182978 seconds (1.01 M allocations: 196.328 MiB)
+Filter: IIR HP                        0.270114 seconds (1.01 M allocations: 196.328 MiB, 54.68% gc time)
+Filter: IIR notch                     0.061824 seconds (61.59 k allocations: 140.935 MiB)
+Filter: Remez                         0.313397 seconds (390.99 k allocations: 351.971 MiB)
+Filter: polynomial (8)                1.681711 seconds (995.09 k allocations: 1.922 GiB, 9.90% gc time)
+Filter: moving average                1.495158 seconds (11.75 M allocations: 2.185 GiB, 26.02% gc time)
+Interpolate: PL                      26.550921 seconds (460.99 M allocations: 40.065 GiB, 9.18% gc time)
+Interpolate: LR                       0.303685 seconds (4.26 k allocations: 489.335 MiB)
+Surface Laplacian                     0.405778 seconds (26.37 k allocations: 455.120 MiB, 11.00% gc time)
 
 # ANALYZE
 
-Total power                           0.137874 seconds (99.08 k allocations: 67.912 MiB)
-Total power: mt                       1.900609 seconds (155.32 k allocations: 1.962 GiB, 3.16% gc time)
-Band power                            0.153752 seconds (130.03 k allocations: 78.487 MiB)
-Band power: mt                        1.862384 seconds (177.06 k allocations: 1.985 GiB, 3.17% gc time)
-Covariance matrix                     0.009053 seconds (3.85 k allocations: 41.183 MiB)
-Correlation matrix                    0.007373 seconds (3.98 k allocations: 41.205 MiB)
-Auto-covariance                       0.018763 seconds (37.27 k allocations: 122.774 MiB)
-Cross-covariance 1                    1.036845 seconds (1.69 M allocations: 8.189 GiB, 7.89% gc time)
-Cross-covariance 2                    0.000208 seconds (281 allocations: 475.203 KiB)
-PSD                                   0.146543 seconds (94.70 k allocations: 103.322 MiB)
-PSD: mt                               1.898789 seconds (141.61 k allocations: 1.991 GiB, 2.48% gc time)
-PSD: mw                              31.212935 seconds (35.41 M allocations: 125.468 GiB, 5.52% gc time)
-Stationarity: mean                    0.009398 seconds (37.12 k allocations: 43.215 MiB)
-Stationarity: var                     0.009462 seconds (39.28 k allocations: 43.500 MiB)
-Stationarity: cov                     0.925099 seconds (3.46 M allocations: 3.056 GiB, 15.46% gc time)
-Stationarity: hilbert                 0.296049 seconds (164.85 k allocations: 250.402 MiB)
-Stationarity: adf                     0.394436 seconds (350.07 k allocations: 2.246 GiB, 17.00% gc time)
-Mutual information 1                  0.881383 seconds (648.95 k allocations: 2.546 GiB, 8.11% gc time)
-Mutual information 2                  1.573864 seconds (1.13 M allocations: 4.802 GiB, 3.16% gc time)
-Time coherence                        0.001095 seconds (292 allocations: 1.188 MiB)
-Signal difference: absdiff            0.896664 seconds (220.60 k allocations: 4.575 GiB, 3.96% gc time)
-Signal difference: diff2int           1.074904 seconds (296.12 k allocations: 5.183 GiB, 6.17% gc time)
-Epoch stats                           0.133166 seconds (6.42 k allocations: 248.984 MiB, 34.76% gc time)
-Spectrogram: standard                 2.474614 seconds (104.13 k allocations: 3.743 GiB, 5.54% gc time)
-Spectrogram: mt                       0.607164 seconds (156.88 k allocations: 489.131 MiB, 37.71% gc time)
-Spectrogram: stft                     1.763157 seconds (110.50 k allocations: 6.139 GiB, 5.46% gc time)
-Spectrogram: mw                     128.967090 seconds (31.74 M allocations: 454.746 GiB, 11.66% gc time)
-Spectrogram: cwt                     11.202104 seconds (5.63 M allocations: 73.162 GiB, 6.31% gc time)
-Spectrum: FFT                         0.235657 seconds (104.97 k allocations: 468.268 MiB, 12.50% gc time)
-Spectrum: Hilbert                     0.404907 seconds (182.91 k allocations: 452.141 MiB, 5.37% gc time)
-Channel stats                         0.046726 seconds (33.48 k allocations: 268.915 MiB)
-SNR                                   0.127185 seconds (192.92 k allocations: 336.394 MiB)
-Standardize                           0.033746 seconds (6.32 k allocations: 83.012 MiB)
-Frequency convolution                 1.774309 seconds (258.05 k allocations: 5.068 GiB, 1.58% gc time)
-Time convolution                      0.782944 seconds (175.99 k allocations: 2.254 GiB, 3.51% gc time)
-DFT                                   0.128951 seconds (85.96 k allocations: 286.367 MiB, 17.63% gc time)
-MSCI95: normal                        0.016803 seconds (7.25 k allocations: 38.123 MiB)
-MSCI95:boot                           0.015224 seconds (7.25 k allocations: 38.123 MiB)
-Mean                                  0.015262 seconds (11.50 k allocations: 47.784 MiB)
-Subtract channels                     0.035414 seconds (15.73 k allocations: 81.420 MiB)
-Temporal envelope                     0.605554 seconds (32.46 M allocations: 1.246 GiB, 27.13% gc time)
-Temporal envelope: mean               0.482402 seconds (32.47 M allocations: 1.308 GiB, 18.87% gc time)
-Temporal envelope: median             0.666440 seconds (34.97 M allocations: 1.440 GiB, 18.13% gc time)
-Power envelope                        0.234235 seconds (7.15 M allocations: 415.272 MiB)
-Power envelope: mean                  0.294101 seconds (517.21 k allocations: 143.667 MiB, 28.87% gc time)
-Power envelope: median                0.194925 seconds (591.30 k allocations: 155.746 MiB)
-Spectral envelope                     1.032879 seconds (464.90 k allocations: 4.951 GiB, 8.88% gc time)
-Spectral envelope: mean               1.052173 seconds (521.93 k allocations: 4.955 GiB, 5.54% gc time)
-Spectral envelope: median             1.169323 seconds (500.12 k allocations: 4.955 GiB, 6.25% gc time)
-Hilbert amplitude envelope            1.043414 seconds (32.64 M allocations: 1.767 GiB, 17.33% gc time)
-Hilbert amplitude envelope: mean      1.054821 seconds (32.64 M allocations: 1.830 GiB, 19.82% gc time)
-Hilbert amplitude envelope: median    1.242631 seconds (35.15 M allocations: 1.962 GiB, 9.58% gc time)
-ISPC 1                                4.686233 seconds (3.43 M allocations: 7.232 GiB, 2.84% gc time)
-ISPC 2                                0.001308 seconds (348 allocations: 500.750 KiB)
-ITPC                                  0.020937 seconds (8.49 k allocations: 19.431 MiB)
-ITPC spectrogram                    453.286224 seconds (312.06 M allocations: 535.736 GiB, 2.35% gc time)
-PLI 1                                 5.072510 seconds (3.39 M allocations: 6.172 GiB, 2.22% gc time)
-PLI 2                                 0.001205 seconds (345 allocations: 440.422 KiB)
-AEC                                   0.207201 seconds (3.84 M allocations: 151.873 MiB)
-GED                                   0.035701 seconds (10.34 k allocations: 163.796 MiB)
-Instant frequency                     0.388799 seconds (196.49 k allocations: 491.944 MiB, 14.52% gc time)
-TKEO                                  0.041001 seconds (14.58 k allocations: 81.331 MiB)
-Frequency coherence                   0.014567 seconds (408 allocations: 3.419 MiB)
-F-test 1                              0.046946 seconds (48.93 k allocations: 5.039 MiB)
-F-test 2                              0.046135 seconds (31.61 k allocations: 3.367 MiB)
-Band power                            0.215141 seconds (101.57 k allocations: 82.604 MiB)
-Relative PSD                          0.953858 seconds (194.57 k allocations: 139.662 MiB, 5.26% gc time)
-Frequency band split                  2.031223 seconds (18.31 M allocations: 6.188 GiB, 10.93% gc time)
-Channel difference                    0.004833 seconds (9.32 k allocations: 5.628 MiB)
-Cross power spectrum 1               21.469226 seconds (1.63 M allocations: 32.528 GiB, 3.02% gc time)
-Cross power spectrum 2                0.012486 seconds (371 allocations: 3.538 MiB)
-Amplitude difference                  0.066278 seconds (63.96 k allocations: 126.482 MiB, 30.42% gc time)
-DWT                                   0.463605 seconds (84.77 k allocations: 1.533 GiB, 5.44% gc time)
-CWT                                  10.699692 seconds (3.09 M allocations: 51.310 GiB, 12.47% gc time)
-PSD slope                             0.494096 seconds (536.76 k allocations: 260.238 MiB, 9.69% gc time)
-eeg_apply()                           8.736321 seconds (5.03 M allocations: 686.972 MiB, 0.52% gc time)
-Normalize                             0.062529 seconds (95.01 k allocations: 87.512 MiB, 49.76% gc time)
-Demean                                0.078553 seconds (14.68 k allocations: 83.699 MiB, 34.32% gc time)
-Taper                                 0.076775 seconds (22.34 k allocations: 84.901 MiB, 34.42% gc time)
-Derivative                            0.055515 seconds (17.84 k allocations: 123.962 MiB, 38.84% gc time)
-Detrend                               0.094609 seconds (52.93 k allocations: 85.178 MiB, 62.64% gc time)
-Wiener denoising                      0.730400 seconds (354.95 k allocations: 2.638 GiB, 8.21% gc time)
-Generate PCA                          0.189374 seconds (12.54 k allocations: 233.851 MiB, 29.41% gc time)
-Generate ICA                          0.636960 seconds (20.68 k allocations: 1.260 GiB, 31.02% gc time)
-Remove ICA                            0.437562 seconds (1.86 k allocations: 279.525 MiB, 13.98% gc time)
+Total power                           0.059020 seconds (108.00 k allocations: 75.748 MiB)
+Total power: mt                       1.938606 seconds (161.43 k allocations: 2.192 GiB)
+Band power                            0.087015 seconds (140.85 k allocations: 87.511 MiB)
+Band power: mt                        2.059812 seconds (199.11 k allocations: 2.219 GiB, 5.19% gc time)
+Covariance matrix                     0.011781 seconds (4.05 k allocations: 46.117 MiB)
+Correlation matrix                    0.010481 seconds (4.17 k allocations: 46.141 MiB)
+Auto-covariance                       0.024072 seconds (40.59 k allocations: 137.116 MiB)
+Cross-covariance 1                    3.972539 seconds (2.10 M allocations: 10.169 GiB, 9.89% gc time)
+Cross-covariance 2                    0.000249 seconds (299 allocations: 475.734 KiB)
+PSD                                   0.146954 seconds (103.37 k allocations: 115.349 MiB)
+PSD: mt                               2.519997 seconds (156.61 k allocations: 2.313 GiB)
+PSD: mw                              77.259388 seconds (41.05 M allocations: 140.265 GiB, 9.25% gc time)
+Stationarity: mean                    0.029744 seconds (40.69 k allocations: 48.205 MiB)
+Stationarity: var                     0.026329 seconds (43.03 k allocations: 48.522 MiB)
+Stationarity: cov                     6.935761 seconds (3.46 M allocations: 3.725 GiB, 1.67% gc time)
+Stationarity: hilbert                 2.921423 seconds (184.03 k allocations: 279.788 MiB)
+Stationarity: adf                     4.829029 seconds (397.57 k allocations: 2.511 GiB, 8.66% gc time, 0.80% compilation time)
+Mutual information 1                  4.112695 seconds (801.44 k allocations: 3.161 GiB, 3.05% gc time)
+Mutual information 2                 12.106946 seconds (1.41 M allocations: 5.999 GiB)
+Entropy                               0.219353 seconds (29.23 k allocations: 47.759 MiB)
+Negentropy                            0.396119 seconds (33.77 k allocations: 92.708 MiB)
+Time coherence                        0.000717 seconds (283 allocations: 416.188 KiB)
+Signal difference: absdiff            1.811595 seconds (244.96 k allocations: 5.638 GiB, 3.37% gc time)
+Signal difference: diff2int           1.834336 seconds (329.19 k allocations: 6.316 GiB, 2.90% gc time)
+Epoch stats                           0.792603 seconds (6.42 k allocations: 270.844 MiB, 14.46% gc time)
+Spectrogram: standard                 1.884894 seconds (113.76 k allocations: 2.602 GiB, 4.04% gc time)
+Spectrogram: mt                       0.910328 seconds (153.40 k allocations: 546.060 MiB)
+Spectrogram: stft                     1.359412 seconds (119.21 k allocations: 4.227 GiB, 2.65% gc time)
+Spectrogram: mw                     107.015394 seconds (40.34 M allocations: 185.488 GiB, 19.93% gc time)
+Spectrogram: cwt                     63.010536 seconds (6.28 M allocations: 81.764 GiB, 4.25% gc time)
+Spectrum: FFT                         0.354393 seconds (109.23 k allocations: 522.945 MiB, 19.37% gc time)
+Spectrum: Hilbert                     0.478604 seconds (198.66 k allocations: 505.083 MiB, 6.62% gc time)
+Channel stats                         0.077314 seconds (36.21 k allocations: 296.241 MiB)
+SNR                                   0.243331 seconds (207.15 k allocations: 374.792 MiB, 11.72% gc time)
+Standardize                           0.098467 seconds (6.53 k allocations: 92.475 MiB, 49.02% gc time)
+Frequency convolution                 2.601996 seconds (294.90 k allocations: 5.664 GiB, 4.54% gc time)
+Time convolution                      1.676588 seconds (206.05 k allocations: 2.520 GiB, 3.12% gc time)
+DFT                                   0.215259 seconds (95.25 k allocations: 319.836 MiB, 10.34% gc time)
+MSCI95: normal                        0.014038 seconds (7.45 k allocations: 38.129 MiB)
+MSCI95:boot                           0.024768 seconds (7.45 k allocations: 38.128 MiB, 41.90% gc time)
+Mean                                  0.015330 seconds (11.90 k allocations: 47.796 MiB)
+Subtract channels                     0.074468 seconds (16.59 k allocations: 90.895 MiB, 36.64% gc time)
+Temporal envelope                     0.683891 seconds (36.28 M allocations: 1.392 GiB, 27.64% gc time)
+Temporal envelope: mean               0.681371 seconds (36.28 M allocations: 1.459 GiB, 27.15% gc time)
+Temporal envelope: median             0.846188 seconds (38.79 M allocations: 1.596 GiB, 23.17% gc time)
+Power envelope                        0.261085 seconds (7.99 M allocations: 464.103 MiB, 23.23% gc time)
+Power envelope: mean                  0.137788 seconds (525.85 k allocations: 157.628 MiB, 20.89% gc time)
+Power envelope: median                0.144818 seconds (599.07 k allocations: 170.776 MiB, 16.78% gc time)
+Spectral envelope                     0.976054 seconds (371.89 k allocations: 3.405 GiB, 13.95% gc time)
+Spectral envelope: mean               0.893221 seconds (415.06 k allocations: 3.408 GiB, 13.71% gc time)
+Spectral envelope: median             0.847639 seconds (393.42 k allocations: 3.407 GiB, 12.80% gc time)
+Hilbert amplitude envelope            1.170573 seconds (36.47 M allocations: 1.975 GiB, 18.48% gc time)
+Hilbert amplitude envelope: mean      1.210947 seconds (36.47 M allocations: 2.042 GiB, 19.26% gc time)
+Hilbert amplitude envelope: median    1.369475 seconds (38.99 M allocations: 2.179 GiB, 17.82% gc time)
+ISPC 1                                6.242004 seconds (4.16 M allocations: 8.978 GiB, 5.87% gc time)
+ISPC 2                                0.000899 seconds (356 allocations: 500.969 KiB)
+ITPC                                  0.056183 seconds (8.49 k allocations: 19.431 MiB, 63.49% gc time)
+ITPC spectrogram                    437.358464 seconds (307.79 M allocations: 535.623 GiB, 5.14% gc time)
+PLI 1                                 7.222681 seconds (3.95 M allocations: 7.657 GiB, 5.05% gc time)
+PLI 2                                 0.000575 seconds (359 allocations: 440.828 KiB)
+Envelope correlation: amp             0.214244 seconds (3.84 M allocations: 151.682 MiB)
+Envelope correlation: pow             0.081744 seconds (857.71 k allocations: 50.727 MiB)
+Envelope correlation: spec            0.277552 seconds (50.94 k allocations: 369.443 MiB, 10.43% gc time)
+Envelope correlation: hamp            0.344016 seconds (3.88 M allocations: 306.004 MiB, 9.80% gc time)
+GED                                   0.183175 seconds (10.74 k allocations: 183.286 MiB, 74.93% gc time)
+Instant frequency                     0.509806 seconds (222.67 k allocations: 550.387 MiB, 10.77% gc time)
+TKEO                                  0.070464 seconds (15.27 k allocations: 90.801 MiB, 29.33% gc time)
+Frequency coherence                   0.013382 seconds (418 allocations: 3.420 MiB)
+F-test 1                              0.071626 seconds (54.96 k allocations: 5.533 MiB)
+F-test 2                              0.106912 seconds (70.29 k allocations: 5.723 MiB)
+Band power                            0.128177 seconds (121.36 k allocations: 92.405 MiB, 38.71% gc time)
+Relative PSD                          0.186780 seconds (217.51 k allocations: 165.423 MiB, 21.46% gc time)
+Frequency band split                  5.373773 seconds (2.69 M allocations: 2.638 GiB, 4.68% gc time)
+Channel difference                    0.008038 seconds (9.32 k allocations: 5.628 MiB)
+Cross power spectrum 1               29.211509 seconds (1.96 M allocations: 40.397 GiB, 4.05% gc time)
+Cross power spectrum 2                0.013985 seconds (381 allocations: 3.538 MiB)
+Amplitude difference                  0.081120 seconds (70.47 k allocations: 141.264 MiB, 27.82% gc time)
+DWT                                   0.690102 seconds (93.72 k allocations: 1.714 GiB, 4.59% gc time)
+CWT                                  38.662534 seconds (3.45 M allocations: 57.343 GiB, 15.10% gc time)
+PSD slope                             0.364469 seconds (586.21 k allocations: 290.448 MiB)
+eeg_apply()                           8.602359 seconds (5.03 M allocations: 686.649 MiB, 0.60% gc time)
+Normalize                             0.103786 seconds (105.12 k allocations: 97.428 MiB, 35.00% gc time)
+Demean                                0.200978 seconds (15.46 k allocations: 93.172 MiB, 13.58% gc time)
+Taper                                 0.075865 seconds (23.13 k allocations: 94.375 MiB, 45.13% gc time)
+Derivative                            0.070638 seconds (18.80 k allocations: 138.164 MiB, 35.28% gc time)
+Detrend                               0.097878 seconds (58.04 k allocations: 94.811 MiB, 59.89% gc time)
+Wiener denoising                      0.765827 seconds (377.31 k allocations: 1017.414 MiB, 7.63% gc time)
+Generate PCA                          0.237204 seconds (12.73 k allocations: 258.219 MiB, 37.37% gc time)
+Generate ICA                          1.308841 seconds (20.87 k allocations: 1.334 GiB, 19.44% gc time)
+Remove ICA                            0.291984 seconds (2.06 k allocations: 293.838 MiB, 17.50% gc time)
+Split using DWT                       0.069182 seconds (3.09 k allocations: 68.651 MiB, 32.73% gc time)
