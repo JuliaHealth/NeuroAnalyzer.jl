@@ -2492,40 +2492,64 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
         error("File $file_name cannot be loaded.")
     end
 
-    tags = Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}()
+    # read file_id tag
+    try
+        tag_kind, tag_type, tag_size, tag_next = _read_fif_tag(fid)
+    catch
+        error("File $file_name first tag cannot be read.")
+    end
+
+    # check file_id tag
+    fiff_file_id = 100
+    fiff_id_struct = 31
+    fiff_next_seq = 0
+    tag_kind != fiff_file_id && throw(ArgumentError("File $file_name is not a FIF file."))
+    tag_type != fiff_id_struct && throw(ArgumentError("File $file_name is not a FIF file."))
+    tag_size != 20 && throw(ArgumentError("File $file_name is not a FIF file."))
+
+    # read dir_pointer tag
+    try
+        tag_kind, tag_type, tag_size, tag_next = _read_fif_tag(fid)
+    catch
+        error("File $file_name first tag cannot be read.")
+    end
+
+    # check dir_pointer tag
+    fiff_dir_pointer = 101
+    tag_kind != fiff_dir_pointer && throw(ArgumentError("File $file_name has no dir_pointer tag."))
 
     # read tags
-    
+    seek(fid, 0)
+    # tags: position in file, type, size, next
+    tags = Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}()
     while tag_next != -1
         current_position = position(fid)
-        try
-            tag = reinterpret(Int32, read(fid, sizeof(Int32) * 4))
-            tag .= ntoh.(tag)
-            tag_kind = tag[1]
-            tag_type = tag[2]
-            tag_size = tag[3]
-            tag_next = tag[4]
-        catch
-            error("File $file_name first tag cannot be read.")
-        end
-
-        # check first tag
-        if length(tags) == 0
-            tag_kind != 100 && throw(ArgumentError("File $file_name is not a FIF file."))
-            tag_type != 31 && throw(ArgumentError("File $file_name is not a FIF file."))
-            tag_size != 20 && throw(ArgumentError("File $file_name is not a FIF file."))
-        end
-
+        tag_kind, tag_type, tag_size, tag_next = _read_fif_tag(fid)
         push!(tags, (current_position, tag_kind, tag_type, tag_size, tag_next))
-
-        current_position = position(fid)
-
-        if tag_next == 0
-            seek(fid, current_position + tag_size)
-        elseif tag_next > 0
-            seek(fid, tag_next)
-        end
     end
+    seek(fid, 0)
+
+    # create list of tag IDs
+    tag_ids = Vector{Int64}()
+    for tag_idx in 1:length(tags)
+        push!(tag_ids, tags[tag_idx][2])
+    end
+
+    # channel_n
+    fiff_nchan_id = 200
+    channel_n = reinterpret(Int32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_nchan_id)]))
+    channel_n = Int64.(channel_n)[]
+
+    # sr
+    fiff_sfreq_id = 201
+    sr = reinterpret(Float32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_sfreq_id)]))
+    sr = Int64.(sr)[]
+
+    # date
+    fiff_meas_date_id = 204
+    d = reinterpret(Int32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_meas_date_id)]))
+    d = unix2datetime(d[2])
+
     close(fid)
 
 end

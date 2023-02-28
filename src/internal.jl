@@ -715,3 +715,32 @@ end
 function _info(s::String)
     verbose == true && @info s
 end
+
+function _read_fif_tag(fid::IOStream)
+    tag = reinterpret(Int32, read(fid, sizeof(Int32) * 4))
+    tag .= ntoh.(tag)
+    tag_kind = tag[1]
+    tag_type = tag[2]
+    tag_size = tag[3]
+    tag_next = tag[4]
+    current_position = position(fid)
+
+    if tag_next == 0
+        seek(fid, current_position + tag_size)
+    elseif tag_next > 0
+        seek(fid, tag_next)
+    end
+
+    return tag_kind, tag_type, tag_size, tag_next
+end
+
+function _read_fif_data(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Int64})
+    seek(fid, tag[1] + 16)
+    buf = zeros(UInt8, tag[4])
+    readbytes!(fid, buf, tag[4])
+    return reverse(buf)
+end
+
+function _find_fif_tag(tag_ids::Vector{Int64}, id::Int64)
+    return findfirst(x -> x == id, tag_ids)
+end
