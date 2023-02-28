@@ -5,8 +5,10 @@
 ##################################
 
 _reflect(signal::AbstractArray) = vcat(signal[end:-1:1], signal, signal[end:-1:1])
+_reflect(s1::AbstractArray, s2::AbstractArray, s3::AbstractArray) = vcat(s2[end:-1:1], s1, s3[end:-1:1])
 
 _chop(signal::AbstractArray) = signal[(length(signal) ÷ 3 + 1):(length(signal) ÷ 3) * 2]
+_chop(s1::AbstractArray, n::Int64) = s1[(n + 1):end - n]
 
 _xlims(t::Union{Vector{<:Real}, AbstractRange}) = floor(t[1], digits=2), ceil(t[end], digits=2)
 
@@ -359,7 +361,7 @@ end
 function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, epoch_len::Int64)
 
     if size(signal, 3) > 1
-        @info "EEG has already been epoched, parts of the signal might have been removed."
+        _info("EEG has already been epoched, parts of the signal might have been removed.")
         signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
     end
 
@@ -398,7 +400,7 @@ function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, ma
         for epoch_idx in 1:marker_n
             markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx] && (within_epoch = true)
         end
-        within_epoch == false && delete!(markers, marker_idx)
+        within_epoch == false && deleteat!(markers, marker_idx)
     end
 
     # calculate marker offsets
@@ -624,6 +626,7 @@ function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vec
             signal_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
     end
+    signal_interpolated = signal_interpolated'
     
     return s_normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
 end
@@ -680,7 +683,7 @@ end
 
 function _delete_markers(markers::DataFrame, segment::Tuple{Int64, Int64})
     for marker_idx in nrow(markers):-1:1
-        markers[marker_idx, :start] in segment[1]:segment[2] && delete!(markers, marker_idx)
+        markers[marker_idx, :start] in segment[1]:segment[2] && deleteat!(markers, marker_idx)
     end
     return markers
 end
@@ -699,4 +702,16 @@ function _s2v(s::Union{<:Number, Vector{<:Number}})
     else
         return s
     end
+end
+
+function _split(df::DataFrame, ratio::Float64=0.8)
+    n = nrow(df)
+    idx = shuffle(1:n)
+    train_idx = view(idx, 1:floor(Int, ratio * n))
+    test_idx = view(idx, (floor(Int, ratio * n) + 1):n)
+    return df[train_idx, :], df[test_idx, :]
+end
+
+function _info(s::String)
+    verbose == true && @info s
 end

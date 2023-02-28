@@ -5,8 +5,11 @@ Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 - EDF/EDF+
 - BDF/BDF+
 - BrainVision
+- CSV
+- SET (EEGLAB dataset)
+- FIFF
 
-This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr).
+This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff).
 
 # Arguments
 
@@ -24,6 +27,11 @@ function eeg_import(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".edf" && return eeg_import_edf(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".bdf" && return eeg_import_bdf(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".vhdr" && return eeg_import_bv(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".csv" && return eeg_import_csv(file_name, detect_type=detect_type)
+    (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return eeg_import_csv(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".set" && return eeg_import_set(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".fif" && return eeg_import_fiff(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".fiff" && return eeg_import_fiff(file_name, detect_type=detect_type)
 end
 
 """
@@ -57,7 +65,14 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -178,7 +193,13 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    fid = open(file_name)
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -310,6 +331,9 @@ This is a meta-function that triggers appropriate `locs_import_*()` function. Fi
 function locs_import(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    _info("Send standard location for your channels to adam.wysokinski@neuroanalyzer.org")
+    _info("Nose direction is set at '+Y'.")
 
     if splitext(file_name)[2] == ".ced"
         locs = locs_import_ced(file_name)
@@ -664,6 +688,7 @@ Accepted formats:
 - TSV
 - SFP
 - CSD
+- GEO
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -679,12 +704,13 @@ Electrode locations:
 
 - `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
+- `maximize::Bool=true`: maximize locations after importing
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
+function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -701,6 +727,8 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
         locs = locs_import_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
         locs = locs_import_csd(file_name)
+    elseif splitext(file_name)[2] == ".geo"
+        locs = locs_import_geo(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -720,7 +748,7 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
 
     e_labels = lowercase.(eeg.eeg_header[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
-    length(no_match) > 0 && @info "Labels: $(uppercase.(no_match)) not found in $file_name."
+    length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in $file_name.")
 
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
@@ -746,6 +774,9 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
                                  :loc_theta_sph => loc_theta_sph[labels_idx],
                                  :loc_phi_sph => loc_phi_sph[labels_idx])
 
+
+    maximize == true && locs_maximize!(eeg_new.eeg_locs)
+
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_load_electrodes(EEG, file_name=$file_name)")
 
@@ -763,6 +794,8 @@ Accepted formats:
 - ELC
 - TSV
 - SFP
+- CSD
+- GEO
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -778,10 +811,11 @@ Electrode locations:
 
 - `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
+- `maximize::Bool=true`: maximize locations after importing
 """
-function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
+function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
 
-    eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name)
+    eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name, maximize=maximize)
     eeg.eeg_locs = eeg_tmp.eeg_locs
     eeg.eeg_header[:channel_locations] = true
 
@@ -1121,7 +1155,14 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -1232,7 +1273,13 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
-    fid = open(file_name)
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
     eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -1369,7 +1416,12 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
  
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    fid = open(file_name)
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
 
     buffer = readline(fid)
     occursin("Start time ", buffer) || throw(ArgumentError("File $file_name is not a Digitrack file."))
@@ -1547,7 +1599,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "segmentation=") && (segmentation = lowercase(split(vhdr[idx], '=')[2]) == "markerbased" ? true : false) # YES|NO
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[channelinfos]") && (channels_idx = idx)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "[coordinates]") && (locs_idx = idx)
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && @info "Software filters are not supported yet."
+        startswith(lowercase(replace(vhdr[idx], " " => "")), "softwarefilters") && _info("Software filters are not supported yet.")
     end
 
     patient = ""
@@ -1667,7 +1719,14 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         else
             @error("Only Float32 and Int16 BVCDF binary formats are supported.")
         end
-        fid = open(eeg_file)
+
+        fid = ""
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         signal = zeros(filesize(eeg_file) ÷ bytes)
         for idx in 1:(filesize(eeg_file) ÷ bytes)
             buf = zeros(UInt8, bytes)
@@ -1793,7 +1852,14 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     eeg_filetype = ""
-    fid = open(file_name)
+
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
     header = zeros(UInt8, 256)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
@@ -1917,7 +1983,13 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     if length(unique(samples_per_datarecord)) == 1
         sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
 
-        fid = open(file_name)
+        fid = ""
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
         eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
@@ -1957,7 +2029,13 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
         sampling_rate = round.(Int64, samples_per_datarecord / data_records_duration)
         max_sampling_rate = maximum(sampling_rate)
 
-        fid = open(file_name)
+        fid = ""
+        try
+            fid = open(file_name, "r")
+        catch
+            error("File $file_name cannot be loaded.")
+        end
+
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
 
@@ -2005,7 +2083,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
                 markers[idx1] = String(Char.(signal))
             end
         end
-        verbose == true && @info "Channels upsampled to $max_sampling_rate Hz."
+        _info("Channels upsampled to $max_sampling_rate Hz.")
         sampling_rate = max_sampling_rate
         close(fid)
     end
@@ -2079,4 +2157,375 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
+end
+
+"""
+    locs_import_geo(file_name)
+
+Load electrode positions from GEO file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function locs_import_geo(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
+    splitext(file_name)[2] == ".geo" || throw(ArgumentError("Not a GEO file."))
+
+    f = open(file_name, "r")
+    locs = readlines(f)
+    close(f)
+
+    l1 = 0
+    l2 = 0
+    for idx in 1:length(locs)
+        locs[idx] == "View\"\"{" && (l1 = idx + 1)
+        locs[idx] == "};" && (l2 = idx - 1)
+    end
+    locs = locs[l1+1:2:l2]
+
+    labels = repeat([""], length(locs))
+    x = zeros(length(locs))
+    y = zeros(length(locs))
+    z = zeros(length(locs))
+
+    p = r"(.+)(\(.+\)){(.+)}"
+    for idx in 1:length(labels)
+        m = match(p, locs[idx])
+        labels[idx] = replace(m[3], "\"" => "")
+        tmp = replace(m[2], "(" => "")
+        tmp = replace(tmp, ")" => "")
+        x[idx], y[idx], z[idx], = parse.(Float64, split(tmp, ", "))
+    end
+
+    x, y, z = _locnorm(x, y, z)
+
+    # center x at 0
+    x_adj = x[findfirst(isequal("Cz"), labels)]
+    x .-= x_adj
+    x, y, z = _locnorm(x, y, z)
+
+    radius = zeros(length(labels))
+    theta = zeros(length(labels))
+    radius_sph = zeros(length(labels))
+    theta_sph = zeros(length(labels))
+    phi_sph = zeros(length(labels))
+
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    locs = _round_locs(locs)
+
+    locs = locs_cart2sph(locs)
+    locs = locs_cart2pol(locs)
+
+    return locs
+end
+
+"""
+    eeg_import_csv(file_name; detect_type)
+
+Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
+
+# Returns
+
+- `eeg:EEG`
+
+# Notes
+
+CSV first row or first column must contain channel names.
+Shape of data array will be detected automatically. Sampling rate will be detected.
+If file is gzip-ed, it will be uncompressed automatically while reading.
+"""
+function eeg_import_csv(file_name::String; detect_type::Bool=true)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg_filetype = "CSV"
+
+    df = CSV.read(file_name, DataFrame)
+
+    if typeof(df[:, 1]) == Vector{Float64}
+        # time by channels
+        eeg_time = df[:, 1]
+        eeg_signals = Array(df[:, 2:end])'
+        channel_n = ncol(df) - 1
+        labels = String.(names(df)[2:end])
+    else
+        # channels by time
+        eeg_time = parse.(Float64, names(df)[2:end])
+        eeg_signals = Array(df[:, 2:end])
+        channel_n = nrow(df)
+        labels = String.(df[:, 1])
+    end
+    eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1)
+
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
+
+    has_markers = false
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    sampling_rate = round(Int64, 1 / eeg_time[2] * 1000)
+    gain = ones(channel_n)
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+
+    eeg_duration_samples = size(eeg_signals, 2)
+    eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate
+    eeg_time = collect(0:(1 / sampling_rate):eeg_duration_seconds)
+    eeg_time = eeg_time[1:end - 1]
+    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
+
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
+                      :eeg_filesize_mb => eeg_filesize_mb,
+                      :eeg_filetype => eeg_filetype,
+                      :patient => "",
+                      :recording => "",
+                      :recording_date => "",
+                      :recording_time => "",
+                      :channel_n => channel_n,
+                      :channel_type => channel_type[channel_order],
+                      :reference => "",
+                      :channel_locations => false,
+                      :history => String[],
+                      :components => Symbol[],
+                      :eeg_duration_samples => eeg_duration_samples,
+                      :eeg_duration_seconds => eeg_duration_seconds,
+                      :epoch_n => 1,
+                      :epoch_duration_samples => eeg_duration_samples,
+                      :epoch_duration_seconds => eeg_duration_seconds,
+                      :labels => labels[channel_order],
+                      :transducers => repeat([""], channel_n),
+                      :physical_dimension => repeat([""], channel_n),
+                      :prefiltering => repeat([""], channel_n),
+                      :sampling_rate => sampling_rate,
+                      :gain => gain[channel_order],
+                      :note => "",
+                      :markers => has_markers)
+
+    eeg_components = Vector{Any}()
+    eeg_epoch_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
+
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+
+    return eeg
+end
+
+"""
+    eeg_import_set(file_name; detect_type)
+
+Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
+
+# Returns
+
+- `eeg:EEG`
+"""
+function eeg_import_set(file_name::String; detect_type::Bool=true)
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg_filetype = "SET"
+
+    dataset = matread(file_name)
+    eeg_time = dataset["times"][:]
+    eeg_signals = dataset["data"]
+
+    # there are no epochs if signal is matrix, not array
+    ndims(eeg_signals) == 2 && (eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1))
+
+    channel_n = size(eeg_signals, 1)
+    
+    # get channel labels
+    if length(dataset["chanlocs"]["labels"][:]) == channel_n
+        labels = String.(dataset["chanlocs"]["labels"][:])
+    else
+        labels = repeat([""], channel_n)
+    end
+
+    labels = _clean_labels(labels)
+    if detect_type == true
+        channel_type = _set_channel_types(labels)
+    else
+        channel_type = repeat(["???"], channel_n)
+    end
+    channel_order = _sort_channels(copy(channel_type))
+
+    # TODO: import locations, events and other data
+    # keys(dataset) = ["event", "icawinv", "chaninfo", "epoch", "stats", "chanlocs", "reject", "icaact", "icaweights", "ref", "eventdescription", "urchanlocs", "urevent", "nbchan", "icachansind", "specicaact", "icasplinefile", "splinefile", "condition", "dipfit", "group", "icasphere", "session", "datfile", "trials", "epochdescription", "setname", "specdata", "run"]
+    # epochs data: dataset["epoch"]
+    # events data: dataset["event"]
+    # channel data: dataset["chaninfo"]
+    # locs data: dataset["chanlocs"]
+    # ICA weights: dataset["icaweights"]
+    # ICA weights: dataset["icaweights"]
+    # ignore: xmin, xmax, filename, filepath, etc, setname, saved, pnts
+
+    # EEGLAB metadata
+    patient = dataset["subject"]
+    note = dataset["comments"]
+    history = split(dataset["history"], "\n")
+    # remove first two entries, 1st is empty, second is EEGLAB version
+    length(history) > 2 && (history = history[3:end])
+
+    sampling_rate = round(Int64, dataset["srate"])
+
+    has_markers = false
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    gain = ones(channel_n)
+    eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+
+    eeg_duration_samples = size(eeg_signals, 2)
+    eeg_duration_seconds = size(eeg_signals, 2) / sampling_rate
+    eeg_time = collect(0:(1 / sampling_rate):eeg_duration_seconds)
+    eeg_time = eeg_time[1:end - 1]
+    eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
+
+    signal_type = "eeg"
+    "meg" in channel_type && (signal_type = "meg")
+
+    eeg_header = Dict(:signal_type => signal_type,
+                      :eeg_filename => file_name,
+                      :eeg_filesize_mb => eeg_filesize_mb,
+                      :eeg_filetype => eeg_filetype,
+                      :patient => patient,
+                      :recording => "",
+                      :recording_date => "",
+                      :recording_time => "",
+                      :channel_n => channel_n,
+                      :channel_type => channel_type[channel_order],
+                      :reference => "",
+                      :channel_locations => false,
+                      :history => history,
+                      :components => Symbol[],
+                      :eeg_duration_samples => eeg_duration_samples,
+                      :eeg_duration_seconds => eeg_duration_seconds,
+                      :epoch_n => 1,
+                      :epoch_duration_samples => eeg_duration_samples,
+                      :epoch_duration_seconds => eeg_duration_seconds,
+                      :labels => labels[channel_order],
+                      :transducers => repeat([""], channel_n),
+                      :physical_dimension => repeat([""], channel_n),
+                      :prefiltering => repeat([""], channel_n),
+                      :sampling_rate => sampling_rate,
+                      :gain => gain[channel_order],
+                      :note => note,
+                      :markers => has_markers)
+
+    eeg_components = Vector{Any}()
+    eeg_epoch_time = eeg_time
+    eeg_locs = DataFrame(:channel => Int64,
+                         :labels => String[],
+                         :loc_theta => Float64[],
+                         :loc_radius => Float64[],
+                         :loc_x => Float64[],
+                         :loc_y => Float64[],
+                         :loc_z => Float64[],
+                         :loc_radius_sph => Float64[],
+                         :loc_theta_sph => Float64[],
+                         :loc_phi_sph => Float64[])
+
+    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+
+    return eeg
+end
+
+"""
+    eeg_import_fiff(file_name; detect_type)
+
+Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
+
+# Returns
+
+- `eeg:EEG`
+
+"""
+function eeg_import_fiff(file_name::String; detect_type::Bool=true)
+
+    file_name = "test/meg-test-fif.fif"
+    file_name = "/home/eb/Downloads/urmr_thumb_right.fif"
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg_filetype = ""
+
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
+    tags = Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}()
+
+    # read tags
+    
+    while tag_next != -1
+        current_position = position(fid)
+        try
+            tag = reinterpret(Int32, read(fid, sizeof(Int32) * 4))
+            tag .= ntoh.(tag)
+            tag_kind = tag[1]
+            tag_type = tag[2]
+            tag_size = tag[3]
+            tag_next = tag[4]
+        catch
+            error("File $file_name first tag cannot be read.")
+        end
+
+        # check first tag
+        if length(tags) == 0
+            tag_kind != 100 && throw(ArgumentError("File $file_name is not a FIF file."))
+            tag_type != 31 && throw(ArgumentError("File $file_name is not a FIF file."))
+            tag_size != 20 && throw(ArgumentError("File $file_name is not a FIF file."))
+        end
+
+        push!(tags, (current_position, tag_kind, tag_type, tag_size, tag_next))
+
+        current_position = position(fid)
+
+        if tag_next == 0
+            seek(fid, current_position + tag_size)
+        elseif tag_next > 0
+            seek(fid, tag_next)
+        end
+    end
+    close(fid)
+
 end

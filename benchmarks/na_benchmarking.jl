@@ -49,8 +49,17 @@ print(rpad("Import Digitrack", 36))
 eeg_import_digitrack("test/eeg-test-digitrack.txt");
 @time eeg_import_digitrack("test/eeg-test-digitrack.txt");
 print(rpad("Import BrainVision", 36))
-eeg_import_bv("test/eeg-test-bv.vhdr")
-@time eeg_import_bv("test/eeg-test-bv.vhdr")
+eeg_import_bv("test/eeg-test-bv.vhdr");
+@time eeg_import_bv("test/eeg-test-bv.vhdr");
+print(rpad("Import CSV ch×t", 36))
+eeg_import_csv("test/eeg-test_chxt.csv.gz");
+@time eeg_import_csv("test/eeg-test_chxt.csv.gz");
+print(rpad("Import CSV t×ch", 36))
+eeg_import_csv("test/eeg-test_txch.csv.gz");
+@time eeg_import_csv("test/eeg-test_txch.csv.gz");
+print(rpad("Import EEGLAB dataset", 36))
+eeg_import_set("test/eeg-test.set");
+@time eeg_import_set("test/eeg-test.set");
 print(rpad("Save HDF5", 36))
 tmp = tempname()
 eeg_save(eeg, file_name=tmp);
@@ -61,8 +70,8 @@ eeg_load(tmp);
 @time eeg_load(tmp);
 
 eeg = eeg_import_edf("test/eeg-test-edf.edf");
-eeg_delete_channel!(eeg, channel=20:24)
-e10 = eeg_epoch(eeg, epoch_len=2560)
+eeg_delete_channel!(eeg, channel=20:24);
+e10 = eeg_epoch(eeg, epoch_len=2560);
 eeg_load_electrodes!(e10, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
 @info "Benchmarking: eeg_edit.jl"
@@ -70,19 +79,19 @@ println()
 println("# EDIT")
 println()
 
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Delete channel", 36))
 eeg_delete_channel(e10_tmp, channel=1);
 @time eeg_delete_channel(e10_tmp, channel=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Keep channel", 36))
 eeg_keep_channel(e10_tmp, channel=1);
 @time eeg_keep_channel(e10_tmp, channel=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Delete epoch", 36))
 eeg_delete_epoch(e10_tmp, epoch=1);
 @time eeg_delete_epoch(e10_tmp, epoch=1);
-e10_tmp = deepcopy(e10)
+e10_tmp = deepcopy(e10);
 print(rpad("Keep epoch", 36))
 eeg_keep_epoch(e10_tmp, epoch=1);
 @time eeg_keep_epoch(e10_tmp, epoch=1);
@@ -112,10 +121,16 @@ eeg_reference_car(e10);
 print(rpad("Channel referencing", 36))
 eeg_reference_ch(e10, channel=1);
 @time eeg_reference_ch(e10, channel=1);
-print(rpad("Filter: LP", 36))
+print(rpad("Filter: FIR LP", 36))
+eeg_filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+@time eeg_filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+print(rpad("Filter: FIR HP", 36))
+eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+@time eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+print(rpad("Filter: IIR LP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
-print(rpad("Filter: HP", 36))
+print(rpad("Filter: IIR HP", 36))
 eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 @time eeg_filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 print(rpad("Filter: IIR notch", 36))
@@ -124,12 +139,9 @@ eeg_filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
 print(rpad("Filter: Remez", 36))
 eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
 @time eeg_filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
-print(rpad("Filter: FIR", 36))
-eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
-@time eeg_filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8, window=generate_window(:hann, 128));
 print(rpad("Filter: polynomial (8)", 36))
-eeg_filter(e10, fprototype=:poly, order=8);
-@time eeg_filter(e10, fprototype=:poly, order=8);
+eeg_filter(e10, fprototype=:poly, order=8, window=256);
+@time eeg_filter(e10, fprototype=:poly, order=8, window=256);
 print(rpad("Filter: moving average", 36))
 eeg_filter(e10, fprototype=:mavg);
 @time eeg_filter(e10, fprototype=:mavg);
@@ -139,6 +151,9 @@ eeg_plinterpolate_channel(e10, channel=1, epoch=1);
 print(rpad("Interpolate: LR", 36))
 eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
 @time eeg_lrinterpolate_channel(e10, channel=1, epoch=1);
+print(rpad("Surface Laplacian", 36))
+eeg_slaplacian(e10);
+@time eeg_slaplacian(e10);
 
 @info "Benchmarking: eeg_analyze.jl"
 println()
@@ -202,12 +217,12 @@ eeg_mi(e10);
 print(rpad("Mutual information 2", 36))
 eeg_mi(e10, e10);
 @time eeg_mi(e10, e10);
-# print(rpad("Entropy", 36))
-# eeg_entropy(e10);
-# @time eeg_entropy(e10);
-# print(rpad("Negentropy", 36))
-# eeg_negentropy(e10);
-# @time eeg_negentropy(e10);
+print(rpad("Entropy", 36))
+eeg_entropy(e10);
+@time eeg_entropy(e10);
+print(rpad("Negentropy", 36))
+eeg_negentropy(e10);
+@time eeg_negentropy(e10);
 print(rpad("Time coherence", 36))
 eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time eeg_tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
@@ -325,9 +340,18 @@ eeg_pli(e10);
 print(rpad("PLI 2", 36))
 eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time eeg_pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-print(rpad("AEC", 36))
-eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-@time eeg_aec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
+print(rpad("Envelope correlation: amp", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+print(rpad("Envelope correlation: pow", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+print(rpad("Envelope correlation: spec", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+print(rpad("Envelope correlation: hamp", 36))
+eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
+@time eeg_ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
 print(rpad("GED", 36))
 eeg_ged(e10, e10);
 @time eeg_ged(e10, e10);
@@ -409,3 +433,6 @@ eeg_add_component!(e10_ica, c=:ica_mw, v=i_mw);
 print(rpad("Remove ICA", 36))
 eeg_ica_reconstruct(e10_ica, ic=1);
 @time eeg_ica_reconstruct(e10_ica, ic=1);
+print(rpad("Split using DWT", 36))
+eeg_bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);
+@time eeg_bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);

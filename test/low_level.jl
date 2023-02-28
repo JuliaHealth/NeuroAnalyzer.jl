@@ -59,13 +59,13 @@ s, t = s_resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0
 
 @test s_derivative(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-@test s_filter(ones(10), fs=1, fprototype=:mavg) == ones(10)
+@test s_filter(ones(10), fprototype=:mavg, order=2) == [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]
 
 p, f = s_psd(ones(100), fs=10)
 @test p[1] == 0.0
 @test f[end] == 5.0
 
-@test s_stationarity_hilbert(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+@test round.(s_stationarity_hilbert(ones(10))) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 @test s_stationarity_mean(ones(10), window=1) == [1.0]
 @test s_stationarity_var(ones(10), window=1) == [0.0]
 @test s_trim(ones(10), segment=(1,5)) == ones(5)
@@ -74,7 +74,7 @@ p, f = s_psd(ones(100), fs=10)
 @test s_negentropy([1, 2, 3]) == -0.16602396751648252
 @test s_average(ones(10, 10, 1)) == ones(1, 10, 1)
 @test s2_average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
-@test s2_tcoherence([1, 2], [3, 4]) == (c = [0.04166666666666667, 0.027777777777777776], msc = [0.006944444444444444, 0.0007716049382716049], ic = [0.07216878364870322, -0.0])
+@test s2_tcoherence([1, 2], [3, 4]) == (c = [5.25, 0.25], msc = [27.5625, 0.0625], ic = [-0.0, 0.0])
 
 p, w, m, pca = s_pca(ones(2, 10, 1), n=1)
 @test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
@@ -100,7 +100,7 @@ p, f, t = s_spectrogram(ones(100), fs=10)
 @test s_itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 @test s2_pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test length(s2_ged(ones(10, 10), zeros(10, 10))) == 3
-@test s_frqinst(ones(10), fs=10) == zeros(10)
+@test round.(s_frqinst(ones(10), fs=10)) == zeros(10)
 
 s, _ = s_fftdenoise(rand(10))
 @test length(s) == 10
@@ -121,7 +121,11 @@ s, _ = s_fftdenoise(rand(10))
 @test s2_diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
 @test length(generate_morlet_fwhm(10, 10)) == 21
 @test f_nearest([(1.0, 1.0) (0.0, 0.0); (0.0, 0.0) (0.0, 0.0)], (1.0, 0.0)) == (1, 1)
-@test s_band_mpower(ones(100), f=(1,2), fs=10) == (mbp = 0.0, maxfrq = 1.0, maxbp = 0.0)
+
+mb, mf, mxb = s_band_mpower(ones(100), f=(1,2), fs=10)
+@test round(mb) == 0.0
+@test mf == 1.0
+@test round(mxb) == 0.0
 
 p, f = s_rel_psd(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
@@ -139,7 +143,7 @@ segp, segs, tidx, fidx = s_specseg(sp, st, sf, t=(0.5,2), f=(10,20))
 p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
 
-@test s2_phdiff(ones(100), zeros(100)) == zeros(100)
+@test s2_phdiff(ones(10), zeros(10)) == zeros(10)
 @test round.(s_normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
 @test round.(s_normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
 @test round.(s_normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]

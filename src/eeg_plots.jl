@@ -12,7 +12,7 @@ function plot_save(p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}; file_n
 
     ext = splitext(file_name)[2]
     _check_var(ext, [".png", ".pdf", ".jpg", ".tiff"], "File format")
-    (isfile(file_name) && verbose == true) && @info "File $file_name will be overwritten."
+    (isfile(file_name) && verbose == true) && _info("File $file_name will be overwritten.")
     if typeof(p) == Plots.Plot{Plots.GRBackend}
         savefig(p, file_name)
     else
@@ -733,7 +733,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -746,7 +746,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Vector{Float64}; norm::Bool=tru
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -849,22 +849,22 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
         xscale = :log10
         yscale = :identity
     elseif ax === :linlog
-        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        _info("For multi-channel PSD plots, y-axis log-scale is ignored.")
         xticks = _ticks(frq_lim)
         xscale = :identity
         yscale = :identity
     elseif ax === :loglog
-        @info "For multi-channel PSD plots, y-axis log-scale is ignored."
+        _info("For multi-channel PSD plots, y-axis log-scale is ignored.")
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -952,7 +952,7 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -965,7 +965,7 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1064,7 +1064,7 @@ function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; la
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1077,7 +1077,7 @@ function plot_psd_butterfly(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; la
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1144,7 +1144,7 @@ Plot 3-d waterfall PSD plot.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend}`
+- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
 function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", zlabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, variant::Symbol, kwargs...)
 
@@ -1169,7 +1169,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1182,7 +1182,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1287,6 +1287,8 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
+    length(channel) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+
     frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
 
@@ -1302,7 +1304,7 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     elseif ax === :loglin
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1315,7 +1317,7 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
     elseif ax === :loglog
         if frq_lim[1] == 0
             frq_lim = (0.1, frq_lim[2])
-            verbose == true && @info "Lower frequency bound truncated to 0.1 Hz"
+            _info("Lower frequency bound truncated to 0.1 Hz")
         end
         s_frq[1] == 0 && (s_frq[1] = 0.1)
         xticks = ([0.1, 1, 10, 100], ["0.1", "1", "10", "100"])
@@ -1414,7 +1416,7 @@ Plot power spectrum density.
 
 # Returns
 
-- `p::Plots.Plot{Plots.GRBackend} | GLMakie.Figure`
+- `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
 function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
@@ -1466,16 +1468,19 @@ function eeg_plot_psd(eeg::NeuroAnalyzer.EEG; epoch::Int64, channel::Union{Int64
     else
         if method === :welch
             s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
-            title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
             s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
-            title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
+            title == "default" && (title = "PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end
 
     # set labels
     if type !== :w3d && type !== :s3d && type !== :topo
         xlabel == "default" && (xlabel = "Frequency [Hz]")
+        if ref !== :abs
+            ylabel == "default" && (ylabel = "Power ratio")
+        end
         if norm == true
             ylabel == "default" && (ylabel = "Power [dB]")
         else
@@ -2026,7 +2031,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Abstra
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
@@ -2181,7 +2186,7 @@ function eeg_plot_spectrogram(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractA
             s_p = s_p[:, f1:f2]
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            @info "Method :stft is not available for multi-channel spectrogram, using standard periodogram."
+            _info("Method :stft is not available for multi-channel spectrogram, using standard periodogram.")
             s_p, s_f = s_psd(signal, fs=fs, norm=false, mt=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
@@ -3119,14 +3124,27 @@ Plot filter response.
 # Arguments
 
 - `fs::Int64`: sampling rate
-- `fprototype::Symbol`: filter class: `:fir`, `:butterworth`, `:chebyshev1`, `:chebyshev2`, `:elliptic`
-- `ftype::Symbol`: filter type: low-pass (`:lp`), high-pass (`:hp`), band-pass (`:bp`), band-stop (`:bs`)
-- `cutoff::Union{Real, Tuple}`: filter cutoff in Hz (vector for `:bp` and `:bs`)
-- `order::Int64`: filter order
-- `rp::Real`: dB ripple in the passband
-- `rs::Real`: dB attenuation in the stopband
-- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
-- `window::window::Union{Vector{Float64}, Nothing}`: window, required for FIR filter
+- `fprototype::Symbol`: filter prototype:
+    - `:butterworth`
+    - `:chebyshev1`
+    - `:chebyshev2`
+    - `:elliptic`
+    - `:fir`
+    - `:iirnotch`: second-order IIR notch filter
+    - `:remez`: Remez FIR filter
+- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
+    - `:lp`: low pass
+    - `:hp`: high pass
+    - `:bp`: band pass
+    - `:bs`: band stop
+- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
+- `n::Int64`: signal length in samples
+- `fs::Int64`: sampling rate
+- `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
+- `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
+- `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
+- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
 - `mono::Bool=false`: use color or grey palette
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `kwargs`: optional arguments for plot() function
@@ -3135,92 +3153,38 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cutoff::Union{Real, Tuple}, order::Int64=-1, rp::Real=-1, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
-
-    _check_var(fprototype, [:fir, :butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez], "fprototype")
-    _check_var(ftype, [:lp, :hp, :bp, :bs], "ftype")
-
-    fprototype !== :fir && order < 1 && throw(ArgumentError("order must be > 0."))
+function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim = tuple_order(frq_lim)
 
-    if ftype === :lp
-        length(cutoff) != 1 && throw(ArgumentError("For :lp filter one frequency must be given."))
-        responsetype = Lowpass(cutoff; fs=fs)
-    elseif ftype === :hp
-        length(cutoff) != 1 && throw(ArgumentError("For :hp filter one frequency must be given."))
-        responsetype = Highpass(cutoff; fs=fs)
-    elseif ftype === :bp
-        length(cutoff) != 2 && throw(ArgumentError("For :bp filter two frequencies must be given."))
-        responsetype = Bandpass(cutoff[1], cutoff[2]; fs=fs)
-    elseif ftype === :bs
-        if fprototype !== :iirnotch
-            length(cutoff) != 2 && throw(ArgumentError("For :bs filter two frequencies must be given."))
-            cutoff = tuple_order(cutoff)
-            responsetype = Bandstop(cutoff[1], cutoff[2]; fs=fs)
-        end
-    end
+    flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
 
-    fprototype === :butterworth && (prototype = Butterworth(order))
-    if fprototype === :fir
-        if window === nothing
-            verbose == true && @info "Using default window for :fir filter: hanning($(3 * floor(Int64, fs / cutoff[1])))."
-            window = hanning(3 * floor(Int64, fs / cutoff[1]))
-        end
-        if ftype === :hp || ftype === :bp || ftype === :bs
-            mod(length(window), 2) == 0 && (window = vcat(window[1:((length(window) ÷ 2) - 1)], window[((length(window) ÷ 2) + 1):end]))
-        end
-        prototype = FIRWindow(window)
-    end
-    if fprototype === :chebyshev1
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev1 filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Chebyshev1(order, rs)
-    end
-    if fprototype === :chebyshev2
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :chebyshev2 filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Chebyshev2(order, rp)
-    end
-    if fprototype === :elliptic
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Elliptic(order, rp, rs)
-    end
-    if fprototype === :elliptic
-        (rs < 0 || rs > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rs must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        (rp < 0 || rp > eeg_sr(eeg) / 2) && throw(ArgumentError("For :elliptic filter rp must be ≥ 0 and ≤ $(eeg_sr(eeg) / 2)."))
-        prototype = Elliptic(order, rp, rs)
-    end
-    if fprototype === :iirnotch
-        ffilter = iirnotch(cutoff, bw, fs=fs)
-    elseif fprototype === :remez
-        ftype === :lp && (window = [(0, cutoff - bw) => 1, (cutoff + bw, fs / 2) => 0])
-        ftype === :hp && (window = [(0, cutoff - bw) => 0, (cutoff + bw, fs / 2) => 1])
-        ftype === :bp && (window = [(0, cutoff[1] - bw / 2) => 0, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 1, (cutoff[2] + bw / 2, fs / 2) => 0])
-        ftype === :bs && (window = [(0, cutoff[1] - bw / 2) => 1, (cutoff[1] + bw / 2, cutoff[2] - bw / 2) => 0, (cutoff[2] + bw / 2, fs / 2) => 1])
-        ffilter = remez(order, window, Hz=fs)
-    else
-        ffilter = digitalfilter(responsetype, prototype)
-    end
-
-    if fprototype !== :fir
-        H, w = freqresp(ffilter)
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
+        H, w = freqresp(flt)
         # convert to dB
         H = 20 * log10.(abs.(H))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
-        fprototype !== :irrnotch && (fname = titlecase(String(fprototype)))
-        fprototype !== :irrnotch && (fname = "IRR notch")
+        
+        if fprototype !== :iirnotch
+            fname = titlecase(String(fprototype))
+            title = "Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response"
+        else
+            fname = "IIR notch"
+            title = "Filter: $(fname), cutoff: $cutoff Hz, band width: $bw\n\nFrequency response"
+        end
+
         p1 = Plots.plot(w,
                         H,
-                        title="Filter: $(fname), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, order: $order\n\nFrequency response",
+                        title=title,
                         # xlims=(0, x_max),
                         xlims=frq_lim,
-                        ylims=(-100, 0),
+                        ylims=(-100, 10),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -3254,7 +3218,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                              lc=:green)
         end
 
-        phi, w = phaseresp(ffilter)
+        phi, w = phaseresp(flt)
         phi = rad2deg.(angle.(phi))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
@@ -3298,7 +3262,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                              lc=:green)
         end
 
-        tau, w = grpdelay(ffilter)
+        tau, w = grpdelay(flt)
         tau = abs.(tau)
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
@@ -3342,20 +3306,26 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
 
         p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
     else
+        @show "FIR"
         w = range(0, stop=pi, length=1024)
-        H = _fir_response(ffilter, w)
+        H = _fir_response(flt, w)
         # convert to dB
         H = 20 * log10.(abs.(H))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
         x_max = w[end]
         ftype === :hp && (x_max = cutoff * 10)
+        if fprototype === :fir
+            title = "Filter: FIR, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt)), attenuation: $(order * 15) dB\nFrequency response"
+        elseif fprototype === :remez
+            title = "Filter: Remez, type: $(uppercase(String(ftype))), cutoff: $cutoff Hz, taps: $(length(flt))\nFrequency response"
+        end
         p1 = Plots.plot(w,
                         H,
-                        title="Filter: $(uppercase(String(fprototype))), type: $(uppercase(String(ftype))), cutoff: $cutoff Hz\nFrequency response",
+                        title=title,
                         # xlims=(0, x_max),
                         xlims=frq_lim,
-                        ylims=(-100, 0),
+                        ylims=(-100, 10),
                         ylabel="Magnitude\n[dB]",
                         xlabel="Frequency [Hz]",
                         label="",
@@ -3388,7 +3358,7 @@ function plot_filter_response(; fs::Int64, fprototype::Symbol, ftype::Symbol, cu
                              lc=:green)
         end
         w = range(0, stop=pi, length=1024)
-        phi = _fir_response(ffilter, w)
+        phi = _fir_response(flt, w)
         phi = DSP.unwrap(-atan.(imag(phi), real(phi)))
         # convert rad/sample to Hz
         w = w .* fs / 2 / pi
@@ -3741,7 +3711,13 @@ Plot topographical view.
 - `cb_label::String="[A.U.]"`: color bar label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
@@ -3845,8 +3821,16 @@ Topographical plot.
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
-- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `amethod::Symbol=:mean`: averaging method:
+    - `:mean`
+    - `:median`
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
@@ -3889,6 +3873,8 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
 
     length(channel) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
     _check_channels(eeg_tmp, channel)
+
+    length(channel) > nrow(eeg_tmp.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
 
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg_tmp)
@@ -3941,8 +3927,16 @@ Topographical plot of embedded or external component.
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
-- `amethod::Symbol=:mean`: averaging method: `:mean`, `:median`
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `amethod::Symbol=:mean`: averaging method:
+    - `:mean`
+    - `:median`
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `nmethod::Symbol=:minmax`: method for normalization, see `s_normalize()`
 - `plot_size::Int64=800`: plot dimensions in pixels (size × size)
 - `plot_contours::Bools=true`: plot contours over topo plot
@@ -4004,6 +3998,9 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     _check_cidx(c, c_idx)
     labels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (labels = [labels])
+
+    length(c_idx) < 2 && throw(ArgumentError("eeg_plot_topo() requires ≥ 2 channels."))
+    length(channel) > nrow(eeg_tmp.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
 
     # get time vector
     if segment[2] <= eeg_epoch_len(eeg_tmp)
@@ -4395,6 +4392,7 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     size(signal, 2) == length(t) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
+    length(channel) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
 
     pal = mono == true ? :grays : :darktest
     
@@ -4644,10 +4642,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                 Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV")
         else
             erp = mean(eeg_erp(eeg).eeg_signals[channel, :], dims=1)[:]
             eeg_tmp = eeg_keep_channel(eeg, channel=1)
@@ -4660,10 +4658,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         end
     end
 
@@ -4912,10 +4910,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         else         
             erp = mean(mean(signal, dims=3), dims=1)[:]
             eeg_tmp = eeg_keep_channel(eeg, channel=1)
@@ -4928,10 +4926,10 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                 Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
                 Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
-            verbose == true && @info "Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms"
-            verbose == true && @info "Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV"
-            verbose == true && @info "Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms"
-            verbose == true && @info "Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV"
+            _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
+            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
+            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
         end
     end
 
@@ -4941,5 +4939,75 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
         GLMakie.show(p)
     end
 
+    return p
+end
+
+"""
+    plot_dipole3d(d; <keyword arguments>)
+
+Plot dipole in 3D.
+
+# Arguments
+
+- `d::NeuroAnalyzer.DIPOLE`
+- `project::Bool=true`: plot lines projected onto X, Y and Z axes
+
+# Returns
+
+- `p::GLMakie.Figure`
+
+# Notes
+
+Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
+"""
+function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
+
+    # prepare meshes
+    brain_top = Point3f[[-1.2, -1.2, 0.0], [1.2, -1.2, 0.0], [1.2, 1.2, 0.0], [-1.2, 1.2, 0.0]]
+    brain_top_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_top_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_top_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_top, uv = brain_top_uvs, normals = normals(brain_top, brain_top_fs)), brain_top_fs)
+
+    brain_side = Point3f[[-1.2, -1.2, 0],[-1.2, 1.2, 0], [-1.2, 1.2, 1.2], [-1.2, -1.2, 1.2]]
+    brain_side_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_side_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_side_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_side, uv = brain_side_uvs, normals = normals(brain_side, brain_side_fs)), brain_side_fs)
+
+    brain_front = Point3f[[-1.2, 1.2, 0],[-1.2, 1.2, 1.2], [1.2, 1.2, 1.2], [1.2, 1.2, 0]]
+    brain_front_uvs = Vec2f[(0, 0), (1, 0), (1, 1), (0, 1)]
+    brain_front_fs = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
+    brain_front_mesh = GeometryBasics.Mesh(GeometryBasics.meta(brain_front, uv = brain_front_uvs, normals = normals(brain_front, brain_front_fs)), brain_front_fs)
+
+    # load textures
+    brain_top_texture = FileIO.load("resources/brain_top.png")
+    brain_side_texture = FileIO.load("resources/brain_side.png")
+    brain_front_texture = FileIO.load("resources/brain_front.png")
+
+    # get dipole position
+    x = d.loc[1]
+    y = d.loc[2]
+    z = d.loc[3]
+
+    # prepare figure
+    p = Figure(backgroundcolor=:black, resolution=(800, 800))
+    ax = Axis3(p[1, 1])
+    hidedecorations!(ax)
+    mesh!(ax, brain_side_mesh, color=brain_side_texture)
+    mesh!(ax, brain_top_mesh, color=brain_top_texture)
+    mesh!(ax, brain_front_mesh, color=brain_front_texture)
+
+    # draw dipole
+    GLMakie.scatter!(ax, x, y, z, markersize=20, color=:red)
+
+    if project == true
+        # project at top-plane
+        GLMakie.lines!(ax, [x, x], [y, y], [z, 0], linestyle=:dash, color=:red)
+        # project at side-axis
+        GLMakie.lines!(ax, [x, -1.2], [y, y], [z, z], linestyle=:dash, color=:red)
+        # project at front-axis
+        GLMakie.lines!(ax, [x, x], [y, 1.2], [z, z], linestyle=:dash, color=:red)
+    end
+
+    GLMakie.show(p)
     return p
 end

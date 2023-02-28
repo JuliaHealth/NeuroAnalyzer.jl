@@ -8,7 +8,7 @@ function na_info()
     println("    NeuroAnalyzer: $na_ver")
     println("            Julia: $VERSION")
     if CUDA.functional()
-        println("             CUDA: $(CUDA.version()) (use_cuda = $use_cuda)")
+        println("             CUDA: $(CUDA.runtime_version()) (use_cuda = $use_cuda)")
     else
         println("             CUDA: not available (use_cuda = $use_cuda)")
     end
@@ -24,31 +24,36 @@ function na_info()
     println("Imported packages:")
     required_packages = [
         "ColorSchemes",
+        "ContinuousWavelets",
         "CSV",
         "CubicSplines",
         "CUDA",
         "DataFrames",
         "Deconvolution",
+        "DICOM",
         "Distances",
         "DSP",
         "FFTW",
         "FileIO",
         "FindPeaks1D",
         "FourierTools",
+        "GeometryBasics",
         "Git",
         "GLM",
         "GLMakie",
         "HypothesisTests",
         "InformationMeasures",
         "Interpolations",
+        "Jacobi",
         "JLD2",
-        "Lathe",
         "Loess",
+        "MAT",
         "MultivariateStats",
         "Plots",
         "Polynomials",
         "Preferences",
         "ProgressMeter",
+        "SavitzkyGolay",
         "ScatteredInterpolation",
         "Simpson",
         "StatsFuns",
@@ -56,8 +61,8 @@ function na_info()
         "StatsModels",
         "StatsPlots",
         "Wavelets",
-        "WaveletsExt",
-        "ContinuousWavelets"]
+        "WaveletsExt"]
+
     if isfile("Manifest.toml")
         versions = TOML.parsefile("Manifest.toml")["deps"]
         for idx in 1:length(required_packages)
@@ -77,6 +82,7 @@ Reload NeuroAnalyzer plugins.
 """
 function na_plugins_reload()
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     for idx1 in 1:length(plugins)
@@ -88,14 +94,16 @@ function na_plugins_reload()
         for idx2 in 1:length(plugin)
             if splitext(plugin[idx2])[2] == ".jl"
                 if Sys.isunix() || Sys.isapple()
-                    verbose == true && @info "Loading plugin: $(plugin[idx2])"
                     include(plugins_path * plugins[idx1] * "/src/" * plugin[idx2])
+                    _info("Loaded: $(plugin[idx2])")
                 elseif Sys.iswindows()
                     include(plugins_path * plugins[idx1] * "\\src\\" * plugin[idx2])
+                    _info("Loaded: $(plugin[idx2])")
                 end
             end
         end
     end
+    cd(path_tmp)
 end
 
 """
@@ -105,11 +113,14 @@ List NeuroAnalyzer plugins.
 """
 function na_plugins_list()
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
+    @info "Available plugins:"
     for idx in 1:length(plugins)
-        println("$idx. $(replace(plugins[idx]))")
+        println("\t$idx. $(replace(plugins[idx]))")
     end
+    cd(path_tmp)
 end
 
 """
@@ -122,8 +133,9 @@ Remove NeuroAnalyzer `plugin`.
 - `plugin::String`: plugin name
 """
 function na_plugins_remove(plugin::String)
-    verbose == true && @info "This will remove the whole $plugin directory, along with its file contents."
+    _info("This will remove the whole $plugin directory, along with its file contents.")
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     plugin in plugins || throw(ArgumentError("Plugin $plugin does not exist."))
@@ -133,6 +145,7 @@ function na_plugins_remove(plugin::String)
         @error "Cannot remove $plugin directory."
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -146,6 +159,7 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_install(plugin::String)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     try
         run(`$(git()) clone $plugin`)
@@ -153,6 +167,7 @@ function na_plugins_install(plugin::String)
         @error "Cannot install $plugin."
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -166,12 +181,13 @@ Install NeuroAnalyzer `plugin`.
 """
 function na_plugins_update(plugin::Union{String, Nothing}=nothing)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
+    path_tmp = pwd()
     cd(plugins_path)
     plugins = readdir(plugins_path)
     if plugin === nothing
         for idx in 1:length(plugins)
             cd(plugins[idx])
-            println(plugins[idx])
+            @info "Updating: $(plugins[idx])"
             try
                 run(`$(git()) pull`)
             catch
@@ -190,6 +206,7 @@ function na_plugins_update(plugin::Union{String, Nothing}=nothing)
         cd(plugins_path)
     end
     na_plugins_reload()
+    cd(path_tmp)
 end
 
 """
@@ -203,7 +220,7 @@ Change `use_cuda` preference.
 """
 function na_set_use_cuda(use_cuda::Bool)
     @set_preferences!("use_cuda" => use_cuda)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -217,7 +234,7 @@ Change `progress_bar` preference.
 """
 function na_set_progress_bar(progress_bar::Bool)
     @set_preferences!("progress_bar" => progress_bar)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -234,7 +251,7 @@ function na_set_plugins_path(plugins_path::String)
     isdir(plugins_path) || throw(ArgumentError("Folder $plugins_path does not exist."))
     plugins_path[end] == '/' || (plugins_path *= '/')
     @set_preferences!("plugins_path" => plugins_path)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """
@@ -270,7 +287,7 @@ Change `verbose` preference.
 """
 function na_set_verbose(verbose::Bool)
     @set_preferences!("verbose" => verbose)
-    verbose == true && @info("New option value set, restart your Julia session for this change to take effect!")
+    _info("New option value set, restart your Julia session for this change to take effect!")
 end
 
 """

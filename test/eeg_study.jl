@@ -12,8 +12,9 @@ s = eeg_study_create([eeg1, eeg2], [:a, :b])
 
 @test typeof(s) == NeuroAnalyzer.STUDY
 @test eeg_study_n(s) == 2
+@test eeg_study_channel_n(s) == 24
 @test eeg_study_epoch_n(s) == 242
 @test eeg_study_epoch_len(s) == 1280
-@test eeg_study_channel_n(s) == 24
+@test eeg_study_sr(s) == 256
 
 true

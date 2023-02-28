@@ -790,3 +790,81 @@ function dranks(x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x)))
     # scale ranks in 0..nbins
     return ceil.(Int64, ranks .* nbins)
 end
+
+"""
+    res_norm(x, g)
+
+Test normal distribution of residuals.
+
+# Arguments
+
+- `x::AbstractVector`: data values
+- `g::Vector{Int64}`: group(s) to which each data value belongs
+
+# Returns
+
+- `adt_p::Vector{Float64}`: p-values for k-sample Anderson–Darling test vs normal distribution
+- `ks_p::Vector{Float64}`: p-values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
+
+# Notes
+
+p-values are reported for each group and for the whole sample. If there is only one group, p-values are returned only for the whole sample p-values are reported.
+"""
+function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
+
+    groups = sort(unique(g))
+
+    if length(groups) > 1   
+    adt_p = zeros(length(groups) + 1)
+    ks_p = zeros(length(groups) + 1)
+        # check residuals normality per groups 
+        for group_idx in 1:length(groups)
+            m = mean(x[g .== groups[group_idx]])
+            res = x[g .== groups[group_idx]] .- m
+            adt = KSampleADTest(res, rand(Normal(0, 1), length(res)))
+            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Normal(0, 1), length(res))))
+            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Normal(0, 1)))
+        end
+    else
+        adt_p = zeros(1)
+        ks_p = zeros(1)
+    end
+
+    # check residuals normality for the whole sample
+    m = mean(x)
+    res = x .- m
+    adt = KSampleADTest(res, rand(Normal(0, 1), length(res)))
+    adt_p[end] = pvalue(KSampleADTest(res, rand(Normal(0, 1), length(res))))
+    ks_p[end] = pvalue(ExactOneSampleKSTest(res, Normal(0, 1)))
+
+    return (adt_p=adt_p, ks_p=ks_p)
+end
+
+"""
+    mcc(tp, tn, fp, fn)
+
+Assess performance of the classification model using Matthews correlation coefficient (MCC).
+
+MCC’s value ranges from -1 to 1, depending on:
+- a score of -1 denotes a complete discrepancy between expected and actual classes
+- 0 is equivalent to making an entirely arbitrary guess
+- total agreement between expected and actual classes is indicated by a score of 1
+
+# Arguments
+
+- `tp::Int64`: number of true positives
+- `tn::Int64`: number of true negatives
+- `fp::Int64`: number of false positives
+- `fn::Int64`: number of false negatives
+
+# Returns
+
+- `mcc::Float64`
+
+# Source
+
+https://finnstats.com/index.php/2022/09/06/assess-performance-of-the-classification-model/
+"""
+function mcc(tp::Int64, tn::Int64, fp::Int64, fn::Int64)
+    return (tp * tn - fp * fn) / sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+end

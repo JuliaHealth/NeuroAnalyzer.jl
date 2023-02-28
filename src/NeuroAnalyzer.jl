@@ -2,11 +2,17 @@ __precompile__()
 
 module NeuroAnalyzer
 
-const na_ver = v"0.23.02"
-
 if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
 end
+
+const na_ver = v"0.23.3"
+
+# initialize preferences
+use_cuda = nothing
+progress_bar = nothing
+plugins_path = nothing
+verbose = nothing
 
 using ColorSchemes
 using CSV
@@ -14,22 +20,25 @@ using CubicSplines
 using CUDA
 using DataFrames
 using Deconvolution
+using DICOM
 using Distances
 using DSP
 using FFTW
 using FileIO
 using FindPeaks1D
 using FourierTools
+using GeometryBasics
 using Git
 using GLM
 using GLMakie
 using HypothesisTests
 using InformationMeasures
 using Interpolations
+using Jacobi
 using JLD2
-using Lathe.preprocess
 using LinearAlgebra
 using Loess
+using MAT
 using MultivariateStats
 using Pkg
 using Plots
@@ -38,6 +47,7 @@ using Polynomials
 using Preferences
 using ProgressMeter
 using Random
+using SavitzkyGolay
 using ScatteredInterpolation
 using Simpson
 using StatsFuns
@@ -47,7 +57,7 @@ using StatsPlots
 using TOML
 using Wavelets
 using WaveletsExt
-using ContinuousWavelets   
+using ContinuousWavelets
 
 mutable struct EEG
     eeg_header::Dict
@@ -65,9 +75,15 @@ mutable struct STUDY
     study_group::Vector{Symbol}
 end
 
+mutable struct DIPOLE
+    loc::Tuple{Real, Real, Real}
+end
+
+FFTW.set_provider!("mkl")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
+# NA functions
 include("na.jl")
 export na_info
 export na_plugins_reload
@@ -82,24 +98,34 @@ export na_set_prefs
 export na_set_verbose
 export na_version
 
-# preferences
-if Sys.isunix() || Sys.isapple()
-    def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
-elseif Sys.iswindows()
-    def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+function __init__()
+
+    @info "Loading NeuroAnalyzer v$na_ver"
+
+    # load preferences
+    @info "Loading preferences..."
+    if Sys.isunix() || Sys.isapple()
+        def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
+    elseif Sys.iswindows()
+        def_plugins_path = "$(homedir())\\NeuroAnalyzer\\plugins\\"
+    end
+    global use_cuda = @load_preference("use_cuda", false)
+    global progress_bar = @load_preference("progress_bar", true)
+    global plugins_path = @load_preference("plugins_path", def_plugins_path)
+    global verbose = @load_preference("verbose", true)
+    na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
+
+    # load plugins
+    @info "Loading plugins..."
+    isdir(plugins_path) || mkdir(plugins_path)
+    na_plugins_reload()
+
 end
-const use_cuda = @load_preference("use_cuda", false)
-const progress_bar = @load_preference("progress_bar", true)
-const plugins_path = @load_preference("plugins_path", def_plugins_path)
-const verbose = @load_preference("verbose", true)
-isdir(plugins_path) || mkdir(plugins_path)
-na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
 
-# reload plugins
-na_plugins_reload()
-
+# internal functions are not available outside NA
 include("internal.jl")
 
+# load sub-modules
 include("low_level.jl")
 export linspace
 export logspace
@@ -158,6 +184,8 @@ export s_invert_polarity
 export s_derivative
 export s_tconv
 export s_filter
+export s_filter_create
+export s_filter_apply
 export s_psd
 export s_stationarity_hilbert
 export s_stationarity_mean
@@ -262,6 +290,8 @@ export s2_cor
 export dprime
 export norminv
 export dranks
+export res_norm
+export mcc
 
 include("eeg_io.jl")
 export eeg_export_csv
@@ -285,6 +315,9 @@ export eeg_add_electrodes!
 export eeg_import_digitrack
 export eeg_import_bv
 export eeg_import_alice4
+export locs_import_geo
+export eeg_import_csv
+export eeg_import_set
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -385,6 +418,12 @@ export eeg_edit_marker!
 export eeg_channel_cluster
 export eeg_lrinterpolate_channel
 export eeg_lrinterpolate_channel!
+export locs_maximize
+export locs_maximize!
+export eeg_reflect
+export eeg_reflect!
+export eeg_chop
+export eeg_chop!
 
 include("eeg_process.jl")
 export eeg_reference_ch
@@ -443,6 +482,8 @@ export eeg_denoise_wien!
 export eeg_scale
 export eeg_scale!
 export eeg_gfilter
+export eeg_slaplacian
+export eeg_slaplacian!
 
 include("eeg_analyze.jl")
 export eeg_total_power
@@ -514,14 +555,7 @@ export eeg_henv_median
 export eeg_apply
 export eeg_erp_peaks
 export eeg_signal_channels
-
-include("eeg_study.jl")
-export eeg_study_create
-export eeg_study_n
-export eeg_study_channel_n
-export eeg_study_epoch_n
-export eeg_study_epoch_len
-export eeg_study_sr
+export eeg_bands_dwt
 
 include("eeg_plots.jl")
 export plot_save
@@ -565,5 +599,19 @@ export plot_erp_butterfly
 export plot_erp_topo
 export eeg_plot_erp
 export plot_erp_stack
+export plot_dipole3d
+
+include("eeg_study.jl")
+export eeg_study_create
+export eeg_study_n
+export eeg_study_channel_n
+export eeg_study_epoch_n
+export eeg_study_epoch_len
+export eeg_study_sr
+
+include("tes.jl")
+export tes_dose
+export ect_charge
+export tes_protocol
 
 end # NeuroAnalyzer

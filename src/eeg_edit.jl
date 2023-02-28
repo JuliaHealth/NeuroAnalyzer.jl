@@ -310,7 +310,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg_new.eeg_header[:labels][idx])), lowercase.(string.(eeg_new.eeg_locs[!, :labels])))
-        loc !== nothing && delete!(eeg_new.eeg_locs, loc)
+        loc !== nothing && deleteat!(eeg_new.eeg_locs, loc)
         deleteat!(eeg_new.eeg_header[:labels], idx)
         deleteat!(eeg_new.eeg_header[:channel_type], idx)
         deleteat!(eeg_new.eeg_header[:transducers], idx)
@@ -351,7 +351,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
     # update headers
     for idx in channel
         loc = findfirst(isequal(lowercase(eeg.eeg_header[:labels][idx])), lowercase.(string.(eeg.eeg_locs[!, :labels])))
-        loc !== nothing && delete!(eeg.eeg_locs, loc)
+        loc !== nothing && deleteat!(eeg.eeg_locs, loc)
         deleteat!(eeg.eeg_header[:labels], idx)
         deleteat!(eeg.eeg_header[:channel_type], idx)
         deleteat!(eeg.eeg_header[:transducers], idx)
@@ -799,7 +799,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
 
         # delete markers outside epochs
         for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-            eeg_new.eeg_markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || delete!(eeg_new.eeg_markers, marker_idx)
+            eeg_new.eeg_markers[marker_idx, :start] in 1:size(epochs, 2) * size(epochs, 3) || deleteat!(eeg_new.eeg_markers, marker_idx)
         end
     end
 
@@ -888,7 +888,7 @@ function eeg_erp(eeg::NeuroAnalyzer.EEG)
 
     # remove markers of deleted epochs
     for marker_idx in nrow(eeg_new.eeg_markers):-1:1
-        eeg_new.eeg_markers[marker_idx, :start] > eeg_duration_samples && delete!(eeg_new.eeg_markers, marker_idx)
+        eeg_new.eeg_markers[marker_idx, :start] > eeg_duration_samples && deleteat!(eeg_new.eeg_markers, marker_idx)
     end
 
     eeg_reset_components!(eeg_new)
@@ -975,7 +975,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
         eeg_new.eeg_signals = s_trim(eeg_new.eeg_signals, segment=segment)
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
         eeg_new.eeg_time = t_trimmed
-        eeg_new.eeg_epoch_time = t_trimmed
+        eeg_new.eeg_epoch_time = t_trimmed .+ eeg.eeg_epoch_time[1]
         eeg_new.eeg_header[:eeg_duration_samples] -= length(segment[1]:segment[2])
         eeg_new.eeg_header[:eeg_duration_seconds] -= length(segment[1]:segment[2]) * (1 / eeg_sr(eeg))
         eeg_new.eeg_header[:epoch_duration_samples] -= length(segment[1]:segment[2])
@@ -984,7 +984,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
             if eeg_epoch_len(eeg) <= eeg_signal_len(eeg_new)
                 eeg_epoch!(eeg_new, epoch_len=eeg_epoch_len(eeg))
             else
-                verbose == true && @info "Cannot apply original epoch length, returning single-epoch EEG."
+                _info("Cannot apply original epoch length, returning single-epoch EEG.")
             end
         end
         eeg_new.eeg_markers = _delete_markers(eeg_new.eeg_markers, segment)
@@ -992,7 +992,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
     else
         eeg_epoch_n(eeg) == 1 && throw(ArgumentError("EEG has only one epoch, cannot use remove_epochs=true."))
         epochs = _s2epoch(eeg, segment[1], segment[2])
-        verbose == true && @info "Removing epochs: $epochs."
+        _info("Removing epochs: $epochs.")
         eeg_new = eeg_delete_epoch(eeg, epoch=epochs)
     end
 
@@ -1691,7 +1691,7 @@ Replace EEG channel.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel number or name
-- `signal::Array{Float64, 3}
+- `signal::Array{Float64, 3}`
 
 # Returns
 
@@ -1733,7 +1733,7 @@ Replace EEG channel.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, String}`: channel number or name
-- `signal::Array{Float64, 3}
+- `signal::Array{Float64, 3}`
 """
 function eeg_replace_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
@@ -1755,7 +1755,13 @@ Interpolate EEG channel(s) using planar interpolation.
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
 - `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
-- `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
+- `imethod::Symbol=:sh`: interpolation method:
+    - `:sh`: Shepard
+    - `:mq`: Multiquadratic
+    - `:imq`: InverseMultiquadratic
+    - `:tp`: ThinPlate
+    - `:nn`: NearestNeighbour
+    - `:ga`: Gaussian
 - `interpolation_factor::Int64=100`: interpolation quality
 
 # Returns
@@ -1774,28 +1780,29 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
     typeof(channel) == Vector{Int64} && sort!(channel, rev=true)
 
     eeg_new = deepcopy(eeg)
+    eeg_tmp = deepcopy(eeg)
     _check_channels(eeg, channel)
     _check_epochs(eeg, epoch)
 
     locs_x1 = eeg.eeg_locs[!, :loc_x]
     locs_y1 = eeg.eeg_locs[!, :loc_y]
     
-    eeg_delete_channel!(eeg, channel=channel)
-    locs_x2 = eeg.eeg_locs[!, :loc_x]
-    locs_y2 = eeg.eeg_locs[!, :loc_y]
-    channels = eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
+    eeg_tmp = eeg_delete_channel(eeg, channel=channel)
+    locs_x2 = eeg_tmp.eeg_locs[!, :loc_x]
+    locs_y2 = eeg_tmp.eeg_locs[!, :loc_y]
+    channels = eeg_get_channel_bytype(eeg_tmp, type=Symbol(eeg.eeg_header[:signal_type]))
 
     epoch_n = length(epoch)
-    epoch_len = eeg_epoch_len(eeg)
+    epoch_len = eeg_epoch_len(eeg_tmp)
 
     s_interpolated = zeros(Float64, length(channel), epoch_len, epoch_n)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(epoch_n * epoch_len, 1))
 
-    Threads.@threads for epoch_idx in eachindex(epoch)
-        @inbounds @simd for length_idx in 1:epoch_len
-            s_tmp, x, y = @views _interpolate(eeg.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
+    @inbounds @simd for epoch_idx in eachindex(epoch)
+        Threads.@threads for length_idx in 1:epoch_len
+            s_tmp, x, y = @views _interpolate(eeg_tmp.eeg_signals[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for channel_idx in eachindex(channel)
                 x_idx = vsearch(locs_x1[channel[channel_idx]], x)
                 y_idx = vsearch(locs_y1[channel[channel_idx]], y)
@@ -2547,7 +2554,7 @@ function eeg_delete_marker(eeg::NeuroAnalyzer.EEG; n::Int64)
     eeg_new.eeg_header[:markers] == true || throw(ArgumentError("EEG has no markers."))
     nn = size(eeg_new.eeg_markers, 1)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
-    delete!(eeg_new.eeg_markers, n)
+    deleteat!(eeg_new.eeg_markers, n)
     size(eeg_new.eeg_markers, 1) == 0 && (eeg_new.eeg_header[:markers] = false)
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_delete_marker(EEG; n=$n)")
@@ -2681,7 +2688,7 @@ function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
     vc = zeros(1, eeg_epoch_len(eeg), epoch_n)
     Threads.@threads for epoch_idx in 1:epoch_n
         f_tmp = f
-        for channel_idx in eachindex(labels)
+        @inbounds for channel_idx in eachindex(labels)
             occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(eeg.eeg_signals[channel_idx, :, epoch_idx])"))
         end
         try
@@ -2782,9 +2789,9 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     good_signal = _make_epochs(eeg.eeg_signals[:, :, good_epochs], epoch_n=1)
 
     # train
-    df = @views DataFrame(hcat(good_signal[channel, :, :], good_signal[good_channels, :, ]'), :auto)
-    train, test = preprocess.TrainTestSplit(df, .80)
-    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[:, Not(:x1)]))))
+    df = @views DataFrame(hcat(good_signal[channel, :, 1], good_signal[good_channels, :, 1]'), :auto)
+    train, test = _split(df, 0.80)
+    fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)
     acc_r2 = r2(linear_regressor)
     prediction = GLM.predict(linear_regressor, test)
@@ -2793,10 +2800,10 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     accuracy_testdf[!, :signal_predicted]
     acc_mae = mean(abs.(accuracy_testdf.error))
     aic, bic = infcrit(linear_regressor)
-    verbose == true && @info "R² for the linear regressor: $(round(acc_r2, digits=3))"
-    verbose == true && @info "MAE (test dataset): $(round(acc_mae, digits=3))"
-    verbose == true && @info "AIC: $(round(aic, digits=3))"
-    verbose == true && @info "BIC: $(round(bic, digits=3))"
+    _info("R² for the linear regressor: $(round(acc_r2, digits=3))")
+    _info("MAE (test dataset): $(round(acc_mae, digits=3))")
+    _info("AIC: $(round(aic, digits=3))")
+    _info("BIC: $(round(bic, digits=3))")
 
     # predict
     eeg_new = eeg_copy(eeg) 
@@ -2836,3 +2843,189 @@ function eeg_lrinterpolate_channel!(eeg::NeuroAnalyzer.EEG; channel::Int64, epoc
     return nothing
 end
 
+"""
+    locs_maximize(locs; planar, spherical)
+
+Maximize channel locations to the unit sphere.
+
+# Arguments
+
+- `locs::DataFrame`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=false`: modify spherical coordinates
+
+# Returns
+
+- `locs_new::DataFrame`
+"""
+function locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+
+    locs_new = deepcopy(locs)
+
+    if planar == true
+        r1 = locs_new[!, :loc_radius]
+        r2 = s_normalize_minmax(locs_new[!, :loc_radius])
+        r = maximum(r2) / maximum(r1)
+        locs_new[!, :loc_radius] .*= r
+    end
+
+    if spherical == true
+        r1 = locs_new[!, :loc_radius_sph]
+        r2 = s_normalize_minmax(r1)
+        r = maximum(r2) / maximum(r1)
+        locs_new[!, :loc_radius_sph] .*= r
+    end
+    locs_sph2cart!(locs_new)
+
+    return locs_new
+end
+
+"""
+    locs_maximize!(locs; planar, spherical)
+
+Maximize channel locations to the unit sphere.
+
+# Arguments
+
+- `locs::DataFrame`
+- `planar::Bool=true`: modify planar coordinates
+- `spherical::Bool=false`: modify spherical coordinates
+"""
+function locs_maximize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+    locs[!, :] = locs_maximize(locs, planar=planar, spherical=spherical)[!, :]
+    return nothing
+end
+
+"""
+    eeg_reflect(eeg; n)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to add, default is 1 second
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_reflect(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    # add up to one epoch
+    n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
+
+    eeg_new = deepcopy(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s = zeros(channel_n, eeg_epoch_len(eeg) + 2 * n, epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            s1 = eeg_new.eeg_signals[:, 1:n, epoch_idx]
+            s2 = eeg_new.eeg_signals[:, end:-1:(end - n + 1), epoch_idx]
+            @views s[channel_idx, :, epoch_idx] = _reflect(eeg.eeg_signals[channel_idx, :, epoch_idx], s1[channel_idx, :], s2[channel_idx, :])
+        end
+    end
+    eeg_new.eeg_signals = s
+
+    t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
+    eeg_new.eeg_time = t
+    eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
+
+    push!(eeg_new.eeg_header[:history], "eeg_reflect(EEG, n=$n)")
+
+    return eeg_new
+end
+
+"""
+    eeg_reflect!(eeg; n)
+
+Expand signal by adding reflected signal before the signal and after the signal, i.e. a signal 1234 becomes 432112344321. This may reduce edge artifacts, but will also affect amplitude of the filtered signal.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to add, default is 1 second
+"""
+function eeg_reflect!(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    eeg_tmp = eeg_reflect(eeg, n=n)
+
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+
+    eeg_reset_components!(eeg)
+
+    return nothing
+end
+
+"""
+    eeg_chop(eeg; n)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to remove, default is 1 second
+
+# Returns
+
+- `eeg::NeuroAnalyzer.EEG`
+"""
+function eeg_chop(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    # add up to one epoch
+    n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
+
+    eeg_new = deepcopy(eeg)
+    channel_n = eeg_channel_n(eeg)
+    epoch_n = eeg_epoch_n(eeg)
+    s = zeros(channel_n, eeg_epoch_len(eeg) - 2 * n, epoch_n)
+
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        Threads.@threads for channel_idx in 1:channel_n
+            @views s[channel_idx, :, epoch_idx] = _chop(eeg.eeg_signals[channel_idx, :, epoch_idx], n)
+        end
+    end
+    eeg_new.eeg_signals = s
+
+    t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
+    eeg_new.eeg_time = t
+    eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
+    eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
+
+    push!(eeg_new.eeg_header[:history], "eeg_chop(EEG, n=$n)")
+
+    return eeg_new
+end
+
+"""
+    eeg_chop!(eeg; c, v)
+
+Reduce signal by removing reflected signal before the signal and after the signal, i.e. a signal 432112344321 becomes 1234.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `n::Int64=eeg_sr(eeg)`: number of samples to remove, default is 1 second
+"""
+function eeg_chop!(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
+
+    eeg_tmp = eeg_chop(eeg, n=n)
+
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+
+    eeg_reset_components!(eeg)
+
+    return nothing
+end

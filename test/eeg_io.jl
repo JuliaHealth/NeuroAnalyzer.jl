@@ -14,7 +14,13 @@ eeg = eeg_import_digitrack("eeg-test-digitrack.txt")
 @test typeof(eeg) == NeuroAnalyzer.EEG
 eeg = eeg_import_bv("eeg-test-bv.vhdr")
 @test typeof(eeg) == NeuroAnalyzer.EEG
-eeg
+eeg = eeg_import_csv("eeg-test_txch.csv.gz")
+@test typeof(eeg) == NeuroAnalyzer.EEG
+eeg = eeg_import_csv("eeg-test_chxt.csv.gz")
+@test typeof(eeg) == NeuroAnalyzer.EEG
+eeg = eeg_import_set("eeg-test.set")
+@test typeof(eeg) == NeuroAnalyzer.EEG
+
 eeg = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(eeg, channel=24)
 eeg_delete_channel!(eeg, channel=24)
@@ -43,6 +49,8 @@ s = locs_import_tsv("test.tsv")
 s = locs_import_sfp("test.sfp")
 @test typeof(s) == DataFrame
 s = locs_import_csd("test.csd")
+@test typeof(s) == DataFrame
+s = locs_import_geo("test.geo")
 @test typeof(s) == DataFrame
 
 eeg = eeg_load_electrodes(eeg, file_name="standard-10-20-cap19-elmiko.ced")

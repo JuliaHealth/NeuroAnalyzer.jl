@@ -169,7 +169,7 @@ function eeg_derivative(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            @views eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = s_derivative(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
+            @views eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = s_derivative(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
 
@@ -233,7 +233,7 @@ function eeg_detrend(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            @views eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = s_detrend(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], type=type, offset=offset, order=order, f=f, fs=fs)
+            @views eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = s_detrend(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], type=type, offset=offset, order=order, f=f, fs=fs)
         end
     end
 
@@ -511,43 +511,68 @@ Apply filtering to EEG channel(s).
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
     - `:conv`: convolution
-- `ftype::Symbol`: filter type:
+    - `:sg`: Savitzky-Golay
+- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order, number of taps for :remez filter, k-value for :mavg and :mmed (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `dir:Symbol=:twopass`: filter direction (:onepass, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{AbstractVector, Nothing} - window, required for FIR filter, weighting window for `:mavg` and `:mmed` 
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
+- `preview::Bool=false`: plot filter response
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
+
+# Notes
+
+For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing, preview::Bool=false)
+function eeg_filter(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, d::Int64=1, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     _check_channels(eeg, channel)
-
+    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :mavg, :mmed, :poly, :conv, :sg], "fprototype")
     epoch_n = eeg_epoch_n(eeg)
     fs = eeg_sr(eeg)
+    n = eeg_epoch_len(eeg)
 
     if preview == true
-        verbose == true && @info "When `preview=true`, signal is not being filtered."
+        _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)    
-        p = plot_filter_response(fs=fs, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
         return p
     end
 
     eeg_new = deepcopy(eeg)
+
+    if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
+        n = eeg_epoch_len(eeg)
+        flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+    end
+
+    # initialize progress bar
+    progress_bar == true && (pb = Progress(epoch_n * length(channel), 1))
+
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, ftype=ftype, cutoff=cutoff, fs=fs, order=order, rp=rp, rs=rs, bw=bw, dir=dir, t=t, window=window)
+            if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter_apply(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt, dir=dir)
+            else
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_filter(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], fprototype=fprototype, order=order, t=t, window=window)
+            end
+            # update progress bar
+            progress_bar == true && next!(pb)
         end
     end
 
@@ -576,25 +601,34 @@ Apply filtering to EEG channel(s).
     - `:mavg`: moving average (with threshold)
     - `:mmed`: moving median (with threshold)
     - `:poly`: polynomial of `order`
-- `ftype::Symbol`: filter type:
+    - `:conv`: convolution
+    - `:sg`: Savitzky-Golay
+- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `order::Int64=8`: filter order, number of taps for `:remez` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
-- `dir:Symbol=:twopass`: filter direction (`:onepass`, :onepass_reverse, `:twopass`), for causal filter use `:onepass`
+- `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
+    - `:twopass`
+    - `:onepass`
+    - `:reverse`: one pass, reverse direction
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
 - `t::Real`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Vector{<:Real}, Nothing} - window, required for `:fir` filter
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
 - `preview::Bool=false`: plot filter response
+
+# Notes
+
+For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Vector{<:Real}, Nothing}=nothing, preview::Bool=false)
+function eeg_filter!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(eeg_channel_n(eeg)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
-        verbose == true && @info "When `preview=true`, signal is not being filtered."
+        _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)
         p = plot_filter_response(fs=eeg_sr(eeg), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
@@ -673,7 +707,7 @@ function eeg_pca_reconstruct(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
     eeg_new = deepcopy(eeg)
     pc_idx = findfirst(isequal(:pc), eeg.eeg_header[:components])
     pc_m_idx = findfirst(isequal(:pca), eeg.eeg_header[:components])
-    eeg_new.eeg_signals[channel, :, :] = @views s_pca_reconstruct(eeg.eeg_signals[channel, :, :], pc=eeg_new.eeg_components[pc_idx], pca=eeg_new.eeg_components[pc_m_idx])
+    eeg_new.eeg_signals[channel, :, :] = @views s_pca_reconstruct(eeg_new.eeg_signals[channel, :, :], pc=eeg_new.eeg_components[pc_idx], pca=eeg_new.eeg_components[pc_m_idx])
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_pca_reconstruct(EEG, channel=$channel)")
 
@@ -956,7 +990,7 @@ function eeg_average(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG)
     eeg_new = deepcopy(eeg1)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s2_average(signal1[channel_idx, :, epoch_idx], signal2[channel_idx, :, epoch_idx])
+            eeg_new.eeg_signals[channel_idx, :, epoch_idx] = @views s2_average(eeg1.eeg_signals[channel_idx, :, epoch_idx], eeg2.eeg_signals[channel_idx, :, epoch_idx])
         end
     end
 
@@ -1071,13 +1105,14 @@ Upsample EEG.
 """
 function eeg_upsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && _info("New sampling rate should be easily captured by integer fractions, e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
     
+    eeg_new = deepcopy(eeg)
+
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
-    s_upsampled, t_upsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
+    s_upsampled, t_upsampled = s_resample(eeg_new.eeg_signals, t=t, new_sr=new_sr)
 
     t_upsampled = collect(t_upsampled)
-    eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_upsampled
     eeg_new.eeg_time = t_upsampled
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_upsampled, 2) * size(s_upsampled, 3)
@@ -1119,8 +1154,8 @@ end
 """
     eeg_downsample(eeg; new_sr)
 
-Downsample EEG.
-
+Downsample EEG
+.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
@@ -1132,15 +1167,16 @@ Downsample EEG.
 """
 function eeg_downsample(eeg::NeuroAnalyzer.EEG; new_sr::Int64)
 
-    (new_sr < eeg_sr(eeg) && verbose == true) && @info "To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz)."
+    new_sr < eeg_sr(eeg) && _info("To prevent aliasing due to down-sampling, a low-pass filter should be applied before removing data points. The filter cutoff should be the Nyquist frequency of the new down-sampled rate, ($(new_sr / 2) Hz), not the original Nyquist frequency ($(eeg_sr(eeg) / 2) Hz).")
 
-    (new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && verbose == true) && @info "New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz."
+    new_sr / eeg_sr(eeg) != new_sr ÷ eeg_sr(eeg) && _info("New sampling rate should be easily captured by integer fractions e.g. 1000 Hz → 250 Hz or 256 Hz → 512 Hz.")
+
+    eeg_new = deepcopy(eeg)
 
     t = eeg.eeg_time[1]:(1 / eeg.eeg_header[:sampling_rate]):eeg.eeg_time[end]
-    s_downsampled, t_downsampled = s_resample(eeg.eeg_signals, t=t, new_sr=new_sr)
+    s_downsampled, t_downsampled = s_resample(eeg_new.eeg_signals, t=t, new_sr=new_sr)
 
     t_downsampled = collect(t_downsampled)
-    eeg_new = deepcopy(eeg)
     eeg_new.eeg_time = t_downsampled
     eeg_new.eeg_signals = s_downsampled
     eeg_new.eeg_header[:eeg_duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
@@ -1199,7 +1235,7 @@ function eeg_wdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in 1:channel_n
-            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_wdenoise(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt)
+            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_wdenoise(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt)
         end
     end
 
@@ -1269,61 +1305,61 @@ function eeg_reference_a(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     s_ref = similar(signal)
 
     if type === :l
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
-            @inbounds @simd for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(a1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
@@ -1400,61 +1436,61 @@ function eeg_reference_m(eeg::NeuroAnalyzer.EEG; type::Symbol=:l, med::Bool=fals
     s_ref = similar(signal)
 
     if type === :l
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
-            @inbounds @simd for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:channel_n
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m1[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = eeg_pick(eeg, pick=:central)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             if med == false
                 reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             else
                 reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
             end
-            @inbounds @simd for channel_idx in central_picks
+            Threads.@threads for channel_idx in central_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         left_picks = eeg_pick(eeg, pick=:left)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m2[:, :, epoch_idx])
-            @inbounds @simd for channel_idx in left_picks
+            Threads.@threads for channel_idx in left_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
         right_picks = eeg_pick(eeg, pick=:right)
-        Threads.@threads for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:epoch_n
             reference_channel = @views vec(m1[:, :, epoch_idx])
-            for channel_idx in right_picks
+            Threads.@threads for channel_idx in right_picks
                 s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
             end
         end
@@ -1518,7 +1554,7 @@ function eeg_fftdenoise(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], _ = @views s_fftdenoise(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, threshold=threshold)
+                eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], _ = @views s_fftdenoise(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, threshold=threshold)
         end
     end
 
@@ -1573,7 +1609,9 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
     # keep EEG channels
     eeg_tmp = deepcopy(eeg)
     channels = eeg_signal_channels(eeg)
-    signal = eeg.eeg_signals[channels, :, :]
+    signal = eeg_tmp.eeg_signals[channels, :, :]
+
+    length(channels) > nrow(eeg.eeg_locs) && throw(ArgumentError("Some channels do not have locations."))
 
     channel_n = size(signal, 1)
     nn < 1 && throw(ArgumentError("nn must be ≥ 1"))
@@ -1583,12 +1621,9 @@ function eeg_reference_plap(eeg::NeuroAnalyzer.EEG; nn::Int64=4, weights::Bool=f
     loc_x = zeros(channel_n)
     loc_y = zeros(channel_n)
     for idx in 1:channel_n
-        # loc_y[idx], loc_x[idx] = pol2cart(pi / 180 * eeg.eeg_locs[!, :loc_theta][idx], eeg.eeg_locs[!, :loc_radius][idx])
-        # loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
         loc_x[idx] = eeg.eeg_locs[idx, :loc_x]
         loc_y[idx] = eeg.eeg_locs[idx, :loc_y]
     end
-    # loc_x, loc_y = _locnorm(loc_x, loc_y)
 
     # Euclidean distance matrix
     d = zeros(channel_n, channel_n)
@@ -1735,7 +1770,7 @@ function eeg_wbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_wbp(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, frq=frq, fs=fs, ncyc=ncyc, demean=demean)
+            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_wbp(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, frq=frq, fs=fs, ncyc=ncyc, demean=demean)
         end
     end
 
@@ -1796,7 +1831,7 @@ function eeg_cbp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     eeg_new = deepcopy(eeg)
     @inbounds @simd for epoch_idx in 1:epoch_n
         Threads.@threads for channel_idx in eachindex(channel)
-            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_cbp(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, frq=frq, fs=fs, demean=demean)
+            eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx] = @views s_cbp(eeg_new.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, frq=frq, fs=fs, demean=demean)
         end
     end
 
@@ -1847,7 +1882,7 @@ function eeg_denoise_wien(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     _check_channels(eeg, channel)
 
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals[channel, :, :] = s_denoise_wien(eeg.eeg_signals[channel, :, :])
+    eeg_new.eeg_signals[channel, :, :] = s_denoise_wien(eeg_new.eeg_signals[channel, :, :])
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_denoise_wien(EEG, channel=$channel)")
 
@@ -1894,7 +1929,7 @@ function eeg_scale(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, 
     _check_channels(eeg, channel)
     
     eeg_new = deepcopy(eeg)
-    eeg_new.eeg_signals[channel, :, :] = @views eeg.eeg_signals[channel, :, :] .* factor
+    eeg_new.eeg_signals[channel, :, :] = @views eeg_new.eeg_signals[channel, :, :] .* factor
     eeg_reset_components!(eeg_new)
     push!(eeg_new.eeg_header[:history], "eeg_scale(EEG, channel=$channel)")
 
@@ -1920,4 +1955,136 @@ function eeg_scale!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     eeg_reset_components!(eeg)
 
     return nothing
+end
+
+"""
+    eeg_slaplacian(eeg; m, n, s)
+
+Transform signal channels using surface Laplacian.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `m::Int64=8`: constant positive integer for smoothness
+- `n::Int64=8`: Legendre polynomial order
+- `s::Float64=10^-5`: smoothing factor
+
+# Returns
+
+- `eeg_new::NeuroAnalyzer.EEG`
+- `G::Matrix{Float64}`: transformation matrix
+- `H::Matrix{Float64}`: transformation matrix
+
+# Source
+
+Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
+"""
+function eeg_slaplacian(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float64=10^-5)
+
+    eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use eeg_load_electrodes() or eeg_add_electrodes() first."))
+
+    m < 1 && throw(ArgumentError("m must be ≥ 1."))
+    n < 1 && throw(ArgumentError("n must be ≥ 1."))
+    s <= 0 && throw(ArgumentError("s must be > 0."))
+
+    channels = eeg_signal_channels(eeg)
+    locs = eeg.eeg_locs
+    channel_n = nrow(locs)
+    epoch_n = eeg_epoch_n(eeg)
+
+    length(channels) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+
+    G = zeros(channel_n, channel_n)
+    H = zeros(channel_n, channel_n)
+    cosdist = zeros(channel_n, channel_n)
+
+    # r = locs[!, :loc_radius_sph]
+    # x = locs[!, :loc_x] ./ maximum(r)
+    # y = locs[!, :loc_y] ./ maximum(r)
+    # z = locs[!, :loc_z] ./ maximum(r)
+
+    x = locs[!, :loc_x]
+    y = locs[!, :loc_y]
+    z = locs[!, :loc_z]
+    x, y, z = _locnorm(x, y, z)
+
+    # cosine distance
+    Threads.@threads for i = 1:channel_n
+        @inbounds @simd  for j = 1:channel_n
+            cosdist[i, j]  =  1 - (( (x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2 ) / 2 )
+        end
+    end
+
+    # compute Legendre polynomial
+    legpoly = zeros(n, channel_n, channel_n)
+    Threads.@threads for idx1 in 1:n
+        @inbounds @simd for idx2 in 1:channel_n
+            legpoly[idx1, idx2, :] = @views legendre.(cosdist[idx2, :], idx1)
+        end
+    end
+
+    # compute G and H
+    Threads.@threads for i = 1:channel_n
+        @inbounds @simd for j = 1:channel_n
+            g = 0
+            h = 0
+            @inbounds @simd for idx_n = 1:n
+                g = g + ((2 * idx_n + 1) * legpoly[idx_n, i, j] / ((idx_n * (idx_n + 1))^m))
+                h = h - ((2 * (idx_n + 1) * legpoly[idx_n, i, j]) / ((idx_n * (idx_n + 1))^(m - 1)))
+            end
+            G[i, j] =  g / (4 * pi)
+            H[i, j] = -h / (4 * pi)
+        end
+    end
+
+    # add smoothing factor to the diagonal
+    Gs = G + I(channel_n) * s
+    GsinvS = sum(inv(Gs))
+
+    eeg_new = deepcopy(eeg)
+    @inbounds @simd for epoch_idx in 1:epoch_n
+        data = @views eeg.eeg_signals[channels, :, epoch_idx]
+        # dataGs = data[channels, :]' / Gs
+        dataGs = Gs / data'
+        # C = dataGs .- (sum(dataGs,dims=2)/sum(GsinvS))*GsinvS
+        C = data .- (sum(dataGs, dims=2) / sum(GsinvS)) * GsinvS
+        # compute surface Laplacian
+        eeg_new.eeg_signals[channels, :, epoch_idx] = (C'*H)'
+    end
+
+    eeg_reset_components!(eeg_new)
+    push!(eeg_new.eeg_header[:history], "eeg_surface_laplacian(EEG, m=m, n=n, s=s)")
+
+    return eeg_new, G, H
+end
+
+"""
+    eeg_slaplacian!(eeg; m, n, s)
+
+Transform signal channels using surface Laplacian.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `m::Int64=8`: constant positive integer for smoothness
+- `n::Int64=8`: Legendre polynomial order
+- `s::Float64=10^-5`: smoothing factor
+
+# Returns
+
+- `G::Matrix{Float64}`: transformation matrix
+- `H::Matrix{Float64}`: transformation matrix
+
+# Source
+
+Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp potential and current density mapping. Electroencephalography and Clinical Neurophysiology. 1989;72(2):184-7
+"""
+function eeg_slaplacian!(eeg::NeuroAnalyzer.EEG; m::Int64=4, n::Int64=8, s::Float64=10^-5)
+
+    eeg_tmp, G, H = eeg_slaplacian(eeg, m=m, n=n, s=s)
+    eeg.eeg_signals = eeg_tmp.eeg_signals
+    eeg.eeg_header = eeg_tmp.eeg_header
+    eeg_reset_components!(eeg)
+
+    return G, H
 end

@@ -316,7 +316,11 @@ eeg1 = eeg_replace_channel(eeg1, channel=1, signal=new_channel);
 @test eeg1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(eeg1), eeg_epoch_n(eeg1))
 eeg2 = eeg_plinterpolate_channel(eeg1, channel=1, epoch=1)
 @test eeg2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(eeg1))
-eeg2 = eeg_lrinterpolate_channel(eeg1, channel=1, epoch=1)
+
+eeg1 = eeg_epoch(eeg, epoch_len=2560);
+new_channel = zeros(1, eeg_epoch_len(eeg1), 1)
+eeg1.eeg_signals[1, :, 1] = zeros(eeg_epoch_len(eeg1))
+eeg2 = eeg_lrinterpolate_channel(eeg1, channel=1, epoch=1);
 @test eeg2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(eeg1))
 
 @test length(eeg_band_mpower(eeg, f=(1,4))) == 3
@@ -366,6 +370,8 @@ locs2 = locs_sph2cart(locs)
 @test locs2[1, 5] == -0.309
 locs2 = locs_cart2sph(locs)
 @test locs2[1, 3] == 108.0
+locs2 = locs_maximize(locs)
+@test locs2[1, :loc_radius] == 1.0
 
 @test size(eeg_phdiff(eeg)) == (19, 309760, 1)
 @test size(eeg_scale(eeg, channel=1, factor=0.1).eeg_signals) == (19, 309760, 1)
@@ -396,5 +402,17 @@ e2 = eeg_trim(e1, segment=(1, 400), remove_epochs=false)
 e2 = eeg_epoch(e1, epoch_len=200)
 eeg_delete_epoch!(e2, epoch=1)
 @test e2.eeg_markers[1, :start] == 800
+
+eeg1, g, h = eeg_slaplacian(eeg)
+@test size(eeg1.eeg_signals) == (19, 309760, 1)
+@test size(g) == (19, 19)
+@test size(h) == (19, 19)
+
+b = eeg_bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
+@test size(b) == (5, 309760, 1)
+
+eeg_r = eeg_reflect(eeg)
+eeg_c = eeg_chop(eeg_r)
+@test size(eeg.eeg_signals) == size(eeg_c.eeg_signals)
 
 true
