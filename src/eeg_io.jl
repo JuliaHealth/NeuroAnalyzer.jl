@@ -317,6 +317,8 @@ Load electrode positions. Supported formats:
 - TSV
 - SFP
 - CSD
+- GEO
+- MAT
 
 This is a meta-function that triggers appropriate `locs_import_*()` function. File format is detected based on file extension.
 
@@ -347,6 +349,10 @@ function locs_import(file_name::String)
         locs = locs_import_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
         locs = locs_import_csd(file_name)
+    elseif splitext(file_name)[2] == ".geo"
+        locs = locs_import_geo(file_name)
+    elseif splitext(file_name)[2] == ".mat"
+        locs = locs_import_mat(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -679,7 +685,7 @@ end
 """
     eeg_load_electrodes(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with `eeg_locs` data frame. 
 
 Accepted formats:
 - CED
@@ -689,6 +695,7 @@ Accepted formats:
 - SFP
 - CSD
 - GEO
+- MAT
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -729,6 +736,8 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize
         locs = locs_import_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
         locs = locs_import_geo(file_name)
+    elseif splitext(file_name)[2] == ".mat"
+        locs = locs_import_mat(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -786,7 +795,7 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with `eeg_locs` data frame. 
 
 Accepted formats:
 - CED
@@ -796,6 +805,7 @@ Accepted formats:
 - SFP
 - CSD
 - GEO
+- MAT
 
 Electrode locations:
 - `loc_theta`       planar polar angle
@@ -2552,4 +2562,48 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
+end
+
+"""
+    locs_import_mat(file_name)
+
+Load electrode positions from MAT file.
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `locs::DataFrame`
+"""
+function locs_import_mat(file_name::String)
+
+    isfile(file_name) || throw(ArgumentError("$file_name not found."))
+    splitext(file_name)[2] == ".mat" || throw(ArgumentError("Not a SFP file."))
+
+    dataset = matread(file_name)
+    x = dataset["Cpos"][1, :]
+    y = dataset["Cpos"][2, :]
+    r = dataset["Rxy"]    
+    channel_n = length(x)
+    labels = dataset["Cnames"][1:channel_n]
+
+    # x, y, z positions must be within -1..+1
+    x, y = _locnorm(x, y)
+
+    z = zeros(channel_n)
+    radius = zeros(length(labels))
+    theta = zeros(length(labels))
+    radius_sph = zeros(length(labels))
+    theta_sph = zeros(length(labels))
+    phi_sph = zeros(length(labels))
+
+    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+
+    locs = _round_locs(locs)
+    locs_cart2sph!(locs)
+    locs_cart2pol!(locs)
+
+    return locs
 end

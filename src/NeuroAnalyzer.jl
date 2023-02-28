@@ -318,6 +318,7 @@ export eeg_import_alice4
 export locs_import_geo
 export eeg_import_csv
 export eeg_import_set
+export locs_import_mat
 
 include("eeg_edit.jl")
 export eeg_copy
