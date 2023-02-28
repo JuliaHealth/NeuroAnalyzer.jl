@@ -7,8 +7,9 @@ Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
 - BrainVision
 - CSV
 - SET (EEGLAB dataset)
+- FIFF
 
-This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set).
+This is a meta-function that triggers appropriate `eeg_import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff).
 
 # Arguments
 
@@ -29,6 +30,8 @@ function eeg_import(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".csv" && return eeg_import_csv(file_name, detect_type=detect_type)
     (splitext(file_name)[2] == ".gz" && splitext(splitext(file_name)[1])[2] == ".csv") && return eeg_import_csv(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".set" && return eeg_import_set(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".fif" && return eeg_import_fiff(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".fiff" && return eeg_import_fiff(file_name, detect_type=detect_type)
 end
 
 """
@@ -2456,4 +2459,73 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
+end
+
+"""
+    eeg_import_fiff(file_name; detect_type)
+
+Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.EEG` object.
+
+# Arguments
+
+- `file_name::String`: name of the file to load
+- `detect_type::Bool=true`: detect channel type based on its label
+
+# Returns
+
+- `eeg:EEG`
+
+"""
+function eeg_import_fiff(file_name::String; detect_type::Bool=true)
+
+    file_name = "test/meg-test-fif.fif"
+    file_name = "/home/eb/Downloads/urmr_thumb_right.fif"
+
+    isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
+
+    eeg_filetype = ""
+
+    fid = ""
+    try
+        fid = open(file_name, "r")
+    catch
+        error("File $file_name cannot be loaded.")
+    end
+
+    tags = Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}()
+
+    # read tags
+    
+    while tag_next != -1
+        current_position = position(fid)
+        try
+            tag = reinterpret(Int32, read(fid, sizeof(Int32) * 4))
+            tag .= ntoh.(tag)
+            tag_kind = tag[1]
+            tag_type = tag[2]
+            tag_size = tag[3]
+            tag_next = tag[4]
+        catch
+            error("File $file_name first tag cannot be read.")
+        end
+
+        # check first tag
+        if length(tags) == 0
+            tag_kind != 100 && throw(ArgumentError("File $file_name is not a FIF file."))
+            tag_type != 31 && throw(ArgumentError("File $file_name is not a FIF file."))
+            tag_size != 20 && throw(ArgumentError("File $file_name is not a FIF file."))
+        end
+
+        push!(tags, (current_position, tag_kind, tag_type, tag_size, tag_next))
+
+        current_position = position(fid)
+
+        if tag_next == 0
+            seek(fid, current_position + tag_size)
+        elseif tag_next > 0
+            seek(fid, tag_next)
+        end
+    end
+    close(fid)
+
 end

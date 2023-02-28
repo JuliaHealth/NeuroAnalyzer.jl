@@ -37,6 +37,7 @@ function na_info()
         "FileIO",
         "FindPeaks1D",
         "FourierTools",
+        "GeometryBasics",
         "Git",
         "GLM",
         "GLMakie",

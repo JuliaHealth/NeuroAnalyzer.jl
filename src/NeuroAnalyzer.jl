@@ -6,7 +6,7 @@ if VERSION < v"1.7.0"
     @error("This version of NeuroAnalyzer requires Julia 1.7.0 or above.")
 end
 
-const na_ver = v"0.23.03"
+const na_ver = v"0.23.3"
 
 # initialize preferences
 use_cuda = nothing
@@ -27,6 +27,7 @@ using FFTW
 using FileIO
 using FindPeaks1D
 using FourierTools
+using GeometryBasics
 using Git
 using GLM
 using GLMakie
@@ -72,6 +73,10 @@ mutable struct STUDY
     study_header::Dict{Symbol, Any}
     study_eeg::Vector{NeuroAnalyzer.EEG}
     study_group::Vector{Symbol}
+end
+
+mutable struct DIPOLE
+    loc::Tuple{Real, Real, Real}
 end
 
 FFTW.set_provider!("mkl")
@@ -594,6 +599,7 @@ export plot_erp_butterfly
 export plot_erp_topo
 export eeg_plot_erp
 export plot_erp_stack
+export plot_dipole3d
 
 include("eeg_study.jl")
 export eeg_study_create
