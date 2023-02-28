@@ -701,12 +701,13 @@ Electrode locations:
 
 - `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
+- `maximize::Bool=true`: maximize locations after importing
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
+function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
     length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
@@ -770,6 +771,9 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String)
                                  :loc_theta_sph => loc_theta_sph[labels_idx],
                                  :loc_phi_sph => loc_phi_sph[labels_idx])
 
+
+    maximize == true && locs_maximize!(eeg_new.eeg_locs)
+
     # add entry to :history field
     push!(eeg_new.eeg_header[:history], "eeg_load_electrodes(EEG, file_name=$file_name)")
 
@@ -804,10 +808,11 @@ Electrode locations:
 
 - `eeg::NeuroAnalyzer.EEG`
 - `file_name::String`
+- `maximize::Bool=true`: maximize locations after importing
 """
-function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String)
+function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
 
-    eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name)
+    eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name, maximize=maximize)
     eeg.eeg_locs = eeg_tmp.eeg_locs
     eeg.eeg_header[:channel_locations] = true
 
