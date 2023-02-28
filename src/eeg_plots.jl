@@ -4953,7 +4953,12 @@ Plot dipole in 3D.
 - `project::Bool=true`: plot lines projected onto X, Y and Z axes
 
 # Returns
+
 - `p::GLMakie.Figure`
+
+# Notes
+
+Brain volume is within -1.0 to +1.0 (X-, Y- and Z-axis)
 """
 function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 
@@ -4984,7 +4989,7 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
     z = d.loc[3]
 
     # prepare figure
-    p = Figure(backgroundcolor=:black)
+    p = Figure(backgroundcolor=:black, resolution=(800, 800))
     ax = Axis3(p[1, 1])
     hidedecorations!(ax)
     mesh!(ax, brain_side_mesh, color=brain_side_texture)
@@ -4996,11 +5001,11 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
 
     if project == true
         # project at top-plane
-        GLMakie.lines!(ax, [x, x], [y, y], [z, 0], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, x], [y, y], [z, 0], linestyle=:dash, color=:red)
         # project at side-axis
-        GLMakie.lines!(ax, [x, -1.2], [y, y], [z, z], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, -1.2], [y, y], [z, z], linestyle=:dash, color=:red)
         # project at front-axis
-        GLMakie.lines!(ax, [x, x], [y, 1.2], [z, z], linestyle=:dash, color=:blue)
+        GLMakie.lines!(ax, [x, x], [y, 1.2], [z, z], linestyle=:dash, color=:red)
     end
 
     GLMakie.show(p)
