@@ -4393,14 +4393,16 @@ Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations,
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
+- `yrev::Bool=false`: reverse Y axis
 - `mono::Bool=false`: use color or grey palette
+
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `fig::GLMakie.Figure`
 """
-function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float64, 2}; channel=Union{Vector{Int64}, AbstractRange}, labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
     size(signal, 2) == length(t) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     length(channel) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
@@ -4460,6 +4462,9 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float6
                        xtickfontsize=6,
                        ytickfontsize=6;
                        kwargs...)
+        # reverse Y axis
+        yrev == true && yflip!(true)
+
         # plot 0 h-line
         p = Plots.hline!([0],
                          color=:grey,
@@ -4510,13 +4515,14 @@ Plot ERP.
 - `peaks::Bool=true`: draw peaks
 - `labels::Bool=true`: draw labels legend (using EEG channel labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+- `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -4550,7 +4556,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     mono=mono;
+                     mono=mono,
+                     yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
         if length(channel) > 1
@@ -4572,7 +4579,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                                ylabel=ylabel,
                                title=title,
                                labels=labels,
-                               mono=mono;
+                               mono=mono,
+                               yrev=yrev;
                                kwargs...)
     elseif type === :mean
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
@@ -4581,7 +4589,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         mono=mono;
+                         mono=mono,
+                         yrev=yrev;
                          kwargs...)
     elseif type === :topo
         eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
@@ -4599,7 +4608,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
                           xlabel=xlabel,
                           ylabel=ylabel,
                           title=title,
-                          mono=mono;
+                          mono=mono,
+                          yrev=yrev;
                           kwargs...)
     elseif type === :stack
         peaks = false
@@ -4773,13 +4783,14 @@ Plot ERP.
 - `peaks::Bool=true`: draw peaks
 - `labels::Bool=true`: draw labels legend (using EEG component labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
+- `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, kwargs...)
+function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -4821,7 +4832,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                      xlabel=xlabel,
                      ylabel=ylabel,
                      title=title,
-                     mono=mono;
+                     mono=mono,
+                     yrev=yrev;
                      kwargs...)
     elseif type === :butterfly
         if length(c_idx) > 1
@@ -4843,7 +4855,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                                ylabel=ylabel,
                                title=title,
                                labels=labels,
-                               mono=mono;
+                               mono=mono,
+                               yrev=yrev;
                                kwargs...)
     elseif type === :mean
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
@@ -4852,7 +4865,8 @@ function eeg_plot_erp(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; c
                          xlabel=xlabel,
                          ylabel=ylabel,
                          title=title,
-                         mono=mono;
+                         mono=mono,
+                         yrev=yrev;
                          kwargs...)
     elseif type === :topo
         eeg.eeg_header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
