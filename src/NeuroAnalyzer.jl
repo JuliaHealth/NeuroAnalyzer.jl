@@ -69,6 +69,16 @@ mutable struct EEG
     eeg_locs::DataFrame
 end
 
+mutable struct MEG
+    meg_header::Dict
+    meg_time::Vector{Float64}
+    meg_epoch_time::Vector{Float64}
+    meg_signals::Array{Float64, 3}
+    meg_components::Vector{Any}
+    meg_markers::DataFrame
+    meg_locs::DataFrame
+end
+
 mutable struct STUDY
     study_header::Dict{Symbol, Any}
     study_eeg::Vector{NeuroAnalyzer.EEG}
@@ -294,10 +304,24 @@ export res_norm
 export mcc
 
 include("eeg_io.jl")
-export eeg_export_csv
+export eeg_load
+export eeg_save
+export eeg_load_electrodes
+export eeg_load_electrodes!
+export eeg_save_electrodes
+export eeg_add_electrodes
+export eeg_add_electrodes!
 export eeg_import
 export eeg_import_edf
 export eeg_import_bdf
+export eeg_import_digitrack
+export eeg_import_bv
+export eeg_import_alice4
+export eeg_import_csv
+export eeg_import_set
+export eeg_export_csv
+
+include("locs_io.jl")
 export locs_import
 export locs_import_ced
 export locs_import_locs
@@ -305,20 +329,11 @@ export locs_import_elc
 export locs_import_tsv
 export locs_import_sfp
 export locs_import_csd
-export eeg_load
-export eeg_load_electrodes
-export eeg_load_electrodes!
-export eeg_save
-export eeg_save_electrodes
-export eeg_add_electrodes
-export eeg_add_electrodes!
-export eeg_import_digitrack
-export eeg_import_bv
-export eeg_import_alice4
 export locs_import_geo
-export eeg_import_csv
-export eeg_import_set
 export locs_import_mat
+
+include("meg_io.jl")
+export meg_import_fiff
 
 include("eeg_edit.jl")
 export eeg_copy
@@ -387,6 +402,24 @@ export eeg_channel_type!
 export eeg_edit_electrode
 export eeg_edit_electrode!
 export eeg_electrode_loc
+export eeg_view_marker
+export eeg_delete_marker
+export eeg_delete_marker!
+export eeg_add_marker
+export eeg_add_marker!
+export eeg_get_channel_bytype
+export eeg_vch
+export eeg_edit_marker
+export eeg_edit_marker!
+export eeg_channel_cluster
+export eeg_lrinterpolate_channel
+export eeg_lrinterpolate_channel!
+export eeg_reflect
+export eeg_reflect!
+export eeg_chop
+export eeg_chop!
+
+include("locs_edit.jl")
 export locs_flipy
 export locs_flipy!
 export locs_flipx
@@ -407,24 +440,8 @@ export locs_cart2pol
 export locs_cart2pol!
 export locs_sph2pol
 export locs_sph2pol!
-export eeg_view_marker
-export eeg_delete_marker
-export eeg_delete_marker!
-export eeg_add_marker
-export eeg_add_marker!
-export eeg_get_channel_bytype
-export eeg_vch
-export eeg_edit_marker
-export eeg_edit_marker!
-export eeg_channel_cluster
-export eeg_lrinterpolate_channel
-export eeg_lrinterpolate_channel!
 export locs_maximize
 export locs_maximize!
-export eeg_reflect
-export eeg_reflect!
-export eeg_chop
-export eeg_chop!
 
 include("eeg_process.jl")
 export eeg_reference_ch

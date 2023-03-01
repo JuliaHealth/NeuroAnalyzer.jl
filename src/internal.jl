@@ -776,8 +776,11 @@ function _read_fif_data(fid::IOStream, tags::Vector{Tuple{Int64, Int64, Int64, I
     elseif tag[3] == 21
         return reinterpret(ComplexF64, reverse(buf))
     elseif tag[3] == 30
+        # recording order
         scan_no = reinterpret(Int32, reverse(buf[1:4]))[]
+        # logical channels order
         log_no = reinterpret(Int32, reverse(buf[5:8]))[]
+        # channel type
         kind = reinterpret(Int32, reverse(buf[9:12]))[]
         r = reinterpret(Float32, reverse(buf[13:16]))[]
         cal = reinterpret(Float32, reverse(buf[17:20]))[]
