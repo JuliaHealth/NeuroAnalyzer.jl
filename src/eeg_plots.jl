@@ -4111,13 +4111,14 @@ Plot ERP.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVector; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -4143,7 +4144,9 @@ function plot_erp(t::Union{AbstractVector, AbstractRange}, signal::AbstractVecto
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
-    
+    # reverse Y axis
+    yrev == true && yflip!(true)
+
     # plot 0 h-line
     p = Plots.hline!([0],
                      color=:grey,
@@ -4180,13 +4183,14 @@ Plot ERP amplitude mean and ±95% CI.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, yrev::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -4215,6 +4219,9 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractA
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
+
+    # reverse Y axis
+    yrev == true && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],
@@ -4271,13 +4278,14 @@ Butterfly plot of ERP.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `avg::Bool=false`: plot average ERP
+- `yrev::Bool=false`: reverse Y axis
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, kwargs...)
+function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::AbstractArray; labels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, avg::Bool=true, yrev::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -4305,6 +4313,9 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
+
+    # reverse Y axis
+    yrev == true && yflip!(true)
 
     # plot 0 h-line
     p = Plots.hline!([0],

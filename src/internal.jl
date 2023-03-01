@@ -734,11 +734,72 @@ function _read_fif_tag(fid::IOStream)
     return tag_kind, tag_type, tag_size, tag_next
 end
 
-function _read_fif_data(fid::IOStream, tag::Tuple{Int64, Int64, Int64, Int64, Int64})
+function _read_fif_data(fid::IOStream, tags::Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}, tag_ids::Vector{Int64}, id::Union{Int64, Nothing})
+    id === nothing && throw(ArgumentError("id does not contain valid tag id."))
+    tag = tags[id]
     seek(fid, tag[1] + 16)
     buf = zeros(UInt8, tag[4])
     readbytes!(fid, buf, tag[4])
-    return reverse(buf)
+    # @show tag[1]
+    # @show tag[2]
+    # @show tag[3]
+    # @show tag[4]
+    # @show tag[5]
+    # @show length(buf)
+    if tag[3] == 0
+        return nothing
+    elseif tag[3] == 1
+        return reinterpret(Int8, buf)
+    elseif tag[3] == 2
+        return reinterpret(Int16, reverse(buf))
+    elseif tag[3] == 3
+        return reinterpret(Int32, reverse(buf))
+    elseif tag[3] == 4
+        return reinterpret(Float32, reverse(buf))
+    elseif tag[3] == 5
+        return reinterpret(Float64, reverse(buf))
+    elseif tag[3] == 6
+        return reinterpret(Float32, reverse(buf))
+        # julian
+    elseif tag[3] == 7
+        return reinterpret(UInt16, reverse(buf))
+    elseif tag[3] == 8
+        return reinterpret(UInt32, reverse(buf))
+    elseif tag[3] == 9
+        return reinterpret(UInt64, reverse(buf))
+    elseif tag[3] == 10
+        return String(Char.(buf))
+    elseif tag[3] == 11
+        return reinterpret(Int64, reverse(buf))
+    elseif tag[3] == 20
+        return reinterpret(ComplexF32, reverse(buf))
+    elseif tag[3] == 21
+        return reinterpret(ComplexF64, reverse(buf))
+    elseif tag[3] == 30
+        scan_no = reinterpret(Int32, reverse(buf[1:4]))[]
+        log_no = reinterpret(Int32, reverse(buf[5:8]))[]
+        kind = reinterpret(Int32, reverse(buf[9:12]))[]
+        r = reinterpret(Float32, reverse(buf[13:16]))[]
+        cal = reinterpret(Float32, reverse(buf[17:20]))[]
+        coil_type = reinterpret(Int32, reverse(buf[21:24]))[]
+        r01 = reinterpret(Float32, reverse(buf[25:28]))[]
+        r02 = reinterpret(Float32, reverse(buf[29:32]))[]
+        r03 = reinterpret(Float32, reverse(buf[33:36]))[]
+        ex1 = reinterpret(Float32, reverse(buf[37:40]))[]
+        ex2 = reinterpret(Float32, reverse(buf[41:44]))[]
+        ex2 = reinterpret(Float32, reverse(buf[45:48]))[]
+        ey1 = reinterpret(Float32, reverse(buf[49:52]))[]
+        ey2 = reinterpret(Float32, reverse(buf[53:56]))[]
+        ey2 = reinterpret(Float32, reverse(buf[57:60]))[]
+        ez1 = reinterpret(Float32, reverse(buf[61:64]))[]
+        ez2 = reinterpret(Float32, reverse(buf[65:68]))[]
+        ez2 = reinterpret(Float32, reverse(buf[69:72]))[]
+        unit = reinterpret(Int32, reverse(buf[73:76]))[]
+        unit_mul = reinterpret(Int32, reverse(buf[77:80]))[]
+        return(scan_no, log_no, kind, r, cal, coil_type, r01, r02, r03, ex1, ex2, ex2, ey1, ey2, ey2, ez1, ez2, ez2, unit, unit_mul)
+    else
+        throw(ArgumentError("Unknown tag type $(tag[3])."))
+    end
 end
 
 function _find_fif_tag(tag_ids::Vector{Int64}, id::Int64)

@@ -783,7 +783,6 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize
                                  :loc_theta_sph => loc_theta_sph[labels_idx],
                                  :loc_phi_sph => loc_phi_sph[labels_idx])
 
-
     maximize == true && locs_maximize!(eeg_new.eeg_locs)
 
     # add entry to :history field
@@ -2485,11 +2484,13 @@ Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.EEG` obj
 
 - `eeg:EEG`
 
+# Source
+
+Elekta Neuromag: Functional Image File Format Description. FIFF version 1.3. March 2011
 """
 function eeg_import_fiff(file_name::String; detect_type::Bool=true)
 
     file_name = "test/meg-test-fif.fif"
-    file_name = "/home/eb/Downloads/urmr_thumb_right.fif"
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -2530,7 +2531,7 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
 
     # read tags
     seek(fid, 0)
-    # tags: position in file, type, size, next
+    # tags: position in file, tag_id, data_type, data_size, next
     tags = Vector{Tuple{Int64, Int64, Int64, Int64, Int64}}()
     while tag_next != -1
         current_position = position(fid)
@@ -2544,21 +2545,103 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
     for tag_idx in 1:length(tags)
         push!(tag_ids, tags[tag_idx][2])
     end
+    tag_types = Vector{Int64}()
+    for tag_idx in 1:length(tags)
+        push!(tag_types, tags[tag_idx][3])
+    end
 
     # channel_n
     fiff_nchan_id = 200
-    channel_n = reinterpret(Int32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_nchan_id)]))
-    channel_n = Int64.(channel_n)[]
+    id = _find_fif_tag(tag_ids, fiff_nchan_id)
+    channel_n = _read_fif_data(fid, tags, tag_ids, id)[]
 
     # sr
     fiff_sfreq_id = 201
-    sr = reinterpret(Float32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_sfreq_id)]))
-    sr = Int64.(sr)[]
+    id = _find_fif_tag(tag_ids, fiff_sfreq_id)
+    sr = Int64.(_read_fif_data(fid, tags, tag_ids, id)[])
 
     # date
     fiff_meas_date_id = 204
-    d = reinterpret(Int32, _read_fif_data(fid, tags[_find_fif_tag(tag_ids, fiff_meas_date_id)]))
-    d = unix2datetime(d[2])
+    id = _find_fif_tag(tag_ids, fiff_meas_date_id)
+    d = _read_fif_data(fid, tags, tag_ids, id)
+    unix2datetime(d[1])
+    unix2datetime(d[2])
+
+    # data order
+    fiff_data_pack_id = 202
+    id = _find_fif_tag(tag_ids, fiff_data_pack_id)
+    ord = _read_fif_data(fid, tags, tag_ids, id)
+
+    # patient data
+    fiff_subj_first_name_id = 401
+    id = _find_fif_tag(tag_ids, fiff_subj_first_name_id)
+    patient = _read_fif_data(fid, tags, tag_ids, id)
+    fiff_subj_last_name_id = 403
+    id = _find_fif_tag(tag_ids, fiff_subj_last_name_id)
+    patient *= " " * _read_fif_data(fid, tags, tag_ids, id)
+
+    # ch_info_struct
+    fiff_ch_info_struct_id = 30
+    channels = findall(x -> x == fiff_ch_info_struct_id, tag_types)
+    channels_struct = Vector{Any}()
+    for channels_idx in 1:channel_n
+        push!(channels_struct, _read_fif_data(fid, tags, tag_ids, channels[channels_idx]))
+    end
+
+    # events
+    # event channel numbers
+    fiff_event_channels_id = 600
+    id = _find_fif_tag(tag_ids, fiff_event_channels_id)
+    event_channel = _read_fif_data(fid, tags, tag_ids, id)
+    fiff_event_list_id = 601
+    id = _find_fif_tag(tag_ids, fiff_event_list_id)
+    # 3 integers per event: [number of samples, before, after]
+    event_list = _read_fif_data(fid, tags, tag_ids, id)
+    # event channel name
+    fiff_event_channel_name_id = 602
+    id = _find_fif_tag(tag_ids, fiff_event_channel_name_id)
+    event_channel = _read_fif_data(fid, tags, tag_ids, id)
+    # event bits array describing transition, 4 integers: [from_mask, from_state, to_mask, to_state]
+    fiff_event_bits_id = 603
+    id = _find_fif_tag(tag_ids, fiff_event_bits_id)
+    event_bits = _read_fif_data(fid, tags, tag_ids, id)
+
+    # data
+    # type of data block
+    fiff_raw_data_block_id = 102
+    id = _find_fif_tag(tag_ids, fiff_raw_data_block_id)
+    id !== nothing && (raw_data_block = _read_fif_data(fid, tags, tag_ids, id))
+    fiff_processed_data_block_id = 103
+    id = _find_fif_tag(tag_ids, fiff_processed_data_block_id)
+    id !== nothing && (processed_data_block = _read_fif_data(fid, tags, tag_ids, id))
+
+    # buffer containing measurement data
+    fiff_data_buffer_id = 300
+    id = _find_fif_tag(tag_ids, fiff_data_buffer_id)
+    data_buffer = _read_fif_data(fid, tags, tag_ids, id)
+    data_buffer = reshape(data_buffer, channel_n, length(data_buffer) ÷ channel_n)
+    plot(data_buffer[300, :])
+
+    # data skip in buffers
+    fiff_data_skip_id = 301
+    id = _find_fif_tag(tag_ids, fiff_data_skip_id)
+    data_skip = _read_fif_data(fid, tags, tag_ids, id)
+    # buffer containing one epoch and channel
+    fiff_epoch_id = 302
+    id = _find_fif_tag(tag_ids, fiff_epoch_id)
+    epoch = _read_fif_data(fid, tags, tag_ids, id)
+    # data skip in samples
+    fiff_data_skip_smp_id = 303
+    id = _find_fif_tag(tag_ids, fiff_data_skip_smp_id)
+    data_skip_smp = _read_fif_data(fid, tags, tag_ids, id)
+    # data buffer with int32 time channel
+    fiff_data_buffer2_id = 304
+    id = _find_fif_tag(tag_ids, fiff_data_buffer2_id)
+    data_buffer2 = _read_fif_data(fid, tags, tag_ids, id)
+    # data buffer with int32 time channel
+    fiff_time_stamp_id = 305
+    id = _find_fif_tag(tag_ids, fiff_time_stamp_id)
+    data_buffer2 = _read_fif_data(fid, tags, tag_ids, id)
 
     close(fid)
 
