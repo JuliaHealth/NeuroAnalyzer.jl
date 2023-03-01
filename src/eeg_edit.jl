@@ -314,7 +314,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
         deleteat!(eeg_new.eeg_header[:labels], idx)
         deleteat!(eeg_new.eeg_header[:channel_type], idx)
         deleteat!(eeg_new.eeg_header[:transducers], idx)
-        deleteat!(eeg_new.eeg_header[:physical_dimension], idx)
+        deleteat!(eeg_new.eeg_header[:units], idx)
         deleteat!(eeg_new.eeg_header[:prefiltering], idx)
         deleteat!(eeg_new.eeg_header[:gain], idx)
     end
@@ -355,7 +355,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
         deleteat!(eeg.eeg_header[:labels], idx)
         deleteat!(eeg.eeg_header[:channel_type], idx)
         deleteat!(eeg.eeg_header[:transducers], idx)
-        deleteat!(eeg.eeg_header[:physical_dimension], idx)
+        deleteat!(eeg.eeg_header[:units], idx)
         deleteat!(eeg.eeg_header[:prefiltering], idx)
         deleteat!(eeg.eeg_header[:gain], idx)
     end
