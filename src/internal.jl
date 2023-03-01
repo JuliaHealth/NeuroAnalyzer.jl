@@ -782,21 +782,27 @@ function _read_fif_data(fid::IOStream, tags::Vector{Tuple{Int64, Int64, Int64, I
         r = reinterpret(Float32, reverse(buf[13:16]))[]
         cal = reinterpret(Float32, reverse(buf[17:20]))[]
         coil_type = reinterpret(Int32, reverse(buf[21:24]))[]
+        # coil coordinate system origin
         r01 = reinterpret(Float32, reverse(buf[25:28]))[]
         r02 = reinterpret(Float32, reverse(buf[29:32]))[]
         r03 = reinterpret(Float32, reverse(buf[33:36]))[]
+        # coil coordinate system x-axis unit vector
         ex1 = reinterpret(Float32, reverse(buf[37:40]))[]
         ex2 = reinterpret(Float32, reverse(buf[41:44]))[]
-        ex2 = reinterpret(Float32, reverse(buf[45:48]))[]
+        ex3 = reinterpret(Float32, reverse(buf[45:48]))[]
+        # coil coordinate system y-axis unit vector
         ey1 = reinterpret(Float32, reverse(buf[49:52]))[]
         ey2 = reinterpret(Float32, reverse(buf[53:56]))[]
-        ey2 = reinterpret(Float32, reverse(buf[57:60]))[]
+        ey3 = reinterpret(Float32, reverse(buf[57:60]))[]
+        # coil coordinate system z-axis unit vector
         ez1 = reinterpret(Float32, reverse(buf[61:64]))[]
         ez2 = reinterpret(Float32, reverse(buf[65:68]))[]
-        ez2 = reinterpret(Float32, reverse(buf[69:72]))[]
+        ez3 = reinterpret(Float32, reverse(buf[69:72]))[]
         unit = reinterpret(Int32, reverse(buf[73:76]))[]
         unit_mul = reinterpret(Int32, reverse(buf[77:80]))[]
         return(scan_no, log_no, kind, r, cal, coil_type, r01, r02, r03, ex1, ex2, ex2, ey1, ey2, ey2, ez1, ez2, ez2, unit, unit_mul)
+    elseif tag[3] == 31
+        reverse(buf)
     else
         throw(ArgumentError("Unknown tag type $(tag[3])."))
     end
@@ -804,4 +810,42 @@ end
 
 function _find_fif_tag(tag_ids::Vector{Int64}, id::Int64)
     return findfirst(x -> x == id, tag_ids)
+end
+
+function _extract_struct(s, id::Int64)
+    id < 1 && throw(ArgumentError("id must be ≥ 1."))
+    id > length(channels_struct[1]) && throw(ArgumentError("id must be ≤ $(length(channels_struct[1]))."))
+    out = Vector{typeof(channels_struct[channels_idx][1])}()
+    for channels_idx in 1:channel_n
+        push!(out, channels_struct[channels_idx][id])
+    end
+    return out
+end
+
+function _fif_channel_type(channel_types::Vector{Int32})
+    channel_type = Vector{String}()
+    for idx in 1:length(channel_types)
+        if channel_types[idx] == 1
+            push!(channel_type, "meg")
+        elseif channel_types[idx] == 2
+            push!(channel_type, "eeg")
+        elseif channel_types[idx] == 3
+            push!(channel_type, "mrk")
+        elseif channel_types[idx] == 102
+            push!(channel_type, "bio")
+        elseif channel_types[idx] == 201
+            push!(channel_type, "mcg")
+        elseif channel_types[idx] == 202
+            push!(channel_type, "eog")
+        elseif channel_types[idx] == 301
+            push!(channel_type, "meg_ref")
+        elseif channel_types[idx] == 302
+            push!(channel_type, "emg")
+        elseif channel_types[idx] == 402
+            push!(channel_type, "ecg")
+        else
+            push!(channel_type, "misc")
+        end
+    end
+    return channel_type
 end

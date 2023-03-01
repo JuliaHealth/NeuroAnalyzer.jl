@@ -599,14 +599,14 @@ end
 """
     m_sort(m, m_idx; rev=false, dims=1)
 
-Sorts matrix `m` using sorting index `m_idx` by columns (`dims` = 1) or by rows (`dims` = 2).
+Sorts matrix `m` using sorting index `m_idx`
 
 # Arguments
 
 - `m::Matrix`
 - `m_idx::Vector{Int64}`
-- `rev::Bool`
-- `dims::Int64`
+- `rev::Bool=false`
+- `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
 
 # Returns
 

@@ -2522,8 +2522,10 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
     try
         tag_kind, tag_type, tag_size, tag_next = _read_fif_tag(fid)
     catch
-        error("File $file_name first tag cannot be read.")
+        error("File $file_name dir_pointer tag cannot be read.")
     end
+
+    eeg_filetype = "FIFF"
 
     # check dir_pointer tag
     fiff_dir_pointer = 101
@@ -2558,7 +2560,7 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
     # sr
     fiff_sfreq_id = 201
     id = _find_fif_tag(tag_ids, fiff_sfreq_id)
-    sr = Int64.(_read_fif_data(fid, tags, tag_ids, id)[])
+    sampling_rate = Int64.(_read_fif_data(fid, tags, tag_ids, id)[])
 
     # date
     fiff_meas_date_id = 204
@@ -2586,6 +2588,22 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
     channels_struct = Vector{Any}()
     for channels_idx in 1:channel_n
         push!(channels_struct, _read_fif_data(fid, tags, tag_ids, channels[channels_idx]))
+    end
+    # identify MEG or EEG signal
+    signal_type = ""
+    channel_order = Int64.(_extract_struct(channels_struct, 2))
+    channel_types = _extract_struct(channels_struct, 3)
+    1 in channel_types && (signal_type = "meg")
+    2 in channel_types && (signal_type = "eeg")
+    # identify channel types
+    channel_type = _fif_channel_type(channel_types)
+    # identify gradiometers abnd magnetometers
+    coils = _extract_struct(channels_struct, 6)
+    gradiometers = Vector{Int64}()
+    megnetometers = Vector{Int64}()
+    for channel_idx in 1:channel_n
+        coils[channel_idx] in [2001, 3012, 3013, 3014, 4002, 5001] && push!(gradiometers, channel_idx)
+        coils[channel_idx] in [2000, 3021, 3022, 3023, 3024, 4001] && push!(megnetometers, channel_idx)
     end
 
     # events
@@ -2619,9 +2637,8 @@ function eeg_import_fiff(file_name::String; detect_type::Bool=true)
     fiff_data_buffer_id = 300
     id = _find_fif_tag(tag_ids, fiff_data_buffer_id)
     data_buffer = _read_fif_data(fid, tags, tag_ids, id)
-    data_buffer = reshape(data_buffer, channel_n, length(data_buffer) ÷ channel_n)
-    plot(data_buffer[300, :])
-
+    data_buffer = Float64.(reshape(data_buffer, channel_n, length(data_buffer) ÷ channel_n))
+    data_buffer = m_sort(data_buffer, channel_order)
     # data skip in buffers
     fiff_data_skip_id = 301
     id = _find_fif_tag(tag_ids, fiff_data_skip_id)
