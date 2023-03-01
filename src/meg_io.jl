@@ -30,6 +30,10 @@ function meg_import_fiff(file_name::String; detect_type::Bool=true)
     end
 
     # read file_id tag
+    tag_kind = nothing
+    tag_type = nothing
+    tag_size = nothing
+    tag_next = nothing
     try
         tag_kind, tag_type, tag_size, tag_next = _read_fif_tag(fid)
     catch
@@ -89,9 +93,8 @@ function meg_import_fiff(file_name::String; detect_type::Bool=true)
     # date
     fiff_meas_date_id = 204
     id = _find_fif_tag(tag_ids, fiff_meas_date_id)
-    d = _read_fif_data(fid, tags, tag_ids, id)
-    date = 
-    unix2datetime(d[2])
+    date = _read_fif_data(fid, tags, tag_ids, id)
+    date = unix2datetime(date[2])
 
     # data order
     fiff_data_pack_id = 202
@@ -194,8 +197,8 @@ function meg_import_fiff(file_name::String; detect_type::Bool=true)
 
     duration_samples = size(signals, 2)
     duration_seconds = size(signals, 2) / sampling_rate
-    time = collect(0:(1 / sampling_rate):duration_seconds)
-    time = eeg_time[1:end - 1]
+    meg_time = collect(0:(1 / sampling_rate):duration_seconds)
+    meg_time = meg_time[1:end - 1]
     filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     meg_header = Dict(:signal_type => signal_type,

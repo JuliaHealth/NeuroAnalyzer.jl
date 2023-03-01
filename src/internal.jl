@@ -817,10 +817,10 @@ end
 
 function _extract_struct(s, id::Int64)
     id < 1 && throw(ArgumentError("id must be ≥ 1."))
-    id > length(channels_struct[1]) && throw(ArgumentError("id must be ≤ $(length(channels_struct[1]))."))
-    out = Vector{typeof(channels_struct[channels_idx][1])}()
-    for channels_idx in 1:channel_n
-        push!(out, channels_struct[channels_idx][id])
+    id > length(s[1]) && throw(ArgumentError("id must be ≤ $(length(s[1]))."))
+    out = Vector{typeof(s[1])}()
+    for channels_idx in 1:length(s)
+        push!(out, s[channels_idx][id])
     end
     return out
 end

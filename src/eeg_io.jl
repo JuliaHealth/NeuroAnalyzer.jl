@@ -258,10 +258,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -282,7 +279,7 @@ function eeg_import_edf(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => transducers[channel_order],
-                      :physical_dimension => physical_dimension[channel_order],
+                      :units => physical_dimension[channel_order],
                       :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -981,10 +978,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -1005,7 +999,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => transducers[channel_order],
-                      :physical_dimension => physical_dimension[channel_order],
+                      :units => physical_dimension[channel_order],
                       :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -1125,10 +1119,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -1149,7 +1140,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => transducers[channel_order],
-                      :physical_dimension => physical_dimension[channel_order],
+                      :units => physical_dimension[channel_order],
                       :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -1393,10 +1384,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(eeg_file) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -1417,7 +1405,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => transducers[channel_order],
-                      :physical_dimension => physical_dimension[channel_order],
+                      :units => physical_dimension[channel_order],
                       :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -1744,10 +1732,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -1768,7 +1753,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => transducers[channel_order],
-                      :physical_dimension => physical_dimension[channel_order],
+                      :units => physical_dimension[channel_order],
                       :prefiltering => prefiltering[channel_order],
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -1856,10 +1841,7 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -1880,7 +1862,7 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => repeat([""], channel_n),
-                      :physical_dimension => repeat([""], channel_n),
+                      :units => repeat([""], channel_n),
                       :prefiltering => repeat([""], channel_n),
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
@@ -1979,10 +1961,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     eeg_time = eeg_time[1:end - 1]
     eeg_filesize_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    signal_type = "eeg"
-    "meg" in channel_type && (signal_type = "meg")
-
-    eeg_header = Dict(:signal_type => signal_type,
+    eeg_header = Dict(:signal_type => "eeg",
                       :eeg_filename => file_name,
                       :eeg_filesize_mb => eeg_filesize_mb,
                       :eeg_filetype => eeg_filetype,
@@ -2003,7 +1982,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
                       :transducers => repeat([""], channel_n),
-                      :physical_dimension => repeat([""], channel_n),
+                      :units => repeat([""], channel_n),
                       :prefiltering => repeat([""], channel_n),
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
