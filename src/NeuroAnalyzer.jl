@@ -419,6 +419,9 @@ export eeg_reflect
 export eeg_reflect!
 export eeg_chop
 export eeg_chop!
+export eeg_extract_data
+export eeg_extract_time
+export eeg_extract_etime
 
 include("locs_edit.jl")
 export locs_flipy

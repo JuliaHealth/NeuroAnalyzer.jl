@@ -1215,7 +1215,7 @@ Detect bad EEG channels and epochs.
 # Arguments
 
 - `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG/MEG channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))`: index of channels, default is all EEG channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
@@ -2500,4 +2500,71 @@ function eeg_chop!(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     eeg_reset_components!(eeg)
 
     return nothing
+end
+
+"""
+    eeg_extract_data(eeg; channel)
+
+Extract EEG data.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all signal channels
+- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=eeg_epoch_n(eeg)`: index of epochs, default is all epochs
+- `time::Bool=false`: return time vector
+- `etime::Bool=false`: return epoch time vector
+
+# Returns
+
+- `signal::Array{Float64, 3}`
+- `time::Vector{Float64}`
+- `etime::Vector{Float64}`
+"""
+function eeg_extract_data(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), epoch::Union{Int64, Vector{Int64}, AbstractRange}=eeg_epoch_n(eeg), time::Bool=false, etime::Bool=false)
+    _check_channels(eeg, channel)
+    _check_epochs(eeg, epoch)
+    if time == false && etime == false
+        return eeg.eeg_signals[channel, :, epoch][:, :, :]
+    elseif time == true && etime == false
+        return eeg.eeg_signals[channel, :, epoch][:, :, :], eeg.eeg_time
+    elseif time == false && etime == true
+        return eeg.eeg_signals[channel, :, epoch][:, :, :], eeg.eeg_epoch_time
+    else
+        return eeg.eeg_signals[channel, :, epoch][:, :, :], eeg.eeg_time, eeg.eeg_epoch_time
+    end
+end
+
+"""
+    eeg_extract_time(eeg)
+
+Extract EEG time.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+
+# Returns
+
+- `time::Array{Float64, 3}`
+"""
+function eeg_extract_time(eeg::NeuroAnalyzer.EEG)
+    return eeg.eeg_time
+end
+
+"""
+    eeg_extract_etime(eeg)
+
+Extract EEG epochs time.
+
+# Arguments
+
+- `eeg::NeuroAnalyzer.EEG`
+
+# Returns
+
+- `time::Array{Float64, 3}`
+"""
+function eeg_extract_etime(eeg::NeuroAnalyzer.EEG)
+    return eeg.eeg_epoch_time
 end

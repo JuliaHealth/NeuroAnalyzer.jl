@@ -930,9 +930,6 @@ function _create_fiff_block(file_name::String)
     end
 
     # check file_id tag
-    fiff_file_id = 100
-    fiff_id_struct = 31
-    fiff_next_seq = 0
     tag_kind != fiff_file_id && throw(ArgumentError("File $file_name is not a FIFF file."))
     tag_type != fiff_id_struct && throw(ArgumentError("File $file_name is not a FIFF file."))
     tag_size != 20 && throw(ArgumentError("File $file_name is not a FIFF file."))
@@ -945,7 +942,6 @@ function _create_fiff_block(file_name::String)
     end
 
     # check dir_pointer tag
-    fiff_dir_pointer = 101
     tag_kind != fiff_dir_pointer && throw(ArgumentError("File $file_name has no dir_pointer tag."))
 
     # read tags
@@ -978,10 +974,6 @@ function _create_fiff_block(file_name::String)
     end
 
     # create block structure
-    fiff_block_start = 104
-    fiff_block_end = 105
-    fiff_block_nop = 108
-    fiff_block_root = 999
     block_level = ones(Int64, length(tags))
     block_number = ones(Int64, length(tags))
     block_type = Vector{Int64}()

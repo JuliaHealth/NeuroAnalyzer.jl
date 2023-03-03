@@ -415,4 +415,8 @@ eeg_r = eeg_reflect(eeg)
 eeg_c = eeg_chop(eeg_r)
 @test size(eeg.eeg_signals) == size(eeg_c.eeg_signals)
 
+@test size(eeg_extract_data(eeg, channel=1:eeg_channel_n(eeg))) == size(eeg.eeg_signals)
+@test length(eeg_extract_time(eeg)) == length(eeg.eeg_time)
+@test length(eeg_extract_etime(eeg)) == length(eeg.eeg_epoch_time)
+
 true
