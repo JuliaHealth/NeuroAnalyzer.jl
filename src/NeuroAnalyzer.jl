@@ -216,6 +216,7 @@ export s_ica_reconstruct
 export s_spectrogram
 export s_detect_channel_flat
 export s_snr
+export s_snr2
 export s_findpeaks
 export s_wdenoise
 export s2_ispc

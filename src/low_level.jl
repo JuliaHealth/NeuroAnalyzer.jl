@@ -2678,6 +2678,23 @@ function s_snr(signal::AbstractVector)
 end
 
 """
+    s_snr2(signal)
+
+Calculate RMS-based SNR.
+
+# Arguments
+
+- `signal::AbstractVector`
+
+# Returns
+
+- `snr::Float64`: SNR
+"""
+function s_snr2(signal::AbstractVector)
+    return (maximum(signal) - minimum(signal)) / s_rms(signal)
+end
+
+"""
     s_findpeaks(signal; d)
 
 Find peaks.

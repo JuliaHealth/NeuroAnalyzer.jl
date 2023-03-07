@@ -113,7 +113,6 @@ const fiff_event_list = 601
 const fiff_event_channel_name = 602
 const fiff_event_bits = 603
 
-
 """
     meg_import_fiff(file_name; detect_type)
 

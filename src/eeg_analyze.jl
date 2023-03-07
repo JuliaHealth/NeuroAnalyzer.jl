@@ -1158,7 +1158,7 @@ function eeg_channel_stats(eeg::NeuroAnalyzer.EEG)
 end
 
 """
-    eeg_snr(eeg; channel)
+    eeg_snr(eeg; channel, type)
 
 Calculate SNR of `eeg` channels.
 
@@ -1166,6 +1166,9 @@ Calculate SNR of `eeg` channels.
 
 - `eeg::NeuroAnalyzer.EEG`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG channels
+- `type::Symbol=:rms`: SNR type:
+    - `:mean`: mean-based
+    - `:rms`: RMS-based
 
 # Returns
 
@@ -1173,8 +1176,9 @@ Named tuple containing:
 - `snr::Matrix(Float64)`: SNR for each channel over frequencies 1:Nyquist
 - `hz::Vector(Float64)`: frequencies
 """
-function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
+function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), type::Symbol=:rms)
 
+    _check_var(type, [:mean, :rms], "type")
     _check_channels(eeg, channel)
     channel_n = length(channel)
     epoch_n = eeg_epoch_n(eeg)
@@ -1195,7 +1199,11 @@ function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     # calculate SNR for each channel spectrum
     @inbounds @simd for hz_idx in 1:length(hz)
         Threads.@threads for channel_idx in 1:channel_n
-            snr[channel_idx, hz_idx] = @views s_snr(amp[channel_idx, hz_idx, :])
+            if type === :mean
+                snr[channel_idx, hz_idx] = @views s_snr(amp[channel_idx, hz_idx, :])
+            else
+                snr[channel_idx, hz_idx] = @views s_snr2(amp[channel_idx, hz_idx, :])
+            end
         end
     end
 
