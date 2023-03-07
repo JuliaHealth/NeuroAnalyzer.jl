@@ -60,14 +60,24 @@ using Wavelets
 using WaveletsExt
 using ContinuousWavelets
 
-mutable struct EEG
-    eeg_header::Dict
-    eeg_time::Vector{Float64}
-    eeg_epoch_time::Vector{Float64}
-    eeg_signals::Array{Float64, 3}
-    eeg_components::Vector{Any}
-    eeg_markers::DataFrame
-    eeg_locs::DataFrame
+mutable struct HEADER
+    subject::Dict
+    recording::Dict
+    experiment::Dict
+    markers::Bool
+    components::Vector{Symbol}
+    locations::Bool
+    history::Vector{String}
+end
+
+mutable struct RECORD
+    header::NeuroAnalyzer.HEADER
+    time_pts::Vector{Float64}
+    epoch_time::Vector{Float64}
+    data::Union{Array{<:Number, 1}, Array{<:Number, 2}, Array{<:Number, 3}}
+    components::Vector{Any}
+    events::DataFrame
+    locs::DataFrame
 end
 
 mutable struct MEG
@@ -135,8 +145,17 @@ end
 
 # internal functions are not available outside NA
 include("internal.jl")
+include("internal/reflect_chop.jl")
+include("internal/create_header.jl")
+include("internal/io.jl")
+include("internal/check.jl")
 
 # load sub-modules
+include("record_details.jl")
+include("low_level/locs_convert.jl")
+include("analyze/total_power.jl")
+include("io/import_edf.jl")
+
 include("low_level.jl")
 export linspace
 export logspace
@@ -144,11 +163,6 @@ export m_pad0
 export cmax
 export cmin
 export vsearch
-export cart2pol
-export pol2cart
-export sph2cart
-export cart2sph
-export sph2pol
 export generate_window
 export fft0
 export fft2
@@ -180,7 +194,6 @@ export s2_difference
 export s_acov
 export s2_xcov
 export s_spectrum
-export s_total_power
 export s_band_power
 export s_taper
 export s_detrend
@@ -314,7 +327,6 @@ export eeg_save_electrodes
 export eeg_add_electrodes
 export eeg_add_electrodes!
 export eeg_import
-export eeg_import_edf
 export eeg_import_bdf
 export eeg_import_digitrack
 export eeg_import_bv
@@ -359,14 +371,6 @@ export eeg_get_channel
 export eeg_rename_channel
 export eeg_rename_channel!
 export eeg_extract_channel
-export eeg_history
-export eeg_labels
-export eeg_sr
-export eeg_channel_n
-export eeg_epoch_n
-export eeg_signal_len
-export eeg_epoch_len
-export eeg_info
 export eeg_epoch
 export eeg_epoch!
 export eeg_erp
@@ -509,7 +513,6 @@ export eeg_slaplacian
 export eeg_slaplacian!
 
 include("eeg_analyze.jl")
-export eeg_total_power
 export eeg_band_power
 export eeg_cov
 export eeg_cor

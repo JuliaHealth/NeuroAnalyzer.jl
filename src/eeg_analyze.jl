@@ -1,36 +1,4 @@
 """
-    eeg_total_power(eeg, channel, mt)
-
-Calculate total power.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG channels
-- `mt::Bool=false`: if true use multi-tapered periodogram
-
-# Returns
- 
-- `stp::Matrix{Float64}`: total power for each channel per epoch
-"""
-function eeg_total_power(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), mt::Bool=false)
-
-    fs = eeg_sr(eeg)
-    _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
-
-    stp = zeros(length(channel), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            @views stp[channel_idx, epoch_idx] = s_total_power(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt)
-        end
-    end
-
-    return stp
-end
-
-"""
     eeg_band_power(eeg; channel, f, mt)
 
 Calculate absolute band power between two frequencies
@@ -3884,23 +3852,6 @@ function eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
     end
 
     return p
-end
-
-"""
-    eeg_signal_channels(eeg)
-
-Return all signal (EEG/MEG) channels; signal is determined by `:signal_type` variable in `eeg_header`).
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`:
-
-# Returns
- 
-- `channels::Vector{Int64}`
-"""
-function eeg_signal_channels(eeg::NeuroAnalyzer.EEG)
-    return eeg_get_channel_bytype(eeg, type=Symbol(eeg.eeg_header[:signal_type]))
 end
 
 """
