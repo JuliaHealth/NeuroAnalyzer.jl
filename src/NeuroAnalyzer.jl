@@ -115,19 +115,7 @@ FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # NA functions
-include("na.jl")
-export na_info
-export na_plugins_reload
-export na_plugins_list
-export na_plugins_remove
-export na_plugins_install
-export na_plugins_update
-export na_set_use_cuda
-export na_set_progress_bar
-export na_set_plugins_path
-export na_set_prefs
-export na_set_verbose
-export na_version
+include("utils/na.jl")
 
 function __init__()
 
@@ -154,40 +142,40 @@ function __init__()
 end
 
 # internal functions are not available outside NA
-include("internal/reflect_chop.jl")
-include("internal/create_header.jl")
-include("internal/io.jl")
-include("internal/check.jl")
-include("internal/select.jl")
-include("internal/len.jl")
-include("internal/plots.jl")
-include("internal/draw_head.jl")
-include("internal/fir_response.jl")
-include("internal/make_epochs.jl")
-include("internal/locs.jl")
-include("internal/interpolate.jl")
-include("internal/fiff.jl")
-include("internal/gpu.jl")
-include("internal/time.jl")
-include("internal/labels.jl")
-include("internal/markers.jl")
-include("internal/labeled_matrix.jl")
-include("internal/ml.jl")
 include("internal/ch_idx.jl")
+include("internal/check.jl")
+include("internal/create_header.jl")
+include("internal/draw_head.jl")
+include("internal/fiff.jl")
+include("internal/fir_response.jl")
+include("internal/gpu.jl")
+include("internal/interpolate.jl")
+include("internal/io.jl")
+include("internal/labeled_matrix.jl")
+include("internal/labels.jl")
+include("internal/len.jl")
+include("internal/locs.jl")
+include("internal/make_epochs.jl")
 include("internal/map_channels.jl")
+include("internal/markers.jl")
 include("internal/misc.jl")
+include("internal/ml.jl")
+include("internal/plots.jl")
+include("internal/reflect_chop.jl")
+include("internal/select.jl")
 include("internal/tester.jl")
+include("internal/time.jl")
 
 # load sub-modules
-include("low_level/locs_convert.jl")
-include("low_level/normalize.jl")
-include("low_level/matrix.jl")
-include("low_level/vector.jl")
-include("low_level/generate.jl")
-include("low_level/frequency.jl")
-include("low_level/time.jl")
-include("low_level/entropy.jl")
 include("low_level/band_frq.jl")
+include("low_level/entropy.jl")
+include("low_level/frequency.jl")
+include("low_level/generate.jl")
+include("low_level/locs_convert.jl")
+include("low_level/matrix.jl")
+include("low_level/normalize.jl")
+include("low_level/time.jl")
+include("low_level/vector.jl")
 
 include("analyze/band_power.jl")
 include("analyze/corm.jl")
@@ -197,15 +185,16 @@ include("analyze/stationarity.jl")
 include("analyze/total_power.jl")
 include("analyze/xcov.jl")
 
-include("io/import_edf.jl")
-include("io/import_locs.jl")
-include("io/import_fiff.jl")
 include("io/fiff.jl")
+include("io/import_edf.jl")
+include("io/import_fiff.jl")
+include("io/import_locs.jl")
+include("io/locs_import.jl")
 
-include("locs/flip.jl")
 include("locs/convert.jl")
-include("locs/scale.jl")
+include("locs/flip.jl")
 include("locs/rotate.jl")
+include("locs/scale.jl")
 include("locs/swap.jl")
 
 include("plots/misc.jl")
@@ -238,6 +227,7 @@ include("statistics/s2cmp.jl")
 include("statistics/s2cor.jl")
 include("statistics/segments.jl")
 include("statistics/sem_diff.jl")
+
 include("utils/components.jl")
 include("utils/info.jl")
 
@@ -413,14 +403,6 @@ export eeg_extract_time
 export eeg_extract_etime
 
 include("eeg_process.jl")
-export eeg_reference_ch
-export eeg_reference_ch!
-export eeg_reference_car
-export eeg_reference_car!
-export eeg_reference_a
-export eeg_reference_a!
-export eeg_reference_m
-export eeg_reference_m!
 export eeg_derivative
 export eeg_derivative!
 export eeg_detrend
@@ -446,18 +428,10 @@ export eeg_average!
 export eeg_average
 export eeg_invert_polarity
 export eeg_invert_polarity!
-export eeg_resample
-export eeg_resample!
-export eeg_upsample
-export eeg_upsample!
-export eeg_downsample
-export eeg_downsample!
 export eeg_wdenoise
 export eeg_wdenoise!
 export eeg_fftdenoise
 export eeg_fftdenoise!
-export eeg_reference_plap
-export eeg_reference_plap!
 export eeg_zero
 export eeg_zero!
 export eeg_wbp

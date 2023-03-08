@@ -1,3 +1,16 @@
+export na_info
+export na_plugins_reload
+export na_plugins_list
+export na_plugins_remove
+export na_plugins_install
+export na_plugins_update
+export na_set_use_cuda
+export na_set_progress_bar
+export na_set_plugins_path
+export na_set_prefs
+export na_set_verbose
+export na_version
+
 """
     na_info()
 
