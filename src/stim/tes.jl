@@ -1,3 +1,6 @@
+export tes_dose
+export tes_protocol
+
 """
     tes_dose(current, pad_area, duration)
 
@@ -27,26 +30,6 @@ function tes_dose(;current::Real, pad_area::Real, duration::Int64)
     charge_density = (charge / 1_000) / (pad_area / 1_000)
     
     return (charge=charge, current_density=current_density, charge_density=charge_density)
-end
-
-"""
-    ect_charge(; pw, pint, pf, duration)
-
-Calculate charge administered during ECT.
-
-# Arguments
-
-- `pw::Real`: pulse width [ms]
-- `pint::Real`: pulse intensity [mA]
-- `pf::Real`: pulse frequency [Hz]
-- `duration::Real`: stimulation duration [s]
-
-# Returns
-
-- `charge::Float64`: charge [mC]
-"""
-function ect_charge(; pw::Real, pint::Real, pf::Real, duration::Real)
-    return pw * pint * pf * duration
 end
 
 """

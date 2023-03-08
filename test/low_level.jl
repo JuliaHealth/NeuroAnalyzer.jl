@@ -3,6 +3,10 @@ using Test
 using Wavelets
 using ContinuousWavelets
 
+@test size(covm(zeros(2))) == (2, 2)
+@test size(covm(zeros(2, 2))) == (2, 2, 2, 1)
+@test covm(ones(2), zeros(2)) == zeros(2, 2)
+
 @test linspace(1, 10, 10) == 1.0:10.0
 @test logspace(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
 @test length(pad0(ones(3), 1)) == 4
@@ -36,8 +40,6 @@ using ContinuousWavelets
 @test tuple_order((2, 1)) == (1, 2)
 @test s2_rmse(ones(10), ones(10)) == 0.0
 @test size(m_norm(ones(4, 4, 1))) == (4, 4, 1)
-@test size(s_cov(zeros(2))) == (2, 2)
-@test s2_cov(ones(2), zeros(2)) == zeros(2, 2)
 @test s_dft(ones(4), fs=10) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_sf = [0.0, 0.025, -0.05, -0.025])
 @test s_msci95(ones(4)) == (1.0, 0.0, 1.0, 1.0)
 @test s2_mean(ones(4), zeros(4)) == (1.0, 0.0, 1.0, 1.0)

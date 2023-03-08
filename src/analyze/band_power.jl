@@ -36,6 +36,7 @@ function band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt:
     # dx: frequency resolution
     dx = psd_freq[2] - psd_freq[1]
     return simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
+
 end
 
 """
@@ -68,7 +69,6 @@ function band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::
 
     return sbp
 
-    return 
 end
 
 """

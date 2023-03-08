@@ -24,3 +24,20 @@ function _round_locs(locs::DataFrame)
     locs[!, :loc_phi_sph] = round.(locs[!, :loc_phi_sph], digits=3)
     return locs
 end
+
+function _angle_quadrant(a::Real)
+    if a >= 0
+        a = mod(a, 360)
+        a <= 90 && (q = 1)
+        (a > 90 && a <= 180) && (q = 2)
+        (a > 180 && a <= 270) && (q = 3)
+        (a > 270 && a < 360) && (q = 4)
+    else
+        a = mod(a, -360)
+        a >= -90 && (q = 4)
+        (a < -90 && a >= -180) && (q = 3)
+        (a < -180 && a >= -270) && (q = 2)
+        (a < -270 && a > -360) && (q = 1)
+    end
+    return q    
+end 

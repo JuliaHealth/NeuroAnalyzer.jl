@@ -30,7 +30,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    filetype = ""
+    file_type = ""
 
     fid = ""
     try
@@ -43,9 +43,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, 256)
     header = String(Char.(header))
 
-    filetype = parse(Int, strip(header[1:8]))
-    filetype == 0 && (filetype = "EDF")
-    filetype !== "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
+    file_type = parse(Int, strip(header[1:8]))
+    file_type == 0 && (file_type = "EDF")
+    file_type !== "EDF" && throw(ArgumentError("File $file_name is not a EDF file."))
 
     patient = strip(header[9:88])
     recording = strip(header[89:168])
@@ -57,7 +57,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
     reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet."))
-    reserved == "EDF+C" && (filetype = "EDF+")
+    reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
     channel_n  = parse(Int, strip(header[253:256]))
@@ -145,7 +145,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     end
     channel_order = _sort_channels(copy(channel_type))
 
-    if filetype == "EDF"
+    if file_type == "EDF"
         has_markers = false
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
         markers_channel = -1
@@ -226,8 +226,49 @@ function import_edf(file_name::String; detect_type::Bool=true)
     time_pts = collect(0:(1 / sampling_rate):duration_seconds)
     time_pts = time_pts[1:end - 1]
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    data_type = "eeg"
 
-    hdr = _create_header(last_name=string(patient), data_type="eeg", file_name=file_name, file_size_mb=file_size_mb, file_type=filetype, recording=string(recording), recording_date=recording_date, recording_time=recording_time, recording_notes="", channel_n=channel_n, channel_type=channel_type[channel_order], reference="", duration_samples=duration_samples, duration_seconds=duration_seconds, epoch_n=1, epoch_duration_samples=duration_samples, epoch_duration_seconds=duration_seconds, labels=labels[channel_order], units=physical_dimension[channel_order], prefiltering=prefiltering[channel_order], sampling_rate=sampling_rate, gain=gain[channel_order], markers=has_markers, history=[""], components=Symbol[], locations=false)
+    s = _create_subject(id="",
+                        first_name="",
+                        middle_name="",
+                        last_name=string(patient),
+                        handedness="",
+                        weight=-1,
+                        height=-1)
+
+    r = _create_recording_eeg(data_type=data_type,
+                              file_name=file_name,
+                              file_size_mb=file_size_mb,
+                              file_type=file_type,
+                              recording=string(recording),
+                              recording_date=recording_date,
+                              recording_time=recording_time,
+                              recording_notes="",
+                              channel_n=channel_n,
+                              channel_type=channel_type,
+                              reference="",
+                              duration_samples=duration_samples,
+                              duration_seconds=duration_seconds,
+                              epoch_n=1,
+                              epoch_duration_samples=duration_samples,
+                              epoch_duration_seconds=duration_seconds,
+                              labels=labels,
+                              units=physical_dimension,
+                              prefiltering=prefiltering,
+                              sampling_rate=sampling_rate,
+                              gain=gain)
+
+    e = _create_experiment(experiment_name="",
+                           experiment_notes="",
+                           experiment_design="")
+
+    hdr = _create_header(s,
+                         r,
+                         e,
+                         markers=has_markers,
+                         components=Symbol[],
+                         locations=false,
+                         history=[""])
 
     components = Vector{Any}()
     epoch_time = time_pts

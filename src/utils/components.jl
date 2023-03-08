@@ -224,8 +224,8 @@ Extract component values.
 function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
     c in obj.header.components || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
-    
     c_idx = component_idx(obj, c=c)
+    
     return obj.components[c_idx]
 end
 

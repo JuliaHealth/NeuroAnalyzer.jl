@@ -80,6 +80,16 @@ mutable struct NEURO
     locs::DataFrame
 end
 
+mutable struct EEG
+    eeg_header::Dict
+    eeg_time::Vector{Float64}
+    eeg_epoch_time::Vector{Float64}
+    eeg_signals::Array{Float64, 3}
+    eeg_components::Vector{Any}
+    eeg_markers::DataFrame
+    eeg_locs::DataFrame
+end
+
 mutable struct MEG
     meg_header::Dict
     meg_time::Vector{Float64}
@@ -144,14 +154,12 @@ function __init__()
 end
 
 # internal functions are not available outside NA
-include("internal.jl")
-
 include("internal/reflect_chop.jl")
 include("internal/create_header.jl")
 include("internal/io.jl")
 include("internal/check.jl")
 include("internal/select.jl")
-include("internal/pl.jl")
+include("internal/len.jl")
 include("internal/plots.jl")
 include("internal/draw_head.jl")
 include("internal/fir_response.jl")
@@ -159,15 +167,37 @@ include("internal/make_epochs.jl")
 include("internal/locs.jl")
 include("internal/interpolate.jl")
 include("internal/fiff.jl")
+include("internal/gpu.jl")
+include("internal/time.jl")
+include("internal/labels.jl")
+include("internal/markers.jl")
+include("internal/labeled_matrix.jl")
+include("internal/ml.jl")
+include("internal/ch_idx.jl")
+include("internal/map_channels.jl")
+include("internal/misc.jl")
+include("internal/tester.jl")
 
 # load sub-modules
 include("low_level/locs_convert.jl")
 include("low_level/normalize.jl")
+
 include("analyze/total_power.jl")
 include("analyze/band_power.jl")
 include("analyze/covm.jl")
 include("analyze/corm.jl")
+
 include("io/import_edf.jl")
+include("io/import_locs.jl")
+include("io/import_fiff.jl")
+include("io/fiff.jl")
+
+include("locs/flip.jl")
+include("locs/convert.jl")
+include("locs/scale.jl")
+include("locs/rotate.jl")
+include("locs/swap.jl")
+
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
 include("statistics/hildebrand_rule.jl")
@@ -318,20 +348,6 @@ export eeg_import_csv
 export eeg_import_set
 export eeg_export_csv
 
-include("locs_io.jl")
-export locs_import
-export locs_import_ced
-export locs_import_locs
-export locs_import_elc
-export locs_import_tsv
-export locs_import_sfp
-export locs_import_csd
-export locs_import_geo
-export locs_import_mat
-
-include("meg_io.jl")
-export meg_import_fiff
-
 include("eeg_edit.jl")
 export eeg_copy
 export eeg_delete_channel
@@ -398,30 +414,6 @@ export eeg_chop!
 export eeg_extract_data
 export eeg_extract_time
 export eeg_extract_etime
-
-include("locs_edit.jl")
-export locs_flipy
-export locs_flipy!
-export locs_flipx
-export locs_flipx!
-export locs_flipz
-export locs_flipz!
-export locs_scale
-export locs_scale!
-export locs_rotx
-export locs_rotx!
-export locs_swapxy
-export locs_swapxy!
-export locs_sph2cart
-export locs_sph2cart!
-export locs_cart2sph
-export locs_cart2sph!
-export locs_cart2pol
-export locs_cart2pol!
-export locs_sph2pol
-export locs_sph2pol!
-export locs_maximize
-export locs_maximize!
 
 include("eeg_process.jl")
 export eeg_reference_ch
@@ -594,17 +586,10 @@ export eeg_plot_erp
 export plot_erp_stack
 export plot_dipole3d
 
-include("eeg_study.jl")
-export eeg_study_create
-export eeg_study_n
-export eeg_study_channel_n
-export eeg_study_epoch_n
-export eeg_study_epoch_len
-export eeg_study_sr
+include("study/create.jl")
+include("study/info.jl")
 
-include("tes.jl")
-export tes_dose
-export ect_charge
-export tes_protocol
+include("stim/tes.jl")
+include("stim/ect.jl")
 
 end # NeuroAnalyzer

@@ -110,7 +110,9 @@ Return epoch length.
 - `epoch_len::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
+
     ndims(obj.data) < 3 && throw(ArgumentError("Record data is either a vector or a matrix."))
+
     return obj.header.recording[:epoch_duration_samples]
 end
 
@@ -189,6 +191,7 @@ Return channel labels.
 """
 function labels(obj::NeuroAnalyzer.NEURO)
     length(obj.header.recording[:labels]) == 0 && throw(ArgumentError("RECORD has no labels."))
+
     return obj.header.recording[:labels]
 end
 
