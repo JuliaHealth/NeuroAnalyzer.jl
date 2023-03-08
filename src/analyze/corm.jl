@@ -21,46 +21,9 @@ function corm(signal::AbstractVector; norm::Bool=false)
     else
         cor_mat = cor(signal * signal')
     end
-@show "ff"
 
     # normalize
     norm == true && (cor_mat = m_norm(cor_mat))
-
-    return cor_mat
-end
-
-"""
-   corm(signal; norm=true)
-
-Calculate correlation matrix.
-
-# Arguments
-
-- `signal::AbstractArray`
-- `norm::Bool=false`: normalize covariance
-
-# Returns
-
-- `cor_mat::Array{Float64, 4}`
-"""
-function corm(signal::AbstractArray; norm::Bool=false)
-
-    ch_n = size(signal, 1)
-    ep_len = size(signal, 2)
-    ep_n = size(signal, 3)
-
-    # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
-
-    cor_mat = zeros(ch_n, ch_n, ep_len, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for signal_idx in 1:ep_len
-            @views @inbounds cor_mat[:, :, :, epoch_idx] = corm(signal[:, signal_idx, epoch_idx], norm=norm)
-
-            # update progress bar
-            progress_bar == true && next!(pb)
-        end
-    end
 
     return cor_mat
 end
@@ -94,6 +57,42 @@ function corm(signal1::AbstractVector, signal2::AbstractVector; norm::Bool=false
     # normalize
     norm == true && (cor_mat = m_norm(cor_mat))
 
+    return cor_mat
+end
+
+"""
+   corm(signal; norm=true)
+
+Calculate correlation matrix.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `norm::Bool=false`: normalize covariance
+
+# Returns
+
+- `cor_mat::Array{Float64, 4}`
+"""
+function corm(signal::AbstractArray; norm::Bool=false)
+
+    ch_n = size(signal, 1)
+    ep_len = size(signal, 2)
+    ep_n = size(signal, 3)
+
+    # initialize progress bar
+    progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
+
+    cor_mat = zeros(ch_n, ch_n, ep_len, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for signal_idx in 1:ep_len
+            @views @inbounds cor_mat[:, :, signal_idx, epoch_idx] = corm(signal[:, signal_idx, epoch_idx], norm=norm)
+
+            # update progress bar
+            progress_bar == true && next!(pb)
+        end
+    end
+    
     return cor_mat
 end
 

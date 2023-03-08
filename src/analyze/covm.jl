@@ -32,7 +32,7 @@ end
 """
    covm(signal1, signal2; norm=true)
 
-Calculate covariance matrix between `signal1` and `signal2`.
+Calculate covariance matrix of `signal1 * signal2'`.
 
 # Arguments
 
@@ -64,7 +64,7 @@ end
 """
    covm(signal; norm=true)
 
-Calculate covariance matrix.
+Calculate covariance matrix of `signal * signal'`.
 
 # Arguments
 
@@ -77,16 +77,17 @@ Calculate covariance matrix.
 """
 function covm(signal::AbstractArray; norm::Bool=false)
 
+    ch_n = size(signal, 1)
     ep_len = size(signal, 2)
     ep_n = size(signal, 3)
 
     # initialize progress bar
     progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
 
-    cov_mat = zeros(ep_len, ep_len, ep_n)
+    cov_mat = zeros(ch_n, ch_n, ep_len, ep_n)
     @inbounds @simd for epoch_idx in 1:ep_n
         Threads.@threads for signal_idx in 1:ep_len
-            @views @inbounds cov_mat[:, :, epoch_idx] = covm(signal[:, signal_idx, epoch_idx], norm=norm)
+            @views @inbounds cov_mat[:, :, signal_idx, epoch_idx] = covm(signal[:, signal_idx, epoch_idx], norm=norm)
 
             # update progress bar
             progress_bar == true && next!(pb)
@@ -99,7 +100,7 @@ end
 """
     covm(obj; channel, norm)
 
-Calculate covariance matrix.
+Calculate covariance matrix of `signal * signal'`.
 
 # Arguments
 
