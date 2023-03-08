@@ -181,11 +181,21 @@ include("internal/tester.jl")
 # load sub-modules
 include("low_level/locs_convert.jl")
 include("low_level/normalize.jl")
+include("low_level/matrix.jl")
+include("low_level/vector.jl")
+include("low_level/generate.jl")
+include("low_level/frequency.jl")
+include("low_level/time.jl")
+include("low_level/entropy.jl")
+include("low_level/band_frq.jl")
 
-include("analyze/total_power.jl")
 include("analyze/band_power.jl")
-include("analyze/covm.jl")
 include("analyze/corm.jl")
+include("analyze/covm.jl")
+include("analyze/psd.jl")
+include("analyze/stationarity.jl")
+include("analyze/total_power.jl")
+include("analyze/xcov.jl")
 
 include("io/import_edf.jl")
 include("io/import_locs.jl")
@@ -238,34 +248,15 @@ include("stim/tes.jl")
 include("stim/ect.jl")
 
 include("low_level.jl")
-export linspace
-export logspace
-export m_pad0
-export cmax
-export cmin
-export vsearch
-export generate_window
 export fft0
 export fft2
 export ifft0
 export nextpow2
-export vsplit
 export s_rms
-export generate_sine
-export generate_csine
 export s_freqs
-export m_sortperm
-export m_sort
 export pad0
 export pad2
-export hz2rads
-export rads2hz
-export generate_sinc
-export generate_morlet
-export generate_gaussian
-export tuple_order
 export s2_rmse
-export m_norm
 export s_dft
 export s_msci95
 export s2_mean
@@ -283,13 +274,8 @@ export s_tconv
 export s_filter
 export s_filter_create
 export s_filter_apply
-export s_stationarity_hilbert
-export s_stationarity_mean
-export s_stationarity_var
 export s_trim
 export s2_mi
-export s_entropy
-export s_negentropy
 export s_average
 export s2_average
 export s2_tcoherence
@@ -310,8 +296,6 @@ export s2_pli
 export s2_ged
 export s_frqinst
 export s_hspectrum
-export t2f
-export f2t
 export s_wspectrogram
 export s_fftdenoise
 export s_gfilter
@@ -327,7 +311,6 @@ export s_cums
 export s_gfp
 export s_gfp_norm
 export s2_diss
-export generate_morlet_fwhm
 export f_nearest
 export s_band_mpower
 export s_rel_psd
@@ -344,9 +327,6 @@ export s_idwt
 export normalize_invroot
 export s_cwt
 export s_icwt
-export t2s
-export s2t
-export generate_noise
 
 include("eeg_io.jl")
 export eeg_load
@@ -492,17 +472,9 @@ export eeg_gfilter
 export eeg_slaplacian
 export eeg_slaplacian!
 
-
-include("analyze/xcov.jl")
-include("analyze/psd.jl")
-
 include("eeg_analyze.jl")
-export stationarity
 export mi
 export mi
-export entropy
-export negentropy
-export band
 export tcoherence
 export freqs
 export difference
@@ -510,8 +482,6 @@ export channel_pick
 export epoch_stats
 export spectrogram
 export spectrum
-export s2t
-export t2s
 export channel_stats
 export snr
 export standardize

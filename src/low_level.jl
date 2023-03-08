@@ -1,192 +1,4 @@
 """
-    linspace(start, stop, length)
-
-Generates a sequence of evenly spaced numbers between `start` and `stop`.
-
-# Arguments
-
-- `start::Number`
-- `stop::Number`
-- `n::Int64`: sequence length
-
-# Returns
-
-- `range::Vector`
-"""
-function linspace(start::Number, stop::Number, n::Int64)
-    n < 2 && throw(ArgumentError("n must be ≥ 2."))
-    return collect(range(start, stop, n))
-end
-
-"""
-    logspace(start, stop, n)
-
-Generates a sequence of log10-spaced numbers between `start` and `stop`.
-
-# Arguments
-
-- `start::Number`
-- `stop::Number`
-- `n::Int64`: sequence length
-
-# Returns
-
-- `range::Vector{<:Number}`
-"""
-function logspace(start::Number, stop::Number, n::Int64)
-    n < 2 && throw(ArgumentError("n must be ≥ 2."))
-    return collect(exp10.(range(start, stop, n)))
-end
-
-"""
-    m_pad0(m)
-
-Pad matrix with zeros to make it square.
-
-# Arguments
-
-- `m::Matrix{<:Number}`
-
-# Returns
-
-- `m::Matrix{<:Number}`
-"""
-function m_pad0(m::Matrix{<:Number})
-
-    nr, nc = size(m)
-
-    if nr > nc
-        # horizontal
-        return hcat(m, repeat(zeros(eltype(m), 1), nr, nr - nc))
-    elseif nr < nc
-        # vertical
-        return vcat(m, repeat(zeros(eltype(m), 1), nc - nr, nc))
-    else
-        return m
-    end
-end
-
-"""
-    vsearch(y, x; return_distance)
-
-Return the positions of the `y` value in the vector `x`.
-
-# Arguments
-
-- `y::Real`: value of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
-
-# Returns
-
-- `y_idx::Int64`
-- `y_dist::Real`: the difference between `y` and `x[y_idx]`
-"""
-function vsearch(y::Real, x::AbstractVector; acc::Bool=false)
-    y_dist, y_idx = findmin(abs.(x .- y))
-    return acc == true ? (y_idx, y_dist) : y_idx
-end
-
-"""
-    vsearch(y, x; acc)
-
-Return the positions of the `y` vector in the vector `x`.
-
-# Arguments
-
-- `y::AbstractVector`: vector of interest
-- `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
-
-# Returns
-
-- `y_idx::Int64`
-- `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
-"""
-function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
-
-    length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
-
-    y_idx = zeros(length(y))
-    y_dist = zeros(length(y))
-
-    @inbounds @simd for idx in eachindex(y)
-        y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
-    end
-
-    return acc == true ? (convert.(Int64, y_idx), y_dist) : y_idx
-end
-
-"""
-    generate_window(type, n; even)
-
-Return the `n`-point long symmetric window `type`.
-
-# Arguments
-
-- `type::Symbol`: window type:
-    - `:hann`: Hann
-    - `:bh`: Blackman-Harris
-    - `:bohman`: Bohman
-    - `:flat`: Flat-top window
-    - `:bn`: Blackman-Nuttall
-    - `:nutall`: Nuttall
-    - `:triangle`: symmetric triangle (left half ↑, right half ↓)
-    - `:exp`: symmetric exponential (left half ↑, right half ↓)
-- `n::Int64`: window length
-- `even::Bool=false`: if true, make the window of even length (+1 for odd n)
-
-# Returns
-
-- `w::Vector{Float64}`:: generated window
-"""
-function generate_window(type::Symbol, n::Int64; even::Bool=false)
-    _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
-
-    even == true && mod(n, 2) != 0 && (n += 1)
-    t = range(0, 1, n)
-
-    if type === :hann
-        return @. 0.5 * (1 - cos.(2 * pi * t))
-    elseif type === :bh
-        return @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
-    elseif type === :bohman
-        return @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
-    elseif type === :flat
-        return @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
-    elseif type === :bn
-        return @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
-    elseif type === :nutall
-        return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
-    elseif type === :triangle
-        w = zeros(n)
-        @inbounds @simd for idx in 1:((n ÷ 2) + 1)
-            w[idx] = @. (idx * (idx + 1)) / 2
-        end
-        w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
-        w .= w ./ maximum(w)
-        return w
-    elseif type === :exp
-        w = ones(n)
-        if mod(n, 2) == 0
-            @inbounds @simd for idx in 1:(n ÷ 2)
-                w[idx] = 1 / idx
-            end
-            w[1:((n ÷ 2))] = reverse(w[1:((n ÷ 2))])
-            w[((n ÷ 2) + 1):n] = reverse(w[1:(n ÷ 2)])
-        else
-            @inbounds @simd for idx in 1:((n ÷ 2) + 1)
-                w[idx] = 1 / idx
-            end
-            w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
-            w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
-        end
-        return w
-    end
-end
-
-"""
     fft0(x, n)
 
 Zeros-padded FFT.
@@ -286,34 +98,6 @@ function nextpow2(x::Int64)
 end
 
 """
-    vsplit(x, n)
-
-Splits the vector `x` into `n`-long pieces.
-
-# Argument
-
-- `x::AbstractVector`
-- `n::Int64`
-
-# Returns
-
-- `x::Vector{AbstractVector}`
-"""
-function vsplit(x::AbstractVector, n::Int64=1)
-
-    n < 1 && throw(ArgumentError("n must be ≥ 1."))
-    length(x) % n == 0 || throw(ArgumentError("Length of x must be a multiple of n."))
-
-    x_m = reshape(x, length(x) ÷ n, n)
-    result = [x_m[1, :]]
-    @inbounds @simd for idx in 2:size(x_m, 1)
-        result = vcat(result, [x_m[idx, :]])
-    end
-
-    return result
-end
-
-"""
     s_rms(signal)
 
 Calculate Root Mean Square.
@@ -329,45 +113,6 @@ Calculate Root Mean Square.
 function s_rms(signal::AbstractVector)
     # rms = sqrt(mean(signal.^2))    
     return norm(signal) / sqrt(length(signal))
-end
-
-"""
-    generate_sine(f, t, a, p)
-
-Generates sine wave.
-
-# Arguments
-
-- `f::Real`: frequency [Hz]
-- `t::Union{AbstractVector, AbstractRange}`: time vector
-- `a::Real`: amplitude
-- `p::Real`: initial phase
-
-# Returns
-
-- sine::Vector{Float64}`
-"""
-function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
-    return @. a * sin(2 * pi * f * t + p)
-end
-
-"""
-    generate_csine(f, t, a)
-
-Generates complex sine wave.
-
-# Arguments
-
-- `f::Real`: frequency [Hz]
-- `t::Union{AbstractVector, AbstractRange}`: time vector
-- `a::Real`: amplitude
-
-# Returns
-
-- sine::Vector{Float64}`
-"""
-function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
-    return @. a * exp(1im * 2 * pi * f * t)
 end
 
 """
@@ -428,77 +173,6 @@ function s_freqs(signal::Vector{Float64}, fs::Int64)
 end
 
 """
-    m_sortperm(m; rev=false, dims=1)
-
-Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims` = 2).
-
-# Arguments
-
-- `m::Matrix`
-- `rev::Bool`
-- `dims::Int64`
-
-# Returns
-
-- `m_idx::Matrix{Int64}`
-"""
-function m_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
-
-    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
-    
-    m_idx = zeros(Int, size(m))
-    if dims == 1
-        @inbounds @simd for idx = 1:size(m, 2)
-            # sort by columns
-            m_idx[:, idx] = sortperm(m[:, idx], rev=rev)
-        end
-    else
-        @inbounds @simd for idx = 1:size(m, 1)
-            # sort by rows
-            m_idx[idx, :] = sortperm(m[idx, :], rev=rev)'
-        end     
-    end
-
-    return m_idx
-end
-
-"""
-    m_sort(m, m_idx; rev=false, dims=1)
-
-Sorts matrix `m` using sorting index `m_idx`
-
-# Arguments
-
-- `m::Matrix`
-- `m_idx::Vector{Int64}`
-- `rev::Bool=false`
-- `dims::Int64=1`: sort by columns (`dims=1`) or by rows (`dims=2`)
-
-# Returns
-
-- `m_sorted::Matrix`
-"""
-function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
-
-    dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
-
-    m_sorted = zeros(eltype(m), size(m))
-    if dims == 1
-        @inbounds @simd for idx = 1:size(m, 2)
-            # sort by columns
-            m_sorted[:, idx] = @views m[:, idx][m_idx]
-        end
-    else
-        @inbounds @simd for idx = 1:size(m, 1)
-            # sort by rows
-            m_sorted[idx, :] = @views m[idx, :][m_idx]
-        end
-    end
-
-    return m_sorted
-end
-
-"""
     pad0(x, n)
 
 Pad vector / rows of matrix / array with zeros. Works with 1-, 2- and 3-dimensional arrays.
@@ -541,172 +215,6 @@ function pad2(x::Union{AbstractVector, AbstractArray})
 end
 
 """
-    hz2rads(f)
-
-Convert frequency `f` in Hz to rad/s.
-
-# Arguments
-
-- `f::Real`
-
-# Returns
-
-- `f_rads::Float64`
-"""
-function hz2rads(f::Real)
-    return 2 * pi * f
-end
-
-"""
-    rads2hz(f)
-
-Convert frequency `f` in rad/s to Hz.
-
-# Arguments
-
-- `f::Real`
-
-# Returns
-
-- `f_rads::Float64`
-"""
-function rads2hz(f::Real)
-    return f / 2 * pi
-end
-
-"""
-    cmax(x)
-
-Return maximum value of the complex vector`x`.
-
-# Arguments
-
-- `x::Vector{ComplexF64}`
-
-# Returns
-
-- `cmax::ComplexF64`
-"""
-function cmax(x::Vector{ComplexF64})
-    return argmax(abs, x)
-end
-
-"""
-    cmin(x)
-
-Return minimum value of the complex vector`x`.
-
-# Arguments
-
-- `x::Vector{ComplexF64}`
-
-# Returns
-
-- `cmin::ComplexF64`
-"""
-function cmin(x::Vector{ComplexF64})
-    return argmin(abs, x)
-end
-
-"""
-    generate_sinc(t, f, peak, norm)
-
-Generate sinc function.
-
-# Arguments
-
-- `t::AbstractRange=-2:0.01:2`: time
-- `f::Real=10.0`: frequency
-- `peak::Real=0`: sinc peak time
-- `norm::Bool=true`: generate normalized function
-
-# Returns
-
-- `sinc::Vector{Float64}`
-"""
-function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
-
-    y_sinc = norm == true ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
-    nan_idx = isnan.(y_sinc)
-    sum(nan_idx) != 0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
-    
-    return y_sinc
-end
-
-"""
-    generate_morlet(fs, f, t; ncyc, complex)
-
-Generate Morlet wavelet.
-
-# Arguments
-
-- `fs::Int64`: sampling rate
-- `f::Real`: frequency
-- `t::Real=1`: length = -t:1/fs:t
-- `ncyc::Int64=5`: number of cycles
-- `complex::Bool=false`: generate complex Morlet
-
-# Returns
-
-- `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
-"""
-function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
-    t <= 0 && throw(ArgumentError("t must be > 0."))
-    t = -t:1/fs:t
-    sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
-    g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
-    return sin_wave .* g
-end
-
-"""
-    generate_gaussian(fs, f, t; ncyc, a)
-
-Generate Gaussian wave.
-
-# Arguments
-
-- `fs::Int64`: sampling rate
-- `f::Real`: frequency
-- `t::Real=1`: length = -t:1/fs:t
-- `ncyc::Int64`: : number of cycles, width, SD of the Gaussian
-- `a::Real=1`: peak amp
-
-# Returns
-
-- `gaussian::Vector{Float64}`
-"""
-function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
-    t <= 0 && throw(ArgumentError("t must be > 0."))
-    t = -t:1/fs:t
-    s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
-    return @. a * exp(-(t/s)^2 / 2)     # Gaussian
-end
-
-"""
-    tuple_order(t, rev)
-
-Order tuple elements in ascending or descending (rev=true) order.
-
-# Arguments
-
-- `t::Tuple{Real, Real}`
-- `rev::Bool=false`
-
-# Returns
-
-- `t::Tuple{Real, Real}`
-"""
-function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
-    (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
-    (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
-    return t
-end
-
-"""
     s2_rmse(signal1, signal2)
 
 Calculate RMSE between two signals.
@@ -724,23 +232,6 @@ function s2_rmse(signal1::AbstractVector, signal2::AbstractVector)
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
     # r = sum(signal1 .* signal2) ./ (sqrt(sum(signal1.^2)) .* sqrt(sum(signal2.^2)))
     return sqrt(mean(signal2 - signal1)^2)
-end
-
-"""
-    m_norm(m)
-
-Normalize matrix.
-
-# Arguments
-
-- `m::AbstractArray`
-
-# Returns
-
-- `m_norm::AbstractArray`
-"""
-function m_norm(m::AbstractArray)
-    return m ./ (size(m, 2) - 1)
 end
 
 """
@@ -1646,67 +1137,6 @@ function s_filter_apply(signal::AbstractVector; flt::Union{Vector{Float64}, Zero
 end
 
 """
-    s_stationarity_hilbert(signal)
-
-Calculate phase stationarity using Hilbert transformation.
-
-# Arguments
-
-- `signal::AbstractVector`
-
-# Returns
-
-- `phase_stationarity::Vector{Float64}`
-"""
-function s_stationarity_hilbert(signal::AbstractVector)
-    return diff(DSP.unwrap(angle.(hilbert(signal))))
-end
-
-"""
-    s_stationarity_mean(signal; window)
-
-Calculate mean stationarity. Signal is split into `window`-long windows and averaged across windows.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `window::Int64`: time window in samples
-
-# Returns
-
-- `mean_stationarity::Vector{Float64}`
-"""
-function s_stationarity_mean(signal::AbstractVector; window::Int64)
-    window < 1 && throw(ArgumentError("window must be ≥ 1."))
-    window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
-    signal = signal[1:(window * floor(Int64, length(signal) / window))]
-    signal = reshape(signal, Int(length(signal) / window), window)
-    return mean(signal, dims=1)[:]
-end
-
-"""
-    s_stationarity_var(signal; window)
-
-Calculate variance stationarity. Signal is split into `window`-long windows and variance is calculated across windows.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `window::Int64`: time window in samples
-
-# Returns
-
-- `var_stationarity::Vector{Float64}`
-"""
-function s_stationarity_var(signal::AbstractVector; window::Int64)
-    window < 1 && throw(ArgumentError("window must be ≥ 1."))
-    window > length(signal) && throw(ArgumentError("window must be ≤ $(length(signal))."))
-    signal = signal[1:(window * floor(Int64, length(signal) / window))]
-    signal = reshape(signal, Int(length(signal) / window), window)
-    return var(signal, dims=1)[:]
-end
-
-"""
     s_trim(signal; segment)
 
 Remove segment from the signal.
@@ -1760,55 +1190,6 @@ Calculate mutual information between `signal1` and `signal2`.
 """
 function s2_mi(signal1::AbstractVector, signal2::AbstractVector)
     return get_mutual_information(signal1, signal2)
-end
-
-"""
-    s_entropy(signal)
-
-Calculate entropy.
-
-# Arguments
-
-- `signal::AbstractVector`
-
-# Returns
-
-- `ent::Float64`
-- `sent::Float64`: Shanon entropy
-- `leent::Float64`: log energy entropy
-"""
-function s_entropy(signal::AbstractVector)
-
-    n = length(signal)
-    maxmin_range = maximum(signal) - minimum(signal)
-    fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(signal) * n^(-1/3))) # Freedman-Diaconis
-
-    # recompute entropy with optimal bins for comparison
-    h = StatsKit.fit(Histogram, signal, nbins=fd_bins)
-    hdat1 = h.weights ./ sum(h.weights)
-
-    # convert histograms to probability values
-    return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
-            sent=coefentropy(signal, ShannonEntropy()),
-            leent=coefentropy(signal, LogEnergyEntropy()))
-end
-
-"""
-    s_negentropy(signal)
-
-Calculate negentropy.
-
-# Arguments
-
-- `signal::AbstractVector`
-
-# Returns
-
-- `ent::Float64`
-"""
-function s_negentropy(signal::AbstractVector)
-    s = s_demean(signal)
-    return 0.5 * log(2 * pi * exp(1) * var(s)) - s_entropy(s)[1]
 end
 
 """
@@ -2457,42 +1838,6 @@ function s_hspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true)
 end
 
 """
-    t2f(t)
-
-Convert cycle length in ms `t` to frequency.
-
-# Arguments
-
-- `t::Real`: cycle length in ms
-
-# Returns
-
-- `f::Float64`: frequency in Hz
-"""
-function t2f(t::Real)
-    t <= 0 && throw(ArgumentError("t must be > 0."))
-    return round(1000 / t, digits=2)
-end
-
-"""
-    f2t(f)
-
-Convert frequency `f` to cycle length in ms.
-
-# Arguments
-
-- `f::Real`: frequency in Hz
-
-# Returns
-
-- `f::Float64`: cycle length in ms
-"""
-function f2t(f::Real)
-    f <= 0 && throw(ArgumentError("f must be > 0."))
-    return round(1000 / f, digits=2)
-end
-
-"""
     s_wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
 
 Calculate spectrogram using wavelet convolution.
@@ -3107,31 +2452,6 @@ function s2_diss(signal1::AbstractVector, signal2::AbstractVector)
 end
 
 """
-    generate_morlet_fwhm(fs, f, t; h)
-
-Generate Morlet wavelet using Mike X Cohen formula.
-
-# Arguments
-
-- `fs::Int64`: sampling rate
-- `f::Real`: frequency
-- `t::Real=1`: length = -t:1/fs:t
-- `h::Float64=0.25`: full width at half-maximum in seconds (FWHM)
-
-# Returns
-
-- `morlet::Vector{ComplexF64}`
-
-# Source
-
-Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
-"""
-function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
-    t = -t:1/fs:t
-    return @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
-end
-
-"""
     f_nearest(m, pos)
 
 Find nearest position tuple `pos` in matrix of positions `m`.
@@ -3194,100 +2514,6 @@ function s_band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, 
     maxbp = psd.power[vsearch(maxfrq, psd_freq)]
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
-end
-
-"""
-    s_rel_psd(signal; fs, norm, mt, f)
-
-Calculate relative power spectrum density.
-
-# Arguments
-- `signal::AbstractVector`
-- `fs::Int64`: sampling rate
-- `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
-
-# Returns
-
-Named tuple containing:
-- `psd_pow::Vector{Float64}`
-- `psd_frq::Vector{Float64}`
-"""
-function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
-
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    if f !== nothing
-        f = tuple_order(f)
-        f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-        f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-    end
-    ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
-    if mt == true
-        psd = mt_pgram(signal, fs=fs)
-    else
-        psd = welch_pgram(signal, 4*fs, fs=fs)
-    end
-
-    psd_pow = power(psd)
-    psd_frq = Vector(freq(psd))
-    psd_pow[1] = psd_pow[2]
-    psd_pow = psd_pow / ref_pow
-
-    norm == true && (psd_pow = pow2db.(psd_pow))
-
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
-end
-
-"""
-    s_rel_psd(signal; fs, norm, mt, f)
-
-Calculate relative power spectrum density.
-
-# Arguments
-- `signal::Matrix{Float64}`
-- `fs::Int64`: sampling rate
-- `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
-
-# Returns
-
-Named tuple containing:
-- `psd_pow::Vector{Float64}`
-- `psd_frq::Vector{Float64}`
-"""
-function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
-
-    ch_n = size(signal, 1)
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-
-    if mt == true
-        psd_tmp = mt_pgram(signal[1, :], fs=fs)
-    else
-        psd_tmp = welch_pgram(signal[1, :], 4*fs, fs=fs)
-    end
-    psd_frq = Vector(freq(psd_tmp))
-    psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
-
-    Threads.@threads for channel_idx in 1:ch_n
-        ref_pow = f === nothing ? s_total_power(signal[channel_idx, :], fs=fs, mt=mt) : s_band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
-        if mt == true
-            psd = mt_pgram(signal[channel_idx, :], fs=fs)
-        else
-            psd = welch_pgram(signal[channel_idx, :], 4*fs, fs=fs)
-        end
-        psd_pow[channel_idx, :] = power(psd)
-        psd_pow[channel_idx, :] = psd_pow[channel_idx, :] / ref_pow
-        psd_pow[channel_idx, 1] = psd_pow[channel_idx, 2]
-    end
-
-    norm == true && (psd_pow = pow2db.(psd_pow))
-
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
 
 """
@@ -3742,73 +2968,97 @@ function s_icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
     type === :df && return ContinuousWavelets.icwt(cwt_c, wt, DualFrames())
 end
 
-"""
-    t2s(t, fs)
 
-Convert time to sample number.
+"""
+    s_rel_psd(signal; fs, norm, mt, f)
+
+Calculate relative power spectrum density.
 
 # Arguments
-
-- `t::Real`: time in s
+- `signal::AbstractVector`
 - `fs::Int64`: sampling rate
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
 # Returns
 
-- `s::Int64`: sample number
+Named tuple containing:
+- `psd_pow::Vector{Float64}`
+- `psd_frq::Vector{Float64}`
 """
-function t2s(t::Real, fs::Int64)
-    t < 0 && throw(ArgumentError("t must be ≥ 0."))
-    if t == 0
-        return 1
+function s_rel_psd(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    if f !== nothing
+        f = tuple_order(f)
+        f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+        f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+    end
+    ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
+    if mt == true
+        p = mt_pgram(signal, fs=fs)
     else
-        return round(Int64, t * fs)
+        p = welch_pgram(signal, 4*fs, fs=fs)
     end
+
+    psd_pow = power(p)
+    psd_frq = Vector(freq(p))
+    psd_pow[1] = psd_pow[2]
+    psd_pow = psd_pow / ref_pow
+
+    norm == true && (psd_pow = pow2db.(psd_pow))
+
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
 
 """
-    s2t(s, fs)
+    s_rel_psd(signal; fs, norm, mt, f)
 
-Convert sample number to time.
+Calculate relative power spectrum density.
 
 # Arguments
-
-- `t::Int64`: sample number
+- `signal::Matrix{Float64}`
 - `fs::Int64`: sampling rate
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
 # Returns
 
-- `t::Float64`: time in s
+Named tuple containing:
+- `psd_pow::Vector{Float64}`
+- `psd_frq::Vector{Float64}`
 """
-function s2t(s::Int64, fs::Int64)
-    s < 0 && throw(ArgumentError("s must be > 0."))
-    return s / fs
-end
+function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-"""
-    generate_noise(n, amp; type)
+    ch_n = size(signal, 1)
+    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
+    f = tuple_order(f)
+    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
+    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
 
-Generate noise.
-
-# Arguments
-
-- `n::Int64`: length (in samples)
-- `amp::Real=1.0`: amplitude, signal will be [-amp..+amp]
-- `type::Symbol=:whiten`: noise type: `:whiten` (normal distributed), `:whiteu` (uniformly distributed), `:pink`
-
-# Returns
-
-- `noise::Float64`
-"""
-function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
-    _check_var(type, [:whiten, :whiteu, :pink], "type")
-    if type === :whiten
-        noise = randn(n)
-    elseif type === :whiteu
-        noise = rand(n)
-    elseif type === :pink
-        noise = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
+    if mt == true
+        psd_tmp = mt_pgram(signal[1, :], fs=fs)
+    else
+        psd_tmp = welch_pgram(signal[1, :], 4*fs, fs=fs)
     end
-    noise = normalize_minmax(noise)
-    noise .*= amp
-    return noise
+    psd_frq = Vector(freq(psd_tmp))
+    psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
+
+    Threads.@threads for channel_idx in 1:ch_n
+        ref_pow = f === nothing ? s_total_power(signal[channel_idx, :], fs=fs, mt=mt) : s_band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
+        if mt == true
+            p = mt_pgram(signal[channel_idx, :], fs=fs)
+        else
+            p = welch_pgram(signal[channel_idx, :], 4*fs, fs=fs)
+        end
+        psd_pow[channel_idx, :] = power(p)
+        psd_pow[channel_idx, :] = psd_pow[channel_idx, :] / ref_pow
+        psd_pow[channel_idx, 1] = psd_pow[channel_idx, 2]
+    end
+
+    norm == true && (psd_pow = pow2db.(psd_pow))
+
+    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
