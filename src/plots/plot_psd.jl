@@ -757,10 +757,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
 
     if ref === :abs
         if method === :welch
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
+            s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
             s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
@@ -801,27 +801,27 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
         # ndims(s_pow) > 1 && throw(ArgumentError("For type=:normal the signal must contain 1 channel."))
         if ndims(s_pow) == 1
             p = plot_psd(s_frq,
-                     s_pow,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     title=title,
-                     norm=norm,
-                     frq_lim=frq_lim,
-                     ax=ax,
-                     mono=mono;
-                     kwargs...)
+                         s_pow,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         title=title,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono;
+                         kwargs...)
         else
             p = plot_psd(s_frq,
-                     s_pow,
-                     xlabel=xlabel,
-                     ylabel=ylabel,
-                     clabels=clabels,
-                     title=title,
-                     norm=norm,
-                     frq_lim=frq_lim,
-                     ax=ax,
-                     mono=mono;
-                     kwargs...)
+                         s_pow,
+                         xlabel=xlabel,
+                         ylabel=ylabel,
+                         clabels=clabels,
+                         title=title,
+                         norm=norm,
+                         frq_lim=frq_lim,
+                         ax=ax,
+                         mono=mono;
+                         kwargs...)
         end
     elseif type === :butterfly
         ndims(s_pow) < 2 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
@@ -985,10 +985,10 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epo
 
     if ref === :abs
         if method === :welch
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
+            s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
             s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)

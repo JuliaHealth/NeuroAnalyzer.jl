@@ -1,147 +1,3 @@
-"""
-    xcov(obj; channel, lag, demean, norm)
-
-Calculate cross-covariance.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all EEG channels
-- `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
-- `norm::Bool=false`: normalize cross-covariance
-
-# Returns
-
-Named tuple containing:
-- `xcov::Matrix{Float64}`: ch1-ch1, ch1-ch2, ch1-ch3, etc.
-- `lags::Vector{Float64}`: lags in ms
-"""
-function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, demean::Bool=false, norm::Bool=false)
-
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
-
-    # create vector of lags
-    lags = 1/sr(obj) .* collect(-lag:lag) .* 1000
-
-    xcov = zeros(ch_n^2, length(lags), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        
-        # create half of the covariance matrix
-        xcov_packed = Array{Vector{Float64}}(undef, ch_n, ch_n)
-        Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:channel_idx1
-                xcov_packed[channel_idx1, channel_idx2], _ = @views s2_xcov(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx], lag=lag, demean=demean, norm=norm)
-            end
-        end
-        
-        # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):ch_n
-                xcov_packed[channel_idx1, channel_idx2] = @views xcov_packed[channel_idx2, channel_idx1]
-            end
-        end
-
-        # unpack by channels
-        Threads.@threads for channel_idx in 1:ch_n^2
-            xcov[channel_idx, :, epoch_idx] = @views xcov_packed[channel_idx]
-        end
-    end
-
-    return (xcov=xcov, lags=lags)
-end
-
-"""
-    xcov(obj1, obj2; channel1, channel2, epoch1, epoch2, lag, demean, norm)
-
-Calculate cross-covariance between two EEG signals.
-
-# Arguments
-
-- `obj1::NeuroAnalyzer.NEURO`
-- `obj2::NeuroAnalyzer.NEURO`
-- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type]))`: index of channels, default is all EEG channels
-- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type]))`: index of channels, default is all EEG channels
-- `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
-- `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
-- `norm::Bool=false`: normalize cross-covariance
-
-# Returns
-
-Named tuple containing:
-- `xcov::Array{Float64, 3}`
-- `lags::Vector{Float64}`: lags in ms
-"""
-function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)), lag::Int64=1, demean::Bool=false, norm::Bool=false)
-
-    # check channels
-    _check_channels(obj1, channel1)
-    _check_channels(obj2, channel2)
-    length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
-    
-    # check epochs
-    _check_epochs(obj1, epoch1)
-    _check_epochs(obj2, epoch2)
-    length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("obj1 and obj2 epoch lengths must be equal."))
-
-    ep_n = length(epoch1)
-    ch_n = length(channel1)
-
-    # create vector of lags
-    lags = 1/sr(obj1) .* collect(-lag:lag) .* 1000
-
-    xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            xcov[channel_idx, :, epoch_idx], _ = @views s2_xcov(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]], lag=lag, demean=demean, norm=norm)
-        end
-    end
-
-    return (xcov=xcov, lags=lags)
-end
-
-"""
-    psd(obj; channel, norm, mt)
-
-Calculate power spectrum density.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all EEG channels
-- `norm::Bool=false`: normalize do dB
-- `mt::Bool=false`: if true use multi-tapered periodogram
-- `nt::Int64=8`: number of Slepian tapers
-
-# Returns
-
-Named tuple containing:
-- `psd_pow::Array{Float64, 3}`:powers
-- `psd_frq::Vector{Float64}`: frequencies
-"""
-function psd(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
-
-    fs = sr(obj)
-
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
-    
-    _, psd_frq = s_psd(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
-    psd_pow = zeros(length(channel), length(psd_frq), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            psd_pow[channel_idx, :, epoch_idx], _ = s_psd(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
-        end
-    end
-
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
-end
 
 """
     stationarity(obj; channel, window, method)
@@ -176,27 +32,27 @@ function stationarity(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
 
     if method === :mean
         s_stationarity = zeros(ch_n, window, ep_n)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_mean(obj.data[channel[channel_idx], :, epoch_idx], window=window)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                s_stationarity[ch_idx, :, ep_idx] = @views s_stationarity_mean(obj.data[channel[ch_idx], :, ep_idx], window=window)
             end
         end
     end
 
     if method === :var
         s_stationarity = zeros(ch_n, window, ep_n)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_var(obj.data[channel[channel_idx], :, epoch_idx], window=window)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                s_stationarity[ch_idx, :, ep_idx] = @views s_stationarity_var(obj.data[channel[ch_idx], :, ep_idx], window=window)
             end
         end
     end
 
     if method === :hilbert
         s_stationarity = zeros(ch_n, epoch_len(obj) - 1, ep_n)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_hilbert(obj.data[channel[channel_idx], :, epoch_idx])
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                s_stationarity[ch_idx, :, ep_idx] = @views s_stationarity_hilbert(obj.data[channel[ch_idx], :, ep_idx])
             end
         end
     end
@@ -209,17 +65,17 @@ function stationarity(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
         ch_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # create covariance matrices per each window
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for window_idx = 1:window_n
-                cov_mat[:, :, window_idx, epoch_idx] = @views s2_cov(obj.data[channel, window_idx, epoch_idx], obj.data[channel, window_idx, epoch_idx])
+                cov_mat[:, :, window_idx, ep_idx] = @views s2_cov(obj.data[channel, window_idx, ep_idx], obj.data[channel, window_idx, ep_idx])
             end
         end
 
         # calculate Euclidean distance between adjacent matrices
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             w_idx = 1
             Threads.@threads for window_idx = 2:window:window_n
-                s_stationarity[w_idx, epoch_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, epoch_idx], cov_mat[:, :, window_idx, epoch_idx])
+                s_stationarity[w_idx, ep_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, ep_idx], cov_mat[:, :, window_idx, ep_idx])
                 w_idx += 1
             end
         end
@@ -232,16 +88,16 @@ function stationarity(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
         progress_bar == true && (pb = Progress(ep_n * ch_n, 1))
 
         # perform Augmented Dickey–Fuller test
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx = 1:ch_n
-                adf = @views ADFTest(obj.data[channel[channel_idx], :, epoch_idx], :constant, window)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx = 1:ch_n
+                adf = @views ADFTest(obj.data[channel[ch_idx], :, ep_idx], :constant, window)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)
                 a = round(a, digits=2)
                 p = round(p, digits=4)
                 p == 0.0 && (p = 0.0001)
-                s_stationarity[channel_idx, :, epoch_idx] = [a, p]
+                s_stationarity[ch_idx, :, ep_idx] = [a, p]
 
                 # update progress bar
                 progress_bar == true && next!(pb)
@@ -273,19 +129,19 @@ function mi(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int64}, AbstractRang
     ep_n = epoch_n(obj)
 
     mi = zeros(ch_n, ch_n, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
+    @inbounds @simd for ep_idx in 1:ep_n
         
         # create half of the matrix
-        Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:channel_idx1
-                mi[channel_idx1, channel_idx2, epoch_idx] = @views s2_mi(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx])
+        Threads.@threads for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_idx1
+                mi[ch_idx1, ch_idx2, ep_idx] = @views s2_mi(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
             end
         end
 
         # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):ch_n
-                mi[channel_idx1, channel_idx2, epoch_idx] = @views mi[channel_idx2, channel_idx1, epoch_idx]
+        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
+            for ch_idx2 in (ch_idx1 + 1):ch_n
+                mi[ch_idx1, ch_idx2, ep_idx] = @views mi[ch_idx2, ch_idx1, ep_idx]
             end
         end
     end
@@ -328,10 +184,10 @@ function mi(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Unio
     ep_n = length(epoch1)
 
     mi = zeros(ch_n, ch_n, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:ch_n
-                mi[channel_idx1, channel_idx2, epoch_idx] = @views s2_mi(obj1.signals[channel1[channel_idx1], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_n
+                mi[ch_idx1, ch_idx2, ep_idx] = @views s2_mi(obj1.signals[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx2], :, epoch2[ep_idx]])
             end
         end
     end
@@ -365,9 +221,9 @@ function entropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     ent = zeros(ch_n, ep_n)
     sent = zeros(ch_n, ep_n)
     leent = zeros(ch_n, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            ent[channel_idx, epoch_idx], sent[channel_idx, epoch_idx], leent[channel_idx, epoch_idx] = @views s_entropy(obj.data[channel[channel_idx], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views s_entropy(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 
@@ -395,9 +251,9 @@ function negentropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     ep_n = epoch_n(obj)
 
     ne = zeros(ch_n, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            ne[channel_idx, epoch_idx] = @views s_negentropy(obj.data[channel[channel_idx], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ne[ch_idx, ep_idx] = @views s_negentropy(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 
@@ -565,9 +421,9 @@ function tcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
     msc = zeros(length(channel1), epoch_len(obj1), length(epoch1))
     ic = zeros(length(channel1), epoch_len(obj1), length(epoch1))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]], pad=pad)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views s2_tcoherence(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], pad=pad)
         end
     end
 
@@ -624,8 +480,8 @@ function difference(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     s_stat_single = zeros(ep_n)
     p = zeros(ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = s2_difference(obj.data[channel, :, epoch_idx], obj.data[channel, :, epoch_idx], n=n, method=method)
+    @inbounds @simd for ep_idx in 1:ep_n
+        s_stat[ep_idx, :], s_stat_single[ep_idx], p[ep_idx] = s2_difference(obj.data[channel, :, ep_idx], obj.data[channel, :, ep_idx], n=n, method=method)
     end
 
     return (s_stat=s_stat, s_stat_single=s_stat_single, p=p)
@@ -776,17 +632,17 @@ function epoch_stats(obj::NeuroAnalyzer.NEURO)
     e_max_dif = zeros(ep_n)
     e_dev_mean = zeros(ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        e_mean[epoch_idx] = @views mean(obj.data[:, :, epoch_idx])
-        e_median[epoch_idx] = @views median(obj.data[:, :, epoch_idx])
-        e_std[epoch_idx] = @views std(obj.data[:, :, epoch_idx])
-        e_var[epoch_idx] = @views var(obj.data[:, :, epoch_idx])
-        e_kurt[epoch_idx] = @views kurtosis(obj.data[:, :, epoch_idx])
-        e_skew[epoch_idx] = @views skewness(obj.data[:, :, epoch_idx])
-        e_mean_diff = @views mean(diff(obj.data[:, :, epoch_idx], dims=2))
-        e_median_diff = @views median(diff(obj.data[:, :, epoch_idx], dims=2))
-        e_max_dif = @views maximum(obj.data[:, :, epoch_idx]) - minimum(obj.data[:, :, epoch_idx])
-        e_dev_mean = @views abs(mean(obj.data[:, :, epoch_idx])) - mean(obj.data[:, :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        e_mean[ep_idx] = @views mean(obj.data[:, :, ep_idx])
+        e_median[ep_idx] = @views median(obj.data[:, :, ep_idx])
+        e_std[ep_idx] = @views std(obj.data[:, :, ep_idx])
+        e_var[ep_idx] = @views var(obj.data[:, :, ep_idx])
+        e_kurt[ep_idx] = @views kurtosis(obj.data[:, :, ep_idx])
+        e_skew[ep_idx] = @views skewness(obj.data[:, :, ep_idx])
+        e_mean_diff = @views mean(diff(obj.data[:, :, ep_idx], dims=2))
+        e_median_diff = @views median(diff(obj.data[:, :, ep_idx], dims=2))
+        e_max_dif = @views maximum(obj.data[:, :, ep_idx]) - minimum(obj.data[:, :, ep_idx])
+        e_dev_mean = @views abs(mean(obj.data[:, :, ep_idx])) - mean(obj.data[:, :, ep_idx])
     end
 
     return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_skew=e_skew, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
@@ -857,20 +713,20 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
             if method === :standard
-                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=false, st=false, demean=demean)
+                s_pow[:, :, ch_idx, ep_idx], _, _ = @views s_spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=false, demean=demean)
             elseif method === :mt
-                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=true, st=false, demean=demean)
+                s_pow[:, :, ch_idx, ep_idx], _, _ = @views s_spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=true, st=false, demean=demean)
             elseif method === :stft
-                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=false, st=true, demean=demean)
+                s_pow[:, :, ch_idx, ep_idx], _, _ = @views s_spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=true, demean=demean)
             elseif method === :mw
-                _, s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_wspectrogram(obj.data[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+                _, s_pow[:, :, ch_idx, ep_idx], _, _ = @views s_wspectrogram(obj.data[channel[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
             elseif method === :gh
-                s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_ghspectrogram(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
+                s_pow[:, :, ch_idx, ep_idx], _, _ = @views s_ghspectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
             elseif method === :cwt
-                s_pow[:, :, channel_idx, epoch_idx], _ = @views s_cwtspectrogram(obj.data[channel[channel_idx], :, epoch_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
+                s_pow[:, :, ch_idx, ep_idx], _ = @views s_cwtspectrogram(obj.data[channel[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
             end
 
             # update progress bar
@@ -924,12 +780,12 @@ function spectrum(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
         s_pow = zeros(ch_n, fft_size ÷ 2, ep_n)
     end        
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
             if h == true
-                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_pha[channel_idx, :, epoch_idx] = @views s_hspectrum(obj.data[channel[channel_idx], :, epoch_idx], pad=pad, norm=norm)
+                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views s_hspectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad, norm=norm)
             else
-                s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_pha[channel_idx, :, epoch_idx] = @views s_spectrum(obj.data[channel[channel_idx], :, epoch_idx], pad=pad, norm=norm)
+                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views s_spectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad, norm=norm)
             end
         end
     end
@@ -1012,18 +868,18 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)
     c_max_dif = zeros(ch_n, ep_n)
     c_dev_mean = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            c_mean[channel_idx, epoch_idx] = @views mean(obj.data[channel_idx, :, epoch_idx])
-            c_median[channel_idx, epoch_idx] = @views median(obj.data[channel_idx, :, epoch_idx])
-            c_std[channel_idx, epoch_idx] = @views std(obj.data[channel_idx, :, epoch_idx])
-            c_var[channel_idx, epoch_idx] = @views var(obj.data[channel_idx, :, epoch_idx])
-            c_kurt[channel_idx, epoch_idx] = @views kurtosis(obj.data[channel_idx, :, epoch_idx])
-            c_skew[channel_idx, epoch_idx] = @views skewness(obj.data[channel_idx, :, epoch_idx])
-            c_mean_diff[channel_idx, epoch_idx] = @views mean(diff(obj.data[channel_idx, :, epoch_idx]))
-            c_median_diff[channel_idx, epoch_idx] = @views median(diff(obj.data[channel_idx, :, epoch_idx]))
-            c_max_dif[channel_idx, epoch_idx] = @views maximum(obj.data[channel_idx, :, epoch_idx]) - minimum(obj.data[channel_idx, :, epoch_idx])
-            c_dev_mean[channel_idx, epoch_idx] = @views abs(mean(obj.data[channel_idx, :, epoch_idx])) - mean(obj.data[channel_idx, :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            c_mean[ch_idx, ep_idx] = @views mean(obj.data[ch_idx, :, ep_idx])
+            c_median[ch_idx, ep_idx] = @views median(obj.data[ch_idx, :, ep_idx])
+            c_std[ch_idx, ep_idx] = @views std(obj.data[ch_idx, :, ep_idx])
+            c_var[ch_idx, ep_idx] = @views var(obj.data[ch_idx, :, ep_idx])
+            c_kurt[ch_idx, ep_idx] = @views kurtosis(obj.data[ch_idx, :, ep_idx])
+            c_skew[ch_idx, ep_idx] = @views skewness(obj.data[ch_idx, :, ep_idx])
+            c_mean_diff[ch_idx, ep_idx] = @views mean(diff(obj.data[ch_idx, :, ep_idx]))
+            c_median_diff[ch_idx, ep_idx] = @views median(diff(obj.data[ch_idx, :, ep_idx]))
+            c_max_dif[ch_idx, ep_idx] = @views maximum(obj.data[ch_idx, :, ep_idx]) - minimum(obj.data[ch_idx, :, ep_idx])
+            c_dev_mean[ch_idx, ep_idx] = @views abs(mean(obj.data[ch_idx, :, ep_idx])) - mean(obj.data[ch_idx, :, ep_idx])
         end
     end
 
@@ -1063,19 +919,19 @@ function snr(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
     snr = zeros(ch_n, length(hz))
 
     # create spectrum for each channel
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            _, amp[channel_idx, :, epoch_idx], _, _ = @views s_spectrum(obj.data[channel[channel_idx], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            _, amp[ch_idx, :, ep_idx], _, _ = @views s_spectrum(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 
     # calculate SNR for each channel spectrum
     @inbounds @simd for hz_idx in 1:length(hz)
-        Threads.@threads for channel_idx in 1:ch_n
+        Threads.@threads for ch_idx in 1:ch_n
             if type === :mean
-                snr[channel_idx, hz_idx] = @views s_snr(amp[channel_idx, hz_idx, :])
+                snr[ch_idx, hz_idx] = @views s_snr(amp[ch_idx, hz_idx, :])
             else
-                snr[channel_idx, hz_idx] = @views s_snr2(amp[channel_idx, hz_idx, :])
+                snr[ch_idx, hz_idx] = @views s_snr2(amp[ch_idx, hz_idx, :])
             end
         end
     end
@@ -1106,9 +962,9 @@ function standardize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
     scaler = Vector{Any}()
 
     new = deepcopy(obj)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        @views push!(scaler, StatsBase.fit(ZScoreTransform, obj.data[channel, :, epoch_idx], dims=2)) 
-        @views new.signals[channel,:, epoch_idx] = StatsBase.transform(scaler[epoch_idx], obj.data[channel, :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        @views push!(scaler, StatsBase.fit(ZScoreTransform, obj.data[channel, :, ep_idx], dims=2)) 
+        @views new.signals[channel,:, ep_idx] = StatsBase.transform(scaler[ep_idx], obj.data[channel, :, ep_idx])
     end
 
     reset_components!(new)
@@ -1169,9 +1025,9 @@ function fconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Ab
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(obj.data[channel[channel_idx], :, epoch_idx], kernel=kernel, norm=norm, pad=pad)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s_convoluted[ch_idx, :, ep_idx] = @views s_fconv(obj.data[channel[ch_idx], :, ep_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
             progress_bar == true && next!(p)
@@ -1204,9 +1060,9 @@ function tconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Ab
 
     s_convoluted = zeros(ch_n, epoch_len(obj), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s_convoluted[channel_idx, :, epoch_idx] = s_tconv(obj.data[channel[channel_idx], :, epoch_idx], kernel=kernel)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s_convoluted[ch_idx, :, ep_idx] = s_tconv(obj.data[channel[ch_idx], :, ep_idx], kernel=kernel)
         end
     end
 
@@ -1240,9 +1096,9 @@ function dft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
     sfft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
     sf = nothing
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            sfft[channel_idx, :, epoch_idx], sf = @views s_dft(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, pad=pad)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            sfft[ch_idx, :, ep_idx], sf = @views s_dft(obj.data[channel[ch_idx], :, ep_idx], fs=fs, pad=pad)
         end
     end
 
@@ -1282,8 +1138,8 @@ function msci95(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     s_u = zeros(ep_n, epoch_len)
     s_l = zeros(ep_n, epoch_len)
 
-    Threads.@threads for epoch_idx in 1:ep_n
-        s_m[epoch_idx, :], s_s[epoch_idx, :], s_u[epoch_idx, :], s_l[epoch_idx, :] = @views s_msci95(obj.data[channel, :, epoch_idx], n=n, method=method)
+    Threads.@threads for ep_idx in 1:ep_n
+        s_m[ep_idx, :], s_s[ep_idx, :], s_u[ep_idx, :], s_l[ep_idx, :] = @views s_msci95(obj.data[channel, :, ep_idx], n=n, method=method)
     end
 
     return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)
@@ -1332,15 +1188,15 @@ function mean(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
     s_u = zeros(ep_n, epoch_len)
     s_l = zeros(ep_n, epoch_len)
 
-    Threads.@threads for epoch_idx in 1:ep_n
-        s1_mean = @views mean(obj1.signals[channel1, :, epoch1[epoch_idx]], dims=1)
-        s2_mean = @views mean(obj2.signals[channel2, :, epoch2[epoch_idx]], dims=1)
-        s_m[epoch_idx, :] = s1_mean - s2_mean
-        s1_sd = @views std(obj1.signals[channel1, :, epoch1[epoch_idx]], dims=1) / sqrt(size(obj1.signals[channel1, :, epoch1[epoch_idx]], 2))
-        s2_sd = @views std(obj2.signals[channel2, :, epoch2[epoch_idx]], dims=1) / sqrt(size(obj2.signals[channel2, :, epoch2[epoch_idx]], 2))
-        s_s[epoch_idx, :] = sqrt.(s1_sd.^2 .+ s2_sd.^2)
-        s_u[epoch_idx, :] = @. s_m[epoch_idx, :] + 1.96 * s_s[epoch_idx, :]
-        s_l[epoch_idx, :] = @. s_m[epoch_idx, :] - 1.96 * s_s[epoch_idx, :]
+    Threads.@threads for ep_idx in 1:ep_n
+        s1_mean = @views mean(obj1.signals[channel1, :, epoch1[ep_idx]], dims=1)
+        s2_mean = @views mean(obj2.signals[channel2, :, epoch2[ep_idx]], dims=1)
+        s_m[ep_idx, :] = s1_mean - s2_mean
+        s1_sd = @views std(obj1.signals[channel1, :, epoch1[ep_idx]], dims=1) / sqrt(size(obj1.signals[channel1, :, epoch1[ep_idx]], 2))
+        s2_sd = @views std(obj2.signals[channel2, :, epoch2[ep_idx]], dims=1) / sqrt(size(obj2.signals[channel2, :, epoch2[ep_idx]], 2))
+        s_s[ep_idx, :] = sqrt.(s1_sd.^2 .+ s2_sd.^2)
+        s_u[ep_idx, :] = @. s_m[ep_idx, :] + 1.96 * s_s[ep_idx, :]
+        s_l[ep_idx, :] = @. s_m[ep_idx, :] - 1.96 * s_s[ep_idx, :]
     end
 
     return (s_m=s_m, s_s=s_s, s_u=s_u, s_l=s_l)
@@ -1388,8 +1244,8 @@ function difference(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
     s_stat_single = zeros(ep_n)
     p = zeros(ep_n)
 
-    Threads.@threads for epoch_idx in 1:ep_n
-        s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(obj1.signals[channel1, :, epoch1[epoch_idx]], obj2.signals[channel2, :, epoch2[epoch_idx]], n=n, method=method)
+    Threads.@threads for ep_idx in 1:ep_n
+        s_stat[ep_idx, :], s_stat_single[ep_idx], p[ep_idx] = @views s2_difference(obj1.signals[channel1, :, epoch1[ep_idx]], obj2.signals[channel2, :, epoch2[ep_idx]], n=n, method=method)
     end
 
     return (s_stat=s_stat, statsitic_single=s_stat_single, p=p)
@@ -1423,9 +1279,9 @@ function acov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     ep_n = epoch_n(obj)
 
     acov = zeros(ch_n, length(-lag:lag), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            acov[channel_idx, :, epoch_idx], _ = @views s_acov(obj.data[channel[channel_idx], :, epoch_idx], lag=lag, demean=demean, norm=norm)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            acov[ch_idx, :, ep_idx], _ = @views s_acov(obj.data[channel[ch_idx], :, ep_idx], lag=lag, demean=demean, norm=norm)
         end
     end
 
@@ -1460,9 +1316,9 @@ function tenv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     t_env = zeros(ch_n, epoch_len(obj), ep_n)
     s_t = obj.epoch_time
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s = @view obj.data[channel[channel_idx], :, epoch_idx]
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s = @view obj.data[channel[ch_idx], :, ep_idx]
             # find peaks
             p_idx = s_findpeaks(s, d=d)
             # add first time-point
@@ -1473,18 +1329,18 @@ function tenv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
             if length(p_idx) >= 5
                 model = CubicSpline(s_t[p_idx], s[p_idx])
                 try
-                    t_env[channel_idx, :, epoch_idx] = model(s_t)
+                    t_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
                     @error "CubicSpline error, using Loess."
                     model = loess(s_t[p_idx], s[p_idx], span=0.5)
-                    t_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
+                    t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
             else
                 _info("Less than 5 peaks detected, using Loess.")
                 model = loess(s_t[p_idx], s[p_idx], span=0.5)
-                t_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
+                t_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
             end
-            t_env[channel_idx, 1, epoch_idx] = t_env[channel_idx, 2, epoch_idx]
+            t_env[ch_idx, 1, ep_idx] = t_env[ch_idx, 2, ep_idx]
         end
     end
     
@@ -1533,11 +1389,11 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            t_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
-            s = std(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
-            t_env_u[:, epoch_idx] = @. t_env_m[:, epoch_idx] + 1.96 * s
-            t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
+        @inbounds @simd for ep_idx in 1:ep_n
+            t_env_m[:, ep_idx] = mean(s_a[:, :, ep_idx], dims=1)
+            s = std(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
+            t_env_u[:, ep_idx] = @. t_env_m[:, ep_idx] + 1.96 * s
+            t_env_l[:, ep_idx] = @. t_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # mean over epochs
@@ -1546,11 +1402,11 @@ function tenv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            t_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
-            s = std(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
-            t_env_u[:, channel_idx] = @. t_env_m[:, channel_idx] + 1.96 * s
-            t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
+        @inbounds @simd for ch_idx in 1:ch_n
+            t_env_m[:, ch_idx] = mean(s_a[ch_idx, :, :], dims=2)
+            s = std(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
+            t_env_u[:, ch_idx] = @. t_env_m[:, ch_idx] + 1.96 * s
+            t_env_l[:, ch_idx] = @. t_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # mean over channels and epochs
@@ -1611,22 +1467,22 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         t_env_u = zeros(length(s_t), ep_n)
         t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            t_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
-            t_idx = s_findpeaks(t_env_m[:, epoch_idx], d=d)
+        @inbounds @simd for ep_idx in 1:ep_n
+            t_env_m[:, ep_idx] = median(s_a[:, :, ep_idx], dims=1)
+            t_idx = s_findpeaks(t_env_m[:, ep_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, epoch_idx]))
+            push!(t_idx, length(t_env_m[:, ep_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
                 try
-                    t_env_m[:, epoch_idx] = model(s_t)
+                    t_env_m[:, ep_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
-            t_env_u[:, epoch_idx] = @. t_env_m[:, epoch_idx] + 1.96 * s
-            t_env_l[:, epoch_idx] = @. t_env_m[:, epoch_idx] - 1.96 * s
+            s = iqr(t_env_m[:, ep_idx]) / sqrt(length(t_env_m[:, ep_idx]))
+            t_env_u[:, ep_idx] = @. t_env_m[:, ep_idx] + 1.96 * s
+            t_env_l[:, ep_idx] = @. t_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -1635,22 +1491,22 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         t_env_u = zeros(length(s_t), ch_n)
         t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            t_env_m[:, idx] = median(s_a[channel_idx, :, :], dims=2)
-            t_idx = s_findpeaks(t_env_m[:, channel_idx], d=d)
+        @inbounds @simd for ch_idx in 1:ch_n
+            t_env_m[:, idx] = median(s_a[ch_idx, :, :], dims=2)
+            t_idx = s_findpeaks(t_env_m[:, ch_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(t_env_m[:, channel_idx]))
+            push!(t_idx, length(t_env_m[:, ch_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], t_env_m[t_idx])
                 try
-                    t_env_m[:, channel_idx] = model(s_t)
+                    t_env_m[:, ch_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
-            t_env_u[:, channel_idx] = @. t_env_m[:, channel_idx] + 1.96 * s
-            t_env_l[:, channel_idx] = @. t_env_m[:, channel_idx] - 1.96 * s
+            s = iqr(t_env_m[:, ch_idx]) / sqrt(length(t_env_m[:, ch_idx]))
+            t_env_u[:, ch_idx] = @. t_env_m[:, ch_idx] + 1.96 * s
+            t_env_l[:, ch_idx] = @. t_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -1699,9 +1555,9 @@ function penv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     psd_tmp, frq = s_psd(obj.data[1, :, 1], fs=fs, mt=mt, nt=nt)
     p_env = zeros(ch_n, length(psd_tmp), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            psd_pow, _ = s_psd(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true, nt=nt)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            psd_pow, _ = s_psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, mt=mt, norm=true, nt=nt)
             # find peaks
             p_idx = s_findpeaks(psd_pow, d=d)
             # add first time-point
@@ -1712,14 +1568,14 @@ function penv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
             if length(p_idx) >= 5
                 model = CubicSpline(frq[p_idx], psd_pow[p_idx])
                 try
-                    p_env[channel_idx, :, epoch_idx] = model(frq)
+                    p_env[ch_idx, :, ep_idx] = model(frq)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             else
-                p_env[channel_idx, :, epoch_idx] = psd_pow
+                p_env[ch_idx, :, ep_idx] = psd_pow
             end
-            p_env[channel_idx, 1, epoch_idx] = p_env[channel_idx, 2, epoch_idx]
+            p_env[ch_idx, 1, ep_idx] = p_env[ch_idx, 2, ep_idx]
         end
     end
     
@@ -1769,26 +1625,26 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         p_env_u = zeros(length(s_f), ep_n)
         p_env_l = zeros(length(s_f), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            p_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
+        @inbounds @simd for ep_idx in 1:ep_n
+            p_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(p_env_m[:, epoch_idx]))
+            push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, epoch_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(s_f)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = std(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
-            p_env_u[:, epoch_idx] = @. p_env_m[:, epoch_idx] + 1.96 * s
-            p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
+            s = std(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
+            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + 1.96 * s
+            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # mean over epochs
@@ -1797,26 +1653,26 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         p_env_u = zeros(length(s_f), ch_n)
         p_env_l = zeros(length(s_f), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            p_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
+        @inbounds @simd for ch_idx in 1:ch_n
+            p_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(p_env_m[:, channel_idx]))
+            push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, channel_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(s_f)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = std(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
-            p_env_u[:, channel_idx] = @. p_env_m[:, channel_idx] + 1.96 * s
-            p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
+            s = std(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
+            p_env_u[:, ch_idx] = @. p_env_m[:, ch_idx] + 1.96 * s
+            p_env_l[:, ch_idx] = @. p_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # mean over channels and epochs
@@ -1876,26 +1732,26 @@ function penv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         p_env_u = zeros(length(s_f), ep_n)
         p_env_l = zeros(length(s_f), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            p_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
+        @inbounds @simd for ep_idx in 1:ep_n
+            p_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(p_env_m[:, epoch_idx]))
+            push!(p_idx, length(p_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, epoch_idx] = model(s_f)
+                    p_env_m[:, ep_idx] = model(s_f)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(p_env_m[:, epoch_idx]) / sqrt(length(p_env_m[:, epoch_idx]))
-            p_env_u[:, epoch_idx] = @. p_env_m[:, epoch_idx] + 1.96 * s
-            p_env_l[:, epoch_idx] = @. p_env_m[:, epoch_idx] - 1.96 * s
+            s = iqr(p_env_m[:, ep_idx]) / sqrt(length(p_env_m[:, ep_idx]))
+            p_env_u[:, ep_idx] = @. p_env_m[:, ep_idx] + 1.96 * s
+            p_env_l[:, ep_idx] = @. p_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -1904,26 +1760,26 @@ function penv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         p_env_u = zeros(length(s_f), ch_n)
         p_env_l = zeros(length(s_f), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            p_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
+        @inbounds @simd for ch_idx in 1:ch_n
+            p_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
+            p_idx = s_findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
-            push!(p_idx, length(p_env_m[:, channel_idx]))
+            push!(p_idx, length(p_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(p_idx) >= 5
                 model = CubicSpline(s_f[p_idx], p_env_m[p_idx])
                 try
-                    p_env_m[:, channel_idx] = model(s_f)
+                    p_env_m[:, ch_idx] = model(s_f)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(p_env_m[:, channel_idx]) / sqrt(length(p_env_m[:, channel_idx]))
-            p_env_u[:, channel_idx] = @. p_env_m[:, channel_idx] + 1.96 * s
-            p_env_l[:, channel_idx] = @. p_env_m[:, channel_idx] - 1.96 * s
+            s = iqr(p_env_m[:, ch_idx]) / sqrt(length(p_env_m[:, ch_idx]))
+            p_env_u[:, ch_idx] = @. p_env_m[:, ch_idx] + 1.96 * s
+            p_env_l[:, ch_idx] = @. p_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -1981,13 +1837,13 @@ function senv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
 
     s_env = zeros(ch_n, length(sp_t), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
             # prepare spectrogram
             if mt == true
-                spec = @views mt_spectrogram(obj.data[channel[channel_idx], :, epoch_idx], fs=fs)
+                spec = @views mt_spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs)
             else
-                spec = @views spectrogram(obj.data[channel[channel_idx], :, epoch_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
+                spec = @views spectrogram(obj.data[channel[ch_idx], :, ep_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
             end
             s_frq = Vector(spec.freq)
             s_p = pow2db.(spec.power)
@@ -2014,14 +1870,14 @@ function senv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
             if length(p_idx) >= 5
                 model = CubicSpline(sp_t[p_idx], f_idx[p_idx])
                 try
-                    s_env[channel_idx, :, epoch_idx] = model(sp_t)
+                    s_env[ch_idx, :, ep_idx] = model(sp_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             else
-                s_env[channel_idx, :, epoch_idx] = f_idx
+                s_env[ch_idx, :, ep_idx] = f_idx
             end
-            s_env[channel_idx, 1, epoch_idx] = s_env[channel_idx, 2, epoch_idx]
+            s_env[ch_idx, 1, ep_idx] = s_env[ch_idx, 2, ep_idx]
         end
     end
     
@@ -2072,25 +1928,25 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         s_env_u = zeros(length(s_t), ep_n)
         s_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            s_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
+        @inbounds @simd for ep_idx in 1:ep_n
+            s_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
             # find peaks
-            s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
             pushfirst!(s_idx, 1)
             # interpolate peaks using cubic spline or loess
-            push!(s_idx, length(s_env_m[:, epoch_idx]))
+            push!(s_idx, length(s_env_m[:, ep_idx]))
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, epoch_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = std(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
-            s_env_u[:, epoch_idx] = @. s_env_m[:, epoch_idx] + 1.96 * s
-            s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
+            s = std(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
+            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + 1.96 * s
+            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # mean over epochs
@@ -2099,26 +1955,26 @@ function senv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         s_env_u = zeros(length(s_t), ch_n)
         s_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            s_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
+        @inbounds @simd for ch_idx in 1:ch_n
+            s_env_m[:, ch_idx] = mean(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(s_idx, 1)
             # add last time-point
-            push!(s_idx, length(s_env_m[:, channel_idx]))
+            push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, channel_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = std(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
-            s_env_u[:, channel_idx] = @. s_env_m[:, channel_idx] + 1.96 * s
-            s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
+            s = std(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
+            s_env_u[:, ch_idx] = @. s_env_m[:, ch_idx] + 1.96 * s
+            s_env_l[:, ch_idx] = @. s_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # mean over channels and epochs
@@ -2179,26 +2035,26 @@ function senv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         s_env_u = zeros(length(s_t), ep_n)
         s_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            s_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
+        @inbounds @simd for ep_idx in 1:ep_n
+            s_env_m[:, ep_idx] = median(s_p[:, :, ep_idx], dims=1)
             # find peaks
-            s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, ep_idx], d=d)
             # add first time-point
             pushfirst!(s_idx, 1)
             # add last time-point
-            push!(s_idx, length(s_env_m[:, epoch_idx]))
+            push!(s_idx, length(s_env_m[:, ep_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, epoch_idx] = model(s_t)
+                    s_env_m[:, ep_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(s_env_m[:, epoch_idx]) / sqrt(length(s_env_m[:, epoch_idx]))
-            s_env_u[:, epoch_idx] = @. s_env_m[:, epoch_idx] + 1.96 * s
-            s_env_l[:, epoch_idx] = @. s_env_m[:, epoch_idx] - 1.96 * s
+            s = iqr(s_env_m[:, ep_idx]) / sqrt(length(s_env_m[:, ep_idx]))
+            s_env_u[:, ep_idx] = @. s_env_m[:, ep_idx] + 1.96 * s
+            s_env_l[:, ep_idx] = @. s_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -2207,26 +2063,26 @@ function senv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         s_env_u = zeros(length(s_t), ch_n)
         s_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            s_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
+        @inbounds @simd for ch_idx in 1:ch_n
+            s_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
+            s_idx = s_findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(s_idx, 1)
             # add last time-point
-            push!(s_idx, length(s_env_m[:, channel_idx]))
+            push!(s_idx, length(s_env_m[:, ch_idx]))
             # interpolate peaks using cubic spline or loess
             if length(s_idx) > 4
                 model = CubicSpline(s_t[s_idx], s_env_m[s_idx])
                 try
-                    s_env_m[:, channel_idx] = model(s_t)
+                    s_env_m[:, ch_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(s_env_m[:, channel_idx]) / sqrt(length(s_env_m[:, channel_idx]))
-            s_env_u[:, channel_idx] = @. s_env_m[:, channel_idx] + 1.96 * s
-            s_env_l[:, channel_idx] = @. s_env_m[:, channel_idx] - 1.96 * s
+            s = iqr(s_env_m[:, ch_idx]) / sqrt(length(s_env_m[:, ch_idx]))
+            s_env_u[:, ch_idx] = @. s_env_m[:, ch_idx] + 1.96 * s
+            s_env_l[:, ch_idx] = @. s_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -2288,9 +2144,9 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
     s1_phase = zeros(ch_n, epoch_len(obj1), ep_n)
     s2_phase = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            ispc[channel_idx, epoch_idx], ispc_angle[channel_idx, epoch_idx], signal_diff[channel_idx, :, epoch_idx], phase_diff[channel_idx, :, epoch_idx], s1_phase[channel_idx, :, epoch_idx], s2_phase[channel_idx, :, epoch_idx] = @views s2_ispc(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ispc[ch_idx, ep_idx], ispc_angle[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views s2_ispc(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]])
         end
     end
 
@@ -2331,8 +2187,8 @@ function itpc(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     itpc_angle = zeros(ch_n)
     itpc_phases = zeros(ch_n, ep_n)
 
-    Threads.@threads for channel_idx in 1:ch_n
-        @inbounds itpc[channel_idx], itpcz[channel_idx], itpc_angle[channel_idx], itpc_phases[channel_idx, :] = @views s_itpc(reshape(obj.data[channel[channel_idx], :, :], 1, :, ep_n), t=t, w=w)
+    Threads.@threads for ch_idx in 1:ch_n
+        @inbounds itpc[ch_idx], itpcz[ch_idx], itpc_angle[ch_idx], itpc_phases[ch_idx, :] = @views s_itpc(reshape(obj.data[channel[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
     return (itpc=itpc, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
@@ -2380,9 +2236,9 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     s1_phase = zeros(ch_n, epoch_len(obj1), ep_n)
     s2_phase = zeros(ch_n, epoch_len(obj1), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            pli[channel_idx, epoch_idx], signal_diff[channel_idx, :, epoch_idx], phase_diff[channel_idx, :, epoch_idx], s1_phase[channel_idx, :, epoch_idx], s2_phase[channel_idx, :, epoch_idx] = @views s2_pli(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            pli[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views s2_pli(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]])
         end
     end
 
@@ -2411,15 +2267,15 @@ function pli(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
 
     pli_m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:channel_idx1
-                pli_m[channel_idx1, channel_idx2, epoch_idx], _, _, _, _ = @views s2_pli(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_idx1
+                pli_m[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views s2_pli(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
             end
         end
-        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):ch_n
-                pli_m[channel_idx1, channel_idx2, epoch_idx] = @views pli_m[channel_idx2, channel_idx1, epoch_idx]
+        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
+            for ch_idx2 in (ch_idx1 + 1):ch_n
+                pli_m[ch_idx1, ch_idx2, ep_idx] = @views pli_m[ch_idx2, ch_idx1, ep_idx]
             end
         end
     end
@@ -2449,16 +2305,16 @@ function ispc(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
 
     ispc_m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:channel_idx1
-                ispc_m[channel_idx1, channel_idx2, epoch_idx], _, _, _, _, _ = @views s2_ispc(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_idx1
+                ispc_m[ch_idx1, ch_idx2, ep_idx], _, _, _, _, _ = @views s2_ispc(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
             end
         end
 
-        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):ch_n
-                ispc_m[channel_idx1, channel_idx2, epoch_idx] = @views ispc_m[channel_idx2, channel_idx1, epoch_idx]
+        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
+            for ch_idx2 in (ch_idx1 + 1):ch_n
+                ispc_m[ch_idx1, ch_idx2, ep_idx] = @views ispc_m[ch_idx2, ch_idx1, ep_idx]
             end
         end
     end
@@ -2527,10 +2383,10 @@ function ec(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:
     s2 = s2[:, :, epoch2]
     
     # compare envelopes per epochs
-    Threads.@threads for epoch_idx in 1:ep_n
-        ec = CorrelationTest(vec(s1[:, :, epoch_idx]), vec(s2[:, :, epoch_idx]))
-        @inbounds ec_r[epoch_idx] = ec.r
-        @inbounds ec_p[epoch_idx] = pvalue(ec)
+    Threads.@threads for ep_idx in 1:ep_n
+        ec = CorrelationTest(vec(s1[:, :, ep_idx]), vec(s2[:, :, ep_idx]))
+        @inbounds ec_r[ep_idx] = ec.r
+        @inbounds ec_p[ep_idx] = pvalue(ec)
     end
 
     return (ec=ec_r, ec_p=ec_p)
@@ -2574,8 +2430,8 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     ress = zeros(ch_n, ep_n)
     resnormalized = zeros(ch_n, ep_n)
 
-    Threads.@threads for epoch_idx in 1:ep_n
-        sged[:, :, epoch_idx], ress[:, epoch_idx], resnormalized[:, epoch_idx] = @views s2_ged(obj1.signals[channel1, :, epoch1[epoch_idx]], obj2.signals[channel2, :, epoch2[epoch_idx]])
+    Threads.@threads for ep_idx in 1:ep_n
+        sged[:, :, ep_idx], ress[:, ep_idx], resnormalized[:, ep_idx] = @views s2_ged(obj1.signals[channel1, :, epoch1[ep_idx]], obj2.signals[channel2, :, epoch2[ep_idx]])
     end
 
     return (sged=sged, ress=ress, resnormalized=resnormalized)
@@ -2608,9 +2464,9 @@ function frqinst(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            frqinst[channel_idx, :, epoch_idx] = @views s_frqinst(obj.data[channel[channel_idx], :, epoch_idx], fs=fs)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            frqinst[ch_idx, :, ep_idx] = @views s_frqinst(obj.data[channel[ch_idx], :, ep_idx], fs=fs)
         end
         # update progress bar
         progress_bar == true && next!(p)
@@ -2671,8 +2527,8 @@ function itpc_s(obj::NeuroAnalyzer.NEURO; channel::Int64, frq_lim::Tuple{Real, R
         half_kernel = floor(Int64, length(kernel) / 2) + 1
         s_conv = zeros(Float64, 1, epoch_len, ep_n)
         # convolute with Morlet wavelet
-        @inbounds @simd for epoch_idx in 1:ep_n
-            s_conv[1, :, epoch_idx] = @views DSP.conv(obj.data[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
+        @inbounds @simd for ep_idx in 1:ep_n
+            s_conv[1, :, ep_idx] = @views DSP.conv(obj.data[channel, :, ep_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
         @inbounds @simd for t_idx in 1:epoch_len
@@ -2709,9 +2565,9 @@ function tkeo(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     ep_n = epoch_n(obj)
 
     tkeo = zeros(ch_n, epoch_len(obj), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            tkeo[channel_idx, :, epoch_idx] = @views s_tkeo(obj.data[channel[channel_idx], :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            tkeo[ch_idx, :, ep_idx] = @views s_tkeo(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 
@@ -2753,9 +2609,9 @@ function mwpsd(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Ab
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            w_pow[channel_idx, :, epoch_idx], _ = @views s_mwpsd(obj.data[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            w_pow[ch_idx, :, ep_idx], _ = @views s_mwpsd(obj.data[channel[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
             # update progress bar
             progress_bar == true && next!(p)
@@ -2804,9 +2660,9 @@ function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
     c = zeros(length(channel1), length(c_tmp), length(epoch1))
     msc = zeros(length(channel1), length(c_tmp), length(epoch1))
     f = zeros(length(channel1), length(c_tmp), length(epoch1))
-    @inbounds @simd for epoch_idx in eachindex(epoch1)
-        Threads.@threads for channel_idx in eachindex(channel1)
-            c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], _ = @views s2_fcoherence(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]], fs=sr(obj1), frq_lim=frq_lim)
+    @inbounds @simd for ep_idx in eachindex(epoch1)
+        Threads.@threads for ch_idx in eachindex(channel1)
+            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], _ = @views s2_fcoherence(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], fs=sr(obj1), frq_lim=frq_lim)
         end
     end
 
@@ -2837,20 +2693,20 @@ function vartest(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-       Threads.@threads for channel_idx1 in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+       Threads.@threads for ch_idx1 in 1:ch_n
             # create half of the matrix
-            for channel_idx2 in 1:channel_idx1
-                ftest = @views VarianceFTest(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx])
-                f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
-                p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
+            for ch_idx2 in 1:ch_idx1
+                ftest = @views VarianceFTest(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
+                f[ch_idx1, ch_idx2, ep_idx] = ftest.F
+                p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
             end
         end
         # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):ch_n
-                f[channel_idx1, channel_idx2, epoch_idx] = @views f[channel_idx2, channel_idx1, epoch_idx]
-                p[channel_idx1, channel_idx2, epoch_idx] = @views p[channel_idx2, channel_idx1, epoch_idx]
+        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
+            for ch_idx2 in (ch_idx1 + 1):ch_n
+                f[ch_idx1, ch_idx2, ep_idx] = @views f[ch_idx2, ch_idx1, ep_idx]
+                p[ch_idx1, ch_idx2, ep_idx] = @views p[ch_idx2, ch_idx1, ep_idx]
             end
         end
     end
@@ -2895,12 +2751,12 @@ function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1:
     f = zeros(ch_n, ch_n, ep_n)
     p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-       Threads.@threads for channel_idx1 in 1:ch_n
-            for channel_idx2 in 1:ch_n
-                ftest = @views VarianceFTest(obj1.signals[channel1[channel_idx1], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
-                f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
-                p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
+    @inbounds @simd for ep_idx in 1:ep_n
+       Threads.@threads for ch_idx1 in 1:ch_n
+            for ch_idx2 in 1:ch_n
+                ftest = @views VarianceFTest(obj1.signals[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx2], :, epoch2[ep_idx]])
+                f[ch_idx1, ch_idx2, ep_idx] = ftest.F
+                p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
             end
         end
     end
@@ -2942,9 +2798,9 @@ function band_mpower(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
     maxfrq = zeros(ch_n, ep_n)
     maxbp = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            mbp[channel_idx, epoch_idx], maxfrq[channel_idx, epoch_idx], maxbp[channel_idx, epoch_idx] = @views s_band_mpower(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, f=f, mt=mt)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx] = @views s_band_mpower(obj.data[channel[ch_idx], :, ep_idx], fs=fs, f=f, mt=mt)
         end
     end
 
@@ -2985,9 +2841,9 @@ function rel_psd(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     psd_tmp, psd_frq = @views s_rel_psd(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
     psd_pow = zeros(ch_n, length(psd_tmp), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        for channel_idx in 1:ch_n
-            psd_pow[channel_idx, :, epoch_idx], _ = @views s_rel_psd(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, f=f)
+    @inbounds @simd for ep_idx in 1:ep_n
+        for ch_idx in 1:ch_n
+            psd_pow[ch_idx, :, ep_idx], _ = @views s_rel_psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, f=f)
         end
     end
 
@@ -3029,9 +2885,9 @@ function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
         band_f = band(obj, band=band[band_idx])
         push!(band_frq, band_f)
         flt = s_filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=epoch_len(obj))
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                signal_split[band_idx, channel_idx, :, epoch_idx] = @views s_filter_apply(obj.data[channel[channel_idx], :, epoch_idx], flt=flt)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                signal_split[band_idx, ch_idx, :, ep_idx] = @views s_filter_apply(obj.data[channel[ch_idx], :, ep_idx], flt=flt)
             end
         end
     end
@@ -3072,9 +2928,9 @@ function chdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::
     ch_n = length(channel1)
 
     ch_diff = zeros(ch_n, epoch_len(obj1), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            ch_diff[channel_idx, :, epoch_idx] = @views obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]] .- obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]]
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ch_diff[ch_idx, :, ep_idx] = @views obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]] .- obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]]
         end
     end
 
@@ -3114,10 +2970,10 @@ function cps(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx1 in 1:ch_n
-           for channel_idx2 in 1:channel_idx1
-                cps_pw[channel_idx1, channel_idx2, :, epoch_idx], cps_ph[channel_idx1, channel_idx2, :, epoch_idx], _ = @views s2_cps(obj.data[channel[channel_idx1], :, epoch_idx], obj.data[channel[channel_idx2], :, epoch_idx], fs=fs, norm=norm)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx1 in 1:ch_n
+           for ch_idx2 in 1:ch_idx1
+                cps_pw[ch_idx1, ch_idx2, :, ep_idx], cps_ph[ch_idx1, ch_idx2, :, ep_idx], _ = @views s2_cps(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx], fs=fs, norm=norm)
             end
 
         # update progress bar
@@ -3126,11 +2982,11 @@ function cps(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
     end
 
     @inbounds @simd for time_idx in 1:size(cps_pw, 3)
-        Threads.@threads for epoch_idx in 1:ep_n
-            for channel_idx1 in 1:(ch_n - 1)
-                for channel_idx2 in (channel_idx1 + 1):ch_n
-                    cps_pw[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_pw[channel_idx2, channel_idx1, time_idx, epoch_idx]
-                    cps_ph[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_ph[channel_idx2, channel_idx1, time_idx, epoch_idx]
+        Threads.@threads for ep_idx in 1:ep_n
+            for ch_idx1 in 1:(ch_n - 1)
+                for ch_idx2 in (ch_idx1 + 1):ch_n
+                    cps_pw[ch_idx1, ch_idx2, time_idx, ep_idx] = @views cps_pw[ch_idx2, ch_idx1, time_idx, ep_idx]
+                    cps_ph[ch_idx1, ch_idx2, time_idx, ep_idx] = @views cps_ph[ch_idx2, ch_idx1, time_idx, ep_idx]
                 end
             end
         end
@@ -3182,9 +3038,9 @@ function cps(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     cps_pw = zeros(ch_n, length(cps_pw), ep_n)
     cps_ph = zeros(ch_n, length(cps_ph), ep_n)
     cps_fq = zeros(ch_n, length(cps_fq), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            cps_pw[channel_idx, :, epoch_idx], cps_ph[channel_idx, :, epoch_idx], cps_fq[channel_idx, :, epoch_idx] = @views s2_cps(obj1.signals[channel1[channel_idx], :, epoch1[epoch_idx]], obj2.signals[channel2[channel_idx], :, epoch2[epoch_idx]], fs=fs, norm=norm)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            cps_pw[ch_idx, :, ep_idx], cps_ph[ch_idx, :, ep_idx], cps_fq[ch_idx, :, ep_idx] = @views s2_cps(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], fs=fs, norm=norm)
         end
     end
 
@@ -3220,33 +3076,33 @@ function phdiff(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
 
     ph_diff = zeros(ch_n, epoch_len(obj), ep_n)
     if avg === :phase
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                ref_channels = setdiff(channel, channel_idx)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                ref_channels = setdiff(channel, ch_idx)
                 ph_ref = zeros(length(ref_channels), epoch_len(obj))
                 for ref_idx in eachindex(ref_channels)
                     if h == true
-                        _, _, _, ph = @views s_hspectrum(obj.data[ref_channels[ref_idx], :, epoch_idx], pad=pad)
+                        _, _, _, ph = @views s_hspectrum(obj.data[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
-                        _, _, _, ph = @views s_spectrum(obj.data[ref_channels[ref_idx], :, epoch_idx], pad=pad)
+                        _, _, _, ph = @views s_spectrum(obj.data[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     end
                     ph_ref[ref_idx, :] = ph
                 end
                 ph_ref = vec(mean(ph_ref, dims=1))
                 if h == true
-                    _, _, _, ph = @views s_hspectrum(obj.data[channel[channel_idx], :, epoch_idx], pad=pad)
+                    _, _, _, ph = @views s_hspectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad)
                 else
-                    _, _, _, ph = @views s_spectrum(obj.data[channel[channel_idx], :, epoch_idx], pad=pad)
+                    _, _, _, ph = @views s_spectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad)
                 end
-                ph_diff[channel_idx, :, epoch_idx] = ph - ph_ref
+                ph_diff[ch_idx, :, ep_idx] = ph - ph_ref
             end
         end
     else
-        @inbounds @simd for epoch_idx in 1:ep_n
-            Threads.@threads for channel_idx in 1:ch_n
-                ref_channels = setdiff(channel, channel_idx)
-                signal_m = @views vec(mean(obj.data[ref_channels, :, epoch_idx], dims=1))
-                ph_diff[channel_idx, :, epoch_idx] = @views s_phdiff(obj.data[channel[channel_idx], :, epoch_idx], signal_m)
+        @inbounds @simd for ep_idx in 1:ep_n
+            Threads.@threads for ch_idx in 1:ch_n
+                ref_channels = setdiff(channel, ch_idx)
+                signal_m = @views vec(mean(obj.data[ref_channels, :, ep_idx], dims=1))
+                ph_diff[ch_idx, :, ep_idx] = @views s_phdiff(obj.data[channel[ch_idx], :, ep_idx], signal_m)
             end
         end
     end
@@ -3275,11 +3131,11 @@ function ampdiff(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     ep_n = epoch_n(obj)
 
     amp_diff = zeros(ch_n, epoch_len(obj), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            ref_channels = setdiff(channel, channel_idx)
-            amp_ref = @views vec(mean(obj.data[ref_channels, :, epoch_idx], dims=1))
-            amp_diff[channel_idx, :, epoch_idx] = @views obj.data[channel[channel_idx], :, epoch_idx] - amp_ref
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ref_channels = setdiff(channel, ch_idx)
+            amp_ref = @views vec(mean(obj.data[ref_channels, :, ep_idx], dims=1))
+            amp_diff[ch_idx, :, ep_idx] = @views obj.data[channel[ch_idx], :, ep_idx] - amp_ref
         end
     end
 
@@ -3317,9 +3173,9 @@ function dwt(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
     ep_n = epoch_n(obj)
 
     dwt_c = zeros(ch_n, (l + 1), epoch_len(obj), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            dwt_c[channel_idx, :, :, epoch_idx] = @views s_dwt(obj.data[channel[channel_idx], :, epoch_idx], wt=wt, type=type, l=l)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            dwt_c[ch_idx, :, :, ep_idx] = @views s_dwt(obj.data[channel[ch_idx], :, ep_idx], wt=wt, type=type, l=l)
         end
     end
 
@@ -3349,9 +3205,9 @@ function cwt(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
 
     l = size(ContinuousWavelets.cwt(obj.data[1, :, 1], wt), 2)
     cwt_c = zeros(ch_n, l, epoch_len(obj), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            cwt_c[channel_idx, :, :, epoch_idx] = @views s_cwt(obj.data[channel[channel_idx], :, epoch_idx], wt=wt)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            cwt_c[ch_idx, :, :, ep_idx] = @views s_cwt(obj.data[channel[ch_idx], :, ep_idx], wt=wt)
         end
     end
 
@@ -3396,11 +3252,11 @@ function psdslope(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     lf = zeros(ch_n, length(frq[f1_idx:f2_idx]), ep_n)
     psd_slope = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            pow, _ = s_psd(obj.data[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
-            _, _, _, _, _, _, lf[channel_idx, :, epoch_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
-            psd_slope[channel_idx, epoch_idx] = lf[channel_idx, 2, epoch_idx] - lf[channel_idx, 1, epoch_idx]
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            pow, _ = s_psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
+            _, _, _, _, _, _, lf[ch_idx, :, ep_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
+            psd_slope[ch_idx, ep_idx] = lf[ch_idx, 2, ep_idx] - lf[ch_idx, 1, ep_idx]
         end
     end
 
@@ -3434,9 +3290,9 @@ function henv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     h_env = similar(signal)
     s_t = obj.epoch_time
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s = @view signal[channel_idx, :, epoch_idx]
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s = @view signal[ch_idx, :, ep_idx]
             # find peaks
             p_idx = s_findpeaks(s, d=d)
             # add first time-point
@@ -3447,18 +3303,18 @@ function henv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
             if length(p_idx) >= 5
                 model = CubicSpline(s_t[p_idx], s[p_idx])
                 try
-                    h_env[channel_idx, :, epoch_idx] = model(s_t)
+                    h_env[ch_idx, :, ep_idx] = model(s_t)
                 catch
                     @error "CubicSpline error, using Loess."
                     model = loess(s_t[p_idx], s[p_idx], span=0.5)
-                    h_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
+                    h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
                 end
             else
                 _info("Less than 5 peaks detected, using Loess.")
                 model = loess(s_t[p_idx], s[p_idx], span=0.5)
-                h_env[channel_idx, :, epoch_idx] = Loess.predict(model, s_t)
+                h_env[ch_idx, :, ep_idx] = Loess.predict(model, s_t)
             end
-            h_env[channel_idx, 1, epoch_idx] = h_env[channel_idx, 2, epoch_idx]
+            h_env[ch_idx, 1, ep_idx] = h_env[ch_idx, 2, ep_idx]
         end
     end
     
@@ -3507,11 +3363,11 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            h_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
-            s = std(h_env_m[:, epoch_idx]) / sqrt(length(h_env_m[:, epoch_idx]))
-            h_env_u[:, epoch_idx] = @. h_env_m[:, epoch_idx] + 1.96 * s
-            h_env_l[:, epoch_idx] = @. h_env_m[:, epoch_idx] - 1.96 * s
+        @inbounds @simd for ep_idx in 1:ep_n
+            h_env_m[:, ep_idx] = mean(s_a[:, :, ep_idx], dims=1)
+            s = std(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
+            h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + 1.96 * s
+            h_env_l[:, ep_idx] = @. h_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # mean over epochs
@@ -3520,11 +3376,11 @@ function henv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            h_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
-            s = std(h_env_m[:, channel_idx]) / sqrt(length(h_env_m[:, channel_idx]))
-            h_env_u[:, channel_idx] = @. h_env_m[:, channel_idx] + 1.96 * s
-            h_env_l[:, channel_idx] = @. h_env_m[:, channel_idx] - 1.96 * s
+        @inbounds @simd for ch_idx in 1:ch_n
+            h_env_m[:, ch_idx] = mean(s_a[ch_idx, :, :], dims=2)
+            s = std(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
+            h_env_u[:, ch_idx] = @. h_env_m[:, ch_idx] + 1.96 * s
+            h_env_l[:, ch_idx] = @. h_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # mean over channels and epochs
@@ -3583,22 +3439,22 @@ function henv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         h_env_u = zeros(length(s_t), ep_n)
         h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
-            h_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
-            t_idx = s_findpeaks(h_env_m[:, epoch_idx], d=d)
+        @inbounds @simd for ep_idx in 1:ep_n
+            h_env_m[:, ep_idx] = median(s_a[:, :, ep_idx], dims=1)
+            t_idx = s_findpeaks(h_env_m[:, ep_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(h_env_m[:, epoch_idx]))
+            push!(t_idx, length(h_env_m[:, ep_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
                 try
-                    h_env_m[:, epoch_idx] = model(s_t)
+                    h_env_m[:, ep_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(h_env_m[:, epoch_idx]) / sqrt(length(h_env_m[:, epoch_idx]))
-            h_env_u[:, epoch_idx] = @. h_env_m[:, epoch_idx] + 1.96 * s
-            h_env_l[:, epoch_idx] = @. h_env_m[:, epoch_idx] - 1.96 * s
+            s = iqr(h_env_m[:, ep_idx]) / sqrt(length(h_env_m[:, ep_idx]))
+            h_env_u[:, ep_idx] = @. h_env_m[:, ep_idx] + 1.96 * s
+            h_env_l[:, ep_idx] = @. h_env_m[:, ep_idx] - 1.96 * s
         end
     elseif dims == 2
         # median over epochs
@@ -3607,22 +3463,22 @@ function henv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         h_env_u = zeros(length(s_t), ch_n)
         h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:ch_n
-            h_env_m[:, channel_idx] = median(s_a[channel_idx, :, :], dims=2)
-            t_idx = s_findpeaks(h_env_m[:, channel_idx], d=d)
+        @inbounds @simd for ch_idx in 1:ch_n
+            h_env_m[:, ch_idx] = median(s_a[ch_idx, :, :], dims=2)
+            t_idx = s_findpeaks(h_env_m[:, ch_idx], d=d)
             pushfirst!(t_idx, 1)
-            push!(t_idx, length(h_env_m[:, channel_idx]))
+            push!(t_idx, length(h_env_m[:, ch_idx]))
             if length(t_idx) > 4
                 model = CubicSpline(s_t[t_idx], h_env_m[t_idx])
                 try
-                    h_env_m[:, channel_idx] = model(s_t)
+                    h_env_m[:, ch_idx] = model(s_t)
                 catch
                     _info("CubicSpline could not be calculated, using non-smoothed variant instead.")
                 end
             end
-            s = iqr(h_env_m[:, channel_idx]) / sqrt(length(h_env_m[:, channel_idx]))
-            h_env_u[:, channel_idx] = @. h_env_m[:, channel_idx] + 1.96 * s
-            h_env_l[:, channel_idx] = @. h_env_m[:, channel_idx] - 1.96 * s
+            s = iqr(h_env_m[:, ch_idx]) / sqrt(length(h_env_m[:, ch_idx]))
+            h_env_u[:, ch_idx] = @. h_env_m[:, ch_idx] + 1.96 * s
+            h_env_l[:, ch_idx] = @. h_env_m[:, ch_idx] - 1.96 * s
         end
     else
         # median over channels and epochs
@@ -3666,11 +3522,11 @@ function apply(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Ab
 
     # initialize progress bar
     progress_bar == true && (p = Progress(ch_n * ep_n, 1))
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            f_tmp = replace(f, "obj" => "$(obj.data[channel[channel_idx], :, epoch_idx])")
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            f_tmp = replace(f, "obj" => "$(obj.data[channel[ch_idx], :, ep_idx])")
             try
-                out[channel_idx, :, epoch_idx] = eval(Meta.parse(f_tmp))
+                out[ch_idx, :, ep_idx] = eval(Meta.parse(f_tmp))
 
             catch
                 @error "Formula is incorrect."
@@ -3750,10 +3606,10 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
 
     ch_n = size(erp, 1)
     p = zeros(Int64, ch_n, 2)
-    @inbounds @simd for channel_idx in 1:ch_n
-        pp_pos = @views maximum(erp[channel_idx, :])
-        pp_neg = @views minimum(erp[channel_idx, :])
-        p[channel_idx, :] = @views [vsearch(pp_pos, erp[channel_idx, :]), vsearch(pp_neg, erp[channel_idx, :])]
+    @inbounds @simd for ch_idx in 1:ch_n
+        pp_pos = @views maximum(erp[ch_idx, :])
+        pp_neg = @views minimum(erp[ch_idx, :])
+        p[ch_idx, :] = @views [vsearch(pp_pos, erp[ch_idx, :]), vsearch(pp_neg, erp[ch_idx, :])]
     end
 
     return p
@@ -3791,8 +3647,8 @@ function bands_dwt(obj::NeuroAnalyzer.NEURO; channel::Int64, wt::T, type::Symbol
     ep_n = epoch_n(obj)
 
     dwt_c = zeros((n + 1), epoch_len(obj), ep_n)
-    Threads.@threads for epoch_idx in 1:ep_n
-        @inbounds dwt_c[:, :, epoch_idx] = @views s_dwt(obj.data[channel, :, epoch_idx], wt=wt, type=type, l=n)
+    Threads.@threads for ep_idx in 1:ep_n
+        @inbounds dwt_c[:, :, ep_idx] = @views s_dwt(obj.data[channel, :, ep_idx], wt=wt, type=type, l=n)
     end
     
     bands = similar(dwt_c)

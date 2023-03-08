@@ -271,7 +271,6 @@ export s_msci95
 export s2_mean
 export s2_difference
 export s_acov
-export s2_xcov
 export s_spectrum
 export s_taper
 export s_detrend
@@ -284,7 +283,6 @@ export s_tconv
 export s_filter
 export s_filter_create
 export s_filter_apply
-export s_psd
 export s_stationarity_hilbert
 export s_stationarity_mean
 export s_stationarity_var
@@ -494,9 +492,11 @@ export eeg_gfilter
 export eeg_slaplacian
 export eeg_slaplacian!
 
+
+include("analyze/xcov.jl")
+include("analyze/psd.jl")
+
 include("eeg_analyze.jl")
-export xcov
-export psd
 export stationarity
 export mi
 export mi
