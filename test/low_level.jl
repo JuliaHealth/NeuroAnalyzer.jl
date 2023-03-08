@@ -52,9 +52,9 @@ using ContinuousWavelets
 @test s_taper(ones(10), taper=zeros(10)) == zeros(10)
 @test s_detrend(ones(10)) == zeros(10)
 @test s_demean(ones(10)) == zeros(10)
-@test s_normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test s_normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
-@test s_normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
+@test normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
+@test normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
+@test normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
 @test length(s_add_noise(ones(10), randn(10))) == 10
 
 s, t = s_resample(ones(10), t=1:10, new_sr=20)
@@ -134,7 +134,7 @@ p, f = s_rel_psd(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
 
 @test s_wbp(ones(10), fs=10, frq=3) == zeros(10)
-@test round.(s_normalize_gauss([1, 0, 1]), digits=2) == [-0.26, -0.26, 0.55]
+@test round.(normalize_gauss([1, 0, 1]), digits=2) == [-0.26, -0.26, 0.55]
 @test s_cbp(ones(100), fs=10, frq=1) == zeros(100)
 
 sp, sf, st = s_spectrogram(rand(2560), fs=256)
@@ -147,19 +147,19 @@ p, _, _ = s2_cps(zeros(100), ones(100), fs=10)
 @test p == zeros(65)
 
 @test s2_phdiff(ones(10), zeros(10)) == zeros(10)
-@test round.(s_normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
-@test round.(s_normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
-@test round.(s_normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]
-@test s_normalize_neg([1, 2, 3]) == [-2, -1, 0]
-@test s_normalize_pos([1, 2, 3]) == [2, 3, 4]
-@test s_normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
-@test s_normalize_n([1, 2, 3], 2) == [0.0, 1.0, 2.0]
-@test s_normalize([1, 2, 3], method=:zscore) == s_normalize_zscore([1, 2, 3])
+@test round.(normalize_log10([1, 2, 3]), digits=2) == [0.48, 0.6, 0.7]
+@test round.(normalize_neglog([1, 2, 3]), digits=2) == [0.0, -0.69, -1.1]
+@test round.(normalize_neglog10([1, 2, 3]), digits=2) == [0.0, -0.3, -0.48]
+@test normalize_neg([1, 2, 3]) == [-2, -1, 0]
+@test normalize_pos([1, 2, 3]) == [2, 3, 4]
+@test normalize_perc([1, 2, 3]) == [0.0, 0.5, 1.0]
+@test normalize_n([1, 2, 3], 2) == [0.0, 1.0, 2.0]
+@test normalize([1, 2, 3], method=:zscore) == normalize_zscore([1, 2, 3])
 @test s_phases(ones(ComplexF64, 10)) == zeros(10)
 @test length(s_cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
 @test size(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
 @test length(s_idwt(s_dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
-@test round.(s_normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
+@test round.(normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
 @test size(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
 @test length(s_icwt(s_cwt(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
 @test t2s(1, 256) == 256

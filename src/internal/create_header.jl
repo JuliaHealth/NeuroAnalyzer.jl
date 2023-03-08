@@ -9,7 +9,7 @@ function _create_subject(;id::String="", first_name::String="", middle_name::Str
                 :height=>height)
 end
 
-function _create_recording_eeg(;data_type::String, file_name::String="", file_size_mb::Real=-1, file_type::String="", recording::String="", recording_date::String="", recording_time::String="", recording_notes::String="", channel_n::Int64, channel_type::Vector{String}, reference::String="", duration_samples::Int64, duration_seconds::Float64, epoch_n::Int64=1, epoch_duration_samples::Int64, epoch_duration_seconds::Float64, labels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
+function _create_recording_eeg(;data_type::String, file_name::String="", file_size_mb::Real=-1, file_type::String="", recording::String="", recording_date::String="", recording_time::String="", recording_notes::String="", channel_n::Int64, channel_type::Vector{String}, reference::String="", duration_samples::Int64, duration_seconds::Float64, epoch_n::Int64=1, epoch_duration_samples::Int64, epoch_duration_seconds::Float64, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, gain::Vector{Float64})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -28,14 +28,14 @@ function _create_recording_eeg(;data_type::String, file_name::String="", file_si
                 :epoch_n=>epoch_n,
                 :epoch_duration_samples=>epoch_duration_samples,
                 :epoch_duration_seconds=>epoch_duration_seconds,
-                :labels=>labels,
+                :labels=>clabels,
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,
                 :gain=>gain)
 end
 
-function _create_recording_meg(;data_type::String, file_name::String="", file_size_mb::Real=-1, file_type::String="", recording::String="", recording_date::String="", recording_time::String="", recording_notes::String="", channel_n::Int64, channel_type::Vector{String}, reference::String="", duration_samples::Int64, duration_seconds::Float64, epoch_n::Int64=1, epoch_duration_samples::Int64, epoch_duration_seconds::Float64, labels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, gradiometers_planar::Vector{Int64}, gradiometers_axial::Vector{Int64}, coils::Vector{Int64})
+function _create_recording_meg(;data_type::String, file_name::String="", file_size_mb::Real=-1, file_type::String="", recording::String="", recording_date::String="", recording_time::String="", recording_notes::String="", channel_n::Int64, channel_type::Vector{String}, reference::String="", duration_samples::Int64, duration_seconds::Float64, epoch_n::Int64=1, epoch_duration_samples::Int64, epoch_duration_seconds::Float64, clabels::Vector{String}, units::Vector{String}, prefiltering::Vector{String}, sampling_rate::Int64, magnetometers::Vector{Int64}, gradiometers::Vector{Int64}, gradiometers_planar::Vector{Int64}, gradiometers_axial::Vector{Int64}, coils::Vector{Int64})
 
     return Dict(:data_type=>data_type,
                 :file_name=>file_name,
@@ -54,7 +54,7 @@ function _create_recording_meg(;data_type::String, file_name::String="", file_si
                 :epoch_n=>epoch_n,
                 :epoch_duration_samples=>epoch_duration_samples,
                 :epoch_duration_seconds=>epoch_duration_seconds,
-                :labels=>labels,
+                :labels=>clabels,
                 :units=>units,
                 :prefiltering=>prefiltering,
                 :sampling_rate=>sampling_rate,

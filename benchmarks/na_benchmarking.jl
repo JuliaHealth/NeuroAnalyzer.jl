@@ -410,8 +410,8 @@ print(rpad("Demean", 36))
 eeg_demean(e10);
 @time eeg_demean(e10);
 print(rpad("Taper", 36))
-eeg_taper(e10, taper=generate_window(:hann, eeg_epoch_len(e10)));
-@time eeg_taper(e10, taper=generate_window(:hann, eeg_epoch_len(e10)));
+eeg_taper(e10, taper=generate_window(:hann, epoch_len(e10)));
+@time eeg_taper(e10, taper=generate_window(:hann, epoch_len(e10)));
 print(rpad("Derivative", 36))
 eeg_derivative(e10);
 @time eeg_derivative(e10);

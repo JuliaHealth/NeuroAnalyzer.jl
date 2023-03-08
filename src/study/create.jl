@@ -29,7 +29,5 @@ function study_create(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
         channel_n(obj[idx]) == ch_n || throw(ArgumentError("All OBJs in the study must have the same number of channels."))
     end
 
-    study = STUDY(Dict{Symbol, Any}(), obj, group)
-    
-    return study
+    return NeuroAnalyzer.STUDY(Dict{Symbol, Any}(), obj, group)
 end

@@ -28,5 +28,5 @@ function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vec
     end
     signal_interpolated = signal_interpolated'
     
-    return s_normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
+    return normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
 end

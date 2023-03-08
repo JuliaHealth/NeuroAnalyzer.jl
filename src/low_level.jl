@@ -1261,14 +1261,14 @@ function s_resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
 
-    channel_n, _, epoch_n = size(signal)
+    ch_n, _, ep_n = size(signal)
 
     s_resampled_len = length(s_resample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
-    s_resampled = zeros(channel_n, s_resampled_len, epoch_n) 
+    s_resampled = zeros(ch_n, s_resampled_len, ep_n) 
 
     t_resampled = nothing
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s_resampled[channel_idx, :, epoch_idx], t_resampled = @views s_resample(signal[channel_idx, :, epoch_idx], t=t, new_sr=new_sr)
         end
     end
@@ -1747,11 +1747,11 @@ function s_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fa
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     size(signal, 2) < 4 * fs && (mt = true)
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
     psd_tmp, psd_frq = s_psd(signal[1, :], fs=fs, norm=norm, mt=mt)
-    psd_pow = zeros(channel_n, length(psd_tmp))
+    psd_pow = zeros(ch_n, length(psd_tmp))
 
-    @inbounds @simd for channel_idx in 1:channel_n
+    @inbounds @simd for channel_idx in 1:ch_n
         psd_pow[channel_idx, :], _ = s_psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
     end
     
@@ -1779,13 +1779,13 @@ function s_psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=fals
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     size(signal, 2) < 4 * fs && (mt = true)
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    ch_n = size(signal, 1)
+    ep_n = size(signal, 3)
     psd_tmp, psd_frq = s_psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
-    psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
+    psd_pow = zeros(ch_n, length(psd_tmp), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             psd_pow[channel_idx, :, epoch_idx], _ = s_psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
         end
     end
@@ -2049,23 +2049,23 @@ function s_pca(signal::AbstractArray; n::Int64)
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("n must be ≤ $(size(signal, 1))."))
 
-    epoch_n = size(signal, 3)
+    ep_n = size(signal, 3)
     pc_m = []
 
     # check maximum n
     n_tmp = n
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         pc_m = @views MultivariateStats.fit(PCA, signal[:, :, epoch_idx], maxoutdim=n)
         size(pc_m)[2] < n_tmp && (n_tmp = size(pc_m)[2])
     end
     (n_tmp < n && verbose == true) && @info "Only $n_tmp PC components were generated."
     n = n_tmp
     
-    pc = zeros(n, size(signal, 2), epoch_n)
-    pc_var = zeros(n, epoch_n)
+    pc = zeros(n, size(signal, 2), ep_n)
+    pc_var = zeros(n, ep_n)
     pca = nothing
     
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         # m_cov = s_cov(s)
         # eig_val, eig_vec = eigen(m_cov)
         # eig_val_idx = sortperm(eig_val, rev=true)
@@ -2104,8 +2104,8 @@ Reconstructs `signal` using PCA components.
 function s_pca_reconstruct(signal::AbstractArray; pc::AbstractArray, pca::MultivariateStats.PCA{Float64})
 
     s_reconstructed = similar(signal)
-    epoch_n = size(signal, 3)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    ep_n = size(signal, 3)
+    @inbounds @simd for epoch_idx in 1:ep_n
         s_reconstructed[:, :, epoch_idx] = @views MultivariateStats.reconstruct(pca, pc[:, :, epoch_idx])
     end
 
@@ -2170,11 +2170,11 @@ function s_ica(signal::AbstractArray; n::Int64, tol::Float64=1.0e-6, iter::Int64
     _check_var(f, [:tanh, :gaus], "f")
     n < 0 && throw(ArgumentError("n must be ≥ 1."))
     n > size(signal, 1) && throw(ArgumentError("n must be ≤ $(size(signal, 1))."))
-    channel_n, _, epoch_n = size(signal)
-    ica = zeros(n, size(signal, 2), epoch_n)
-    ica_mw = zeros(channel_n, n, epoch_n)
+    ch_n, _, ep_n = size(signal)
+    ica = zeros(n, size(signal, 2), ep_n)
+    ica_mw = zeros(ch_n, n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         f === :tanh && (M = @views MultivariateStats.fit(ICA, signal[:, :, epoch_idx], n, tol=tol, maxiter=iter, fun=MultivariateStats.Tanh(1.0)))
         f === :gaus && (M = @views MultivariateStats.fit(ICA, signal[:, :, epoch_idx], n, tol=tol, maxiter=iter, fun=MultivariateStats.Gaus()))
 
@@ -2222,9 +2222,9 @@ function s_ica_reconstruct(signal::AbstractArray; ica::AbstractArray, ica_mw::Ab
 
     s_reconstructed = zeros(size(signal))
 
-    _, _, epoch_n = size(signal)
+    _, _, ep_n = size(signal)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         s_reconstructed[:, :, epoch_idx] = ica_mw[:, ic_removal, epoch_idx] * ica[ic_removal, :, epoch_idx]
     end
 
@@ -2462,22 +2462,22 @@ function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothin
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
     t > size(signal, 2) && throw(ArgumentError("t must be ≤ $(size(signal, 2))."))
     size(signal, 1) == 1 || throw(ArgumentError("signal must have 1 channel."))
-    epoch_n = size(signal, 3)
+    ep_n = size(signal, 3)
 
-    w === nothing && (w = ones(epoch_n))
+    w === nothing && (w = ones(ep_n))
     # scale w if w contains negative values
     any(i -> i < 0, w) && (w .+= abs(minimum(w)))
-    length(w) == epoch_n || throw(ArgumentError("Length of w should be equal to number of epochs ($epoch_n)."))
+    length(w) == ep_n || throw(ArgumentError("Length of w should be equal to number of epochs ($ep_n)."))
     
-    s_phase = zeros(size(signal, 2), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    s_phase = zeros(size(signal, 2), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
         _, _, _, s_phase[:, epoch_idx] = @views s_hspectrum(signal[1, :, epoch_idx])
     end
  
     itpc_phases = @view s_phase[t, :]
     itpc = abs.(mean(exp.(1im .* itpc_phases .* w)))
     itpc_angle = angle.(mean(exp.(1im .* itpc_phases .* w)))
-    itpcz = epoch_n * itpc^2
+    itpcz = ep_n * itpc^2
 
     return (itpc=itpc, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
@@ -2531,7 +2531,7 @@ Perform generalized eigendecomposition.
 Named tuple containing:
 - `sged::Matrix{Float64}`
 - `ress::Vector{Float64}`
-- `ress_normalized::Vector{Float64}`: RESS normalized to -1..1
+- `resnormalized::Vector{Float64}`: RESS normalized to -1..1
 """
 function s2_ged(signal1::AbstractArray, signal2::AbstractArray)
 
@@ -2545,9 +2545,9 @@ function s2_ged(signal1::AbstractArray, signal2::AbstractArray)
     eig_vec = m_sort(eig_vec, eig_val_idx, dims=2)
     sged = signal2 .* eig_vec[:, 1]
     ress = pinv(eig_vec[:, 1]')
-    ress_normalized = ress ./ maximum(abs.(ress))
+    resnormalized = ress ./ maximum(abs.(ress))
 
-    return (sged=sged, ress=ress, ress_normalized=ress_normalized)
+    return (sged=sged, ress=ress, resnormalized=resnormalized)
 end
 
 """
@@ -2924,8 +2924,8 @@ function s_mwpsd(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim:
         end
     end
 
-    channel_n = size(signal, 1)
-    w_powers = zeros(channel_n, )
+    ch_n = size(signal, 1)
+    w_powers = zeros(ch_n, )
 
     pad > 0 && (signal = pad0(signal, pad))
     @inbounds @simd for frq_idx in 1:frq_n
@@ -2965,12 +2965,12 @@ Named tuple containing:
 """
 function s_mwpsd(signal::Matrix{Float64}; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=10, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
     w_powers, frq_list = s_mwpsd(signal[1, :], pad=pad, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
-    w_powers = zeros(channel_n, length(frq_list))
+    w_powers = zeros(ch_n, length(frq_list))
     frq_list = zeros(length(frq_list))
 
-    Threads.@threads for channel_idx in 1:channel_n
+    Threads.@threads for channel_idx in 1:ch_n
         @inbounds w_powers[channel_idx, :], frq_list = @views s_mwpsd(signal[channel_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
     end
 
@@ -3009,11 +3009,11 @@ function a2_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, per
     perm_n = 1000
     spec_all = cat(a1, a2, dims=3)
     perm_maps = zeros(size(a1, 1), size(a1, 2), perm_n)
-    epoch_n = size(spec_all, 3)
+    ep_n = size(spec_all, 3)
     @inbounds @simd for perm_idx in 1:perm_n
-        rand_idx = sample(1:epoch_n, epoch_n, replace=false)
+        rand_idx = sample(1:ep_n, ep_n, replace=false)
         rand_spec = @view spec_all[:, :, rand_idx]
-        perm_maps[:, :, perm_idx] = @views dropdims(mean(rand_spec[:, :, (epoch_n ÷ 2 + 1):end], dims=3) .- mean(rand_spec[:, :, 1:(epoch_n ÷ 2)], dims=3), dims=3)
+        perm_maps[:, :, perm_idx] = @views dropdims(mean(rand_spec[:, :, (ep_n ÷ 2 + 1):end], dims=3) .- mean(rand_spec[:, :, 1:(ep_n ÷ 2)], dims=3), dims=3)
     end
     mean_h0 = dropdims(mean(perm_maps, dims=3), dims=3)
     std_h0 = dropdims(std(perm_maps, dims=3), dims=3)
@@ -3181,11 +3181,11 @@ Calculate cumulative sum.
 """
 function s_cums(signal::Array{<:Real, 3})
     
-    channel_n, _, epoch_n = size(signal)
+    ch_n, _, ep_n = size(signal)
     signal_cs = similar(signal)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             signal_cs[channel_idx, :, epoch_idx] = @views s_cums(signal[channel_idx, :, epoch_idx])
         end
     end
@@ -3407,7 +3407,7 @@ Named tuple containing:
 """
 function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
@@ -3419,9 +3419,9 @@ function s_rel_psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Boo
         psd_tmp = welch_pgram(signal[1, :], 4*fs, fs=fs)
     end
     psd_frq = Vector(freq(psd_tmp))
-    psd_pow = zeros(channel_n, length(Vector(freq(psd_tmp))))
+    psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
 
-    Threads.@threads for channel_idx in 1:channel_n
+    Threads.@threads for channel_idx in 1:ch_n
         ref_pow = f === nothing ? s_total_power(signal[channel_idx, :], fs=fs, mt=mt) : s_band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
         if mt == true
             psd = mt_pgram(signal[channel_idx, :], fs=fs)
@@ -3606,14 +3606,14 @@ Perform Wiener deconvolution denoising.
 """
 function s_denoise_wien(signal::AbstractArray)
 
-    channel_n, _, epoch_n = size(signal)
+    ch_n, _, ep_n = size(signal)
     signal_new = similar(signal)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         s_m = @views mean(signal[:, :, epoch_idx], dims=1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
-        Threads.@threads for channel_idx in 1:channel_n
+        Threads.@threads for channel_idx in 1:ch_n
             signal_new[channel_idx, :, epoch_idx] = @views wiener(signal[channel_idx, :, epoch_idx], s_m, noise)
         end
     end
@@ -3818,7 +3818,7 @@ function s_idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: Discr
 end
 
 """
-    s_normalize_invroot(signal)
+    normalize_invroot(signal)
 
 Normalize in inverse root (1/sqrt(x)).
 
@@ -3828,9 +3828,9 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Returns
 
-- `s_normalized::Vector{Float64}`
+- `normalized::Vector{Float64}`
 """
-function s_normalize_invroot(signal::AbstractArray)
+function normalize_invroot(signal::AbstractArray)
     # make signal > 0
     return 1 ./ (sqrt.(signal .+ abs(minimum(signal)) .+ eps()))
 end
@@ -3956,7 +3956,7 @@ function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
     elseif type === :pink
         noise = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
     end
-    noise = s_normalize_minmax(noise)
+    noise = normalize_minmax(noise)
     noise .*= amp
     return noise
 end

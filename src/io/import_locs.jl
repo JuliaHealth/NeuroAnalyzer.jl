@@ -83,16 +83,16 @@ function locs_import_ced(file_name::String)
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
 
-    labels = lstrip.(locs[!, "labels"])
+    clabels = lstrip.(locs[!, "labels"])
 
-    x = zeros(length(labels))
-    y = zeros(length(labels))
-    z = zeros(length(labels))
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
     "x" in colnames && (x = Float64.(locs[!, "x"]))
     "y" in colnames && (y = Float64.(locs[!, "y"]))
@@ -103,7 +103,7 @@ function locs_import_ced(file_name::String)
     "sph_theta" in colnames && (theta_sph = Float64.(locs[!, "sph_theta"]))
     "sph_phi" in colnames && (phi_sph = Float64.(locs[!, "sph_phi"]))
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -133,28 +133,28 @@ function locs_import_locs(file_name::String)
     locs = CSV.read(file_name, header=false, delim="\t", DataFrame)
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
-    labels = lstrip.(locs[!, "labels"])
+    clabels = lstrip.(locs[!, "labels"])
 
-    x = zeros(length(labels))
-    y = zeros(length(labels))
-    z = zeros(length(labels))
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
     theta = Float64.(locs[!, "theta"])
     radius = Float64.(locs[!, "radius"])
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
     locs_swapxy!(locs)
     locs_flipx!(locs, planar=true, spherical=false)
 
-    locs[!, :loc_phi_sph] = zeros(length(labels))
+    locs[!, :loc_phi_sph] = zeros(length(clabels))
 
     return locs
 end
@@ -187,16 +187,16 @@ function locs_import_elc(file_name::String)
             locs_l = idx + 2
         end
     end
-    labels = repeat([""], locs_n)
+    clabels = repeat([""], locs_n)
 
-    x = zeros(length(labels))
-    y = zeros(length(labels))
-    z = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
     idx2 = 1
     for idx1 in locs_l:(locs_l + locs_n - 1)
@@ -207,14 +207,14 @@ function locs_import_elc(file_name::String)
     end
     idx2 = 1
     for idx1 in (locs_l + 1 + locs_n):(locs_l + (2 * locs_n))
-        labels[idx2] = elc_file[idx1]
+        clabels[idx2] = elc_file[idx1]
         idx2 += 1
     end
-    x = s_normalize_minmax(x)
-    y = s_normalize_minmax(y)
-    z = s_normalize_minmax(z)
+    x = normalize_minmax(x)
+    y = normalize_minmax(y)
+    z = normalize_minmax(z)
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -246,18 +246,18 @@ function locs_import_tsv(file_name::String)
     colnames = lowercase.(names(locs))
     DataFrames.rename!(locs, Symbol.(colnames))
 
-    "labels" in colnames && (labels = lstrip.(locs[!, "labels"]))
-    "label" in colnames && (labels = lstrip.(locs[!, "label"]))
-    "site" in colnames && (labels = lstrip.(locs[!, "site"]))
+    "labels" in colnames && (clabels = lstrip.(locs[!, "labels"]))
+    "label" in colnames && (clabels = lstrip.(locs[!, "label"]))
+    "site" in colnames && (clabels = lstrip.(locs[!, "site"]))
 
-    x = zeros(length(labels))
-    y = zeros(length(labels))
-    z = zeros(length(labels))
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    x = zeros(length(clabels))
+    y = zeros(length(clabels))
+    z = zeros(length(clabels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
     
     "x" in colnames && (x = Float64.(locs[!, "x"]))
     "y" in colnames && (y = Float64.(locs[!, "y"]))
@@ -271,7 +271,7 @@ function locs_import_tsv(file_name::String)
     "phi" in colnames && (phi_sph = locs[!, "phi"])
     "phi_sph" in colnames && (phi_sph = locs[!, "phi_sph"])
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -312,7 +312,7 @@ function locs_import_sfp(file_name::String)
 
     DataFrames.rename!(locs, [:label, :x, :y, :z])
 
-    labels = lstrip.(locs[!, "label"])
+    clabels = lstrip.(locs[!, "label"])
 
     x = Float64.(locs[!, :x])
     y = Float64.(locs[!, :y])
@@ -325,13 +325,13 @@ function locs_import_sfp(file_name::String)
     # sometimes positions are shifted along x-axis, remove the shift
     x .+= abs(t)
 
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -361,7 +361,7 @@ function locs_import_csd(file_name::String)
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
 
     DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
-    labels = lstrip.(locs[!, "labels"])
+    clabels = lstrip.(locs[!, "labels"])
 
     x = Float64.(locs[!, "x"])
     y = Float64.(locs[!, "y"])
@@ -376,7 +376,7 @@ function locs_import_csd(file_name::String)
         radius[idx], theta[idx] = sph2pol(radius_sph[idx], theta_sph[idx], phi_sph[idx])
     end
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -413,15 +413,15 @@ function locs_import_geo(file_name::String)
     end
     locs = locs[l1+1:2:l2]
 
-    labels = repeat([""], length(locs))
+    clabels = repeat([""], length(locs))
     x = zeros(length(locs))
     y = zeros(length(locs))
     z = zeros(length(locs))
 
     p = r"(.+)(\(.+\)){(.+)}"
-    for idx in 1:length(labels)
+    for idx in 1:length(clabels)
         m = match(p, locs[idx])
-        labels[idx] = replace(m[3], "\"" => "")
+        clabels[idx] = replace(m[3], "\"" => "")
         tmp = replace(m[2], "(" => "")
         tmp = replace(tmp, ")" => "")
         x[idx], y[idx], z[idx], = parse.(Float64, split(tmp, ", "))
@@ -430,17 +430,17 @@ function locs_import_geo(file_name::String)
     x, y, z = _locnorm(x, y, z)
 
     # center x at 0
-    x_adj = x[findfirst(isequal("Cz"), labels)]
+    x_adj = x[findfirst(isequal("Cz"), clabels)]
     x .-= x_adj
     x, y, z = _locnorm(x, y, z)
 
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
 
@@ -472,20 +472,20 @@ function locs_import_mat(file_name::String)
     x = dataset["Cpos"][1, :]
     y = dataset["Cpos"][2, :]
     r = dataset["Rxy"]    
-    channel_n = length(x)
-    labels = dataset["Cnames"][1:channel_n]
+    ch_n = length(x)
+    clabels = dataset["Cnames"][1:ch_n]
 
     # x, y, z positions must be within -1..+1
     x, y = _locnorm(x, y)
 
-    z = zeros(channel_n)
-    radius = zeros(length(labels))
-    theta = zeros(length(labels))
-    radius_sph = zeros(length(labels))
-    theta_sph = zeros(length(labels))
-    phi_sph = zeros(length(labels))
+    z = zeros(ch_n)
+    radius = zeros(length(clabels))
+    theta = zeros(length(clabels))
+    radius_sph = zeros(length(clabels))
+    theta_sph = zeros(length(clabels))
+    phi_sph = zeros(length(clabels))
 
-    locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
+    locs = DataFrame(:channel => 1:length(clabels), :labels => clabels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 
     locs = _round_locs(locs)
     locs_cart2sph!(locs)

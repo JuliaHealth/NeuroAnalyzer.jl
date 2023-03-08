@@ -3,23 +3,23 @@ using Test
 using DataFrames
 
 eeg = eeg_import_bdf("eeg-test-bdf.bdf")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_bdf("eeg-test-bdfplus.bdf")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_edf("eeg-test-edf.edf")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_edf("eeg-test-edfplus.edf")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_digitrack("eeg-test-digitrack.txt")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_bv("eeg-test-bv.vhdr")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_csv("eeg-test_txch.csv.gz")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_csv("eeg-test_chxt.csv.gz")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 eeg = eeg_import_set("eeg-test.set")
-@test typeof(eeg) == NeuroAnalyzer.EEG
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 
 eeg = eeg_import("eeg-test-edf.edf")
 ecg = eeg_extract_channel(eeg, channel=24)
@@ -33,10 +33,10 @@ eeg_delete_channel!(eeg, channel=21)
 a1 = eeg_extract_channel(eeg, channel=20)
 eeg_delete_channel!(eeg, channel=20)
 
-@test eeg.eeg_header[:eeg_filetype] == "EDF"
-@test eeg.eeg_header[:channel_n] == 19
-@test eeg.eeg_header[:channel_locations] == false
-@test eeg.eeg_header[:channel_locations] == false
+@test obj.header[:eeg_filetype] == "EDF"
+@test obj.header[:channel_n] == 19
+@test obj.header[:channel_locations] == false
+@test obj.header[:channel_locations] == false
 
 s = locs_import_ced("test.ced")
 @test typeof(s) == DataFrame
@@ -56,15 +56,15 @@ s = locs_import_mat("test.mat")
 @test typeof(s) == DataFrame
 
 eeg = eeg_load_electrodes(eeg, file_name="standard-10-20-cap19-elmiko.ced")
-@test typeof(eeg) == NeuroAnalyzer.EEG
-@test eeg.eeg_header[:channel_locations] == true
+@test typeof(eeg) == NeuroAnalyzer.NEURO
+@test obj.header[:channel_locations] == true
 
 isfile("test.hdf5") && rm("test.hdf5")
 eeg_save(eeg, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
 eeg_new = eeg_load("test.hdf5")
-@test typeof(eeg_new) == NeuroAnalyzer.EEG
+@test typeof(eeg_new) == NeuroAnalyzer.NEURO
 isfile("test.hdf5") && rm("test.hdf5")
 
 isfile("eeg.csv") && rm("eeg.csv")
@@ -84,6 +84,6 @@ isfile("test_out.locs") && rm("test_out.locs")
 
 locs = locs_import_ced("standard-10-20-cap19-elmiko.ced")
 eeg2 = eeg_add_electrodes(eeg, locs=locs)
-@test typeof(eeg2) == NeuroAnalyzer.EEG
+@test typeof(eeg2) == NeuroAnalyzer.NEURO
 
 true

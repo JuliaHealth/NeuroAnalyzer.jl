@@ -1,20 +1,20 @@
 """
-    test_pipeline(eeg::NeuroAnalyzer.EEG)
+    test_pipeline(obj::NeuroAnalyzer.NEURO)
 
 Basic NeuroAnalyzer EEG processing pipeline.
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `dc::Real=50`: DC frequency
 - `lp::Real=45`: low-pass filtering cutoff
 - `hp::Real=0.1`: low-pass filtering cutoff
 
 # Returns
 
-- `eeg_processed::NeuroAnalyzer.EEG`
+- `eeg_processed::NeuroAnalyzer.NEURO`
 """
-function test_pipeline(eeg::NeuroAnalyzer.EEG, dc::Real=50, lp::Real=45, hp::Real=0.1)
+function test_pipeline(obj::NeuroAnalyzer.NEURO, dc::Real=50, lp::Real=45, hp::Real=0.1)
 
     # re-reference to common average
     eeg_processed = eeg_reference_car(eeg)

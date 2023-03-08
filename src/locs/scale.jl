@@ -65,14 +65,14 @@ function locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false
 
     if planar == true
         r1 = locs_new[!, :loc_radius]
-        r2 = s_normalize_minmax(locs_new[!, :loc_radius])
+        r2 = normalize_minmax(locs_new[!, :loc_radius])
         r = maximum(r2) / maximum(r1)
         locs_new[!, :loc_radius] .*= r
     end
 
     if spherical == true
         r1 = locs_new[!, :loc_radius_sph]
-        r2 = s_normalize_minmax(r1)
+        r2 = normalize_minmax(r1)
         r = maximum(r2) / maximum(r1)
         locs_new[!, :loc_radius_sph] .*= r
     end

@@ -1,5 +1,13 @@
-function _gen_clabels(eeg::NeuroAnalyzer.EEG, c::Symbol)
-    c, _ = _get_component(eeg, c)
+function _clean_labels(clabels::Vector{String})
+    clabels = replace.(clabels, "EEG " => "")
+    clabels = replace.(clabels, "EOG EOG" => "EOG")
+    clabels = replace.(clabels, "ECG EKG" => "ECG")
+    clabels = replace.(clabels, "BDF " => "")
+    return clabels
+end
+
+function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
+    c, _ = _get_component(obj, c)
     clabels = Vector{String}()
     for idx in 1:size(c, 1)
         push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))

@@ -1,7 +1,7 @@
 """
     eeg_import(file_name; detect_type)
 
-Load EEG file and return `NeuroAnalyzer.EEG` object. Supported formats:
+Load EEG file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - EDF/EDF+
 - BDF/BDF+
 - BrainVision
@@ -37,7 +37,7 @@ end
 """
     eeg_load_electrodes(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with `eeg_locs` data frame. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.NEURO` object with `eeg_locs` data frame. 
 
 Accepted formats:
 - CED
@@ -61,7 +61,7 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `maximize::Bool=true`: maximize locations after importing
 
@@ -69,10 +69,10 @@ Electrode locations:
 
 - `eeg:EEG`
 """
-function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
+function eeg_load_electrodes(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    length(eeg.eeg_header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
+    length(obj.header[:labels]) > 0 || throw(ArgumentError("EEG does not contain labels, use eeg_add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
         locs = locs_import_ced(file_name)
@@ -107,7 +107,7 @@ function eeg_load_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, maximize
     loc_y = float.(locs[!, :loc_y])
     loc_z = float.(locs[!, :loc_z])
 
-    e_labels = lowercase.(eeg.eeg_header[:labels])
+    e_labels = lowercase.(obj.header[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
     length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in $file_name.")
 
@@ -146,7 +146,7 @@ end
 """
     eeg_load_electrodes!(eeg; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.EEG` object with `eeg_locs` data frame. 
+Load electrode positions from `file_name` and return `NeuroAnalyzer.NEURO` object with `eeg_locs` data frame. 
 
 Accepted formats:
 - CED
@@ -170,15 +170,15 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `maximize::Bool=true`: maximize locations after importing
 """
-function eeg_load_electrodes!(eeg::NeuroAnalyzer.EEG; file_name::String, maximize::Bool=true)
+function eeg_load_electrodes!(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
 
     eeg_tmp = eeg_load_electrodes(eeg, file_name=file_name, maximize=maximize)
-    eeg.eeg_locs = eeg_tmp.eeg_locs
-    eeg.eeg_header[:channel_locations] = true
+    obj.locs = eeg_tmp.eeg_locs
+    obj.header[:channel_locations] = true
 
     nothing
  end
@@ -190,7 +190,7 @@ Save `eeg` to `file_name` file (HDF5-based).
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`: file name
 - `overwrite::Bool=false`
 
@@ -198,14 +198,14 @@ Save `eeg` to `file_name` file (HDF5-based).
 
 - `success::Bool`
 """
-function eeg_save(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
+function eeg_save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
-    eeg.eeg_header[:eeg_filename] = file_name
+    obj.header[:eeg_filename] = file_name
 
     save_object("/tmp/$(basename(file_name))", eeg)
-    eeg.eeg_header[:eeg_filesize_mb] = round(filesize("/tmp/$(basename(file_name))") / 1024, digits=2)
+    obj.header[:eeg_filesize_mb] = round(filesize("/tmp/$(basename(file_name))") / 1024, digits=2)
     rm("/tmp/$(basename(file_name))")
 
     save_object(file_name, eeg)
@@ -222,7 +222,7 @@ Load `eeg` from `file_name` file (HDF5-based).
 
 # Returns
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function eeg_load(file_name::String)
 
@@ -240,7 +240,7 @@ Export EEG data as CSV.
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `header::Bool=false`: export header
 - `components::Bool=false`: export components
@@ -252,18 +252,18 @@ Export EEG data as CSV.
 
 - `success::Bool`
 """
-function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, overwrite::Bool=false)
+function eeg_export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
-    eeg.eeg_header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
+    obj.header[:components] == [""] && throw(ArgumentError("EEG does not contain components."))
 
     # DATA
     # unsplit epochs
-    s_merged = reshape(eeg.eeg_signals,
-                       size(eeg.eeg_signals, 1),
-                       size(eeg.eeg_signals, 2) * size(eeg.eeg_signals, 3))
+    s_merged = reshape(obj.data,
+                       size(obj.data, 1),
+                       size(obj.data, 2) * size(obj.data, 3))
     s = s_merged[:, :, 1]'
-    s = hcat(eeg.eeg_time, s)
+    s = hcat(obj.time_pts, s)
     l = vcat("time", eeg_labels(eeg))
     CSV.write(file_name, DataFrame(s, l))
 
@@ -272,7 +272,7 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
         file_name = replace(file_name, ".csv" => "_header.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
-        for (key, value) in eeg.eeg_header
+        for (key, value) in obj.header
             println(f, key, ": ", value)
         end
         close(f)
@@ -283,9 +283,9 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
         file_name = replace(file_name, ".csv" => "_components.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
-        for idx in eachindex(eeg.eeg_header[:components])
-            println(f, "component: $(eeg.eeg_header[:components][idx])")
-            println(f, eeg.eeg_components[idx])
+        for idx in eachindex(obj.header[:components])
+            println(f, "component: $(obj.header[:components][idx])")
+            println(f, obj.components[idx])
             println(f, "---")
         end
         close(f)
@@ -295,14 +295,14 @@ function eeg_export_csv(eeg::NeuroAnalyzer.EEG; file_name::String, header::Bool=
     if markers
         file_name = replace(file_name, ".csv" => "_markers.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
-        CSV.write(file_name, eeg.eeg_markers)
+        CSV.write(file_name, obj.markers)
     end
 
     # LOCS
     if locs
         file_name = replace(file_name, ".csv" => "_locs.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
-        CSV.write(file_name, eeg.eeg_locs)
+        CSV.write(file_name, obj.locs)
     end
 end
 
@@ -313,24 +313,24 @@ Export EEG channel locations data, format is based on `file_name` extension (.ce
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `overwrite::Bool=false`
 """
-function eeg_save_electrodes(eeg::NeuroAnalyzer.EEG; file_name::String, overwrite::Bool=false)
+function eeg_save_electrodes(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
-    channels = eeg.eeg_locs[!, :channel]
-    labels = eeg.eeg_locs[!, :labels]
-    theta = eeg.eeg_locs[!, :loc_theta]
-    radius = eeg.eeg_locs[!, :loc_radius]
-    x = eeg.eeg_locs[!, :loc_x]
-    y = eeg.eeg_locs[!, :loc_y]
-    z = eeg.eeg_locs[!, :loc_z]
-    radius_sph = eeg.eeg_locs[!, :loc_radius_sph]
-    theta_sph = eeg.eeg_locs[!, :loc_theta_sph]
-    phi_sph = eeg.eeg_locs[!, :loc_phi_sph]
+    channels = obj.locs[!, :channel]
+    labels = obj.locs[!, :labels]
+    theta = obj.locs[!, :loc_theta]
+    radius = obj.locs[!, :loc_radius]
+    x = obj.locs[!, :loc_x]
+    y = obj.locs[!, :loc_y]
+    z = obj.locs[!, :loc_z]
+    radius_sph = obj.locs[!, :loc_radius_sph]
+    theta_sph = obj.locs[!, :loc_theta_sph]
+    phi_sph = obj.locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
         df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
@@ -409,18 +409,18 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `locs::DataFrame`
 
 # Returns
 
 - `eeg:EEG`
 """
-function eeg_add_electrodes(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
+function eeg_add_electrodes(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     f_labels = lowercase.(locs[!, :labels])
 
-    e_labels = lowercase.(eeg.eeg_header[:labels])
+    e_labels = lowercase.(obj.header[:labels])
     no_match = setdiff(e_labels, f_labels)
     length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
@@ -445,7 +445,7 @@ end
 """
     eeg_add_electrodes!(eeg; locs)
 
-Load electrode positions from `locs` and return `NeuroAnalyzer.EEG` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
 
 Electrode locations:
 - `channel`         channel number
@@ -461,14 +461,14 @@ Electrode locations:
 
 # Arguments
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 - `locs::DataFrame`
 """
-function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
+function eeg_add_electrodes!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     
     f_labels = lowercase.(locs[!, :labels])
 
-    e_labels = lowercase.(eeg.eeg_header[:labels])
+    e_labels = lowercase.(obj.header[:labels])
     no_match = setdiff(e_labels, f_labels)
     length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
@@ -480,17 +480,17 @@ function eeg_add_electrodes!(eeg::NeuroAnalyzer.EEG; locs::DataFrame)
     end
     
     # create new dataset
-    eeg.eeg_locs = locs
+    obj.locs = locs
 
     # add entry to :history field
-    push!(eeg.eeg_header[:history], "eeg_add_electrodes!(EEG, locs)")
+    push!(obj.header[:history], "eeg_add_electrodes!(EEG, locs)")
     nothing
  end
 
 """
     eeg_import_bdf(file_name; detect_type)
 
-Load BDF/BDF+ file and return `NeuroAnalyzer.EEG` object.
+Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -542,78 +542,78 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     reserved == "BDF+C" && (eeg_filetype = "BDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    channel_n  = parse(Int, strip(header[253:256]))
+    ch_n  = parse(Int, strip(header[253:256]))
 
-    labels = Vector{String}(undef, channel_n)
-    transducers = Vector{String}(undef, channel_n)
-    physical_dimension = Vector{String}(undef, channel_n)
-    physical_minimum = Vector{Float64}(undef, channel_n)
-    physical_maximum = Vector{Float64}(undef, channel_n)
-    digital_minimum = Vector{Float64}(undef, channel_n)
-    digital_maximum = Vector{Float64}(undef, channel_n)
-    prefiltering = Vector{String}(undef, channel_n)
-    samples_per_datarecord = Vector{Int64}(undef, channel_n)
+    labels = Vector{String}(undef, ch_n)
+    transducers = Vector{String}(undef, ch_n)
+    physical_dimension = Vector{String}(undef, ch_n)
+    physical_minimum = Vector{Float64}(undef, ch_n)
+    physical_maximum = Vector{Float64}(undef, ch_n)
+    digital_minimum = Vector{Float64}(undef, ch_n)
+    digital_maximum = Vector{Float64}(undef, ch_n)
+    prefiltering = Vector{String}(undef, ch_n)
+    samples_per_datarecord = Vector{Int64}(undef, ch_n)
 
-    header = zeros(UInt8, channel_n * 16)
-    readbytes!(fid, header, channel_n * 16)
+    header = zeros(UInt8, ch_n * 16)
+    readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         labels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
@@ -623,14 +623,14 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
 
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
-    gain = Vector{Float64}(undef, channel_n)
-    for idx in 1:channel_n
+    gain = Vector{Float64}(undef, ch_n)
+    for idx in 1:ch_n
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
@@ -643,10 +643,10 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
 
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
-    eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
+    eeg_signals = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
     markers = repeat([""], data_records)
     for idx1 in 1:data_records
-        for idx2 in 1:channel_n
+        for idx2 in 1:ch_n
             signal24 = zeros(UInt8, samples_per_datarecord[idx2] * 3)
             readbytes!(fid, signal24, samples_per_datarecord[idx2] * 3)
             if idx2 != markers_channel
@@ -686,14 +686,14 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
     
     if has_markers
         deleteat!(channel_order, vsearch(markers_channel, channel_order))
-        eeg_signals = eeg_signals[setdiff(1:channel_n, markers_channel), :, :]
+        eeg_signals = eeg_signals[setdiff(1:ch_n, markers_channel), :, :]
         deleteat!(channel_type, markers_channel)
         deleteat!(labels, markers_channel)
         deleteat!(transducers, markers_channel)
         deleteat!(physical_dimension, markers_channel)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
-        channel_n -= 1
+        ch_n -= 1
         eeg_markers = _m2df(markers)
         # convert markers time to samples
         eeg_markers[!, :start] = t2s.(eeg_markers[!, :start], sampling_rate)
@@ -716,7 +716,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :channel_n => channel_n,
+                      :ch_n => ch_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
@@ -749,7 +749,7 @@ function eeg_import_bdf(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -757,7 +757,7 @@ end
 """
     eeg_import_digitrack(file_name; detect_type)
 
-Load Digitrack ASCII file and return `NeuroAnalyzer.EEG` object.
+Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -807,25 +807,25 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
         push!(channels, buffer)
     end
     deleteat!(channels, length(channels))
-    channel_n  = length(channels)
+    ch_n  = length(channels)
 
-    labels = Vector{String}(undef, channel_n)
-    prefiltering = Vector{String}(undef, channel_n)
-    for idx in 1:channel_n
+    labels = Vector{String}(undef, ch_n)
+    prefiltering = Vector{String}(undef, ch_n)
+    for idx in 1:ch_n
         labels[idx] = split(channels[idx], "\t")[1]
         prefiltering[idx] = split(channels[idx], "\t")[2]
         prefiltering[idx] = prefiltering[idx][1:(length(prefiltering[idx]) - 1)]
     end
 
-    transducers = repeat([""], channel_n)
-    physical_dimension = repeat([""], channel_n)
-    gain = repeat([-1.0], channel_n)
+    transducers = repeat([""], ch_n)
+    physical_dimension = repeat([""], ch_n)
+    gain = repeat([-1.0], ch_n)
     
     labels = _clean_labels(labels)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
     has_markers, markers_channel = _has_markers(channel_type)
@@ -834,7 +834,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    eeg_signals = zeros(channel_n, length(data), 1)
+    eeg_signals = zeros(ch_n, length(data), 1)
     Threads.@threads for idx in eachindex(data)
         signals = split(data[idx], "\t")
         deleteat!(signals, length(signals))
@@ -857,7 +857,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :channel_n => channel_n,
+                      :ch_n => ch_n,
                       :channel_type => channel_type,
                       :reference => "",
                       :channel_locations => false,
@@ -890,7 +890,7 @@ function eeg_import_digitrack(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -898,7 +898,7 @@ end
 """
     eeg_import_bv(file_name; detect_type)
 
-Load BrainVision BVCDF file and return `NeuroAnalyzer.EEG` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
+Load BrainVision BVCDF file and return `NeuroAnalyzer.NEURO` object. At least two files are required: .vhdr (header) and .eeg (signal data). If available, markers are loaded from .vmrk file.
 
 # Arguments
 
@@ -929,7 +929,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
     marker_file = ""
     data_format = ""
     data_orientation = ""
-    channel_n = 0
+    ch_n = 0
     sampling_interval = 0
     binary_format = ""
     averaged = false
@@ -944,7 +944,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         startswith(lowercase(replace(vhdr[idx], " " => "")), "markerfile=") && (marker_file = split(vhdr[idx], '=')[2])
         replace(marker_file, raw"$b" => split(file_name)[1])
         startswith(lowercase(replace(vhdr[idx], " " => "")), "dataformat=") && (data_format = lowercase(split(vhdr[idx], '=')[2])) # BINARY or ASCII
-        startswith(lowercase(replace(vhdr[idx], " " => "")), "numberofchannels=") && (channel_n = parse(Int64, split(vhdr[idx], '=')[2])) # 32
+        startswith(lowercase(replace(vhdr[idx], " " => "")), "numberofchannels=") && (ch_n = parse(Int64, split(vhdr[idx], '=')[2])) # 32
         startswith(lowercase(replace(vhdr[idx], " " => "")), "dataorientation=") && (data_orientation = lowercase(split(vhdr[idx], '=')[2])) # MULTIPLEXED
         startswith(lowercase(replace(vhdr[idx], " " => "")), "samplinginterval=") && (sampling_interval = parse(Float64, split(vhdr[idx], '=')[2])) # 1000
         startswith(lowercase(replace(vhdr[idx], " " => "")), "binaryformat=") && (binary_format = lowercase(split(vhdr[idx], '=')[2])) # INT_16
@@ -961,13 +961,13 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
     recording = ""
     recording_date = ""
     recording_time = ""
-    transducers = repeat([""], channel_n)
-    physical_dimension = repeat([""], channel_n)
-    gain = repeat([1.0], channel_n)
-    prefiltering = repeat([""], channel_n)
+    transducers = repeat([""], ch_n)
+    physical_dimension = repeat([""], ch_n)
+    gain = repeat([1.0], ch_n)
+    prefiltering = repeat([""], ch_n)
 
-    labels = repeat([""], channel_n)
-    for idx in 1:channel_n
+    labels = repeat([""], ch_n)
+    for idx in 1:ch_n
         tmp = split(split(vhdr[idx + channels_idx], '=')[2], ',')
         # channel label
         labels[idx] = replace(split(split(vhdr[idx + channels_idx], '=')[2], ',')[1], "\1" => ",")
@@ -982,22 +982,22 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 
     # read locs
-    loc_theta = zeros(channel_n)
-    loc_radius = zeros(channel_n)
-    loc_x = zeros(channel_n)
-    loc_y = zeros(channel_n)
-    loc_z = zeros(channel_n)
-    loc_radius_sph = zeros(channel_n)
-    loc_theta_sph = zeros(channel_n)
-    loc_phi_sph = zeros(channel_n)
+    loc_theta = zeros(ch_n)
+    loc_radius = zeros(ch_n)
+    loc_x = zeros(ch_n)
+    loc_y = zeros(ch_n)
+    loc_z = zeros(ch_n)
+    loc_radius_sph = zeros(ch_n)
+    loc_theta_sph = zeros(ch_n)
+    loc_phi_sph = zeros(ch_n)
     if locs_idx != 0
         channel_locations = true
-        for idx in 1:channel_n
+        for idx in 1:ch_n
             loc_radius_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[1])
             loc_theta_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[2])
             loc_phi_sph[idx] = parse(Float64, split(vhdr[locs_idx + idx], '=')[3])
@@ -1095,10 +1095,10 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
         close(fid)
         # split signal into channels
         if data_orientation == "multiplexed"
-            eeg_signals = zeros(channel_n, length(signal) ÷ channel_n, 1)
+            eeg_signals = zeros(ch_n, length(signal) ÷ ch_n, 1)
             idx2 = 1
-            for idx1 in 1:channel_n:length(signal)
-                eeg_signals[:, idx2, 1] = signal[idx1:(idx1 + (channel_n - 1))]
+            for idx1 in 1:ch_n:length(signal)
+                eeg_signals[:, idx2, 1] = signal[idx1:(idx1 + (ch_n - 1))]
                 idx2 += 1
             end
         else
@@ -1122,7 +1122,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :channel_n => channel_n,
+                      :ch_n => ch_n,
                       :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => channel_locations,
@@ -1156,7 +1156,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                              :loc_theta_sph => Float64[],
                              :loc_phi_sph => Float64[])
     else
-        eeg_locs = DataFrame(:channel_n => 1:channel_n,
+        eeg_locs = DataFrame(:ch_n => 1:ch_n,
                              :labels => labels,
                              :loc_theta => loc_theta,
                              :loc_radius => loc_radius,
@@ -1168,7 +1168,7 @@ function eeg_import_bv(file_name::String; detect_type::Bool=true)
                              :loc_phi_sph => loc_phi_sph)
     end
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1176,7 +1176,7 @@ end
 """
     eeg_import_alice4(file_name; detect_type)
 
-Load EDF exported from Alice 4 return `NeuroAnalyzer.EEG` object.
+Load EDF exported from Alice 4 return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -1233,78 +1233,78 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     data_records = parse(Int, strip(header[237:244]))
     # we get 1.0 here
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    channel_n  = parse(Int, strip(header[253:256]))
+    ch_n  = parse(Int, strip(header[253:256]))
 
-    labels = Vector{String}(undef, channel_n)
-    transducers = Vector{String}(undef, channel_n)
-    physical_dimension = Vector{String}(undef, channel_n)
-    physical_minimum = Vector{Float64}(undef, channel_n)
-    physical_maximum = Vector{Float64}(undef, channel_n)
-    digital_minimum = Vector{Float64}(undef, channel_n)
-    digital_maximum = Vector{Float64}(undef, channel_n)
-    prefiltering = Vector{String}(undef, channel_n)
-    samples_per_datarecord = Vector{Int64}(undef, channel_n)
+    labels = Vector{String}(undef, ch_n)
+    transducers = Vector{String}(undef, ch_n)
+    physical_dimension = Vector{String}(undef, ch_n)
+    physical_minimum = Vector{Float64}(undef, ch_n)
+    physical_maximum = Vector{Float64}(undef, ch_n)
+    digital_minimum = Vector{Float64}(undef, ch_n)
+    digital_maximum = Vector{Float64}(undef, ch_n)
+    prefiltering = Vector{String}(undef, ch_n)
+    samples_per_datarecord = Vector{Int64}(undef, ch_n)
 
-    header = zeros(UInt8, channel_n * 16)
-    readbytes!(fid, header, channel_n * 16)
+    header = zeros(UInt8, ch_n * 16)
+    readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         labels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
@@ -1314,7 +1314,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 
@@ -1327,8 +1327,8 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
         markers = repeat([""], data_records)
     end
 
-    gain = Vector{Float64}(undef, channel_n)
-    for idx in 1:channel_n
+    gain = Vector{Float64}(undef, ch_n)
+    for idx in 1:ch_n
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
@@ -1344,9 +1344,9 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
 
         header = zeros(UInt8, data_offset)
         readbytes!(fid, header, data_offset)
-        eeg_signals = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
+        eeg_signals = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
         for idx1 in 1:data_records
-            for idx2 in 1:channel_n
+            for idx2 in 1:ch_n
                 signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
                 readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
                 if idx2 != markers_channel
@@ -1396,11 +1396,11 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
         readbytes!(fid, data, data_size, all=true)
         signal = map(ltoh, reinterpret(Int16, data))
         data_records = length(signal) ÷ sum(sampling_rate)        
-        eeg_signals = zeros(channel_n, data_records * max_sampling_rate)
+        eeg_signals = zeros(ch_n, data_records * max_sampling_rate)
         data_segment = max_sampling_rate
 
         @inbounds for idx1 in 1:data_records            
-            for idx2 in 1:channel_n
+            for idx2 in 1:ch_n
                 tmp = Vector{Float64}()
                 for idx3 in 1:sampling_rate[idx2]
                     push!(tmp, popat!(signal, 1))
@@ -1417,7 +1417,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
 
         # reject weird channels
 
-        for idx1 in 1:channel_n
+        for idx1 in 1:ch_n
             if idx1 != markers_channel
                 if channel_type[idx1] == "markers"
                     for idx2 in 1:size(eeg_signals, 2)
@@ -1442,13 +1442,13 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
 
     if has_markers
         deleteat!(channel_order, vsearch(markers_channel, channel_order))
-        eeg_signals = eeg_signals[setdiff(1:channel_n, markers_channel), :, :]
+        eeg_signals = eeg_signals[setdiff(1:ch_n, markers_channel), :, :]
         deleteat!(labels, markers_channel)
         deleteat!(transducers, markers_channel)
         deleteat!(physical_dimension, markers_channel)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
-        channel_n -= 1
+        ch_n -= 1
         eeg_markers = _m2df(markers)
         eeg_markers[!, :start] = t2s.(eeg_markers[!, :start], sampling_rate)
         eeg_markers[!, :length] = t2s.(eeg_markers[!, :length], sampling_rate)
@@ -1470,7 +1470,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
                       :recording => string(recording),
                       :recording_date => recording_date,
                       :recording_time => recording_time,
-                      :channel_n => channel_n,
+                      :ch_n => ch_n,
                       :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => false,
@@ -1503,7 +1503,7 @@ function eeg_import_alice4(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1511,7 +1511,7 @@ end
 """
     eeg_import_csv(file_name; detect_type)
 
-Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.EEG` object.
+Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -1540,13 +1540,13 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
         # time by channels
         eeg_time = df[:, 1]
         eeg_signals = Array(df[:, 2:end])'
-        channel_n = ncol(df) - 1
+        ch_n = ncol(df) - 1
         labels = String.(names(df)[2:end])
     else
         # channels by time
         eeg_time = parse.(Float64, names(df)[2:end])
         eeg_signals = Array(df[:, 2:end])
-        channel_n = nrow(df)
+        ch_n = nrow(df)
         labels = String.(df[:, 1])
     end
     eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1)
@@ -1555,14 +1555,14 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 
     has_markers = false
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
     sampling_rate = round(Int64, 1 / eeg_time[2] * 1000)
-    gain = ones(channel_n)
+    gain = ones(ch_n)
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
 
     eeg_duration_samples = size(eeg_signals, 2)
@@ -1579,7 +1579,7 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
                       :recording => "",
                       :recording_date => "",
                       :recording_time => "",
-                      :channel_n => channel_n,
+                      :ch_n => ch_n,
                       :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => false,
@@ -1591,9 +1591,9 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
-                      :transducers => repeat([""], channel_n),
-                      :units => repeat([""], channel_n),
-                      :prefiltering => repeat([""], channel_n),
+                      :transducers => repeat([""], ch_n),
+                      :units => repeat([""], ch_n),
+                      :prefiltering => repeat([""], ch_n),
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
                       :note => "",
@@ -1612,7 +1612,7 @@ function eeg_import_csv(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end
@@ -1620,7 +1620,7 @@ end
 """
     eeg_import_set(file_name; detect_type)
 
-Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.EEG` object.
+Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -1644,20 +1644,20 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
     # there are no epochs if signal is matrix, not array
     ndims(eeg_signals) == 2 && (eeg_signals = reshape(eeg_signals, size(eeg_signals, 1), size(eeg_signals, 2), 1))
 
-    channel_n = size(eeg_signals, 1)
+    ch_n = size(eeg_signals, 1)
     
     # get channel labels
-    if length(dataset["chanlocs"]["labels"][:]) == channel_n
+    if length(dataset["chanlocs"]["labels"][:]) == ch_n
         labels = String.(dataset["chanlocs"]["labels"][:])
     else
-        labels = repeat([""], channel_n)
+        labels = repeat([""], ch_n)
     end
 
     labels = _clean_labels(labels)
     if detect_type == true
         channel_type = _set_channel_types(labels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 
@@ -1682,7 +1682,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
 
     has_markers = false
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
-    gain = ones(channel_n)
+    gain = ones(ch_n)
     eeg_markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
 
     eeg_duration_samples = size(eeg_signals, 2)
@@ -1699,7 +1699,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :recording => "",
                       :recording_date => "",
                       :recording_time => "",
-                      :channel_n => channel_n,
+                      :channel_n => ch_n,
                       :channel_type => channel_type[channel_order],
                       :reference => "",
                       :channel_locations => false,
@@ -1711,9 +1711,9 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                       :epoch_duration_samples => eeg_duration_samples,
                       :epoch_duration_seconds => eeg_duration_seconds,
                       :labels => labels[channel_order],
-                      :transducers => repeat([""], channel_n),
-                      :units => repeat([""], channel_n),
-                      :prefiltering => repeat([""], channel_n),
+                      :transducers => repeat([""], ch_n),
+                      :units => repeat([""], ch_n),
+                      :prefiltering => repeat([""], ch_n),
                       :sampling_rate => sampling_rate,
                       :gain => gain[channel_order],
                       :note => note,
@@ -1732,7 +1732,7 @@ function eeg_import_set(file_name::String; detect_type::Bool=true)
                          :loc_theta_sph => Float64[],
                          :loc_phi_sph => Float64[])
 
-    eeg = NeuroAnalyzer.EEG(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
+    eeg = NeuroAnalyzer.NEURO(eeg_header, eeg_time, eeg_epoch_time, eeg_signals[channel_order, :, :], eeg_components, eeg_markers, eeg_locs)
 
     return eeg
 end

@@ -1,55 +1,55 @@
-function _make_epochs(signal::Matrix{<:Real}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
+function _make_epochs(signal::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
-    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
-    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
-    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
-    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
+    (ep_len === nothing && ep_n === nothing) && throw(ArgumentError("Either ep_n or ep_len must be specified."))
+    (ep_len !== nothing && ep_n !== nothing) && throw(ArgumentError("Both ep_n and ep_len cannot be specified."))
+    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
+    (ep_n !== nothing && ep_n < 1) && throw(ArgumentError("ep_n must be ≥ 1."))
 
-    channel_n = size(signal, 1)
-    if epoch_n === nothing
-        epoch_n = size(signal, 2) ÷ epoch_len
+    ch_n = size(signal, 1)
+    if ep_n === nothing
+        ep_n = size(signal, 2) ÷ ep_len
     else
-        epoch_len = size(signal, 2) ÷ epoch_n
+        ep_len = size(signal, 2) ÷ ep_n
     end
 
-    epoch_len > size(signal, 2) && throw(ArgumentError("epoch_len must be ≤ $(size(signal, 2))."))
-    epoch_len < 1 && throw(ArgumentError("epoch_len must be ≥ 1."))
-    epoch_n < 1 && throw(ArgumentError("epoch_n must be ≥ 1."))
+    ep_len > size(signal, 2) && throw(ArgumentError("ep_len must be ≤ $(size(signal, 2))."))
+    ep_len < 1 && throw(ArgumentError("ep_len must be ≥ 1."))
+    ep_n < 1 && throw(ArgumentError("ep_n must be ≥ 1."))
 
-    epochs = reshape(signal[:, 1:(epoch_len * epoch_n)], channel_n, epoch_len, epoch_n)
+    epochs = reshape(signal[:, 1:(ep_len * ep_n)], ch_n, ep_len, ep_n)
 
     return epochs
 end
 
-function _make_epochs(signal::Array{T, 3}; epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing) where {T <: Real}
+function _make_epochs(signal::Array{T, 3}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing) where {T <: Real}
 
-    (epoch_len === nothing && epoch_n === nothing) && throw(ArgumentError("Either epoch_n or epoch_len must be specified."))
-    (epoch_len !== nothing && epoch_n !== nothing) && throw(ArgumentError("Both epoch_n and epoch_len cannot be specified."))
-    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
-    (epoch_n !== nothing && epoch_n < 1) && throw(ArgumentError("epoch_n must be ≥ 1."))
+    (ep_len === nothing && ep_n === nothing) && throw(ArgumentError("Either ep_n or ep_len must be specified."))
+    (ep_len !== nothing && ep_n !== nothing) && throw(ArgumentError("Both ep_n and ep_len cannot be specified."))
+    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
+    (ep_n !== nothing && ep_n < 1) && throw(ArgumentError("ep_n must be ≥ 1."))
 
-    channel_n = size(signal, 1)
-    if epoch_n === nothing
-        epoch_n = size(signal, 2) * size(signal, 3) ÷ epoch_len
+    ch_n = size(signal, 1)
+    if ep_n === nothing
+        ep_n = size(signal, 2) * size(signal, 3) ÷ ep_len
     else
-        epoch_len = size(signal, 2) * size(signal, 3) ÷ epoch_n
+        ep_len = size(signal, 2) * size(signal, 3) ÷ ep_n
     end
-    signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
-    epochs = reshape(signal[:, 1:(epoch_len * epoch_n), 1], channel_n, epoch_len, epoch_n)
+    signal = reshape(signal, ch_n, (size(signal, 2) * size(signal, 3)), 1)
+    epochs = reshape(signal[:, 1:(ep_len * ep_n), 1], ch_n, ep_len, ep_n)
 
     return epochs
 end
 
-function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, epoch_len::Int64)
+function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, marker_start::Vector{Int64}, epoch_offset::Int64, ep_len::Int64)
 
     if size(signal, 3) > 1
         _info("Signal has already been epoched, parts of the signal might have been removed.")
-        signal = reshape(signal, channel_n, (size(signal, 2) * size(signal, 3)), 1)
+        signal = reshape(signal, ch_n, (size(signal, 2) * size(signal, 3)), 1)
     end
 
     marker_n = length(marker_start)
     epoch_start = marker_start .- epoch_offset
-    epoch_end = epoch_start .+ epoch_len .- 1
+    epoch_end = epoch_start .+ ep_len .- 1
 
     # delete epochs outside signal limits
     for marker_idx in marker_n:-1:1
@@ -65,15 +65,15 @@ function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, ma
     end
 
     (epoch_offset < 1) && throw(ArgumentError("epoch_offset must be ≥ 1."))
-    (epoch_len !== nothing && epoch_len < 1) && throw(ArgumentError("epoch_len must be ≥ 1."))
+    (ep_len !== nothing && ep_len < 1) && throw(ArgumentError("ep_len must be ≥ 1."))
 
-    (epoch_offset + epoch_len > size(signal, 2)) && throw(ArgumentError("epoch_offset + epoch_len must be ≤ signal length $(size(signal, 2))."))
+    (epoch_offset + ep_len > size(signal, 2)) && throw(ArgumentError("epoch_offset + ep_len must be ≤ signal length $(size(signal, 2))."))
 
-    epochs = zeros(size(signal, 1), epoch_len, marker_n)
+    epochs = zeros(size(signal, 1), ep_len, marker_n)
     for marker_idx in 1:marker_n
         epochs[:, :, marker_idx] = reshape(signal[:, epoch_start[marker_idx]:epoch_end[marker_idx], :],
                                            size(signal, 1), 
-                                           epoch_len)
+                                           ep_len)
     end
 
     # remove markers outside epoch limits
@@ -89,7 +89,7 @@ function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, ma
     for epoch_idx in 1:marker_n
         for marker_idx in 1:nrow(markers)
             if markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx]
-                markers[!, :start][marker_idx] = (epoch_idx - 1) * epoch_len + markers[!, :start][marker_idx] .- epoch_start[epoch_idx]
+                markers[!, :start][marker_idx] = (epoch_idx - 1) * ep_len + markers[!, :start][marker_idx] .- epoch_start[epoch_idx]
             end
         end
     end

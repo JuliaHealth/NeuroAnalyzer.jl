@@ -5,13 +5,13 @@ using ContinuousWavelets
 
 eeg = eeg_import_bdf("eeg-test-bdfplus.bdf")
 eeg_delete_marker!(eeg, n=1)
-@test size(eeg.eeg_markers) == (1, 5)
+@test size(obj.markers) == (1, 5)
 eeg_add_marker!(eeg, id="event", start=1, len=1, desc="test", channel=0)
-@test size(eeg.eeg_markers) == (2, 5)
+@test size(obj.markers) == (2, 5)
 eeg_edit_marker!(eeg, n=2, id="event2", start=1, len=1, desc="test2", channel=0)
 
 eeg = eeg_import_edf("eeg-test-edf.edf")
-@test size(eeg.eeg_signals) == (24, 309760, 1)
+@test size(obj.data) == (24, 309760, 1)
 
 ecg = eeg_extract_channel(eeg, channel=24)
 eog2 = eeg_extract_channel(eeg, channel=23)
@@ -62,7 +62,7 @@ eeg1 = eeg_rename_channel(eeg, channel="Cz", name="CZ")
 eeg1 = eeg_rename_channel(eeg, channel=1, name="FP1")
 @test eeg1.eeg_header[:labels][1] == "FP1"
 
-eeg1 = eeg_taper(eeg, taper=eeg.eeg_signals[1, :, 1])
+eeg1 = eeg_taper(eeg, taper=obj.data[1, :, 1])
 @test size(eeg1.eeg_signals) == (19, 309760, 1)
 
 eeg1 = eeg_demean(eeg)
@@ -255,7 +255,7 @@ eeg_keep_channel_type!(e, type=:eeg)
 @test size(e.eeg_signals) == (18, 309760, 1)
 
 e = eeg_invert_polarity(eeg, channel=1)
-@test e.eeg_signals[1, 1, 1] == -eeg.eeg_signals[1, 1, 1]
+@test e.eeg_signals[1, 1, 1] == -obj.data[1, 1, 1]
 
 v = eeg_channel_stats(eeg)
 @test length(v) == 10
@@ -291,7 +291,7 @@ e10 = eeg_epoch(eeg, epoch_len=10*256)
 @test size(eeg_ispc(e10)) == (19, 19, 121)
 @test length(eeg_ec(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
 @test length(eeg_ged(eeg, eeg)) == 3
-@test size(eeg_frqinst(eeg)) == size(eeg.eeg_signals)
+@test size(eeg_frqinst(eeg)) == size(obj.data)
 @test size(eeg_fftdenoise(eeg).eeg_signals) == (19, 309760, 1)
 @test size(eeg_tkeo(eeg)) == (19, 309760, 1)
 @test length(eeg_mwpsd(eeg, frq_lim=(0, 20), frq_n=21)) == 2
@@ -311,17 +311,17 @@ eeg_delete_note!(eeg1)
 @test eeg_view_note(eeg1) == ""
 
 eeg1 = eeg_epoch(eeg, epoch_len=2560)
-new_channel = zeros(1, eeg_epoch_len(eeg1), eeg_epoch_n(eeg1))
+new_channel = zeros(1, epoch_len(eeg1), eeg_epoch_n(eeg1))
 eeg1 = eeg_replace_channel(eeg1, channel=1, signal=new_channel);
-@test eeg1.eeg_signals[1, :, :] == zeros(eeg_epoch_len(eeg1), eeg_epoch_n(eeg1))
+@test eeg1.eeg_signals[1, :, :] == zeros(epoch_len(eeg1), eeg_epoch_n(eeg1))
 eeg2 = eeg_plinterpolate_channel(eeg1, channel=1, epoch=1)
-@test eeg2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(eeg1))
+@test eeg2.eeg_signals[1, :, 1] != zeros(epoch_len(eeg1))
 
 eeg1 = eeg_epoch(eeg, epoch_len=2560);
-new_channel = zeros(1, eeg_epoch_len(eeg1), 1)
-eeg1.eeg_signals[1, :, 1] = zeros(eeg_epoch_len(eeg1))
+new_channel = zeros(1, epoch_len(eeg1), 1)
+eeg1.eeg_signals[1, :, 1] = zeros(epoch_len(eeg1))
 eeg2 = eeg_lrinterpolate_channel(eeg1, channel=1, epoch=1);
-@test eeg2.eeg_signals[1, :, 1] != zeros(eeg_epoch_len(eeg1))
+@test eeg2.eeg_signals[1, :, 1] != zeros(epoch_len(eeg1))
 
 @test length(eeg_band_mpower(eeg, f=(1,4))) == 3
 
@@ -413,10 +413,10 @@ b = eeg_bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
 
 eeg_r = eeg_reflect(eeg)
 eeg_c = eeg_chop(eeg_r)
-@test size(eeg.eeg_signals) == size(eeg_c.eeg_signals)
+@test size(obj.data) == size(eeg_c.eeg_signals)
 
-@test size(eeg_extract_data(eeg, channel=1:eeg_channel_n(eeg))) == size(eeg.eeg_signals)
-@test length(eeg_extract_time(eeg)) == length(eeg.eeg_time)
-@test length(eeg_extract_etime(eeg)) == length(eeg.eeg_epoch_time)
+@test size(eeg_extract_data(eeg, channel=1:eeg_channel_n(eeg))) == size(obj.data)
+@test length(eeg_extract_time(eeg)) == length(obj.time_pts)
+@test length(eeg_extract_etime(eeg)) == length(obj.epoch_time)
 
 true

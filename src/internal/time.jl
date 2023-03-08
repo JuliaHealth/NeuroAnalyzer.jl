@@ -15,16 +15,16 @@ function _convert_t(t1::Float64, t2::Float64)
     return t1, ts1, t2, ts2
 end
 
-function _s2epoch(eeg::NeuroAnalyzer.EEG, from::Int64, to::Int64)
-    epoch = floor(Int64, from / eeg_epoch_len(eeg)):ceil(Int64, to / eeg_epoch_len(eeg))
-    from / eeg_epoch_len(eeg) > from ÷ eeg_epoch_len(eeg) && (epoch = epoch[1] + 1:epoch[end])
+function _s2epoch(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
+    epoch = floor(Int64, from / epoch_len(obj)):ceil(Int64, to / epoch_len(obj))
+    from / epoch_len(obj) > from ÷ epoch_len(obj) && (epoch = epoch[1] + 1:epoch[end])
     epoch[1] == 0 && (epoch = 1:epoch[end])
     epoch[1] == epoch[end] && (epoch = epoch[1])
     return epoch
 end
 
-function _epoch2s(eeg::NeuroAnalyzer.EEG, epoch::Int64)
-    t1 = (epoch - 1) * eeg_epoch_len(eeg) + 1
-    t2 = epoch * eeg_epoch_len(eeg)
+function _epoch2s(obj::NeuroAnalyzer.NEURO, epoch::Int64)
+    t1 = (epoch - 1) * epoch_len(obj) + 1
+    t2 = epoch * epoch_len(obj)
     return t1, t2
 end

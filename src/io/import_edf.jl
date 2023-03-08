@@ -60,91 +60,90 @@ function import_edf(file_name::String; detect_type::Bool=true)
     reserved == "EDF+C" && (file_type = "EDF+")
     data_records = parse(Int, strip(header[237:244]))
     data_records_duration  = parse(Float64, strip(header[245:252]))
-    channel_n  = parse(Int, strip(header[253:256]))
+    ch_n  = parse(Int, strip(header[253:256]))
 
-    labels = Vector{String}(undef, channel_n)
-    transducers = Vector{String}(undef, channel_n)
-    physical_dimension = Vector{String}(undef, channel_n)
-    physical_minimum = Vector{Float64}(undef, channel_n)
-    physical_maximum = Vector{Float64}(undef, channel_n)
-    digital_minimum = Vector{Float64}(undef, channel_n)
-    digital_maximum = Vector{Float64}(undef, channel_n)
-    prefiltering = Vector{String}(undef, channel_n)
-    samples_per_datarecord = Vector{Int64}(undef, channel_n)
+    clabels = Vector{String}(undef, ch_n)
+    transducers = Vector{String}(undef, ch_n)
+    physical_dimension = Vector{String}(undef, ch_n)
+    physical_minimum = Vector{Float64}(undef, ch_n)
+    physical_maximum = Vector{Float64}(undef, ch_n)
+    digital_minimum = Vector{Float64}(undef, ch_n)
+    digital_maximum = Vector{Float64}(undef, ch_n)
+    prefiltering = Vector{String}(undef, ch_n)
+    samples_per_datarecord = Vector{Int64}(undef, ch_n)
 
-    header = zeros(UInt8, channel_n * 16)
-    readbytes!(fid, header, channel_n * 16)
+    header = zeros(UInt8, ch_n * 16)
+    readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
-    for idx in 1:channel_n
-        labels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
+    for idx in 1:ch_n
+        clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         transducers[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         physical_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_minimum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         digital_maximum[idx] = parse(Float64, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
-    header = zeros(UInt8, channel_n * 80)
-    readbytes!(fid, header, channel_n * 80)
+    header = zeros(UInt8, ch_n * 80)
+    readbytes!(fid, header, ch_n * 80)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         prefiltering[idx] = strip(header[1 + ((idx - 1) * 80):(idx * 80)])
     end
 
-    header = zeros(UInt8, channel_n * 8)
-    readbytes!(fid, header, channel_n * 8)
+    header = zeros(UInt8, ch_n * 8)
+    readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         samples_per_datarecord[idx] = parse(Int, strip(header[1 + ((idx - 1) * 8):(idx * 8)]))
     end
 
     close(fid)
 
-    labels = _clean_labels(labels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(labels)
+        channel_type = _set_channel_types(clabels)
     else
-        channel_type = repeat(["???"], channel_n)
+        channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
-
     if file_type == "EDF"
         has_markers = false
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
@@ -156,8 +155,8 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     # we assume that all channels have the same sampling rate
     sampling_rate = round(Int64, samples_per_datarecord[1] / data_records_duration)
-    gain = Vector{Float64}(undef, channel_n)
-    for idx in 1:channel_n
+    gain = Vector{Float64}(undef, ch_n)
+    for idx in 1:ch_n
         gain[idx] = (physical_maximum[idx] - physical_minimum[idx]) / (digital_maximum[idx] - digital_minimum[idx])
     end
 
@@ -170,9 +169,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     header = zeros(UInt8, data_offset)
     readbytes!(fid, header, data_offset)
-    data = zeros(channel_n, samples_per_datarecord[1] * data_records, 1)
+    data = zeros(ch_n, samples_per_datarecord[1] * data_records, 1)
     for idx1 in 1:data_records
-        for idx2 in 1:channel_n
+        for idx2 in 1:ch_n
             signal = zeros(UInt8, samples_per_datarecord[idx2] * 2)
             readbytes!(fid, signal, samples_per_datarecord[idx2] * 2)
             if idx2 != markers_channel
@@ -209,13 +208,13 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     if has_markers
         deleteat!(channel_order, vsearch(markers_channel, channel_order))
-        data = data[setdiff(1:channel_n, markers_channel), :, :]
-        deleteat!(labels, markers_channel)
+        data = data[setdiff(1:ch_n, markers_channel), :, :]
+        deleteat!(clabels, markers_channel)
         deleteat!(transducers, markers_channel)
         deleteat!(physical_dimension, markers_channel)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
-        channel_n -= 1
+        ch_n -= 1
         markers = _m2df(markers)
         markers[!, :start] = t2s.(markers[!, :start], sampling_rate)
         markers[!, :length] = t2s.(markers[!, :length], sampling_rate)
@@ -244,7 +243,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_n=channel_n,
+                              channel_n=ch_n,
                               channel_type=channel_type,
                               reference="",
                               duration_samples=duration_samples,
@@ -252,7 +251,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               epoch_n=1,
                               epoch_duration_samples=duration_samples,
                               epoch_duration_seconds=duration_seconds,
-                              labels=labels,
+                              clabels=clabels,
                               units=physical_dimension,
                               prefiltering=prefiltering,
                               sampling_rate=sampling_rate,

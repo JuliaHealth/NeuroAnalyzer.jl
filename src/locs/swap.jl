@@ -14,7 +14,7 @@ Swap channel locations x and y axes.
 
 # Returns
 
-- `eeg::NeuroAnalyzer.EEG`
+- `obj::NeuroAnalyzer.NEURO`
 """
 function locs_swapxy(locs::DataFrame; planar::Bool=true, spherical::Bool=true)
 

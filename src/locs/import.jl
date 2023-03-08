@@ -210,9 +210,9 @@ function locs_import_elc(file_name::String)
         labels[idx2] = elc_file[idx1]
         idx2 += 1
     end
-    x = s_normalize_minmax(x)
-    y = s_normalize_minmax(y)
-    z = s_normalize_minmax(z)
+    x = normalize_minmax(x)
+    y = normalize_minmax(y)
+    z = normalize_minmax(z)
 
     locs = DataFrame(:channel => 1:length(labels), :labels => labels, :loc_theta => theta, :loc_radius => radius, :loc_x => x, :loc_y => y, :loc_z => z, :loc_radius_sph => radius_sph, :loc_theta_sph => theta_sph, :loc_phi_sph => phi_sph)
 

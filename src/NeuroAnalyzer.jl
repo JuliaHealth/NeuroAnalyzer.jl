@@ -102,7 +102,7 @@ end
 
 mutable struct STUDY
     study_header::Dict{Symbol, Any}
-    study_eeg::Vector{NeuroAnalyzer.EEG}
+    study_eeg::Vector{NeuroAnalyzer.NEURO}
     study_group::Vector{Symbol}
 end
 
@@ -131,7 +131,7 @@ export na_version
 
 function __init__()
 
-    @info "Loading NeuroAnalyzer v$na_ver"
+    @info "NeuroAnalyzer v$na_ver"
 
     # load preferences
     @info "Loading preferences..."
@@ -198,6 +198,19 @@ include("locs/scale.jl")
 include("locs/rotate.jl")
 include("locs/swap.jl")
 
+include("plots/misc.jl")
+include("plots/plot_connections.jl")
+include("plots/plot_dipole3d.jl")
+include("plots/plot_electrodes.jl")
+include("plots/plot_erp.jl")
+include("plots/plot_filter_response.jl")
+include("plots/plot_psd.jl")
+include("plots/plot_save.jl")
+include("plots/plot_signal.jl")
+include("plots/plot_spectrogram.jl")
+include("plots/plot_topo.jl")
+include("plots/plot_weights.jl")
+
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")
 include("statistics/hildebrand_rule.jl")
@@ -217,6 +230,12 @@ include("statistics/segments.jl")
 include("statistics/sem_diff.jl")
 include("utils/components.jl")
 include("utils/info.jl")
+
+include("study/create.jl")
+include("study/info.jl")
+
+include("stim/tes.jl")
+include("stim/ect.jl")
 
 include("low_level.jl")
 export linspace
@@ -324,7 +343,7 @@ export s_phases
 export s_cwtspectrogram
 export s_dwt
 export s_idwt
-export s_normalize_invroot
+export normalize_invroot
 export s_cwt
 export s_icwt
 export t2s
@@ -476,120 +495,70 @@ export eeg_slaplacian
 export eeg_slaplacian!
 
 include("eeg_analyze.jl")
-export eeg_xcov
-export eeg_psd
-export eeg_stationarity
-export eeg_mi
-export eeg_mi
-export eeg_entropy
-export eeg_negentropy
-export eeg_band
-export eeg_tcoherence
-export eeg_freqs
-export eeg_difference
-export eeg_channel_pick
-export eeg_epoch_stats
-export eeg_spectrogram
-export eeg_spectrum
-export eeg_s2t
-export eeg_t2s
-export eeg_channel_stats
-export eeg_snr
-export eeg_standardize
-export eeg_standardize!
-export eeg_fconv
-export eeg_tconv
-export eeg_dft
-export eeg_mean
-export eeg_msci95
-export eeg_difference
-export eeg_acov
-export eeg_tenv
-export eeg_tenv_mean
-export eeg_tenv_median
-export eeg_penv
-export eeg_penv_mean
-export eeg_penv_median
-export eeg_senv
-export eeg_senv_mean
-export eeg_senv_median
-export eeg_ispc
-export eeg_itpc
-export eeg_pli
-export eeg_ispc_m
-export eeg_ec
-export eeg_ged
-export eeg_frqinst
-export eeg_itpc_s
-export eeg_tkeo
-export eeg_mwpsd
-export eeg_fcoherence
-export eeg_vartest
-export eeg_band_mpower
-export eeg_rel_psd
-export eeg_fbsplit
-export eeg_chdiff
-export eeg_cps
-export eeg_phdiff
-export eeg_ampdiff
-export eeg_dwt
-export eeg_cwt
-export eeg_psdslope
-export eeg_henv
-export eeg_henv_mean
-export eeg_henv_median
-export eeg_apply
-export eeg_erp_peaks
-export eeg_bands_dwt
-
-include("eeg_plots.jl")
-export plot_save
-export plot_signal
-export plot_signal_avg
-export plot_signal_butterfly
-export eeg_plot
-export plot_psd
-export plot_psd_avg
-export plot_psd_butterfly
-export plot_psd_3d
-export plot_psd_topo
-export eeg_plot_psd
-export plot_spectrogram
-export eeg_plot_spectrogram
-export plot_electrodes
-export plot_electrodes3d
-export eeg_plot_electrodes
-export plot_matrix
-export plot_covmatrix
-export plot_histogram
-export plot_bar
-export plot_line
-export plot_box
-export plot_violin
-export plot_dots
-export plot_paired
-export plot_polar
-export plot_filter_response
-export plot_weights
-export eeg_plot_weights
-export plot_connections
-export eeg_plot_connections
-export plot_topo
-export eeg_plot_topo
-export plot_compose
-export plot_empty
-export plot_erp
-export plot_erp_avg
-export plot_erp_butterfly
-export plot_erp_topo
-export eeg_plot_erp
-export plot_erp_stack
-export plot_dipole3d
-
-include("study/create.jl")
-include("study/info.jl")
-
-include("stim/tes.jl")
-include("stim/ect.jl")
+export xcov
+export psd
+export stationarity
+export mi
+export mi
+export entropy
+export negentropy
+export band
+export tcoherence
+export freqs
+export difference
+export channel_pick
+export epoch_stats
+export spectrogram
+export spectrum
+export s2t
+export t2s
+export channel_stats
+export snr
+export standardize
+export standardize!
+export fconv
+export tconv
+export dft
+export mean
+export msci95
+export difference
+export acov
+export tenv
+export tenv_mean
+export tenv_median
+export penv
+export penv_mean
+export penv_median
+export senv
+export senv_mean
+export senv_median
+export ispc
+export itpc
+export pli
+export ispc_m
+export ec
+export ged
+export frqinst
+export itpc_s
+export tkeo
+export mwpsd
+export fcoherence
+export vartest
+export band_mpower
+export rel_psd
+export fbsplit
+export chdiff
+export cps
+export phdiff
+export ampdiff
+export dwt
+export cwt
+export psdslope
+export henv
+export henv_mean
+export henv_median
+export apply
+export erp_peaks
+export bands_dwt
 
 end # NeuroAnalyzer
