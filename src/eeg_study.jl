@@ -15,16 +15,16 @@ Create EEG study object.
 function eeg_study_create(eeg::Vector{NeuroAnalyzer.EEG}, group::Vector{Symbol})
     length(eeg) == length(group) || throw(ArgumentError("Length of EEGs and groups must be equal."))
 
-    channel_n = eeg_channel_n(eeg[1])
-    epoch_n = eeg_epoch_n(eeg[1])
+    ch_n = eeg_channel_n(eeg[1])
+    ep_n = eeg_epoch_n(eeg[1])
     epoch_len = eeg_epoch_len(eeg[1])
     sr = eeg_sr(eeg[1])
 
     for eeg_idx in 1:length(eeg)
-        eeg_epoch_n(eeg[eeg_idx]) == epoch_n || throw(ArgumentError("All EEG object in the study must have the same number of epochs."))
+        eeg_epoch_n(eeg[eeg_idx]) == ep_n || throw(ArgumentError("All EEG object in the study must have the same number of epochs."))
         eeg_epoch_len(eeg[eeg_idx]) == epoch_len || throw(ArgumentError("All EEG object in the study must have the same length of epochs."))
         eeg_sr(eeg[eeg_idx]) == sr || throw(ArgumentError("All EEG object in the study must have the same sampling rate."))
-        eeg_channel_n(eeg[eeg_idx]) == channel_n || throw(ArgumentError("All EEG object in the study must have the same number of channels."))
+        eeg_channel_n(eeg[eeg_idx]) == ch_n || throw(ArgumentError("All EEG object in the study must have the same number of channels."))
     end
 
     study = STUDY(Dict{Symbol, Any}(), eeg, group)

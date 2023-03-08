@@ -70,7 +70,7 @@ mutable struct HEADER
     history::Vector{String}
 end
 
-mutable struct RECORD
+mutable struct NEURO
     header::NeuroAnalyzer.HEADER
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
@@ -145,16 +145,48 @@ end
 
 # internal functions are not available outside NA
 include("internal.jl")
+
 include("internal/reflect_chop.jl")
 include("internal/create_header.jl")
 include("internal/io.jl")
 include("internal/check.jl")
+include("internal/select.jl")
+include("internal/pl.jl")
+include("internal/plots.jl")
+include("internal/draw_head.jl")
+include("internal/fir_response.jl")
+include("internal/make_epochs.jl")
+include("internal/locs.jl")
+include("internal/interpolate.jl")
+include("internal/fiff.jl")
 
 # load sub-modules
-include("record_details.jl")
 include("low_level/locs_convert.jl")
+include("low_level/normalize.jl")
 include("analyze/total_power.jl")
+include("analyze/band_power.jl")
+include("analyze/covm.jl")
+include("analyze/corm.jl")
 include("io/import_edf.jl")
+include("statistics/dprime.jl")
+include("statistics/effsize.jl")
+include("statistics/hildebrand_rule.jl")
+include("statistics/jaccard_similarity.jl")
+include("statistics/linreg.jl")
+include("statistics/means.jl")
+include("statistics/misc.jl")
+include("statistics/ml.jl")
+include("statistics/norminv.jl")
+include("statistics/outliers.jl")
+include("statistics/pred_int.jl")
+include("statistics/ranks.jl")
+include("statistics/res_norm.jl")
+include("statistics/s2cmp.jl")
+include("statistics/s2cor.jl")
+include("statistics/segments.jl")
+include("statistics/sem_diff.jl")
+include("utils/components.jl")
+include("utils/info.jl")
 
 include("low_level.jl")
 export linspace
@@ -185,8 +217,6 @@ export generate_gaussian
 export tuple_order
 export s2_rmse
 export m_norm
-export s_cov
-export s2_cov
 export s_dft
 export s_msci95
 export s2_mean
@@ -194,14 +224,9 @@ export s2_difference
 export s_acov
 export s2_xcov
 export s_spectrum
-export s_band_power
 export s_taper
 export s_detrend
 export s_demean
-export s_normalize_zscore
-export s_normalize_minmax
-export s_normalize_n
-export s_normalize_log
 export s_add_noise
 export s_resample
 export s_invert_polarity
@@ -260,19 +285,11 @@ export f_nearest
 export s_band_mpower
 export s_rel_psd
 export s_wbp
-export s_normalize_gauss
 export s_cbp
 export s_specseg
 export s_denoise_wien
 export s2_cps
 export s2_phdiff
-export s_normalize_log10
-export s_normalize_neglog
-export s_normalize_neglog10
-export s_normalize_neg
-export s_normalize_pos
-export s_normalize_perc
-export s_normalize
 export s_phases
 export s_cwtspectrogram
 export s_dwt
@@ -283,40 +300,6 @@ export s_icwt
 export t2s
 export s2t
 export generate_noise
-
-include("statistics.jl")
-export hildebrand_rule
-export jaccard_similarity
-export z_score
-export k_categories
-export effsize
-export infcrit
-export grubbs
-export outlier_detect
-export seg_mean
-export seg2_mean
-export binom_prob
-export binom_stat
-export cvar_mean
-export cvar_median
-export cvar
-export meang
-export meanh
-export meanw
-export moe
-export rng
-export se
-export pred_int
-export sem_diff
-export prank
-export linreg
-export s2_cmp
-export s2_cor
-export dprime
-export norminv
-export dranks
-export res_norm
-export mcc
 
 include("eeg_io.jl")
 export eeg_load
@@ -351,18 +334,6 @@ export meg_import_fiff
 
 include("eeg_edit.jl")
 export eeg_copy
-export eeg_add_component
-export eeg_add_component!
-export eeg_list_components
-export eeg_extract_component
-export eeg_delete_component
-export eeg_delete_component!
-export eeg_reset_components
-export eeg_reset_components!
-export eeg_component_idx
-export eeg_component_type
-export eeg_rename_component
-export eeg_rename_component!
 export eeg_delete_channel
 export eeg_delete_channel!
 export eeg_keep_channel
@@ -513,9 +484,6 @@ export eeg_slaplacian
 export eeg_slaplacian!
 
 include("eeg_analyze.jl")
-export eeg_band_power
-export eeg_cov
-export eeg_cor
 export eeg_xcov
 export eeg_psd
 export eeg_stationarity
@@ -580,7 +548,6 @@ export eeg_henv_mean
 export eeg_henv_median
 export eeg_apply
 export eeg_erp_peaks
-export eeg_signal_channels
 export eeg_bands_dwt
 
 include("eeg_plots.jl")

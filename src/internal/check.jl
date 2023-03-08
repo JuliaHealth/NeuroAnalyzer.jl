@@ -1,32 +1,32 @@
-function _check_channels(record::NeuroAnalyzer.RECORD, channel::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_channels(obj::NeuroAnalyzer.NEURO, channel::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in channel
-        (idx < 1 || idx > channel_n(record)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(record))."))
+        (idx < 1 || idx > channel_n(obj)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(obj))."))
     end
 end
 
-function _check_channels(eeg::NeuroAnalyzer.RECORD, channel::Union{Int64, Vector{Int64}, AbstractRange}, type::Symbol)
-    channels = get_channel_bytype(record, type=type)
+function _check_channels(obj::NeuroAnalyzer.NEURO, channel::Union{Int64, Vector{Int64}, AbstractRange}, type::Symbol)
+    channels = get_channel_bytype(obj, type=type)
     for idx in channel
         idx in channels || throw(ArgumentError("Channel $idx does not match type: $(uppercase(string(type))) data channels."))
-        (idx < 1 || idx > channel_n(record)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(record))."))
+        (idx < 1 || idx > channel_n(obj)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(obj))."))
     end
 end
 
 function _check_channels(channels::Union{Int64, Vector{Int64}, AbstractRange}, channel::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in channel
         idx in channels || throw(ArgumentError("Channel $idx does not match signal channels."))
-        (idx < 1 || idx > length(channels)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(record))."))
+        (idx < 1 || idx > length(channels)) && throw(ArgumentError("channel must be ≥ 1 and ≤ $(channel_n(obj))."))
     end
 end
 
-function _check_epochs(record::NeuroAnalyzer.RECORD, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})
     for idx in epoch
-        (idx < 1 || idx > epoch_n(record)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(epoch_n(record))."))
+        (idx < 1 || idx > epoch_n(obj)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(epoch_n(obj))."))
     end
 end
 
-function _check_cidx(record::NeuroAnalyzer.RECORD, c::Symbol, cc::Union{Int64, Vector{Int64}, AbstractRange})
-    c, _ = _get_component(record, c)
+function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, AbstractRange})
+    c, _ = _get_component(obj, c)
     for idx in cc
         (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be ≥ 1 and ≤ $(size(c, 1))."))
     end
@@ -38,12 +38,12 @@ function _check_cidx(c::Array{Float64, 3}, cc::Union{Int64, Vector{Int64}, Abstr
     end
 end
 
-function _check_segment(record::NeuroAnalyzer.RECORD, from::Int64, to::Int64)
+function _check_segment(obj::NeuroAnalyzer.NEURO, from::Int64, to::Int64)
     from < 1 && throw(ArgumentError("from must be > 0."))
     to < 1 && throw(ArgumentError("to must be > 0."))
     to < from && throw(ArgumentError("to must be ≥ $from."))
-    (from > signal_len(record)) && throw(ArgumentError("from must be ≤ $(signal_len(record))."))
-    (to > signal_len(record)) && throw(ArgumentError("to must be ≤ $(signal_len(record))."))
+    (from > signal_len(obj)) && throw(ArgumentError("from must be ≤ $(signal_len(obj))."))
+    (to > signal_len(obj)) && throw(ArgumentError("to must be ≤ $(signal_len(obj))."))
 end
 
 function _check_segment(signal::AbstractVector, from::Int64, to::Int64)
@@ -76,6 +76,6 @@ function _check_markers(markers::Vector{String}, marker::String)
     marker in markers || throw(ArgumentError("Marker: $marker not found in markers."))
 end
 
-function _check_markers(record::NeuroAnalyzer.RECORD, marker::String)
-    marker in unique(record.markers[!, :description]) || throw(ArgumentError("Marker: $marker not found in markers."))
+function _check_markers(obj::NeuroAnalyzer.NEURO, marker::String)
+    marker in unique(obj.markers[!, :description]) || throw(ArgumentError("Marker: $marker not found in markers."))
 end

@@ -63,13 +63,13 @@ function total_power(signal::AbstractArray; fs::Int64, mt::Bool=false)
 end
 
 """
-    total_power(record, channel, mt)
+    total_power(obj, channel, mt)
 
 Calculate total power.
 
 # Arguments
 
-- `record::NeuroAnalyzer.RECORD`
+- `obj::NeuroAnalyzer.NEURO`
 - `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(record)`: index of channels, default is all signal channels
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -77,34 +77,10 @@ Calculate total power.
  
 - `stp::Matrix{Float64}`: total power for each channel per epoch
 """
-function total_power(record::NeuroAnalyzer.RECORD; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(record), mt::Bool=false)
+function total_power(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), mt::Bool=false)
 
-    fs = sr(record)
-    _check_channels(record, channel)
+    fs = sr(obj)
+    _check_channels(obj, channel)
 
-    return @views total_power(record.data[channel, :, :], fs=fs, mt=mt)
-end
-
-"""
-    total_power(record, c; cc, mt)
-
-Calculate total power.
-
-# Arguments
-
-- `record::NeuroAnalyzer.RECORD`
-- `c::Symbol`: component name
-- `cc::Union{Int64, Vector{Int64}, AbstractRange}=component_channels(record, c)`: index of component channels, default is all channels
-- `mt::Bool=false`: if true use multi-tapered periodogram
-
-# Returns
- 
-- `stp::Matrix{Float64}`: total power for each channel per epoch
-"""
-function total_power(record::NeuroAnalyzer.RECORD, c::Symbol; cc::Union{Int64, Vector{Int64}, AbstractRange}=component_channels(record, c), mt::Bool=false)
-
-    fs = sr(record)
-    _check_cidx(record, c=c, cc=cc)
-
-    return @views total_power(extract_component(record, c=c)[cc, :, :], fs=fs, mt=mt)
+    return @views total_power(obj.data[channel, :, :], fs=fs, mt=mt)
 end

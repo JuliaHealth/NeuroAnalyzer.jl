@@ -1,0 +1,120 @@
+export covm
+
+"""
+   covm(signal; norm=true)
+
+Calculate covariance matrix of `signal * signal'`.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `norm::Bool=false`: normalize covariance
+
+# Returns
+
+- `cov_mat::Matrix{Float64}`
+"""
+function covm(signal::AbstractVector; norm::Bool=false)
+
+    # channels-vs-channels
+    if CUDA.functional() && use_cuda
+        cov_mat = Matrix(cov(CuVector(signal) * CuVector(signal)'))
+    else
+        cov_mat = cov(signal * signal')
+    end
+
+    # normalize
+    norm == true && (cov_mat = m_norm(cov_mat))
+
+    return cov_mat
+end
+
+"""
+   covm(signal1, signal2; norm=true)
+
+Calculate covariance matrix between `signal1` and `signal2`.
+
+# Arguments
+
+- `signal1::AbstractVector`
+- `signal2::AbstractVector`
+- `norm::Bool=false`: normalize covariance
+
+# Returns
+
+- `cov_mat::Matrix{Float64}`
+"""
+function covm(signal1::AbstractVector, signal2::AbstractVector; norm::Bool=false)
+
+    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same length."))
+
+    # channels-vs-channels
+    if CUDA.functional() && use_cuda
+        cov_mat = Matrix(cov(CuVector(signal1) * CuVector(signal2)'))
+    else
+        cov_mat = cov(signal1 * signal2')
+    end
+
+    # normalize
+    norm == true && (cov_mat = m_norm(cov_mat))
+
+    return cov_mat
+end
+
+"""
+   covm(signal; norm=true)
+
+Calculate covariance matrix.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `norm::Bool=false`: normalize covariance
+
+# Returns
+
+- `cov_mat::Matrix{Float64}`
+"""
+function covm(signal::AbstractArray; norm::Bool=false)
+
+    ep_len = size(signal, 2)
+    ep_n = size(signal, 3)
+
+    # initialize progress bar
+    progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
+
+    cov_mat = zeros(ep_len, ep_len, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for signal_idx in 1:ep_len
+            @views @inbounds cov_mat[:, :, epoch_idx] = covm(signal[:, signal_idx, epoch_idx], norm=norm)
+
+            # update progress bar
+            progress_bar == true && next!(pb)
+        end
+    end
+
+    return cov_mat
+end
+
+"""
+    covm(obj; channel, norm)
+
+Calculate covariance matrix.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all OBJ channels
+- `norm::Bool=false`: normalize matrix
+
+# Returns
+
+- `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
+"""
+function covm(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false)
+
+    _check_channels(obj, channel)
+
+    return covm(obj.data[channel, :, :])
+
+end

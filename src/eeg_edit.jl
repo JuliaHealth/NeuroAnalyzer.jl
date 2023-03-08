@@ -1,288 +1,4 @@
 """
-    eeg_add_component(eeg; c, v)
-
-Add component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-- `v::Any`: component value
-
-# Returns
-
-- `eeg::NeuroAnalyzer.EEG`
-"""
-function eeg_add_component(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
-
-    eeg_new = deepcopy(eeg)
-    c in eeg_new.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component() to remove it prior the operation."))
-    # add component name
-    push!(eeg_new.eeg_header[:components], c)
-    # add component values
-    push!(eeg_new.eeg_components, v)
-    push!(eeg_new.eeg_header[:history], "eeg_add_component(EEG, c=$c, v=$v)")
-
-    return eeg_new
-end
-
-"""
-    eeg_add_component!(eeg; c, v)
-
-Add component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-- `v::Any`: component value
-"""
-function eeg_add_component!(eeg::NeuroAnalyzer.EEG; c::Symbol, v::Any)
-
-    c in eeg.eeg_header[:components] && throw(ArgumentError("Component $c already exists. Use eeg_delete_component!() to remove it prior the operation."))
-    # add component name
-    push!(eeg.eeg_header[:components], c)
-    # add component values
-    push!(eeg.eeg_components, v)
-    push!(eeg.eeg_header[:history], "eeg_add_component!(EEG, c=$c, v=$v)")
-
-    return nothing
-end
-
-"""
-    eeg_list_components(eeg)
-
-List component names.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-
-# Returns
-
-- `components::Vector{Symbol}`
-"""
-function eeg_list_components(eeg::NeuroAnalyzer.EEG)
-    return eeg.eeg_header[:components]
-end
-
-"""
-    eeg_extract_component(eeg, c)
-
-Extract component values.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-
-# Returns
-
-- `component::Any`
-"""
-function eeg_extract_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
-    
-    for idx in eachindex(eeg.eeg_header[:components])
-        if c == eeg.eeg_header[:components][idx]
-            return eeg.eeg_components[idx]
-        end
-    end
-end
-
-"""
-    eeg_delete_component(eeg; c)
-
-Delete component. 
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-
-# Returns
-
-- `eeg::NeuroAnalyzer.EEG`
-"""
-function eeg_delete_component(eeg::NeuroAnalyzer.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
-    
-    eeg_new = deepcopy(eeg)
-    for idx in eachindex(eeg.eeg_header[:components])
-        if c == eeg_new.eeg_header[:components][idx]
-            # delete component values
-            deleteat!(eeg_new.eeg_components, idx)
-            # delete component name
-            deleteat!(eeg_new.eeg_header[:components], idx)
-            push!(eeg_new.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
-            return eeg_new
-        end
-    end
-end
-
-"""
-    eeg_delete_component!(eeg; c)
-
-Delete component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-"""
-function eeg_delete_component!(eeg::NeuroAnalyzer.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
-    
-    for idx in length(eeg.eeg_header[:components]):-1:1
-        if c == eeg.eeg_header[:components][idx]
-            # delete component values
-            deleteat!(eeg.eeg_components, idx)
-            # delete component name
-            deleteat!(eeg.eeg_header[:components], idx)
-            push!(eeg.eeg_header[:history], "eeg_delete_component(EEG, c=$c)")
-        end
-    end
-
-    return nothing
-end
-
-"""
-    eeg_reset_components(eeg)
-
-Remove all components.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-
-# Returns
-
-- `eeg::NeuroAnalyzer.EEG`
-"""
-function eeg_reset_components(eeg::NeuroAnalyzer.EEG)
-    eeg_new = deepcopy(eeg)
-    eeg_new.eeg_header[:components] = []
-    eeg_new.eeg_components = []
-    return eeg_new
-end
-
-"""
-    eeg_reset_components!(eeg)
-
-Remove all components.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-"""
-function eeg_reset_components!(eeg::NeuroAnalyzer.EEG)
-    eeg.eeg_header[:components] = []
-    eeg.eeg_components = []
-    return nothing
-end
-
-"""
-    eeg_component_idx(eeg, c)
-
-Return component index.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-
-# Return
-
-- `c_idx::Int64`
-"""
-function eeg_component_idx(eeg::NeuroAnalyzer.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
-    c_idx = findfirst(isequal(c), eeg.eeg_header[:components])
-
-    return c_idx
-end
-
-"""
-    eeg_component_type(eeg, c)
-
-Return component data type.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c::Symbol`: component name
-
-# Return
-
-- `c_type::DataType`
-"""
-function eeg_component_type(eeg::NeuroAnalyzer.EEG; c::Symbol)
-
-    c in eeg.eeg_header[:components] || throw(ArgumentError("Component $c does not exist. Use eeg_list_component() to view existing components."))
-    c_idx = eeg_component_idx(eeg; c=c)
-    c_type = typeof(eeg.eeg_components[c_idx])
-
-    return c_type
-end
-
-"""
-    eeg_rename_component(eeg, c_old, c_new)
-
-Rename component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c_old::Symbol`: old component name
-- `c_new::Symbol`: new component name
-
-# Return
-
-- `eeg_new:EEG`
-"""
-function eeg_rename_component(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Symbol)
-
-    c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
-    c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
-
-    eeg_new = deepcopy(eeg)
-    c_idx = eeg_component_idx(eeg, c=c_old)
-    eeg_new.eeg_header[:components][c_idx] = c_new
-
-    push!(eeg_new.eeg_header[:history], "eeg_rename_component(EEG, c_old=$c_old, c_new=$c_new)")
-
-    return eeg_new
-end
-
-"""
-    eeg_rename_component!(eeg, c_old, c_new)
-
-Rename component.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `c_old::Symbol`: old component name
-- `c_new::Symbol`: new component name
-"""
-function eeg_rename_component!(eeg::NeuroAnalyzer.EEG; c_old::Symbol, c_new::Symbol)
-
-    c_old in eeg.eeg_header[:components] || throw(ArgumentError("Component $c_old does not exist. Use eeg_list_component() to view existing components."))
-    c_new in eeg.eeg_header[:components] && throw(ArgumentError("Component $c_new already exists. Use eeg_list_component() to view existing components."))
-
-    c_idx = eeg_component_idx(eeg, c=c_old)
-    eeg.eeg_header[:components][c_idx] = c_new
-
-    push!(eeg.eeg_header[:history], "eeg_rename_component!(EEG, c_old=$c_old, c_new=$c_new)")
-
-    return nothing
-end
-
-"""
     eeg_delete_channel(eeg; channel)
 
 Delete EEG channel(s).
@@ -299,9 +15,9 @@ Delete EEG channel(s).
 function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel_n = eeg_channel_n(eeg)
+    ch_n = eeg_channel_n(eeg)
     length(channel) > 1 && (channel = sort!(channel, rev=true))
-    length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
+    length(channel) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
     _check_channels(eeg, channel)
 
@@ -318,7 +34,7 @@ function eeg_delete_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector
         deleteat!(eeg_new.eeg_header[:prefiltering], idx)
         deleteat!(eeg_new.eeg_header[:gain], idx)
     end
-    eeg_new.eeg_header[:channel_n] -= length(channel)
+    eeg_new.eeg_header[:ch_n] -= length(channel)
 
     # remove channel
     eeg_new.eeg_signals = eeg_new.eeg_signals[setdiff(1:end, (channel)), :, :]
@@ -342,9 +58,9 @@ Delete EEG channel(s).
 function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
-    channel_n = eeg_channel_n(eeg)
+    ch_n = eeg_channel_n(eeg)
     length(channel) > 1 && (channel = sort!(channel, rev=true))
-    length(channel) == channel_n && throw(ArgumentError("You cannot delete all channels."))
+    length(channel) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
     _check_channels(eeg, channel)
 
@@ -359,7 +75,7 @@ function eeg_delete_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vecto
         deleteat!(eeg.eeg_header[:prefiltering], idx)
         deleteat!(eeg.eeg_header[:gain], idx)
     end
-    eeg.eeg_header[:channel_n] -= length(channel)
+    eeg.eeg_header[:ch_n] -= length(channel)
 
     # remove channel
     eeg.eeg_signals = eeg.eeg_signals[setdiff(1:end, (channel)), :, :]
@@ -389,9 +105,9 @@ function eeg_keep_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     _check_channels(eeg, channel)
 
-    channel_n = eeg_channel_n(eeg)
-    channels_to_remove = setdiff(collect(1:channel_n), channel)
-    length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
+    ch_n = eeg_channel_n(eeg)
+    channels_to_remove = setdiff(collect(1:ch_n), channel)
+    length(channels_to_remove) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
     return eeg_delete_channel(eeg, channel=channels_to_remove)
 end
@@ -411,9 +127,9 @@ function eeg_keep_channel!(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     _check_channels(eeg, channel)
 
-    channel_n = eeg_channel_n(eeg)
-    channels_to_remove = setdiff(collect(1:channel_n), channel)
-    length(channels_to_remove) == channel_n && throw(ArgumentError("You cannot delete all channels."))
+    ch_n = eeg_channel_n(eeg)
+    channels_to_remove = setdiff(collect(1:ch_n), channel)
+    length(channels_to_remove) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
     eeg_delete_channel!(eeg, channel=channels_to_remove)
 end
@@ -559,7 +275,7 @@ function eeg_extract_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Strin
 end
 
 """
-    eeg_epoch(eeg; marker, epoch_offset, epoch_n, epoch_len)
+    eeg_epoch(eeg; marker, ep_offset, ep_n, epoch_len)
 
 Split EEG into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
@@ -567,15 +283,15 @@ Split EEG into epochs. Return signal that is split either by markers (if specifi
 
 - `eeg::NeuroAnalyzer.EEG`
 - `marker::String="": marker name to split at
-- `epoch_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch_offset)
-- `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
+- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - ep_offset)
+- `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
 
 # Returns
 
 - `eeg::NeuroAnalyzer.EEG`
 """
-function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real=0, epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
+function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", ep_offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
 
     eeg_new = deepcopy(eeg)
 
@@ -583,7 +299,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
         # split by markers
         if eeg.eeg_header[:markers] == true
             epoch_len === nothing && throw(ArgumentError("epoch_len must be specified."))
-            epoch_offset == 0 && throw(ArgumentError("epoch_offset must be specified."))
+            ep_offset == 0 && throw(ArgumentError("ep_offset must be specified."))
             _check_markers(eeg, marker)
 
             # get marker positions
@@ -594,13 +310,13 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
             marker_start = eeg_new.eeg_markers[!, :start][marker_idx]
 
             # split into epochs
-            epochs, eeg_new.eeg_markers = _make_epochs_bymarkers(eeg.eeg_signals, markers=eeg_new.eeg_markers, marker_start=marker_start, epoch_offset=epoch_offset, epoch_len=epoch_len)
+            epochs, eeg_new.eeg_markers = _make_epochs_bymarkers(eeg.eeg_signals, markers=eeg_new.eeg_markers, marker_start=marker_start, ep_offset=ep_offset, epoch_len=epoch_len)
         else
             throw(ArgumentError("EEG does not contain markers."))
         end
     else
-        # split by epoch_len or epoch_n
-        epochs = _make_epochs(eeg.eeg_signals, epoch_n=epoch_n, epoch_len=epoch_len)
+        # split by epoch_len or ep_n
+        epochs = _make_epochs(eeg.eeg_signals, ep_n=ep_n, epoch_len=epoch_len)
 
         # delete markers outside epochs
         for marker_idx in nrow(eeg_new.eeg_markers):-1:1
@@ -609,7 +325,7 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
     end
 
     # create new dataset
-    epoch_n = size(epochs, 3)
+    ep_n = size(epochs, 3)
     epoch_duration_samples = size(epochs, 2)
     epoch_duration_seconds = size(epochs, 2) / eeg.eeg_header[:sampling_rate]
     eeg_duration_samples = size(epochs, 2) * size(epochs, 3)
@@ -625,24 +341,24 @@ function eeg_epoch(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real
 
     # update epochs time
     fs = eeg_sr(eeg_new)
-    new_epochs_time = linspace(-s2t(epoch_offset, fs), epoch_duration_seconds - s2t(epoch_offset, fs), epoch_duration_samples)
+    new_epochs_time = linspace(-s2t(ep_offset, fs), epoch_duration_seconds - s2t(ep_offset, fs), epoch_duration_samples)
     eeg_new.eeg_epoch_time = new_epochs_time
 
     # update header
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
-    eeg_new.eeg_header[:epoch_n] = epoch_n
+    eeg_new.eeg_header[:ep_n] = ep_n
     eeg_new.eeg_header[:epoch_duration_samples] = epoch_duration_samples
     eeg_new.eeg_header[:epoch_duration_seconds] = epoch_duration_seconds
 
     eeg_reset_components!(eeg_new)
-    push!(eeg_new.eeg_header[:history], "eeg_epoch(EEG, epoch_n=$epoch_n, epoch_len=$epoch_len)")
+    push!(eeg_new.eeg_header[:history], "eeg_epoch(EEG, ep_n=$ep_n, epoch_len=$epoch_len)")
 
     return eeg_new
 end
 
 """
-    eeg_epoch!(eeg; marker, epoch_offset, epoch_n, epoch_len)
+    eeg_epoch!(eeg; marker, ep_offset, ep_n, epoch_len)
 
 Split EEG into epochs. Return signal that is split either by markers (if specified), by epoch length or by number of epochs.
 
@@ -650,13 +366,13 @@ Split EEG into epochs. Return signal that is split either by markers (if specifi
 
 - `eeg::NeuroAnalyzer.EEG`
 - `marker::String="": marker name to split at
-- `epoch_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - epoch_offset)
-- `epoch_n::Union{Int64, Nothing}=nothing`: number of epochs
+- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - ep_offset)
+- `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `epoch_len::Union{Int64, Nothing}`=nothing: epoch length in samples
 """
-function eeg_epoch!(eeg::NeuroAnalyzer.EEG; marker::String="", epoch_offset::Real=0, epoch_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
+function eeg_epoch!(eeg::NeuroAnalyzer.EEG; marker::String="", ep_offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, epoch_len::Union{Int64, Nothing}=nothing)
 
-    eeg_tmp = eeg_epoch(eeg, marker=marker, epoch_offset=epoch_offset, epoch_n=epoch_n, epoch_len=epoch_len)
+    eeg_tmp = eeg_epoch(eeg, marker=marker, ep_offset=ep_offset, ep_n=ep_n, epoch_len=epoch_len)
     eeg.eeg_header = eeg_tmp.eeg_header
     eeg.eeg_signals = eeg_tmp.eeg_signals
     eeg.eeg_time = eeg_tmp.eeg_time
@@ -689,7 +405,7 @@ function eeg_erp(eeg::NeuroAnalyzer.EEG)
     eeg_new.eeg_time = eeg_time[1:(end - 1)]
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_duration_samples
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_duration_seconds
-    eeg_new.eeg_header[:epoch_n] = 1
+    eeg_new.eeg_header[:ep_n] = 1
 
     # remove markers of deleted epochs
     for marker_idx in nrow(eeg_new.eeg_markers):-1:1
@@ -746,7 +462,7 @@ function eeg_extract_epoch(eeg::NeuroAnalyzer.EEG; epoch::Int64)
     eeg_new = deepcopy(eeg)
     eeg_new.eeg_signals = s_new
     eeg_new.eeg_epoch_time = eeg.eeg_epoch_time
-    eeg_new.eeg_header[:epoch_n] = 1
+    eeg_new.eeg_header[:ep_n] = 1
     eeg_new.eeg_header[:eeg_duration_samples] = eeg_new.eeg_header[:epoch_duration_samples]
     eeg_new.eeg_header[:eeg_duration_seconds] = eeg_new.eeg_header[:epoch_duration_seconds]
 
@@ -775,7 +491,7 @@ function eeg_trim(eeg::NeuroAnalyzer.EEG; segment::Tuple{Int64, Int64}, remove_e
 
     if remove_epochs == false
         eeg_new = deepcopy(eeg)
-        eeg_epoch_n(eeg) > 1 && (eeg_epoch!(eeg_new, epoch_n=1))
+        eeg_epoch_n(eeg) > 1 && (eeg_epoch!(eeg_new, ep_n=1))
         _check_segment(eeg_new, segment[1], segment[2])
         eeg_new.eeg_signals = s_trim(eeg_new.eeg_signals, segment=segment)
         t_trimmed = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
@@ -922,10 +638,10 @@ function eeg_delete_epoch(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, Vector{Int
     end
 
     # update headers
-    eeg_new.eeg_header[:epoch_n] -= length(epoch)
-    epoch_n = eeg_new.eeg_header[:epoch_n]
-    eeg_new.eeg_header[:eeg_duration_samples] = epoch_n * size(eeg.eeg_signals, 2)
-    eeg_new.eeg_header[:eeg_duration_seconds] = round((epoch_n * size(eeg.eeg_signals, 2)) / eeg_sr(eeg), digits=2)
+    eeg_new.eeg_header[:ep_n] -= length(epoch)
+    ep_n = eeg_new.eeg_header[:ep_n]
+    eeg_new.eeg_header[:eeg_duration_samples] = ep_n * size(eeg.eeg_signals, 2)
+    eeg_new.eeg_header[:eeg_duration_seconds] = round((ep_n * size(eeg.eeg_signals, 2)) / eeg_sr(eeg), digits=2)
     eeg_new.eeg_header[:epoch_duration_samples] = size(eeg.eeg_signals, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = round(size(eeg.eeg_signals, 2) / eeg_sr(eeg), digits=2)
 
@@ -1050,90 +766,90 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
     tc < 0 || tc > 1 && throw(ArgumentError("t must be ≥ 0.0 and ≤ 1.0"))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)    
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)    
 
     signal = eeg.eeg_signals
 
-    bad_m = zeros(Bool, channel_n, epoch_n)
+    bad_m = zeros(Bool, ch_n, ep_n)
     bad_epochs = Vector{Int64}()
 
     if :flat in method
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
-            Threads.@threads for channel_idx in 1:channel_n
+            bad_channels = zeros(Bool, ch_n)
+            Threads.@threads for channel_idx in 1:ch_n
                 r = @views s_detect_channel_flat(signal[channel[channel_idx], :, epoch_idx], w=w, tol=ftol)
                 if r > fr
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:channel_n]
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
     
     if :rmse in method
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
+            bad_channels = zeros(Bool, ch_n)
 
-            rmse_ch = zeros(channel_n)
-            Threads.@threads for channel_idx in 1:channel_n
+            rmse_ch = zeros(ch_n)
+            Threads.@threads for channel_idx in 1:ch_n
                 rmse_ch[channel_idx] = @views s2_rmse(signal[channel[channel_idx], :, epoch_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:ch_n
                 if rmse_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] || rmse_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2]
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:channel_n]
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
 
     if :rmsd in method
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
+            bad_channels = zeros(Bool, ch_n)
 
-            rmsd_ch = zeros(channel_n)
-            Threads.@threads for channel_idx in 1:channel_n
+            rmsd_ch = zeros(ch_n)
+            Threads.@threads for channel_idx in 1:ch_n
                 rmsd_ch[channel_idx] = @views Distances.rmsd(signal[channel[channel_idx], :, epoch_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:ch_n
                 if rmsd_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] || rmsd_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2]
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:channel_n]
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
 
     if :euclid in method
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
+            bad_channels = zeros(Bool, ch_n)
 
-            ed_ch = zeros(channel_n)
-            Threads.@threads for channel_idx in 1:channel_n
+            ed_ch = zeros(ch_n)
+            Threads.@threads for channel_idx in 1:ch_n
                 ed_ch[channel_idx] = @views Distances.euclidean(signal[channel[channel_idx], :, epoch_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:ch_n
                 if ed_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] || ed_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2]
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:channel_n]
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
 
@@ -1142,30 +858,30 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
         # mean variance
         s_mv = @views vec(mean(s_v, dims=3))
         # variance outliers
-        o = reshape(outlier_detect(vec(s_v), method=:iqr), channel_n, epoch_n)
+        o = reshape(outlier_detect(vec(s_v), method=:iqr), ch_n, ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
+            bad_channels = zeros(Bool, ch_n)
             ch_v = @views vec(var(signal[channel, :, epoch_idx], dims=2))
             s_mv = vcat(s_mv, ch_v)
-            Threads.@threads for channel_idx in 1:channel_n
+            Threads.@threads for channel_idx in 1:ch_n
                 #if ch_v[channel_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[channel_idx, epoch_idx]
                 if o[channel_idx, epoch_idx]
                     bad_channels_score += 1
                     bad_channels[channel_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:channel_n]
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
 
     if :p2p in method
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             bad_channels_score = 0
-            bad_channels = zeros(Bool, channel_n)
-            Threads.@threads for channel_idx in 1:channel_n
+            bad_channels = zeros(Bool, ch_n)
+            Threads.@threads for channel_idx in 1:ch_n
                 s = Vector{Float64}()
                 for length_idx in 1:w:(length(signal[channel[channel_idx], :, epoch_idx]) - w)
                     @views push!(s, median(signal[channel[channel_idx], length_idx:(length_idx + w), epoch_idx]))
@@ -1183,10 +899,10 @@ function eeg_detect_bad(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int
                     bad_channels[channel_idx] = true
                 end
             end
-            for channel_idx in 1:channel_n
+            for channel_idx in 1:ch_n
                 bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true)
             end 
-            (bad_channels_score / channel_n) > tc && push!(bad_epochs, epoch_idx)
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
         end
     end
 
@@ -1597,13 +1313,13 @@ function eeg_plinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Union{Int64,
     locs_y2 = eeg_tmp.eeg_locs[!, :loc_y]
     channels = eeg_get_channel_bytype(eeg_tmp, type=Symbol(eeg.eeg_header[:signal_type]))
 
-    epoch_n = length(epoch)
+    ep_n = length(epoch)
     epoch_len = eeg_epoch_len(eeg_tmp)
 
-    s_interpolated = zeros(Float64, length(channel), epoch_len, epoch_n)
+    s_interpolated = zeros(Float64, length(channel), epoch_len, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * epoch_len, 1))
+    progress_bar == true && (p = Progress(ep_n * epoch_len, 1))
 
     @inbounds @simd for epoch_idx in eachindex(epoch)
         Threads.@threads for length_idx in 1:epoch_len
@@ -1988,11 +1704,11 @@ Calculate virtual channel using formula `f`.
 """
 function eeg_vch(eeg::NeuroAnalyzer.EEG; f::String)
 
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
     f = lowercase(f)
     labels = lowercase.(eeg_labels(eeg))
-    vc = zeros(1, eeg_epoch_len(eeg), epoch_n)
-    Threads.@threads for epoch_idx in 1:epoch_n
+    vc = zeros(1, eeg_epoch_len(eeg), ep_n)
+    Threads.@threads for epoch_idx in 1:ep_n
         f_tmp = f
         @inbounds for channel_idx in eachindex(labels)
             occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(eeg.eeg_signals[channel_idx, :, epoch_idx])"))
@@ -2092,7 +1808,7 @@ function eeg_lrinterpolate_channel(eeg::NeuroAnalyzer.EEG; channel::Int64, epoch
     bad_signal = eeg.eeg_signals[:, :, epoch]
     good_epochs = setdiff(1:eeg_epoch_n(eeg), epoch)
     good_channels = setdiff(channels, channel)
-    good_signal = _make_epochs(eeg.eeg_signals[:, :, good_epochs], epoch_n=1)
+    good_signal = _make_epochs(eeg.eeg_signals[:, :, good_epochs], ep_n=1)
 
     # train
     df = @views DataFrame(hcat(good_signal[channel, :, 1], good_signal[good_channels, :, 1]'), :auto)
@@ -2169,12 +1885,12 @@ function eeg_reflect(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
 
     eeg_new = deepcopy(eeg)
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-    s = zeros(channel_n, eeg_epoch_len(eeg) + 2 * n, epoch_n)
+    ch_n = eeg_channel_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
+    s = zeros(ch_n, eeg_epoch_len(eeg) + 2 * n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s1 = eeg_new.eeg_signals[:, 1:n, epoch_idx]
             s2 = eeg_new.eeg_signals[:, end:-1:(end - n + 1), epoch_idx]
             @views s[channel_idx, :, epoch_idx] = _reflect(eeg.eeg_signals[channel_idx, :, epoch_idx], s1[channel_idx, :], s2[channel_idx, :])
@@ -2185,8 +1901,8 @@ function eeg_reflect(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
     eeg_new.eeg_time = t
     eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
-    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
-    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * ep_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * ep_n * (1 / eeg_sr(eeg))
     eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
 
@@ -2237,12 +1953,12 @@ function eeg_chop(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     n > eeg_epoch_len(eeg) && (n = eeg_epoch_len(eeg))
 
     eeg_new = deepcopy(eeg)
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
-    s = zeros(channel_n, eeg_epoch_len(eeg) - 2 * n, epoch_n)
+    ch_n = eeg_channel_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
+    s = zeros(ch_n, eeg_epoch_len(eeg) - 2 * n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             @views s[channel_idx, :, epoch_idx] = _chop(eeg.eeg_signals[channel_idx, :, epoch_idx], n)
         end
     end
@@ -2251,8 +1967,8 @@ function eeg_chop(eeg::NeuroAnalyzer.EEG; n::Int64=eeg_sr(eeg))
     t = collect(0:(1 / eeg_sr(eeg)):(size(eeg_new.eeg_signals, 2) / eeg_sr(eeg)))[1:(end - 1)]
     eeg_new.eeg_time = t
     eeg_new.eeg_epoch_time = t .+ eeg.eeg_epoch_time[1]
-    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * epoch_n
-    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * epoch_n * (1 / eeg_sr(eeg))
+    eeg_new.eeg_header[:eeg_duration_samples] = length(t) * ep_n
+    eeg_new.eeg_header[:eeg_duration_seconds] = length(t) * ep_n * (1 / eeg_sr(eeg))
     eeg_new.eeg_header[:epoch_duration_samples] = size(eeg_new.eeg_signals, 2)
     eeg_new.eeg_header[:epoch_duration_seconds] = size(eeg_new.eeg_signals, 2) * (1 / eeg_sr(eeg))
 

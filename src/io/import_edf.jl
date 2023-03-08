@@ -3,7 +3,7 @@ export import_edf
 """
     import_edf(file_name; detect_type)
 
-Load EDF/EDF+ file and return `NeuroAnalyzer.RECORD` object.
+Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -12,7 +12,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.RECORD` object.
 
 # Returns
 
-- `eeg::RECORD`
+- `obj::NEURO`
 
 # Notes
 
@@ -22,7 +22,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.RECORD` object.
 
 # Source
 
-1. Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
+1. Kemp B, Varri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
 2. Kemp B, Olivan J. European data format ‘plus’(EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
 3. https://www.edfplus.info/specs/
 """
@@ -242,6 +242,6 @@ function import_edf(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    return NeuroAnalyzer.RECORD(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
 end
 

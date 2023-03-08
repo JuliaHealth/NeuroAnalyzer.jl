@@ -1,99 +1,4 @@
 """
-    eeg_band_power(eeg; channel, f, mt)
-
-Calculate absolute band power between two frequencies
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG channels
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
-- `mt::Bool=false`: if true use multi-tapered periodogram
-
-# Returns
-
-- `sbp::Matrix{Float64}`: band power for each channel per epoch
-"""
-function eeg_band_power(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), f::Tuple{Real, Real}, mt::Bool=false)
-
-    _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
-    fs = eeg_sr(eeg)
-
-    sbp = zeros(length(channel), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
-            @views sbp[channel_idx, epoch_idx] = s_band_power(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, f=f, mt=mt)
-        end
-    end
-
-    return sbp
-end
-
-"""
-    eeg_cov(eeg; channel, norm)
-
-Calculate covariance matrix.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG channels
-- `norm::Bool=true`: normalize matrix
-
-# Returns
-
-- `cov_mat::Array{Float64, 3}`: covariance matrix for each epoch
-"""
-function eeg_cov(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), norm::Bool=true)
-
-    _check_channels(eeg, channel)
-    epoch_n = eeg_epoch_n(eeg)
-
-    cov_mat = zeros(length(channel), length(channel), epoch_n)
-    Threads.@threads for epoch_idx in 1:epoch_n
-        @views @inbounds cov_mat[:, :, epoch_idx] = cov(eeg.eeg_signals[channel, :, epoch_idx]')
-    end
-
-    # normalize covariance matrix
-    norm == true && (cov_mat = m_norm(cov_mat))
-
-    return cov_mat
-end
-
-"""
-    eeg_cor(eeg; channel, norm)
-
-Calculate correlation coefficients.
-
-# Arguments
-
-- `eeg::NeuroAnalyzer.EEG`
-- `channel::Union{Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg)`: index of channels, default is all EEG channels
-- `norm::Bool=true`: normalize matrix
-
-# Returns
-
-- `cov_mat::Array{Float64, 3}`: correlation matrix for each epoch
-"""
-function eeg_cor(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), norm::Bool=true)
-
-    _check_channels(eeg, channel)
-    epoch_n = eeg_epoch_n(eeg)
-
-    cor_mat = zeros(length(channel), length(channel), epoch_n)
-    Threads.@threads for epoch_idx in 1:epoch_n
-        @views @inbounds cor_mat[:, :, epoch_idx] = @views cor(eeg.eeg_signals[channel, :, epoch_idx]')
-    end
-
-    # normalize covariance matrix
-    norm == true && (cor_mat = m_norm(cor_mat))
-
-    return cor_mat
-end
-
-"""
     eeg_xcov(eeg; channel, lag, demean, norm)
 
 Calculate cross-covariance.
@@ -115,32 +20,32 @@ Named tuple containing:
 function eeg_xcov(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), lag::Int64=1, demean::Bool=false, norm::Bool=false)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     # create vector of lags
     lags = 1/eeg_sr(eeg) .* collect(-lag:lag) .* 1000
 
-    xcov = zeros(channel_n^2, length(lags), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    xcov = zeros(ch_n^2, length(lags), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
         
         # create half of the covariance matrix
-        xcov_packed = Array{Vector{Float64}}(undef, channel_n, channel_n)
-        Threads.@threads for channel_idx1 in 1:channel_n
+        xcov_packed = Array{Vector{Float64}}(undef, ch_n, ch_n)
+        Threads.@threads for channel_idx1 in 1:ch_n
             for channel_idx2 in 1:channel_idx1
                 xcov_packed[channel_idx1, channel_idx2], _ = @views s2_xcov(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx], lag=lag, demean=demean, norm=norm)
             end
         end
         
         # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):ch_n
                 xcov_packed[channel_idx1, channel_idx2] = @views xcov_packed[channel_idx2, channel_idx1]
             end
         end
 
         # unpack by channels
-        Threads.@threads for channel_idx in 1:channel_n^2
+        Threads.@threads for channel_idx in 1:ch_n^2
             xcov[channel_idx, :, epoch_idx] = @views xcov_packed[channel_idx]
         end
     end
@@ -184,15 +89,15 @@ function eeg_xcov(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
     # create vector of lags
     lags = 1/eeg_sr(eeg1) .* collect(-lag:lag) .* 1000
 
     xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             xcov[channel_idx, :, epoch_idx], _ = @views s2_xcov(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]], lag=lag, demean=demean, norm=norm)
         end
     end
@@ -224,13 +129,13 @@ function eeg_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     fs = eeg_sr(eeg)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
     
     _, psd_frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
-    psd_pow = zeros(length(channel), length(psd_frq), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    psd_pow = zeros(length(channel), length(psd_frq), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             psd_pow[channel_idx, :, epoch_idx], _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
         end
     end
@@ -266,31 +171,31 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     window > eeg_epoch_len(eeg) && throw(ArgumentError("window must be ≤ $(eeg_epoch_len(eeg))."))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     if method === :mean
-        s_stationarity = zeros(channel_n, window, epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        s_stationarity = zeros(ch_n, window, ep_n)
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_mean(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], window=window)
             end
         end
     end
 
     if method === :var
-        s_stationarity = zeros(channel_n, window, epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        s_stationarity = zeros(ch_n, window, ep_n)
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_var(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], window=window)
             end
         end
     end
 
     if method === :hilbert
-        s_stationarity = zeros(channel_n, eeg_epoch_len(eeg) - 1, epoch_n)
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        s_stationarity = zeros(ch_n, eeg_epoch_len(eeg) - 1, ep_n)
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 s_stationarity[channel_idx, :, epoch_idx] = @views s_stationarity_hilbert(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
             end
         end
@@ -299,19 +204,19 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     if method === :cov
         # number of time windows per epoch
         window_n = eeg_epoch_len(eeg)
-        cov_mat = zeros(channel_n, channel_n, window_n, epoch_n)
-        s_stationarity = zeros(1 + length(2:window:window_n), epoch_n)
-        channel_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
+        cov_mat = zeros(ch_n, ch_n, window_n, ep_n)
+        s_stationarity = zeros(1 + length(2:window:window_n), ep_n)
+        ch_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # create covariance matrices per each window
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             Threads.@threads for window_idx = 1:window_n
                 cov_mat[:, :, window_idx, epoch_idx] = @views s2_cov(eeg.eeg_signals[channel, window_idx, epoch_idx], eeg.eeg_signals[channel, window_idx, epoch_idx])
             end
         end
 
         # calculate Euclidean distance between adjacent matrices
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             w_idx = 1
             Threads.@threads for window_idx = 2:window:window_n
                 s_stationarity[w_idx, epoch_idx] = @views euclidean(cov_mat[:, :, window_idx - 1, epoch_idx], cov_mat[:, :, window_idx, epoch_idx])
@@ -321,14 +226,14 @@ function eeg_stationarity(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{I
     end
 
     if method === :adf
-        s_stationarity = zeros(channel_n, 2, epoch_n)
+        s_stationarity = zeros(ch_n, 2, ep_n)
 
         # initialize progress bar
-        progress_bar == true && (pb = Progress(epoch_n * channel_n, 1))
+        progress_bar == true && (pb = Progress(ep_n * ch_n, 1))
 
         # perform Augmented Dickey–Fuller test
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx = 1:channel_n
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx = 1:ch_n
                 adf = @views ADFTest(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], :constant, window)
                 a = adf.stat
                 p = pvalue(adf)
@@ -364,22 +269,22 @@ Calculate mutual information between EEG channels.
 function eeg_mi(eeg::NeuroAnalyzer.EEG; channel::Union{Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    mi = zeros(channel_n, channel_n, epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    mi = zeros(ch_n, ch_n, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
         
         # create half of the matrix
-        Threads.@threads for channel_idx1 in 1:channel_n
+        Threads.@threads for channel_idx1 in 1:ch_n
             for channel_idx2 in 1:channel_idx1
                 mi[channel_idx1, channel_idx2, epoch_idx] = @views s2_mi(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
             end
         end
 
         # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):ch_n
                 mi[channel_idx1, channel_idx2, epoch_idx] = @views mi[channel_idx2, channel_idx1, epoch_idx]
             end
         end
@@ -419,13 +324,13 @@ function eeg_mi(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Unio
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    channel_n = length(channel1)
-    epoch_n = length(epoch1)
+    ch_n = length(channel1)
+    ep_n = length(epoch1)
 
-    mi = zeros(channel_n, channel_n, epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+    mi = zeros(ch_n, ch_n, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx1 in 1:ch_n
+            for channel_idx2 in 1:ch_n
                 mi[channel_idx1, channel_idx2, epoch_idx] = @views s2_mi(eeg1.eeg_signals[channel1[channel_idx1], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
             end
         end
@@ -454,14 +359,14 @@ Named tuple containing:
 function eeg_entropy(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    ent = zeros(channel_n, epoch_n)
-    sent = zeros(channel_n, epoch_n)
-    leent = zeros(channel_n, epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    ent = zeros(ch_n, ep_n)
+    sent = zeros(ch_n, ep_n)
+    leent = zeros(ch_n, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             ent[channel_idx, epoch_idx], sent[channel_idx, epoch_idx], leent[channel_idx, epoch_idx] = @views s_entropy(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
@@ -486,12 +391,12 @@ Calculate negentropy.
 function eeg_negentropy(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    ne = zeros(channel_n, epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    ne = zeros(ch_n, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             ne[channel_idx, epoch_idx] = @views s_negentropy(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
@@ -653,15 +558,15 @@ function eeg_tcoherence(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
     c = zeros(length(channel1), eeg_epoch_len(eeg1), length(epoch1))
     msc = zeros(length(channel1), eeg_epoch_len(eeg1), length(epoch1))
     ic = zeros(length(channel1), eeg_epoch_len(eeg1), length(epoch1))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             c[channel_idx, :, epoch_idx], msc[channel_idx, :, epoch_idx], ic[channel_idx, :, epoch_idx] = @views s2_tcoherence(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]], pad=pad)
         end
     end
@@ -712,14 +617,14 @@ Named tuple containing:
 """
 function eeg_difference(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), n::Int64=3, method::Symbol=:absdiff)
 
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
     _check_channels(eeg, channel)
 
-    s_stat = zeros(epoch_n, length(channel) * n)
-    s_stat_single = zeros(epoch_n)
-    p = zeros(epoch_n)
+    s_stat = zeros(ep_n, length(channel) * n)
+    s_stat_single = zeros(ep_n)
+    p = zeros(ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = s2_difference(eeg.eeg_signals[channel, :, epoch_idx], eeg.eeg_signals[channel, :, epoch_idx], n=n, method=method)
     end
 
@@ -858,20 +763,20 @@ Named tuple containing:
 """
 function eeg_epoch_stats(eeg::NeuroAnalyzer.EEG)
 
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
 
-    e_mean = zeros(epoch_n)
-    e_median = zeros(epoch_n)
-    e_std = zeros(epoch_n)
-    e_var = zeros(epoch_n)
-    e_kurt = zeros(epoch_n)
-    e_skew = zeros(epoch_n)
-    e_mean_diff = zeros(epoch_n)
-    e_median_diff = zeros(epoch_n)
-    e_max_dif = zeros(epoch_n)
-    e_dev_mean = zeros(epoch_n)
+    e_mean = zeros(ep_n)
+    e_median = zeros(ep_n)
+    e_std = zeros(ep_n)
+    e_var = zeros(ep_n)
+    e_kurt = zeros(ep_n)
+    e_skew = zeros(ep_n)
+    e_mean_diff = zeros(ep_n)
+    e_median_diff = zeros(ep_n)
+    e_max_dif = zeros(ep_n)
+    e_dev_mean = zeros(ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         e_mean[epoch_idx] = @views mean(eeg.eeg_signals[:, :, epoch_idx])
         e_median[epoch_idx] = @views median(eeg.eeg_signals[:, :, epoch_idx])
         e_std[epoch_idx] = @views std(eeg.eeg_signals[:, :, epoch_idx])
@@ -924,8 +829,8 @@ function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
 
     _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     # get frequency range
     fs = eeg_sr(eeg)
@@ -947,13 +852,13 @@ function eeg_spectrogram(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     s_t = linspace(0, (eeg_epoch_len(eeg) / fs), size(p_tmp, 2))
-    s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), channel_n, epoch_n)
+    s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
+    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             if method === :standard
                 s_pow[:, :, channel_idx, epoch_idx], _, _ = @views s_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=false, st=false, demean=demean)
             elseif method === :mt
@@ -1004,23 +909,23 @@ Named tuple containing:
 function eeg_spectrum(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), pad::Int64=0, h::Bool=false, norm::Bool=false)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fft_size = eeg_epoch_len(eeg) + pad
 
-    s_c = zeros(ComplexF64, channel_n, fft_size, epoch_n)
-    s_pha = zeros(channel_n, fft_size, epoch_n)
+    s_c = zeros(ComplexF64, ch_n, fft_size, ep_n)
+    s_pha = zeros(ch_n, fft_size, ep_n)
     if h == true
-        s_amp = zeros(channel_n, fft_size, epoch_n)
-        s_pow = zeros(channel_n, fft_size, epoch_n)
+        s_amp = zeros(ch_n, fft_size, ep_n)
+        s_pow = zeros(ch_n, fft_size, ep_n)
     else
-        s_amp = zeros(channel_n, fft_size ÷ 2, epoch_n)
-        s_pow = zeros(channel_n, fft_size ÷ 2, epoch_n)
+        s_amp = zeros(ch_n, fft_size ÷ 2, ep_n)
+        s_pow = zeros(ch_n, fft_size ÷ 2, ep_n)
     end        
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             if h == true
                 s_c[channel_idx, :, epoch_idx], s_amp[channel_idx, :, epoch_idx], s_pow[channel_idx, :, epoch_idx], s_pha[channel_idx, :, epoch_idx] = @views s_hspectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, norm=norm)
             else
@@ -1093,22 +998,22 @@ Named tuple containing:
 """
 function eeg_channel_stats(eeg::NeuroAnalyzer.EEG)
 
-    channel_n = eeg_channel_n(eeg)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = eeg_channel_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
     
-    c_mean = zeros(channel_n, epoch_n)
-    c_median = zeros(channel_n, epoch_n)
-    c_std = zeros(channel_n, epoch_n)
-    c_var = zeros(channel_n, epoch_n)
-    c_kurt = zeros(channel_n, epoch_n)
-    c_skew = zeros(channel_n, epoch_n)
-    c_mean_diff = zeros(channel_n, epoch_n)
-    c_median_diff = zeros(channel_n, epoch_n)
-    c_max_dif = zeros(channel_n, epoch_n)
-    c_dev_mean = zeros(channel_n, epoch_n)
+    c_mean = zeros(ch_n, ep_n)
+    c_median = zeros(ch_n, ep_n)
+    c_std = zeros(ch_n, ep_n)
+    c_var = zeros(ch_n, ep_n)
+    c_kurt = zeros(ch_n, ep_n)
+    c_skew = zeros(ch_n, ep_n)
+    c_mean_diff = zeros(ch_n, ep_n)
+    c_median_diff = zeros(ch_n, ep_n)
+    c_max_dif = zeros(ch_n, ep_n)
+    c_dev_mean = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             c_mean[channel_idx, epoch_idx] = @views mean(eeg.eeg_signals[channel_idx, :, epoch_idx])
             c_median[channel_idx, epoch_idx] = @views median(eeg.eeg_signals[channel_idx, :, epoch_idx])
             c_std[channel_idx, epoch_idx] = @views std(eeg.eeg_signals[channel_idx, :, epoch_idx])
@@ -1148,25 +1053,25 @@ function eeg_snr(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
 
     _check_var(type, [:mean, :rms], "type")
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    epoch_n == 1 && throw(ArgumentError("EEG must contain ≥ 2 epochs."))
+    ep_n == 1 && throw(ArgumentError("EEG must contain ≥ 2 epochs."))
 
     hz, _ = s_freqs(eeg.eeg_epoch_time)
-    amp = zeros(channel_n, length(hz), epoch_n)
-    snr = zeros(channel_n, length(hz))
+    amp = zeros(ch_n, length(hz), ep_n)
+    snr = zeros(ch_n, length(hz))
 
     # create spectrum for each channel
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             _, amp[channel_idx, :, epoch_idx], _, _ = @views s_spectrum(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
 
     # calculate SNR for each channel spectrum
     @inbounds @simd for hz_idx in 1:length(hz)
-        Threads.@threads for channel_idx in 1:channel_n
+        Threads.@threads for channel_idx in 1:ch_n
             if type === :mean
                 snr[channel_idx, hz_idx] = @views s_snr(amp[channel_idx, hz_idx, :])
             else
@@ -1196,12 +1101,12 @@ Standardize channels.
 function eeg_standardize(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
     
     _check_channels(eeg, channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
 
     scaler = Vector{Any}()
 
     eeg_new = deepcopy(eeg)
-    @inbounds @simd for epoch_idx in 1:epoch_n
+    @inbounds @simd for epoch_idx in 1:ep_n
         @views push!(scaler, StatsBase.fit(ZScoreTransform, eeg.eeg_signals[channel, :, epoch_idx], dims=2)) 
         @views eeg_new.eeg_signals[channel,:, epoch_idx] = StatsBase.transform(scaler[epoch_idx], eeg.eeg_signals[channel, :, epoch_idx])
     end
@@ -1256,16 +1161,16 @@ Perform convolution in the frequency domain.
 function eeg_fconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
+    s_convoluted = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
+    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s_convoluted[channel_idx, :, epoch_idx] = @views s_fconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
@@ -1294,13 +1199,13 @@ Perform convolution in the time domain.
 function eeg_tconv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    s_convoluted = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
+    s_convoluted = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s_convoluted[channel_idx, :, epoch_idx] = s_tconv(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], kernel=kernel)
         end
     end
@@ -1328,15 +1233,15 @@ Named tuple containing:
 function eeg_dft(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), pad::Int64=0)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
-    sfft = zeros(ComplexF64, channel_n, eeg_epoch_len(eeg), epoch_n)
+    sfft = zeros(ComplexF64, ch_n, eeg_epoch_len(eeg), ep_n)
     sf = nothing
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             sfft[channel_idx, :, epoch_idx], sf = @views s_dft(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, pad=pad)
         end
     end
@@ -1370,14 +1275,14 @@ function eeg_msci95(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
 
     _check_channels(eeg, channel)
     epoch_len = eeg_epoch_len(eeg)
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
 
-    s_m = zeros(epoch_n, epoch_len)
-    s_s = zeros(epoch_n, epoch_len)
-    s_u = zeros(epoch_n, epoch_len)
-    s_l = zeros(epoch_n, epoch_len)
+    s_m = zeros(ep_n, epoch_len)
+    s_s = zeros(ep_n, epoch_len)
+    s_u = zeros(ep_n, epoch_len)
+    s_l = zeros(ep_n, epoch_len)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:ep_n
         s_m[epoch_idx, :], s_s[epoch_idx, :], s_u[epoch_idx, :], s_l[epoch_idx, :] = @views s_msci95(eeg.eeg_signals[channel, :, epoch_idx], n=n, method=method)
     end
 
@@ -1419,15 +1324,15 @@ function eeg_mean(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
+    ep_n = length(epoch1)
     epoch_len = eeg_epoch_len(eeg1)
 
-    s_m = zeros(epoch_n, epoch_len)
-    s_s = zeros(epoch_n, epoch_len)
-    s_u = zeros(epoch_n, epoch_len)
-    s_l = zeros(epoch_n, epoch_len)
+    s_m = zeros(ep_n, epoch_len)
+    s_s = zeros(ep_n, epoch_len)
+    s_u = zeros(ep_n, epoch_len)
+    s_l = zeros(ep_n, epoch_len)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:ep_n
         s1_mean = @views mean(eeg1.eeg_signals[channel1, :, epoch1[epoch_idx]], dims=1)
         s2_mean = @views mean(eeg2.eeg_signals[channel2, :, epoch2[epoch_idx]], dims=1)
         s_m[epoch_idx, :] = s1_mean - s2_mean
@@ -1477,13 +1382,13 @@ function eeg_difference(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channe
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
+    ep_n = length(epoch1)
 
-    s_stat = zeros(epoch_n, length(channel1) * n)
-    s_stat_single = zeros(epoch_n)
-    p = zeros(epoch_n)
+    s_stat = zeros(ep_n, length(channel1) * n)
+    s_stat_single = zeros(ep_n)
+    p = zeros(ep_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:ep_n
         s_stat[epoch_idx, :], s_stat_single[epoch_idx], p[epoch_idx] = @views s2_difference(eeg1.eeg_signals[channel1, :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2, :, epoch2[epoch_idx]], n=n, method=method)
     end
 
@@ -1514,12 +1419,12 @@ function eeg_acov(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    acov = zeros(channel_n, length(-lag:lag), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    acov = zeros(ch_n, length(-lag:lag), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             acov[channel_idx, :, epoch_idx], _ = @views s_acov(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], lag=lag, demean=demean, norm=norm)
         end
     end
@@ -1549,14 +1454,14 @@ Named tuple containing:
 function eeg_tenv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), d::Int64=32)
     
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    t_env = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
+    t_env = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
     s_t = eeg.eeg_epoch_time
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s = @view eeg.eeg_signals[channel[channel_idx], :, epoch_idx]
             # find peaks
             p_idx = s_findpeaks(s, d=d)
@@ -1618,17 +1523,17 @@ function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     end
 
     s_a, s_t = eeg_tenv(eeg, channel=channel, d=d)
-    channel_n = size(s_a, 1)
-    epoch_n = size(s_a, 3)
+    ch_n = size(s_a, 1)
+    ep_n = size(s_a, 3)
 
     if dims == 1
         # mean over channels
 
-        t_env_m = zeros(length(s_t), epoch_n)
-        t_env_u = zeros(length(s_t), epoch_n)
-        t_env_l = zeros(length(s_t), epoch_n)
+        t_env_m = zeros(length(s_t), ep_n)
+        t_env_u = zeros(length(s_t), ep_n)
+        t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             t_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
             s = std(t_env_m[:, epoch_idx]) / sqrt(length(t_env_m[:, epoch_idx]))
             t_env_u[:, epoch_idx] = @. t_env_m[:, epoch_idx] + 1.96 * s
@@ -1637,11 +1542,11 @@ function eeg_tenv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     elseif dims == 2
         # mean over epochs
 
-        t_env_m = zeros(length(s_t), channel_n)
-        t_env_u = zeros(length(s_t), channel_n)
-        t_env_l = zeros(length(s_t), channel_n)
+        t_env_m = zeros(length(s_t), ch_n)
+        t_env_u = zeros(length(s_t), ch_n)
+        t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             t_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
             s = std(t_env_m[:, channel_idx]) / sqrt(length(t_env_m[:, channel_idx]))
             t_env_u[:, channel_idx] = @. t_env_m[:, channel_idx] + 1.96 * s
@@ -1696,17 +1601,17 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     s_a, s_t = eeg_tenv(eeg, channel=channel, d=d)
-    channel_n = size(s_a, 1)
-    epoch_n = size(s_a, 3)
+    ch_n = size(s_a, 1)
+    ep_n = size(s_a, 3)
 
     if dims == 1
         # median over channels
 
-        t_env_m = zeros(length(s_t), epoch_n)
-        t_env_u = zeros(length(s_t), epoch_n)
-        t_env_l = zeros(length(s_t), epoch_n)
+        t_env_m = zeros(length(s_t), ep_n)
+        t_env_u = zeros(length(s_t), ep_n)
+        t_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             t_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
             t_idx = s_findpeaks(t_env_m[:, epoch_idx], d=d)
             pushfirst!(t_idx, 1)
@@ -1726,11 +1631,11 @@ function eeg_tenv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     elseif dims == 2
         # median over epochs
 
-        t_env_m = zeros(length(s_t), channel_n)
-        t_env_u = zeros(length(s_t), channel_n)
-        t_env_l = zeros(length(s_t), channel_n)
+        t_env_m = zeros(length(s_t), ch_n)
+        t_env_u = zeros(length(s_t), ch_n)
+        t_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             t_env_m[:, idx] = median(s_a[channel_idx, :, :], dims=2)
             t_idx = s_findpeaks(t_env_m[:, channel_idx], d=d)
             pushfirst!(t_idx, 1)
@@ -1786,16 +1691,16 @@ Named tuple containing:
 function eeg_penv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), d::Int64=8, mt::Bool=false, nt::Int64=8)
     
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
 
     psd_tmp, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, mt=mt, nt=nt)
-    p_env = zeros(channel_n, length(psd_tmp), epoch_n)
+    p_env = zeros(ch_n, length(psd_tmp), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             psd_pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, mt=mt, norm=true, nt=nt)
             # find peaks
             p_idx = s_findpeaks(psd_pow, d=d)
@@ -1854,17 +1759,17 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     end
 
     s_p, s_f = eeg_psd(eeg, channel=channel, norm=true, mt=mt)
-    channel_n = size(s_p, 1)
-    epoch_n = size(s_p, 3)
+    ch_n = size(s_p, 1)
+    ep_n = size(s_p, 3)
 
     if dims == 1
         # mean over channels
 
-        p_env_m = zeros(length(s_f), epoch_n)
-        p_env_u = zeros(length(s_f), epoch_n)
-        p_env_l = zeros(length(s_f), epoch_n)
+        p_env_m = zeros(length(s_f), ep_n)
+        p_env_u = zeros(length(s_f), ep_n)
+        p_env_l = zeros(length(s_f), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             p_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
             # find peaks
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
@@ -1888,11 +1793,11 @@ function eeg_penv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     elseif dims == 2
         # mean over epochs
 
-        p_env_m = zeros(length(s_f), channel_n)
-        p_env_u = zeros(length(s_f), channel_n)
-        p_env_l = zeros(length(s_f), channel_n)
+        p_env_m = zeros(length(s_f), ch_n)
+        p_env_u = zeros(length(s_f), ch_n)
+        p_env_l = zeros(length(s_f), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             p_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
             # find peaks
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
@@ -1961,17 +1866,17 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     s_p, s_f = eeg_psd(eeg, channel=channel, norm=true, mt=mt)
-    channel_n = size(s_p, 1)
-    epoch_n = size(s_p, 3)
+    ch_n = size(s_p, 1)
+    ep_n = size(s_p, 3)
 
     if dims == 1
         # median over channels
 
-        p_env_m = zeros(length(s_f), epoch_n)
-        p_env_u = zeros(length(s_f), epoch_n)
-        p_env_l = zeros(length(s_f), epoch_n)
+        p_env_m = zeros(length(s_f), ep_n)
+        p_env_u = zeros(length(s_f), ep_n)
+        p_env_l = zeros(length(s_f), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             p_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
             # find peaks
             p_idx = s_findpeaks(p_env_m[:, epoch_idx], d=d)
@@ -1995,11 +1900,11 @@ function eeg_penv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     elseif dims == 2
         # median over epochs
 
-        p_env_m = zeros(length(s_f), channel_n)
-        p_env_u = zeros(length(s_f), channel_n)
-        p_env_l = zeros(length(s_f), channel_n)
+        p_env_m = zeros(length(s_f), ch_n)
+        p_env_u = zeros(length(s_f), ch_n)
+        p_env_l = zeros(length(s_f), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             p_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
             # find peaks
             p_idx = s_findpeaks(p_env_m[:, channel_idx], d=d)
@@ -2057,8 +1962,8 @@ Named tuple containing:
 function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
     s_tmp = @view eeg.eeg_signals[1, :, 1]
@@ -2074,10 +1979,10 @@ function eeg_senv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     sp_t = collect(spec_tmp.time)
     sp_t .+= eeg.eeg_epoch_time[1]
 
-    s_env = zeros(channel_n, length(sp_t), epoch_n)
+    s_env = zeros(ch_n, length(sp_t), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             # prepare spectrogram
             if mt == true
                 spec = @views mt_spectrogram(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs)
@@ -2157,17 +2062,17 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     end
 
     s_p, s_t = eeg_senv(eeg, channel=channel, d=d, mt=mt, t=t)
-    channel_n = size(s_p, 1)
-    epoch_n = size(s_p, 3)
+    ch_n = size(s_p, 1)
+    ep_n = size(s_p, 3)
 
     if dims == 1
         # mean over channels
 
-        s_env_m = zeros(length(s_t), epoch_n)
-        s_env_u = zeros(length(s_t), epoch_n)
-        s_env_l = zeros(length(s_t), epoch_n)
+        s_env_m = zeros(length(s_t), ep_n)
+        s_env_u = zeros(length(s_t), ep_n)
+        s_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             s_env_m[:, epoch_idx] = mean(s_p[:, :, epoch_idx], dims=1)
             # find peaks
             s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
@@ -2190,11 +2095,11 @@ function eeg_senv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     elseif dims == 2
         # mean over epochs
 
-        s_env_m = zeros(length(s_t), channel_n)
-        s_env_u = zeros(length(s_t), channel_n)
-        s_env_l = zeros(length(s_t), channel_n)
+        s_env_m = zeros(length(s_t), ch_n)
+        s_env_u = zeros(length(s_t), ch_n)
+        s_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             s_env_m[:, channel_idx] = mean(s_p[channel_idx, :, :], dims=2)
             # find peaks
             s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
@@ -2264,17 +2169,17 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     s_p, s_t = eeg_senv(eeg, channel=channel, d=d, mt=mt, t=t)
-    channel_n = size(s_p, 1)
-    epoch_n = size(s_p, 3)
+    ch_n = size(s_p, 1)
+    ep_n = size(s_p, 3)
 
     if dims == 1
         # median over channels
 
-        s_env_m = zeros(length(s_t), epoch_n)
-        s_env_u = zeros(length(s_t), epoch_n)
-        s_env_l = zeros(length(s_t), epoch_n)
+        s_env_m = zeros(length(s_t), ep_n)
+        s_env_u = zeros(length(s_t), ep_n)
+        s_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             s_env_m[:, epoch_idx] = median(s_p[:, :, epoch_idx], dims=1)
             # find peaks
             s_idx = s_findpeaks(s_env_m[:, epoch_idx], d=d)
@@ -2298,11 +2203,11 @@ function eeg_senv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     elseif dims == 2
         # median over epochs
 
-        s_env_m = zeros(length(s_t), channel_n)
-        s_env_u = zeros(length(s_t), channel_n)
-        s_env_l = zeros(length(s_t), channel_n)
+        s_env_m = zeros(length(s_t), ch_n)
+        s_env_u = zeros(length(s_t), ch_n)
+        s_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             s_env_m[:, channel_idx] = median(s_p[channel_idx, :, :], dims=2)
             # find peaks
             s_idx = s_findpeaks(s_env_m[:, channel_idx], d=d)
@@ -2373,18 +2278,18 @@ function eeg_ispc(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Un
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
-    ispc = zeros(channel_n, epoch_n)
-    ispc_angle = zeros(channel_n, epoch_n)
-    signal_diff = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    phase_diff = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    s1_phase = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    s2_phase = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
+    ispc = zeros(ch_n, ep_n)
+    ispc_angle = zeros(ch_n, ep_n)
+    signal_diff = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    phase_diff = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    s1_phase = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    s2_phase = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             ispc[channel_idx, epoch_idx], ispc_angle[channel_idx, epoch_idx], signal_diff[channel_idx, :, epoch_idx], phase_diff[channel_idx, :, epoch_idx], s1_phase[channel_idx, :, epoch_idx], s2_phase[channel_idx, :, epoch_idx] = @views s2_ispc(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]])
         end
     end
@@ -2415,19 +2320,19 @@ Named tuple containing:
 function eeg_itpc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), t::Int64, w::Union{Vector{<:Real}, Nothing}=nothing)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
     t > eeg_epoch_len(eeg) && throw(ArgumentError("t must be ≤ $(eeg_epoch_len(eeg))."))
-    epoch_n < 2 && throw(ArgumentError("EEG must contain ≥ 2 epochs."))
+    ep_n < 2 && throw(ArgumentError("EEG must contain ≥ 2 epochs."))
 
-    itpc = zeros(channel_n)
-    itpcz = zeros(channel_n)
-    itpc_angle = zeros(channel_n)
-    itpc_phases = zeros(channel_n, epoch_n)
+    itpc = zeros(ch_n)
+    itpcz = zeros(ch_n)
+    itpc_angle = zeros(ch_n)
+    itpc_phases = zeros(ch_n, ep_n)
 
-    Threads.@threads for channel_idx in 1:channel_n
-        @inbounds itpc[channel_idx], itpcz[channel_idx], itpc_angle[channel_idx], itpc_phases[channel_idx, :] = @views s_itpc(reshape(eeg.eeg_signals[channel[channel_idx], :, :], 1, :, epoch_n), t=t, w=w)
+    Threads.@threads for channel_idx in 1:ch_n
+        @inbounds itpc[channel_idx], itpcz[channel_idx], itpc_angle[channel_idx], itpc_phases[channel_idx, :] = @views s_itpc(reshape(eeg.eeg_signals[channel[channel_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
     return (itpc=itpc, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end
@@ -2466,17 +2371,17 @@ function eeg_pli(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Uni
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
-    pli = zeros(channel_n, epoch_n)
-    signal_diff = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    phase_diff = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    s1_phase = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    s2_phase = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
+    pli = zeros(ch_n, ep_n)
+    signal_diff = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    phase_diff = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    s1_phase = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    s2_phase = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             pli[channel_idx, epoch_idx], signal_diff[channel_idx, :, epoch_idx], phase_diff[channel_idx, :, epoch_idx], s1_phase[channel_idx, :, epoch_idx], s2_phase[channel_idx, :, epoch_idx] = @views s2_pli(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]])
         end
     end
@@ -2501,19 +2406,19 @@ Calculate PLIs (Phase Lag Index).
 function eeg_pli(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    pli_m = zeros(channel_n, channel_n, epoch_n)
+    pli_m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx1 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx1 in 1:ch_n
             for channel_idx2 in 1:channel_idx1
                 pli_m[channel_idx1, channel_idx2, epoch_idx], _, _, _, _ = @views s2_pli(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
             end
         end
-        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):ch_n
                 pli_m[channel_idx1, channel_idx2, epoch_idx] = @views pli_m[channel_idx2, channel_idx1, epoch_idx]
             end
         end
@@ -2539,20 +2444,20 @@ Calculate ISPCs (Inter-Site-Phase Clustering).
 function eeg_ispc(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    ispc_m = zeros(channel_n, channel_n, epoch_n)
+    ispc_m = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx1 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx1 in 1:ch_n
             for channel_idx2 in 1:channel_idx1
                 ispc_m[channel_idx1, channel_idx2, epoch_idx], _, _, _, _, _ = @views s2_ispc(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
             end
         end
 
-        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):ch_n
                 ispc_m[channel_idx1, channel_idx2, epoch_idx] = @views ispc_m[channel_idx2, channel_idx1, epoch_idx]
             end
         end
@@ -2599,10 +2504,10 @@ function eeg_ec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
+    ep_n = length(epoch1)
     
-    ec_r = zeros(epoch_n)
-    ec_p = zeros(epoch_n)
+    ec_r = zeros(ep_n)
+    ec_p = zeros(ep_n)
 
     # calculate envelopes
     if type === :amp
@@ -2622,7 +2527,7 @@ function eeg_ec(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; type::Symbol=:
     s2 = s2[:, :, epoch2]
     
     # compare envelopes per epochs
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:ep_n
         ec = CorrelationTest(vec(s1[:, :, epoch_idx]), vec(s2[:, :, epoch_idx]))
         @inbounds ec_r[epoch_idx] = ec.r
         @inbounds ec_p[epoch_idx] = pvalue(ec)
@@ -2662,14 +2567,14 @@ function eeg_ged(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Uni
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
-    sged = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    ress = zeros(channel_n, epoch_n)
-    ress_normalized = zeros(channel_n, epoch_n)
+    sged = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    ress = zeros(ch_n, ep_n)
+    ress_normalized = zeros(ch_n, ep_n)
 
-    Threads.@threads for epoch_idx in 1:epoch_n
+    Threads.@threads for epoch_idx in 1:ep_n
         sged[:, :, epoch_idx], ress[:, epoch_idx], ress_normalized[:, epoch_idx] = @views s2_ged(eeg1.eeg_signals[channel1, :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2, :, epoch2[epoch_idx]])
     end
 
@@ -2693,18 +2598,18 @@ Calculate instantaneous frequency.
 function eeg_frqinst(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    frqinst = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
+    frqinst = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
     fs = eeg_sr(eeg)
 
     _info("eeg_frqinst() uses Hilbert transform, the signal should be narrowband for best results.")
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             frqinst[channel_idx, :, epoch_idx] = @views s_frqinst(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs)
         end
         # update progress bar
@@ -2750,9 +2655,9 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
     end
 
     _check_channels(eeg, channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
     epoch_len = eeg_epoch_len(eeg)
-    epoch_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
+    ep_n < 2 && throw(ArgumentError("eeg must contain ≥ 2 epochs."))
 
     itpc_s = zeros(frq_n, epoch_len)
     itpc_z_s = zeros(frq_n, epoch_len)
@@ -2764,9 +2669,9 @@ function eeg_itpc_s(eeg::NeuroAnalyzer.EEG; channel::Int64, frq_lim::Tuple{Real,
         # create Morlet wavelet
         kernel = generate_morlet(eeg_sr(eeg), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
-        s_conv = zeros(Float64, 1, epoch_len, epoch_n)
+        s_conv = zeros(Float64, 1, epoch_len, ep_n)
         # convolute with Morlet wavelet
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             s_conv[1, :, epoch_idx] = @views DSP.conv(eeg.eeg_signals[channel, :, epoch_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
@@ -2800,12 +2705,12 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 function eeg_tkeo(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    tkeo = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    tkeo = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             tkeo[channel_idx, :, epoch_idx] = @views s_tkeo(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])
         end
     end
@@ -2838,18 +2743,18 @@ Named tuple containing:
 function eeg_mwpsd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=0, frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
     p_tmp, w_frq = @views s_mwpsd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
-    w_pow = zeros(channel_n, length(p_tmp), epoch_n)
+    w_pow = zeros(ch_n, length(p_tmp), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
+    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             w_pow[channel_idx, :, epoch_idx], _ = @views s_mwpsd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
 
             # update progress bar
@@ -2927,13 +2832,13 @@ Named tuple containing:
 function eeg_vartest(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    f = zeros(channel_n, channel_n, epoch_n)
-    p = zeros(channel_n, channel_n, epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-       Threads.@threads for channel_idx1 in 1:channel_n
+    f = zeros(ch_n, ch_n, ep_n)
+    p = zeros(ch_n, ch_n, ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+       Threads.@threads for channel_idx1 in 1:ch_n
             # create half of the matrix
             for channel_idx2 in 1:channel_idx1
                 ftest = @views VarianceFTest(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx])
@@ -2942,8 +2847,8 @@ function eeg_vartest(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
             end
         end
         # copy to the other half
-        Threads.@threads for channel_idx1 in 1:(channel_n - 1)
-            for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for channel_idx1 in 1:(ch_n - 1)
+            for channel_idx2 in (channel_idx1 + 1):ch_n
                 f[channel_idx1, channel_idx2, epoch_idx] = @views f[channel_idx2, channel_idx1, epoch_idx]
                 p[channel_idx1, channel_idx2, epoch_idx] = @views p[channel_idx2, channel_idx1, epoch_idx]
             end
@@ -2984,15 +2889,15 @@ function eeg_vartest(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1:
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
-    f = zeros(channel_n, channel_n, epoch_n)
-    p = zeros(channel_n, channel_n, epoch_n)
+    f = zeros(ch_n, ch_n, ep_n)
+    p = zeros(ch_n, ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-       Threads.@threads for channel_idx1 in 1:channel_n
-            for channel_idx2 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+       Threads.@threads for channel_idx1 in 1:ch_n
+            for channel_idx2 in 1:ch_n
                 ftest = @views VarianceFTest(eeg1.eeg_signals[channel1[channel_idx1], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx2], :, epoch2[epoch_idx]])
                 f[channel_idx1, channel_idx2, epoch_idx] = ftest.F
                 p[channel_idx1, channel_idx2, epoch_idx] = pvalue(ftest)
@@ -3030,15 +2935,15 @@ function eeg_band_mpower(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    mbp = zeros(channel_n, epoch_n)
-    maxfrq = zeros(channel_n, epoch_n)
-    maxbp = zeros(channel_n, epoch_n)
+    mbp = zeros(ch_n, ep_n)
+    maxfrq = zeros(ch_n, ep_n)
+    maxbp = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             mbp[channel_idx, epoch_idx], maxfrq[channel_idx, epoch_idx], maxbp[channel_idx, epoch_idx] = @views s_band_mpower(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, f=f, mt=mt)
         end
     end
@@ -3075,13 +2980,13 @@ function eeg_rel_psd(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     end
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     psd_tmp, psd_frq = @views s_rel_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
-    psd_pow = zeros(channel_n, length(psd_tmp), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        for channel_idx in 1:channel_n
+    psd_pow = zeros(ch_n, length(psd_tmp), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        for channel_idx in 1:ch_n
             psd_pow[channel_idx, :, epoch_idx], _ = @views s_rel_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, f=f)
         end
     end
@@ -3113,19 +3018,19 @@ function eeg_fbsplit(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}
     band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
-    signal_split = zeros(length(band), channel_n, eeg_epoch_len(eeg), epoch_n)
+    signal_split = zeros(length(band), ch_n, eeg_epoch_len(eeg), ep_n)
     band_frq = Vector{Tuple{Real, Real}}()
 
     @inbounds for band_idx in eachindex(band)
         band_f = eeg_band(eeg, band=band[band_idx])
         push!(band_frq, band_f)
         flt = s_filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=eeg_epoch_len(eeg))
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 signal_split[band_idx, channel_idx, :, epoch_idx] = @views s_filter_apply(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], flt=flt)
             end
         end
@@ -3163,12 +3068,12 @@ function eeg_chdiff(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
 
-    ch_diff = zeros(channel_n, eeg_epoch_len(eeg1), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    ch_diff = zeros(ch_n, eeg_epoch_len(eeg1), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             ch_diff[channel_idx, :, epoch_idx] = @views eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]] .- eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]]
         end
     end
@@ -3197,20 +3102,20 @@ Named tuple containing:
 function eeg_cps(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), norm::Bool=true)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     fs = eeg_sr(eeg)
     
     cps_pw_tmp, cps_ph_tmp, cps_fq = @views s2_cps(eeg.eeg_signals[1, :, 1], eeg.eeg_signals[1, :, 1], fs=fs)
-    cps_pw = zeros(channel_n, channel_n, length(cps_pw_tmp), epoch_n)
-    cps_ph = zeros(channel_n, channel_n, length(cps_ph_tmp), epoch_n)
+    cps_pw = zeros(ch_n, ch_n, length(cps_pw_tmp), ep_n)
+    cps_ph = zeros(ch_n, ch_n, length(cps_ph_tmp), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(epoch_n * channel_n, 1))
+    progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx1 in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx1 in 1:ch_n
            for channel_idx2 in 1:channel_idx1
                 cps_pw[channel_idx1, channel_idx2, :, epoch_idx], cps_ph[channel_idx1, channel_idx2, :, epoch_idx], _ = @views s2_cps(eeg.eeg_signals[channel[channel_idx1], :, epoch_idx], eeg.eeg_signals[channel[channel_idx2], :, epoch_idx], fs=fs, norm=norm)
             end
@@ -3221,9 +3126,9 @@ function eeg_cps(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     end
 
     @inbounds @simd for time_idx in 1:size(cps_pw, 3)
-        Threads.@threads for epoch_idx in 1:epoch_n
-            for channel_idx1 in 1:(channel_n - 1)
-                for channel_idx2 in (channel_idx1 + 1):channel_n
+        Threads.@threads for epoch_idx in 1:ep_n
+            for channel_idx1 in 1:(ch_n - 1)
+                for channel_idx2 in (channel_idx1 + 1):ch_n
                     cps_pw[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_pw[channel_idx2, channel_idx1, time_idx, epoch_idx]
                     cps_ph[channel_idx1, channel_idx2, time_idx, epoch_idx] = @views cps_ph[channel_idx2, channel_idx1, time_idx, epoch_idx]
                 end
@@ -3268,17 +3173,17 @@ function eeg_cps(eeg1::NeuroAnalyzer.EEG, eeg2::NeuroAnalyzer.EEG; channel1::Uni
     length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
     eeg_epoch_len(eeg1) == eeg_epoch_len(eeg2) || throw(ArgumentError("eeg1 and eeg2 epoch lengths must be equal."))
 
-    epoch_n = length(epoch1)
-    channel_n = length(channel1)
+    ep_n = length(epoch1)
+    ch_n = length(channel1)
     fs = eeg_sr(eeg1)
 
     cps_pw, cps_ph, cps_fq = @views s2_cps(eeg1.eeg_signals[1, :, 1], eeg2.eeg_signals[1, :, 1], fs=fs, norm=norm)
 
-    cps_pw = zeros(channel_n, length(cps_pw), epoch_n)
-    cps_ph = zeros(channel_n, length(cps_ph), epoch_n)
-    cps_fq = zeros(channel_n, length(cps_fq), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    cps_pw = zeros(ch_n, length(cps_pw), ep_n)
+    cps_ph = zeros(ch_n, length(cps_ph), ep_n)
+    cps_fq = zeros(ch_n, length(cps_fq), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             cps_pw[channel_idx, :, epoch_idx], cps_ph[channel_idx, :, epoch_idx], cps_fq[channel_idx, :, epoch_idx] = @views s2_cps(eeg1.eeg_signals[channel1[channel_idx], :, epoch1[epoch_idx]], eeg2.eeg_signals[channel2[channel_idx], :, epoch2[epoch_idx]], fs=fs, norm=norm)
         end
     end
@@ -3310,13 +3215,13 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
     avg in [:phase, :signal] || throw(ArgumentError("avg must be :phase or :signal."))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    ph_diff = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
+    ph_diff = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
     if avg === :phase
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 ref_channels = setdiff(channel, channel_idx)
                 ph_ref = zeros(length(ref_channels), eeg_epoch_len(eeg))
                 for ref_idx in eachindex(ref_channels)
@@ -3337,8 +3242,8 @@ function eeg_phdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64},
             end
         end
     else
-        @inbounds @simd for epoch_idx in 1:epoch_n
-            Threads.@threads for channel_idx in 1:channel_n
+        @inbounds @simd for epoch_idx in 1:ep_n
+            Threads.@threads for channel_idx in 1:ch_n
                 ref_channels = setdiff(channel, channel_idx)
                 signal_m = @views vec(mean(eeg.eeg_signals[ref_channels, :, epoch_idx], dims=1))
                 ph_diff[channel_idx, :, epoch_idx] = @views s_phdiff(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], signal_m)
@@ -3366,12 +3271,12 @@ Calculate amplitude difference between each channel and mean amplitude.
 function eeg_ampdiff(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    amp_diff = zeros(channel_n, eeg_epoch_len(eeg), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    amp_diff = zeros(ch_n, eeg_epoch_len(eeg), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             ref_channels = setdiff(channel, channel_idx)
             amp_ref = @views vec(mean(eeg.eeg_signals[ref_channels, :, epoch_idx], dims=1))
             amp_diff[channel_idx, :, epoch_idx] = @views eeg.eeg_signals[channel[channel_idx], :, epoch_idx] - amp_ref
@@ -3408,12 +3313,12 @@ function eeg_dwt(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, Ab
     end
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
-    dwt_c = zeros(channel_n, (l + 1), eeg_epoch_len(eeg), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    dwt_c = zeros(ch_n, (l + 1), eeg_epoch_len(eeg), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             dwt_c[channel_idx, :, :, epoch_idx] = @views s_dwt(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt, type=type, l=l)
         end
     end
@@ -3439,13 +3344,13 @@ Perform continuous wavelet transformation (CWT).
 function eeg_cwt(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), wt::T) where {T <: CWT}
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     l = size(ContinuousWavelets.cwt(eeg.eeg_signals[1, :, 1], wt), 2)
-    cwt_c = zeros(channel_n, l, eeg_epoch_len(eeg), epoch_n)
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    cwt_c = zeros(ch_n, l, eeg_epoch_len(eeg), ep_n)
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             cwt_c[channel_idx, :, :, epoch_idx] = @views s_cwt(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], wt=wt)
         end
     end
@@ -3482,17 +3387,17 @@ function eeg_psdslope(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64
     f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be be < $(fs / 2)."))
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     _, frq = s_psd(eeg.eeg_signals[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
     f1_idx = vsearch(f[1], frq)
     f2_idx = vsearch(f[2], frq)
-    lf = zeros(channel_n, length(frq[f1_idx:f2_idx]), epoch_n)
-    psd_slope = zeros(channel_n, epoch_n)
+    lf = zeros(ch_n, length(frq[f1_idx:f2_idx]), ep_n)
+    psd_slope = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             pow, _ = s_psd(eeg.eeg_signals[channel[channel_idx], :, epoch_idx], fs=fs, norm=norm, mt=mt, nt=nt)
             _, _, _, _, _, _, lf[channel_idx, :, epoch_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
             psd_slope[channel_idx, epoch_idx] = lf[channel_idx, 2, epoch_idx] - lf[channel_idx, 1, epoch_idx]
@@ -3524,13 +3429,13 @@ function eeg_henv(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, A
     _check_channels(eeg, channel)
     _, signal, _, _ = @views eeg_spectrum(eeg_keep_channel(eeg, channel=channel), h=true)
 
-    channel_n = size(signal, 1)
-    epoch_n = size(signal, 3)
+    ch_n = size(signal, 1)
+    ep_n = size(signal, 3)
     h_env = similar(signal)
     s_t = eeg.eeg_epoch_time
 
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             s = @view signal[channel_idx, :, epoch_idx]
             # find peaks
             p_idx = s_findpeaks(s, d=d)
@@ -3592,17 +3497,17 @@ function eeg_henv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     end
 
     s_a, s_t = eeg_henv(eeg, channel=channel, d=d)
-    channel_n = size(s_a, 1)
-    epoch_n = size(s_a, 3)
+    ch_n = size(s_a, 1)
+    ep_n = size(s_a, 3)
 
     if dims == 1
         # mean over channels
 
-        h_env_m = zeros(length(s_t), epoch_n)
-        h_env_u = zeros(length(s_t), epoch_n)
-        h_env_l = zeros(length(s_t), epoch_n)
+        h_env_m = zeros(length(s_t), ep_n)
+        h_env_u = zeros(length(s_t), ep_n)
+        h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             h_env_m[:, epoch_idx] = mean(s_a[:, :, epoch_idx], dims=1)
             s = std(h_env_m[:, epoch_idx]) / sqrt(length(h_env_m[:, epoch_idx]))
             h_env_u[:, epoch_idx] = @. h_env_m[:, epoch_idx] + 1.96 * s
@@ -3611,11 +3516,11 @@ function eeg_henv_mean(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int6
     elseif dims == 2
         # mean over epochs
 
-        h_env_m = zeros(length(s_t), channel_n)
-        h_env_u = zeros(length(s_t), channel_n)
-        h_env_l = zeros(length(s_t), channel_n)
+        h_env_m = zeros(length(s_t), ch_n)
+        h_env_u = zeros(length(s_t), ch_n)
+        h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             h_env_m[:, channel_idx] = mean(s_a[channel_idx, :, :], dims=2)
             s = std(h_env_m[:, channel_idx]) / sqrt(length(h_env_m[:, channel_idx]))
             h_env_u[:, channel_idx] = @. h_env_m[:, channel_idx] + 1.96 * s
@@ -3668,17 +3573,17 @@ function eeg_henv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     end
 
     s_a, s_t = eeg_henv(eeg, channel=channel, d=d)
-    channel_n = size(s_a, 1)
-    epoch_n = size(s_a, 3)
+    ch_n = size(s_a, 1)
+    ep_n = size(s_a, 3)
 
     if dims == 1
         # median over channels
 
-        h_env_m = zeros(length(s_t), epoch_n)
-        h_env_u = zeros(length(s_t), epoch_n)
-        h_env_l = zeros(length(s_t), epoch_n)
+        h_env_m = zeros(length(s_t), ep_n)
+        h_env_u = zeros(length(s_t), ep_n)
+        h_env_l = zeros(length(s_t), ep_n)
 
-        @inbounds @simd for epoch_idx in 1:epoch_n
+        @inbounds @simd for epoch_idx in 1:ep_n
             h_env_m[:, epoch_idx] = median(s_a[:, :, epoch_idx], dims=1)
             t_idx = s_findpeaks(h_env_m[:, epoch_idx], d=d)
             pushfirst!(t_idx, 1)
@@ -3698,11 +3603,11 @@ function eeg_henv_median(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{In
     elseif dims == 2
         # median over epochs
 
-        h_env_m = zeros(length(s_t), channel_n)
-        h_env_u = zeros(length(s_t), channel_n)
-        h_env_l = zeros(length(s_t), channel_n)
+        h_env_m = zeros(length(s_t), ch_n)
+        h_env_u = zeros(length(s_t), ch_n)
+        h_env_l = zeros(length(s_t), ch_n)
 
-        @inbounds @simd for channel_idx in 1:channel_n
+        @inbounds @simd for channel_idx in 1:ch_n
             h_env_m[:, channel_idx] = median(s_a[channel_idx, :, :], dims=2)
             t_idx = s_findpeaks(h_env_m[:, channel_idx], d=d)
             pushfirst!(t_idx, 1)
@@ -3752,17 +3657,17 @@ Apply custom function.
 function eeg_apply(eeg::NeuroAnalyzer.EEG; channel::Union{Int64, Vector{Int64}, AbstractRange}=eeg_signal_channels(eeg), f::String)
 
     _check_channels(eeg, channel)
-    channel_n = length(channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ch_n = length(channel)
+    ep_n = eeg_epoch_n(eeg)
 
     f_tmp = replace(f, "eeg" => "$(eeg.eeg_signals[1, :, 1])")
     out_tmp = eval(Meta.parse(f_tmp))
-    out = zeros(eltype(out_tmp), channel_n, length(out_tmp), epoch_n)
+    out = zeros(eltype(out_tmp), ch_n, length(out_tmp), ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(channel_n * epoch_n, 1))
-    @inbounds @simd for epoch_idx in 1:epoch_n
-        Threads.@threads for channel_idx in 1:channel_n
+    progress_bar == true && (p = Progress(ch_n * ep_n, 1))
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
             f_tmp = replace(f, "eeg" => "$(eeg.eeg_signals[channel[channel_idx], :, epoch_idx])")
             try
                 out[channel_idx, :, epoch_idx] = eval(Meta.parse(f_tmp))
@@ -3843,9 +3748,9 @@ function eeg_erp_peaks(eeg::NeuroAnalyzer.EEG)
     channels = eeg_signal_channels(eeg)
     erp = eeg_erp(eeg).eeg_signals[channels, :]
 
-    channel_n = size(erp, 1)
-    p = zeros(Int64, channel_n, 2)
-    @inbounds @simd for channel_idx in 1:channel_n
+    ch_n = size(erp, 1)
+    p = zeros(Int64, ch_n, 2)
+    @inbounds @simd for channel_idx in 1:ch_n
         pp_pos = @views maximum(erp[channel_idx, :])
         pp_neg = @views minimum(erp[channel_idx, :])
         p[channel_idx, :] = @views [vsearch(pp_pos, erp[channel_idx, :]), vsearch(pp_neg, erp[channel_idx, :])]
@@ -3883,10 +3788,10 @@ function eeg_bands_dwt(eeg::NeuroAnalyzer.EEG; channel::Int64, wt::T, type::Symb
     n < 2 && throw(ArgumentError("n must be ≥ 2."))
 
     _check_channels(eeg, channel)
-    epoch_n = eeg_epoch_n(eeg)
+    ep_n = eeg_epoch_n(eeg)
 
-    dwt_c = zeros((n + 1), eeg_epoch_len(eeg), epoch_n)
-    Threads.@threads for epoch_idx in 1:epoch_n
+    dwt_c = zeros((n + 1), eeg_epoch_len(eeg), ep_n)
+    Threads.@threads for epoch_idx in 1:ep_n
         @inbounds dwt_c[:, :, epoch_idx] = @views s_dwt(eeg.eeg_signals[channel, :, epoch_idx], wt=wt, type=type, l=n)
     end
     

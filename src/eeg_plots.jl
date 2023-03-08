@@ -48,7 +48,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # convert single-channel signal to single-row matrix
     ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
 
     # reverse so 1st channel is on top
     signal = @views reverse(signal[:, 1:length(t)], dims = 1)
@@ -56,12 +56,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     if mono == true
         pal = :grays
         channel_color = Vector{Symbol}()
-        for idx in 1:channel_n
+        for idx in 1:ch_n
             push!(channel_color, :black)
         end
     else
         pal = :darktest
-        channel_color = channel_n:-1:1
+        channel_color = ch_n:-1:1
     end
 
     # get range of the original signal for the scale
@@ -69,19 +69,19 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # normalize and shift so all channels are visible
     # each channel is between -1.0 and +1.0
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         # scale by 0.5 so maxima do not overlap
         signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
     end
 
     # prepare plot
-    channel_n == 1 && (plot_size = (1200, 500))
-    channel_n > 1 && (plot_size = (1200, 800))
+    ch_n == 1 && (plot_size = (1200, 500))
+    ch_n > 1 && (plot_size = (1200, 800))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
                    xticks=_ticks(t),
-                   ylims=(-1, channel_n),
+                   ylims=(-1, ch_n),
                    title=title,
                    palette=pal,
                    size=plot_size,
@@ -94,13 +94,13 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
                    kwargs...)
 
     # plot zero line
-    p = Plots.hline!(collect((channel_n - 1):-1:0),
+    p = Plots.hline!(collect((ch_n - 1):-1:0),
                      color=:grey,
                      lw=0.5,
                      labels="")
 
     # plot channels
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         p = @views Plots.plot!(t,
                                signal[idx, :],
                                linewidth=1,
@@ -109,12 +109,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     end
 
     # plot labels
-    p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
+    p = Plots.plot!(yticks=((ch_n - 1):-1:0, labels))
 
     # draw scale
     if scale == true
-        p = Plots.plot!([t[1], t[1]], [(channel_n - 1.5), (channel_n - 0.5)], color=:red, linewidth=5, label="")
-        p = Plots.plot!(annotation=(t[1], (channel_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=5, label="")
+        p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -150,7 +150,7 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # convert single-channel signal to single-row matrix
     ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
 
     # reverse so 1st channel is on top
     signal = @views reverse(signal[:, 1:length(t)], dims = 1)
@@ -163,19 +163,19 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
 
     # normalize and shift so all channels are visible
     # each channel is between -1.0 and +1.0
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         # scale by 0.5 so maxima do not overlap
         signal[idx, :] = @views s_normalize(signal[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
     end
 
     # prepare plot
-    channel_n == 1 && (plot_size = (1200, 500))
-    channel_n > 1 && (plot_size = (1200, 800))
+    ch_n == 1 && (plot_size = (1200, 500))
+    ch_n > 1 && (plot_size = (1200, 800))
     p = Plots.plot(xlabel=xlabel,
                    ylabel=ylabel,
                    xlims=_xlims(t),
                    xticks=_ticks(t),
-                   ylims=(-1, channel_n),
+                   ylims=(-1, ch_n),
                    title=title,
                    palette=pal,
                    size=plot_size,
@@ -188,13 +188,13 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
                    kwargs...)
     
     # plot zero line
-    p = Plots.hline!(collect((channel_n - 1):-1:0),
+    p = Plots.hline!(collect((ch_n - 1):-1:0),
                      color=:grey,
                      lw=0.5,
                      labels="")
 
     # plot channels
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         if bad[idx] == true
             p = @views Plots.plot!(t,
                                    signal[idx, :],
@@ -211,12 +211,12 @@ function plot_signal(t::Union{AbstractVector, AbstractRange}, signal::Union{Abst
     end
 
     # plot labels
-    p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
+    p = Plots.plot!(yticks=((ch_n - 1):-1:0, labels))
 
     # draw scale
     if scale == true
-        p = Plots.plot!([t[1], t[1]], [(channel_n - 1.5), (channel_n - 0.5)], color=:red, linewidth=5, label="")
-        p = Plots.plot!(annotation=(t[1], (channel_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
+        p = Plots.plot!([t[1], t[1]], [(ch_n - 1.5), (ch_n - 0.5)], color=:red, linewidth=5, label="")
+        p = Plots.plot!(annotation=(t[1], (ch_n - 1), Plots.text("$range$units", pointsize=6, halign=:center, valign=:bottom, rotation=90)), label=false)
     end
 
     return p
@@ -347,7 +347,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::
     # get range of the original signal for the scale
     range = _get_range(signal)
 
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
 
     # get limits
     if norm != true
@@ -361,7 +361,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::
     end
 
     # channel labels
-    labels == [""] && (labels = repeat([""], channel_n))
+    labels == [""] && (labels = repeat([""], ch_n))
     
     # plot channels
     p = Plots.plot(xlabel=xlabel,
@@ -380,7 +380,7 @@ function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, signal::
                    xtickfontsize=6,
                    ytickfontsize=6;
                    kwargs...)
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         p = Plots.plot!(t,
                         signal[idx, :],
                         t=:line,
@@ -459,7 +459,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange}=0, 
     if segment[2] <= eeg_epoch_len(eeg)
         signal = eeg.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        signal = eeg_epoch(eeg, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+        signal = eeg_epoch(eeg, ep_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
@@ -615,7 +615,7 @@ function eeg_plot(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; epoch
     if segment[2] <= eeg_epoch_len(eeg)
         signal = c[c_idx, segment[1]:segment[2], 1]
     else
-        signal = _make_epochs(c, epoch_n=1)[c_idx, segment[1]:segment[2], 1]
+        signal = _make_epochs(c, ep_n=1)[c_idx, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg))
 
@@ -808,7 +808,7 @@ Plot multi-channel PSD (power spectrum density).
 """
 function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector{String}=[""], norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, ax::Symbol=:linlin, kwargs...)
 
-    channel_n = size(s_pow, 1)
+    ch_n = size(s_pow, 1)
     size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Length of powers vector must equal length of frequencies vector."))
     _check_var(ax, [:linlin, :loglin, :linlog, :loglog], "ax")
 
@@ -818,12 +818,12 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
     if mono == true
         pal = :grays
         channel_color = Vector{Symbol}()
-        for idx in 1:channel_n
+        for idx in 1:ch_n
             push!(channel_color, :black)
         end
     else
         pal = :darktest
-        channel_color = channel_n:-1:1
+        channel_color = ch_n:-1:1
     end
 
     # channel labels
@@ -834,7 +834,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
 
     # normalize and shift so all channels are visible
     # each channel is between -1.0 and +1.0
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         # scale by 0.5 so maxima do not overlap
         s_pow[idx, :] = @views s_normalize(s_pow[idx, :], method=:minmax) .* 0.5 .+ (idx - 1)
     end
@@ -890,13 +890,13 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
                    ytickfontsize=6)
 
     # plot zero line
-    p = Plots.hline!(collect((channel_n - 1):-1:0),
+    p = Plots.hline!(collect((ch_n - 1):-1:0),
                      color=:grey,
                      lw=0.5,
                      label="")
 
     # plot channels
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         p = @views Plots.plot!(s_frq,
                                s_pow[idx, :],
                                linewidth=1,
@@ -907,7 +907,7 @@ function plot_psd(s_frq::Vector{Float64}, s_pow::Matrix{Float64}; labels::Vector
     end
 
     # plot labels
-    p = Plots.plot!(yticks=((channel_n - 1):-1:0, labels))
+    p = Plots.plot!(yticks=((ch_n - 1):-1:0, labels))
 
     return p
 end
@@ -1155,12 +1155,12 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
     frq_lim == (0, 0) && (frq_lim = (s_frq[1], s_frq[end]))
     frq_lim = tuple_order(frq_lim)
 
-    channel_n = size(s_pow, 1)
+    ch_n = size(s_pow, 1)
 
     pal = mono == true ? :grays : :darktest
     
     # channel labels
-    labels == [""] && (labels = repeat([""], channel_n))
+    labels == [""] && (labels = repeat([""], ch_n))
 
     if ax === :linlin
         xticks=_ticks(frq_lim)
@@ -1216,7 +1216,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
                        ytickfontsize=6)
 
         # plot powers
-        for idx in 2:channel_n
+        for idx in 2:ch_n
             p = Plots.plot!(s_frq,
                             ones(length(s_frq)) .* idx,
                             s_pow[idx, :],
@@ -1252,7 +1252,7 @@ function plot_psd_3d(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; labels::V
                        ytickfontsize=6)
     end
 
-    p = Plots.plot!(yticks=(1:channel_n, labels))
+    p = Plots.plot!(yticks=(1:ch_n, labels))
 
     return p
 end
@@ -3880,7 +3880,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG; epoch::Union{Int64, AbstractRange
     if segment[2] <= eeg_epoch_len(eeg_tmp)
         signal = eeg_tmp.eeg_signals[channel, segment[1]:segment[2], 1]
     else
-        signal = eeg_epoch(eeg_tmp, epoch_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
+        signal = eeg_epoch(eeg_tmp, ep_n=1).eeg_signals[channel, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
@@ -4006,7 +4006,7 @@ function eeg_plot_topo(eeg::NeuroAnalyzer.EEG, c::Union{Symbol, AbstractArray}; 
     if segment[2] <= eeg_epoch_len(eeg_tmp)
         signal = c[c_idx, segment[1]:segment[2], 1]
     else
-        signal = _make_epochs(c, epoch_n=1)[c_idx, segment[1]:segment[2], 1]
+        signal = _make_epochs(c, ep_n=1)[c_idx, segment[1]:segment[2], 1]
     end
     if segment[1] != segment[2]
         t = _get_t(segment[1], segment[2], eeg_sr(eeg_tmp))
@@ -4289,7 +4289,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
 
     pal = mono == true ? :grays : :darktest
 
-    channel_n = size(signal, 1)
+    ch_n = size(signal, 1)
 
     # get limits
     ylim = (floor(minimum(signal) * 1.1, digits=0), ceil(maximum(signal) * 1.1, digits=0))
@@ -4324,7 +4324,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
                      labels="")
 
     # plot signals
-    for idx in 1:channel_n
+    for idx in 1:ch_n
         if labels == [""]
             p = Plots.plot!(t,
                             signal[idx, :],
@@ -4334,7 +4334,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
                             alpha=0.2,
                             legend=false)
         else
-            if labels == repeat([""], channel_n)
+            if labels == repeat([""], ch_n)
                 p = Plots.plot!(t,
                                 signal[idx, :],
                                 t=:line,
@@ -4356,7 +4356,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
 
     # plot averaged ERP
     if avg == true
-        if channel_n == 1
+        if ch_n == 1
             signal = mean(signal, dims=2)[:]
         else
             signal = mean(signal, dims=1)[:]
