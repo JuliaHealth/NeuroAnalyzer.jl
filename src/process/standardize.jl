@@ -30,7 +30,7 @@ function standardize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
     end
 
     reset_components!(new)
-    push!(new.header[:history], "standardize(OBJ)")
+    push!(new.header.history, "standardize(OBJ)")
 
     return new, scaler
 end

@@ -28,7 +28,7 @@ Named tuple containing:
 """
 function linreg(x::AbstractVector, y::AbstractVector)
 
-    df = DataFrame(:x => x, :y => y)
+    df = DataFrame(:x=>x, :y=>y)
     lr = lm(@formula(y ~ x), df)
     radj = r2(lr)
     c = coef(lr)

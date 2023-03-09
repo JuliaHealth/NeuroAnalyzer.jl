@@ -96,7 +96,7 @@ function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int
 
     obj_new = deepcopy(obj)
     obj_new.header.recording[:markers] = true
-    append!(obj_new.markers, DataFrame(:id => id, :start => start, :length => len, :description => desc, :channel => channel))
+    append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>channel))
     sort!(obj_new.markers)
     reset_components!(obj_new)
     push!(obj_new.header.recording.history, "add_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
@@ -158,7 +158,7 @@ function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int6
     nn = size(obj.markers, 1)
     n < 1 || n > nn && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     obj_new = deepcopy(obj)
-    obj_new.markers[n, :] = Dict(:id => id, :start => start, :length => len, :description => desc, :channel => channel)
+    obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>channel)
      reset_components!(obj_new)
     push!(obj_new.header.recording.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
 

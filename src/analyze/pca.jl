@@ -132,8 +132,8 @@ Reconstruct signals using embedded PCA components (`:pc`) and model (`:pca`).
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)))
 
-    :pc in obj.header.components || throw(ArgumentError("OBJ does not contain :pc component. Perform pca(OBJ) first."))
-    :pca in obj.header.components || throw(ArgumentError("OBJ does not contain :pca component. Perform pca(OBJ) first."))
+    :pc in obj.header.component_names || throw(ArgumentError("OBJ does not contain :pc component. Perform pca(OBJ) first."))
+    :pca in obj.header.component_names || throw(ArgumentError("OBJ does not contain :pca component. Perform pca(OBJ) first."))
 
     _check_channels(obj, channel)
 
@@ -142,7 +142,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{
     pc_m_idx = component_idx(obj, c=:pca)
     obj_new.data[channel, :, :] = @views pca_reconstruct(obj_new.data[channel, :, :], pc=obj_new.components[pc_idx], pca=obj_new.components[pc_m_idx])
     reset_components!(obj_new)
-    push!(obj_new.header[:history], "pca_reconstruct(OBJ, channel=$channel)")
+    push!(obj_new.header.history, "pca_reconstruct(OBJ, channel=$channel)")
 
     return obj_new
 end
@@ -190,7 +190,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pca::M
     obj_new = deepcopy(obj)
     obj_new.data[channel, :, :] = @views pca_reconstruct(obj_new.data[channel, :, :], pc=pc, pca=pca)
     reset_components!(obj_new)
-    push!(obj_new.header[:history], "pca_reconstruct(OBJ, channel=$channel, pc=$pc, pca=$pca)")
+    push!(obj_new.header.history, "pca_reconstruct(OBJ, channel=$channel, pc=$pc, pca=$pca)")
 
     return obj_new
 end

@@ -1,7 +1,9 @@
+export import_alice4
+
 """
     import_alice4(file_name; detect_type)
 
-Load EDF exported from Alice 4 return `NeuroAnalyzer.NEURO` object.
+Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.NEURO` object.
 
 # Arguments
 
@@ -10,19 +12,11 @@ Load EDF exported from Alice 4 return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `eeg:EEG`
+- `::NeuroAnalyzer.NEURO`
 
 # Notes
 
-- sampling_rate = n.samples / data.record.duration
-- gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-- value = (value - digital_minimum ) * gain + physical_minimum
-
-# Source
-
-1. Kemp B, Värri A, Rosa AC, Nielsen KD, Gade J. A simple format for exchange of digitized polygraphic recordings. Electroencephalography and Clinical Neurophysiology. 1992 May;82(5):391–3. 
-2. Kemp B, Olivan J. European data format ‘plus’ (EDF+), an EDF alike standard format for the exchange of physiological data. Clinical Neurophysiology 2003;114:1755–61.
-3. https://www.edfplus.info/specs/
+- EDF files exported from Alice 4 have incorrect value of `data_records` (-1) and multiple sampling rate; channels are upsampled to the highest rate.
 """
 function import_alice4(file_name::String; detect_type::Bool=true)
 
@@ -60,9 +54,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     data_records_duration  = parse(Float64, strip(header[245:252]))
     ch_n  = parse(Int, strip(header[253:256]))
 
-    labels = Vector{String}(undef, ch_n)
+    clabels = Vector{String}(undef, ch_n)
     transducers = Vector{String}(undef, ch_n)
-    physical_dimension = Vector{String}(undef, ch_n)
+    units = Vector{String}(undef, ch_n)
     physical_minimum = Vector{Float64}(undef, ch_n)
     physical_maximum = Vector{Float64}(undef, ch_n)
     digital_minimum = Vector{Float64}(undef, ch_n)
@@ -74,7 +68,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, ch_n * 16)
     header = String(Char.(header))
     for idx in 1:ch_n
-        labels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
+        clabels[idx] = strip(header[1 + ((idx - 1) * 16):(idx * 16)])
     end
 
     header = zeros(UInt8, ch_n * 80)
@@ -88,7 +82,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
+        units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
     header = zeros(UInt8, ch_n * 8)
@@ -135,9 +129,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     close(fid)
 
-    labels = _clean_labels(labels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(labels)
+        channel_type = _set_channel_types(clabels)
     else
         channel_type = repeat(["???"], ch_n)
     end
@@ -145,7 +139,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
 
     if file_type == "EDF"
         has_markers = false
-        markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
         markers_channel = -1
     else
         has_markers, markers_channel = _has_markers(channel_type)
@@ -188,13 +182,16 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                     elseif channel_type[idx2] == "events"
                         data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal
                     else
-                        if occursin("uV", physical_dimension[idx2]) 
+                        data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
+                        #=
+                        if occursin("uV", units[idx2]) 
                             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                        elseif occursin("mV", physical_dimension[idx2])
+                        elseif occursin("mV", units[idx2])
                             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
                         else
                             data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
                         end
+                        =#
                     end
                 else
                     markers[idx1] = String(Char.(signal))
@@ -241,10 +238,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         end
 
         # reject weird channels
-
         for idx1 in 1:ch_n
             if idx1 != markers_channel
-                if channel_type[idx1] == "markers"
+                if channel_type[idx1] == "mrk"
                     for idx2 in 1:size(data, 2)
                         if signal[idx1, idx2] == digital_minimum[idx1]
                             signal[idx1, idx2] = 0
@@ -253,9 +249,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                         end
                     end
                 end
-                if occursin("mV", physical_dimension[idx1])
-                    data ./= 1000
-                end
+                # if occursin("mV", units[idx1])
+                #     data ./= 1000
+                # end
             else
                 markers[idx1] = String(Char.(signal))
             end
@@ -268,9 +264,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     if has_markers
         deleteat!(channel_order, vsearch(markers_channel, channel_order))
         data = data[setdiff(1:ch_n, markers_channel), :, :]
-        deleteat!(labels, markers_channel)
+        deleteat!(clabels, markers_channel)
         deleteat!(transducers, markers_channel)
-        deleteat!(physical_dimension, markers_channel)
+        deleteat!(units, markers_channel)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
         ch_n -= 1
@@ -278,12 +274,12 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         markers[!, :start] = t2s.(markers[!, :start], sampling_rate)
         markers[!, :length] = t2s.(markers[!, :length], sampling_rate)
     else
-        markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+        markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     end
 
     duration_samples = size(data, 2)
-    duration_seconds = size(data, 2) / sampling_rate
-    time_pts = collect(0:(1 / sampling_rate):duration_seconds)
+    duration_seconds = size(data, 2) / max_sampling_rate
+    time_pts = collect(0:(1 / max_sampling_rate):duration_seconds)
     time_pts = time_pts[1:end - 1]
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -306,18 +302,19 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes="",
                               channel_n=ch_n,
-                              channel_type=channel_type,
+                              channel_type=channel_type[channel_order],
                               reference="",
                               duration_samples=duration_samples,
                               duration_seconds=duration_seconds,
                               epoch_n=1,
                               epoch_duration_samples=duration_samples,
                               epoch_duration_seconds=duration_seconds,
-                              clabels=clabels,
-                              units=physical_dimension,
-                              prefiltering=prefiltering,
-                              sampling_rate=sampling_rate,
-                              gain=gain)
+                              clabels=clabels[channel_order],
+                              units=units[channel_order],
+                              transducers=transducers[channel_order],
+                              prefiltering=prefiltering[channel_order],
+                              sampling_rate=max_sampling_rate,
+                              gain=gain[channel_order])
 
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
@@ -327,9 +324,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          markers=has_markers,
-                         components=Symbol[],
-                         locations=false,
-                         history=[""])
+                         component_names=Symbol[],
+                         locs=false,
+                         history=String[])
 
     components = Vector{Any}()
     epoch_time = time_pts

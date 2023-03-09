@@ -25,13 +25,13 @@ Electrode locations:
 
 # Returns
 
-- `eeg:EEG`
+- `obj_new::NeuroAnalyzer.NEURO`
 """
 function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     f_labels = lowercase.(locs[!, :labels])
 
-    e_labels = lowercase.(obj.header[:labels])
+    e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, f_labels)
     length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
@@ -44,7 +44,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.header.locations = true
+    obj_new.header.locs = true
     obj_new.locs = locs
 
     # add entry to :history field
@@ -76,24 +76,10 @@ Electrode locations:
 - `locs::DataFrame`
 """
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
-    
-    f_labels = lowercase.(locs[!, :labels])
 
-    e_labels = lowercase.(obj.header[:labels])
-    no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
+    obj_new = add_locs(obj, locs=locs)
+    obj.header = obj_new.header
+    obj.locs = obj_new.locs
 
-    labels_idx = zeros(Int64, length(e_labels))
-    for idx1 in eachindex(e_labels)
-        for idx2 in eachindex(f_labels)
-            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
-        end
-    end
-    
-    # create new dataset
-    obj.locs = locs
-
-    # add entry to :history field
-    push!(obj.header[:history], "add_locs!(OBJ, locs)")
     nothing
 end

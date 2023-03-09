@@ -13,8 +13,8 @@ export rename_component!
 
 function _get_component(obj::NeuroAnalyzer.NEURO, c::Symbol)
     # get component values
-    c in obj.header.components || throw(ArgumentError("Component $c not found."))
-    c_idx = findfirst(isequal(c), obj.header.components)
+    c in obj.header.component_names || throw(ArgumentError("Component $c not found."))
+    c_idx = findfirst(isequal(c), obj.header.component_names)
     c = obj.components[c_idx]
     return (c=c, c_idx=c_idx)
 end
@@ -62,8 +62,8 @@ Return component index.
 """
 function component_idx(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in obj.header.components || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
-    return findfirst(isequal(c), obj.header.components)
+    c in obj.header.component_names || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    return findfirst(isequal(c), obj.header.component_names)
 
 end
 
@@ -83,7 +83,7 @@ Return component data type.
 """
 function component_type(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in obj.header.components || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    c in obj.header.component_names || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
     c_idx = component_idx(obj; c=c)
     return typeof(obj.components[c_idx])
 
@@ -106,8 +106,8 @@ Rename component.
 """
 function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
 
-    c_old in obj.header.components || throw(ArgumentError("Component $c_old does not exist. Use list_component() to view existing components."))
-    c_new in obj.header.components && throw(ArgumentError("Component $c_new already exists. Use list_component() to view existing components."))
+    c_old in obj.header.component_names || throw(ArgumentError("Component $c_old does not exist. Use list_component() to view existing components."))
+    c_new in obj.header.component_names && throw(ArgumentError("Component $c_new already exists. Use list_component() to view existing components."))
 
     obj_new = deepcopy(obj)
     c_idx = component_idx(obj, c=c_old)
@@ -132,7 +132,7 @@ Rename component.
 function rename_component!(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
 
     obj_new = rename_component(obj, c_old=c_old, c_new=c_new)
-    obj.header.components = obj_new.header.components
+    obj.header.component_names = obj_new.header.components
     obj.components = obj_new.components
 
     return nothing
@@ -184,7 +184,7 @@ Add component.
 function add_component!(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
 
     obj_new = add_component(obj, c=c, v=v)
-    obj.header.components = obj_new.header.components
+    obj.header.component_names = obj_new.header.components
     obj.components = obj_new.components
 
     return nothing
@@ -204,7 +204,7 @@ List component names.
 - `components::Vector{Symbol}`
 """
 function list_component(obj::NeuroAnalyzer.NEURO)
-    return obj.header.components
+    return obj.header.component_names
 end
 
 """
@@ -223,7 +223,7 @@ Extract component values.
 """
 function extract_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in obj.header.components || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    c in obj.header.component_names || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
     c_idx = component_idx(obj, c=c)
     
     return obj.components[c_idx]
@@ -245,7 +245,7 @@ Delete component.
 """
 function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
-    c in obj.header.components || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    c in obj.header.component_names || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
     
     obj_new = deepcopy(obj)
     c_idx = component_idx(obj, c=c)
@@ -271,14 +271,14 @@ Delete component.
 function delete_component!(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
     obj_new = delete_component(obj, c=c)
-    obj.header.components = obj_new.header.components
+    obj.header.component_names = obj_new.header.components
     obj.components = obj_new.components
 
     return nothing
 end
 
 """
-    reset_component(obj)
+    reset_components(obj)
 
 Remove all components.
 
@@ -290,7 +290,7 @@ Remove all components.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function reset_component(obj::NeuroAnalyzer.NEURO)
+function reset_components(obj::NeuroAnalyzer.NEURO)
 
     obj_new = deepcopy(obj)
     obj_new.header.components = Symbol[]
@@ -300,7 +300,7 @@ function reset_component(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    reset_component!(obj)
+    reset_components!(obj)
 
 Remove all components.
 
@@ -308,9 +308,9 @@ Remove all components.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function reset_component!(obj::NeuroAnalyzer.NEURO)
+function reset_components!(obj::NeuroAnalyzer.NEURO)
 
-    obj.header.components = Symbol[]
+    obj.header.component_names = Symbol[]
     obj.components = Any[]
 
     return nothing

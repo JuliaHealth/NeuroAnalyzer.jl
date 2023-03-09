@@ -111,7 +111,7 @@ function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
     end
 
     reset_components!(obj_new)
-    push!(obj.header[:history], "average(OBJ1, OBJ2)")
+    push!(obj.header.history, "average(OBJ1, OBJ2)")
 
     return obj_new
 end

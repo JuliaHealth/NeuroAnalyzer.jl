@@ -69,7 +69,7 @@ function tes_protocol(;type::Symbol, hd::Bool, current::Real, frequency::Real=0,
     ramp_in < 0 && throw(ArgumentError("ramp_in must be ≥ 0 s."))
     ramp_out < 0 && throw(ArgumentError("ramp_out must be ≥ 0 s."))
 
-    protocol = Dict(:type => type, :hd => hd, :current => current, :frequency => frequency, :cathode_size => cathode_size, :cathode_size => cathode_size, :anode_loc => anode_loc, :cathode_loc => cathode_loc, :duration => duration, :ramp_in => ramp_in, :ramp_out => ramp_out, :sham => sham, )
+    protocol = Dict(:type=>type, :hd=>hd, :current=>current, :frequency=>frequency, :cathode_size=>cathode_size, :cathode_size=>cathode_size, :anode_loc=>anode_loc, :cathode_loc=>cathode_loc, :duration=>duration, :ramp_in=>ramp_in, :ramp_out=>ramp_out, :sham=>sham, )
     
     return protocol
 end

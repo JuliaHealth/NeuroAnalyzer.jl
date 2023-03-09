@@ -65,8 +65,8 @@ mutable struct HEADER
     recording::Dict
     experiment::Dict
     markers::Bool
-    components::Vector{Symbol}
-    locations::Bool
+    component_names::Vector{Symbol}
+    locs::Bool
     history::Vector{String}
 end
 

@@ -53,7 +53,6 @@ function import_edf(file_name::String; detect_type::Bool=true)
     occursin("Alice 4", recording) && return import_alice4(file_name, detect_type=detect_type)
     recording_date = header[169:176]
     recording_time = header[177:184]
-    recording_time = replace(recording_time, '.'=>':')
     data_offset = parse(Int, strip(header[185:192]))
     reserved = strip(header[193:236])
     reserved == "EDF+D" && throw(ArgumentError("EDF+D format (interrupted recordings) is not supported yet."))
@@ -64,7 +63,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
 
     clabels = Vector{String}(undef, ch_n)
     transducers = Vector{String}(undef, ch_n)
-    physical_dimension = Vector{String}(undef, ch_n)
+    units = Vector{String}(undef, ch_n)
     physical_minimum = Vector{Float64}(undef, ch_n)
     physical_maximum = Vector{Float64}(undef, ch_n)
     digital_minimum = Vector{Float64}(undef, ch_n)
@@ -90,7 +89,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     readbytes!(fid, header, ch_n * 8)
     header = String(Char.(header))
     for idx in 1:ch_n
-        physical_dimension[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
+        units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
 
     header = zeros(UInt8, ch_n * 8)
@@ -190,9 +189,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
                 else
                     data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
 #=
-                    if occursin("uV", physical_dimension[idx2]) 
+                    if occursin("uV", units[idx2]) 
                         data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
-                    elseif occursin("mV", physical_dimension[idx2])
+                    elseif occursin("mV", units[idx2])
                         data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2] ./ 1000
                     else
                         data[idx2, ((idx1 - 1) * samples_per_datarecord[idx2] + 1):(idx1 * samples_per_datarecord[idx2]), 1] = signal .* gain[idx2]
@@ -211,7 +210,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
         data = data[setdiff(1:ch_n, markers_channel), :, :]
         deleteat!(clabels, markers_channel)
         deleteat!(transducers, markers_channel)
-        deleteat!(physical_dimension, markers_channel)
+        deleteat!(units, markers_channel)
         deleteat!(prefiltering, markers_channel)
         deleteat!(gain, markers_channel)
         ch_n -= 1
@@ -225,6 +224,7 @@ function import_edf(file_name::String; detect_type::Bool=true)
     time_pts = collect(0:(1 / sampling_rate):duration_seconds)
     time_pts = time_pts[1:end - 1]
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
+    
     data_type = "eeg"
 
     s = _create_subject(id="",
@@ -244,18 +244,19 @@ function import_edf(file_name::String; detect_type::Bool=true)
                               recording_time=recording_time,
                               recording_notes="",
                               channel_n=ch_n,
-                              channel_type=channel_type,
+                              channel_type=channel_type[channel_order],
                               reference="",
                               duration_samples=duration_samples,
                               duration_seconds=duration_seconds,
-                              epoch_n=1,
+                              epoch_n=size(data, 3),
                               epoch_duration_samples=duration_samples,
                               epoch_duration_seconds=duration_seconds,
-                              clabels=clabels,
-                              units=physical_dimension,
-                              prefiltering=prefiltering,
+                              clabels=clabels[channel_order],
+                              transducers=transducers[channel_order],
+                              units=units[channel_order],
+                              prefiltering=prefiltering[channel_order],
                               sampling_rate=sampling_rate,
-                              gain=gain)
+                              gain=gain[channel_order])
 
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
@@ -265,9 +266,9 @@ function import_edf(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          markers=has_markers,
-                         components=Symbol[],
-                         locations=false,
-                         history=[""])
+                         component_names=Symbol[],
+                         locs=false,
+                         history=String[])
 
     components = Vector{Any}()
     epoch_time = time_pts

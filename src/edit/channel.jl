@@ -29,7 +29,7 @@ Change channel type.
 function channel_type(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, type::String)
 
     type = lowercase(type)
-    labels = labels(obj)
+    clabels = labels(obj)
 
     # create new dataset
     obj_new = deepcopy(obj)
@@ -37,8 +37,8 @@ function channel_type(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, t
     
     if typeof(channel) == String
         channel_found = nothing
-        for idx in eachindex(labels)
-            if channel == labels[idx]
+        for idx in eachindex(clabels)
+            if channel == clabels[idx]
                 types[idx] = type
                 channel_found = idx
             end
@@ -93,12 +93,12 @@ Return channel number (if provided by name) or name (if provided by number).
 """
 function get_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
 
-    labels = labels(obj)
+    clabels = labels(obj)
     if typeof(channel) == String
         # get channel by name
         channel_idx = nothing
-        for idx in eachindex(labels)
-            if lowercase(channel) == lowercase(labels[idx])
+        for idx in eachindex(clabels)
+            if lowercase(channel) == lowercase(clabels[idx])
                 channel_idx = idx
             end
         end
@@ -109,7 +109,7 @@ function get_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
     else
         # get channel by number
         _check_channels(obj, channel)
-        return labels[channel]
+        return clabels[channel]
     end
 end
 
@@ -132,15 +132,15 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String},
 
     # create new dataset
     obj_new = deepcopy(obj)
-    labels = labels(obj_new)
-    name in labels && throw(ArgumentError("Channel $name already exist."))
+    clabels = labels(obj_new)
+    name in clabels && throw(ArgumentError("Channel $name already exist."))
 
     if typeof(channel) == String
         # get channel by name
         channel_found = nothing
-        for idx in eachindex(labels)
-            if channel == labels[idx]
-                labels[idx] = name
+        for idx in eachindex(clabels)
+            if channel == clabels[idx]
+                clabels[idx] = name
                 channel_found = idx
             end
         end
@@ -150,9 +150,9 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String},
     else
         # get channel by number
         _check_channels(obj, channel)
-        labels[channel] = name
+        clabels[channel] = name
     end
-    obj_new.header.recording[:labels] = labels
+    obj_new.header.recording[:labels] = clabels
     
     # add entry to :history field
     push!(obj_new.header.recording.history, "rename_channel(OBJ, channel=$channel, name=$name)")
@@ -173,8 +173,8 @@ Rename channel.
 """
 function rename_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, name::String)
 
-    obj.header[:labels] = rename_channel(obj, channel=channel, name=name).header.recording[:labels]
-    push!(obj.header[:history], "rename_channel!(OBJ, channel=$channel, name=$name)")
+    obj.header.recording[:labels] = rename_channel(obj, channel=channel, name=name).header.recording[:labels]
+    push!(obj.header.history, "rename_channel!(OBJ, channel=$channel, name=$name)")
 
     return nothing
 end
@@ -195,12 +195,12 @@ Extract channel data.
 """
 function extract_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
 
-    labels = labels(obj)
+    clabels = labels(obj)
     if typeof(channel) == String
         # get channel by name
         channel_idx = nothing
-        for idx in eachindex(labels)
-            if channel == labels[idx]
+        for idx in eachindex(clabels)
+            if channel == clabels[idx]
                 channel_idx = idx
             end
         end
@@ -287,10 +287,10 @@ Replace channel.
 function replace_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
     channel_idx = nothing
-    labels = labels(obj)
+    clabels = labels(obj)
     if typeof(channel) == String
-        for idx in eachindex(labels)
-            if channel == labels[idx]
+        for idx in eachindex(clabels)
+            if channel == clabels[idx]
                 channel_idx = idx
             end
         end
@@ -340,38 +340,38 @@ Add channel labels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `labels::Vector{String}`
+- `clabels::Vector{String}`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function add_labels(obj::NeuroAnalyzer.NEURO; labels::Vector{String})
+function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
-    length(labels) == channel_n(obj) || throw(ArgumentError("labels length must be $(channel_n(obj))."))
+    length(clabels) == channel_n(obj) || throw(ArgumentError("clabels length must be $(channel_n(obj))."))
     
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:labels] = labels
+    obj_new.header.recording[:labels] = clabels
 
-    push!(obj_new.header.recording.history, "add_labels(OBJ, labels=$labels")
+    push!(obj_new.header.recording.history, "add_labels(OBJ, clabels=$clabels")
  
     return obj_new
 end
 
 """
-    add_labels!(obj::NeuroAnalyzer.NEURO; labels::Vector{String})
+    add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
 Add OBJ channel labels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `labels::Vector{String}`
+- `clabels::Vector{String}`
 """
-function add_labels!(obj::NeuroAnalyzer.NEURO; labels::Vector{String})
+function add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
-    length(labels) == channel_n(obj) || throw(ArgumentError("labels length must be $(channel_n(obj))."))
-    obj_tmp = add_labels(obj, labels=labels)
+    length(clabels) == channel_n(obj) || throw(ArgumentError("clabels length must be $(channel_n(obj))."))
+    obj_tmp = add_labels(obj, clabels=clabels)
     obj.header = obj_tmp.header
 
     return nothing

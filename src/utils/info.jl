@@ -240,12 +240,12 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                Markers: yes")
     end
-    if obj.header.locations == false
+    if obj.header.locs == false
         println("      Channel locations: no")
     else
         println("      Channel locations: yes")
     end
-    if obj.header.components != []
+    if obj.header.component_names != []
         print("             Components: ")
         c = list_components(obj)
         if length(c) == 1

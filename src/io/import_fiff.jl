@@ -215,7 +215,7 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                               reference="",
                               duration_samples=duration_samples,
                               duration_seconds=duration_seconds,
-                              epoch_n=1,
+                              epoch_n=size(data, 3),
                               epoch_duration_samples=duration_samples,
                               epoch_duration_seconds=duration_seconds,
                               clabels=clabels,
@@ -237,21 +237,21 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                          markers=false,
                          components=Symbol[],
                          locations=true,
-                         history=[""])
+                         history=String[])
 
     components = Vector{Any}()
     epoch_time = time_pts
     markers = DataFrame()
-    locs = DataFrame(:channel => Int64,
-                     :labels => String[],
-                     :loc_theta => Float64[],
-                     :loc_radius => Float64[],
-                     :loc_x => Float64[],
-                     :loc_y => Float64[],
-                     :loc_z => Float64[],
-                     :loc_radius_sph => Float64[],
-                     :loc_theta_sph => Float64[],
-                     :loc_phi_sph => Float64[])
+    locs = DataFrame(:channel=>Int64,
+                     :labels=>String[],
+                     :loc_theta=>Float64[],
+                     :loc_radius=>Float64[],
+                     :loc_x=>Float64[],
+                     :loc_y=>Float64[],
+                     :loc_z=>Float64[],
+                     :loc_radius_sph=>Float64[],
+                     :loc_theta_sph=>Float64[],
+                     :loc_phi_sph=>Float64[])
 
     return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs)
 end

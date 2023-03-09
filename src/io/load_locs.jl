@@ -39,7 +39,7 @@ Electrode locations:
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=true)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
-    length(obj.header[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
+    length(obj.header.recording[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
         locs = locs_import_ced(file_name)
@@ -74,7 +74,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     loc_y = float.(locs[!, :loc_y])
     loc_z = float.(locs[!, :loc_z])
 
-    e_labels = lowercase.(obj.header[:labels])
+    e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, lowercase.(f_labels))
     length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in $file_name.")
 
@@ -90,17 +90,17 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.header.locations = true
-    obj_new.locs = DataFrame(:channel => 1:length(f_labels[labels_idx]),
-                                 :labels => f_labels[labels_idx],
-                                 :loc_theta => loc_theta[labels_idx],
-                                 :loc_radius => loc_radius[labels_idx],
-                                 :loc_x => loc_x[labels_idx],
-                                 :loc_y => loc_y[labels_idx],
-                                 :loc_z => loc_z[labels_idx],
-                                 :loc_radius_sph => loc_radius_sph[labels_idx],
-                                 :loc_theta_sph => loc_theta_sph[labels_idx],
-                                 :loc_phi_sph => loc_phi_sph[labels_idx])
+    obj_new.header.locs = true
+    obj_new.locs = DataFrame(:channel=>1:length(f_labels[labels_idx]),
+                             :labels=>f_labels[labels_idx],
+                             :loc_theta=>loc_theta[labels_idx],
+                             :loc_radius=>loc_radius[labels_idx],
+                             :loc_x=>loc_x[labels_idx],
+                             :loc_y=>loc_y[labels_idx],
+                             :loc_z=>loc_z[labels_idx],
+                             :loc_radius_sph=>loc_radius_sph[labels_idx],
+                             :loc_theta_sph=>loc_theta_sph[labels_idx],
+                             :loc_phi_sph=>loc_phi_sph[labels_idx])
 
     maximize == true && locs_maximize!(obj_new.locs)
 
@@ -145,7 +145,7 @@ function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=
 
     obj_tmp = load_locs(obj, file_name=file_name, maximize=maximize)
     obj.locs = obj_tmp.locs
-    obj.header.locations = true
+    obj.header.locs = true
 
     nothing
  end

@@ -2,9 +2,9 @@ export save
 export load
 
 """
-    save(eeg; file_name, overwrite)
+    save(obj; file_name, overwrite)
 
-Save `eeg` to `file_name` file (HDF5-based).
+Save `obj` to `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -14,7 +14,7 @@ Save `eeg` to `file_name` file (HDF5-based).
 
 # Returns
 
-- `success::Bool`
+- `::Bool`
 """
 function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false)
 
@@ -22,17 +22,17 @@ function save(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Bool=false
 
     obj.header.recording[:file_name] = file_name
 
-    save_object("/tmp/$(basename(file_name))", eeg)
+    save_object("/tmp/$(basename(file_name))", obj)
     obj.header.recording[:file_size_mb] = round(filesize("/tmp/$(basename(file_name))") / 1024, digits=2)
     rm("/tmp/$(basename(file_name))")
 
-    save_object(file_name, eeg)
+    save_object(file_name, obj)
 end
 
 """
     load(file_name)
 
-Load `eeg` from `file_name` file (HDF5-based).
+Load `NeuroAnalyzer.NEURO` from `file_name` file (HDF5-based).
 
 # Arguments
 
@@ -40,14 +40,12 @@ Load `eeg` from `file_name` file (HDF5-based).
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `::NeuroAnalyzer.NEURO`
 """
 function load(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    eeg = load_object(file_name)
-
-    return eeg
+    return load_object(file_name)
 end
 

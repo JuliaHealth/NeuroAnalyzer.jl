@@ -80,7 +80,7 @@ function _m2df(markers::Vector{String})
             push!(a_event, strip(s[3]))
         end
     end
-    return DataFrame(:id => repeat([""], length(a_event)), :start => a_start, :length => zeros(Int64, length(a_event)), :description => a_event, :channel => zeros(Int64, length(a_event)))
+    return DataFrame(:id=>repeat([""], length(a_event)), :start=>a_start, :length=>zeros(Int64, length(a_event)), :description=>a_event, :channel=>zeros(Int64, length(a_event)))
 end
 
 function _sort_channels(ch_t::Vector{String})

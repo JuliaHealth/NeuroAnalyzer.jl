@@ -12,7 +12,7 @@ Load SET file (exported from EEGLAB) and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `::NeuroAnalyzer.NEURO`
 """
 function import_set(file_name::String; detect_type::Bool=true)
 
@@ -31,14 +31,14 @@ function import_set(file_name::String; detect_type::Bool=true)
     
     # get channel labels
     if length(dataset["chanlocs"]["labels"][:]) == ch_n
-        labels = String.(dataset["chanlocs"]["labels"][:])
+        clabels = String.(dataset["chanlocs"]["labels"][:])
     else
-        labels = repeat([""], ch_n)
+        clabels = repeat([""], ch_n)
     end
 
-    labels = _clean_labels(labels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(labels)
+        channel_type = _set_channel_types(clabels)
     else
         channel_type = repeat(["???"], ch_n)
     end
@@ -64,9 +64,9 @@ function import_set(file_name::String; detect_type::Bool=true)
     sampling_rate = round(Int64, dataset["srate"])
 
     has_markers = false
-    markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     gain = ones(ch_n)
-    markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     duration_samples = size(data, 2)
     duration_seconds = size(data, 2) / sampling_rate
@@ -74,48 +74,63 @@ function import_set(file_name::String; detect_type::Bool=true)
     time_pts = time_pts[1:end - 1]
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
-    hdr = Dict(:data_type => "eeg",
-                      :file_name => file_name,
-                      :file_size_mb => file_size_mb,
-                      :file_type => file_type,
-                      :patient => patient,
-                      :recording => "",
-                      :recording_date => "",
-                      :recording_time => "",
-                      :channel_n => ch_n,
-                      :channel_type => channel_type[channel_order],
-                      :reference => "",
-                      :channel_locations => false,
-                      :history => history,
-                      :components => Symbol[],
-                      :duration_samples => duration_samples,
-                      :duration_seconds => duration_seconds,
-                      :epoch_n => 1,
-                      :epoch_duration_samples => duration_samples,
-                      :epoch_duration_seconds => duration_seconds,
-                      :labels => labels[channel_order],
-                      :transducers => repeat([""], ch_n),
-                      :units => repeat([""], ch_n),
-                      :prefiltering => repeat([""], ch_n),
-                      :sampling_rate => sampling_rate,
-                      :gain => gain[channel_order],
-                      :note => note,
-                      :markers => has_markers)
+    data_type = "eeg"
+
+    s = _create_subject(id="",
+                        first_name="",
+                        middle_name="",
+                        last_name=string(patient),
+                        handedness="",
+                        weight=-1,
+                        height=-1)
+
+    r = _create_recording_eeg(data_type=data_type,
+                              file_name=file_name,
+                              file_size_mb=file_size_mb,
+                              file_type=file_type,
+                              recording="",
+                              recording_date="",
+                              recording_time="",
+                              recording_notes=note,
+                              channel_n=ch_n,
+                              channel_type=channel_type,
+                              reference="",
+                              duration_samples=duration_samples,
+                              duration_seconds=duration_seconds,
+                              epoch_n=size(data, 3),
+                              epoch_duration_samples=duration_samples,
+                              epoch_duration_seconds=duration_seconds,
+                              clabels=clabels,
+                              transducers=repeat([""], ch_n),
+                              units=repeat([""], ch_n),
+                              prefiltering=repeat([""], ch_n),
+                              sampling_rate=sampling_rate,
+                              gain=ones(ch_n))
+
+    e = _create_experiment(experiment_name="",
+                           experiment_notes="",
+                           experiment_design="")
+
+    hdr = _create_header(s,
+                         r,
+                         e,
+                         markers=has_markers,
+                         component_names=Symbol[],
+                         locs=false,
+                         history=String[])
 
     components = Vector{Any}()
     epoch_time = time_pts
-    locs = DataFrame(:channel => Int64,
-                         :labels => String[],
-                         :loc_theta => Float64[],
-                         :loc_radius => Float64[],
-                         :loc_x => Float64[],
-                         :loc_y => Float64[],
-                         :loc_z => Float64[],
-                         :loc_radius_sph => Float64[],
-                         :loc_theta_sph => Float64[],
-                         :loc_phi_sph => Float64[])
+    locs = DataFrame(:channel=>Int64,
+                     :labels=>String[],
+                     :loc_theta=>Float64[],
+                     :loc_radius=>Float64[],
+                     :loc_x=>Float64[],
+                     :loc_y=>Float64[],
+                     :loc_z=>Float64[],
+                     :loc_radius_sph=>Float64[],
+                     :loc_theta_sph=>Float64[],
+                     :loc_phi_sph=>Float64[])
 
-    eeg = NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
-
-    return eeg
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
 end

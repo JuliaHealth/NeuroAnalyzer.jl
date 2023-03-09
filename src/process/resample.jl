@@ -152,7 +152,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.header.recording[:epoch_duration_seconds] = size(s_upsampled, 2) / new_sr
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
-    push!(obj_new.header[:history], "upsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.header.history, "upsample(OBJ, new_sr=$new_sr)")
 
     return obj_new
 end
@@ -218,7 +218,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.header[:epoch_duration_seconds] = size(s_downsampled, 2) / new_sr
     obj_new.header[:sampling_rate] = new_sr
     reset_components!(obj_new)
-    push!(obj_new.header[:history], "downsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.header.history, "downsample(OBJ, new_sr=$new_sr)")
 
     return obj_new
 end

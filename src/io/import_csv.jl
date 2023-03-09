@@ -1,3 +1,5 @@
+export import_csv
+
 """
     import_csv(file_name; detect_type)
 
@@ -10,7 +12,7 @@ Load CSV file (e.g. exported from EEGLAB) and return `NeuroAnalyzer.NEURO` objec
 
 # Returns
 
-- `eeg:EEG`
+- `::NeuroAnalyzer.NEURO`
 
 # Notes
 
@@ -31,29 +33,29 @@ function import_csv(file_name::String; detect_type::Bool=true)
         time_pts = df[:, 1]
         data = Array(df[:, 2:end])'
         ch_n = ncol(df) - 1
-        labels = String.(names(df)[2:end])
+        clabels = String.(names(df)[2:end])
     else
         # channels by time
         time_pts = parse.(Float64, names(df)[2:end])
         data = Array(df[:, 2:end])
         ch_n = nrow(df)
-        labels = String.(df[:, 1])
+        clabels = String.(df[:, 1])
     end
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
-    labels = _clean_labels(labels)
+    clabels = _clean_labels(clabels)
     if detect_type == true
-        channel_type = _set_channel_types(labels)
+        channel_type = _set_channel_types(clabels)
     else
         channel_type = repeat(["???"], ch_n)
     end
     channel_order = _sort_channels(copy(channel_type))
 
     has_markers = false
-    markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
     gain = ones(ch_n)
-    markers = DataFrame(:id => String[], :start => Int64[], :length => Int64[], :description => String[], :channel => Int64[])
+    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
     duration_samples = size(data, 2)
     duration_seconds = size(data, 2) / sampling_rate
@@ -84,14 +86,15 @@ function import_csv(file_name::String; detect_type::Bool=true)
                               reference="",
                               duration_samples=duration_samples,
                               duration_seconds=duration_seconds,
-                              epoch_n=1,
+                              epoch_n=size(data, 3),
                               epoch_duration_samples=duration_samples,
                               epoch_duration_seconds=duration_seconds,
                               clabels=clabels,
-                              units=[""],
-                              prefiltering=[""],
+                              transducers=repeat([""], ch_n),
+                              units=repeat([""], ch_n),
+                              prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
-                              gain=[])
+                              gain=gain)
 
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
@@ -101,9 +104,9 @@ function import_csv(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          markers=has_markers,
-                         components=Symbol[],
-                         locations=false,
-                         history=[""])
+                         component_names=Symbol[],
+                         locs=false,
+                         history=String[])
 
     components = Vector{Any}()
     epoch_time = time_pts

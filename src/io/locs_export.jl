@@ -16,7 +16,7 @@ function locs_export(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     channels = obj.locs[!, :channel]
-    labels = obj.locs[!, :labels]
+    clabels = obj.locs[!, :labels]
     theta = obj.locs[!, :loc_theta]
     radius = obj.locs[!, :loc_radius]
     x = obj.locs[!, :loc_x]
@@ -27,13 +27,13 @@ function locs_export(obj::NeuroAnalyzer.NEURO; file_name::String, overwrite::Boo
     phi_sph = obj.locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
-        df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
+        df = DataFrame(Number=channels, labels=clabels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=labels)
+        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=clabels)
         CSV.write(file_name, df, delim="\t", header=false)
     elseif splitext(file_name)[2] == ".tsv"
-        df = DataFrame(labels=labels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
+        df = DataFrame(labels=clabels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     else
         throw(ArgumentError("$file_name format must be .ced, .locs or .tsv."))
@@ -60,7 +60,7 @@ function locs_export(locs::DataFrame; file_name::String, overwrite::Bool=false)
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
     channels = locs[!, :channel]
-    labels = locs[!, :labels]
+    clabels = locs[!, :labels]
     theta = locs[!, :loc_theta]
     radius = locs[!, :loc_radius]
     x = locs[!, :loc_x]
@@ -71,13 +71,13 @@ function locs_export(locs::DataFrame; file_name::String, overwrite::Bool=false)
     phi_sph = locs[!, :loc_phi_sph]
 
     if splitext(file_name)[2] == ".ced"
-        df = DataFrame(Number=channels, labels=labels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph, head=true)
+        df = DataFrame(Number=channels, labels=clabels, theta=theta, radius=radius, X=x, Y=y, Z=z, sph_theta=theta_sph, sph_phi=phi_sph, sph_radius=radius_sph, head=true)
         CSV.write(file_name, df, delim="\t")
     elseif splitext(file_name)[2] == ".locs"
-        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=labels)
+        df = DataFrame(Number=channels, theta=theta, radius=radius, labels=clabels)
         CSV.write(file_name, df, delim="\t", header=false)
     elseif splitext(file_name)[2] == ".tsv"
-        df = DataFrame(labels=labels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
+        df = DataFrame(labels=clabels, x=x, y=y, z=z, theta=theta, radius=radius, radius_sph=radius_sph, theta_sph=theta_sph, phi_sph=phi_sph)
         CSV.write(file_name, df, delim="\t", header=true)
     else
         throw(ArgumentError("file_name format must be .ced, .locs or .tsv."))

@@ -32,20 +32,16 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{I
 
     # update headers
     for idx in channel
-        loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.obj_new.locs[!, :labels]))
-        loc !== nothing && deleteat!( obj_new.locs, loc)
+        loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))
+        loc !== nothing && deleteat!(obj_new.locs, loc)
+        deleteat!(obj_new.header.recording[:labels], idx)
+        deleteat!(obj_new.header.recording[:channel_type], idx)
+        deleteat!(obj_new.header.recording[:units], idx)
+        deleteat!(obj_new.header.recording[:prefiltering], idx)
         if obj_new.header.recording[:data_type] === "eeg"
-            deleteat!(obj_new.header.recording[:labels], idx)
-            deleteat!(obj_new.header.recording[:channel_type], idx)
             deleteat!(obj_new.header.recording[:transducers], idx)
-            deleteat!(obj_new.header.recording[:units], idx)
-            deleteat!(obj_new.header.recording[:prefiltering], idx)
             deleteat!(obj_new.header.recording[:gain], idx)
         elseif obj_new.header.recording[:data_type] === "meg"
-            deleteat!(obj_new.header.recording[:labels], idx)
-            deleteat!(obj_new.header.recording[:channel_type], idx)
-            deleteat!(obj_new.header.recording[:units], idx)
-            deleteat!(obj_new.header.recording[:prefiltering], idx)
             deleteat!(obj_new.header.recording[:coils], idx)
             deleteat!(obj_new.header.recording[:magnetometers], idx)
             deleteat!(obj_new.header.recording[:gradiometers], idx)
@@ -53,15 +49,15 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{I
             deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         end
     end
-    obj_new.header.recording[:ch_n] -= length(channel)
+    obj_new.header.recording[:channel_n] -= length(channel)
 
     # remove channel
     obj_new.data =obj_new.data[setdiff(1:end, (channel)), :, :]
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "delete_channel(OBJ, $channel)")
+    push!(obj_new.header.history, "delete_channel(OBJ, channel=$channel)")
 
-    returnobj_new
+    return obj_new
 end
 
 """
@@ -76,43 +72,10 @@ Delete channel(s).
 """
 function delete_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    ch_n = channel_n(obj)
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-    length(channel) == ch_n && throw(ArgumentError("You cannot delete all channels."))
-
-    _check_channels(obj, channel)
-
-    # update headers
-    for idx in channel
-        loc = findfirst(isequal(lowercase(obj.header.recording[:labels][idx])), lowercase.(string.(obj.locs[!, :labels])))
-        loc !== nothing && deleteat!(obj.locs, loc)
-        if obj.header.recording[:data_type] === "eeg"
-            deleteat!(obj.header.recording[:labels], idx)
-            deleteat!(obj.header.recording[:channel_type], idx)
-            deleteat!(obj.header.recording[:transducers], idx)
-            deleteat!(obj.header.recording[:units], idx)
-            deleteat!(obj.header.recording[:prefiltering], idx)
-            deleteat!(obj.header.recording[:gain], idx)
-        elseif obj.header.recording[:data_type] === "meg"
-            deleteat!(obj.header.recording[:labels], idx)
-            deleteat!(obj.header.recording[:channel_type], idx)
-            deleteat!(obj.header.recording[:units], idx)
-            deleteat!(obj.header.recording[:prefiltering], idx)
-            deleteat!(obj.header.recording[:coils], idx)
-            deleteat!(obj.header.recording[:magnetometers], idx)
-            deleteat!(obj.header.recording[:gradiometers], idx)
-            deleteat!(obj.header.recording[:gradiometers_axial], idx)
-            deleteat!(obj.header.recording[:gradiometers_planar], idx)
-        end
-    end
-    obj.header[:ch_n] -= length(channel)
-
-    # remove channel
-    obj.data = obj.data[setdiff(1:end, (channel)), :, :]
-
-    reset_components!(obj)
-    push!(obj.header[:history], "delete_channel!(OBJ, $channel)")
+    obj_new = delete_channel(obj, channel=channel)
+    obj.header = obj_new.header    
+    obj.data = obj_new.data    
+    obj.components = obj_new.components    
 
     return nothing
 end
@@ -155,20 +118,18 @@ Keep channel(s).
 """
 function keep_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
 
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    _check_channels(obj, channel)
+    obj_new = keep_channel(obj, channel=channel)
+    obj.header = obj_new.header    
+    obj.data = obj_new.data    
+    obj.components = obj_new.components    
 
-    ch_n = channel_n(obj)
-    channels_to_remove = setdiff(collect(1:ch_n), channel)
-    length(channels_to_remove) == ch_n && throw(ArgumentError("You cannot delete all channels."))
-
-    delete_channel!(obj, channel=channels_to_remove)
+    return nothing
 end
 
 """
     keep_channel_type(eeg; type)
 
-Keep OBJ channels of `type` type.
+Keep channel(s) of `type` type.
 
 # Arguments
 
@@ -189,6 +150,7 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
     end
     obj_new = keep_channel(eeg, channel=channels_idx)
     reset_components!(obj_new)
+    pop!(obj_new.header.recording.history)
     push!(obj_new.header.recording.history, "keep_channel_type(OBJ, type=$type")
 
     return obj_new
@@ -206,10 +168,10 @@ Keep OBJ channels of `type` type.
 """
 function keep_channel_type!(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
-    obj_tmp = keep_channel_type(eeg, type=type)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    reset_components!(eeg)
+    obj_new = keep_channel_type(obj, channel=channel, type=type)
+    obj.header = obj_new.header    
+    obj.data = obj_new.data    
+    obj.components = obj_new.components  
 
     return nothing
 end

@@ -2,41 +2,40 @@ using NeuroAnalyzer
 using Test
 using DataFrames
 
-eeg = eeg_import_bdf("eeg-test-bdf.bdf")
+eeg = import_bdf("eeg-test-bdf.bdf")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_bdf("eeg-test-bdfplus.bdf")
+eeg = import_bdf("eeg-test-bdfplus.bdf")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_edf("eeg-test-edf.edf")
+eeg = import_edf("eeg-test-edf.edf")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_edf("eeg-test-edfplus.edf")
+eeg = import_edf("eeg-test-edfplus.edf")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_digitrack("eeg-test-digitrack.txt")
+eeg = import_digitrack("eeg-test-digitrack.txt")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_bv("eeg-test-bv.vhdr")
+eeg = import_bv("eeg-test-bv.vhdr")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_csv("eeg-test_txch.csv.gz")
+eeg = import_csv("eeg-test_txch.csv.gz")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_csv("eeg-test_chxt.csv.gz")
+eeg = import_csv("eeg-test_chxt.csv.gz")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-eeg = eeg_import_set("eeg-test.set")
+eeg = import_set("eeg-test.set")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
 
-eeg = eeg_import("eeg-test-edf.edf")
-ecg = eeg_extract_channel(eeg, channel=24)
-eeg_delete_channel!(eeg, channel=24)
-eog2 = eeg_extract_channel(eeg, channel=23)
-eeg_delete_channel!(eeg, channel=23)
-eog1 = eeg_extract_channel(eeg, channel=22)
-eeg_delete_channel!(eeg, channel=22)
-a2 = eeg_extract_channel(eeg, channel=21)
-eeg_delete_channel!(eeg, channel=21)
-a1 = eeg_extract_channel(eeg, channel=20)
-eeg_delete_channel!(eeg, channel=20)
+eeg = import_recording("eeg-test-edf.edf")
+ecg = extract_channel(eeg, channel=24)
+delete_channel!(eeg, channel=24)
+eog2 = extract_channel(eeg, channel=23)
+delete_channel!(eeg, channel=23)
+eog1 = extract_channel(eeg, channel=22)
+delete_channel!(eeg, channel=22)
+a2 = extract_channel(eeg, channel=21)
+delete_channel!(eeg, channel=21)
+a1 = extract_channel(eeg, channel=20)
+delete_channel!(eeg, channel=20)
 
-@test obj.header[:eeg_filetype] == "EDF"
-@test obj.header[:channel_n] == 19
-@test obj.header[:channel_locations] == false
-@test obj.header[:channel_locations] == false
+@test eeg.header.recording[:file_type] == "EDF"
+@test eeg.header.recording[:channel_n] == 19
+@test eeg.header.locs == false
 
 s = locs_import_ced("test.ced")
 @test typeof(s) == DataFrame
@@ -55,35 +54,37 @@ s = locs_import_geo("test.geo")
 s = locs_import_mat("test.mat")
 @test typeof(s) == DataFrame
 
-eeg = eeg_load_electrodes(eeg, file_name="standard-10-20-cap19-elmiko.ced")
+eeg = load_locs(eeg, file_name="standard-10-20-cap19-elmiko.ced")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-@test obj.header[:channel_locations] == true
+@test eeg.header.locs == true
 
 isfile("test.hdf5") && rm("test.hdf5")
-eeg_save(eeg, file_name="test.hdf5")
+save(eeg, file_name="test.hdf5")
 @test isfile("test.hdf5") == true
 
-eeg_new = eeg_load("test.hdf5")
-@test typeof(eeg_new) == NeuroAnalyzer.NEURO
+new = load("test.hdf5")
+@test typeof(new) == NeuroAnalyzer.NEURO
 isfile("test.hdf5") && rm("test.hdf5")
 
 isfile("eeg.csv") && rm("eeg.csv")
-eeg_export_csv(eeg, file_name="eeg.csv", header=false)
+export_csv(eeg, file_name="eeg.csv", header=false)
 @test isfile("eeg.csv") == true
 isfile("eeg.csv") && rm("eeg.csv")
 
 isfile("test_out.ced") && rm("test_out.ced")
-eeg_save_electrodes(eeg, file_name="test_out.ced")
+locs_export(eeg, file_name="test_out.ced")
 @test isfile("test_out.ced") == true
 isfile("test_out.ced") && rm("test_out.ced")
 
 isfile("test_out.locs") && rm("test_out.locs")
-eeg_save_electrodes(eeg, file_name="test_out.locs")
+locs_export(eeg, file_name="test_out.locs")
 @test isfile("test_out.locs") == true
 isfile("test_out.locs") && rm("test_out.locs")
 
 locs = locs_import_ced("standard-10-20-cap19-elmiko.ced")
-eeg2 = eeg_add_electrodes(eeg, locs=locs)
+eeg2 = add_locs(eeg, locs=locs)
 @test typeof(eeg2) == NeuroAnalyzer.NEURO
+add_locs!(eeg, locs=locs)
+@test typeof(eeg) == NeuroAnalyzer.NEURO
 
 true
