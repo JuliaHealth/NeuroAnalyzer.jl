@@ -1,0 +1,37 @@
+export vch
+
+"""
+    vch(obj; f)
+
+Calculate virtual channel using formula `f`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `f::String`: channel calculation formula, e.g. `"cz / mean(fp1 + fp2)"`; case of labels in the formula is ignored, all standard Julia math operators are available, channel labels must be the same as of the OBJ object
+
+# Returns
+ 
+- `vc::Array{Float64, 3}`: single channel × time × epochs
+"""
+function vch(obj::NeuroAnalyzer.NEURO; f::String)
+
+    ep_n = epoch_n(obj)
+    f = lowercase(f)
+    labels = lowercase.(labels(obj))
+    vc = zeros(1, epoch_len(obj), ep_n)
+    Threads.@threads for epoch_idx in 1:ep_n
+        f_tmp = f
+        @inbounds for channel_idx in eachindex(labels)
+            occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(obj.data[channel_idx, :, epoch_idx])"))
+        end
+        try
+            @inbounds vc[1, :, epoch_idx] = eval(Meta.parse("@. " * f_tmp))
+        catch
+            @error "Formula is incorrect, check channel labels and operators."
+        end
+    end
+
+    return vc
+end
+

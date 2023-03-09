@@ -1,0 +1,99 @@
+export add_locs
+export add_locs!
+
+"""
+    add_locs(eeg; locs)
+
+Add electrode positions from `locs`. 
+
+Electrode locations:
+- `channel`         channel number
+- `labels`          channel label
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `locs::DataFrame`
+
+# Returns
+
+- `eeg:EEG`
+"""
+function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
+
+    f_labels = lowercase.(locs[!, :labels])
+
+    e_labels = lowercase.(obj.header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
+    # create new dataset
+    obj_new = deepcopy(obj)
+    obj_new.header.locations = true
+    obj_new.locs = locs
+
+    # add entry to :history field
+    push!(obj_new.header.history, "add_locs(OBJ, locs)")
+
+    return obj_new
+end
+
+"""
+    add_locs!(obj; locs)
+
+Load electrode positions from `locs` and return `NeuroAnalyzer.NEURO` object with metadata: `:channel_locations`, `:loc_theta`, `:loc_radius`, `:loc_x`, `:loc_x`, `:loc_y`, `:loc_radius_sph`, `:loc_theta_sph`, `:loc_phi_sph`. 
+
+Electrode locations:
+- `channel`         channel number
+- `labels`          channel label
+- `loc_theta`       planar polar angle
+- `loc_radius`      planar polar radius
+- `loc_x`           spherical Cartesian x
+- `loc_y`           spherical Cartesian y
+- `loc_z`           spherical Cartesian z
+- `loc_radius_sph`  spherical radius
+- `loc_theta_sph`   spherical horizontal angle
+- `loc_phi_sph`     spherical azimuth angle
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `locs::DataFrame`
+"""
+function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
+    
+    f_labels = lowercase.(locs[!, :labels])
+
+    e_labels = lowercase.(obj.header[:labels])
+    no_match = setdiff(e_labels, f_labels)
+    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
+
+    labels_idx = zeros(Int64, length(e_labels))
+    for idx1 in eachindex(e_labels)
+        for idx2 in eachindex(f_labels)
+            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+        end
+    end
+    
+    # create new dataset
+    obj.locs = locs
+
+    # add entry to :history field
+    push!(obj.header[:history], "add_locs!(OBJ, locs)")
+    nothing
+end

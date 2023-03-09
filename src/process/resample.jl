@@ -6,6 +6,77 @@ export downsample
 export downsample!
 
 """
+    resample(signal; t, new_sr)
+
+Resample to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::AbstractVector`
+- `t::AbstractRange`: time
+- `new_sr::Int64`: new sampling rate
+
+# Returns
+
+- `s_resampled::Vector{Float64}`
+- `t_resampled::AbstractRange`
+"""
+function resample(signal::AbstractVector; t::AbstractRange, new_sr::Int64)
+
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
+
+    # sampling interval
+    dt = t[2] - t[1]
+    # sampling rate
+    sr = 1 / dt
+    new_sr == sr && return(signal)
+
+    # interpolate
+    sr_ratio = new_sr / sr
+    s_upsampled = DSP.resample(signal, sr_ratio)
+    # s_interpolation = CubicSplineInterpolation(t, signal)
+    t_upsampled = t[1]:1/new_sr:t[end]
+    # s_upsampled = s_interpolation(t_upsampled)
+
+    return s_upsampled, t_upsampled
+end
+
+"""
+    resample(signal; t, new_sr)
+
+Resamples all channels and time vector `t` to `new_sr` sampling frequency.
+
+# Arguments
+
+- `signal::AbstractArray`
+- `t::AbstractRange`
+- `new_sr::Int64`: new sampling rate
+
+# Returns
+
+- `s_downsampled::Array{Float64, 3}`
+- `t_downsampled::AbstractRange`
+"""
+function resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
+
+    new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
+
+    ch_n, _, ep_n = size(signal)
+
+    s_resampled_len = length(resample(signal[1, :, 1], t=t, new_sr=new_sr)[1])
+    s_resampled = zeros(ch_n, s_resampled_len, ep_n) 
+
+    t_resampled = nothing
+    @inbounds @simd for epoch_idx in 1:ep_n
+        Threads.@threads for channel_idx in 1:ch_n
+            s_resampled[channel_idx, :, epoch_idx], t_resampled = @views resample(signal[channel_idx, :, epoch_idx], t=t, new_sr=new_sr)
+        end
+    end
+
+    return s_resampled, t_resampled
+end
+
+"""
     resample(obj; new_sr)
 
 Resample (up- or down-sample).
@@ -69,7 +140,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new = deepcopy(obj)
 
     t = obj.time_pts[1]:(1 / obj.header.recording[:sampling_rate]):obj.time_pts[end]
-    s_upsampled, t_upsampled = s_resample(obj_new.data, t=t, new_sr=new_sr)
+    s_upsampled, t_upsampled = resample(obj_new.data, t=t, new_sr=new_sr)
 
     t_upsampled = collect(t_upsampled)
     obj_new.data = s_upsampled
@@ -135,7 +206,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new = deepcopy(obj)
 
     t = obj.time_pts[1]:(1 / obj.header.recording[:sampling_rate]):obj.time_pts[end]
-    s_downsampled, t_downsampled = s_resample(obj_new.data, t=t, new_sr=new_sr)
+    s_downsampled, t_downsampled = resample(obj_new.data, t=t, new_sr=new_sr)
 
     t_downsampled = collect(t_downsampled)
     obj_new.time_pts = t_downsampled
