@@ -133,14 +133,14 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 """
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
 
-    :ic in obj.header[:components] || throw(ArgumentError("OBJ does not contain :ic component. Perform ica() first."))
-    :ic_mw in obj.header[:components] || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica() first."))
+    :ic in obj.header.recording[:components] || throw(ArgumentError("OBJ does not contain :ic component. Perform ica() first."))
+    :ic_mw in obj.header.recording[:components] || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica() first."))
 
     _check_channels(obj, channel)
 
     obj_new = deepcopy(obj)
-    ic_a_idx = findfirst(isequal(:ic), obj.header[:components])
-    ic_mw_idx = findfirst(isequal(:ic_mw), obj.header[:components])
+    ic_a_idx = findfirst(isequal(:ic), obj.header.recording[:components])
+    ic_mw_idx = findfirst(isequal(:ic_mw), obj.header.recording[:components])
     obj_new.data[channel, :, :] = @views ica_reconstruct(obj_new.data[channel, :, :], ic=obj_new.components[ic_a_idx], ic_mw=obj_new.components[ic_mw_idx], ic_idx=ic_idx)
     reset_components!(obj_new)
     push!(obj_new.header.history, "ica_reconstruct(OBJ, channel=$channel, ic=$ic)")

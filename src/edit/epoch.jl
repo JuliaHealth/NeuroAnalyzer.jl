@@ -57,10 +57,10 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
     # create new dataset
     ep_n = size(epochs, 3)
     epoch_duration_samples = size(epochs, 2)
-    epoch_duration_seconds = size(epochs, 2) / obj.header[:sampling_rate]
+    epoch_duration_seconds = size(epochs, 2) / obj.header.recording[:sampling_rate]
     duration_samples = size(epochs, 2) * size(epochs, 3)
-    duration_seconds = duration_samples / obj.header[:sampling_rate]
-    time_pts = collect(0:(1 / obj.header[:sampling_rate]):duration_seconds)
+    duration_seconds = duration_samples / obj.header.recording[:sampling_rate]
+    time_pts = collect(0:(1 / obj.header.recording[:sampling_rate]):duration_seconds)
     time_pts = time_pts[1:(end - 1)]
 
     # update signal

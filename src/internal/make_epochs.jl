@@ -21,7 +21,7 @@ function _make_epochs(signal::Matrix{<:Real}; ep_n::Union{Int64, Nothing}=nothin
     return epochs
 end
 
-function _make_epochs(signal::Array{T, 3}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing) where {T <: Real}
+function _make_epochs(signal::Array{<:Real, 3}; ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
     (ep_len === nothing && ep_n === nothing) && throw(ArgumentError("Either ep_n or ep_len must be specified."))
     (ep_len !== nothing && ep_n !== nothing) && throw(ArgumentError("Both ep_n and ep_len cannot be specified."))

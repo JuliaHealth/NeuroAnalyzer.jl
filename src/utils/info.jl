@@ -228,7 +228,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     if obj.header.recording[:reference] == ""
         println("         Reference type: unknown")
     else
-        println("         Reference type: $(obj.header[:reference])")
+        println("         Reference type: $(obj.header.recording[:reference])")
     end
     if length(labels(obj)) == 0
         println("                 Labels: no")

@@ -27,7 +27,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 """
 function plot_connections(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
-    obj.header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.recording[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
 
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 

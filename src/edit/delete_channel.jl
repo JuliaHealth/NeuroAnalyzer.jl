@@ -146,7 +146,7 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
     channels_idx = Vector{Int64}()
     for idx in 1:channel_n(obj, type=:all)
-        obj.header[:channel_type][idx] == string(type) && push!(channels_idx, idx)
+        obj.header.recording[:channel_type][idx] == string(type) && push!(channels_idx, idx)
     end
     obj_new = keep_channel(obj, channel=channels_idx)
     reset_components!(obj_new)

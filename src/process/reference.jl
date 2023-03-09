@@ -439,7 +439,7 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (
 """
 function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
-    obj.header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.recording[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
 
     # keep signal channels
     obj_tmp = deepcopy(obj)

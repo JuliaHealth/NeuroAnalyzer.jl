@@ -890,7 +890,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
                         variant=:s;
                         kwargs...)
     elseif type === :topo
-        obj.header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+        obj.header.recording[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
         ndims(s_pow) == 1 && (s_pow = reshape(s_pow, 1, length(s_pow)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")
