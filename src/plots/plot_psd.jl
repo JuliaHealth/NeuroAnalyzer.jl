@@ -687,7 +687,7 @@ function plot_psd_topo(locs::DataFrame, s_frq::Vector{Float64}, s_pow::Array{Flo
                        kwargs...)
         marker_img = tempname() * ".png"
         savefig(p, marker_img)
-        marker = load(marker_img)
+        marker = GLMakie.load(marker_img)
         GLMakie.scatter!(fig_axis, (loc_x[idx], loc_y[idx]), marker=marker, markersize=marker_size)
         rm(marker_img)
     end

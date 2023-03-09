@@ -168,7 +168,7 @@ Keep OBJ channels of `type` type.
 """
 function keep_channel_type!(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
-    obj_new = keep_channel_type(obj, channel=channel, type=type)
+    obj_new = keep_channel_type(obj, type=type)
     obj.header = obj_new.header    
     obj.data = obj_new.data    
     obj.components = obj_new.components  

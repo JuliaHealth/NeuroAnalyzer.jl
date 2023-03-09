@@ -49,18 +49,18 @@ p = plot_spectrogram(e10, norm=true, epoch=1, channel=1, method=:mw)
 p = plot_spectrogram(e10, norm=true, epoch=1, channel=1:10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p = plot_electrodes(e10)
+p = plot_locs(e10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = plot_electrodes(e10, selected=1:4)
+p = plot_locs(e10, selected=1:4)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = plot_electrodes(e10, threed=true)
+p = plot_locs(e10, threed=true)
 @test typeof(p) == Makie.Figure
 
-c = cor(e10)
-channels = get_channel_bytype(e10, type=Symbol(e10.header[:signal_type]))
-p = plot_matrix(c[:, :, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
+c = corm(e10)
+channels = get_channel_bytype(e10, type=Symbol(e10.header.recording[:data_type]))
+p = plot_matrix(c[:, :, 1, 1], xlabels=labels(e10)[channels], ylabels=labels(e10)[channels])
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-ac, lags = acov(eeg, lag=5, norm=false)
+ac, lags = acov(e10, lag=5, norm=false)
 p = plot_covmatrix(ac[1, :, 1], lags)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 cc, lags = xcov(eeg, lag=5, norm=false)
@@ -92,7 +92,7 @@ p = plot_paired([stats[1, :], stats[2, :]], labels=["1", "2"])
 p = plot_polar(stats')
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-p1 = plot(e10, epoch=1, xlabel="")
+p1 = NeuroAnalyzer.plot(e10, epoch=1, xlabel="")
 p2 = plot_empty()
 pp = [p1, p2]
 l = (2, 1)

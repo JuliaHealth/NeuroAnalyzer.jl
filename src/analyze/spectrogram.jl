@@ -30,7 +30,7 @@ function spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Boo
     (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = remove_dc(signal))
 
     nfft = length(signal)
     interval = fs
@@ -46,9 +46,9 @@ function spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Boo
     end
 
     if mt == true
-        spec = mt_spectrogram(signal, fs=fs)
+        spec = DSP.mt_spectrogram(signal, fs=fs)
     else
-        spec = spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+        spec = DSP.spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
     end    
     s_pow = spec.power
     norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
@@ -113,7 +113,7 @@ function wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq
         frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = remove_dc(signal))
     w_conv = zeros(ComplexF64, length(frq_list), length(signal))
     w_powers = zeros(length(frq_list), length(signal))
     w_amp = zeros(length(frq_list), length(signal))
@@ -190,7 +190,7 @@ function ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_l
         s_frq = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = remove_dc(signal))
     s_pow = zeros(length(s_frq), length(signal))
     s_ph = zeros(length(s_frq), length(signal))
     @inbounds @simd for frq_idx in eachindex(s_frq)
@@ -230,7 +230,7 @@ function cwtspectrogram(signal::AbstractVector; wt::T, fs::Int64, norm::Bool=tru
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = remove_dc(signal))
 
     h_powers = abs.(ContinuousWavelets.cwt(signal, wt)')
     frq_list = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(signal), wt)[1])

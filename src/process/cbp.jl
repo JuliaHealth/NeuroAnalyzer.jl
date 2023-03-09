@@ -25,7 +25,7 @@ function cbp(signal::AbstractVector; pad::Int64=0, frq::Real, fs::Int64, demean:
 
     pad > 0 && (signal = pad0(signal, pad))
 
-    demean == true && (signal = demean(signal))
+    demean == true && (signal = remove_dc(signal))
 
     kernel = generate_sine(frq, -1:1/fs:1)
 

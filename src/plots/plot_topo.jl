@@ -172,7 +172,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}=
 
     # remove non-signal channels
     obj_tmp = deepcopy(obj)
-    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header[:signal_type]))
+    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
     length(channel) < 2 && throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
     _check_channels(obj_tmp, channel)
@@ -293,7 +293,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     # remove non-signal channels
     obj_tmp = deepcopy(obj)
-    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header[:signal_type]))
+    keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
     # select component channels, default is all channels
     typeof(c) == Symbol && (c = _get_component(obj_tmp, c).c)

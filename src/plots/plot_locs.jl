@@ -1,10 +1,10 @@
-export plot_electrodes
-export plot_electrodes3d
+export plot_locs
+export plot_locs3d
 
 """
-    plot_electrodes(locs; <keyword arguments>)
+    plot_locs(locs; <keyword arguments>)
 
-Preview of electrode locations. It uses polar `:loc_radius` and `:loc_theta` locations, which are translated into Cartesian x and y positions.
+Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locations, which are translated into Cartesian x and y positions.
 
 # Arguments
 
@@ -15,14 +15,14 @@ Preview of electrode locations. It uses polar `:loc_radius` and `:loc_theta` loc
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
 - `head_details::Bool=true`: draw nose and ears
-- `grid::Bool=false`: draw grid, useful for locating electrode positions
+- `grid::Bool=false`: draw grid, useful for locating positions
 - `plot_size::Int64=400`: plot dimensions in pixels (size × size)
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
 
     pal = mono == true ? :grays : :darktest
 
@@ -149,9 +149,9 @@ function plot_electrodes(locs::DataFrame; channel::Union{Int64, Vector{Int64}, A
 end
 
 """
-    plot_electrodes3d(locs; <keyword arguments>)
+    plot_locs3d(locs; <keyword arguments>)
 
-3D interactive preview of electrode locations. It uses spherical :loc_radius_sph, :loc_theta_sph and :loc_phi_sph locations.
+3D interactive preview of channel locations. It uses spherical :loc_radius_sph, :loc_theta_sph and :loc_phi_sph locations.
 
 # Arguments
 
@@ -168,7 +168,7 @@ c
 
 - `fig::GLMakie.Figure`
 """
-function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
+function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
 
     # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
     # channel = setdiff(channel, selected)
@@ -228,9 +228,9 @@ function plot_electrodes3d(locs::DataFrame; channel::Union{Int64, Vector{Int64},
 end
 
 """
-    plot_electrodes(obj; <keyword arguments>)
+    plot_locs(obj; <keyword arguments>)
 
-Preview of electrode locations.
+Preview of channel locations.
 
 # Arguments
 
@@ -244,25 +244,25 @@ Preview of electrode locations.
 - `head_details::Bool=true`: draw nose and ears
 - `mono::Bool=false`: use color or grey palette
 - `threed::Bool=false`: 3-dimensional plot
-- `grid::Bool=false`: draw grid, useful for locating electrode positions
+- `grid::Bool=false`: draw grid, useful for locating positions
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_electrodes(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
 
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.has_locs == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
     # select channels, default is all channels
     _check_channels(obj, channel, Symbol(obj.header.recording[:data_type]))
     selected != 0 && _check_channels(obj, selected)
 
     if threed == false
-        p = plot_electrodes(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid)
+        p = plot_locs(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid)
     else
-        p = plot_electrodes3d(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+        p = plot_locs3d(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
     end
 
     return p

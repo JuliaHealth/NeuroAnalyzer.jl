@@ -31,8 +31,8 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
             m = mean(x[g .== groups[group_idx]])
             res = x[g .== groups[group_idx]] .- m
             adt = KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
-            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Normal(0, 1), length(res))))
-            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Normal(0, 1)))
+            adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
+            ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
         end
     else
         adt_p = zeros(1)

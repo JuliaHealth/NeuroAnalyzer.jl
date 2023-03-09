@@ -25,24 +25,24 @@ function xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, de
     lags = collect(-lag:lag)
 
     if demean == true
-        signal1 = demean(signal1)
-        signal2 = demean(signal2)
+        signal1 = remove_dc(signal1)
+        signal2 = remove_dc(signal2)
     end
 
-    xcov = zeros(length(lags))
+    xcov_m = zeros(length(lags))
     l = length(signal1)
 
     @inbounds @fastmath @simd for idx in eachindex(lags)
         # no lag
-        lags[idx] == 0 && (xcov[idx] = sum(signal1 .* signal2))
+        lags[idx] == 0 && (xcov_m[idx] = sum(signal1 .* signal2))
         # positive lag
-        lags[idx] > 0 && (xcov[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])]))
+        lags[idx] > 0 && (xcov_m[idx] = @views sum(signal1[(1 + lags[idx]):end] .* signal2[1:(end - lags[idx])]))
         # negative lag
-        lags[idx] < 0 && (xcov[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end]))
+        lags[idx] < 0 && (xcov_m[idx] = @views sum(signal1[1:(end - abs(lags[idx]))] .* signal2[(1 + abs(lags[idx])):end]))
     end
-    norm == true && (xcov ./ l)
+    norm == true && (xcov_m ./ l)
 
-    return xcov, lags
+    return xcov_m, lags
 end
 
 """
@@ -73,7 +73,7 @@ function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     # create vector of lags
     lags = 1/sr(obj) .* collect(-lag:lag) .* 1000
 
-    xcov = zeros(ch_n^2, length(lags), ep_n)
+    xcov_m = zeros(ch_n^2, length(lags), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         
         # create half of the covariance matrix
@@ -93,11 +93,11 @@ function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
 
         # unpack by channels
         Threads.@threads for ch_idx in 1:ch_n^2
-            xcov[ch_idx, :, ep_idx] = @views xcov_packed[ch_idx]
+            xcov_m[ch_idx, :, ep_idx] = @views xcov_packed[ch_idx]
         end
     end
 
-    return (xcov=xcov, lags=lags)
+    return (xcov=xcov_m, lags=lags)
 end
 
 """
@@ -142,12 +142,12 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
     # create vector of lags
     lags = 1/sr(obj1) .* collect(-lag:lag) .* 1000
 
-    xcov = zeros(length(channel1), (2 * lag + 1), length(epoch1))
+    xcov_m = zeros(length(channel1), (2 * lag + 1), length(epoch1))
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xcov[ch_idx, :, ep_idx], _ = @views xcov(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, demean=demean, norm=norm)
+            xcov_m[ch_idx, :, ep_idx], _ = @views xcov(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, demean=demean, norm=norm)
         end
     end
 
-    return (xcov=xcov, lags=lags)
+    return (xcov=xcov_m, lags=lags)
 end

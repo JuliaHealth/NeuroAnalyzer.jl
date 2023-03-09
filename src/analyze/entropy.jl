@@ -46,7 +46,7 @@ Calculate negentropy.
 - `negent::Float64`
 """
 function negentropy(signal::AbstractVector)
-    s = demean(signal)
+    s = remove_dc(signal)
     return 0.5 * log(2 * pi * exp(1) * var(s)) - entropy(s)[1]
 end
 

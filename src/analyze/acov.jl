@@ -14,6 +14,7 @@ Calculate autocovariance.
 
 # Returns
 
+Named tuple containing:
 - `acov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
@@ -23,25 +24,25 @@ function acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bo
     lags = collect(-lag:lag)
 
     if demean == true
-        s_demeaned = demean(signal)
+        s_demeaned = remove_dc(signal)
     else
         s_demeaned = signal
     end
 
-    acov = zeros(length(lags))
+    acov_m = zeros(length(lags))
     l = length(signal)
 
     @inbounds @simd for idx in eachindex(lags)
         # no lag
-        lags[idx] == 0 && (acov[idx] = sum(s_demeaned.^2))
+        lags[idx] == 0 && (acov_m[idx] = sum(s_demeaned.^2))
         # positive lag
-        lags[idx] > 0 && (acov[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
+        lags[idx] > 0 && (acov_m[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
         # negative lag
-        lags[idx] < 0 && (acov[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
+        lags[idx] < 0 && (acov_m[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
     end
     norm == true && (acov ./ l)
 
-    return acov, lags
+    return (acov=acov_m, lags=lags)
 end
 
 """
@@ -71,14 +72,14 @@ function acov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     ch_n = length(channel)
     ep_n = epoch_n(obj)
 
-    acov = zeros(ch_n, length(-lag:lag), ep_n)
+    acov_m = zeros(ch_n, length(-lag:lag), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            acov[ch_idx, :, ep_idx], _ = @views acov(obj.data[channel[ch_idx], :, ep_idx], lag=lag, demean=demean, norm=norm)
+            acov_m[ch_idx, :, ep_idx], _ = @views acov(obj.data[channel[ch_idx], :, ep_idx], lag=lag, demean=demean, norm=norm)
         end
     end
 
     lags = 1/sr(obj) .* collect(-lag:lag) .* 1000
 
-    return (acov=acov, acov_lags=lags)
+    return (acov=acov_m, acov_lags=lags)
 end
