@@ -6,8 +6,8 @@ export list_component
 export extract_component
 export delete_component
 export delete_component!
-export reset_component
-export reset_component!
+export reset_components
+export reset_components!
 export rename_component
 export rename_component!
 

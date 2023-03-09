@@ -108,7 +108,7 @@ p = plot_erp(e10, channel=1, type=:butterfly)
 p = plot_erp(e10, channel=1, type=:stack)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
-c = e10.signals .^ 2
+c = e10.data .^ 2
 p = plot_erp(e10, c, c_idx=1)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 p = plot_erp(e10, c, c_idx=1, type=:mean)

@@ -154,7 +154,7 @@ function difference(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
     p = zeros(ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        s_stat[ep_idx, :], s_stat_single[ep_idx], p[ep_idx] = @views difference(obj1.signals[channel1, :, epoch1[ep_idx]], obj2.signals[channel2, :, epoch2[ep_idx]], n=n, method=method)
+        s_stat[ep_idx, :], s_stat_single[ep_idx], p[ep_idx] = @views difference(obj1.data[channel1, :, epoch1[ep_idx]], obj2.data[channel2, :, epoch2[ep_idx]], n=n, method=method)
     end
 
     return (s_stat=s_stat, statsitic_single=s_stat_single, p=p)
@@ -195,7 +195,7 @@ function chdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::
     ch_diff = zeros(ch_n, epoch_len(obj1), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ch_diff[ch_idx, :, ep_idx] = @views obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]] .- obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]]
+            ch_diff[ch_idx, :, ep_idx] = @views obj1.data[channel1[ch_idx], :, epoch1[ep_idx]] .- obj2.data[channel2[ch_idx], :, epoch2[ep_idx]]
         end
     end
 

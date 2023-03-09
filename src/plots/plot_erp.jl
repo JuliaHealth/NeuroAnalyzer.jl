@@ -101,7 +101,7 @@ function plot_erp_avg(t::Union{AbstractVector, AbstractRange}, signal::AbstractA
     pal = mono == true ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = s_msci95(signal')
+    s_m, _, s_u, s_l = msci95(signal')
 
     # get limits
     ylim = (floor(minimum(s_l) * 1.1, digits=0), ceil(maximum(s_u) * 1.1, digits=0))
@@ -285,7 +285,7 @@ function plot_erp_butterfly(t::Union{AbstractVector, AbstractRange}, signal::Abs
 end
 
 """
-    plot_erp_topo(locs, t, erp; <keyword arguments>)
+    plot_erp_topo(locs, t, signal; <keyword arguments>)
 
 Plot topographical map ERPs. It uses polar :loc_radius and :loc_theta locations, which are translated into Cartesian x and y positions.
 
@@ -316,7 +316,7 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float6
     pal = mono == true ? :grays : :darktest
     
     # channel labels
-    clabels == [""] && (clabels = repeat([""], size(s_pow, 1)))
+    clabels == [""] && (clabels = repeat([""], size(signal, 1)))
 
     # get limits
     ylim = (floor(minimum(signal) * 1.1, digits=0), ceil(maximum(signal) * 1.1, digits=0))
@@ -327,9 +327,9 @@ function plot_erp_topo(locs::DataFrame, t::Vector{Float64}, signal::Array{Float6
     marker_size = (150, 75)
     
     # get locations
-    loc_x = zeros(size(locs, 1))
-    loc_y = zeros(size(locs, 1))
-    for idx in 1:size(locs, 1)
+    loc_x = nrows(locs)
+    loc_y = nrows(locs)
+    for idx in 1:nrows(locs)
         loc_x[idx], loc_y[idx] = pol2cart(locs[!, :loc_radius][idx], locs[!, :loc_theta][idx])
     end
     # loc_x, loc_y = _locnorm(loc_x, loc_y)
@@ -438,9 +438,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     _check_channels(obj, channel)
 
     # average all epochs
-    epoch = 1:epoch_n(obj)
+    ep_n = 1:epoch_n(obj)
 
-    signal = obj.data[channel, :, epoch]
+    signal = obj.data[channel, :, ep_n]
 
     # get time vector
     t = obj.epoch_time
@@ -453,9 +453,8 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
             tm[tm_idx] = vsearch(tm[tm_idx] / 1000, t)
         end
     end
-
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(channel))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         signal = mean(signal, dims=2)[:]
         p = plot_erp(t,
                      signal,
@@ -467,7 +466,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
                      kwargs...)
     elseif type === :butterfly
         if length(channel) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
             if channel_labels == true
                 clabels = labels(obj)[channel]
@@ -475,7 +474,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
                 clabels = repeat([""], length(channel))
             end
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = signal'
             clabels = [""]
         end
@@ -489,7 +488,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(channel))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          signal,
                          xlabel=xlabel,
@@ -500,7 +499,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
                          kwargs...)
     elseif type === :topo
         obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         signal = mean(signal, dims=3)[:, :]
         ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
@@ -521,7 +520,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
         peaks = false
         cb_title == "default" && (cb_title = "Amplitude [μV]")
         if length(channel) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
             if channel_labels == true
                 clabels = labels(obj)[channel]
@@ -530,7 +529,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
             end
             ylabel = "Channel"
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(channel))) $(_channel2channel_name(channel))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = signal'
             clabels = [""]
             ylabel = "Epoch"
@@ -560,35 +559,35 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     # draw peaks
     if peaks == true
         if length(channel) == 1
-            erp = erp(obj).data
+            erp_obj = erp(obj).data
             pp = erp_peaks(obj)
             if mono == false
-                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
-                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 1]], erp_obj[channel, pp[channel, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp_obj[channel, pp[channel, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[channel, 1]], erp[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
-                Plots.scatter!((t[pp[channel, 2]], erp[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 1]], erp_obj[channel, pp[channel, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[channel, 2]], erp_obj[channel, pp[channel, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[channel, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp[channel, pp[channel, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[channel, pp[channel, 1]], digits=2)) μV")
             _info("Negative peak time: $(round(t[pp[channel, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp[channel, pp[channel, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[channel, pp[channel, 2]], digits=2)) μV")
         else
-            erp = mean(erp(obj).data[channel, :], dims=1)[:]
+            erp_obj = mean(erp(obj).data[channel, :], dims=1)[:]
             obj_tmp = keep_channel(obj, channel=1)
-            obj_tmp.data = reshape(erp, 1, length(erp), 1)
+            obj_tmp.data = reshape(erp_obj, 1, length(erp_obj), 1)
             pp = erp_peaks(obj_tmp)
             if mono == false
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
         end
     end
 
@@ -704,7 +703,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     typeof(c) == Symbol && (c = _get_component(obj, c).c)
     c_idx == 0 && (c_idx = _select_cidx(c, c_idx))
     _check_cidx(c, c_idx)
-    if clabels == true
+    if channel_labels == true
         clabels = _gen_clabels(c)[c_idx]
     else
         clabels = repeat([""], length(c_idx))
@@ -714,9 +713,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     type in [:normal, :mean] && length(c_idx) > 1 && throw(ArgumentError("For :normal and :mean plot types, only one component channel must be specified."))
 
     # average all epochs
-    epoch = 1:epoch_n(obj)
+    ep_n = 1:epoch_n(obj)
 
-    signal = c[c_idx, :, epoch]
+    signal = c[c_idx, :, ep_n]
 
     # get time vector
     t = obj.epoch_time
@@ -731,7 +730,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     end
 
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         signal = mean(signal, dims=2)[:]
         p = plot_erp(t,
                      signal,
@@ -743,7 +742,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                      kwargs...)
     elseif type === :butterfly
         if length(c_idx) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
             if channel_labels == true
                 clabels = _gen_clabels(c)[c_idx]
@@ -751,7 +750,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 clabels = repeat([""], length(c_idx))
             end
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = signal'
             clabels = [""]
         end
@@ -765,7 +764,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(epoch))): $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          signal,
                          xlabel=xlabel,
@@ -776,7 +775,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                          kwargs...)
     elseif type === :topo
         obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         signal = mean(signal, dims=3)[:, :]
         ndims(signal) == 1 && (signal = reshape(signal, 1, length(signal)))
@@ -795,11 +794,11 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
         cb_title == "default" && (cb_title = "Amplitude [μV]")
         peaks = false
         if length(c_idx) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = mean(signal, dims=3)[:, :]
             ylabel = "Component channel"
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $epoch, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             signal = signal'
             clabels = [""]
             ylabel = "Epoch"
@@ -828,39 +827,39 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
 
     # draw peaks
     if peaks == true
-        signal = c[c_idx, :, epoch]
+        signal = c[c_idx, :, ep_n]
         if length(c_idx) == 1
-            erp = mean(signal, dims=2)[:]
+            erp_obj = mean(signal, dims=2)[:]
             obj_tmp = keep_channel(obj, channel=1)
-            obj_tmp.data = reshape(erp, 1, length(erp), 1)
+            obj_tmp.data = reshape(erp_obj, 1, length(erp_obj), 1)
             pp = erp_peaks(obj_tmp)
             if mono == false
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
         else         
-            erp = mean(mean(signal, dims=3), dims=1)[:]
+            erp_obj = mean(mean(signal, dims=3), dims=1)[:]
             obj_tmp = keep_channel(obj, channel=1)
-            obj_tmp.data = reshape(erp, 1, length(erp), 1)
+            obj_tmp.data = reshape(erp_obj, 1, length(erp_obj), 1)
             pp = erp_peaks(obj_tmp)
             if mono == false
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:red, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:blue, markersize=3, label=false)
             else
-                Plots.scatter!((t[pp[1, 1]], erp[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
-                Plots.scatter!((t[pp[1, 2]], erp[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 1]], erp_obj[pp[1, 1]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
+                Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
         end
     end
 

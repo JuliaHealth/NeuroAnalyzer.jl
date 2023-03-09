@@ -198,11 +198,11 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::
     s_l = zeros(ep_n, ep_len)
 
     Threads.@threads for ep_idx in 1:ep_n
-        s1_mean = @views mean(obj1.signals[channel1, :, epoch1[ep_idx]], dims=1)
-        s2_mean = @views mean(obj2.signals[channel2, :, epoch2[ep_idx]], dims=1)
+        s1_mean = @views mean(obj1.data[channel1, :, epoch1[ep_idx]], dims=1)
+        s2_mean = @views mean(obj2.data[channel2, :, epoch2[ep_idx]], dims=1)
         s_m[ep_idx, :] = s1_mean - s2_mean
-        s1_sd = @views std(obj1.signals[channel1, :, epoch1[ep_idx]], dims=1) / sqrt(size(obj1.signals[channel1, :, epoch1[ep_idx]], 2))
-        s2_sd = @views std(obj2.signals[channel2, :, epoch2[ep_idx]], dims=1) / sqrt(size(obj2.signals[channel2, :, epoch2[ep_idx]], 2))
+        s1_sd = @views std(obj1.data[channel1, :, epoch1[ep_idx]], dims=1) / sqrt(size(obj1.data[channel1, :, epoch1[ep_idx]], 2))
+        s2_sd = @views std(obj2.data[channel2, :, epoch2[ep_idx]], dims=1) / sqrt(size(obj2.data[channel2, :, epoch2[ep_idx]], 2))
         s_s[ep_idx, :] = sqrt.(s1_sd.^2 .+ s2_sd.^2)
         s_u[ep_idx, :] = @. s_m[ep_idx, :] + 1.96 * s_s[ep_idx, :]
         s_l[ep_idx, :] = @. s_m[ep_idx, :] - 1.96 * s_s[ep_idx, :]

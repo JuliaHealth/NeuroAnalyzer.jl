@@ -74,7 +74,7 @@ function tcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views s2_tcoherence(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], pad=pad)
+            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views s2_tcoherence(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], pad=pad)
         end
     end
 

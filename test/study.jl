@@ -6,7 +6,7 @@ eeg = epoch(eeg, epoch_len=5*256)
 
 eeg1 = copy(eeg)
 eeg2 = copy(eeg)
-eeg2.signals .*= 0.75
+eeg2.data .*= 0.75
 
 s = study_create([eeg1, eeg2], [:a, :b])
 

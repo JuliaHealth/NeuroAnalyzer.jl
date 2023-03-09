@@ -1,3 +1,6 @@
+export erp
+export erp!
+
 """
     erp(obj)
 
@@ -51,7 +54,7 @@ function erp!(obj::NeuroAnalyzer.NEURO)
     obj.data = obj_tmp.data
     obj.time_pts = obj_tmp.time_pts
     obj.markers = obj_tmp.markers
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
 end

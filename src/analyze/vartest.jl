@@ -85,7 +85,7 @@ function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1:
     @inbounds @simd for ep_idx in 1:ep_n
        Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_n
-                ftest = @views VarianceFTest(obj1.signals[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx2], :, epoch2[ep_idx]])
+                ftest = @views VarianceFTest(obj1.data[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx2], :, epoch2[ep_idx]])
                 f[ch_idx1, ch_idx2, ep_idx] = ftest.F
                 p[ch_idx1, ch_idx2, ep_idx] = pvalue(ftest)
             end

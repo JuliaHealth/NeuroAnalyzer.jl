@@ -127,14 +127,14 @@ function cps(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     ch_n = length(channel1)
     fs = sr(obj1)
 
-    cps_pw, cps_ph, cps_fq = @views s2_cps(obj1.signals[1, :, 1], obj2.signals[1, :, 1], fs=fs, norm=norm)
+    cps_pw, cps_ph, cps_fq = @views s2_cps(obj1.data[1, :, 1], obj2.data[1, :, 1], fs=fs, norm=norm)
 
     cps_pw = zeros(ch_n, length(cps_pw), ep_n)
     cps_ph = zeros(ch_n, length(cps_ph), ep_n)
     cps_fq = zeros(ch_n, length(cps_fq), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            cps_pw[ch_idx, :, ep_idx], cps_ph[ch_idx, :, ep_idx], cps_fq[ch_idx, :, ep_idx] = @views cps(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], fs=fs, norm=norm)
+            cps_pw[ch_idx, :, ep_idx], cps_ph[ch_idx, :, ep_idx], cps_fq[ch_idx, :, ep_idx] = @views cps(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], fs=fs, norm=norm)
         end
     end
 

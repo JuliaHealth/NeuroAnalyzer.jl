@@ -79,7 +79,7 @@ function pli(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pli_value[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views pli(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]])
+            pli_value[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views pli(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]])
         end
     end
 

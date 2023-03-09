@@ -73,7 +73,7 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     resnormalized = zeros(ch_n, ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        sged[:, :, ep_idx], ress[:, ep_idx], resnormalized[:, ep_idx] = @views sged(obj1.signals[channel1, :, epoch1[ep_idx]], obj2.signals[channel2, :, epoch2[ep_idx]])
+        sged[:, :, ep_idx], ress[:, ep_idx], resnormalized[:, ep_idx] = @views sged(obj1.data[channel1, :, epoch1[ep_idx]], obj2.data[channel2, :, epoch2[ep_idx]])
     end
 
     return (sged=sged, ress=ress, resnormalized=resnormalized)

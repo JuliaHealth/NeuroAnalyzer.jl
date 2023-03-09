@@ -145,7 +145,7 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
     xcov_m = zeros(length(channel1), (2 * lag + 1), length(epoch1))
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xcov_m[ch_idx, :, ep_idx], _ = @views xcov(obj1.signals[channel1[ch_idx], :, epoch1[ep_idx]], obj2.signals[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, demean=demean, norm=norm)
+            xcov_m[ch_idx, :, ep_idx], _ = @views xcov(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, demean=demean, norm=norm)
         end
     end
 
