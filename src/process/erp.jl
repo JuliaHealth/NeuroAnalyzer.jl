@@ -29,7 +29,7 @@ function erp(obj::NeuroAnalyzer.NEURO)
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "erp(OBJ)")
+    push!(obj_new.header.history, "erp(OBJ)")
 
     return obj_new
 end

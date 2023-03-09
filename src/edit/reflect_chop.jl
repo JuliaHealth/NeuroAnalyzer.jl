@@ -44,7 +44,7 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     obj_new.header.recording[:epoch_duration_samples] = size(obj_new.data, 2)
     obj_new.header.recording[:epoch_duration_seconds] = size(obj_new.data, 2) * (1 / sr(obj))
 
-    push!(obj_new.header.recording.history, "reflect(OBJ, n=$n)")
+    push!(obj_new.header.history, "reflect(OBJ, n=$n)")
 
     return obj_new
 end
@@ -112,7 +112,7 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     obj_new.header.recording[:epoch_duration_samples] = size(obj_new.data, 2)
     obj_new.header.recording[:epoch_duration_seconds] = size(obj_new.data, 2) * (1 / sr(obj))
 
-    push!(obj_new.header.recording.history, "chop(OBJ, n=$n)")
+    push!(obj_new.header.history, "chop(OBJ, n=$n)")
 
     return obj_new
 end

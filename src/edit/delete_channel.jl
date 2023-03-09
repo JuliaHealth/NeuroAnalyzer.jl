@@ -150,8 +150,8 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
     end
     obj_new = keep_channel(obj, channel=channels_idx)
     reset_components!(obj_new)
-    pop!(obj_new.header.recording.history)
-    push!(obj_new.header.recording.history, "keep_channel_type(OBJ, type=$type")
+    pop!(obj_new.header.history)
+    push!(obj_new.header.history, "keep_channel_type(OBJ, type=$type")
 
     return obj_new
 end

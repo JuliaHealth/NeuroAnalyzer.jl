@@ -1,5 +1,7 @@
+export ch_zero
+
 """
-    zero(obj)
+    ch_zero(obj)
 
 Zero channels at the beginning and at the end.
 
@@ -11,7 +13,7 @@ Zero channels at the beginning and at the end.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function zero(obj::NeuroAnalyzer.NEURO)
+function ch_zero(obj::NeuroAnalyzer.NEURO)
 
     obj_new = deepcopy(obj)
     obj_new.data[:, 1, :] .= 0
@@ -24,7 +26,7 @@ function zero(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    zero!(obj)
+    ch_zero!(obj)
 
 Zero channels at the beginning and at the end.
 
@@ -32,12 +34,12 @@ Zero channels at the beginning and at the end.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function zero!(obj::NeuroAnalyzer.NEURO)
+function ch_zero!(obj::NeuroAnalyzer.NEURO)
 
-    obj_tmp = zero(obj)
+    obj_tmp = ch_zero(obj)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
 end

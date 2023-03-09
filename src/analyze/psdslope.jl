@@ -32,7 +32,7 @@ function psdslope(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     ch_n = length(channel)
     ep_n = epoch_n(obj)
 
-    _, frq = s_psd(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
+    _, frq = psd(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
     f1_idx = vsearch(f[1], frq)
     f2_idx = vsearch(f[2], frq)
     lf = zeros(ch_n, length(frq[f1_idx:f2_idx]), ep_n)
@@ -40,7 +40,7 @@ function psdslope(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            pow, _ = s_psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
+            pow, _ = psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
             _, _, _, _, _, _, lf[ch_idx, :, ep_idx] = @views linreg(frq[f1_idx:f2_idx], pow[f1_idx:f2_idx])
             psd_slope[ch_idx, ep_idx] = lf[ch_idx, 2, ep_idx] - lf[ch_idx, 1, ep_idx]
         end

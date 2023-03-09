@@ -233,7 +233,7 @@ function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, signal::Abstra
     range = _get_range(signal)
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = s_msci95(signal)
+    s_m, _, s_u, s_l = msci95(signal)
 
     # get limits
     if norm != true

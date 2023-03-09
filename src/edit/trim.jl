@@ -47,7 +47,7 @@ function trim(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epo
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "trim(OBJ, segment=$segment, remove_epochs=$remove_epochs)")
+    push!(obj_new.header.history, "trim(OBJ, segment=$segment, remove_epochs=$remove_epochs)")
 
     return obj_new
 end

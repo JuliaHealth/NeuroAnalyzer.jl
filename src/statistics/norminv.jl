@@ -14,5 +14,5 @@ Convert probability to a normal distribution with a peak at 0.5.
 - `z::Float64`
 """
 function norminv(x::Real)
-    return quantile(Normal(), x)
+    return quantile(Distributions.Normal(), x)
 end

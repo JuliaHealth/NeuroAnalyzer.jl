@@ -1,7 +1,7 @@
-export s2_cmp
+export cmp_test
 
 """
-    s2_cmp(seg1, seg2, paired, alpha, type, exact)
+    cmp_test(seg1, seg2, paired, alpha, type, exact)
 
 Compare two vectors; Kruskall-Wallis test is used first, next t-test (paired on non-paired) or non-parametric test (paired: Wilcoxon signed rank, non-paired: Mann-Whitney U test) is applied.
 
@@ -29,7 +29,7 @@ Named tuple containing for type === `:perm`:
 - `p1::Float64`: one-sided p-value
 - `p2::Float64`: two-sided p-value
 """
-function s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)
+function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Float64=0.05, type::Symbol=:auto, exact::Bool=false, nperm::Int64=1000)
 
     _check_var(type, [:auto, :perm, :p, :np], "type")
     paired == true && size(s1) != size(s2) && throw(ArgumentError("For paired test both segments must have the same size."))
@@ -117,7 +117,7 @@ function s2_cmp(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::Flo
         else
             z = (observed_difference - mean(perm_diff)) / std(perm_diff)
             z = round(z, digits=3)
-            p_one_tailed = 1 - cdf(Normal(), abs(z))
+            p_one_tailed = 1 - cdf(Distributions.Normal(), abs(z))
         end
         return (t=(perm_diff=perm_diff, obs_diff=observed_difference), p1=p_one_tailed, p2=(p_one_tailed / 2))
     end

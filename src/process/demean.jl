@@ -40,7 +40,7 @@ function demean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(channel)
-            @views obj_new.data[channel[ch_idx], :, ep_idx] = s_demean(obj_new.data[channel[ch_idx], :, ep_idx])
+            @views obj_new.data[channel[ch_idx], :, ep_idx] = demean(obj_new.data[channel[ch_idx], :, ep_idx])
         end
     end
 

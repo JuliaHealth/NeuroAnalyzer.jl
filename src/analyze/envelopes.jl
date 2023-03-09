@@ -191,7 +191,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
 
         @inbounds @simd for ep_idx in 1:ep_n
             t_env_m[:, ep_idx] = median(s_a[:, :, ep_idx], dims=1)
-            t_idx = s_findpeaks(t_env_m[:, ep_idx], d=d)
+            t_idx = findpeaks(t_env_m[:, ep_idx], d=d)
             pushfirst!(t_idx, 1)
             push!(t_idx, length(t_env_m[:, ep_idx]))
             if length(t_idx) > 4
@@ -215,7 +215,7 @@ function tenv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
 
         @inbounds @simd for ch_idx in 1:ch_n
             t_env_m[:, idx] = median(s_a[ch_idx, :, :], dims=2)
-            t_idx = s_findpeaks(t_env_m[:, ch_idx], d=d)
+            t_idx = findpeaks(t_env_m[:, ch_idx], d=d)
             pushfirst!(t_idx, 1)
             push!(t_idx, length(t_env_m[:, ch_idx]))
             if length(t_idx) > 4
@@ -350,7 +350,7 @@ function penv_mean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}
         @inbounds @simd for ep_idx in 1:ep_n
             p_env_m[:, ep_idx] = mean(s_p[:, :, ep_idx], dims=1)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, ep_idx], d=d)
+            p_idx = findpeaks(p_env_m[:, ep_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
@@ -485,7 +485,7 @@ function penv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         @inbounds @simd for ch_idx in 1:ch_n
             p_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            p_idx = s_findpeaks(p_env_m[:, ch_idx], d=d)
+            p_idx = findpeaks(p_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(p_idx, 1)
             # add last time-point
@@ -788,7 +788,7 @@ function senv_median(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         @inbounds @simd for ch_idx in 1:ch_n
             s_env_m[:, ch_idx] = median(s_p[ch_idx, :, :], dims=2)
             # find peaks
-            s_idx = s_findpeaks(s_env_m[:, ch_idx], d=d)
+            s_idx = findpeaks(s_env_m[:, ch_idx], d=d)
             # add first time-point
             pushfirst!(s_idx, 1)
             # add last time-point

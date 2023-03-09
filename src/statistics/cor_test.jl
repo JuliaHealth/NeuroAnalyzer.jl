@@ -1,7 +1,7 @@
-export s2_cor
+export cor_test
 
 """
-    s2_cor(seg1, seg2)
+    cor_test(seg1, seg2)
 
 Calculate correlation between two vectors.
 
@@ -20,7 +20,7 @@ Named tuple containing:
 - `df::Int64`: degrees of freedom
 - `p::Float64`: p-value
 """
-function s2_cor(s1::AbstractVector, s2::AbstractVector)
+function cor_test(s1::AbstractVector, s2::AbstractVector)
 
     length(s1) == length(s2) || throw(ArgumentError("Both vectors must have the same length."))
     t = CorrelationTest(s1, s2)

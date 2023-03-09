@@ -24,8 +24,8 @@ function ispc(signal1::AbstractVector, signal2::AbstractVector)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
-    _, _, _, s1_phase = s_hspectrum(signal1)
-    _, _, _, s2_phase = s_hspectrum(signal2)
+    _, _, _, s1_phase = hspectrum(signal1)
+    _, _, _, s2_phase = hspectrum(signal2)
 
     signal_diff = signal2 - signal1
     phase_diff = s2_phase - s1_phase

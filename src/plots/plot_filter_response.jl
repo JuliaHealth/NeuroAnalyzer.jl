@@ -22,7 +22,7 @@ Plot filter response.
     - `:bp`: band pass
     - `:bs`: band stop
 - `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
-- `n::Int64`: signal length in samples
+- `n::Int64=2560`: signal length in samples
 - `fs::Int64`: sampling rate
 - `order::Int64=8`: filter order (6 dB/octave), number of taps for `:remez`, attenuation (× 4 dB) for `:fir` filters
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
@@ -37,14 +37,14 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, n::Int64, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
     frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim = tuple_order(frq_lim)
 
-    flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+    flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch]
         H, w = freqresp(flt)

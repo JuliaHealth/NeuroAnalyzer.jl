@@ -252,7 +252,7 @@ function plot_psd_avg(s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bo
     pal = mono == true ? :grays : :darktest
 
     # get mean and 95%CI
-    s_m, _, s_u, s_l = s_msci95(s_pow)
+    s_m, _, s_u, s_l = msci95(s_pow)
 
     if ax === :linlin
         xticks = _ticks(frq_lim)
@@ -763,23 +763,23 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
             s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
             title == "default" && (title = "PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
             title == "default" && (title = "PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end
@@ -991,23 +991,23 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epo
             s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = s_mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = s_rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
             title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end

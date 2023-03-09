@@ -46,7 +46,7 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64
     obj_new.header.recording[:epoch_duration_seconds] = round(size(obj.data, 2) / sr(obj), digits=2)
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "delete_epoch(OBJ, $epoch)")
+    push!(obj_new.header.history, "delete_epoch(OBJ, $epoch)")
     
     return obj_new
 end
@@ -101,7 +101,7 @@ function keep_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64},
 
     obj_new = delete_epoch(obj, epoch=epoch_to_remove)
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "keep_epoch(OBJ, $epoch)")    
+    push!(obj_new.header.history, "keep_epoch(OBJ, $epoch)")    
 
     return obj_new
 end

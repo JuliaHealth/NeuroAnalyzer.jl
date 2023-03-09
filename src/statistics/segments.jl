@@ -1,5 +1,4 @@
 export seg_mean
-export seg2_mean
 
 """
     seg_mean(seg)
@@ -34,6 +33,6 @@ Named tuple containing:
 - `seg1::Vector{Float64}`: averaged segment 1
 - `seg2::Vector{Float64}`: averaged segment 2
 """
-function seg2_mean(seg1::AbstractArray, seg2::AbstractArray)
+function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
     return (seg1=seg_mean(seg1), seg2=seg_mean(seg2))
 end

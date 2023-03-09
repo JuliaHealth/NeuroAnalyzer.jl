@@ -14,11 +14,11 @@ plot_save(p, file_name="test.png")
 @test isfile("test.png") == true
 isfile("test.png") && rm("test.png")
 
-p = plot(e10)
+p = NeuroAnalyzer.plot(e10)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = plot(e10, type=:mean)
+p = NeuroAnalyzer.plot(e10, type=:mean)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
-p = plot(e10, type=:butterfly)
+p = NeuroAnalyzer.plot(e10, type=:butterfly)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}
 
 p = plot_psd(e10, norm=true, epoch=1, channel=1)

@@ -82,7 +82,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
     obj_new.header.recording[:epoch_duration_seconds] = epoch_duration_seconds
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "epoch(OBJ, ep_n=$ep_n, ep_len=$ep_len)")
+    push!(obj_new.header.history, "epoch(OBJ, ep_n=$ep_n, ep_len=$ep_len)")
 
     return obj_new
 end
@@ -134,7 +134,7 @@ function epoch_time(obj::NeuroAnalyzer.NEURO; ts::Real)
     obj_new = deepcopy(obj)
     obj_new.epoch_time = new_epochs_time
 
-    push!(obj_new.header.recording.history, "epoch_time(OBJ, ts=$ts)")
+    push!(obj_new.header.history, "epoch_time(OBJ, ts=$ts)")
 
     return obj_new
 end
@@ -189,7 +189,7 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; epoch::Int64)
     obj_new.header.recording[:duration_seconds] = obj_new.header.recording[:epoch_duration_seconds]
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "extract_epoch(OBJ, epoch=$epoch)")
+    push!(obj_new.header.history, "extract_epoch(OBJ, epoch=$epoch)")
 
     return obj_new
 end

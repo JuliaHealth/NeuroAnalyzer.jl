@@ -44,7 +44,7 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
     deleteat!(obj_new.markers, n)
     size(obj_new.markers, 1) == 0 && (obj_new.header.recording[:markers] = false)
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "delete_marker(OBJ; n=$n)")
+    push!(obj_new.header.history, "delete_marker(OBJ; n=$n)")
     
     return obj_new
 end
@@ -99,7 +99,7 @@ function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>channel))
     sort!(obj_new.markers)
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "add_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
+    push!(obj_new.header.history, "add_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
 
     return obj_new
 end
@@ -160,7 +160,7 @@ function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int6
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>channel)
      reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
+    push!(obj_new.header.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, channel=$channel)")
 
     return obj_new
 end

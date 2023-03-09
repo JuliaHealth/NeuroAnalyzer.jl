@@ -53,7 +53,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, t
     obj_new.header.recording[:channel_type] = types
     
     # add entry to :history field
-    push!(obj_new.header.recording.history, "channel_type(OBJ, channel=$channel, type=$type)")
+    push!(obj_new.header.history, "channel_type(OBJ, channel=$channel, type=$type)")
 
     return obj_new
 end
@@ -155,7 +155,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String},
     obj_new.header.recording[:labels] = clabels
     
     # add entry to :history field
-    push!(obj_new.header.recording.history, "rename_channel(OBJ, channel=$channel, name=$name)")
+    push!(obj_new.header.history, "rename_channel(OBJ, channel=$channel, name=$name)")
 
     return obj_new
 end
@@ -244,7 +244,7 @@ function edit_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, field::Symbol, v
     obj_new.header.recording[field][channel] = value
 
     # add entry to :history field
-    push!(obj_new.header.recording.history, "edit_channel(OBJ, channel=$channel, field=$field, value=$value)")   
+    push!(obj_new.header.history, "edit_channel(OBJ, channel=$channel, field=$field, value=$value)")   
 
     return obj_new
 end
@@ -306,7 +306,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}
     reset_components!(obj_new)
 
     # add entry to :history field
-    push!(obj_new.header.recording.history, "replace_channel(OBJ, channel=$channel, signal=$signal")
+    push!(obj_new.header.history, "replace_channel(OBJ, channel=$channel, signal=$signal")
 
     return obj_new
 end
@@ -353,7 +353,7 @@ function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
     obj_new = deepcopy(obj)
     obj_new.header.recording[:labels] = clabels
 
-    push!(obj_new.header.recording.history, "add_labels(OBJ, clabels=$clabels")
+    push!(obj_new.header.history, "add_labels(OBJ, clabels=$clabels")
  
     return obj_new
 end

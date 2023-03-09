@@ -25,8 +25,8 @@ function xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, de
     lags = collect(-lag:lag)
 
     if demean == true
-        signal1 = s_demean(signal1)
-        signal2 = s_demean(signal2)
+        signal1 = demean(signal1)
+        signal2 = demean(signal2)
     end
 
     xcov = zeros(length(lags))

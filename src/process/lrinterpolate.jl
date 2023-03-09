@@ -51,7 +51,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.recording.history, "lrinterpolate_channel(OBJ, channel=$channel, epoch=$epoch)")
+    push!(obj_new.header.history, "lrinterpolate_channel(OBJ, channel=$channel, epoch=$epoch)")
 
     return obj_new
 end

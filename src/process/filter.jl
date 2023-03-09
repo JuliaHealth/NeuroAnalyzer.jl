@@ -122,7 +122,7 @@ function filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t::R
 
     if fprototype === :conv
         window === nothing && throw(ArgumentError("For :conv filter window must be specified."))
-        s_filtered = s_tconv(signal, kernel=window)
+        s_filtered = tconv(signal, kernel=window)
         return s_filtered
     end
 
@@ -441,7 +441,7 @@ function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
         n = epoch_len(obj)
-        flt = s_filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
     # initialize progress bar

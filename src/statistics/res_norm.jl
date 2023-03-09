@@ -30,7 +30,7 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
         for group_idx in 1:length(groups)
             m = mean(x[g .== groups[group_idx]])
             res = x[g .== groups[group_idx]] .- m
-            adt = KSampleADTest(res, rand(Normal(0, 1), length(res)))
+            adt = KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
             adt_p[group_idx] = pvalue(KSampleADTest(res, rand(Normal(0, 1), length(res))))
             ks_p[group_idx] = pvalue(ExactOneSampleKSTest(res, Normal(0, 1)))
         end
@@ -42,9 +42,9 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
     # check residuals normality for the whole sample
     m = mean(x)
     res = x .- m
-    adt = KSampleADTest(res, rand(Normal(0, 1), length(res)))
-    adt_p[end] = pvalue(KSampleADTest(res, rand(Normal(0, 1), length(res))))
-    ks_p[end] = pvalue(ExactOneSampleKSTest(res, Normal(0, 1)))
+    adt = KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res)))
+    adt_p[end] = pvalue(KSampleADTest(res, rand(Distributions.Normal(0, 1), length(res))))
+    ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
 
     return (adt_p=adt_p, ks_p=ks_p)
 end

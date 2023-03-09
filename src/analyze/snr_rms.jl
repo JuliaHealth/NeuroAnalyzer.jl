@@ -107,7 +107,7 @@ function snr(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
 
     ep_n == 1 && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
-    hz, _ = s_freqs(obj.epoch_time)
+    hz, _ = freqs(obj.epoch_time)
     amp = zeros(ch_n, length(hz), ep_n)
     snr = zeros(ch_n, length(hz))
 
