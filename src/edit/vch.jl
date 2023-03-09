@@ -18,12 +18,12 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)
 
     ep_n = epoch_n(obj)
     f = lowercase(f)
-    labels = lowercase.(labels(obj))
+    clabels = lowercase.(labels(obj))
     vc = zeros(1, epoch_len(obj), ep_n)
     Threads.@threads for epoch_idx in 1:ep_n
         f_tmp = f
-        @inbounds for channel_idx in eachindex(labels)
-            occursin(labels[channel_idx], f) == true && (f_tmp = replace(f_tmp, labels[channel_idx] => "$(obj.data[channel_idx, :, epoch_idx])"))
+        @inbounds for channel_idx in eachindex(clabels)
+            occursin(clabels[channel_idx], f) == true && (f_tmp = replace(f_tmp, clabels[channel_idx] => "$(obj.data[channel_idx, :, epoch_idx])"))
         end
         try
             @inbounds vc[1, :, epoch_idx] = eval(Meta.parse("@. " * f_tmp))

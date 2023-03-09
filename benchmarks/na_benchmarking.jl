@@ -71,8 +71,8 @@ load(tmp);
 
 eeg = import_edf("test/eeg-test-edf.edf");
 delete_channel!(eeg, channel=20:24);
-e10 = epoch(eeg, epoch_len=2560);
-load_electrodes!(e10, file_name="locs/standard-10-20-cap19-elmiko.ced")
+e10 = epoch(eeg, ep_len=2560);
+load_locs!(e10, file_name="locs/standard-10-20-cap19-elmiko.ced")
 
 @info "Benchmarking: edit.jl"
 println()
@@ -107,7 +107,7 @@ println()
 print(rpad("A referencing", 36))
 edf_am = import_edf("test/eeg-test-edf.edf")
 delete_channel!(edf_am, channel=[22, 23, 24])
-e10_am = epoch(edf_am, epoch_len=2560)
+e10_am = epoch(edf_am, ep_len=2560)
 reference_a(e10_am)
 @time reference_a(e10_am);
 print(rpad("M referencing", 36))

@@ -1,6 +1,6 @@
+export filter
 export filter_apply
 export filter_create
-export filter
 
 """
     filter(signal; <keyword arguments>)
