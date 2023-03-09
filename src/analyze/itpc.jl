@@ -53,7 +53,7 @@ Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs/t
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional vector of epochs/trials weights for wITPC calculation
 
@@ -123,11 +123,11 @@ function itpc_s(obj::NeuroAnalyzer.NEURO; channel::Int64, frq_lim::Tuple{Real, R
 
     _check_channels(obj, channel)
     ep_n = epoch_n(obj)
-    epoch_len = epoch_len(obj)
+    ep_len = epoch_len(obj)
     ep_n < 2 && throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
-    itpc_spec = zeros(frq_n, epoch_len)
-    itpc_z_s = zeros(frq_n, epoch_len)
+    itpc_spec = zeros(frq_n, ep_len)
+    itpc_z_s = zeros(frq_n, ep_len)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(frq_n, 1))
@@ -136,13 +136,13 @@ function itpc_s(obj::NeuroAnalyzer.NEURO; channel::Int64, frq_lim::Tuple{Real, R
         # create Morlet wavelet
         kernel = generate_morlet(sr(obj), frq_list[frq_idx], 1, ncyc=10)
         half_kernel = floor(Int64, length(kernel) / 2) + 1
-        s_conv = zeros(Float64, 1, epoch_len, ep_n)
+        s_conv = zeros(Float64, 1, ep_len, ep_n)
         # convolute with Morlet wavelet
         @inbounds @simd for ep_idx in 1:ep_n
             s_conv[1, :, ep_idx] = @views DSP.conv(obj.data[channel, :, ep_idx], kernel)[(half_kernel - 1):(end - half_kernel)]
         end
         # calculate ITPC of the convoluted signals
-        @inbounds @simd for t_idx in 1:epoch_len
+        @inbounds @simd for t_idx in 1:ep_len
             itpc_value, itpc_z, _, _ = itpc(s_conv, t=t_idx, w=w)
             itpc_spec[frq_idx, t_idx] = itpc_value
             itpc_z_s[frq_idx, t_idx] = itpc_z

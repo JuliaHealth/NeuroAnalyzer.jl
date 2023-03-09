@@ -28,7 +28,7 @@ function locs_scale(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool
 end
 
 """
-    locs_scale!(eeg)
+    locs_scale!(locs)
 
 Scale channel locations.
 

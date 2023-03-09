@@ -114,7 +114,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency bounds for the spectrogram

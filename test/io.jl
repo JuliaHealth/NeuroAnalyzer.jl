@@ -35,7 +35,7 @@ delete_channel!(eeg, channel=20)
 
 @test eeg.header.recording[:file_type] == "EDF"
 @test eeg.header.recording[:channel_n] == 19
-@test eeg.header.locs == false
+@test eeg.header.has_locs == false
 
 s = locs_import_ced("test.ced")
 @test typeof(s) == DataFrame
@@ -56,7 +56,7 @@ s = locs_import_mat("test.mat")
 
 eeg = load_locs(eeg, file_name="standard-10-20-cap19-elmiko.ced")
 @test typeof(eeg) == NeuroAnalyzer.NEURO
-@test eeg.header.locs == true
+@test eeg.header.has_locs == true
 
 isfile("test.hdf5") && rm("test.hdf5")
 save(eeg, file_name="test.hdf5")

@@ -80,7 +80,7 @@ Calculate absolute band power between two frequencies.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all EEG channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -147,7 +147,7 @@ Calculate mean and maximum band power and its frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 

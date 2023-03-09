@@ -82,7 +82,7 @@ Calculate mean difference and its 95% CI between channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:absdiff`
     - `:absdiff`: maximum difference

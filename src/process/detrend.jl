@@ -70,14 +70,14 @@ function detrend(signal::AbstractVector; type::Symbol=:linear, offset::Real=0, o
 end
 
 """
-    detrend(eeg; channel, type, offset, order, f)
+    detrend(obj; channel, type, offset, order, f)
 
 Perform piecewise detrending.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(eeg))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -93,14 +93,14 @@ Perform piecewise detrending.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function detrend(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(eeg)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
 
-    ep_n = epoch_n(eeg)
-    fs = sr(eeg)
+    ep_n = epoch_n(obj)
+    fs = sr(obj)
 
-    obj_new = deepcopy(eeg)
+    obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(channel)
             @views obj_new.data[channel[ch_idx], :, ep_idx] = detrend(obj_new.data[channel[ch_idx], :, ep_idx], type=type, offset=offset, order=order, f=f, fs=fs)
@@ -108,20 +108,20 @@ function detrend(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "detrend(EEG, channel=$channel, type=$type, offset=$offset, order=$order, f=$f)")
+    push!(obj_new.header.history, "detrend(OBJ, channel=$channel, type=$type, offset=$offset, order=$order, f=$f)")
 
     return obj_new
 end
 
 """
-    detrend!(eeg; channel, type, offset, order, span)
+    detrend!(obj; channel, type, offset, order, span)
 
 Perform piecewise detrending.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(eeg))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -133,12 +133,12 @@ Perform piecewise detrending.
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 """
-function detrend!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(eeg)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
-    obj_tmp = detrend(eeg, channel=channel, type=type, offset=offset, order=order, f=f)
+    obj_tmp = detrend(obj, channel=channel, type=type, offset=offset, order=order, f=f)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(eeg)
+    obj.components = obj_tmp.components
 
     return nothing
 end

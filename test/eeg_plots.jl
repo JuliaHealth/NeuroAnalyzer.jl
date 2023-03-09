@@ -2,11 +2,11 @@ using NeuroAnalyzer
 using Plots
 using GLMakie
 using Test
-
+ 
 eeg = import_edf("eeg-test-edf.edf")
-load_electrodes!(eeg, file_name="../locs/standard-10-20-cap19-elmiko-correct.ced")
+load_locs!(eeg, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 isfile("test.png") && rm("test.png")
-e10 = epoch(eeg, epoch_n=10)
+e10 = epoch(eeg, ep_n=10)
 
 p = plot_filter_response(fs=sr(eeg), fprototype=:butterworth, ftype=:hp, cutoff=10, order=8)
 @test typeof(p) == Plots.Plot{Plots.GRBackend}

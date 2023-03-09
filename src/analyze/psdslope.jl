@@ -8,7 +8,7 @@ Calculate PSD linear fit and slope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}=(0, sr(obj)/2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram

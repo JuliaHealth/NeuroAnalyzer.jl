@@ -157,7 +157,7 @@ function locs_flipz(locs::DataFrame)
 end
 
 """
-    locs_flipz!(eeg)
+    locs_flipz!(locs)
 
 Flip channel locations along z axis.
 

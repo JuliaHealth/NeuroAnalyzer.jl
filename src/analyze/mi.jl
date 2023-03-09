@@ -21,12 +21,12 @@ end
 """
     mi(obj; channel)
 
-Calculate mutual information between EEG channels.
+Calculate mutual information between channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all EEG channels
+- `channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
@@ -62,14 +62,14 @@ end
 """
     mi(obj1, obj2; channel1, channel2, epoch1, epoch2)
 
-Calculate mutual information between two EEG channels.
+Calculate mutual information between two channels.
 
 # Arguments
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type]))`: index of channels, default is all EEG channels
-- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type]))`: index of channels, default is all EEG channels
+- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type]))`: index of channels, default is all signal channels
+- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type]))`: index of channels, default is all signal channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
 - `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 

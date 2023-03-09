@@ -105,7 +105,7 @@ Calculate covariance matrix of `signal * signal'`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all OBJ channels
+- `channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize matrix
 
 # Returns

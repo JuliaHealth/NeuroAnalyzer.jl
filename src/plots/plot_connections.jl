@@ -8,7 +8,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)

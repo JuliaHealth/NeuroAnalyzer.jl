@@ -460,7 +460,7 @@ function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "filter(EEG, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, t=$t, window=$window)")
+    push!(obj_new.header.history, "filter(OBJ, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, t=$t, window=$window)")
 
     return obj_new
 end
@@ -468,7 +468,7 @@ end
 """
     filter!(obj; <keyword arguments>)
 
-Apply filtering to EEG channel(s).
+Apply filtering.
 
 # Arguments
 

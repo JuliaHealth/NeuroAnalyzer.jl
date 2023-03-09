@@ -22,7 +22,7 @@ function invert_polarity(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{
     obj_new = deepcopy(obj)
     obj_new.data[channel, :, :] = .- obj_new.data[channel, :, :]
     reset_components!(obj_new)
-    push!(obj_new.header.history, "invert_polarity(EEG, channel=$channel)")
+    push!(obj_new.header.history, "invert_polarity(OBJ, channel=$channel)")
 
     return obj_new
 end

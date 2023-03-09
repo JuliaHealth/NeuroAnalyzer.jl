@@ -96,7 +96,7 @@ function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "surface_laplacian(EEG, m=m, n=n, s=s)")
+    push!(obj_new.header.history, "slaplacian(OBJ, m=m, n=n, s=s)")
 
     return obj_new, G, H
 end
@@ -127,7 +127,7 @@ function slaplacian!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float6
     obj_tmp, G, H = slaplacian(obj, m=m, n=n, s=s)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return G, H
 end

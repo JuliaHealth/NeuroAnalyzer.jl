@@ -72,7 +72,7 @@ Calculate stationarity.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all EEG channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `window::Int64=10`: time window in samples
 - `method::Symbol=:euclid`: stationarity method:
     - `:mean`: mean across `window`-long windows

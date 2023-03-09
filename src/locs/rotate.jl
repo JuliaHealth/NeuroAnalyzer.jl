@@ -29,7 +29,7 @@ function locs_rotx(locs::DataFrame; a::Real, planar::Bool=true, spherical::Bool=
 end
 
 """
-    locs_rotx!(eeg)
+    locs_rotx!(locs)
 
 Rotate channel locations in the x-plane.
 

@@ -52,7 +52,7 @@ Calculate autocovariance.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `lag::Int64`: lags range is `-lag:lag`
 - `demean::Bool`: demean obj prior to analysis
 - `norm::Bool`: normalize autocovariance

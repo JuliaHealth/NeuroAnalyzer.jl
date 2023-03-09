@@ -2,7 +2,7 @@ export add_locs
 export add_locs!
 
 """
-    add_locs(eeg; locs)
+    add_locs(obj; locs)
 
 Add electrode positions from `locs`. 
 
@@ -44,7 +44,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.header.locs = true
+    obj_new.header.has_locs = true
     obj_new.locs = locs
 
     # add entry to :history field

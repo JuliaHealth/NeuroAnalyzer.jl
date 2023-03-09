@@ -8,7 +8,7 @@ Apply custom function.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::String`: function to be applied, e.g. `f="mean(obj, dims=3)"; OBJ signal is given using variable `obj` here.
 
 # Returns

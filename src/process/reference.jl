@@ -56,7 +56,7 @@ function reference_ch(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
     obj_new.data[channels, :, :] = signal
     obj_new.header.recording[:reference] = "channel: $channel"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_ch(EEG, channel=$channel, med=$med")
+    push!(obj_new.header.history, "reference_ch(OBJ, channel=$channel, med=$med")
 
     return obj_new
 end
@@ -100,7 +100,7 @@ Reference to common average reference. Only signal (EEG/MEG, depending on `obj.h
 """
 function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
-    # keep EEG channels
+    # keep signal channels
     obj_new = deepcopy(obj)
     channels = signal_channels(obj)
     signal = @view obj_new.data[channels, :, :]
@@ -132,7 +132,7 @@ function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     obj_new.data[channels, :, :] = signal
     obj_new.header.recording[:reference] = "CAR"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_car(EEG, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
+    push!(obj_new.header.history, "reference_car(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
 
     return obj_new
 end
@@ -180,10 +180,10 @@ Reference to auricular (A1, A2) channels. Only signal (EEG/MEG, depending on `ob
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("a1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("EEG does not contain A1 channel."))
-    all(iszero, occursin.("a2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("EEG does not contain A2 channel."))
+    all(iszero, occursin.("a1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain A1 channel."))
+    all(iszero, occursin.("a2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
 
-    # keep EEG channels
+    # keep signal channels
     channels = signal_channels(obj)
     signal = @view obj.data[channels, :, :]
 
@@ -261,7 +261,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     obj_new.data[channels, :, :] = s_ref
     obj_new.header.recording[:reference] = "A ($type)"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_a(EEG, type=$type, med=$med)")
+    push!(obj_new.header.history, "reference_a(OBJ, type=$type, med=$med)")
 
     return obj_new
 end
@@ -311,10 +311,10 @@ Reference to mastoid (M1, M2) channels. Only signal (EEG/MEG, depending on `obj.
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("m1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("EEG does not contain M1 channel."))
-    all(iszero, occursin.("m2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("EEG does not contain M2 channel."))
+    all(iszero, occursin.("m1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain M1 channel."))
+    all(iszero, occursin.("m2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain M2 channel."))
 
-    # keep EEG channels
+    # keep signal channels
     channels = signal_channels(obj)
     signal = @view obj.data[channels, :, :]
 
@@ -392,7 +392,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     obj_new.data[channels, :, :] = s_ref
     obj_new.header.recording[:reference] = "M ($type)"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_m(EEG, type=$type, med=$med)")
+    push!(obj_new.header.history, "reference_m(OBJ, type=$type, med=$med)")
 
     return obj_new
 end
@@ -441,7 +441,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
 
     obj.header[:channel_locations] == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
 
-    # keep EEG channels
+    # keep signal channels
     obj_tmp = deepcopy(obj)
     channels = signal_channels(obj)
     signal = obj_tmp.data[channels, :, :]
@@ -506,7 +506,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
     obj_tmp.data[channels, :, :] = s_ref
     obj_tmp.header.recording[:reference] = "PLAP ($nn)"
     reset_components!(obj_tmp)
-    push!(obj_tmp.header.history, "reference_plap(EEG, nn=$nn, med=$med))")
+    push!(obj_tmp.header.history, "reference_plap(OBJ, nn=$nn, med=$med))")
 
     return obj_tmp
 end

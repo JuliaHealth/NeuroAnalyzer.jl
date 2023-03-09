@@ -20,7 +20,7 @@ Calculate temporal envelope (amplitude).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -77,7 +77,7 @@ Calculate temporal envelope (amplitude): mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -155,7 +155,7 @@ Calculate temporal envelope (amplitude): median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -255,7 +255,7 @@ Calculate power (in dB) envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -312,7 +312,7 @@ Calculate power (in dB) envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -419,7 +419,7 @@ Calculate power (in dB) envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -526,7 +526,7 @@ Calculate spectral envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -614,7 +614,7 @@ Calculate spectral envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -721,7 +721,7 @@ Calculate spectral envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -829,7 +829,7 @@ Calculate Hilbert spectrum amplitude envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -887,7 +887,7 @@ Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -963,7 +963,7 @@ Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 

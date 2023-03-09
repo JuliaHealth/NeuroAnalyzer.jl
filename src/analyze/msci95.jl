@@ -122,7 +122,7 @@ Calculate mean, standard deviation and 95% confidence interval for channels.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
@@ -139,13 +139,13 @@ function msci95(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     _check_var(method, [:normal, :boot], "method")
 
     _check_channels(obj, channel)
-    epoch_len = epoch_len(obj)
+    ep_len = epoch_len(obj)
     ep_n = epoch_n(obj)
 
-    s_m = zeros(ep_n, epoch_len)
-    s_s = zeros(ep_n, epoch_len)
-    s_u = zeros(ep_n, epoch_len)
-    s_l = zeros(ep_n, epoch_len)
+    s_m = zeros(ep_n, ep_len)
+    s_s = zeros(ep_n, ep_len)
+    s_u = zeros(ep_n, ep_len)
+    s_l = zeros(ep_n, ep_len)
 
     Threads.@threads for ep_idx in 1:ep_n
         s_m[ep_idx, :], s_s[ep_idx, :], s_u[ep_idx, :], s_l[ep_idx, :] = @views msci95(obj.data[channel, :, ep_idx], n=n, method=method)
@@ -190,12 +190,12 @@ function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::
     epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 epoch lengths must be equal."))
 
     ep_n = length(epoch1)
-    epoch_len = epoch_len(obj1)
+    ep_len = epoch_len(obj1)
 
-    s_m = zeros(ep_n, epoch_len)
-    s_s = zeros(ep_n, epoch_len)
-    s_u = zeros(ep_n, epoch_len)
-    s_l = zeros(ep_n, epoch_len)
+    s_m = zeros(ep_n, ep_len)
+    s_s = zeros(ep_n, ep_len)
+    s_u = zeros(ep_n, ep_len)
+    s_l = zeros(ep_n, ep_len)
 
     Threads.@threads for ep_idx in 1:ep_n
         s1_mean = @views mean(obj1.signals[channel1, :, epoch1[ep_idx]], dims=1)

@@ -127,7 +127,7 @@ function keep_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{In
 end
 
 """
-    keep_channel_type(eeg; type)
+    keep_channel_type(obj; type)
 
 Keep channel(s) of `type` type.
 
@@ -145,10 +145,10 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
 
     channels_idx = Vector{Int64}()
-    for idx in 1:channel_n(eeg, type=:all)
+    for idx in 1:channel_n(obj, type=:all)
         obj.header[:channel_type][idx] == string(type) && push!(channels_idx, idx)
     end
-    obj_new = keep_channel(eeg, channel=channels_idx)
+    obj_new = keep_channel(obj, channel=channels_idx)
     reset_components!(obj_new)
     pop!(obj_new.header.recording.history)
     push!(obj_new.header.recording.history, "keep_channel_type(OBJ, type=$type")
@@ -157,7 +157,7 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 end
 
 """
-    keep_channel_type!(eeg; type)
+    keep_channel_type!(obj; type)
 
 Keep OBJ channels of `type` type.
 

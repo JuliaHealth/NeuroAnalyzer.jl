@@ -516,7 +516,7 @@ function plot(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}=0, ch
 
     # plot markers if available
     # TODO: draw markers length
-    if markers == true && obj.header.markers == true
+    if markers == true && obj.header.has_markers == true
         markers_pos = obj.markers[!, :start] ./ sr(obj)
         markers_desc = obj.markers[!, :description]
         p = Plots.vline!(markers_pos,
@@ -657,7 +657,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::
 
     # plot markers if available
     # TODO: draw markers length
-    if markers == true && obj.header.markers == true
+    if markers == true && obj.header.has_markers == true
         markers_pos = obj.markers[!, :start] ./ sr(obj)
         markers_desc = obj.markers[!, :description]
         p = Plots.vline!(markers_pos,

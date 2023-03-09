@@ -97,7 +97,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `weights::Matrix{<:Real}`: matrix of weights
 - `channel_labels::Bool=false`: plot channel_labels
 - `head_labels::Bool=true`: plot head labels

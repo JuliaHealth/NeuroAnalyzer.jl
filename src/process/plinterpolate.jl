@@ -49,15 +49,15 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, V
     channels = get_channel_bytype(obj_tmp, type=Symbol(obj.header.recording[:data_type]))
 
     ep_n = length(epoch)
-    epoch_len = epoch_len(obj_tmp)
+    ep_len = epoch_len(obj_tmp)
 
-    s_interpolated = zeros(Float64, length(channel), epoch_len, ep_n)
+    s_interpolated = zeros(Float64, length(channel), ep_len, ep_n)
 
     # initialize progress bar
-    progress_bar == true && (p = Progress(ep_n * epoch_len, 1))
+    progress_bar == true && (p = Progress(ep_n * ep_len, 1))
 
     @inbounds @simd for epoch_idx in eachindex(epoch)
-        Threads.@threads for length_idx in 1:epoch_len
+        Threads.@threads for length_idx in 1:ep_len
             s_tmp, x, y = @views _interpolate(obj_tmp.data[channels, length_idx, epoch[epoch_idx]], locs_x2, locs_y2, interpolation_factor, imethod, :none)
             for channel_idx in eachindex(channel)
                 x_idx = vsearch(locs_x1[channel[channel_idx]], x)

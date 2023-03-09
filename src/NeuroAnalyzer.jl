@@ -64,9 +64,9 @@ mutable struct HEADER
     subject::Dict
     recording::Dict
     experiment::Dict
-    markers::Bool
+    has_markers::Bool
     component_names::Vector{Symbol}
-    locs::Bool
+    has_locs::Bool
     history::Vector{String}
 end
 
@@ -76,34 +76,14 @@ mutable struct NEURO
     epoch_time::Vector{Float64}
     data::Union{Array{<:Number, 1}, Array{<:Number, 2}, Array{<:Number, 3}}
     components::Vector{Any}
-    events::DataFrame
+    markers::DataFrame
     locs::DataFrame
 end
 
-mutable struct EEG
-    eeg_header::Dict
-    eeg_time::Vector{Float64}
-    eeg_epoch_time::Vector{Float64}
-    eeg_signals::Array{Float64, 3}
-    eeg_components::Vector{Any}
-    eeg_markers::DataFrame
-    eeg_locs::DataFrame
-end
-
-mutable struct MEG
-    meg_header::Dict
-    meg_time::Vector{Float64}
-    meg_epoch_time::Vector{Float64}
-    meg_signals::Array{Float64, 3}
-    meg_components::Vector{Any}
-    meg_markers::DataFrame
-    meg_locs::DataFrame
-end
-
 mutable struct STUDY
-    study_header::Dict{Symbol, Any}
-    study_eeg::Vector{NeuroAnalyzer.NEURO}
-    study_group::Vector{Symbol}
+    header::Dict{Symbol, Any}
+    objects::Vector{NeuroAnalyzer.NEURO}
+    groups::Vector{Symbol}
 end
 
 mutable struct DIPOLE

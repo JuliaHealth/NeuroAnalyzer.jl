@@ -235,7 +235,7 @@ Preview of electrode locations.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
 - `channel_labels::Bool=true`: plot channel labels
 - `head::Bool`=true: plot head

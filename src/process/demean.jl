@@ -45,7 +45,7 @@ function demean(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "demean(EEG, channel=$channel)")
+    push!(obj_new.header.history, "demean(OBJ, channel=$channel)")
 
     return obj_new
 end
@@ -65,7 +65,7 @@ function demean!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     obj_tmp = demean(obj, channel=channel)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
 end

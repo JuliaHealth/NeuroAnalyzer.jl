@@ -64,7 +64,7 @@ function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 end
 
 """
-    epoch_n(eeg)
+    epoch_n(obj)
 
 Return number of epochs.
 
@@ -82,7 +82,7 @@ function epoch_n(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    signal_len(eeg)
+    signal_len(obj)
 
 Return signal length.
 
@@ -99,7 +99,7 @@ function signal_len(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    epoch_len(eeg)
+    epoch_len(obj)
 
 Return epoch length.
 
@@ -119,7 +119,7 @@ function epoch_len(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    signal_channels(eeg)
+    signal_channels(obj)
 
 Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_type` variable in `obj.header.recording`).
 
@@ -162,7 +162,7 @@ function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 end
 
 """
-    history(eeg)
+    history(obj)
 
 Show processing history.
 
@@ -198,7 +198,7 @@ function labels(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    info(eeg)
+    info(obj)
 
 Show info.
 
@@ -235,12 +235,12 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if obj.header.markers == false
+    if obj.header.has_markers == false
         println("                Markers: no")
     else
         println("                Markers: yes")
     end
-    if obj.header.locs == false
+    if obj.header.has_locs == false
         println("      Channel locations: no")
     else
         println("      Channel locations: yes")
@@ -423,11 +423,11 @@ function band_frq(fs::Int64; band::Symbol)
     band === :gamma_higher && (band_frq = (80.0, 150.0))
     
     if band_frq[1] > fs / 2
-        _info("Nyquist frequency based on EEG sampling rate ($(fs / 2)) is lower than $band range: $band_frq, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1))")
+        _info("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $band_frq, band frequency truncated to: ($(fs / 2 - 0.2), $(fs / 2 - 0.1))")
         band_frq = (fs / 2 - 0.2, fs / 2 - 0.1)
     end
     if band_frq[2] > fs / 2
-        _info("Nyquist frequency based on EEG sampling rate ($(fs / 2)) is lower than $band range: $band_frq, band frequency truncated to: ($(band_frq[1]), $(fs / 2 - 0.1))")
+        _info("Nyquist frequency based on sampling rate ($(fs / 2)) is lower than $band range: $band_frq, band frequency truncated to: ($(band_frq[1]), $(fs / 2 - 0.1))")
         band_frq = (band_frq[1], fs / 2 - 0.1)
     end
 
