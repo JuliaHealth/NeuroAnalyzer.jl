@@ -32,7 +32,7 @@ function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     band_frq = Vector{Tuple{Real, Real}}()
 
     @inbounds for band_idx in eachindex(band)
-        band_f = band(obj, band=band[band_idx])
+        band_f = band_frq(obj, band=band[band_idx])
         push!(band_frq, band_f)
         flt = filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=epoch_len(obj))
         @inbounds @simd for ep_idx in 1:ep_n

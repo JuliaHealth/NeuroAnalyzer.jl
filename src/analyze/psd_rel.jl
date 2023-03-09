@@ -26,7 +26,7 @@ function psd_rel(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=f
         f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
         f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
     end
-    ref_pow = f === nothing ? s_total_power(signal, fs=fs, mt=mt) : s_band_power(signal, fs=fs, mt=mt, f=f)
+    ref_pow = f === nothing ? total_power(signal, fs=fs, mt=mt) : band_power(signal, fs=fs, mt=mt, f=f)
     if mt == true
         p = mt_pgram(signal, fs=fs)
     else
@@ -78,7 +78,7 @@ function psd_rel(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=
     psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
 
     Threads.@threads for channel_idx in 1:ch_n
-        ref_pow = f === nothing ? s_total_power(signal[channel_idx, :], fs=fs, mt=mt) : s_band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
+        ref_pow = f === nothing ? total_power(signal[channel_idx, :], fs=fs, mt=mt) : band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
         if mt == true
             p = mt_pgram(signal[channel_idx, :], fs=fs)
         else

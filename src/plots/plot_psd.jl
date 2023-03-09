@@ -741,7 +741,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
     clabels = labels(obj)[channel]
     length(channel) == 1 && (clabels = [clabels])
 
-    ref !== :abs && (f = band(obj, band=ref))
+    ref !== :abs && (f = band_frq(obj, band=ref))
 
     # get frequency range
     fs = sr(obj)
@@ -763,23 +763,23 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
             s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = psd_mw(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=false, f=f)
             title == "default" && (title = "PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=true, f=f)
             title == "default" && (title = "PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $channel, epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end
@@ -890,7 +890,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
                         variant=:s;
                         kwargs...)
     elseif type === :topo
-        obj.header.recording[:channel_locations] == false && throw(ArgumentError("Electrode locations not available."))
+        obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
         ndims(s_pow) == 1 && (s_pow = reshape(s_pow, 1, length(s_pow)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")
@@ -969,7 +969,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epo
     clabels = _gen_clabels(c)[c_idx]
     length(c_idx) == 1 && (clabels = [clabels])
 
-    ref !== :abs && (f = band(obj, band=ref))
+    ref !== :abs && (f = band_frq(obj, band=ref))
 
     # get frequency range
     fs = sr(obj)
@@ -991,23 +991,23 @@ function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epo
             s_pow, s_frq = psd(signal, fs=fs, norm=norm, mt=true, nt=nt)
             title == "default" && (title = "Absolute PSD (multi-tapered) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mw
-            s_pow, s_frq = mwpsd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
+            s_pow, s_frq = psd_psd(signal, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc)
             title == "default" && (title = "Absolute PSD (Morlet wavelet convolution) [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     elseif ref === :total
         if method === :welch
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=false)
             title == "default" && (title = "PSD (Welch's periodogram) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=true)
             title == "default" && (title = "PSD (multi-tapered) relative to total power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     else
         if method === :welch
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=false, f=f)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=false, f=f)
             title == "default" && (title = "Absolute PSD (Welch's periodogram) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         elseif method === :mt
-            s_pow, s_frq = rel_psd(signal, fs=fs, norm=norm, mt=true, f=f)
+            s_pow, s_frq = psd_rel(signal, fs=fs, norm=norm, mt=true, f=f)
             title == "default" && (title = "Absolute PSD (multi-tapered) relative to $ref power [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $epoch, time window: $t_s1:$t_s2]")
         end
     end
