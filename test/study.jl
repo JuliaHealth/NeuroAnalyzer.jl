@@ -2,19 +2,19 @@ using NeuroAnalyzer
 using Test
 
 eeg = import_edf("eeg-test-edf.edf")
-eeg = epoch(eeg, epoch_len=5*256)
+eeg = epoch(eeg, ep_len=5*256)
 
-eeg1 = copy(eeg)
-eeg2 = copy(eeg)
+eeg1 = deepcopy(eeg)
+eeg2 = deepcopy(eeg)
 eeg2.data .*= 0.75
 
-s = study_create([eeg1, eeg2], [:a, :b])
+s = study([eeg1, eeg2], [:a, :b])
 
 @test typeof(s) == NeuroAnalyzer.STUDY
-@test study_n(s) == 2
-@test study_channel_n(s) == 24
-@test study_epoch_n(s) == 242
-@test study_epoch_len(s) == 1280
-@test study_sr(s) == 256
+@test size(s) == 2
+@test channel_n(s) == 24
+@test epoch_n(s) == 242
+@test epoch_len(s) == 1280
+@test sr(s) == 256
 
 true

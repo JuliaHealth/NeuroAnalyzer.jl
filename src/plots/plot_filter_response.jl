@@ -190,7 +190,6 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
 
         p = Plots.plot(p1, p2, p3, size=(1200, 800), margins=20Plots.px, layout=(3, 1), palette=pal; kwargs...)
     else
-        @show "FIR"
         w = range(0, stop=pi, length=1024)
         H = _fir_response(flt, w)
         # convert to dB
