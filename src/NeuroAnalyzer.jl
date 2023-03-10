@@ -102,7 +102,7 @@ function __init__()
     @info "NeuroAnalyzer v$na_ver"
 
     # load preferences
-    @info "Loading preferences..."
+    @info "Loading preferences"
     if Sys.isunix() || Sys.isapple()
         def_plugins_path = "$(homedir())/NeuroAnalyzer/plugins/"
     elseif Sys.iswindows()
@@ -115,7 +115,7 @@ function __init__()
     na_set_prefs(use_cuda=use_cuda, plugins_path=plugins_path, progress_bar=progress_bar, verbose=verbose)
 
     # load plugins
-    @info "Loading plugins..."
+    @info "Loading plugins"
     isdir(plugins_path) || mkdir(plugins_path)
     na_plugins_reload()
 

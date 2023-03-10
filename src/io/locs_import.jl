@@ -471,9 +471,9 @@ function locs_import_mat(file_name::String)
     dataset = matread(file_name)
     x = dataset["Cpos"][1, :]
     y = dataset["Cpos"][2, :]
-    r = dataset["Rxy"]    
+    r = dataset["Rxy"]
     ch_n = length(x)
-    clabels = dataset["Cnames"][1:ch_n]
+    clabels = string.(vec(dataset["Cnames"]))
 
     # x, y, z positions must be within -1..+1
     x, y = _locnorm(x, y)

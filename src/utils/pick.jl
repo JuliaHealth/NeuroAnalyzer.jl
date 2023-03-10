@@ -3,7 +3,7 @@ export pick
 """
     pick(obj; p)
 
-Return set of channel indices corresponding with `pick` of electrodes
+Return set of channel indices corresponding with `p` of electrodes
 
 # Arguments
 
