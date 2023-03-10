@@ -31,7 +31,7 @@ function pli(signal1::AbstractVector, signal2::AbstractVector)
 
     pli_value = abs(mean(sign.(imag.(exp.(1im .* phase_diff)))))
 
-    return (pli_value=pli, signal_diff=signal_diff, phase_diff=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
+    return (pli_value=pli_value, signal_diff=signal_diff, phase_diff=phase_diff, s1_phase=s1_phase, s2_phase=s2_phase)
 end
 
 """

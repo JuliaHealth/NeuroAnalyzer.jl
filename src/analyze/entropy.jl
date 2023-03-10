@@ -78,7 +78,7 @@ function entropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     leent = zeros(ch_n, ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views s_entropy(obj.data[channel[ch_idx], :, ep_idx])
+            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 
@@ -108,7 +108,7 @@ function negentropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     ne = zeros(ch_n, ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ne[ch_idx, ep_idx] = @views s_negentropy(obj.data[channel[ch_idx], :, ep_idx])
+            ne[ch_idx, ep_idx] = @views negentropy(obj.data[channel[ch_idx], :, ep_idx])
         end
     end
 

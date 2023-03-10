@@ -552,7 +552,7 @@ function senv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     if mt == true
         spec_tmp = mt_spectrogram(s_tmp, fs=fs)
     else
-        spec_tmp = spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
+        spec_tmp = DSP.spectrogram(s_tmp, interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
     end
     sp_t = collect(spec_tmp.time)
     sp_t .+= obj.epoch_time[1]
@@ -565,7 +565,7 @@ function senv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
             if mt == true
                 spec = @views mt_spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs)
             else
-                spec = @views spectrogram(obj.data[channel[ch_idx], :, ep_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
+                spec = @views DSP.spectrogram(obj.data[channel[ch_idx], :, ep_idx], interval, overlap, nfft=length(s_tmp), fs=fs, window=hanning)
             end
             s_frq = Vector(spec.freq)
             s_p = pow2db.(spec.power)

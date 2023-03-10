@@ -120,7 +120,7 @@ function cums(signal::Array{<:Real, 3})
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            signal_cs[ch_idx, :, ep_idx] = @views cumsum(signal[ch_idx, :, epoch_idx])
+            signal_cs[ch_idx, :, ep_idx] = @views cumsum(signal[ch_idx, :, ep_idx])
         end
     end
 

@@ -77,16 +77,16 @@ function psd_rel(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=
     psd_frq = Vector(freq(psd_tmp))
     psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
 
-    Threads.@threads for channel_idx in 1:ch_n
-        ref_pow = f === nothing ? total_power(signal[channel_idx, :], fs=fs, mt=mt) : band_power(signal[channel_idx, :], fs=fs, mt=mt, f=f)
+    Threads.@threads for ch_idx in 1:ch_n
+        ref_pow = f === nothing ? total_power(signal[ch_idx, :], fs=fs, mt=mt) : band_power(signal[ch_idx, :], fs=fs, mt=mt, f=f)
         if mt == true
-            p = mt_pgram(signal[channel_idx, :], fs=fs)
+            p = mt_pgram(signal[ch_idx, :], fs=fs)
         else
-            p = welch_pgram(signal[channel_idx, :], 4*fs, fs=fs)
+            p = welch_pgram(signal[ch_idx, :], 4*fs, fs=fs)
         end
-        psd_pow[channel_idx, :] = power(p)
-        psd_pow[channel_idx, :] = psd_pow[channel_idx, :] / ref_pow
-        psd_pow[channel_idx, 1] = psd_pow[channel_idx, 2]
+        psd_pow[ch_idx, :] = power(p)
+        psd_pow[ch_idx, :] = psd_pow[ch_idx, :] / ref_pow
+        psd_pow[ch_idx, 1] = psd_pow[ch_idx, 2]
     end
 
     norm == true && (psd_pow = pow2db.(psd_pow))

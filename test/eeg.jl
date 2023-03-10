@@ -5,13 +5,13 @@ using ContinuousWavelets
 
 eeg = import_bdf("eeg-test-bdfplus.bdf")
 delete_marker!(eeg, n=1)
-@test size(obj.markers) == (1, 5)
+@test size(eeg.markers) == (1, 5)
 add_marker!(eeg, id="event", start=1, len=1, desc="test", channel=0)
-@test size(obj.markers) == (2, 5)
+@test size(eeg.markers) == (2, 5)
 edit_marker!(eeg, n=2, id="event2", start=1, len=1, desc="test2", channel=0)
 
 eeg = import_edf("eeg-test-edf.edf")
-@test size(obj.data) == (24, 309760, 1)
+@test size(eeg.data) == (24, 309760, 1)
 
 ecg = extract_channel(eeg, channel=24)
 eog2 = extract_channel(eeg, channel=23)
@@ -25,10 +25,10 @@ a2 = extract_channel(eeg, channel=21)
 delete_channel!(eeg, channel=[20, 21])
 
 eeg1 = delete_channel(eeg, channel=1)
-@test eeg1.header[:channel_n] == 18
+@test eeg1.header.recording[:channel_n] == 18
 
 eeg1 = keep_channel(eeg, channel=1)
-@test eeg1.header[:channel_n] == 1
+@test eeg1.header.recording[:channel_n] == 1
 
 eeg1 = derivative(eeg)
 @test size(eeg1.data) == (19, 309760, 1)
@@ -62,10 +62,10 @@ eeg1 = rename_channel(eeg, channel="Cz", name="CZ")
 eeg1 = rename_channel(eeg, channel=1, name="FP1")
 @test eeg1.header.recording[:labels][1] == "FP1"
 
-eeg1 = taper(eeg, taper=obj.data[1, :, 1])
+eeg1 = taper(eeg, t=eeg.data[1, :, 1])
 @test size(eeg1.data) == (19, 309760, 1)
 
-eeg1 = demean(eeg)
+eeg1 = remove_dc(eeg)
 @test size(eeg1.data) == (19, 309760, 1)
 
 eeg1 = normalize(eeg, method=:zscore)
@@ -77,13 +77,13 @@ eeg1 = normalize(eeg, method=:log)
 eeg1 = normalize(eeg, method=:gauss)
 @test size(eeg1.data) == (19, 309760, 1)
 
-cov_m = cov(eeg)
-@test size(cov_m) == (19, 19, 1)
+cov_m = covm(eeg)
+@test size(cov_m) == (19, 19, 309760, 1)
 
-cor_m = cor(eeg)
-@test size(cor_m) == (19, 19, 1)
+cor_m = corm(eeg)
+@test size(cor_m) == (19, 19, 309760, 1)
 
-eeg1 = upsample(eeg, new_sr=512)
+eeg1 = NeuroAnalyzer.upsample(eeg, new_sr=512)
 @test size(eeg1.data) == (19, 619519, 1)
 
 @test typeof(history(eeg)) == Vector{String}
@@ -92,11 +92,11 @@ eeg1 = upsample(eeg, new_sr=512)
 
 @test sr(eeg) == 256
 
-eeg1 = epoch(eeg, epoch_len=1000)
+eeg1 = epoch(eeg, ep_len=1000)
 erp!(eeg1)
 @test size(eeg1.data) == (19, 1000, 1)
 
-eeg10 = epoch(eeg, epoch_n=10)
+eeg10 = epoch(eeg, ep_n=10)
 eeg1 = extract_epoch(eeg, epoch=1)
 @test size(eeg1.data) == (19, 309760, 1)
 
@@ -106,21 +106,20 @@ f, s = dft(eeg)
 m, _, _, _ = msci95(eeg)
 @test size(m) == (1, 309760)
 
-m, _, _, _ = mean(eeg, eeg)
+m, _, _, _ = msci95(eeg, eeg)
 @test m == zeros(1, 309760)
 
 s, ss, p = difference(eeg, eeg)
 @test p == [1.0]
 
-eeg1 = filter(eeg, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
+eeg1 = NeuroAnalyzer.filter(eeg, fprototype=:butterworth, ftype=:lp, cutoff=2, order=8)
 @test size(eeg1.data) == (19, 309760, 1)
-eeg1 = filter(eeg, fprototype=:mavg, order=10)
+eeg1 = NeuroAnalyzer.filter(eeg, fprototype=:mavg, order=10)
 @test size(eeg1.data) == (19, 309760, 1)
-eeg1 = filter(eeg, fprototype=:mmed, order=10)
-@test size(eeg1.data) == (19, 309760, 1)
+eeg1 = NeuroAnalyzer.filter(eeg, fprototype=:mmed, order=10)
 @test size(eeg1.data) == (19, 309760, 1)
 
-eeg1 = downsample(eeg, new_sr=128)
+eeg1 = NeuroAnalyzer.downsample(eeg, new_sr=128)
 @test size(eeg1.data) == (19, 154880, 1)
 
 acov_m, _ = acov(eeg)
@@ -143,9 +142,9 @@ p = stationarity(eeg, window=10000, method=:cov)
 e = trim(eeg, segment=(10 * sr(eeg), 20 * sr(eeg)), remove_epochs=false)
 @test signal_len(e) == 307199
 
-m = mi(eeg)
+m = mutual_information(eeg)
 @test size(m) == (19, 19, 1)
-m = mi(eeg, eeg)
+m = mutual_information(eeg, eeg)
 @test size(m) == (19, 19, 1)
 
 e = entropy(eeg)
@@ -153,7 +152,7 @@ e = entropy(eeg)
 e = negentropy(eeg)
 @test size(e) == (19, 1)
 
-a = band(eeg, band=:alpha)
+a = band_frq(eeg, band=:alpha)
 @test a == (8, 13)
 
 c, msc, ic = tcoherence(eeg, eeg)
@@ -163,42 +162,42 @@ hz, nyq = freqs(eeg)
 @test nyq == 128.0
 @test length(hz) == 154880
 
-e10 = epoch(eeg, epoch_len=2560)
+e10 = epoch(eeg, ep_len=2560)
 s_conv = fconv(e10, kernel=generate_window(:hann, 256))
 @test size(s_conv) == (19, 2560, 121)
 s_conv = tconv(e10, kernel=generate_window(:hann, 256))
 @test size(s_conv) == (19, 2560, 121)
 
-p, v, m, pca = pca(eeg, n=2)
+p, v, m, pc_model = pca(eeg, n=2)
 @test size(p) == (2, 309760, 1)
 @test size(v) == (2, 1)
 e1 = add_component(eeg, c=:pc, v=p)
-add_component!(e1, c=:pca, v=pca)
+add_component!(e1, c=:pc_model, v=pc_model)
 e2 = pca_reconstruct(e1)
-e2 = pca_reconstruct(eeg, p, pca)
+e2 = pca_reconstruct(eeg, p, pc_model)
 @test size(e2.data) == (19, 309760, 1)
 
-e = edit_header(eeg, field=:patient, value="unknown")
-@test e.header[:patient] == "unknown"
+eeg.header.subject[:subject_last_name] = "unknown"
+@test eeg.header.subject[:subject_last_name] == "unknown"
 
-e = epoch(eeg, epoch_n=10)
+e = epoch(eeg, ep_n=10)
 e9 = delete_epoch(e, epoch=10)
 @test size(e9.data) == (19, 30976, 9)
 e1 = keep_epoch(e, epoch=1)
 @test size(e1.data) == (19, 30976, 1)
 
-@test length(channel_pick(eeg, pick=:left)) == 8
+@test length(pick(eeg, p=:left)) == 8
 
-e = epoch(eeg, epoch_len=20*256)
+e = epoch(eeg, ep_len=20*256)
 v = epoch_stats(e)
 @test length(v) == 10
 
-e = epoch(eeg, epoch_len=20)
+e = epoch(eeg, ep_len=20)
 erp!(e)
 i, _ = ica(e, n=5, tol=1.0)
 @test size(i) == (5, 20, 1)
 
-e = copy(eeg)
+e = deepcopy(eeg)
 e_stats = epoch_stats(e)
 @test length(e_stats) == (10)
 add_component!(e, c=:epochs_mean, v=e_stats[1])
@@ -216,7 +215,7 @@ reset_components!(e)
 c = list_component(e)
 @test size(c) == (0, )
 
-e = epoch(eeg, epoch_len=2560)
+e = epoch(eeg, ep_len=2560)
 erp!(e)
 p, f, t = spectrogram(e)
 @test size(p) == (1281, 37, 19, 1)
@@ -234,12 +233,12 @@ p, f, t = spectrogram(e, method=:cwt)
 f, a, p, ph = spectrum(e)
 @test size(p) == (19, 1280, 1)
 
-e = copy(eeg)
+e = deepcopy(eeg)
 i, iw = ica(e, tol=1.0, n=10)
-add_component!(e, c=:ica, v=i)
-add_component!(e, c=:ica_mw, v=iw)
+add_component!(e, c=:ic, v=i)
+add_component!(e, c=:ic_mw, v=iw)
 @test size(e.components[1]) == (10, 309760, 1)
-e2 = ica_reconstruct(e, ic=1)
+e2 = ica_reconstruct(e, ic_idx=1)
 @test size(e2.data) == (19, 309760, 1)
 
 b = detect_bad(eeg)
@@ -255,14 +254,14 @@ keep_channel_type!(e, type=:eeg)
 @test size(e.data) == (18, 309760, 1)
 
 e = invert_polarity(eeg, channel=1)
-@test e.data[1, 1, 1] == -obj.data[1, 1, 1]
+@test e.data[1, 1, 1] == -eeg.data[1, 1, 1]
 
 v = channel_stats(eeg)
 @test length(v) == 10
 
 eeg = import_edf("eeg-test-edf.edf")
 delete_channel!(eeg, channel=20:24)
-load_electrodes!(eeg, file_name="../locs/standard-10-20-cap19-elmiko.ced")
+load_locs!(eeg, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 
 s, h = snr(e10)
 @test size(s) == (19, 1280)
@@ -273,7 +272,7 @@ s, _ = standardize(eeg)
 eeg1 = epoch_time(eeg, ts=-10.0)
 eeg1.epoch_time[1, 1] == -10.0
 
-e10 = epoch(eeg, epoch_len=10*256)
+e10 = epoch(eeg, ep_len=10*256)
 @test size(tenv(e10)[1]) == (19, 2560, 121)
 @test size(tenv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(tenv_median(e10, dims=1)[1]) == (2560, 121)
@@ -283,7 +282,7 @@ e10 = epoch(eeg, epoch_len=10*256)
 @test size(senv(e10)[1]) == (19, 37, 121)
 @test size(senv_mean(e10, dims=1)[1]) == (37, 121)
 @test size(senv_median(e10, dims=1)[1]) == (37, 121)
-@test size(wdenoise(eeg, wt=wavelet(WT.haar)).data) == (19, 309760, 1)
+@test size(denoise_wavelet(eeg, wt=wavelet(WT.haar)).data) == (19, 309760, 1)
 @test length(ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
 @test length(itpc(e10, channel=1, t=12)) == 4
 @test length(pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
@@ -291,10 +290,10 @@ e10 = epoch(eeg, epoch_len=10*256)
 @test size(ispc(e10)) == (19, 19, 121)
 @test length(ec(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
 @test length(ged(eeg, eeg)) == 3
-@test size(frqinst(eeg)) == size(obj.data)
+@test size(frqinst(eeg)) == size(eeg.data)
 @test size(fftdenoise(eeg).data) == (19, 309760, 1)
 @test size(tkeo(eeg)) == (19, 309760, 1)
-@test length(mwpsd(eeg, frq_lim=(0, 20), frq_n=21)) == 2
+@test length(psd_mw(eeg, frq_lim=(0, 20), frq_n=21)) == 2
 
 c, msc, f = fcoherence(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(c) == 262145
@@ -310,18 +309,18 @@ eeg1 = add_note(eeg, note="test")
 delete_note!(eeg1)
 @test view_note(eeg1) == ""
 
-eeg1 = epoch(eeg, epoch_len=2560)
-new_channel = zeros(1, epoch_len(eeg1), epoch_n(eeg1))
+eeg1 = epoch(eeg, ep_len=2560)
+new_channel = zeros(1, ep_len(eeg1), epoch_n(eeg1))
 eeg1 = replace_channel(eeg1, channel=1, signal=new_channel);
-@test eeg1.data[1, :, :] == zeros(epoch_len(eeg1), epoch_n(eeg1))
+@test eeg1.data[1, :, :] == zeros(ep_len(eeg1), epoch_n(eeg1))
 eeg2 = plinterpolate_channel(eeg1, channel=1, epoch=1)
-@test eeg2.data[1, :, 1] != zeros(epoch_len(eeg1))
+@test eeg2.data[1, :, 1] != zeros(ep_len(eeg1))
 
-eeg1 = epoch(eeg, epoch_len=2560);
-new_channel = zeros(1, epoch_len(eeg1), 1)
-eeg1.data[1, :, 1] = zeros(epoch_len(eeg1))
+eeg1 = epoch(eeg, ep_len=2560);
+new_channel = zeros(1, ep_len(eeg1), 1)
+eeg1.data[1, :, 1] = zeros(ep_len(eeg1))
 eeg2 = lrinterpolate_channel(eeg1, channel=1, epoch=1);
-@test eeg2.data[1, :, 1] != zeros(epoch_len(eeg1))
+@test eeg2.data[1, :, 1] != zeros(ep_len(eeg1))
 
 @test length(band_mpower(eeg, f=(1,4))) == 3
 
@@ -376,7 +375,7 @@ add_marker!(e1, id="1", start=4000, len=1, desc="test")
 add_marker!(e1, id="1", start=5000, len=1, desc="test")
 e2 = trim(e1, segment=(1, 400), remove_epochs=false)
 @test e2.markers[1, :start] == 600
-e2 = epoch(e1, epoch_len=200)
+e2 = epoch(e1, ep_len=200)
 delete_epoch!(e2, epoch=1)
 @test e2.markers[1, :start] == 800
 
@@ -390,10 +389,10 @@ b = bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
 
 r = reflect(eeg)
 c = chop(r)
-@test size(obj.data) == size(c.data)
+@test size(eeg.data) == size(c.data)
 
-@test size(extract_data(eeg, channel=1:channel_n(eeg))) == size(obj.data)
-@test length(extract_time(eeg)) == length(obj.time_pts)
-@test length(extract_etime(eeg)) == length(obj.epoch_time)
+@test size(extract_data(eeg, channel=1:channel_n(eeg))) == size(eeg.data)
+@test length(extract_time(eeg)) == length(eeg.time_pts)
+@test length(extract_etime(eeg)) == length(eeg.epoch_time)
 
 true

@@ -20,13 +20,13 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)
     f = lowercase(f)
     clabels = lowercase.(labels(obj))
     vc = zeros(1, epoch_len(obj), ep_n)
-    Threads.@threads for epoch_idx in 1:ep_n
+    Threads.@threads for ep_idx in 1:ep_n
         f_tmp = f
-        @inbounds for channel_idx in eachindex(clabels)
-            occursin(clabels[channel_idx], f) == true && (f_tmp = replace(f_tmp, clabels[channel_idx] => "$(obj.data[channel_idx, :, epoch_idx])"))
+        @inbounds for ch_idx in eachindex(clabels)
+            occursin(clabels[ch_idx], f) == true && (f_tmp = replace(f_tmp, clabels[ch_idx] => "$(obj.data[ch_idx, :, ep_idx])"))
         end
         try
-            @inbounds vc[1, :, epoch_idx] = eval(Meta.parse("@. " * f_tmp))
+            @inbounds vc[1, :, ep_idx] = eval(Meta.parse("@. " * f_tmp))
         catch
             @error "Formula is incorrect, check channel labels and operators."
         end

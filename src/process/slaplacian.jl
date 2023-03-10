@@ -85,14 +85,14 @@ function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64
     GsinvS = sum(inv(Gs))
 
     obj_new = deepcopy(obj)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        data = @views obj.data[channels, :, epoch_idx]
+    @inbounds @simd for ep_idx in 1:ep_n
+        data = @views obj.data[channels, :, ep_idx]
         # dataGs = data[channels, :]' / Gs
         dataGs = Gs / data'
         # C = dataGs .- (sum(dataGs,dims=2)/sum(GsinvS))*GsinvS
         C = data .- (sum(dataGs, dims=2) / sum(GsinvS)) * GsinvS
         # compute surface Laplacian
-        obj_new.data[channels, :, epoch_idx] = (C'*H)'
+        obj_new.data[channels, :, ep_idx] = (C'*H)'
     end
 
     reset_components!(obj_new)

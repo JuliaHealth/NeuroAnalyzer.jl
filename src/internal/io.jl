@@ -4,8 +4,8 @@ function _has_markers(channel_types::Vector{String})
     if "mrk" in channel_types
         markers = true
         markers_channel = nothing
-        for channel_idx in eachindex(channel_types)
-            channel_types[channel_idx] == "mrk" && (markers_channel = channel_idx)
+        for ch_idx in eachindex(channel_types)
+            channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx)
         end
     end
     return markers, markers_channel

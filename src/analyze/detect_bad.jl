@@ -48,81 +48,81 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     bad_epochs = Vector{Int64}()
 
     if :flat in method
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
-            Threads.@threads for channel_idx in 1:ch_n
-                r = @views detect_channel_flat(signal[channel[channel_idx], :, epoch_idx], w=w, tol=ftol)
+            Threads.@threads for ch_idx in 1:ch_n
+                r = @views detect_channel_flat(signal[channel[ch_idx], :, ep_idx], w=w, tol=ftol)
                 if r > fr
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
     
     if :rmse in method
-        @inbounds @simd for epoch_idx in 1:ep_n
-            ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
+        @inbounds @simd for ep_idx in 1:ep_n
+            ch_m = @views vec(median(signal[channel, :, ep_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
 
             rmse_ch = zeros(ch_n)
-            Threads.@threads for channel_idx in 1:ch_n
-                rmse_ch[channel_idx] = @views rmse(signal[channel[channel_idx], :, epoch_idx], ch_m)
+            Threads.@threads for ch_idx in 1:ch_n
+                rmse_ch[ch_idx] = @views rmse(signal[channel[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:ch_n
-                if rmse_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] || rmse_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2]
+            Threads.@threads for ch_idx in 1:ch_n
+                if rmse_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmse_ch))[1] || rmse_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmse_ch))[2]
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
 
     if :rmsd in method
-        @inbounds @simd for epoch_idx in 1:ep_n
-            ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
+        @inbounds @simd for ep_idx in 1:ep_n
+            ch_m = @views vec(median(signal[channel, :, ep_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
 
             rmsd_ch = zeros(ch_n)
-            Threads.@threads for channel_idx in 1:ch_n
-                rmsd_ch[channel_idx] = @views Distances.rmsd(signal[channel[channel_idx], :, epoch_idx], ch_m)
+            Threads.@threads for ch_idx in 1:ch_n
+                rmsd_ch[ch_idx] = @views Distances.rmsd(signal[channel[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:ch_n
-                if rmsd_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] || rmsd_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2]
+            Threads.@threads for ch_idx in 1:ch_n
+                if rmsd_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(rmsd_ch))[1] || rmsd_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(rmsd_ch))[2]
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
 
     if :euclid in method
-        @inbounds @simd for epoch_idx in 1:ep_n
-            ch_m = @views vec(median(signal[channel, :, epoch_idx], dims=1))
+        @inbounds @simd for ep_idx in 1:ep_n
+            ch_m = @views vec(median(signal[channel, :, ep_idx], dims=1))
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
 
             ed_ch = zeros(ch_n)
-            Threads.@threads for channel_idx in 1:ch_n
-                ed_ch[channel_idx] = @views Distances.euclidean(signal[channel[channel_idx], :, epoch_idx], ch_m)
+            Threads.@threads for ch_idx in 1:ch_n
+                ed_ch[ch_idx] = @views Distances.euclidean(signal[channel[ch_idx], :, ep_idx], ch_m)
             end
-            Threads.@threads for channel_idx in 1:ch_n
-                if ed_ch[channel_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] || ed_ch[channel_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2]
+            Threads.@threads for ch_idx in 1:ch_n
+                if ed_ch[ch_idx] < HypothesisTests.confint(OneSampleTTest(ed_ch))[1] || ed_ch[ch_idx] > HypothesisTests.confint(OneSampleTTest(ed_ch))[2]
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
 
@@ -133,49 +133,49 @@ function detect_bad(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
         # variance outliers
         o = reshape(outlier_detect(vec(s_v), method=:iqr), ch_n, ep_n)
 
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
-            ch_v = @views vec(var(signal[channel, :, epoch_idx], dims=2))
+            ch_v = @views vec(var(signal[channel, :, ep_idx], dims=2))
             s_mv = vcat(s_mv, ch_v)
-            Threads.@threads for channel_idx in 1:ch_n
-                #if ch_v[channel_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[channel_idx, epoch_idx]
-                if o[channel_idx, epoch_idx]
+            Threads.@threads for ch_idx in 1:ch_n
+                #if ch_v[ch_idx] > HypothesisTests.confint(OneSampleTTest(s_mv))[2] || o[ch_idx, ep_idx]
+                if o[ch_idx, ep_idx]
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            [bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true) for channel_idx in 1:ch_n]
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            [bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true) for ch_idx in 1:ch_n]
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
 
     if :p2p in method
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             bad_channels_score = 0
             bad_channels = zeros(Bool, ch_n)
-            Threads.@threads for channel_idx in 1:ch_n
+            Threads.@threads for ch_idx in 1:ch_n
                 s = Vector{Float64}()
-                for length_idx in 1:w:(length(signal[channel[channel_idx], :, epoch_idx]) - w)
-                    @views push!(s, median(signal[channel[channel_idx], length_idx:(length_idx + w), epoch_idx]))
+                for length_idx in 1:w:(length(signal[channel[ch_idx], :, ep_idx]) - w)
+                    @views push!(s, median(signal[channel[ch_idx], length_idx:(length_idx + w), ep_idx]))
                 end
                 p2p = @views round.(diff(s), digits=-2)
-                s_m = @views mean(signal[channel[channel_idx], :, epoch_idx])
-                s_s = @views std(signal[channel[channel_idx], :, epoch_idx])
-                s_u = s_m + quantile.(Normal(), p) * s_s
-                s_l = s_m - quantile.(Normal(), p) * s_s
+                s_m = @views mean(signal[channel[ch_idx], :, ep_idx])
+                s_s = @views std(signal[channel[ch_idx], :, ep_idx])
+                s_u = s_m + quantile.(Distributions.Normal(), p) * s_s
+                s_l = s_m - quantile.(Distributions.Normal(), p) * s_s
                 p2p_p = zeros(Bool, length(p2p))
                 p2p_p[p2p .> s_u] .= true
                 p2p_p[p2p .< s_l] .= true
                 if sum(p2p_p) > 0
                     bad_channels_score += 1
-                    bad_channels[channel_idx] = true
+                    bad_channels[ch_idx] = true
                 end
             end
-            for channel_idx in 1:ch_n
-                bad_channels[channel_idx] == true && (bad_m[channel_idx, epoch_idx] = true)
+            for ch_idx in 1:ch_n
+                bad_channels[ch_idx] == true && (bad_m[ch_idx, ep_idx] = true)
             end 
-            (bad_channels_score / ch_n) > tc && push!(bad_epochs, epoch_idx)
+            (bad_channels_score / ch_n) > tc && push!(bad_epochs, ep_idx)
         end
     end
 

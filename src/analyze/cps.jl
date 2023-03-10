@@ -57,7 +57,7 @@ function cps(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
 
     fs = sr(obj)
     
-    cps_pw_tmp, cps_ph_tmp, cps_fq = @views s2_cps(obj.data[1, :, 1], obj.data[1, :, 1], fs=fs)
+    cps_pw_tmp, cps_ph_tmp, cps_fq = @views cps(obj.data[1, :, 1], obj.data[1, :, 1], fs=fs)
     cps_pw = zeros(ch_n, ch_n, length(cps_pw_tmp), ep_n)
     cps_ph = zeros(ch_n, ch_n, length(cps_ph_tmp), ep_n)
 
@@ -127,7 +127,7 @@ function cps(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     ch_n = length(channel1)
     fs = sr(obj1)
 
-    cps_pw, cps_ph, cps_fq = @views s2_cps(obj1.data[1, :, 1], obj2.data[1, :, 1], fs=fs, norm=norm)
+    cps_pw, cps_ph, cps_fq = @views cps(obj1.data[1, :, 1], obj2.data[1, :, 1], fs=fs, norm=norm)
 
     cps_pw = zeros(ch_n, length(cps_pw), ep_n)
     cps_ph = zeros(ch_n, length(cps_ph), ep_n)

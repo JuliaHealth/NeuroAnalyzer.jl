@@ -1,8 +1,8 @@
-export dwt
-export idwt
+export dw_trans
+export idw_trans
 
 """
-    dwt(signal; wt, type, l)
+    dw_trans(signal; wt, type, l)
 
 Perform discrete wavelet transformation (DWT).
 
@@ -17,7 +17,7 @@ Perform discrete wavelet transformation (DWT).
 
 - `dwt_c::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     l < 0 && throw(ArgumentError("l must be > 0."))
@@ -44,7 +44,7 @@ function dwt(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <
 end
 
 """
-    idwt(dwt_coefs; wt, type)
+    idw_trans(dwt_coefs; wt, type)
 
 Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
@@ -58,7 +58,7 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
 - `signal::Vector{Float64}`: reconstructed signal
 """
-function idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
+function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
     
     _check_var(type, [:sdwt, :acdwt], "type")
 
@@ -77,7 +77,7 @@ function idwt(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: Discret
 end
 
 """
-    dwt(obj; channel, wt, type, l)
+    dw_trans(obj; channel, wt, type, l)
 
 Perform discrete wavelet transformation (DWT).
 
@@ -95,7 +95,7 @@ Perform discrete wavelet transformation (DWT).
  
 - `dwt_c::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dwt(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
 
     if l == 0
         l = maxtransformlevels(obj.data[1, :, 1])

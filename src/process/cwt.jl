@@ -1,8 +1,8 @@
-export cwt
-export icwt
+export cw_trans
+export icw_trans
 
 """
-    cwt(signal; wt, type, l)
+    cw_trans(signal; wt, type, l)
 
 Perform continuous wavelet transformation (CWT).
 
@@ -15,7 +15,7 @@ Perform continuous wavelet transformation (CWT).
 
 - `cwt_c::Array{Float64, 2}`: CWT coefficients (by rows)
 """
-function cwt(signal::AbstractVector; wt::T) where {T <: CWT}
+function cw_trans(signal::AbstractVector; wt::T) where {T <: CWT}
     cwt_coefs = abs.(ContinuousWavelets.cwt(signal, wt))
     cwt_c = zeros(size(cwt_coefs, 2), size(cwt_coefs, 1))
     for idx in 1:size(cwt_coefs, 2)
@@ -25,7 +25,7 @@ function cwt(signal::AbstractVector; wt::T) where {T <: CWT}
 end
 
 """
-    icwt(dwt_coefs; wt, type)
+    icw_trans(dwt_coefs; wt, type)
 
 Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 
@@ -42,7 +42,7 @@ Perform inverse continuous wavelet transformation (iCWT) of the `dwt_coefs`.
 
 - `signal::Vector{Float64}`: reconstructed signal
 """
-function icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
+function icw_trans(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
 
     _check_var(type, [:nd, :pd, :df], "type")
 
@@ -57,7 +57,7 @@ function icwt(cwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: CWT}
 end
 
 """
-    cwt(obj; channel, wt)
+    cw_trans(obj; channel, wt)
 
 Perform continuous wavelet transformation (CWT).
 
@@ -71,7 +71,7 @@ Perform continuous wavelet transformation (CWT).
  
 - `cwt_c::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cwt(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), wt::T) where {T <: CWT}
+function cw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), wt::T) where {T <: CWT}
 
     _check_channels(obj, channel)
     ch_n = length(channel)

@@ -127,14 +127,14 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     gradiometers_planar = Vector{Int64}()
     gradiometers_axial = Vector{Int64}()
     magnetometers = Vector{Int64}()
-    for channel_idx in 1:ch_n
-        push!(clabels, string(channel_idx))
-        coils[channel_idx] in [2001, 3011, 3012, 3013, 3014, 4002] && push!(gradiometers, channel_idx)
-        coils[channel_idx] in [3011, 3012, 3013, 3014] && push!(gradiometers_planar, channel_idx)
-        coils[channel_idx] in [2001, 5001] && push!(gradiometers_axial, channel_idx)
-        coils[channel_idx] in [2000, 3021, 3022, 3023, 3024, 4001] && push!(magnetometers, channel_idx)
-        coils[channel_idx] in [2001, 3011, 3012, 3013, 3014, 4002] && (channel_type[channel_idx] = "grad")
-        coils[channel_idx] in [2000, 3021, 3022, 3023, 3024, 4001] && (channel_type[channel_idx] = "mag")
+    for ch_idx in 1:ch_n
+        push!(clabels, string(ch_idx))
+        coils[ch_idx] in [2001, 3011, 3012, 3013, 3014, 4002] && push!(gradiometers, ch_idx)
+        coils[ch_idx] in [3011, 3012, 3013, 3014] && push!(gradiometers_planar, ch_idx)
+        coils[ch_idx] in [2001, 5001] && push!(gradiometers_axial, ch_idx)
+        coils[ch_idx] in [2000, 3021, 3022, 3023, 3024, 4001] && push!(magnetometers, ch_idx)
+        coils[ch_idx] in [2001, 3011, 3012, 3013, 3014, 4002] && (channel_type[ch_idx] = "grad")
+        coils[ch_idx] in [2000, 3021, 3022, 3023, 3024, 4001] && (channel_type[ch_idx] = "mag")
     end
 
     # # events
@@ -175,14 +175,14 @@ function import_fiff(file_name::String; detect_type::Bool=true)
         data = hcat(data, Float64.(reshape(data_buffer[idx1], ch_n, length(data_buffer[idx1]) ÷ ch_n)))
     end
     data = data .* range .* cal
-    # for channel_idx in 1:ch_n
-    #     if units[channel_idx] == "T"
-    #          data[channel_idx, :, :] = data[channel_idx, :, :] .* 10^15
-    #          units[channel_idx] = "fT"
+    # for ch_idx in 1:ch_n
+    #     if units[ch_idx] == "T"
+    #          data[ch_idx, :, :] = data[ch_idx, :, :] .* 10^15
+    #          units[ch_idx] = "fT"
     #     end
-    #     if units[channel_idx] == "T/m"
-    #          data[channel_idx, :, :] = data[channel_idx, :, :] .* (10^15 / 100)
-    #          units[channel_idx] = "fT/cm"
+    #     if units[ch_idx] == "T/m"
+    #          data[ch_idx, :, :] = data[ch_idx, :, :] .* (10^15 / 100)
+    #          units[ch_idx] = "fT/cm"
     #     end
     # end
     data = reshape(data, size(data, 1), size(data, 2), 1)

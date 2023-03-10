@@ -1,4 +1,4 @@
-function _get_channel_idx(clabels::Vector{String}, channel::Union{String, Int64})
+function _get_ch_idx(clabels::Vector{String}, channel::Union{String, Int64})
     if typeof(channel) == String
         channel_found = nothing
         for idx in eachindex(clabels)

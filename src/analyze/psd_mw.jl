@@ -97,8 +97,8 @@ function psd_mw(signal::Matrix{Float64}; pad::Int64=0, norm::Bool=true, frq_lim:
     w_powers = zeros(ch_n, length(frq_list))
     frq_list = zeros(length(frq_list))
 
-    Threads.@threads for channel_idx in 1:ch_n
-        @inbounds w_powers[channel_idx, :], frq_list = @views psd_mw(signal[channel_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
+    Threads.@threads for ch_idx in 1:ch_n
+        @inbounds w_powers[ch_idx, :], frq_list = @views psd_mw(signal[ch_idx, :], pad=pad, norm=false, frq_lim=frq_lim, frq_n=frq_n, frq=frq, fs=fs, ncyc=ncyc)
     end
 
     norm == true && (w_powers = pow2db.(w_powers))

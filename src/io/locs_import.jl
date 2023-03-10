@@ -472,7 +472,7 @@ function locs_import_mat(file_name::String)
     x = dataset["Cpos"][1, :]
     y = dataset["Cpos"][2, :]
     r = dataset["Rxy"]    
-    channel_n = length(x)
+    ch_n = length(x)
     clabels = dataset["Cnames"][1:channel_n]
 
     # x, y, z positions must be within -1..+1

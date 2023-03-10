@@ -25,7 +25,7 @@ Edit electrode.
 function edit_locs(obj::NeuroAnalyzer.NEURO; channel::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
     obj_new = deepcopy(obj)
-    channel = _get_channel_idx(labels(obj_new), channel)
+    channel = _get_ch_idx(labels(obj_new), channel)
 
     name != "" && rename_channel!(obj_new, channel=channel, name=name)
     type != "" && channel_type!(obj_new, channel=channel, type=type)

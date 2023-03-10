@@ -18,7 +18,7 @@ Named tuple containing:
 - `msc::Vector{Float64}`: magnitude-squares coherence
 - `ic::Vector{Float64}`: imaginary part of coherence
 """
-function s2_tcoherence(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0)
+function tcoherence(signal1::AbstractVector, signal2::AbstractVector; pad::Int64=0)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must have the same length."))
 
@@ -74,7 +74,7 @@ function tcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channe
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views s2_tcoherence(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], pad=pad)
+            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], ic[ch_idx, :, ep_idx] = @views tcoherence(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], pad=pad)
         end
     end
 

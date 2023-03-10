@@ -61,7 +61,7 @@ function ispc(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                ispc_m[ch_idx1, ch_idx2, ep_idx], _, _, _, _, _ = @views s2_ispc(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
+                ispc_m[ch_idx1, ch_idx2, ep_idx], _, _, _, _, _ = @views ispc(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
             end
         end
 
@@ -122,7 +122,7 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ispc_value[ch_idx, ep_idx], ispc_angle[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views s2_ispc(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]])
+            ispc_value[ch_idx, ep_idx], ispc_angle[ch_idx, ep_idx], signal_diff[ch_idx, :, ep_idx], phase_diff[ch_idx, :, ep_idx], s1_phase[ch_idx, :, ep_idx], s2_phase[ch_idx, :, ep_idx] = @views ispc(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]])
         end
     end
 

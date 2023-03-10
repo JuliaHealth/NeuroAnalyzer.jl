@@ -3,7 +3,6 @@ export channel_type!
 export get_channel
 export rename_channel
 export rename_channel!
-export extract_channel
 export edit_channel
 export edit_channel!
 export replace_channel
@@ -89,23 +88,23 @@ Return channel number (if provided by name) or name (if provided by number).
 
 # Returns
 
-- `channel_idx::Union{Int64, String}`: channel number or name
+- `ch_idx::Union{Int64, String}`: channel number or name
 """
 function get_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
 
     clabels = labels(obj)
     if typeof(channel) == String
         # get channel by name
-        channel_idx = nothing
+        ch_idx = nothing
         for idx in eachindex(clabels)
             if lowercase(channel) == lowercase(clabels[idx])
-                channel_idx = idx
+                ch_idx = idx
             end
         end
-        if channel_idx === nothing
+        if ch_idx === nothing
             throw(ArgumentError("Channel name ($channel) does not match signal labels."))
         end
-        return channel_idx
+        return ch_idx
     else
         # get channel by number
         _check_channels(obj, channel)
@@ -180,44 +179,6 @@ function rename_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}
 end
 
 """
-    extract_channel(obj; channel)
-
-Extract channel data.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, String}`: channel number or name
-
-# Returns
-
-- `channel::Vector{Float64}`
-"""
-function extract_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
-
-    clabels = labels(obj)
-    if typeof(channel) == String
-        # get channel by name
-        channel_idx = nothing
-        for idx in eachindex(clabels)
-            if channel == clabels[idx]
-                channel_idx = idx
-            end
-        end
-        if channel_idx === nothing
-            throw(ArgumentError("Channel name ($channel )does not match channel labels."))
-        end
-    else
-        # get channel by number
-        _check_channels(obj, channel)
-        channel_idx = channel
-    end    
-    channel = reshape(obj.data[channel_idx, :, :], 1, epoch_len(obj), epoch_n(obj))
-
-    return channel
-end
-
-"""
     edit_channel(obj; channel, field, value)
 
 Edit channel properties.
@@ -286,23 +247,23 @@ Replace channel.
 """
 function replace_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, signal::Array{Float64, 3})
 
-    channel_idx = nothing
+    ch_idx = nothing
     clabels = labels(obj)
     if typeof(channel) == String
         for idx in eachindex(clabels)
             if channel == clabels[idx]
-                channel_idx = idx
+                ch_idx = idx
             end
         end
-        channel_idx === nothing && throw(ArgumentError("Channel name ($channel) does not match signal labels."))
+        ch_idx === nothing && throw(ArgumentError("Channel name ($channel) does not match signal labels."))
     else
         _check_channels(obj, channel)
-        channel_idx = channel
+        ch_idx = channel
     end
 
     obj_new = deepcopy(obj)
-    size(signal) == (1, epoch_len(obj_new), epoch_n(obj_new)) || throw(ArgumentError("signal size ($(size(signal))) must be the same as channel size ($(size(obj_new.data[channel_idx, :, :]))."))
-    obj_new.data[channel_idx, :, :] = signal
+    size(signal) == (1, epoch_len(obj_new), epoch_n(obj_new)) || throw(ArgumentError("signal size ($(size(signal))) must be the same as channel size ($(size(obj_new.data[ch_idx, :, :]))."))
+    obj_new.data[ch_idx, :, :] = signal
     reset_components!(obj_new)
 
     # add entry to :history field

@@ -2,7 +2,7 @@ export itpc
 export itpc_s
 
 """
-    s_itpc(signal; t)
+    itpc(signal; t)
 
 Calculate ITPC (Inter-Trial-Phase Clustering) at sample number `t` over epochs/trials.
 
@@ -20,7 +20,7 @@ Named tuple containing:
 - `itpc_angle::Float64`: ITPC angle
 - `itpc_phases::Vector{Float64}`: phases at time `t` averaged across trials/epochs
 """
-function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
+function itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothing}=nothing)
 
     t < 1 && throw(ArgumentError("t must be ≥ 1."))
     t > size(signal, 2) && throw(ArgumentError("t must be ≤ $(size(signal, 2))."))
@@ -33,8 +33,8 @@ function s_itpc(signal::AbstractArray; t::Int64, w::Union{AbstractVector, Nothin
     length(w) == ep_n || throw(ArgumentError("Length of w should be equal to number of epochs ($ep_n)."))
     
     s_phase = zeros(size(signal, 2), ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
-        _, _, _, s_phase[:, epoch_idx] = @views s_hspectrum(signal[1, :, epoch_idx])
+    @inbounds @simd for ep_idx in 1:ep_n
+        _, _, _, s_phase[:, ep_idx] = @views hspectrum(signal[1, :, ep_idx])
     end
  
     itpc_phases = @view s_phase[t, :]
@@ -80,7 +80,7 @@ function itpc(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
     itpc_phases = zeros(ch_n, ep_n)
 
     Threads.@threads for ch_idx in 1:ch_n
-        @inbounds itpc_value[ch_idx], itpcz[ch_idx], itpc_angle[ch_idx], itpc_phases[ch_idx, :] = @views s_itpc(reshape(obj.data[channel[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
+        @inbounds itpc_value[ch_idx], itpcz[ch_idx], itpc_angle[ch_idx], itpc_phases[ch_idx, :] = @views itpc(reshape(obj.data[channel[ch_idx], :, :], 1, :, ep_n), t=t, w=w)
     end
     return (itpc_value=itpc_value, itpcz=itpcz, itpc_angle=itpc_angle, itpc_phases=itpc_phases)
 end

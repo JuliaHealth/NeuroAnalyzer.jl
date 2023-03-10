@@ -24,19 +24,19 @@ function band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt:
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
     f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
     if mt == true
-        psd = mt_pgram(signal, fs=fs)
+        p = mt_pgram(signal, fs=fs)
     else
-        psd = welch_pgram(signal, 4*fs, fs=fs)
+        p = welch_pgram(signal, 4*fs, fs=fs)
     end
 
-    psd_freq = Vector(psd.freq)
+    psd_freq = Vector(p.freq)
     f1_idx = vsearch(f[1], psd_freq)
     f2_idx = vsearch(f[2], psd_freq)
     frq_idx = [f1_idx, f2_idx]
 
     # dx: frequency resolution
     dx = psd_freq[2] - psd_freq[1]
-    return simpson(psd.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
+    return simpson(p.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
 
 end
 
@@ -60,11 +60,11 @@ function band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::
 
     ch_n = size(signal, 1)
     ep_n = size(signal, 3)
-    sbp = zeros(channel_n, epoch_n)
+    sbp = zeros(ch_n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            @views sbp[channel_idx, epoch_idx] = band_power(signal[channel_idx, :, epoch_idx], fs=fs, f=f, mt=mt)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            @views sbp[ch_idx, ep_idx] = band_power(signal[ch_idx, :, ep_idx], fs=fs, f=f, mt=mt)
         end
     end
 
@@ -134,7 +134,7 @@ function band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt
     f2_idx = vsearch(f[2], psd_freq)
     mbp = mean(p.power[f1_idx:f2_idx])
     maxfrq = psd_freq[f1_idx:f2_idx][findmax(p.power[f1_idx:f2_idx])[2]]
-    maxbp = psd.power[vsearch(maxfrq, psd_freq)]
+    maxbp = p.power[vsearch(maxfrq, psd_freq)]
 
     return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
 end

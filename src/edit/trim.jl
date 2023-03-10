@@ -22,7 +22,7 @@ function trim(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epo
         obj_new = deepcopy(obj)
         epoch_n(obj) > 1 && (epoch!(obj_new, ep_n=1))
         _check_segment(obj_new, segment[1], segment[2])
-        obj_new.data = s_trim(obj_new.data, segment=segment)
+        obj_new.data = trim(obj_new.data, segment=segment)
         t_trimmed = collect(0:(1 / sr(obj)):(size(obj_new.data, 2) / sr(obj)))[1:(end - 1)]
         obj_new.time_pts = t_trimmed
         obj_new.epoch_time = t_trimmed .+ obj.epoch_time[1]

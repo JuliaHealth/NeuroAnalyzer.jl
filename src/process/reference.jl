@@ -35,20 +35,20 @@ function reference_ch(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
     ch_n = size(signal, 1)
     ep_n = size(signal, 3)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
             if length(channel) == 1
-                reference_channel = @views vec(signal[channel, :, epoch_idx])
-                if channel_idx != channel
-                    @views signal[channel_idx, :, epoch_idx] .-= reference_channel
+                reference_channel = @views vec(signal[channel, :, ep_idx])
+                if ch_idx != channel
+                    @views signal[ch_idx, :, ep_idx] .-= reference_channel
                 end
             else
                 if med == false
-                    reference_channel = @views vec(mean(signal[channel, :, epoch_idx], dims=1))
+                    reference_channel = @views vec(mean(signal[channel, :, ep_idx], dims=1))
                 else
-                    reference_channel = @views vec(median(signal[channel, :, epoch_idx], dims=1))
+                    reference_channel = @views vec(median(signal[channel, :, ep_idx], dims=1))
                 end
-                @views signal[channel_idx, :, epoch_idx] .-= reference_channel
+                @views signal[ch_idx, :, ep_idx] .-= reference_channel
             end
         end
     end
@@ -108,8 +108,8 @@ function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     ch_n = size(signal, 1)
     ep_n = size(signal, 3)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
             channels2exclude = Vector{Int64}()
             if exclude_fpo == true
                 l = lowercase.(labels(obj_new))
@@ -118,14 +118,14 @@ function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
                 "o1" in l && push!(channels2exclude, findfirst(isequal("o1"), l))
                 "o2" in l && push!(channels2exclude, findfirst(isequal("o2"), l))
             end
-            exclude_current == true && push!(channels2exclude, channel_idx)
-            reference_channels = @view signal[setdiff(1:ch_n, unique(channels2exclude)), :, epoch_idx]
+            exclude_current == true && push!(channels2exclude, ch_idx)
+            reference_channels = @view signal[setdiff(1:ch_n, unique(channels2exclude)), :, ep_idx]
             if med == false
                 reference_channel = vec(mean(reference_channels, dims=1))
             else
                 reference_channel = vec(median(reference_channels, dims=1))
             end
-            @views signal[channel_idx, :, epoch_idx] .-= reference_channel
+            @views signal[ch_idx, :, ep_idx] .-= reference_channel
         end
     end
 
@@ -197,62 +197,62 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     s_ref = similar(signal)
 
     if type === :l
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
-            Threads.@threads for channel_idx in 1:ch_n
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+            Threads.@threads for ch_idx in 1:ch_n
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = pick(obj, pick=:central)
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+                reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+                reference_channel = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             end
-            Threads.@threads for channel_idx in central_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+            Threads.@threads for ch_idx in central_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         left_picks = pick(obj, pick=:left)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in left_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(a1[:, :, ep_idx])
+            Threads.@threads for ch_idx in left_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         right_picks = pick(obj, pick=:right)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in right_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(a2[:, :, ep_idx])
+            Threads.@threads for ch_idx in right_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = pick(obj, pick=:central)
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+                reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([a1[:, :, epoch_idx], a2[:, :, epoch_idx]]))
+                reference_channel = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             end
-            Threads.@threads for channel_idx in central_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+            Threads.@threads for ch_idx in central_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         left_picks = pick(obj, pick=:left)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(a2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in left_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(a2[:, :, ep_idx])
+            Threads.@threads for ch_idx in left_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         right_picks = pick(obj, pick=:right)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(a1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in right_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(a1[:, :, ep_idx])
+            Threads.@threads for ch_idx in right_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     end
@@ -328,62 +328,62 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     s_ref = similar(signal)
 
     if type === :l
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
-            Threads.@threads for channel_idx in 1:ch_n
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+            Threads.@threads for ch_idx in 1:ch_n
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     elseif type === :i
         central_picks = pick(obj, pick=:central)
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+                reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+                reference_channel = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             end
-            Threads.@threads for channel_idx in central_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+            Threads.@threads for ch_idx in central_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         left_picks = pick(obj, pick=:left)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in left_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(m1[:, :, ep_idx])
+            Threads.@threads for ch_idx in left_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         right_picks = pick(obj, pick=:right)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in right_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(m2[:, :, ep_idx])
+            Threads.@threads for ch_idx in right_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     elseif type === :c
         central_picks = pick(obj, pick=:central)
-        @inbounds @simd for epoch_idx in 1:ep_n
+        @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+                reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([m1[:, :, epoch_idx], m2[:, :, epoch_idx]]))
+                reference_channel = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             end
-            Threads.@threads for channel_idx in central_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+            Threads.@threads for ch_idx in central_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         left_picks = pick(obj, pick=:left)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(m2[:, :, epoch_idx])
-            Threads.@threads for channel_idx in left_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(m2[:, :, ep_idx])
+            Threads.@threads for ch_idx in left_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
         right_picks = pick(obj, pick=:right)
-        @inbounds @simd for epoch_idx in 1:ep_n
-            reference_channel = @views vec(m1[:, :, epoch_idx])
-            Threads.@threads for channel_idx in right_picks
-                s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+        @inbounds @simd for ep_idx in 1:ep_n
+            reference_channel = @views vec(m1[:, :, ep_idx])
+            Threads.@threads for ch_idx in right_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
             end
         end
     end
@@ -479,9 +479,9 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
 
     s_ref = zeros(size(signal))
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            reference_channels = @view signal[nn_idx[channel_idx, :], :, epoch_idx]
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            reference_channels = @view signal[nn_idx[ch_idx, :], :, ep_idx]
             if weights == false
                 if med == false
                     reference_channel = vec(mean(reference_channels, dims=1))
@@ -491,7 +491,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
             else
                 g = Vector{Float64}()
                 for idx1 in 1:nn
-                    push!(g, 1 / d[channel_idx, nn_idx[channel_idx, idx1]] / sum(1 / d[channel_idx, nn_idx[channel_idx, :]]))
+                    push!(g, 1 / d[ch_idx, nn_idx[ch_idx, idx1]] / sum(1 / d[ch_idx, nn_idx[ch_idx, :]]))
                 end
                 if med == false
                     reference_channel = vec(mean(g .* reference_channels, dims=1))
@@ -499,7 +499,7 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
                     reference_channel = vec(median(g .* reference_channels, dims=1))
                 end
             end
-            s_ref[channel_idx, :, epoch_idx] = @views signal[channel_idx, :, epoch_idx] .- reference_channel
+            s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
         end
     end
 

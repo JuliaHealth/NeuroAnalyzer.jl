@@ -27,11 +27,11 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     ep_n = epoch_n(obj)
     s = zeros(ch_n, epoch_len(obj) + 2 * n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s1 = obj_new.data[:, 1:n, epoch_idx]
-            s2 = obj_new.data[:, end:-1:(end - n + 1), epoch_idx]
-            @views s[channel_idx, :, epoch_idx] = _reflect(obj.data[channel_idx, :, epoch_idx], s1[channel_idx, :], s2[channel_idx, :])
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s1 = obj_new.data[:, 1:n, ep_idx]
+            s2 = obj_new.data[:, end:-1:(end - n + 1), ep_idx]
+            @views s[ch_idx, :, ep_idx] = _reflect(obj.data[ch_idx, :, ep_idx], s1[ch_idx, :], s2[ch_idx, :])
         end
     end
     obj_new.data = s
@@ -97,9 +97,9 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     ep_n = epoch_n(obj)
     s = zeros(ch_n, epoch_len(obj) - 2 * n, ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            @views s[channel_idx, :, epoch_idx] = _chop(obj.data[channel_idx, :, epoch_idx], n)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            @views s[ch_idx, :, ep_idx] = _chop(obj.data[ch_idx, :, ep_idx], n)
         end
     end
     obj_new.data = s

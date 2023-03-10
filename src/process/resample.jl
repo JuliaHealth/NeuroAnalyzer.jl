@@ -67,9 +67,9 @@ function resample(signal::AbstractArray; t::AbstractRange, new_sr::Int64)
     s_resampled = zeros(ch_n, s_resampled_len, ep_n) 
 
     t_resampled = nothing
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            s_resampled[channel_idx, :, epoch_idx], t_resampled = @views resample(signal[channel_idx, :, epoch_idx], t=t, new_sr=new_sr)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            s_resampled[ch_idx, :, ep_idx], t_resampled = @views resample(signal[ch_idx, :, ep_idx], t=t, new_sr=new_sr)
         end
     end
 
@@ -214,9 +214,9 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.epoch_time = linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(s_downsampled, 2))
     obj_new.header.recording[:duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
     obj_new.header.recording[:duration_seconds] = (size(s_downsampled, 2) * size(s_downsampled, 3)) / new_sr
-    obj_new.header[:epoch_duration_samples] = size(s_downsampled, 2)
-    obj_new.header[:epoch_duration_seconds] = size(s_downsampled, 2) / new_sr
-    obj_new.header[:sampling_rate] = new_sr
+    obj_new.header.recording[:epoch_duration_samples] = size(s_downsampled, 2)
+    obj_new.header.recording[:epoch_duration_seconds] = size(s_downsampled, 2) / new_sr
+    obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
     push!(obj_new.header.history, "downsample(OBJ, new_sr=$new_sr)")
 

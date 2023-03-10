@@ -66,8 +66,8 @@ function psd(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=fals
     psd_tmp, psd_frq = psd(signal[1, :], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(ch_n, length(psd_tmp))
 
-    @inbounds @simd for channel_idx in 1:ch_n
-        psd_pow[channel_idx, :], _ = psd(signal[channel_idx, :], fs=fs, norm=norm, mt=mt)
+    @inbounds @simd for ch_idx in 1:ch_n
+        psd_pow[ch_idx, :], _ = psd(signal[ch_idx, :], fs=fs, norm=norm, mt=mt)
     end
     
     return (psd_pow=psd_pow, psd_frq=psd_frq)
@@ -99,9 +99,9 @@ function psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
     psd_tmp, psd_frq = psd(signal[1, :, 1], fs=fs, norm=norm, mt=mt)
     psd_pow = zeros(ch_n, length(psd_tmp), ep_n)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        Threads.@threads for channel_idx in 1:ch_n
-            psd_pow[channel_idx, :, epoch_idx], _ = psd(signal[channel_idx, :, epoch_idx], fs=fs, norm=norm, mt=mt)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            psd_pow[ch_idx, :, ep_idx], _ = psd(signal[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt)
         end
     end
     

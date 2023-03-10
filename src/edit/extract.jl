@@ -1,6 +1,76 @@
+export extract_channel
+export extract_epoch
 export extract_data
 export extract_time
 export extract_etime
+
+"""
+    extract_channel(obj; channel)
+
+Extract channel data.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `channel::Union{Int64, String}`: channel number or name
+
+# Returns
+
+- `extract_channel::Vector{Float64}`
+"""
+function extract_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String})
+
+    clabels = labels(obj)
+    if typeof(channel) == String
+        # get channel by name
+        ch_idx = nothing
+        for idx in eachindex(clabels)
+            if channel == clabels[idx]
+                ch_idx = idx
+            end
+        end
+        if ch_idx === nothing
+            throw(ArgumentError("Channel name ($channel )does not match channel labels."))
+        end
+        return reshape(obj.data[ch_idx, :, :], 1, epoch_len(obj), epoch_n(obj))
+    else
+        # get channel by number
+        _check_channels(obj, channel)
+        return reshape(obj.data[channel, :, :], 1, epoch_len(obj), epoch_n(obj))
+    end    
+end
+
+"""
+    extract_epoch(obj; epoch)
+
+Extract epoch.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `epoch::Int64`: epoch index
+
+# Returns
+
+- `obj::NeuroAnalyzer.NEURO`
+"""
+function extract_epoch(obj::NeuroAnalyzer.NEURO; epoch::Int64)
+
+    _check_epochs(obj, epoch)
+
+    s_new = reshape(obj.data[:, :, epoch], channel_n(obj), signal_len(obj), 1)
+    obj_new = deepcopy(obj)
+    obj_new.data = s_new
+    obj_new.epoch_time = obj.epoch_time
+    obj_new.header.recording[:epoch_n] = 1
+    obj_new.header.recording[:duration_samples] = obj_new.header.recording[:epoch_duration_samples]
+    obj_new.header.recording[:duration_seconds] = obj_new.header.recording[:epoch_duration_seconds]
+
+    reset_components!(obj_new)
+    push!(obj_new.header.history, "extract_epoch(OBJ, epoch=$epoch)")
+
+    return obj_new
+end
 
 """
     extract_data(obj; channel)

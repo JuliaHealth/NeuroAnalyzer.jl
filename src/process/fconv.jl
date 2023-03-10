@@ -64,7 +64,7 @@ function fconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Ab
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_convoluted[ch_idx, :, ep_idx] = @views s_fconv(obj.data[channel[ch_idx], :, ep_idx], kernel=kernel, norm=norm, pad=pad)
+            s_convoluted[ch_idx, :, ep_idx] = @views fconv(obj.data[channel[ch_idx], :, ep_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
             progress_bar == true && next!(p)

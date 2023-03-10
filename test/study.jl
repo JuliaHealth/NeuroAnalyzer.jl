@@ -11,7 +11,7 @@ eeg2.data .*= 0.75
 s = study([eeg1, eeg2], [:a, :b])
 
 @test typeof(s) == NeuroAnalyzer.STUDY
-@test size(s) == 2
+@test obj_n(s) == 2
 @test channel_n(s) == 24
 @test epoch_n(s) == 242
 @test epoch_len(s) == 1280

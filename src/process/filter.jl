@@ -450,9 +450,9 @@ function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(channel)
             if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-                obj_new.data[channel[ch_idx], :, ep_idx] = @views s_filter_apply(obj_new.data[channel[ch_idx], :, ep_idx], flt=flt, dir=dir)
+                obj_new.data[channel[ch_idx], :, ep_idx] = @views filter_apply(obj_new.data[channel[ch_idx], :, ep_idx], flt=flt, dir=dir)
             else
-                obj_new.data[channel[ch_idx], :, ep_idx] = @views s_filter(obj_new.data[channel[ch_idx], :, ep_idx], fprototype=fprototype, order=order, t=t, window=window)
+                obj_new.data[channel[ch_idx], :, ep_idx] = @views filter(obj_new.data[channel[ch_idx], :, ep_idx], fprototype=fprototype, order=order, t=t, window=window)
             end
             # update progress bar
             progress_bar == true && next!(pb)
@@ -533,7 +533,7 @@ function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
 end

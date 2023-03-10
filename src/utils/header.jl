@@ -1,53 +1,7 @@
-export edit_header
-export edit_header!
-export show_header
+export view_header
 
 """
-    edit_header(obj; field, value)
-
-Change value of OBJ header.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `field::Symbol`
-- `value::Any`
-
-# Returns
-
-- `obj::NeuroAnalyzer.NEURO`
-"""
-function edit_header(obj::NeuroAnalyzer.NEURO; field::Symbol, value::Any)
-
-    value === nothing && throw(ArgumentError("value cannot be empty."))
-
-    obj_new = deepcopy(obj)
-    field in keys(obj_new.header.recording) || throw(ArgumentError("$field does not exist."))
-    typeof(obj_new.header.recording[field]) == typeof(value) || throw(ArgumentError("field type ($(typeof(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."))
-    obj_new.header.recording[field] = value
-    push!(obj_new.header.history, "edit(OBJ, field=$field, value=$value)")    
-
-    return obj_new
-end
-
-"""
-    edit_header!(obj; field, value)
-
-Change value of OBJ header.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `field::Symbol`
-- `value::Any`
-"""
-function edit_header!(obj::NeuroAnalyzer.NEURO; field::Symbol, value::Any)
-    obj.header.recording = edit_header(obj, field=field, value=value).header.recording
-    return nothing
-end
-
-"""
-    show_header(obj)
+    header(obj)
 
 Show keys and values of OBJ header.
 
@@ -55,8 +9,21 @@ Show keys and values of OBJ header.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function show_header(obj::NeuroAnalyzer.NEURO)
-    for (key, value) in obj.header
-        println("$key: $value")
+function view_header(obj::NeuroAnalyzer.NEURO)
+    f = string(fieldnames(typeof(obj.header)))
+    f = replace(f, "("=>"", ")"=>"", ":"=>"")
+    println("Header fields: $f")
+    for (key, value) in obj.header.subject
+        println("header.subject[:$key]: $value")
     end
+    for (key, value) in obj.header.recording
+        println("header.recording[:$key]: $value")
+    end
+    for (key, value) in obj.header.experiment
+        println("header.experiment[:$key]: $value")
+    end
+    println("header.has_markers: $(obj.header.has_markers)")
+    println("header.component_names: $(obj.header.component_names)")
+    println("header.has_locs: $(obj.header.has_locs)")
+    println("header.history: $(obj.header.history)")
 end

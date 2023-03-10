@@ -1,7 +1,7 @@
-export mi
+export mutual_information
 
 """
-    mi(signal1, signal2)
+    mutual_information(signal1, signal2)
 
 Calculate mutual information.
 
@@ -12,14 +12,14 @@ Calculate mutual information.
 
 # Returns
 
-- `mi::Float64`
+- `mutual_information::Float64`
 """
-function mi(signal1::AbstractVector, signal2::AbstractVector)
+function mutual_information(signal1::AbstractVector, signal2::AbstractVector)
     return get_mutual_information(signal1, signal2)
 end
 
 """
-    mi(obj; channel)
+    mutual_information(obj; channel)
 
 Calculate mutual information between channels.
 
@@ -30,9 +30,9 @@ Calculate mutual information between channels.
 
 # Returns
 
-- `m::Array{Float64, 3}`
+- `mutual_information::Array{Float64, 3}`
 """
-function mi(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj))
+function mutual_information(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int64}, AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, channel)
     ch_n = length(channel)
@@ -40,18 +40,18 @@ function mi(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int64}, AbstractRang
 
     m = zeros(ch_n, ch_n, ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
-        
+
         # create half of the matrix
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                m[ch_idx1, ch_idx2, ep_idx] = @views mi(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
+                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
             end
         end
 
         # copy to the other half
         Threads.@threads for ch_idx1 in 1:(ch_n - 1)
             for ch_idx2 in (ch_idx1 + 1):ch_n
-                m[ch_idx1, ch_idx2, ep_idx] = @views mi[ch_idx2, ch_idx1, ep_idx]
+                m[ch_idx1, ch_idx2, ep_idx] = @views m[ch_idx2, ch_idx1, ep_idx]
             end
         end
     end
@@ -60,7 +60,7 @@ function mi(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int64}, AbstractRang
 end
 
 """
-    mi(obj1, obj2; channel1, channel2, epoch1, epoch2)
+    mutual_information(obj1, obj2; channel1, channel2, epoch1, epoch2)
 
 Calculate mutual information between two channels.
 
@@ -75,9 +75,9 @@ Calculate mutual information between two channels.
 
 # Returns
 
-- `mi::Array{Float64, 3}`
+- `m::Array{Float64, 3}`
 """
-function mi(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
+function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
 
     # check channels
     _check_channels(obj1, channel1)
@@ -97,7 +97,7 @@ function mi(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Unio
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_n
-                m[ch_idx1, ch_idx2, ep_idx] = @views mi(obj1.data[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx2], :, epoch2[ep_idx]])
+                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(obj1.data[channel1[ch_idx1], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx2], :, epoch2[ep_idx]])
             end
         end
     end

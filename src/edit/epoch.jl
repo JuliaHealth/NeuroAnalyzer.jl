@@ -2,7 +2,7 @@ export epoch
 export epoch!
 export epoch_time
 export epoch_time!
-export extract_epoch
+
 
 """
     epoch(obj; marker, ep_offset, ep_n, ep_len)
@@ -161,36 +161,3 @@ function epoch_time!(obj::NeuroAnalyzer.NEURO; ts::Real)
 
     return nothing
 end
-
-"""
-    extract_epoch(obj; epoch)
-
-Extract OBJ epoch.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `epoch::Int64`: epoch index
-
-# Returns
-
-- `obj::NeuroAnalyzer.NEURO`
-"""
-function extract_epoch(obj::NeuroAnalyzer.NEURO; epoch::Int64)
-
-    _check_epochs(obj, epoch)
-
-    s_new = reshape(obj.data[:, :, epoch], channel_n(obj), signal_len(obj), 1)
-    obj_new = deepcopy(obj)
-    obj_new.data = s_new
-    obj_new.epoch_time = obj.epoch_time
-    obj_new.header.recording[:epoch_n] = 1
-    obj_new.header.recording[:duration_samples] = obj_new.header.recording[:epoch_duration_samples]
-    obj_new.header.recording[:duration_seconds] = obj_new.header.recording[:epoch_duration_seconds]
-
-    reset_components!(obj_new)
-    push!(obj_new.header.history, "extract_epoch(OBJ, epoch=$epoch)")
-
-    return obj_new
-end
-

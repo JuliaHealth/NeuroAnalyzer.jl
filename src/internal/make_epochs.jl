@@ -79,17 +79,17 @@ function _make_epochs_bymarkers(signal::Array{<:Real, 3}; markers::DataFrame, ma
     # remove markers outside epoch limits
     for marker_idx in nrow(markers):-1:1
         within_epoch = false
-        for epoch_idx in 1:marker_n
-            markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx] && (within_epoch = true)
+        for ep_idx in 1:marker_n
+            markers[!, :start][marker_idx] in epoch_start[ep_idx]:epoch_end[ep_idx] && (within_epoch = true)
         end
         within_epoch == false && deleteat!(markers, marker_idx)
     end
 
     # calculate marker offsets
-    for epoch_idx in 1:marker_n
+    for ep_idx in 1:marker_n
         for marker_idx in 1:nrow(markers)
-            if markers[!, :start][marker_idx] in epoch_start[epoch_idx]:epoch_end[epoch_idx]
-                markers[!, :start][marker_idx] = (epoch_idx - 1) * ep_len + markers[!, :start][marker_idx] .- epoch_start[epoch_idx]
+            if markers[!, :start][marker_idx] in epoch_start[ep_idx]:epoch_end[ep_idx]
+                markers[!, :start][marker_idx] = (ep_idx - 1) * ep_len + markers[!, :start][marker_idx] .- epoch_start[ep_idx]
             end
         end
     end

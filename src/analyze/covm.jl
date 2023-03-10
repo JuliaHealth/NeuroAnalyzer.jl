@@ -85,9 +85,9 @@ function covm(signal::AbstractArray; norm::Bool=false)
     progress_bar == true && (pb = Progress(ep_len * ep_n, 1))
 
     cov_mat = zeros(ch_n, ch_n, ep_len, ep_n)
-    @inbounds @simd for epoch_idx in 1:ep_n
+    @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for signal_idx in 1:ep_len
-            @views @inbounds cov_mat[:, :, signal_idx, epoch_idx] = covm(signal[:, signal_idx, epoch_idx], norm=norm)
+            @views @inbounds cov_mat[:, :, signal_idx, ep_idx] = covm(signal[:, signal_idx, ep_idx], norm=norm)
 
             # update progress bar
             progress_bar == true && next!(pb)

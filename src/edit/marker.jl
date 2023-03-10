@@ -38,11 +38,11 @@ Delete marker.
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:markers] == true || throw(ArgumentError("OBJ has no markers."))
+    obj_new.header.has_markers == true || throw(ArgumentError("OBJ has no markers."))
     nn = size(obj_new.markers, 1)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     deleteat!(obj_new.markers, n)
-    size(obj_new.markers, 1) == 0 && (obj_new.header.recording[:markers] = false)
+    size(obj_new.markers, 1) == 0 && (obj_new.header.has_markers = false)
     reset_components!(obj_new)
     push!(obj_new.header.history, "delete_marker(OBJ; n=$n)")
     
@@ -95,7 +95,7 @@ function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int
     start + len > signal_len(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj))."))
 
     obj_new = deepcopy(obj)
-    obj_new.header.recording[:markers] = true
+    obj_new.header.has_markers = true
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>channel))
     sort!(obj_new.markers)
     reset_components!(obj_new)

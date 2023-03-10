@@ -33,7 +33,7 @@ Calculate signal normalized for GFP (Global Field Power).
 - `gfp_norm::Float64`
 """
 function gfp_norm(signal::AbstractVector)
-    return signal ./ s_gfp(signal)
+    return signal ./ gfp(signal)
 end
 
 """

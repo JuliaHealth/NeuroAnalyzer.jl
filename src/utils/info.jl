@@ -54,13 +54,13 @@ function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
     length(obj.header.recording[:channel_type]) == 0 && throw(ArgumentError("RECORD has no defined channel types."))
-    channel_n = 0
+    ch_n = 0
     for idx in 1:obj.header.recording[:channel_n]
-        obj.header.recording[:channel_type][idx] == string(type) && (channel_n += 1)
+        obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
     end
-    type === :all && (channel_n = size(obj.data, 1))
+    type === :all && (ch_n = size(obj.data, 1))
 
-    return channel_n
+    return ch_n
 end
 
 """
@@ -112,9 +112,7 @@ Return epoch length.
 - `epoch_len::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
-
     ndims(obj.data) < 3 && throw(ArgumentError("Record data is either a vector or a matrix."))
-
     return obj.header.recording[:epoch_duration_samples]
 end
 

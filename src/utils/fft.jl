@@ -163,7 +163,7 @@ function dft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abst
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_fft[ch_idx, :, ep_idx], s_sf = @views s_dft(obj.data[channel[ch_idx], :, ep_idx], fs=fs, pad=pad)
+            s_fft[ch_idx, :, ep_idx], s_sf = @views dft(obj.data[channel[ch_idx], :, ep_idx], fs=fs, pad=pad)
         end
     end
 

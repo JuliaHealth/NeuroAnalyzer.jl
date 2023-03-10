@@ -1,11 +1,11 @@
-export size
+export obj_n
 export channel_n
 export epoch_n
 export epoch_len
 export sr
 
 """
-    size(study)
+    obj_n(study)
 
 Return number of NeuroAnalyzer NEURO objects in the study.
 
@@ -17,7 +17,7 @@ Return number of NeuroAnalyzer NEURO objects in the study.
 
 - `n::Int64`
 """
-function size(study::NeuroAnalyzer.STUDY)
+function obj_n(study::NeuroAnalyzer.STUDY)
     return length(study.objects)
 end
 

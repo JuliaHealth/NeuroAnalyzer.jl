@@ -1,6 +1,6 @@
 export l1
 export l2
-export cmp
+export perm_cmp
 
 """
     l1(a1, a2)
@@ -42,7 +42,7 @@ function l2(a1::AbstractArray, a2::AbstractArray)
 end
 
 """
-    cmp(a1, a2; p, perm_n)
+    perm_cmp(a1, a2; p, perm_n)
 
 Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using permutation based statistic.
 
@@ -59,7 +59,7 @@ Named tuple containing:
 - `zmap::Array{Float64, 3}`: array of Z-values
 - `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
-function cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
+function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
 
     size(a1) == size(a2) || throw(ArgumentError("Both arrays must have the same size"))
     perm_n <= 0 && throw(ArgumentError("perm_n must be > 0."))

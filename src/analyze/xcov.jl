@@ -15,6 +15,7 @@ Calculate cross-covariance.
 
 # Returns
 
+Named tuple containing:
 - `ccov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
@@ -42,7 +43,7 @@ function xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, de
     end
     norm == true && (xcov_m ./ l)
 
-    return xcov_m, lags
+    return (xcov=xcov_m, lags=lags)
 end
 
 """

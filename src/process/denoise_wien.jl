@@ -19,12 +19,12 @@ function denoise_wien(signal::AbstractArray)
     ch_n, _, ep_n = size(signal)
     signal_new = similar(signal)
 
-    @inbounds @simd for epoch_idx in 1:ep_n
-        s_m = @views mean(signal[:, :, epoch_idx], dims=1)'[:, 1]
+    @inbounds @simd for ep_idx in 1:ep_n
+        s_m = @views mean(signal[:, :, ep_idx], dims=1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
-        Threads.@threads for channel_idx in 1:ch_n
-            signal_new[channel_idx, :, epoch_idx] = @views wiener(signal[channel_idx, :, epoch_idx], s_m, noise)
+        Threads.@threads for ch_idx in 1:ch_n
+            signal_new[ch_idx, :, ep_idx] = @views wiener(signal[ch_idx, :, ep_idx], s_m, noise)
         end
     end
 

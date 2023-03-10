@@ -4,8 +4,12 @@ using Wavelets
 using ContinuousWavelets
 
 @test size(covm(zeros(2))) == (2, 2)
-@test size(covm(zeros(2, 2))) == (2, 2, 2, 1)
+@test size(covm(zeros(2, 3, 2))) == (2, 2, 3, 2)
 @test covm(ones(2), zeros(2)) == zeros(2, 2)
+
+@test size(corm(rand(2))) == (2, 2)
+@test size(corm(rand(2, 3, 2))) == (2, 2, 3, 2)
+@test round.(corm(rand(2), rand(2))) == ones(2, 2)
 
 @test linspace(1, 10, 10) == 1.0:10.0
 @test logspace(0, 1, 3) == [1.0, 3.1622776601683795, 10.0]
@@ -40,18 +44,18 @@ using ContinuousWavelets
 @test tuple_order((2, 1)) == (1, 2)
 @test rmse(ones(10), ones(10)) == 0.0
 @test size(m_norm(ones(4, 4, 1))) == (4, 4, 1)
-@test dft(ones(4), fs=10) == (fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], sf = [0.0, 0.025, -0.05, -0.025])
-@test msci95(ones(4)) == (1.0, 0.0, 1.0, 1.0)
-@test mean(ones(4), zeros(4)) == (1.0, 0.0, 1.0, 1.0)
+@test dft(ones(4), fs=10) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_sf = [0.0, 0.025, -0.05, -0.025])
+@test msci95(ones(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
+@test msci95(ones(4), zeros(4)) == (s_m = 1.0, s_s = 0.0, s_u = 1.0, s_l = 1.0)
 @test length(difference(ones(4), zeros(4))) == 3
-@test acov(ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
-@test xcov(ones(4), ones(4)) == ([3.0, 4.0, 3.0], [-1, 0, 1])
-@test spectrum(ones(4)) == (fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], amp = [1.0, 0.0], pow = [1.0, 0.0], pha = [0.0, 0.0, 0.0, 0.0])
+@test acov(ones(4)) == (acov = [3.0, 4.0, 3.0], lags = [-1, 0, 1])
+@test xcov(ones(4), ones(4)) == (xcov = [3.0, 4.0, 3.0], lags = [-1, 0, 1])
+@test spectrum(ones(4)) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amp = [1.0, 0.0], s_pow = [1.0, 0.0], s_pha = [0.0, 0.0, 0.0, 0.0])
 @test total_power(ones(4), fs=10) == 0.0
 @test band_power(ones(4), fs=10, f=(1,2)) == 0.0
 @test taper(ones(10), taper=zeros(10)) == zeros(10)
 @test detrend(ones(10)) == zeros(10)
-@test demean(ones(10)) == zeros(10)
+@test remove_dc(ones(10)) == zeros(10)
 @test normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test normalize_minmax([1, 2, 3]) == [-1.0, 0.0, 1.0]
 @test normalize_log([0, 0, 0]) == [0.0, 0.0, 0.0]
@@ -61,7 +65,7 @@ s, t = resample(ones(10), t=1:10, new_sr=20)
 @test t == 1.0:0.05:10.0
 
 @test derivative(ones(10)) == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-@test filter(ones(10), fprototype=:mavg, order=2) == [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]
+@test NeuroAnalyzer.filter(ones(10), fprototype=:mavg, order=2) == [0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]
 
 p, f = psd(ones(100), fs=10)
 @test p[1] == 0.0
@@ -78,10 +82,10 @@ p, f = psd(ones(100), fs=10)
 @test average(ones(5, 5, 1), zeros(5, 5, 1)) == [0.5; 0.5; 0.5; 0.5; 0.5;;;]
 @test tcoherence([1, 2], [3, 4]) == (c = [5.25, 0.25], msc = [27.5625, 0.0625], ic = [-0.0, 0.0])
 
-p, w, m, pca = pca(ones(2, 10, 1), n=1)
-@test p == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
+pc, pc_w, pc_m, pc_model = pca(ones(2, 10, 1), n=1)
+@test pc == [0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0;;;]
 
-s = pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
+s = pca_reconstruct(ones(2, 10, 1), pc=pc, pc_model=pc_model)
 @test s == ones(2, 10, 1)
 
 @test tconv(ones(5), kernel=[1.0, 2.0]) == [1.0, 3.0, 3.0, 3.0, 3.0]
@@ -89,7 +93,7 @@ s = pca_reconstruct(ones(2, 10, 1), pc=p, pca=pca)
 
 i, m = ica([1.0 2.0; 3.0 4.0;;;], n=1)
 @test size(i) == (1, 2, 1)
-@test ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ica=i, ica_mw=m, ic=[1]) == zeros(2, 2, 1)
+@test ica_reconstruct([1.0 2.0; 3.0 4.0;;;], ic=i, ic_mw=m, ic_idx=[1]) == zeros(2, 2, 1)
 
 p, f, t = spectrogram(ones(100), fs=10)
 @test size(p) == (51, 46)
@@ -99,9 +103,9 @@ p, f, t = spectrogram(ones(100), fs=10)
 @test snr2(ones(10)) == 0.0
 @test findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
 @test length(wdenoise(rand(100), wt=wavelet(WT.haar))) == 100
-@test ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], phase = [0.0, 0.0, 0.0])
-@test itpc(ones(1, 10, 10), t=1) == (itpc = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-@test pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], phase = [0.0, 0.0, 0.0])
+@test ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc_value = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
+@test itpc(ones(1, 10, 10), t=1) == (itpc_value = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+@test pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli_value = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test length(ged(ones(10, 10), zeros(10, 10))) == 3
 @test round.(frqinst(ones(10), fs=10)) == zeros(10)
 
@@ -111,17 +115,16 @@ s, _ = fftdenoise(rand(10))
 @test length(ghspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 3
 @test tkeo(ones(5)) == [1.0, 0.0, 0.0, 0.0, 1.0]
 @test length(wspectrogram(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 4
-@test length(mwpsd(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
-@test length(a2_cmp(ones(10,10,10), zeros(10,10,10))) == 2
+@test length(psd_mw(rand(100), fs=10, frq_lim=(1, 5), frq_n=10)) == 2
+@test length(perm_cmp(ones(10,10,10), zeros(10,10,10))) == 2
 @test length(fcoherence(ones(2, 10), fs=1)) == 3
 @test length(fcoherence(ones(10), ones(10), fs=1)) == 3
-@test a2_l1(ones(10,10,10), zeros(10,10,10)) == 1000.0
-@test a2_l2(ones(10,10,10), zeros(10,10,10)) == 31.622776601683793
-@test cums(ones(10)) == 1:10
+@test l1(ones(10,10,10), zeros(10,10,10)) == 1000.0
+@test l2(ones(10,10,10), zeros(10,10,10)) == 31.622776601683793
 @test cums(zeros(2,2,2)) == zeros(2,2,2)
 @test gfp(ones(10)) == 1.0
 @test gfp_norm(ones(10)) == ones(10)
-@test diss(ones(10), ones(10)) == (diss = 0.0, c = 1.0)
+@test diss(ones(10), ones(10)) == (glob_diss = 0.0, c = 1.0)
 @test length(generate_morlet_fwhm(10, 10)) == 21
 @test f_nearest([(1.0, 1.0) (0.0, 0.0); (0.0, 0.0) (0.0, 0.0)], (1.0, 0.0)) == (1, 1)
 
@@ -130,7 +133,7 @@ mb, mf, mxb = band_mpower(ones(100), f=(1,2), fs=10)
 @test mf == 1.0
 @test round(mxb) == 0.0
 
-p, f = rel_psd(ones(10), fs=10)
+p, f = psd_rel(ones(10), fs=10)
 @test f == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0]
 
 @test wbp(ones(10), fs=10, frq=3) == zeros(10)
@@ -157,11 +160,11 @@ p, _, _ = cps(zeros(100), ones(100), fs=10)
 @test normalize([1, 2, 3], method=:zscore) == normalize_zscore([1, 2, 3])
 @test phases(ones(ComplexF64, 10)) == zeros(10)
 @test length(cwtspectrogram(rand(100), wt=wavelet(Morlet(π), β=2), fs=10, frq_lim=(0, 5))) == 2
-@test size(dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
-@test length(idwt(dwt(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
+@test size(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar))) == (3, 100)
+@test length(idw_trans(dw_trans(rand(100), type=:sdwt, wt=wavelet(WT.haar)), type=:sdwt, wt=wavelet(WT.haar))) == 100
 @test round.(normalize_invroot([1, 2, 3]), digits=2) == [0.71, 0.58, 0.5]
-@test size(cwt(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
-@test length(icwt(cwt(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
+@test size(cw_trans(rand(100), wt=wavelet(Morlet(π), β=2))) == (14, 100)
+@test length(icw_trans(cw_trans(rand(100), wt=wavelet(Morlet(π), β=2)), wt=wavelet(Morlet(π), β=2), type=:pd)) == 100
 @test t2s(1, 256) == 256
 @test s2t(256, 256) == 1.0
 @test length(generate_noise(256, 10)) == 256
