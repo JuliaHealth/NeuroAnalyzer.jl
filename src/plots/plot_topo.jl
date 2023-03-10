@@ -150,7 +150,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}=
 
     signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
 
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
     _check_segment(obj, segment[1], segment[2])
@@ -256,7 +256,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
 
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
 

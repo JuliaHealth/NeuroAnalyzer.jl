@@ -25,7 +25,7 @@ Named tuple containing:
 """
 function locs_details(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, String}, output::Bool=true)
 
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_electrodes() or add_electrodes() first."))
+    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
     channel = _get_ch_idx(labels(obj), channel)
 

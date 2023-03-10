@@ -9,7 +9,7 @@ Detect bad OBJ channels and epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts

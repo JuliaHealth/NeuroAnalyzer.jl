@@ -135,7 +135,7 @@ function psd_mw(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     ep_n = epoch_n(obj)
 
     fs = sr(obj)
-    p_tmp, w_frq = @views mwpsd(obj.data[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    p_tmp, w_frq = @views psd_mw(obj.data[1, :, 1], fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     w_pow = zeros(ch_n, length(p_tmp), ep_n)
 
     # initialize progress bar

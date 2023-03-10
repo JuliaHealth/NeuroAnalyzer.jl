@@ -43,8 +43,8 @@ Perform generalized eigendecomposition.
 
 - `obj1::NeuroAnalyzer.NEURO`: signal data to be analyzed
 - `obj2::NeuroAnalyzer.NEURO`: original signal data
-- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type]))`: index of channels, default is all channels
-- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type]))`: index of channels, default is all channels
+- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
 - `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 
@@ -73,7 +73,7 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Uni
     resnormalized = zeros(ch_n, ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        sged[:, :, ep_idx], ress[:, ep_idx], resnormalized[:, ep_idx] = @views sged(obj1.data[channel1, :, epoch1[ep_idx]], obj2.data[channel2, :, epoch2[ep_idx]])
+        sged[:, :, ep_idx], ress[:, ep_idx], resnormalized[:, ep_idx] = @views ged(obj1.data[channel1, :, epoch1[ep_idx]], obj2.data[channel2, :, epoch2[ep_idx]])
     end
 
     return (sged=sged, ress=ress, resnormalized=resnormalized)

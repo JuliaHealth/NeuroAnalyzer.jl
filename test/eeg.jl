@@ -262,6 +262,7 @@ v = channel_stats(eeg)
 eeg = import_edf("eeg-test-edf.edf")
 delete_channel!(eeg, channel=20:24)
 load_locs!(eeg, file_name="../locs/standard-10-20-cap19-elmiko.ced")
+e10 = epoch(eeg, ep_len=10*256)
 
 s, h = snr(e10)
 @test size(s) == (19, 1280)
@@ -272,7 +273,6 @@ s, _ = standardize(eeg)
 eeg1 = epoch_time(eeg, ts=-10.0)
 eeg1.epoch_time[1, 1] == -10.0
 
-e10 = epoch(eeg, ep_len=10*256)
 @test size(tenv(e10)[1]) == (19, 2560, 121)
 @test size(tenv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(tenv_median(e10, dims=1)[1]) == (2560, 121)
@@ -288,9 +288,9 @@ e10 = epoch(eeg, ep_len=10*256)
 @test length(pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
 @test size(pli(e10)) == (19, 19, 121)
 @test size(ispc(e10)) == (19, 19, 121)
-@test length(ec(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
-@test length(ged(eeg, eeg)) == 3
-@test size(frqinst(eeg)) == size(eeg.data)
+@test length(env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
+@test length(ged(e10, e10)) == 3
+@test size(frqinst(eeg)) == (19, 2560, 121)
 @test size(fftdenoise(eeg).data) == (19, 309760, 1)
 @test size(tkeo(eeg)) == (19, 309760, 1)
 @test length(psd_mw(eeg, frq_lim=(0, 20), frq_n=21)) == 2
@@ -310,17 +310,17 @@ delete_note!(eeg1)
 @test view_note(eeg1) == ""
 
 eeg1 = epoch(eeg, ep_len=2560)
-new_channel = zeros(1, ep_len(eeg1), epoch_n(eeg1))
-eeg1 = replace_channel(eeg1, channel=1, signal=new_channel);
-@test eeg1.data[1, :, :] == zeros(ep_len(eeg1), epoch_n(eeg1))
-eeg2 = plinterpolate_channel(eeg1, channel=1, epoch=1)
+new_channel = zeros(1, epoch_len(eeg1), epoch_n(eeg1))
+eeg1 = replace_channel(eeg1, channel=1, signal=new_channel)
+@test eeg1.data[1, :, :] == zeros(epoch_len(eeg1), epoch_n(eeg1))
+eeg2 = plinterpolate_channel(eeg1, channel=1, epoch=1);
 @test eeg2.data[1, :, 1] != zeros(ep_len(eeg1))
 
 eeg1 = epoch(eeg, ep_len=2560);
-new_channel = zeros(1, ep_len(eeg1), 1)
-eeg1.data[1, :, 1] = zeros(ep_len(eeg1))
+new_channel = zeros(1, epoch_len(eeg1), 1)
+eeg1.data[1, :, 1] = zeros(epoch_len(eeg1))
 eeg2 = lrinterpolate_channel(eeg1, channel=1, epoch=1);
-@test eeg2.data[1, :, 1] != zeros(ep_len(eeg1))
+@test eeg2.data[1, :, 1] != zeros(epoch_len(eeg1))
 
 @test length(band_mpower(eeg, f=(1,4))) == 3
 
