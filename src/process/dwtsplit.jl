@@ -17,7 +17,7 @@ Split OBJ channel into bands using discrete wavelet transformation (DWT).
 
 # Returns
  
-- `bands::Array{Float64, 4}`: bands from lowest to highest frequency (by rows)
+- `b::Array{Float64, 4}`: bands from lowest to highest frequency (by rows)
 """
 function dwtsplit(obj::NeuroAnalyzer.NEURO; channel::Int64, wt::T, type::Symbol, n::Int64=0) where {T <: DiscreteWavelet}
 
@@ -33,12 +33,12 @@ function dwtsplit(obj::NeuroAnalyzer.NEURO; channel::Int64, wt::T, type::Symbol,
 
     dwt_c = zeros((n + 1), epoch_len(obj), ep_n)
     Threads.@threads for ep_idx in 1:ep_n
-        @inbounds dwt_c[:, :, ep_idx] = @views dwt(obj.data[channel, :, ep_idx], wt=wt, type=type, l=n)
+        @inbounds dwt_c[:, :, ep_idx] = @views dw_trans(obj.data[channel, :, ep_idx], wt=wt, type=type, l=n)
     end
     
-    bands = similar(dwt_c)
-    bands[1, :, :] = dwt_c[1, :, :]
-    bands[2:end, :, :] = dwt_c[end:-1:2, :, :]
+    b = similar(dwt_c)
+    b[1, :, :] = dwt_c[1, :, :]
+    b[2:end, :, :] = dwt_c[end:-1:2, :, :]
 
-    return bands
+    return b
 end

@@ -29,11 +29,11 @@ function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     fs = sr(obj)
     signal_split = zeros(length(band), ch_n, epoch_len(obj), ep_n)
-    band_frq = Vector{Tuple{Real, Real}}()
+    bf = Vector{Tuple{Real, Real}}()
 
     @inbounds for band_idx in eachindex(band)
         band_f = band_frq(obj, band=band[band_idx])
-        push!(band_frq, band_f)
+        push!(bf, band_f)
         flt = filter_create(fs=fs, fprototype=:fir, ftype=:bp, cutoff=band_f, order=order, window=window, n=epoch_len(obj))
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
@@ -42,5 +42,5 @@ function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
         end
     end
 
-    return (band_names=band, band_frq=band_frq, signal_split=signal_split)
+    return (band_names=band, band_frq=bf, signal_split=signal_split)
 end

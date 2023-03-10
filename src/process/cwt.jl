@@ -78,10 +78,10 @@ function cw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     ep_n = epoch_n(obj)
 
     l = size(ContinuousWavelets.cwt(obj.data[1, :, 1], wt), 2)
-    cwt_c = similar(obj.data)
+    cwt_c = zeros(ch_n, l, epoch_len(obj), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            cwt_c[ch_idx, :, :, ep_idx] = @views NeuroAnalyzer.cwt(obj.data[channel[ch_idx], :, ep_idx], wt=wt)
+            cwt_c[ch_idx, :, :, ep_idx] = @views cw_trans(obj.data[channel[ch_idx], :, ep_idx], wt=wt)
         end
     end
 

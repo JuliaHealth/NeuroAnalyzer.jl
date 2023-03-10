@@ -1,5 +1,5 @@
 export delete_epoch
-export delete_epoch
+export delete_epoch!
 export keep_epoch
 export keep_epoch!
 

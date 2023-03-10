@@ -314,7 +314,7 @@ new_channel = zeros(1, epoch_len(eeg1), epoch_n(eeg1))
 eeg1 = replace_channel(eeg1, channel=1, signal=new_channel)
 @test eeg1.data[1, :, :] == zeros(epoch_len(eeg1), epoch_n(eeg1))
 eeg2 = plinterpolate_channel(eeg1, channel=1, epoch=1);
-@test eeg2.data[1, :, 1] != zeros(ep_len(eeg1))
+@test eeg2.data[1, :, 1] != zeros(epoch_len(eeg1))
 
 eeg1 = epoch(eeg, ep_len=2560);
 new_channel = zeros(1, epoch_len(eeg1), 1)
@@ -324,13 +324,13 @@ eeg2 = lrinterpolate_channel(eeg1, channel=1, epoch=1);
 
 @test length(band_mpower(eeg, f=(1,4))) == 3
 
-p, f = rel_psd(eeg, f=(8,12))
+p, f = psd_rel(eeg, f=(8,12))
 @test size(p) == (19, 513, 1)
 
 _, _, ss = fbsplit(eeg)
 @test size(ss) == (10, 19, 309760, 1)
 
-eeg1 = zero(eeg)
+eeg1 = ch_zero(eeg)
 @test eeg1.data[1, 1, 1] == 0
 
 c = chdiff(eeg, eeg, channel1=1, channel2=2)
@@ -347,7 +347,7 @@ p, _, _ = cps(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)
 @test length(p) == 262145
 
 eeg2 = channel_type(eeg, channel=1, type="eog")
-@test eeg2.header[:channel_type][1] == "eog"
+@test eeg2.header.recording[:channel_type][1] == "eog"
 
 @test size(phdiff(eeg)) == (19, 309760, 1)
 @test size(scale(eeg, channel=1, factor=0.1).data) == (19, 309760, 1)
@@ -356,17 +356,17 @@ _, _, f = psdslope(eeg)
 @test length(f) == 513
 
 @test size(vch(e10, f="fp1 + fp2")) == (1, 2560, 121)
-@test size(dwt(e10, wt=wavelet(WT.haar), type=:sdwt)) == (19, 10, 2560, 121)
-@test size(cwt(e10, wt=wavelet(Morlet(π), β=2))) == (19, 33, 2560, 121)
+@test size(dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt)) == (19, 10, 2560, 121)
+@test size(cw_trans(e10, wt=wavelet(Morlet(π), β=2))) == (19, 33, 2560, 121)
 
 @test size(henv(e10)[1]) == (19, 2560, 121)
 @test size(henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(henv_median(e10, dims=1)[1]) == (2560, 121)
-@test size(apply(e10, f="mean(eeg, dims=1)")) == (19, 1, 121)
+@test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 121)
 
 @test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
 
-e1 = copy(eeg)
+e1 = deepcopy(eeg)
 add_marker!(e1, id="1", start=100, len=1, desc="test")
 add_marker!(e1, id="1", start=1000, len=1, desc="test")
 add_marker!(e1, id="1", start=2000, len=1, desc="test")
@@ -384,11 +384,11 @@ eeg1, g, h = slaplacian(eeg)
 @test size(g) == (19, 19)
 @test size(h) == (19, 19)
 
-b = bands_dwt(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
+b = dwtsplit(eeg, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5)
 @test size(b) == (5, 309760, 1)
 
 r = reflect(eeg)
-c = chop(r)
+c = NeuroAnalyzer.chop(r)
 @test size(eeg.data) == size(c.data)
 
 @test size(extract_data(eeg, channel=1:channel_n(eeg))) == size(eeg.data)

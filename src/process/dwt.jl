@@ -109,7 +109,7 @@ function dw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     dwt_c = zeros(ch_n, (l + 1), epoch_len(obj), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            dwt_c[ch_idx, :, :, ep_idx] = @views NeuroAnalyzer.dwt(obj.data[channel[ch_idx], :, ep_idx], wt=wt, type=type, l=l)
+            dwt_c[ch_idx, :, :, ep_idx] = @views dw_trans(obj.data[channel[ch_idx], :, ep_idx], wt=wt, type=type, l=l)
         end
     end
 
