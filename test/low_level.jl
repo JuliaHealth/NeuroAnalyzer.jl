@@ -53,7 +53,7 @@ using ContinuousWavelets
 @test spectrum(ones(4)) == (s_fft = ComplexF64[4.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], s_amp = [1.0, 0.0], s_pow = [1.0, 0.0], s_pha = [0.0, 0.0, 0.0, 0.0])
 @test total_power(ones(4), fs=10) == 0.0
 @test band_power(ones(4), fs=10, f=(1,2)) == 0.0
-@test taper(ones(10), taper=zeros(10)) == zeros(10)
+@test taper(ones(10), t=zeros(10)) == zeros(10)
 @test detrend(ones(10)) == zeros(10)
 @test remove_dc(ones(10)) == zeros(10)
 @test normalize_zscore([1, 2, 3]) == [-1.0, 0.0, 1.0]
@@ -75,7 +75,7 @@ p, f = psd(ones(100), fs=10)
 @test stationarity_mean(ones(10), window=1) == [1.0]
 @test stationarity_var(ones(10), window=1) == [0.0]
 @test trim(ones(10), segment=(1,5)) == ones(5)
-@test mi(ones(10), ones(10)) == 0.0
+@test mutual_information(ones(10), ones(10)) == 0.0
 @test entropy([1.0, 2.0, 3.0]) == (ent = 1.5849625007211552, sent = 0.8304717124362917, leent = 4.333653050389665)
 @test negentropy([1, 2, 3]) == -0.16602396751648252
 @test average(ones(10, 10, 1)) == ones(1, 10, 1)
@@ -102,7 +102,7 @@ p, f, t = spectrogram(ones(100), fs=10)
 @test snr(ones(10)) == Inf
 @test snr2(ones(10)) == 0.0
 @test findpeaks(repeat([0, 1], 100)) == [6, 38, 70, 102, 134, 166, 198]
-@test length(wdenoise(rand(100), wt=wavelet(WT.haar))) == 100
+@test length(denoise_wavelet(rand(100), wt=wavelet(WT.haar))) == 100
 @test ispc([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (ispc_value = 1.0, ispc_angle = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])
 @test itpc(ones(1, 10, 10), t=1) == (itpc_value = 1.0, itpcz = 10.0, itpc_angle = 0.0, itpc_phases = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 @test pli([1.0, 1.0, 1.0], [0.0, 0.0, 0.0]) == (pli_value = 0.0, signal_diff = [-1.0, -1.0, -1.0], phase_diff = [0.0, 0.0, 0.0], s1_phase = [0.0, 0.0, 0.0], s2_phase = [0.0, 0.0, 0.0])

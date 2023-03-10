@@ -357,7 +357,7 @@ Load electrode positions from CSD file.
 function locs_import_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
-    splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a csd file."))
+    splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a CSD file."))
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
 
     DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
@@ -466,19 +466,19 @@ Load electrode positions from MAT file.
 function locs_import_mat(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
-    splitext(file_name)[2] == ".mat" || throw(ArgumentError("Not a SFP file."))
+    splitext(file_name)[2] == ".mat" || throw(ArgumentError("Not a MAT file."))
 
     dataset = matread(file_name)
     x = dataset["Cpos"][1, :]
     y = dataset["Cpos"][2, :]
     r = dataset["Rxy"]    
     ch_n = length(x)
-    clabels = dataset["Cnames"][1:channel_n]
+    clabels = dataset["Cnames"][1:ch_n]
 
     # x, y, z positions must be within -1..+1
     x, y = _locnorm(x, y)
 
-    z = zeros(channel_n)
+    z = zeros(ch_n)
     radius = zeros(length(clabels))
     theta = zeros(length(clabels))
     radius_sph = zeros(length(clabels))

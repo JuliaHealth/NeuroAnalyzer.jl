@@ -64,8 +64,8 @@ mutable struct HEADER
     subject::Dict
     recording::Dict
     experiment::Dict
-    has_markers::Bool
     component_names::Vector{Symbol}
+    has_markers::Bool
     has_locs::Bool
     history::Vector{String}
 end

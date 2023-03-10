@@ -258,9 +258,9 @@ data_type = "eeg"
     hdr = _create_header(s,
                          r,
                          e,
-                         markers=has_markers,
                          component_names=Symbol[],
-                         locs=false,
+                         has_markers=has_markers,
+                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

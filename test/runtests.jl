@@ -2,24 +2,24 @@ using NeuroAnalyzer
 using Test
 
 @testset "runtests.jl" begin
-    println("\tRunning statistics.jl tests.. ")
+    @info "Running statistics.jl tests"
     @test include("statistics.jl")
 
-    println("\tRunning io.jl tests.. ")
+    @info "Running io.jl tests"
     @test include("io.jl")
 
-    println("\tRunning plots.jl tests.. ")
+    @info "Running plots.jl tests"
     @test include("plots.jl")
 
-    println("\tRunning stim.jl tests.. ")
+    @info "Running stim.jl tests"
     @test include("stim.jl")
 
-    println("\tRunning study.jl tests.. ")
+    @info "Running study.jl tests"
     @test include("study.jl")
 
-    println("\tRunning low_level.jl tests.. ")
+    @info "Running low_level.jl tests"
     @test include("low_level.jl")
 
-    println("\tRunning eeg.jl tests.. ")
+    @info "Running eeg.jl tests"
     @test include("eeg.jl")
 end

@@ -290,7 +290,7 @@ eeg1.epoch_time[1, 1] == -10.0
 @test size(ispc(e10)) == (19, 19, 121)
 @test length(env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
 @test length(ged(e10, e10)) == 3
-@test size(frqinst(eeg)) == (19, 2560, 121)
+@test size(frqinst(eeg)) == (19, 309760, 1)
 @test size(fftdenoise(eeg).data) == (19, 309760, 1)
 @test size(tkeo(eeg)) == (19, 309760, 1)
 @test length(psd_mw(eeg, frq_lim=(0, 20), frq_n=21)) == 2

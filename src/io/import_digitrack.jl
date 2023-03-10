@@ -135,11 +135,11 @@ function import_digitrack(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e,
-                         markers=has_markers,
                          component_names=Symbol[],
-                         locs=false,
+                         has_markers=has_markers,
+                         has_locs=false,
                          history=String[])
-
+    
     components = Vector{Any}()
     epoch_time = time_pts
     locs = DataFrame(:channel=>Int64,

@@ -234,9 +234,9 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e,
-                         markers=false,
-                         components=Symbol[],
-                         locations=true,
+                         component_names=Symbol[],
+                         has_markers=has_markers,
+                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

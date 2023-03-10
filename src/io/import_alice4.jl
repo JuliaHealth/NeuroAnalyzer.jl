@@ -323,9 +323,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e,
-                         markers=has_markers,
                          component_names=Symbol[],
-                         locs=false,
+                         has_markers=has_markers,
+                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()
