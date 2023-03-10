@@ -186,7 +186,7 @@ e9 = delete_epoch(e, epoch=10)
 e1 = keep_epoch(e, epoch=1)
 @test size(e1.data) == (19, 30976, 1)
 
-@test length(pick(eeg, p=:left)) == 8
+@test length(NeuroAnalyzer.pick(eeg, p=:left)) == 8
 
 e = epoch(eeg, ep_len=20*256)
 v = epoch_stats(e)
