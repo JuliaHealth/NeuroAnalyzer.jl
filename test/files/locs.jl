@@ -9,7 +9,7 @@ _, _, x, _, _, _, _, _ = electrode_loc(eeg2, channel=1, output=false)
 ch1 = electrode_loc(eeg, channel=1, output=false)
 @test ch1[1] == 108.0
 
-locs = locs_import_ced("files/standard-10-20-cap19-elmiko.ced")
+locs = locs_import_ced("../locs/standard-10-20-cap19-elmiko.ced")
 locs2 = locs_flipx(locs)
 @test locs2[1, 3] == 72.0
 locs2 = locs_flipy(locs)
