@@ -11,7 +11,7 @@ export locs_import_mat
 """
     locs_import(file_name)
 
-Load electrode positions. Supported formats:
+Load channel locations. Supported formats:
 - CED
 - ELC
 - LOCS
@@ -64,7 +64,7 @@ end
 """
     locs_import_ced(file_name)
 
-Load electrode positions from CED file.
+Load channel locations from CED file.
 
 # Arguments
 
@@ -116,7 +116,7 @@ end
 """
     locs_import_locs(file_name)
 
-Load electrode positions from LOCS file.
+Load channel locations from LOCS file.
 
 # Arguments
 
@@ -162,7 +162,7 @@ end
 """
     locs_import_elc(file_name)
 
-Load electrode positions from ELC file.
+Load channel locations from ELC file.
 
 # Arguments
 
@@ -227,7 +227,7 @@ end
 """
     locs_import_tsv(file_name)
 
-Load electrode positions from TSV file.
+Load channel locations from TSV file.
 
 # Arguments
 
@@ -284,7 +284,7 @@ end
 """
     locs_import_sfp(file_name)
 
-Load electrode positions from SFP file.
+Load channel locations from SFP file.
 
 # Arguments
 
@@ -344,7 +344,7 @@ end
 """
     locs_import_csd(file_name)
 
-Load electrode positions from CSD file.
+Load channel locations from CSD file.
 
 # Arguments
 
@@ -386,7 +386,7 @@ end
 """
     locs_import_geo(file_name)
 
-Load electrode positions from GEO file.
+Load channel locations from GEO file.
 
 # Arguments
 
@@ -453,7 +453,7 @@ end
 """
     locs_import_mat(file_name)
 
-Load electrode positions from MAT file.
+Load channel locations from MAT file.
 
 # Arguments
 

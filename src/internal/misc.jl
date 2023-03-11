@@ -1,3 +1,7 @@
+_info(s::String) = verbose == true && @info s
+
+_warn(s::String) = verbose == true && @warn s
+
 _pl(x::Union{AbstractRange, AbstractVector}) = length(collect(x)) > 1 ? "s" : ""
 
 _pl(x::Real) = x > 1 ? "s" : ""

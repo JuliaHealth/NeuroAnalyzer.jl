@@ -7,17 +7,8 @@ export signal_channels
 export get_channel_bytype
 export history
 export labels
-export info
 export channel_cluster
 export band_frq
-
-function _info(s::String)
-    verbose == true && @info s
-end
-
-function _warn(s::String)
-    verbose == true && @warn s
-end
 
 """
     sr(obj)
@@ -206,7 +197,7 @@ Show info.
 """
 function info(obj::NeuroAnalyzer.NEURO)
 
-    println("            Signal type: $(uppercase(obj.header.recording[:data_type]))")
+    println("              Data type: $(uppercase(obj.header.recording[:data_type]))")
     println("            File format: $(obj.header.recording[:file_type])")
     println("            Source file: $(obj.header.recording[:file_name])")
     println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")

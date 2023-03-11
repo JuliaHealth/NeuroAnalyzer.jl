@@ -122,29 +122,29 @@ print(rpad("Channel referencing", 36))
 reference_ch(e10, channel=1);
 @time reference_ch(e10, channel=1);
 print(rpad("Filter: FIR LP", 36))
-filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
-@time filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+NeuroAnalyzer.filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
+@time NeuroAnalyzer.filter(e10, fprototype=:fir, ftype=:lp, cutoff=45.0, order=8);
 print(rpad("Filter: FIR HP", 36))
-filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
-@time filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+NeuroAnalyzer.filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
+@time NeuroAnalyzer.filter(e10, fprototype=:fir, ftype=:hp, cutoff=0.1, order=8);
 print(rpad("Filter: IIR LP", 36))
-filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
-@time filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
+NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
+@time NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=45.0, order=8);
 print(rpad("Filter: IIR HP", 36))
-filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
-@time filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
+NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
+@time NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=0.1, order=8);
 print(rpad("Filter: IIR notch", 36))
-filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
-@time filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
+NeuroAnalyzer.filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
+@time NeuroAnalyzer.filter(e10, fprototype=:iirnotch, cutoff=50, bw=2);
 print(rpad("Filter: Remez", 36))
-filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
-@time filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
+NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
+@time NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:lp, order=128, cutoff=20, bw=0.5);
 print(rpad("Filter: polynomial (8)", 36))
-filter(e10, fprototype=:poly, order=8, window=256);
-@time filter(e10, fprototype=:poly, order=8, window=256);
+NeuroAnalyzer.filter(e10, fprototype=:poly, order=8, window=256);
+@time NeuroAnalyzer.filter(e10, fprototype=:poly, order=8, window=256);
 print(rpad("Filter: moving average", 36))
-filter(e10, fprototype=:mavg);
-@time filter(e10, fprototype=:mavg);
+NeuroAnalyzer.filter(e10, fprototype=:mavg);
+@time NeuroAnalyzer.filter(e10, fprototype=:mavg);
 print(rpad("Interpolate: PL", 36))
 plinterpolate_channel(e10, channel=1, epoch=1);
 @time plinterpolate_channel(e10, channel=1, epoch=1);
@@ -173,11 +173,11 @@ print(rpad("Band power: mt", 36))
 band_power(e10, f=(10, 20), mt=true);
 @time band_power(e10, f=(10, 20), mt=true);
 print(rpad("Covariance matrix", 36))
-cov(e10);
-@time cov(e10);
+covm(e10);
+@time covm(e10);
 print(rpad("Correlation matrix", 36))
-cor(e10);
-@time cor(e10);
+corm(e10);
+@time corm(e10);
 print(rpad("Auto-covariance", 36))
 acov(e10);
 @time acov(e10);
@@ -194,8 +194,8 @@ print(rpad("PSD: mt", 36))
 psd(e10, mt=true);
 @time psd(e10, mt=true);
 print(rpad("PSD: mw ", 36))
-mwpsd(e10);
-@time mwpsd(e10);
+psd_mw(e10);
+@time psd_mw(e10);
 print(rpad("Stationarity: mean", 36))
 stationarity(e10, method=:mean);
 @time stationarity(e10, method=:mean);
@@ -212,11 +212,11 @@ print(rpad("Stationarity: adf", 36))
 stationarity(e10, method=:adf);
 @time stationarity(e10, method=:adf);
 print(rpad("Mutual information 1", 36))
-mi(e10);
-@time mi(e10);
+mutual_information(e10);
+@time mutual_information(e10);
 print(rpad("Mutual information 2", 36))
-mi(e10, e10);
-@time mi(e10, e10);
+mutual_information(e10, e10);
+@time mutual_information(e10, e10);
 print(rpad("Entropy", 36))
 entropy(e10);
 @time entropy(e10);
@@ -236,20 +236,20 @@ print(rpad("Epoch stats", 36))
 epoch_stats(e10);
 @time epoch_stats(e10);
 print(rpad("Spectrogram: standard", 36))
-spectrogram(e10);
-@time spectrogram(e10);
+NeuroAnalyzer.spectrogram(e10);
+@time NeuroAnalyzer.spectrogram(e10);
 print(rpad("Spectrogram: mt", 36))
-spectrogram(e10, method=:mt);
-@time spectrogram(e10, method=:mt);
+NeuroAnalyzer.spectrogram(e10, method=:mt);
+@time NeuroAnalyzer.spectrogram(e10, method=:mt);
 print(rpad("Spectrogram: stft", 36))
-spectrogram(e10, method=:stft);
-@time spectrogram(e10, method=:stft);
+NeuroAnalyzer.spectrogram(e10, method=:stft);
+@time NeuroAnalyzer.spectrogram(e10, method=:stft);
 print(rpad("Spectrogram: mw", 36))
-spectrogram(e10, method=:mw);
-@time spectrogram(e10, method=:mw);
+NeuroAnalyzer.spectrogram(e10, method=:mw);
+@time NeuroAnalyzer.spectrogram(e10, method=:mw);
 print(rpad("Spectrogram: cwt", 36))
-spectrogram(e10, method=:cwt);
-@time spectrogram(e10, method=:cwt);
+NeuroAnalyzer.spectrogram(e10, method=:cwt);
+@time NeuroAnalyzer.spectrogram(e10, method=:cwt);
 print(rpad("Spectrum: FFT", 36))
 spectrum(e10);
 @time spectrum(e10);
@@ -277,11 +277,11 @@ dft(e10);
 print(rpad("MSCI95: normal", 36))
 msci95(e10);
 @time msci95(e10);
-print(rpad("MSCI95:boot", 36))
+print(rpad("MSCI95: boot", 36))
 msci95(e10, method=:boot);
 @time msci95(e10);
-print(rpad("Mean", 36))
-mean(e10, e10);
+print(rpad("MSCI85: 2 objects", 36))
+msci95(e10, e10);
 @time mean(e10, e10);
 print(rpad("Subtract channels", 36))
 chdiff(e10, e10); 
@@ -341,17 +341,17 @@ print(rpad("PLI 2", 36))
 pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 @time pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Envelope correlation: amp", 36))
-ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
-@time ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
+@time env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:amp);
 print(rpad("Envelope correlation: pow", 36))
-ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
-@time ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
+@time env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:pow);
 print(rpad("Envelope correlation: spec", 36))
-ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
-@time ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
+@time env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:spec);
 print(rpad("Envelope correlation: hamp", 36))
-ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
-@time ec(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
+env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
+@time env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1, type=:hamp);
 print(rpad("GED", 36))
 ged(e10, e10);
 @time ged(e10, e10);
@@ -374,8 +374,8 @@ print(rpad("Band power", 36))
 band_mpower(e10; f=(10, 20));
 @time band_mpower(e10; f=(10, 20));
 print(rpad("Relative PSD", 36))
-rel_psd(e10; f=(10, 20));
-@time rel_psd(e10; f=(10, 20));
+psd_rel(e10; f=(10, 20));
+@time psd_rel(e10; f=(10, 20));
 print(rpad("Frequency band split", 36))
 fbsplit(e10);
 @time fbsplit(e10);
@@ -392,11 +392,11 @@ print(rpad("Amplitude difference", 36))
 ampdiff(e10);
 @time ampdiff(e10);
 print(rpad("DWT", 36))
-dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
-@time dwt(e10, wt=wavelet(WT.haar), type=:sdwt);
+dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt);
+@time dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt);
 print(rpad("CWT", 36))
-cwt(e10, wt=wavelet(Morlet(π), β=2));
-@time cwt(e10, wt=wavelet(Morlet(π), β=2));
+cw_trans(e10, wt=wavelet(Morlet(π), β=2));
+@time cw_trans(e10, wt=wavelet(Morlet(π), β=2));
 print(rpad("PSD slope", 36))
 psdslope(e10);
 @time psdslope(e10);
@@ -406,12 +406,12 @@ apply(e10, f="mean(eeg, dims=1)", channel=1:4);
 print(rpad("Normalize", 36))
 normalize(e10, method=:zscore);
 @time normalize(e10, method=:zscore);
-print(rpad("Demean", 36))
-demean(e10);
-@time demean(e10);
+print(rpad("Remove DC", 36))
+remove_dc(e10);
+@time remove_dc(e10);
 print(rpad("Taper", 36))
-taper(e10, taper=generate_window(:hann, epoch_len(e10)));
-@time taper(e10, taper=generate_window(:hann, epoch_len(e10)));
+taper(e10, t=generate_window(:hann, epoch_len(e10)));
+@time taper(e10, t=generate_window(:hann, epoch_len(e10)));
 print(rpad("Derivative", 36))
 derivative(e10);
 @time derivative(e10);
@@ -421,6 +421,9 @@ detrend(e10, type=:constant);
 print(rpad("Wiener denoising", 36))
 denoise_wien(e10);
 @time denoise_wien(e10);
+print(rpad("FFT denoising", 36))
+denoise_fft(e10);
+@time denoise_fft(e10);
 print(rpad("Generate PCA", 36))
 pca(e10, n=4);
 @time pca(e10, n=4);

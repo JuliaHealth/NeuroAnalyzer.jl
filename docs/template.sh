@@ -5,47 +5,65 @@ echo ""
 echo "## NeuroAnalyzer"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/na.jl | grep ^function | sed s/"function "//g
+cat ../na.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
-echo "## Low-level functions"
+echo "## Utils"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/low_level.jl | grep ^function | sed s/"function "//g
+cat ../utils/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## IO"
+echo ""
+echo "\`\`\`@docs"
+cat ../io/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## Edit"
+echo ""
+echo "\`\`\`@docs"
+cat ../edit/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## Process"
+echo ""
+echo "\`\`\`@docs"
+cat ../process/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## Locs"
+echo ""
+echo "\`\`\`@docs"
+cat ../locs/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## Analyze"
+echo ""
+echo "\`\`\`@docs"
+cat ../analyze/*.jl | grep ^function | sed s/"function "//g
+echo "\`\`\`"
+echo ""
+echo "## Plot"
+echo ""
+echo "\`\`\`@docs"
+cat ../plots/*.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
 echo "## Statistics"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/statistics.jl | grep ^function | sed s/"function "//g
+cat ../statistics/*.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
-echo "## EEG I/O"
+echo "## Study"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/eeg_io.jl | grep ^function | sed s/"function "//g
+cat ../study/*.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"
 echo ""
-echo "## EEG edit"
+echo "## NIBS"
 echo ""
 echo "\`\`\`@docs"
-cat ../src/eeg_edit.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## EEG process"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/eeg_process.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## EEG analyze"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/eeg_analyze.jl | grep ^function | sed s/"function "//g
-echo "\`\`\`"
-echo ""
-echo "## EEG plots"
-echo ""
-echo "\`\`\`@docs"
-cat ../src/eeg_plots.jl | grep ^function | sed s/"function "//g
+cat ../stim/*.jl | grep ^function | sed s/"function "//g
 echo "\`\`\`"

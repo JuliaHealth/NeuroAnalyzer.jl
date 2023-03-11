@@ -4,7 +4,7 @@ export load_locs!
 """
     load_locs(obj; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
+Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
 
 Accepted formats:
 - CED
@@ -16,7 +16,7 @@ Accepted formats:
 - GEO
 - MAT
 
-Electrode locations:
+Channel locations:
 - `loc_theta`       planar polar angle
 - `loc_radius`      planar polar radius
 - `loc_x`           spherical Cartesian x
@@ -113,7 +113,7 @@ end
 """
     load_locs!(obj; file_name)
 
-Load electrode positions from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
+Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame. 
 
 Accepted formats:
 - CED
@@ -125,7 +125,7 @@ Accepted formats:
 - GEO
 - MAT
 
-Electrode locations:
+Channel locations:
 - `loc_theta`       planar polar angle
 - `loc_radius`      planar polar radius
 - `loc_x`           spherical Cartesian x

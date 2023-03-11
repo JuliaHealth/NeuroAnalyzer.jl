@@ -95,7 +95,7 @@ FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
 # NA functions
-include("utils/na.jl")
+include("na.jl")
 
 function __init__()
 
@@ -291,7 +291,6 @@ include("utils/frequency.jl")
 include("utils/generate.jl")
 include("utils/header.jl")
 include("utils/info.jl")
-include("utils/locs_convert.jl")
 include("utils/matrix.jl")
 include("utils/misc.jl")
 include("utils/note.jl")
