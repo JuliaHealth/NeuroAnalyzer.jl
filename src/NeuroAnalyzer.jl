@@ -126,6 +126,7 @@ end
 # internal functions are exposed outside NA
 include("internal/ch_idx.jl")
 include("internal/check.jl")
+include("internal/component.jl")
 include("internal/create_header.jl")
 include("internal/draw_head.jl")
 include("internal/fiff.jl")

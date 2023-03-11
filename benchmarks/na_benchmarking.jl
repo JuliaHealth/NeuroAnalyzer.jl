@@ -227,11 +227,11 @@ print(rpad("Time coherence", 36))
 tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 print(rpad("Signal difference: absdiff", 36))
-difference(e10, e10; method=:absdiff);
-@time difference(e10, e10; method=:absdiff);
+difference(e10, e10, method=:absdiff);
+@time difference(e10, e10, method=:absdiff);
 print(rpad("Signal difference: diff2int", 36))
-difference(e10, e10; method=:diff2int);
-@time difference(e10, e10; method=:diff2int);
+difference(e10, e10, method=:diff2int);
+@time difference(e10, e10, method=:diff2int);
 print(rpad("Epoch stats", 36))
 epoch_stats(e10);
 @time epoch_stats(e10);
@@ -371,11 +371,11 @@ print(rpad("F-test 2", 36))
 vartest(e10, e10);
 @time vartest(e10, e10);
 print(rpad("Band power", 36))
-band_mpower(e10; f=(10, 20));
-@time band_mpower(e10; f=(10, 20));
+band_mpower(e10, f=(10, 20));
+@time band_mpower(e10, f=(10, 20));
 print(rpad("Relative PSD", 36))
-psd_rel(e10; f=(10, 20));
-@time psd_rel(e10; f=(10, 20));
+psd_rel(e10, f=(10, 20));
+@time psd_rel(e10, f=(10, 20));
 print(rpad("Frequency band split", 36))
 fbsplit(e10);
 @time fbsplit(e10);
@@ -391,6 +391,9 @@ cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
 print(rpad("Amplitude difference", 36))
 ampdiff(e10);
 @time ampdiff(e10);
+print(rpad("Phase difference", 36))
+phdiff(e10);
+@time phdiff(e10);
 print(rpad("DWT", 36))
 dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt);
 @time dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt);
@@ -430,12 +433,12 @@ pca(e10, n=4);
 print(rpad("Generate ICA", 36))
 ica(e10, n=15, tol=1.0);
 @time ica(e10, n=15, tol=1.0);
-i, i_mw = ica(e10, n=15, tol=1.0)
-e10_ica = add_component(e10, c=:ica, v=i);
-add_component!(e10_ica, c=:ica_mw, v=i_mw);
+ic, ic_mw = ica(e10, n=15, tol=1.0)
+e10_ica = add_component(e10, c=:ic, v=ic);
+add_component!(e10_ica, c=:ic_mw, v=ic_mw);
 print(rpad("Remove ICA", 36))
-ica_reconstruct(e10_ica, ic=1);
-@time ica_reconstruct(e10_ica, ic=1);
+ica_reconstruct(e10_ica, ic_idx=1);
+@time ica_reconstruct(e10_ica, ic_idx=1);
 print(rpad("Split using DWT", 36))
-bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);
-@time bands_dwt(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);
+dwtsplit(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);
+@time dwtsplit(e10, channel=1, wt=wavelet(WT.db2), type=:sdwt, n=5);

@@ -1,8 +1,8 @@
-export fftdenoise
-export fftdenoise!
+export denoise_fft
+export denoise_fft!
 
 """
-   fftdenoise(signal; pad, threshold) 
+   denoise_fft(signal; pad, threshold) 
 
 Perform FFT denoising.
 
@@ -18,7 +18,7 @@ Named tuple containing:
 - `s_denoised::Vector{Float64}`
 - `frq_idx::BitVector`: index of components zeroed
 """
-function fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
+function denoise_fft(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
 
     s_fft = fft0(signal, pad)
     s_pow = (real.(s_fft .* conj.(s_fft))) ./ length(signal)
@@ -33,7 +33,7 @@ function fftdenoise(signal::AbstractVector; pad::Int64=0, threshold::Real=0)
 end
 
 """
-    fftdenoise(obj; channel, pad, threshold)
+    denoise_fft(obj; channel, pad, threshold)
 
 Perform FFT denoising.
 
@@ -48,7 +48,7 @@ Perform FFT denoising.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function fftdenoise(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
+function denoise_fft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
 
     _check_channels(obj, channel)
 
@@ -57,18 +57,18 @@ function fftdenoise(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in eachindex(channel)
-                obj_new.data[channel[ch_idx], :, ep_idx], _ = @views fftdenoise(obj_new.data[channel[ch_idx], :, ep_idx], pad=pad, threshold=threshold)
+                obj_new.data[channel[ch_idx], :, ep_idx], _ = @views denoise_fft(obj_new.data[channel[ch_idx], :, ep_idx], pad=pad, threshold=threshold)
         end
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "fftdenoise(OBJ, channel=$channel, pad=$pad, threshold=$threshold)")
+    push!(obj_new.header.history, "denoise_fft(OBJ, channel=$channel, pad=$pad, threshold=$threshold)")
 
     return obj_new
 end
 
 """
-    fftdenoise!(obj; channel, pad, threshold)
+    denoise_fft!(obj; channel, pad, threshold)
 
 Perform FFT denoising.
 
@@ -79,9 +79,9 @@ Perform FFT denoising.
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 """
-function fftdenoise!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
+function denoise_fft!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
 
-    obj_tmp = fftdenoise(obj, channel=channel, pad=pad, threshold=threshold)
+    obj_tmp = denoise_fft(obj, channel=channel, pad=pad, threshold=threshold)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
     reset_components!(obj)
