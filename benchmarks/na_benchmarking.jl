@@ -98,6 +98,9 @@ keep_epoch(e10_tmp, epoch=1);
 print(rpad("Virtual channel", 36))
 vch(e10, f="fp1 + fp2");
 @time vch(e10, f="fp1 + fp2");
+print(rpad("Detect bad channels and epochs", 36))
+detect_bad(e10)
+@time detect_bad(e10)
 
 @info "Benchmarking: PROCESS"
 println()
@@ -160,27 +163,104 @@ println()
 println("# ANALYZE")
 println()
 
-print(rpad("Total power", 36))
-total_power(e10);
-@time total_power(e10);
-print(rpad("Total power: mt", 36))
-total_power(e10, mt=true);
-@time total_power(e10, mt=true);
+print(rpad("Amplitude difference", 36))
+ampdiff(e10);
+@time ampdiff(e10);
+print(rpad("Auto-covariance", 36))
+acov(e10);
+@time acov(e10);
 print(rpad("Band power", 36))
 band_power(e10, f=(10, 20));
 @time band_power(e10, f=(10, 20));
 print(rpad("Band power: mt", 36))
 band_power(e10, f=(10, 20), mt=true);
 @time band_power(e10, f=(10, 20), mt=true);
-print(rpad("Covariance matrix", 36))
-covm(e10);
-@time covm(e10);
+print(rpad("Band mpower", 36))
+band_mpower(e10, f=(10, 20));
+@time band_mpower(e10, f=(10, 20));
+print(rpad("Band mpower: mt", 36))
+band_mpower(e10, f=(10, 20), mt=true);
+@time band_mpower(e10, f=(10, 20), mt=true);
 print(rpad("Correlation matrix", 36))
 corm(e10);
 @time corm(e10);
-print(rpad("Auto-covariance", 36))
-acov(e10);
-@time acov(e10);
+print(rpad("Covariance matrix", 36))
+covm(e10);
+@time covm(e10);
+print(rpad("Cross power spectrum 1", 36))
+cps(e10);
+@time cps(e10);
+print(rpad("Cross power spectrum 2", 36))
+cps(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1);
+@time cps(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1);
+print(rpad("DISS", 36))
+diss(e10);
+@time diss(e10);
+print(rpad("Entropy", 36))
+entropy(e10);
+@time entropy(e10);
+print(rpad("Negentropy", 36))
+negentropy(e10);
+@time negentropy(e10);
+print(rpad("Temporal envelope", 36))
+tenv(e10);
+@time tenv(e10);
+print(rpad("Temporal envelope: mean", 36))
+tenv_mean(e10, dims=1);
+@time tenv_mean(e10, dims=1);
+print(rpad("Temporal envelope: median", 36))
+tenv_median(e10, dims=1);
+@time tenv_median(e10, dims=1);
+print(rpad("Power envelope", 36))
+penv(e10);
+@time penv(e10);
+print(rpad("Power envelope: mean", 36))
+penv_mean(e10, dims=1);
+@time penv_mean(e10, dims=1);
+print(rpad("Power envelope: median", 36))
+penv_median(e10, dims=1);
+@time penv_median(e10, dims=1);
+print(rpad("Spectral envelope", 36))
+senv(e10);
+@time senv(e10);
+print(rpad("Spectral envelope: mean", 36))
+senv_mean(e10, dims=1);
+@time senv_mean(e10, dims=1);
+print(rpad("Spectral envelope: median", 36))
+senv_median(e10, dims=1);
+@time senv_median(e10, dims=1);
+print(rpad("Hilbert amplitude envelope", 36))
+henv(e10);
+@time henv(e10);
+print(rpad("Hilbert amplitude envelope: mean", 36))
+henv_mean(e10, dims=1);
+@time henv_mean(e10, dims=1);
+print(rpad("Hilbert amplitude envelope: median", 36))
+henv_median(e10, dims=1);
+@time henv_median(e10, dims=1);
+print(rpad("Envelope correlations: amplitude", 36))
+env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:amp)
+@time env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:amp)
+print(rpad("Envelope correlations: power", 36))
+env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:pow)
+@time env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:pow)
+print(rpad("Envelope correlations: spectrogram", 36))
+env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:spec)
+@time env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:spec)
+print(rpad("Envelope correlations: Hilbert amplitude", 36))
+env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:hamp)
+@time env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:hamp)
+print(rpad("ERP peaks", 36))
+erp_peaks(e10, dims=1);
+@time erp_peaks(e10, dims=1);
+
+
+print(rpad("Total power", 36))
+total_power(e10);
+@time total_power(e10);
+print(rpad("Total power: mt", 36))
+total_power(e10, mt=true);
+@time total_power(e10, mt=true);
 print(rpad("Cross-covariance 1", 36))
 xcov(e10, lag=10, demean=true);
 @time xcov(e10, lag=10, demean=true);
@@ -217,21 +297,15 @@ mutual_information(e10);
 print(rpad("Mutual information 2", 36))
 mutual_information(e10, e10);
 @time mutual_information(e10, e10);
-print(rpad("Entropy", 36))
-entropy(e10);
-@time entropy(e10);
-print(rpad("Negentropy", 36))
-negentropy(e10);
-@time negentropy(e10);
 print(rpad("Time coherence", 36))
 tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 @time tcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2);
 print(rpad("Signal difference: absdiff", 36))
-difference(e10, e10, method=:absdiff);
-@time difference(e10, e10, method=:absdiff);
+mdiff(e10, e10, method=:absdiff);
+@time mdiff(e10, e10, method=:absdiff);
 print(rpad("Signal difference: diff2int", 36))
-difference(e10, e10, method=:diff2int);
-@time difference(e10, e10, method=:diff2int);
+mdiff(e10, e10, method=:diff2int);
+@time mdiff(e10, e10, method=:diff2int);
 print(rpad("Epoch stats", 36))
 epoch_stats(e10);
 @time epoch_stats(e10);
@@ -286,42 +360,6 @@ msci95(e10, e10);
 print(rpad("Subtract channels", 36))
 chdiff(e10, e10); 
 @time chdiff(e10, e10); 
-print(rpad("Temporal envelope", 36))
-tenv(e10);
-@time tenv(e10);
-print(rpad("Temporal envelope: mean", 36))
-tenv_mean(e10, dims=1);
-@time tenv_mean(e10, dims=1);
-print(rpad("Temporal envelope: median", 36))
-tenv_median(e10, dims=1);
-@time tenv_median(e10, dims=1);
-print(rpad("Power envelope", 36))
-penv(e10);
-@time penv(e10);
-print(rpad("Power envelope: mean", 36))
-penv_mean(e10, dims=1);
-@time penv_mean(e10, dims=1);
-print(rpad("Power envelope: median", 36))
-penv_median(e10, dims=1);
-@time penv_median(e10, dims=1);
-print(rpad("Spectral envelope", 36))
-senv(e10);
-@time senv(e10);
-print(rpad("Spectral envelope: mean", 36))
-senv_mean(e10, dims=1);
-@time senv_mean(e10, dims=1);
-print(rpad("Spectral envelope: median", 36))
-senv_median(e10, dims=1);
-@time senv_median(e10, dims=1);
-print(rpad("Hilbert amplitude envelope", 36))
-henv(e10);
-@time henv(e10);
-print(rpad("Hilbert amplitude envelope: mean", 36))
-henv_mean(e10, dims=1);
-@time henv_mean(e10, dims=1);
-print(rpad("Hilbert amplitude envelope: median", 36))
-henv_median(e10, dims=1);
-@time henv_median(e10, dims=1);
 print(rpad("ISPC 1", 36))
 ispc(e10);
 @time ispc(e10);
@@ -370,9 +408,6 @@ vartest(e10);
 print(rpad("F-test 2", 36))
 vartest(e10, e10);
 @time vartest(e10, e10);
-print(rpad("Band power", 36))
-band_mpower(e10, f=(10, 20));
-@time band_mpower(e10, f=(10, 20));
 print(rpad("Relative PSD", 36))
 psd_rel(e10, f=(10, 20));
 @time psd_rel(e10, f=(10, 20));
@@ -382,15 +417,6 @@ fbsplit(e10);
 print(rpad("Channel difference", 36))
 chdiff(e10, e10, channel1=1, channel2=2);
 @time chdiff(e10, e10, channel1=1, channel2=2);
-print(rpad("Cross power spectrum 1", 36))
-cps(e10);
-@time cps(e10);
-print(rpad("Cross power spectrum 2", 36))
-cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-@time cps(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1);
-print(rpad("Amplitude difference", 36))
-ampdiff(e10);
-@time ampdiff(e10);
 print(rpad("Phase difference", 36))
 phdiff(e10);
 @time phdiff(e10);

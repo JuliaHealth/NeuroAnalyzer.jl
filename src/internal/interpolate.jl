@@ -1,4 +1,4 @@
-function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector{Float64}, interpolation_factor::Int64=100, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
+function _interpolate(s::AbstractVector, loc_x::Vector{Float64}, loc_y::Vector{Float64}, interpolation_factor::Int64=100, imethod::Symbol=:sh, nmethod::Symbol=:minmax)
     # `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     x_lim_int = (-1.4, 1.4)
@@ -13,20 +13,20 @@ function _interpolate(signal::AbstractVector, loc_x::Vector{Float64}, loc_y::Vec
             interpolation_m[idx1, idx2] = (interpolated_x[idx1], interpolated_y[idx2])
         end
     end
-    signal_interpolated = zeros(interpolation_factor, interpolation_factor)
+    s_interpolated = zeros(interpolation_factor, interpolation_factor)
     electrode_locations = [loc_x loc_y]'
-    imethod === :sh && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, signal))
-    imethod === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, signal))
-    imethod === :imq && (itp = ScatteredInterpolation.interpolate(InverseMultiquadratic(), electrode_locations, signal))
-    imethod === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, signal))
-    imethod === :nn && (itp = ScatteredInterpolation.interpolate(NearestNeighbor(), electrode_locations, signal))
-    imethod === :ga && (itp = ScatteredInterpolation.interpolate(Gaussian(), electrode_locations, signal))
+    imethod === :sh && (itp = ScatteredInterpolation.interpolate(Shepard(), electrode_locations, s))
+    imethod === :mq && (itp = ScatteredInterpolation.interpolate(Multiquadratic(), electrode_locations, s))
+    imethod === :imq && (itp = ScatteredInterpolation.interpolate(InverseMultiquadratic(), electrode_locations, s))
+    imethod === :tp && (itp = ScatteredInterpolation.interpolate(ThinPlate(), electrode_locations, s))
+    imethod === :nn && (itp = ScatteredInterpolation.interpolate(NearestNeighbor(), electrode_locations, s))
+    imethod === :ga && (itp = ScatteredInterpolation.interpolate(Gaussian(), electrode_locations, s))
     @inbounds @simd for idx1 in 1:interpolation_factor
         for idx2 in 1:interpolation_factor
-            signal_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
+            s_interpolated[idx1, idx2] = ScatteredInterpolation.evaluate(itp, [interpolation_m[idx1, idx2][1]; interpolation_m[idx1, idx2][2]])[1]
         end
     end
-    signal_interpolated = signal_interpolated'
+    s_interpolated = s_interpolated'
     
-    return normalize(signal_interpolated, method=nmethod), interpolated_x, interpolated_y
+    return normalize(s_interpolated, method=nmethod), interpolated_x, interpolated_y
 end

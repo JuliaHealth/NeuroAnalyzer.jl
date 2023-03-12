@@ -109,14 +109,14 @@ function psd(signal::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false)
 end
 
 """
-    psd(obj; channel, norm, mt)
+    psd(obj; ch, norm, mt)
 
 Calculate power spectrum density.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -127,19 +127,19 @@ Named tuple containing:
 - `psd_pow::Array{Float64, 3}`:powers
 - `psd_frq::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     fs = sr(obj)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
     
     _, psd_frq = psd(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt)
-    psd_pow = zeros(length(channel), length(psd_frq), ep_n)
+    psd_pow = zeros(length(ch), length(psd_frq), ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            psd_pow[ch_idx, :, ep_idx], _ = psd(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
+            psd_pow[ch_idx, :, ep_idx], _ = psd(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt)
         end
     end
 

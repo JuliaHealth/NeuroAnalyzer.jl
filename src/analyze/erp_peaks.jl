@@ -15,8 +15,8 @@ Detect a pair of positive and negative peaks of ERP.
 """
 function erp_peaks(obj::NeuroAnalyzer.NEURO)
 
-    channels = signal_channels(obj)
-    erp_obj = erp(obj).data[channels, :]
+    ch = signal_channels(obj)
+    erp_obj = erp(obj).data[ch, :]
 
     ch_n = size(erp_obj, 1)
     p = zeros(Int64, ch_n, 2)
@@ -27,4 +27,5 @@ function erp_peaks(obj::NeuroAnalyzer.NEURO)
     end
 
     return p
+    
 end

@@ -1,14 +1,50 @@
-function _has_markers(channel_types::Vector{String})
-    markers = false
-    markers_channel = 0
-    if "mrk" in channel_types
-        markers = true
-        markers_channel = nothing
-        for ch_idx in eachindex(channel_types)
-            channel_types[ch_idx] == "mrk" && (markers_channel = ch_idx)
+function _channel2channel_name(channel::Union{Int64, Vector{Int64}, AbstractRange})
+    if typeof(channel) == Int64
+        return channel
+    else
+        if collect(channel[1]:channel[end]) == channel
+            channel_name = string(channel[1]) * ":" * string(channel[end])
+        else
+            channel_name = ""
+            for idx in 1:(length(channel) - 1)
+                channel_name *= string(channel[idx])
+                channel_name *= ", "
+            end
+            channel_name *= string(channel[end])
         end
     end
-    return markers, markers_channel
+    return channel_name
+end
+
+function _map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, channels=Vector{Int64})
+    channel_orig = channel
+    if typeof(channel) == Int64
+        channel = vsearch(channel, channels)
+    else
+        for idx in eachindex(channel)
+            channel[idx] = vsearch(channel[idx], channels)
+        end
+    end
+    return channel, channel_orig
+end
+
+function _get_ch_idx(clabels::Vector{String}, ch::Union{String, Int64})
+    if typeof(ch) == String
+        ch_found = nothing
+        for idx in eachindex(clabels)
+            if ch == clabels[idx]
+                ch_found = idx
+            end
+        end
+        if ch_found === nothing
+            throw(ArgumentError("ch name does not match signal labels."))
+        end
+    else
+        ch < 1 || ch > length(clabels) && throw(ArgumentError("channel index does not match signal channels."))
+        ch_found = ch
+    end
+
+    return ch_found
 end
 
 function _set_channel_types(clabels::Vector{String})
@@ -39,6 +75,7 @@ function _set_channel_types(clabels::Vector{String})
         for idx2 in eachindex(ref_channels)
             occursin(ref_channels[idx2], lowercase(clabels[idx])) && (channel_type[idx] = "ref")
         end
+        occursin("stim", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("mark", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("marker", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
         occursin("markers", lowercase(clabels[idx])) && (channel_type[idx] = "mrk")
@@ -62,25 +99,6 @@ function _set_channel_types(clabels::Vector{String})
         (length(clabels[idx]) > 1 && lowercase(clabels[idx])[1:2] == "af") && (channel_type[idx] = "eeg")
     end
     return channel_type
-end
-
-function _m2df(markers::Vector{String})
-    # convert EDF/BDF markers to DataFrame
-    markers = replace.(markers, "\x14\x14\0" => "|")
-    markers = replace.(markers, "\x14\x14" => "|")
-    markers = replace.(markers, "\x14" => "|")
-    markers = replace.(markers, "\0" => "")
-    a_start = Vector{Float64}()
-    a_event = Vector{String}()
-    # what about markers containing event duration?
-    for idx in eachindex(markers)
-        s = split(markers[idx], "|")
-        if length(s) > 2
-            push!(a_start, parse(Float64, strip(s[2])))
-            push!(a_event, strip(s[3]))
-        end
-    end
-    return DataFrame(:id=>repeat([""], length(a_event)), :start=>a_start, :length=>zeros(Int64, length(a_event)), :description=>a_event, :channel=>zeros(Int64, length(a_event)))
 end
 
 function _sort_channels(ch_t::Vector{String})

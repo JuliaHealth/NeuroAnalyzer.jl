@@ -13,13 +13,13 @@ export normalize_perc
 export normalize_invroot
 
 """
-    normalize(signal, n; method)
+    normalize(s, n; method)
 
 Normalize.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `n::Real`
 - `method::Symbol`: :zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :none
 
@@ -27,260 +27,260 @@ Normalize.
 
 - `normalized::Vector{Float64}`
 """
-function normalize(signal::AbstractArray, n::Real=1.0; method::Symbol)
+function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
 
     _check_var(method, [:zscore, :minmax, :log, :log10, :neglog, :neglog10, :neg, :pos, :perc, :gauss, :invroot, :n, :none], "method")
 
     if method === :zscore
-        return normalize_zscore(signal)
+        return normalize_zscore(s)
     elseif method === :minmax
-        return normalize_minmax(signal)
+        return normalize_minmax(s)
     elseif method === :log
-        return normalize_log(signal)
+        return normalize_log(s)
     elseif method === :log10
-        return normalize_log10(signal)
+        return normalize_log10(s)
     elseif method === :neglog
-        return normalize_neglog(signal)
+        return normalize_neglog(s)
     elseif method === :neglog10
-        return normalize_neglog10(signal)
+        return normalize_neglog10(s)
     elseif method === :neg
-        return normalize_neg(signal)
+        return normalize_neg(s)
     elseif method === :pos
-        return normalize_pos(signal)
+        return normalize_pos(s)
     elseif method === :perc
-        return normalize_perc(signal)
+        return normalize_perc(s)
     elseif method === :gauss
-        return normalize_gauss(signal)
+        return normalize_gauss(s)
     elseif method === :invroot
-        return normalize_invroot(signal)
+        return normalize_invroot(s)
     elseif method === :n
-        return normalize_n(signal, n)
+        return normalize_n(s, n)
     elseif method === :none
-        return signal
+        return s
     end
 end
 
 """
-    normalize_zscore(signal)
+    normalize_zscore(s)
 
 Normalize (by z-score).
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_zscore(signal::AbstractArray)
-    m = mean(signal)
-    s = std(signal)
-    return @. (signal - m) / s
+function normalize_zscore(s::AbstractArray)
+    m = mean(s)
+    s = std(s)
+    return @. (s - m) / s
 end
 
 """
-    normalize_minmax(signal)
+    normalize_minmax(s)
 
 Normalize in [-1, +1].
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::AbstractArray`
 """
-function normalize_minmax(signal::AbstractArray)
-    mi = minimum(signal)
-    mx = maximum(signal)
+function normalize_minmax(s::AbstractArray)
+    mi = minimum(s)
+    mx = maximum(s)
     mxi = mx - mi
-    return @. (2 * (signal - mi) / mxi) - 1
+    return @. (2 * (s - mi) / mxi) - 1
 end
 
 """
-    normalize_n(signal, n)
+    normalize_n(s, n)
 
 Normalize in [0, n], default is [0, +1].
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `n::Real=1.0`
 
 # Returns
 
 - `normalized::AbstractArray`
 """
-function normalize_n(signal::AbstractArray, n::Real=1.0)
-    max_x = maximum(signal)
-    min_x = minimum(signal)
-    return n .* (signal .- min_x) ./ (max_x - min_x)
+function normalize_n(s::AbstractArray, n::Real=1.0)
+    max_x = maximum(s)
+    min_x = minimum(s)
+    return n .* (s .- min_x) ./ (max_x - min_x)
 end
 
 """
-    normalize_log(signal)
+    normalize_log(s)
 
 Normalize using log-transformation.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::AbstractArray`
 """
-function normalize_log(signal::AbstractArray)
-    m = abs(minimum(signal))
-    return @. log(1 + signal + m)
+function normalize_log(s::AbstractArray)
+    m = abs(minimum(s))
+    return @. log(1 + s + m)
 end
 
 """
-    normalize_gauss(signal, dims)
+    normalize_gauss(s, dims)
 
 Normalize to Gaussian.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `dims::Int64=1`: dimension for cumsum()
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_gauss(signal::AbstractArray, dims::Int64=1)
-    dims in 1:ndims(signal) || throw(ArgumentError("dims must be in: 1:$(ndims(signal)).")) 
-    l = length(signal) + 1
-    return atanh.((tiedrank(cumsum(signal, dims=dims)) ./ l .- 0.5) .* 2)
+function normalize_gauss(s::AbstractArray, dims::Int64=1)
+    dims in 1:ndims(s) || throw(ArgumentError("dims must be in: 1:$(ndims(s)).")) 
+    l = length(s) + 1
+    return atanh.((tiedrank(cumsum(s, dims=dims)) ./ l .- 0.5) .* 2)
 end
 
 """
-    normalize_log10(signal)
+    normalize_log10(s)
 
 Normalize using log10-transformation.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_log10(signal::AbstractArray)
-    m = 1 + abs(minimum(signal))
-    return @. log10(signal + m)
+function normalize_log10(s::AbstractArray)
+    m = 1 + abs(minimum(s))
+    return @. log10(s + m)
 end
 
 """
-    normalize_neglog(signal)
+    normalize_neglog(s)
 
 Normalize to using -log-transformation.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_neglog(signal::AbstractArray)
-    return @. -log(signal)
+function normalize_neglog(s::AbstractArray)
+    return @. -log(s)
 end
 
 """
-    normalize_neglog10(signal)
+    normalize_neglog10(s)
 
 Normalize using -log10-transformation.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_neglog10(signal::AbstractArray)
-    return @. -log10(signal)
+function normalize_neglog10(s::AbstractArray)
+    return @. -log10(s)
 end
 
 """
-    normalize_neg(signal)
+    normalize_neg(s)
 
 Normalize in [0, -∞].
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_neg(signal::AbstractArray)
-    m = maximum(signal)
-    return @. signal - m
+function normalize_neg(s::AbstractArray)
+    m = maximum(s)
+    return @. s - m
 end
 
 """
-    normalize_pos(signal)
+    normalize_pos(s)
 
 Normalize in [0, +∞].
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_pos(signal::AbstractArray)
-    m = abs(minimum(signal))
-    return @. signal + m
+function normalize_pos(s::AbstractArray)
+    m = abs(minimum(s))
+    return @. s + m
 end
 
 """
-    normalize_perc(signal)
+    normalize_perc(s)
 
 Normalize in percentages.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_perc(signal::AbstractArray)
-    m1 = minimum(signal)
-    m2 = maximum(signal)
+function normalize_perc(s::AbstractArray)
+    m1 = minimum(s)
+    m2 = maximum(s)
     m = m2 - m1
-    return (signal .- m1) ./ m
+    return (s .- m1) ./ m
 end
 
 """
-    normalize_invroot(signal)
+    normalize_invroot(s)
 
 Normalize in inverse root (1/sqrt(x)).
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `normalized::Vector{Float64}`
 """
-function normalize_invroot(signal::AbstractArray)
-    # make signal > 0
-    return 1 ./ (sqrt.(signal .+ abs(minimum(signal)) .+ eps()))
+function normalize_invroot(s::AbstractArray)
+    # make s > 0
+    return 1 ./ (sqrt.(s .+ abs(minimum(s)) .+ eps()))
 end
 
 """

@@ -1,183 +1,101 @@
 export band_power
-export band_mpower
 
 """
-    band_power(signal; fs, f, mt)
+    band_power(s; fs, f, mt)
 
 Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
-- `sbp::Float64`: signal band power
+- `bp::Float64`: band power
 """
-function band_power(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
+function band_power(s::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     f = tuple_order(f)
     f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
     f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
+
     if mt == true
-        p = mt_pgram(signal, fs=fs)
+        p = mt_pgram(s, fs=fs)
     else
-        p = welch_pgram(signal, 4*fs, fs=fs)
+        p = welch_pgram(s, 4*fs, fs=fs)
     end
 
-    psd_freq = Vector(p.freq)
-    f1_idx = vsearch(f[1], psd_freq)
-    f2_idx = vsearch(f[2], psd_freq)
+    pf = Vector(p.freq)
+    f1_idx = vsearch(f[1], pf)
+    f2_idx = vsearch(f[2], pf)
     frq_idx = [f1_idx, f2_idx]
 
     # dx: frequency resolution
-    dx = psd_freq[2] - psd_freq[1]
-    return simpson(p.power[frq_idx[1]:frq_idx[2]], psd_freq[frq_idx[1]:frq_idx[2]], dx=dx)
+    dx = pf[2] - pf[1]
+
+    # integrate
+    return simpson(p.power[frq_idx[1]:frq_idx[2]], pf[frq_idx[1]:frq_idx[2]], dx=dx)
 
 end
 
 """
-    band_power(signal; fs, f, mt)
+    band_power(s; fs, f, mt)
 
 Calculate absolute band power between two frequencies.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
-- `sbp::Matrix{Float64}`: band power for each channel per epoch
+- `bp::Matrix{Float64}`: band power for each channel per epoch
 """
-function band_power(signal::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
+function band_power(s::AbstractArray; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
 
-    ch_n = size(signal, 1)
-    ep_n = size(signal, 3)
-    sbp = zeros(ch_n, ep_n)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    bp = zeros(ch_n, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            @views sbp[ch_idx, ep_idx] = band_power(signal[ch_idx, :, ep_idx], fs=fs, f=f, mt=mt)
+            bp[ch_idx, ep_idx] = @views band_power(s[ch_idx, :, ep_idx], fs=fs, f=f, mt=mt)
         end
     end
 
-    return sbp
+    return bp
 
 end
 
 """
-    band_power(obj; channel, f, mt)
+    band_power(obj; ch, f, mt)
 
 Calculate absolute band power between two frequencies.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
 # Returns
 
-- `sbp::Matrix{Float64}`: band power for each channel per epoch
+- `bp::Matrix{Float64}`: band power for each ch per epoch
 """
-function band_power(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false)
+function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false)
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
 
-    return @views band_power(obj.data[channel, :, :], fs=sr(obj), f=f, mt=mt)
+    bp = @views band_power(obj.data[ch, :, :], fs=sr(obj), f=f, mt=mt)
 
-end
+    return bp
 
-export band_mpower
-
-"""
-    band_mpower(signal; fs, f)
-
-Calculate mean and maximum band power and its frequency.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `fs::Int64`: sampling rate
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
-
-# Returns
-
-Named tuple containing:
-- `mbp::Float64`: mean band power [dB]
-- `maxfrq::Float64`: frequency of maximum band power [Hz]
-- `maxbp::Float64`: power at maximum band frequency [dB]
-"""
-function band_mpower(signal::AbstractVector; fs::Int64, f::Tuple{Real, Real}, mt::Bool=false)
-
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-
-    if mt == true
-        p = mt_pgram(signal, fs=fs)
-    else
-        p = welch_pgram(signal, 4*fs, fs=fs)
-    end
-
-    psd_freq = Vector(p.freq)
-    f1_idx = vsearch(f[1], psd_freq)
-    f2_idx = vsearch(f[2], psd_freq)
-    mbp = mean(p.power[f1_idx:f2_idx])
-    maxfrq = psd_freq[f1_idx:f2_idx][findmax(p.power[f1_idx:f2_idx])[2]]
-    maxbp = p.power[vsearch(maxfrq, psd_freq)]
-
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
-end
-
-"""
-    band_mpower(obj; channel, f, mt)
-
-Calculate mean and maximum band power and its frequency.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `f::Tuple{Real, Real}`: lower and upper frequency bounds
-- `mt::Bool=false`: if true use multi-tapered periodogram
-
-# Returns
-
-Named tuple containing:
-- `mbp::Matrix{Float64}`: mean band power [μV^2/Hz] per channel per epoch
-- `maxfrq::Matrix{Float64}`: frequency of maximum band power [Hz] per channel per epoch
-- `maxbp::Matrix{Float64}`: power at maximum band frequency [μV^2/Hz] per channel per epoch
-"""
-function band_mpower(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false)
-
-    fs = sr(obj)
-    f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-    f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
-
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
-
-    mbp = zeros(ch_n, ep_n)
-    maxfrq = zeros(ch_n, ep_n)
-    maxbp = zeros(ch_n, ep_n)
-
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            mbp[ch_idx, ep_idx], maxfrq[ch_idx, ep_idx], maxbp[ch_idx, ep_idx] = @views band_mpower(obj.data[channel[ch_idx], :, ep_idx], fs=fs, f=f, mt=mt)
-        end
-    end
-
-    return (mbp=mbp, maxfrq=maxfrq, maxbp=maxbp)
 end

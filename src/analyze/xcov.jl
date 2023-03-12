@@ -1,7 +1,7 @@
 export xcov
 
 """
-   xcov(signal1, signal2; lag=1, demean=false, norm=false)
+   xcov(signal1, signal2; lag, norm)
 
 Calculate cross-covariance.
 
@@ -10,7 +10,6 @@ Calculate cross-covariance.
 - `signal1::AbstractVector`
 - `signal2::AbstractVector`
 - `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean signal prior to analysis
 - `norm::Bool`: normalize cross-covariance
 
 # Returns
@@ -19,16 +18,11 @@ Named tuple containing:
 - `ccov::Vector{Float64}`
 - `lags::Vector{Int64}`
 """
-function xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function xcov(signal1::AbstractVector, signal2::AbstractVector; lag::Int64=1, norm::Bool=false)
 
     length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
     lags = collect(-lag:lag)
-
-    if demean == true
-        signal1 = remove_dc(signal1)
-        signal2 = remove_dc(signal2)
-    end
 
     xcov_m = zeros(length(lags))
     l = length(signal1)
@@ -65,7 +59,7 @@ Named tuple containing:
 - `xcov::Matrix{Float64}`: ch1-ch1, ch1-ch2, ch1-ch3, etc.
 - `lags::Vector{Float64}`: lags in ms
 """
-function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, norm::Bool=false)
 
     _check_channels(obj, channel)
     ch_n = length(channel)
@@ -81,7 +75,7 @@ function xcov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, Abs
         xcov_packed = Array{Vector{Float64}}(undef, ch_n, ch_n)
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                xcov_packed[ch_idx1, ch_idx2], _ = @views xcov(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx], lag=lag, demean=demean, norm=norm)
+                xcov_packed[ch_idx1, ch_idx2], _ = @views xcov(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx], lag=lag, norm=norm)
             end
         end
         
@@ -110,12 +104,11 @@ Calculate cross-covariance between two NeuroAnalyzer NEURO objects.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type]))`: index of channels, default is all signal channels
-- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type]))`: index of channels, default is all signal channels
+- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
 - `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
 - `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 - `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean signal prior to analysis
 - `norm::Bool=false`: normalize cross-covariance
 
 # Returns
@@ -124,7 +117,7 @@ Named tuple containing:
 - `xcov::Array{Float64, 3}`
 - `lags::Vector{Float64}`: lags in ms
 """
-function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj1.header.recording[:data_type])), channel2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj2, type=Symbol(obj2.header.recording[:data_type])), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)), lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)), lag::Int64=1, norm::Bool=false)
 
     # check channels
     _check_channels(obj1, channel1)
@@ -146,7 +139,7 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Un
     xcov_m = zeros(length(channel1), (2 * lag + 1), length(epoch1))
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            xcov_m[ch_idx, :, ep_idx], _ = @views xcov(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, demean=demean, norm=norm)
+            xcov_m[ch_idx, :, ep_idx], _ = @views xcov(obj1.data[channel1[ch_idx], :, epoch1[ep_idx]], obj2.data[channel2[ch_idx], :, epoch2[ep_idx]], lag=lag, norm=norm)
         end
     end
 

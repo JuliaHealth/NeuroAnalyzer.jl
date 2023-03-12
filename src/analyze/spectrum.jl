@@ -2,13 +2,13 @@ export spectrum
 export hspectrum
 
 """
-    spectrum(signal; pad)
+    spectrum(s; pad)
 
 Calculate FFT, amplitudes, powers and phases.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `pad::Int64=0`: number of zeros to add
 - `norm::Bool=false`: normalize do dB
 
@@ -20,12 +20,12 @@ Named tuple containing:
 - `s_pow::Vector{Float64}`
 - `s_pha::Vector{Float64}`
 """
-function spectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=false)
+function spectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
 
-    s_fft = fft0(signal, pad)
+    s_fft = fft0(s, pad)
 
     # amplitudes
-    s_amp = abs.(s_fft) ./ length(signal)       # normalize
+    s_amp = abs.(s_fft) ./ length(s)       # normalize
     s_amp = s_amp[1:(length(s_amp) ÷ 2)]        # remove negative frequencies
     s_amp[2:end] .*= 2                          # double positive frequencies
     # power
@@ -38,14 +38,14 @@ function spectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=false)
 end
 
 """
-    hspectrum(signal; pad=0)
+    hspectrum(s; pad=0)
 
 Calculate amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
-- `signal::AbstractArray`
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `s::AbstractArray`
+- `pad::Int64`: pad the `s` with `pad` zeros
 - `norm::Bool=true`: normalize do dB
 
 # Returns
@@ -56,9 +56,9 @@ Named tuple containing:
 - `h_pow::Vector{Float64}`
 - `h_pha::Vector{Float64}`
 """
-function hspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true)
+function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
 
-    h = hilbert(pad0(signal, pad))
+    h = hilbert(pad0(s, pad))
 
     # amplitudes
     h_amp = @. abs(h)
@@ -69,17 +69,18 @@ function hspectrum(signal::AbstractArray; pad::Int64=0, norm::Bool=true)
     h_pha = angle.(h)
 
     return (h=h, h_amp=h_amp, h_pow=h_pow, h_pha=h_pha)
+    
 end
 
 """
-    spectrum(obj; channel, pad, h)
+    spectrum(obj; ch, pad, h)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 - `norm::Bool=false`: normalize do dB
@@ -92,10 +93,10 @@ Named tuple containing:
 - `pow::Array{Float64, 3}`: powers
 - `pha::Array{Float64, 3}: phase angles
 """
-function spectrum(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
+function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     fft_size = epoch_len(obj) + pad
@@ -113,9 +114,9 @@ function spectrum(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64},
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if h == true
-                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views hspectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad, norm=norm)
+                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views hspectrum(obj.data[ch[ch_idx], :, ep_idx], pad=pad, norm=norm)
             else
-                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views spectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad, norm=norm)
+                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views spectrum(obj.data[ch[ch_idx], :, ep_idx], pad=pad, norm=norm)
             end
         end
     end

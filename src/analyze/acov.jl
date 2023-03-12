@@ -1,85 +1,106 @@
 export acov
 
 """
-   acov(signal; lag, demean, norm)
+   acov(s; lag, norm)
 
-Calculate autocovariance.
+Calculate auto-covariance.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `lag::Int64=1`: lags range is `-lag:lag`
-- `demean::Bool=false`: demean `signal` prior to calculations
-- `norm::Bool=false`: normalize autocovariance
+- `norm::Bool=false`: normalize auto-covariance
 
 # Returns
 
 Named tuple containing:
-- `acov::Vector{Float64}`
-- `lags::Vector{Int64}`
+- `ac::Vector{Float64}`: auto-covariance
+- `l::Vector{Int64}`: lags
 """
-function acov(signal::AbstractVector; lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function acov(s::AbstractVector; lag::Int64=1, norm::Bool=false)
 
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
-    lags = collect(-lag:lag)
+    l = collect(-lag:lag)
 
-    if demean == true
-        s_demeaned = remove_dc(signal)
-    else
-        s_demeaned = signal
-    end
+    ss2 = sum(s.^2)
 
-    acov_m = zeros(length(lags))
-    l = length(signal)
+    ac = zeros(length(l))
 
-    @inbounds @simd for idx in eachindex(lags)
+    @inbounds @simd for idx in eachindex(l)
         # no lag
-        lags[idx] == 0 && (acov_m[idx] = sum(s_demeaned.^2))
+        l[idx] == 0 && (ac[idx] = ss2)
         # positive lag
-        lags[idx] > 0 && (acov_m[idx] = @views sum(s_demeaned[(1 + lags[idx]):end] .* s_demeaned[1:(end - lags[idx])]))
+        l[idx] > 0 && (ac[idx] = @views sum(s[(1 + l[idx]):end] .* s[1:(end - l[idx])]))
         # negative lag
-        lags[idx] < 0 && (acov_m[idx] = @views sum(s_demeaned[1:(end - abs(lags[idx]))] .* s_demeaned[(1 + abs(lags[idx])):end]))
+        l[idx] < 0 && (ac[idx] = @views sum(s[1:(end - abs(l[idx]))] .* s[(1 + abs(l[idx])):end]))
     end
-    norm == true && (acov ./ l)
+    norm == true && (ac ./ length(s))
 
-    return (acov=acov_m, lags=lags)
+    return (ac=ac, l=l)
+
 end
 
 """
-   acov(obj; channel, lag=1, demean=false, norm=false)
+   acov(s; lag, norm)
 
-Calculate autocovariance.
+Calculate auto-covariance.
+
+# Arguments
+
+- `s::AbstractArray`
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `norm::Bool=false`: normalize auto-covariance
+
+# Returns
+
+Named tuple containing:
+- `ac::Matrix{Float64}`
+- `l::Vector{Float64}`
+"""
+function acov(s::AbstractArray; lag::Int64=1, norm::Bool=false)
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    l = collect(-lag:lag)
+
+    ac = zeros(ch_n, length(-lag:lag), ep_n)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ac[ch_idx, :, ep_idx], _ = @views acov(s[ch_idx, :, ep_idx], lag=lag, norm=norm)
+        end
+    end
+
+    return (ac=ac, l=l)
+
+end
+
+"""
+   acov(obj; ch, lag, norm)
+
+Calculate auto-covariance.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `lag::Int64`: lags range is `-lag:lag`
-- `demean::Bool`: demean obj prior to analysis
-- `norm::Bool`: normalize autocovariance
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `lag::Int64=1`: lags range is `-lag:lag`
+- `norm::Bool=false`: normalize auto-covariance
 
 # Returns
 
 Named tuple containing:
-- `acov::Matrix{Float64}`
-- `lags::Vector{Float64}`: lags in ms
+- `ac::Matrix{Float64}`
+- `l::Vector{Float64}`: lags in ms
 """
-function acov(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, demean::Bool=false, norm::Bool=false)
+function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, norm::Bool=false)
 
-    lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
+    _check_channels(obj, ch)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    ac, _ = @views acov(obj.data[ch, :, :], lag=lag, norm=norm)
+    l = 1/sr(obj) .* collect(-lag:lag) .* 1000
 
-    acov_m = zeros(ch_n, length(-lag:lag), ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            acov_m[ch_idx, :, ep_idx], _ = @views acov(obj.data[channel[ch_idx], :, ep_idx], lag=lag, demean=demean, norm=norm)
-        end
-    end
+    return (ac=ac, l=l)
 
-    lags = 1/sr(obj) .* collect(-lag:lag) .* 1000
-
-    return (acov=acov_m, acov_lags=lags)
 end
+

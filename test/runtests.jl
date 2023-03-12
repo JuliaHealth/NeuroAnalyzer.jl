@@ -5,9 +5,6 @@ using Test
     @info "Running internal.jl tests"
     @test include("internal.jl")
 
-    @info "Running low_level.jl tests"
-    @test include("low_level.jl")
-
     @info "Running io.jl tests"
     @test include("io.jl")
 

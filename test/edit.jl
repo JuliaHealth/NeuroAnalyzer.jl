@@ -3,6 +3,22 @@ using Test
 using Wavelets
 using ContinuousWavelets
 
+eeg = import_edf("files/eeg-test-edf.edf")
+e10 = epoch(eeg, ep_len=10*sr(eeg))
+keep_epoch!(e10, epoch=1:10)
+v = [1, 2, 3, 4, 5]
+v1 = [1, 2, 3, 4, 5]
+v2 = [6, 5, 4, 3, 2]
+m = [1 2 3; 4 5 6]
+m1 = [1 2 3; 4 5 6]
+m2 = [7 6 5; 4 3 2]
+a1 = ones(2, 3, 2)
+a0 = zeros(2, 3, 2)
+
+bm, be = detect_bad(e10)
+@test size(bm) == (19, 10)
+@test length(be) == 10
+
 eeg = import_bdf("eeg-test-bdfplus.bdf")
 delete_marker!(eeg, n=1)
 @test size(eeg.markers) == (1, 5)

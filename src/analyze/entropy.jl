@@ -2,13 +2,13 @@ export entropy
 export negentropy
 
 """
-    entropy(signal)
+    entropy(s)
 
 Calculate entropy.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 
 # Returns
 
@@ -16,20 +16,82 @@ Calculate entropy.
 - `sent::Float64`: Shanon entropy
 - `leent::Float64`: log energy entropy
 """
-function entropy(signal::AbstractVector)
+function entropy(s::AbstractVector)
 
-    n = length(signal)
-    maxmin_range = maximum(signal) - minimum(signal)
-    fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(signal) * n^(-1/3))) # Freedman-Diaconis
+    n = length(s)
+    maxmin_range = maximum(s) - minimum(s)
+    fd_bins = ceil(Int64, maxmin_range/(2.0 * iqr(s) * n^(-1/3))) # Freedman-Diaconis
 
     # recompute entropy with optimal bins for comparison
-    h = StatsKit.fit(Histogram, signal, nbins=fd_bins)
+    h = StatsKit.fit(Histogram, s, nbins=fd_bins)
     hdat1 = h.weights ./ sum(h.weights)
 
     # convert histograms to probability values
     return (ent=-sum(hdat1 .* log2.(hdat1 .+ eps())),
-            sent=coefentropy(signal, ShannonEntropy()),
-            leent=coefentropy(signal, LogEnergyEntropy()))
+            sent=coefentropy(s, ShannonEntropy()),
+            leent=coefentropy(s, LogEnergyEntropy()))
+end
+
+"""
+    entropy(s)
+
+Calculate entropy.
+
+# Arguments
+
+- `s::AbstractArray`
+
+# Returns
+
+Named tuple containing:
+- `ent::Array{Float64, 2}`
+- `sent::Array{Float64, 2}`: Shanon entropy
+- `leent::Array{Float64, 2}`: log energy entropy
+"""
+function entropy(s::AbstractArray)
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    
+    ent = zeros(ch_n, ep_n)
+    sent = zeros(ch_n, ep_n)
+    leent = zeros(ch_n, ep_n)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(s[ch_idx, :, ep_idx])
+        end
+    end
+
+    return (ent=ent, sent=sent, leent=leent)
+
+end
+
+"""
+    entropy(obj; ch)
+
+Calculate entropy.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+
+# Returns
+
+Named tuple containing:
+- `ent::Array{Float64, 2}`
+- `sent::Array{Float64, 2}`: Shanon entropy
+- `leent::Array{Float64, 2}`: log energy entropy
+"""
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+
+    _check_channels(obj, ch)
+
+    ent, sent, leent = @views entropy(obj.data[ch, :, :])
+
+    return (ent=ent, sent=sent, leent=leent)
+
 end
 
 """
@@ -46,71 +108,65 @@ Calculate negentropy.
 - `negent::Float64`
 """
 function negentropy(signal::AbstractVector)
+
     s = remove_dc(signal)
-    return 0.5 * log(2 * pi * exp(1) * var(s)) - entropy(s)[1]
+
+    negent = 0.5 * log(2 * pi * exp(1) * var(s)) - entropy(s)[1]
+
+    return negent
+
 end
 
 """
-    entropy(obj; channel)
+    negentropy(s)
 
-Calculate entropy.
+Calculate negentropy.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `s::AbstractArray`
 
 # Returns
 
-Named tuple containing:
-- `ent::Array{Float64, 2}`
-- `s_ent::Array{Float64, 2}`: Shanon entropy
-- `le_ent::Array{Float64, 2}`: log energy entropy
+- `ne::Array{Float64, 2}`
 """
-function entropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function negentropy(s::AbstractArray)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    
+    ne = zeros(ch_n, ep_n)
 
-    ent = zeros(ch_n, ep_n)
-    sent = zeros(ch_n, ep_n)
-    leent = zeros(ch_n, ep_n)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            ent[ch_idx, ep_idx], sent[ch_idx, ep_idx], leent[ch_idx, ep_idx] = @views entropy(obj.data[channel[ch_idx], :, ep_idx])
+            ne[ch_idx, ep_idx] = @views negentropy(s[ch_idx, :, ep_idx])
         end
     end
 
-    return (ent=ent, s_ent=sent, le_ent=leent)
+    return ne
+
 end
 
 """
-    negentropy(obj; channel)
+    negentropy(obj; ch)
 
 Calculate negentropy.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
-- `ne::Matrix{Float64}`
+- `ne::Array{Float64, 2}`
 """
-function negentropy(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    _check_channels(obj, ch)
 
-    ne = zeros(ch_n, ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            ne[ch_idx, ep_idx] = @views negentropy(obj.data[channel[ch_idx], :, ep_idx])
-        end
-    end
+    ne = @views negentropy(obj.data[ch, :, :])
 
     return ne
+
 end
