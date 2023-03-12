@@ -1,13 +1,13 @@
 export msci95
 
 """
-    msci95(signal)
+    msci95(s)
 
 Calculate mean, std and 95% confidence interval.
 
 # Arguments
 
-- `signal::Vector{Float64}`
+- `s::Vector{Float64}`
 
 # Returns
 
@@ -17,24 +17,24 @@ Named tuple containing:
 - `s_u::Float64`: upper 95% CI
 - `s_l::Float64`: lower 95% CI
 """
-function msci95(signal::Vector{Float64})
-    s_m = mean(signal)
-    s_s = std(signal) / sqrt(length(signal))
+function msci95(s::Vector{Float64})
+    s_m = mean(s)
+    s_s = std(s) / sqrt(length(s))
     s_u = s_m + 1.96 * s_s
     s_l = s_m - 1.96 * s_s
     return (s_m=s_m, s_s=s_s, s_u=s_u, s_l=s_l)
 end
 
 """
-    msci95(signal; n, method)
+    msci95(s; n, method)
 
 Calculate mean, std and 95% confidence interval for each the channel.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 - `n::Int64=3`: number of bootstraps
-- `method::Symbol=:normal`: use normal method (:normal) or `n`-times boostrapping (:boot)
+- `method::Symbol=:normal`: use normal method (`:normal`) or `n`-times boostrapping (`:boot`)
 
 # Returns
 
@@ -44,23 +44,23 @@ Named tuple containing:
 - `s_u::Vector{Float64}`: upper 95% CI
 - `s_l::Vector{Float64}`: lower 95% CI
 """
-function msci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
+function msci95(s::AbstractArray; n::Int64=3, method::Symbol=:normal)
 
     _check_var(method, [:normal, :boot], "method")
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
     if method === :normal
-        s_m = mean(signal, dims=1)'
-        s_s = std(signal, dims=1)' / sqrt(size(signal, 1))
+        s_m = mean(s, dims=1)'
+        s_s = std(s, dims=1)' / sqrt(size(s, 1))
         s_u = s_m + 1.96 * s_s
         s_l = s_m - 1.96 * s_s
     else
-        s_tmp1 = zeros(size(signal, 1) * n, size(signal, 2))
-        Threads.@threads for idx1 in 1:size(signal, 1) * n
-            s_tmp2 = zeros(size(signal))
-            sample_idx = rand(1:size(signal, 1), size(signal, 1))
-            @inbounds @simd for idx2 in 1:size(signal, 1)
-                s_tmp2[idx2, :] = signal[sample_idx[idx2], :]'
+        s_tmp1 = zeros(size(s, 1) * n, size(s, 2))
+        Threads.@threads for idx1 in 1:size(s, 1) * n
+            s_tmp2 = zeros(size(s))
+            sample_idx = rand(1:size(s, 1), size(s, 1))
+            @inbounds @simd for idx2 in 1:size(s, 1)
+                s_tmp2[idx2, :] = s[sample_idx[idx2], :]'
             end
             s_tmp1[idx1, :] = mean(s_tmp2, dims=1)
         end
@@ -76,14 +76,14 @@ function msci95(signal::AbstractArray; n::Int64=3, method::Symbol=:normal)
 end
 
 """
-    msci95(signal1, signal2)
+    msci95(s1, s2)
 
 Calculate mean and 95% confidence interval for 2 signals.
 
 # Arguments
 
-- `signal1::Vector{Float64}`
-- `signal2:Vector{Float64}`
+- `s1::Vector{Float64}`
+- `s2:Vector{Float64}`
 
 # Returns
 
@@ -93,20 +93,20 @@ Named tuple containing:
 - `s_u::Float64`: upper 95% CI
 - `s_l::Float64`: lower 95% CI
 """
-function msci95(signal1::Vector{Float64}, signal2::Vector{Float64})
+function msci95(s1::Vector{Float64}, s2::Vector{Float64})
 
-    length(signal1) == length(signal2) || throw(ArgumentError("Both signals must be of the same as size."))
+    length(s1) == length(s2) || throw(ArgumentError("s1 and s2 must have the same length."))
 
-    s_m = zeros(length(signal1))
-    s_s = zeros(length(signal1))
-    s_u = zeros(length(signal1))
-    s_l = zeros(length(signal1))
+    s_m = zeros(length(s1))
+    s_s = zeros(length(s1))
+    s_u = zeros(length(s1))
+    s_l = zeros(length(s1))
 
-    s1_mean = mean(signal1)
-    s2_mean = mean(signal2)
+    s1_mean = mean(s1)
+    s2_mean = mean(s2)
     s_m = s1_mean - s2_mean
-    s1_sd = std(signal1) / sqrt(length(signal1))
-    s2_sd = std(signal2) / sqrt(length(signal2))
+    s1_sd = std(s1) / sqrt(length(s1))
+    s2_sd = std(s2) / sqrt(length(s2))
     s_s = sqrt(s1_sd^2 + s2_sd^2)
     s_u = s_m + 1.96 * s_s
     s_l = s_m - 1.96 * s_s
@@ -115,14 +115,14 @@ function msci95(signal1::Vector{Float64}, signal2::Vector{Float64})
 end
 
 """
-    msci95(obj; channel, n, method)
+    msci95(obj; ch, n, method)
 
 Calculate mean, standard deviation and 95% confidence interval for channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
@@ -134,11 +134,11 @@ Named tuple containing:
 - `s_u::Matrix{Float64}`: upper 95% CI
 - `s_l::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:normal)
+function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:normal)
 
     _check_var(method, [:normal, :boot], "method")
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
     ep_len = epoch_len(obj)
     ep_n = epoch_n(obj)
 
@@ -148,7 +148,7 @@ function msci95(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, A
     s_l = zeros(ep_n, ep_len)
 
     Threads.@threads for ep_idx in 1:ep_n
-        s_m[ep_idx, :], s_s[ep_idx, :], s_u[ep_idx, :], s_l[ep_idx, :] = @views msci95(obj.data[channel, :, ep_idx], n=n, method=method)
+        s_m[ep_idx, :], s_s[ep_idx, :], s_u[ep_idx, :], s_l[ep_idx, :] = @views msci95(obj.data[ch, :, ep_idx], n=n, method=method)
     end
 
     return (mean=s_m, sd=s_s, upper=s_u, lower=s_l)

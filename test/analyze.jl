@@ -283,9 +283,39 @@ iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch=1, frq_lim=(0, 4), frq_n=5)
 @test size(izv) == (5, 2560)
 @test f == [0.01, 0.044721359549995794, 0.20000000000000004, 0.8944271909999159, 4.0]
 
+@info "test 24/ : mdiff()"
+st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:absdiff)
+@test length(st) == 6
+@test sts == 3.0
+@test p in [0.0, 1.0]
+st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:absdiff)
+@test size(st) == (2, 6)
+@test sts == [1.0, 1.0]
+@test p == [0.0, 0.0]
+@test NeuroAnalyzer.mdiff(m1, m2, method=:diff2int) == (st = [2.6666666666666665, 8.666666666666666, 4.666666666666666, 1.1666666666666665, 15.166666666666666, 4.5], sts = 4.666666666666666, p = 1.0)
+st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:diff2int)
+@test size(st) == (2, 6)
+@test sts == [2.0, 2.0]
+@test p == [0.0, 0.0]
+st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:absdiff)
+@test size(st) == (10, 57)
+@test sts == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+@test p == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
+@test size(st) == (10, 57)
+@test sts == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+@test p == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+@info "test 25/ : mutual_information()"
+@test NeuroAnalyzer.mutual_information(v1, v2) == 0.4199730940219748
+@test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
+@test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0] 
+m = NeuroAnalyzer.mutual_information(e10)
+@test size(m) == (19, 19, 10) 
+m = NeuroAnalyzer.mutual_information(e10, e10, ch1=1, ch2=2)
+@test size(m) == (1, 1, 10)
+
 #=
-NeuroAnalyzer.mdiff(e10, e10, method=:absdiff)
-NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
 NeuroAnalyzer.phdiff(e10) 
 NeuroAnalyzer.e10_ica = add_component(e10, c=:ic, v=ic)
 NeuroAnalyzer.channel_stats(e10)
@@ -297,8 +327,6 @@ NeuroAnalyzer.itpc_s(e10, channel=1, frq_lim=(10, 20), frq_n=11)
 NeuroAnalyzer.msci95(e10)
 NeuroAnalyzer.msci95(e10, e10)
 NeuroAnalyzer.msci95(e10, method=:boot)
-NeuroAnalyzer.mutual_information(e10)
-NeuroAnalyzer.mutual_information(e10, e10)
 NeuroAnalyzer.negentropy(e10)
 NeuroAnalyzer.normalize(e10, method=:zscore)
 NeuroAnalyzer.pca(e10, n=4)

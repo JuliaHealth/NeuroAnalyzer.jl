@@ -7,8 +7,8 @@ Calculate mean difference and 95% confidence interval for 2 signals.
 
 # Arguments
 
-- `s1::AbstractArray`
-- `s2::AbstractArray`
+- `s1::AbstractMatrix`
+- `s2::AbstractMatrix`
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:absdiff`:
     - `:absdiff`: maximum difference
@@ -21,7 +21,7 @@ Named tuple containing:
 - `sts::Float64`
 - `p::Float64`
 """
-function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
+function mdiff(s1::AbstractMatrix, s2::AbstractMatrix; n::Int64=3, method::Symbol=:absdiff)
 
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
     _check_var(method, [:absdiff, :diff2int], "method")
@@ -75,42 +75,6 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=
 end
 
 """
-    mdiff(s; n, method)
-
-Calculate mean difference and its 95% CI between channels.
-
-# Arguments
-
-- `s::AbstractArray`
-- `n::Int64=3`: number of bootstraps
-- `method::Symbol=:absdiff`
-    - `:absdiff`: maximum difference
-    - `:diff2int`: integrated area of the squared difference
-
-# Returns
-
-Named tuple containing:
-- `st::Matrix{Float64}`
-- `sts::Vector{Float64}`
-- `p::Vector{Float64}`
-"""
-function mdiff(s::AbstractArray; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:absdiff)
-
-    ch_n = size(s, 1)
-    ep_n = size(s, 3)
-
-    st = zeros(ep_n, ch_n * n)
-    sts = zeros(ep_n)
-    p = zeros(ep_n)
-
-    @inbounds @simd for ep_idx in 1:ep_n
-        st[ep_idx, :], sts[ep_idx], p[ep_idx] = difference(s[:, :, ep_idx], s[:, :, ep_idx], n=n, method=method)
-    end
-
-    return (st=st, sts=sts, p=p)
-end
-
-"""
     mdiff(s1, s2; n, method)
 
 Calculate mean difference and its 95% CI between channels.
@@ -131,7 +95,7 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(s1::AbstractArray, s2::AbstractArray; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:absdiff)
+function mdiff(s1::AbstractArray, s2::AbstractArray; n::Int64=3, method::Symbol=:absdiff)
 
     size(s1) == size(s2) || throw(ArgumentError("s1 and s2 must have the same size."))
 
@@ -143,21 +107,21 @@ function mdiff(s1::AbstractArray, s2::AbstractArray; channel::Union{Int64, Vecto
     p = zeros(ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
-        st[ep_idx, :], sts[ep_idx], p[ep_idx] = difference(s1[:, :, ep_idx], s2[:, :, ep_idx], n=n, method=method)
+        st[ep_idx, :], sts[ep_idx], p[ep_idx] = mdiff(s1[:, :, ep_idx], s2[:, :, ep_idx], n=n, method=method)
     end
 
     return (st=st, sts=sts, p=p)
 end
 
 """
-    mdiff(obj; channel, n, method)
+    mdiff(obj; ch, n, method)
 
 Calculate mean difference and its 95% CI between channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:absdiff`
     - `:absdiff`: maximum difference
@@ -170,11 +134,11 @@ Named tuple containing:
 - `sts::Vector{Float64}`
 - `p::Vector{Float64}`
 """
-function mdiff(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:absdiff)
+function mdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:absdiff)
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
 
-    st, sts, p = difference(obj, n=n, method=method)
+    st, sts, p = mdiff(obj.data[ch, :, :], n=n, method=method)
 
     return (st=st, sts=sts, p=p)
 
@@ -216,7 +180,7 @@ function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::U
     length(epoch1) == length(epoch2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
     epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
-    st, sts, p = @views difference(obj1.data[channel1, :, epoch1], obj2.data[channel2, :, epoch2], n=n, method=method)
+    st, sts, p = @views mdiff(obj1.data[channel1, :, epoch1], obj2.data[channel2, :, epoch2], n=n, method=method)
 
     return (st=st, sts=sts, p=p)
 end
