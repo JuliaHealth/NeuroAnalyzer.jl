@@ -38,43 +38,43 @@ function ispc(s1::AbstractVector, s2::AbstractVector)
 end
 
 """
-    ispc(obj; channel)
+    ispc(obj; ch)
 
 Calculate ISPCs (Inter-Site-Phase Clustering).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
 - `ispc_value::Array{Float64, 3}`: ISPC value matrices over epochs
+- `ispc_angle::Array{Float64, 3}`: ISPC angle matrices over epochs
 """
-function ispc(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function ispc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     ispc_value = zeros(ch_n, ch_n, ep_n)
+    ispc_angle = zeros(ch_n, ch_n, ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
-                ispc_value[ch_idx1, ch_idx2, ep_idx], _, _, _, _, _ = @views ispc(obj.data[channel[ch_idx1], :, ep_idx], obj.data[channel[ch_idx2], :, ep_idx])
-            end
-        end
-
-        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
-            for ch_idx2 in (ch_idx1 + 1):ch_n
-                ispc_value[ch_idx1, ch_idx2, ep_idx] = @views ispc_value[ch_idx2, ch_idx1, ep_idx]
+                ispc_value[ch_idx1, ch_idx2, ep_idx], ispc_angle[ch_idx1, ch_idx2, ep_idx], _, _, _, _ = @views ispc(obj.data[ch[ch_idx1], :, ep_idx], obj.data[ch[ch_idx2], :, ep_idx])
             end
         end
     end
 
-    return ispc_value
-    
+    # copy lower triangle to upper triangle
+    ispc_value = _copy_lt2ut(ispc_value)
+    ispc_angle = _copy_lt2ut(ispc_angle)
+
+    return (ispc_value=ispc_value, ispc_angle=ispc_angle)
+
 end
 
 """
@@ -129,4 +129,5 @@ function ispc(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     end
 
     return (ispc_value=ispc_value, ispc_angle=ispc_angle, s_diff=s_diff, ph_diff=ph_diff, s1_phase=s1_phase, s2_phase=s2_phase)
+    
 end
