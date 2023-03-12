@@ -4,7 +4,7 @@ using Wavelets
 using ContinuousWavelets
 
 @info "- Initializing"
-eeg = import_edf("files/eeg-test-edf.edf")
+eeg = import_edf("test/files/eeg-test-edf.edf")
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, epoch=1:10)
 v = [1, 2, 3, 4, 5]
@@ -190,6 +190,62 @@ ec, p = NeuroAnalyzer.env_cor(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1, type=:hamp)
 p = NeuroAnalyzer.erp_peaks(e10)
 @test size(p) == (19, 2)
 
+@info "test 16/ : fcoherence()"
+c, msc, f = fcoherence(rand(10, 100), fs=10)
+@test size(c) == (10, 10, 65)
+@test size(msc) == (10, 10, 65)
+@test length(f) == 65
+c, msc, f = fcoherence(rand(10, 100), rand(10, 100), fs=10)
+@test length(c) == 9
+@test length(msc) == 9
+@test length(f) == 9
+c, msc, f = fcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
+@test length(c) == 2049
+@test length(msc) == 2049
+@test length(f) == 2049
+
+@info "test 17/ : frqinst()"
+f = frqinst(rand(100), fs=10)
+@test length(f) == 100
+f = frqinst(rand(10, 100, 10), fs=10)
+@test size(f) == (10, 100, 10)
+
+@info "test 18/ : ged()"
+s, r, rn = ged(rand(10, 10), rand(10, 10))
+@test length(s) == 100
+@test length(r) == 10
+@test length(rn) == 10
+s, r, rn = ged(e10, e10)
+@test length(s) == 486400
+@test length(r) == 190
+@test length(rn) == 190
+
+@info "test 19/ : ica()"
+ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000), n=5, tol=1.0)
+@test size(ic) == (5, 1000)
+@test size(ic_mw) == (10, 5)
+ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000, 10), n=5, tol=1.0)
+@test size(ic) == (5, 1000, 10)
+@test size(ic_mw) == (10, 5, 10)
+ic, ic_mw = NeuroAnalyzer.ica(e10, n=5, tol=1.0)
+@test size(ic) == (5, 1000, 10)
+@test size(ic_mw) == (10, 5, 10)
+
+@info "test 20/ : ica_reconstruct()"
+ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000), n=5, tol=1.0)
+s = NeuroAnalyzer.ica_reconstruct(rand(10, 1000), ic=ic, ic_mw=ic_mw, ic_idx=5)
+@test size(s) == (10, 1000)
+ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000, 10), n=5, tol=1.0)
+s = NeuroAnalyzer.ica_reconstruct(rand(10, 1000, 10), ic=ic, ic_mw=ic_mw, ic_idx=5)
+@test size(s) == (10, 1000, 10)
+ic, ic_mw = NeuroAnalyzer.ica(e10, n=5, tol=1.0)
+e10_tmp = NeuroAnalyzer.ica_reconstruct(e10, ic, ic_mw; ic_idx=1)
+@test size(e10_tmp.data) == (24, 2560, 10)
+add_component!(e10, c=:ic, v=ic)
+add_component!(e10, c=:ic_mw, v=ic_mw)
+e10_tmp = NeuroAnalyzer.ica_reconstruct(e10, ic_idx=1)
+@test size(e10_tmp.data) == (24, 2560, 10)
+
 #=
 NeuroAnalyzer.mdiff(e10, e10, method=:absdiff)
 NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
@@ -198,12 +254,8 @@ NeuroAnalyzer.e10_ica = add_component(e10, c=:ic, v=ic)
 NeuroAnalyzer.channel_stats(e10)
 NeuroAnalyzer.epoch_stats(e10)
 NeuroAnalyzer.fbsplit(e10)
-NeuroAnalyzer.fcoherence(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 NeuroAnalyzer.fconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
-NeuroAnalyzer.frqinst(e10)
 NeuroAnalyzer.ged(e10, e10)
-NeuroAnalyzer.ica(e10, n=15, tol=1.0)
-NeuroAnalyzer.ica_reconstruct(e10_ica, ic_idx=1)
 NeuroAnalyzer.ispc(e10)
 NeuroAnalyzer.ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)
 NeuroAnalyzer.itpc(e10, channel=1, t=256)
@@ -250,32 +302,14 @@ NeuroAnalyzer.xcov(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=2, lag=10,
 NeuroAnalyzer.xcov(e10, lag=10, demean=true)
 
 
-acov_m, _ = acov(eeg)
-@test size(acov_m) == (19, 3, 1)
-
 tbp = total_power(eeg)
 @test size(tbp) == (19, 1)
-
-abp = band_power(eeg, f=(2, 4))
-@test size(abp) == (19, 1)
-
-cov_m = covm(eeg)
-@test size(cov_m) == (19, 19, 309760, 1)
-
-cor_m = corm(eeg)
-@test size(cor_m) == (19, 19, 309760, 1)
 
 m, _, _, _ = msci95(eeg)
 @test size(m) == (1, 309760)
 
 m, _, _, _ = msci95(eeg, eeg)
 @test m == zeros(1, 309760)
-
-s, ss, p = difference(eeg, eeg)
-@test p == [1.0]
-
-f, s = dft(eeg)
-@test size(f) == (19, 309760, 1)
 
 xcov_m, _ = xcov(eeg)
 @test size(xcov_m) == (361, 3, 1)
@@ -293,9 +327,6 @@ m = mutual_information(eeg)
 @test size(m) == (19, 19, 1)
 m = mutual_information(eeg, eeg)
 @test size(m) == (19, 19, 1)
-
-a = band_frq(eeg, band=:alpha)
-@test a == (8, 13)
 
 c, msc, ic = tcoherence(eeg, eeg)
 @test size(c) == (19, 309760, 1)
@@ -337,17 +368,6 @@ p, f, t = spectrogram(e, method=:cwt)
 f, a, p, ph = spectrum(e)
 @test size(p) == (19, 1280, 1)
 
-e = deepcopy(eeg)
-i, iw = ica(e, tol=1.0, n=10)
-add_component!(e, c=:ic, v=i)
-add_component!(e, c=:ic_mw, v=iw)
-@test size(e.components[1]) == (10, 309760, 1)
-e2 = ica_reconstruct(e, ic_idx=1)
-@test size(e2.data) == (19, 309760, 1)
-
-b = detect_bad(eeg)
-@test length(b) == 2
-
 v = channel_stats(eeg)
 @test length(v) == 10
 
@@ -362,27 +382,15 @@ s, h = snr(e10)
 @test size(pli(e10)) == (19, 19, 121)
 @test size(ispc(e10)) == (19, 19, 121)
 @test length(ged(e10, e10)) == 3
-@test size(frqinst(eeg)) == (19, 309760, 1)
 @test size(denoise_fft(eeg).data) == (19, 309760, 1)
 @test size(tkeo(eeg)) == (19, 309760, 1)
 @test length(psd_mw(eeg, frq_lim=(0, 20), frq_n=21)) == 2
 
-c, msc, f = fcoherence(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)
-@test length(c) == 262145
-
 f, p = vartest(eeg)
 @test size(f) == (19, 19, 1)
 
-@test length(band_mpower(eeg, f=(1,4))) == 3
-
 p, f = psd_rel(eeg, f=(8,12))
 @test size(p) == (19, 513, 1)
-
-c = chdiff(eeg, eeg, channel1=1, channel2=2)
-@test size(c) == (1, 309760, 1)
-
-p, _, _ = cps(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)
-@test length(p) == 262145
 
 _, _, f = psdslope(eeg)
 @test length(f) == 513

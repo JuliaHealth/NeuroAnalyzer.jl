@@ -28,6 +28,7 @@ Return component index.
 function component_idx(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
     c in obj.header.component_names || throw(ArgumentError("Component $c does not exist. Use list_component() to view existing components."))
+    
     return findfirst(isequal(c), obj.header.component_names)
 
 end
