@@ -209,12 +209,12 @@ function mdiff(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::U
 
     _check_channels(obj1, channel1)
     _check_channels(obj2, channel2)
-    length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
+    length(channel1) == length(channel2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
     
     _check_epochs(obj1, epoch1)
     _check_epochs(obj2, epoch2)
-    length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 epoch lengths must be equal."))
+    length(epoch1) == length(epoch2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     st, sts, p = @views difference(obj1.data[channel1, :, epoch1], obj2.data[channel2, :, epoch2], n=n, method=method)
 

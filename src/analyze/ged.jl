@@ -66,7 +66,7 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     _check_epochs(obj1, ep1)
     _check_epochs(obj2, ep2)
     length(ep1) == length(ep2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 epoch lengths must be equal."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     ep_n = length(ep1)
     ch_n = length(ch1)

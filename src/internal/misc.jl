@@ -24,3 +24,4 @@ function _s2v(s::Union{<:Number, Vector{<:Number}})
     end
 end
 
+_copy_lt2ut(m::AbstractMatrix) = m + m' - diagm(diag(m))

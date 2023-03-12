@@ -82,13 +82,13 @@ function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO
     # check channels
     _check_channels(obj1, channel1)
     _check_channels(obj2, channel2)
-    length(channel1) == length(channel2) || throw(ArgumentError("channel1 and channel2 lengths must be equal."))
+    length(channel1) == length(channel2) || throw(ArgumentError("ch1 and ch2 must have the same length."))
     
     # check epochs
     _check_epochs(obj1, epoch1)
     _check_epochs(obj2, epoch2)
-    length(epoch1) == length(epoch2) || throw(ArgumentError("epoch1 and epoch2 lengths must be equal."))
-    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("obj1 and obj2 epoch lengths must be equal."))
+    length(epoch1) == length(epoch2) || throw(ArgumentError("ep1 and ep2 must have the same length."))
+    epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     ch_n = length(channel1)
     ep_n = length(epoch1)
