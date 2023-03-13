@@ -1,24 +1,25 @@
 export psd_rel
 
 """
-    psd_rel(signal; fs, norm, mt, f)
+    psd_rel(s; fs, norm, mt, nt, f)
 
 Calculate relative power spectrum density.
 
 # Arguments
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
 # Returns
 
 Named tuple containing:
-- `psd_pow::Vector{Float64}`
-- `psd_frq::Vector{Float64}`
+- `pw::Vector{Float64}`: powers
+- `pf::Vector{Float64}`: frequencies
 """
-function psd_rel(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function psd_rel(s::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     if f !== nothing
@@ -26,113 +27,103 @@ function psd_rel(signal::AbstractVector; fs::Int64, norm::Bool=false, mt::Bool=f
         f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
         f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
     end
-    ref_pow = f === nothing ? total_power(signal, fs=fs, mt=mt) : band_power(signal, fs=fs, mt=mt, f=f)
+
+    # for short signals use multi-tapered periodogram
+    length(s) < 4 * fs && (mt = true)
+
+    ref_pw = f === nothing ? total_power(s, fs=fs, mt=mt) : band_power(s, fs=fs, mt=mt, nt=nt, f=f)
+
     if mt == true
-        p = mt_pgram(signal, fs=fs)
+        p = mt_pgram(s, fs=fs, nw=(nt÷2+1), ntapers=nt)
     else
-        p = welch_pgram(signal, 4*fs, fs=fs)
+        p = welch_pgram(s, 4*fs, fs=fs)
     end
 
-    psd_pow = power(p)
-    psd_frq = Vector(freq(p))
-    psd_pow[1] = psd_pow[2]
-    psd_pow = psd_pow / ref_pow
+    pw = power(p)
+    pf = Vector(freq(p))
+    pw = pw[1:length(pf)]
 
-    norm == true && (psd_pow = pow2db.(psd_pow))
+    # replace power at 0 Hz
+    pw[1] = pw[2]
 
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
+    pw = pw / ref_pw
+
+    norm == true && (pw = pow2db.(pw))
+
+    return (pw=pw, pf=pf)
+
 end
 
 """
-    psd_rel(signal; fs, norm, mt, f)
+    psd_rel(s; fs, norm, mt, nt, f)
 
 Calculate relative power spectrum density.
 
 # Arguments
-- `signal::Matrix{Float64}`
+- `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
 - `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
 # Returns
 
 Named tuple containing:
-- `psd_pow::Vector{Float64}`
-- `psd_frq::Vector{Float64}`
+- `pw::Array{Float64, 3}`: powers
+- `pf::Vector{Float64}`: frequencies
 """
-function psd_rel(signal::Matrix{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function psd_rel(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    ch_n = size(signal, 1)
-    fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
-    f = tuple_order(f)
-    f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0.")) 
-    f[2] > fs / 2 && throw(ArgumentError("Lower frequency bound must be ≤ $(fs / 2).")) 
-
-    if mt == true
-        psd_tmp = mt_pgram(signal[1, :], fs=fs)
-    else
-        psd_tmp = welch_pgram(signal[1, :], 4*fs, fs=fs)
+    # for short signals use multi-tapered periodogram
+    if size(s, 2) < 4 * fs
+        mt = true
+        _info("Using multi-tapered periodogram.")
     end
-    psd_frq = Vector(freq(psd_tmp))
-    psd_pow = zeros(ch_n, length(Vector(freq(psd_tmp))))
 
-    Threads.@threads for ch_idx in 1:ch_n
-        ref_pow = f === nothing ? total_power(signal[ch_idx, :], fs=fs, mt=mt) : band_power(signal[ch_idx, :], fs=fs, mt=mt, f=f)
-        if mt == true
-            p = mt_pgram(signal[ch_idx, :], fs=fs)
-        else
-            p = welch_pgram(signal[ch_idx, :], 4*fs, fs=fs)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+
+    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+
+    pw = zeros(ch_n, length(pf), ep_n)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            pw[ch_idx, :, ep_idx], _ = psd_rel(s[ch_idx, :, ep_idx], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
         end
-        psd_pow[ch_idx, :] = power(p)
-        psd_pow[ch_idx, :] = psd_pow[ch_idx, :] / ref_pow
-        psd_pow[ch_idx, 1] = psd_pow[ch_idx, 2]
     end
+    
+    return (pw=pw, pf=pf)
 
-    norm == true && (psd_pow = pow2db.(psd_pow))
-
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end
 
 """
-    psd_rel(obj; channel, norm, mt, f)
+    psd_rel(obj; ch, norm, mt, nt, f)
 
 Calculate relative power spectrum density.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
-- `f::Union{Tuple{Real, Real}, Nothing}=nothing`: calculate power relative to frequency range or total power
+- `nt::Int64=8`: number of Slepian tapers
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
 
 # Returns
 
 Named tuple containing:
-- `psd_pow::Array{Float64, 3}`:powers
-- `psd_frq::Array{Float64, 3}`: frequencies
+- `pw::Array{Float64, 3}`: powers
+- `pf::Array{Float64, 3}`: frequencies
 """
-function psd_rel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+function psd_rel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
 
-    fs = sr(obj)
-    if f !== nothing
-        f = tuple_order(f)
-        f[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
-        f[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be < $(fs / 2)."))
-    end
+    _check_channels(obj, ch)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    pw, pf = @views psd_rel(obj.data[ch, :, :], fs=sr(obj), norm=norm, mt=mt, nt=nt, f=f)
 
-    psd_tmp, psd_frq = @views psd_rel(obj.data[1, :, 1], fs=fs, norm=norm, mt=mt, f=f)
-    psd_pow = zeros(ch_n, length(psd_tmp), ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
-        for ch_idx in 1:ch_n
-            psd_pow[ch_idx, :, ep_idx], _ = @views psd_rel(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=mt, f=f)
-        end
-    end
+    return (pw=pw, pf=pf)
 
-    return (psd_pow=psd_pow, psd_frq=psd_frq)
 end

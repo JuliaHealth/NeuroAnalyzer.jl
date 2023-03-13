@@ -2,96 +2,93 @@ export spectrogram
 export wspectrogram
 export ghspectrogram
 export cwtspectrogram
-export specseg
 
 """
-    spectrogram(signal; fs, norm, mt, st, demean)
+    spectrogram(s; fs, norm, mt, st)
 
 Calculate spectrogram.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `fs::Int64`: sampling frequency
 - `norm::Bool=true`: normalize powers to dB
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `st::Bool=false`: if true use short time Fourier transform
-- `demean::Bool=true`: demean signal prior to analysis
 
 # Returns
 
 Named tuple containing:
-- `s_pow::Matrix{Float64}`: powers
-- `s_frq::Vector{Float64}`: frequencies
-- `s_t::Vector{Float64}`: time
+- `sp::Matrix{Float64}`: powers
+- `sf::Vector{Float64}`: frequencies
+- `st::Vector{Float64}`: time
 """
-function spectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false, demean::Bool=true)
+function spectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, mt::Bool=false, st::Bool=false)
 
     (mt == true && st == true) && throw(ArgumentError("Both mt and st must not be true."))
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    demean == true && (signal = remove_dc(signal))
-
-    nfft = length(signal)
+    nfft = length(s)
     interval = fs
     overlap = round(Int64, fs * 0.75)
 
     if st == true
-        s_pow = abs.(stft(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning))
-        norm == true && (s_pow = pow2db.(s_pow))
-        t = 0:1/fs:(length(signal) / fs)
-        s_t = linspace(t[1], t[end], size(s_pow, 2))
-        s_frq = linspace(0, fs/2, size(s_pow, 1))
-        return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
+        sp = abs.(stft(s, interval, overlap, nfft=nfft, fs=fs, window=hanning))
+        norm == true && (sp = pow2db.(sp))
+        t = 0:1/fs:(length(s) / fs)
+        st = linspace(t[1], t[end], size(sp, 2))
+        sf = linspace(0, fs/2, size(sp, 1))
+        return (sp=sp, sf=sf, st=st)
     end
 
     if mt == true
-        spec = DSP.mt_spectrogram(signal, fs=fs)
+        sp = DSP.mt_spectrogram(s, fs=fs)
     else
-        spec = DSP.spectrogram(signal, interval, overlap, nfft=nfft, fs=fs, window=hanning)
-    end    
-    s_pow = spec.power
-    norm == true ? s_pow = pow2db.(spec.power) : s_pow = spec.power
+        sp = DSP.spectrogram(s, interval, overlap, nfft=nfft, fs=fs, window=hanning)
+    end
+    sp = sp.power
+    norm == true && (sp = pow2db.(sp))
 
-    #s_t = collect(spec.time)
-    #s_frq = Vector(spec.freq)
-    t = 0:1/fs:(length(signal) / fs)
-    s_t = linspace(t[1], t[end], size(s_pow, 2))
-    s_frq = linspace(0, fs/2, size(s_pow, 1))
+    #st = collect(spec.time)
+    #sf = Vector(spec.freq)
+    t = 0:1/fs:(length(s) / fs)
+    st = linspace(t[1], t[end], size(sp, 2))
+    sf = linspace(0, fs/2, size(sp, 1))
     
-    return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
+    return (sp=sp, sf=sf, st=st)
+
 end
 
 """
-    wspectrogram(signal; pad, norm, frq_lim, frq_n, frq, fs, ncyc, demean)
+    wspectrogram(s; pad, norm, fs, frq_lim, frq_n, frq, ncyc)
 
 Calculate spectrogram using wavelet convolution.
 
 # Arguments
 
-- `signal::AbstractVector`
-- `pad::Int64`: pad the `signal` with `pad` zeros
+- `s::AbstractVector`
+- `pad::Int64`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
 - `fs::Int64`: sampling rate
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
-- `demean::Bool=true`: demean signal prior to analysis
+- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc=logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc=linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 
 # Returns
 
 Named tuple containing:
-- `w_conv::Matrix(ComplexF64}`: convoluted signal
-- `w_powers::Matrix{Float64}`
-- `w_phases::Matrix{Float64}`
-- `frq_list::Vector{Float64}`
+- `cs::Matrix(ComplexF64}`: convoluted signal
+- `sp::Matrix{Float64}`: powers
+- `sph::Matrix{Float64}`: phases
+- `sf::Vector{Float64}`: frequencies
 """
-function wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, fs::Int64, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, demean::Bool=true)
+function wspectrogram(s::AbstractVector; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_var(frq, [:log, :lin], "frq")
 
-    pad > 0 && (signal = pad0(signal, pad))
+    pad > 0 && (s = pad0(s, pad))
+
     if typeof(ncyc) == Int64
         ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
     else
@@ -106,18 +103,18 @@ function wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq
     frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
     frq_n < 2 && throw(ArgumentError("frq_n must be ≥ 2."))
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
+
     if frq === :log
         # frq_lim = (frq_lim[1], frq_lim[2])
-        frq_list = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
-        frq_list = linspace(frq_lim[1], frq_lim[2], frq_n)
+        sf = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    demean == true && (signal = remove_dc(signal))
-    w_conv = zeros(ComplexF64, length(frq_list), length(signal))
-    w_powers = zeros(length(frq_list), length(signal))
-    w_amp = zeros(length(frq_list), length(signal))
-    w_phases = zeros(length(frq_list), length(signal))
+    cs = zeros(ComplexF64, length(sf), length(s))
+    sp = zeros(length(sf), length(s))
+    # w_amp = zeros(length(sf), length(s))
+    sph = zeros(length(sf), length(s))
 
     if typeof(ncyc) != Tuple{Int64, Int64}
         ncyc = repeat([ncyc], frq_n)
@@ -130,50 +127,50 @@ function wspectrogram(signal::AbstractVector; pad::Int64=0, norm::Bool=true, frq
     end
 
     @inbounds @simd for frq_idx in 1:frq_n
-        kernel = generate_morlet(fs, frq_list[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
-        w_conv[frq_idx, :] = fconv(signal, kernel=kernel, norm=false)
-        # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(w_conv), imag.(w_conv), 2)
-        w_powers[frq_idx, :] = @views @. abs(w_conv[frq_idx, :])^2
-        w_phases[frq_idx, :] = @views @. angle(w_conv[frq_idx, :])
+        kernel = generate_morlet(fs, sf[frq_idx], 1, ncyc=ncyc[frq_idx], complex=true)
+        cs[frq_idx, :] = fconv(s, kernel=kernel, norm=false)
+        # alternative: w_amp[frq_idx, :] = LinearAlgebra.norm.(real.(cs), imag.(cs), 2)
+        sp[frq_idx, :] = @views @. abs(cs[frq_idx, :])^2
+        sph[frq_idx, :] = @views @. angle(cs[frq_idx, :])
     end
 
     # remove reflected part of the signal
     # if reflect == true
-    #     w_conv = w_conv[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    #     w_amp = w_amp[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    #     w_powers = w_powers[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
-    #     w_phases = w_phases[:, (length(signal) ÷ 3 + 1):(2 * length(signal) ÷ 3)]
+    #     cs = cs[:, (length(s) ÷ 3 + 1):(2 * length(s) ÷ 3)]
+    #     w_amp = w_amp[:, (length(s) ÷ 3 + 1):(2 * length(s) ÷ 3)]
+    #     sp = sp[:, (length(s) ÷ 3 + 1):(2 * length(s) ÷ 3)]
+    #     sph = sph[:, (length(s) ÷ 3 + 1):(2 * length(s) ÷ 3)]
     # end
 
-    norm == true && (w_powers = pow2db.(w_powers))
+    norm == true && (sp = pow2db.(sp))
 
-    return (w_conv=w_conv, w_powers=w_powers, w_phases=w_phases, frq_list=frq_list)
+    return (cs=cs, sp=sp, sph=sph, sf=sf)
+    
 end
 
 """
-    ghspectrogram(signal; fs, norm, frq_lim, frq_n, frq, fs, demean)
+    ghspectrogram(s; fs, norm, frq_lim, frq_n, frq, fs)
 
 Calculate spectrogram using Gaussian and Hilbert transform.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `frq_n::Int64`: number of frequencies
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_n::Int64_tlength(frq_lim)`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
-- `demean::Bool`=true: demean signal prior to analysis
 
 # Returns
 
 Named tuple containing:
-- `s_pow::Matrix{Float64}`: powers
-- `s_pow::Matrix{Float64}`: phases
-- `frq_list::Vector{Float64}`: frequencies
+- `sp::Matrix{Float64}`: powers
+- `sph::Matrix{Float64}`: phases
+- `sf::Vector{Float64}`: frequencies
 """
-function ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, frq_n::Int64, frq::Symbol=:lin, gw::Real=5, demean::Bool=true)
+function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, gw::Real=5)
 
     _check_var(frq, [:log, :lin], "frq")
 
@@ -183,77 +180,77 @@ function ghspectrogram(signal::AbstractVector; fs::Int64, norm::Bool=true, frq_l
     frq_lim[2] > fs ÷ 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs ÷ 2)."))
     frq_n < 2 && throw(ArgumentError("frq_n frequency bound must be ≥ 2."))
     frq_lim[1] == 0 && (frq_lim = (0.1, frq_lim[2]))
+
     if frq === :log
         frq_lim = (frq_lim[1], frq_lim[2])
-        s_frq = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
+        sf = round.(logspace(log10(frq_lim[1]), log10(frq_lim[2]), frq_n), digits=1)
     else
-        s_frq = linspace(frq_lim[1], frq_lim[2], frq_n)
+        sf = linspace(frq_lim[1], frq_lim[2], frq_n)
     end
 
-    demean == true && (signal = remove_dc(signal))
-    s_pow = zeros(length(s_frq), length(signal))
-    s_ph = zeros(length(s_frq), length(signal))
-    @inbounds @simd for frq_idx in eachindex(s_frq)
-        s = gfilter(signal, fs=fs, f=s_frq[frq_idx], gw=gw)
-        s_pow[frq_idx, :] = abs.(hilbert(s)).^2
-        s_ph[frq_idx, :] = angle.(hilbert(s))
-    end
-    norm == true && (s_pow = pow2db.(s_pow))
+    sp = zeros(length(sf), length(s))
+    sph = zeros(length(sf), length(s))
 
-    return (s_pow=s_pow, s_ph=s_ph, s_frq=s_frq)
+    @inbounds @simd for frq_idx in 1:length(sf)
+        s = gfilter(s, fs=fs, f=sf[frq_idx], gw=gw)
+        sp[frq_idx, :] = abs.(hilbert(s)).^2
+        sph[frq_idx, :] = angle.(hilbert(s))
+    end
+    norm == true && (sp = pow2db.(sp))
+
+    return (sp=sp, sph=sph, sf=sf)
+
 end
 
 """
-    cwtspectrogram(signal; wt, pad, norm, frq_lim, fs, demean)
+    cwtspectrogram(s; wt, pad, norm, frq_lim, fs)
 
 Calculate spectrogram using continuous wavelet transformation (CWT).
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 - `fs::Int64`: sampling rate
 - `norm::Bool=true`: normalize powers to dB
-- `frq_lim::Tuple{Real, Real}`: frequency bounds for the spectrogram
-- `demean::Bool`=true: demean signal prior to analysis
+- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
 
 # Returns
 
 Named tuple containing:
-- `h_powers::Matrix{Float64}`
-- `frq_list::Vector{Float64}`
+- `sp::Matrix{Float64}`: powers
+- `sf::Vector{Float64}`: frequencies
 """
-function cwtspectrogram(signal::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}, demean::Bool=true) where {T <: CWT}
+function cwtspectrogram(s::AbstractVector; wt::T, fs::Int64, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)) where {T <: CWT}
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     frq_lim = tuple_order(frq_lim)
     frq_lim[1] < 0 && throw(ArgumentError("Lower frequency bound must be ≥ 0."))
     frq_lim[2] > fs / 2 && throw(ArgumentError("Upper frequency bound must be ≤ $(fs / 2)."))
 
-    demean == true && (signal = remove_dc(signal))
+    sp = abs.(ContinuousWavelets.cwt(s, wt)')
+    sf = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(s), wt)[1])
+    sf[1] = 0
+    sf[1] < frq_lim[1] && throw(ArgumentError("Lower frequency bound must be ≥ $(sf[1])."))
+    sf[end] < frq_lim[2] && throw(ArgumentError("Upper frequency bound must be ≤ $(sf[end])."))
+    sf = sf[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf)]
+    sp = sp[vsearch(frq_lim[1], sf):vsearch(frq_lim[2], sf), :]
 
-    h_powers = abs.(ContinuousWavelets.cwt(signal, wt)')
-    frq_list = ContinuousWavelets.getMeanFreq(ContinuousWavelets.computeWavelets(length(signal), wt)[1])
-    frq_list[1] = 0
-    frq_list[1] < frq_lim[1] && throw(ArgumentError("Lower frequency bound must be ≥ $(frq_list[1])."))
-    frq_list[end] < frq_lim[2] && throw(ArgumentError("Upper frequency bound must be ≤ $(frq_list[end])."))
-    frq_list = frq_list[vsearch(frq_lim[1], frq_list):vsearch(frq_lim[2], frq_list)]
-    h_powers = h_powers[vsearch(frq_lim[1], frq_list):vsearch(frq_lim[2], frq_list), :]
+    norm == true && (sp = pow2db.(sp))
 
-    norm == true && (h_powers = pow2db.(h_powers))
+    return (sp=sp, sf=sf)
 
-    return (h_powers=h_powers, frq_list=frq_list)
 end
 
 """
-    spectrogram(obj; channel, norm, mt, st, demean)
+    spectrogram(obj; ch, norm, mt, st)
 
 Calculate spectrogram.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `method::Symbol=:standard`: method of calculating spectrogram:
     - `:standard`: standard
     - `:stft`: short-time Fourier transform
@@ -262,50 +259,46 @@ Calculate spectrogram.
     - `:gh`: Gaussian and Hilbert transform
     - `:cwt`: continuous wavelet transformation
 - `pad::Int64=0`: number of zeros to add
-- `frq_lim::Tuple{Real, Real}=(0, 0)`: frequency limits
-- `frq_n::Int64=0`: number of frequencies, default is length(frq_lim[1]:frq_lim[2])
+- `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: frequency limits
+- `frq_n::Int64=_tlength(frq_lim)`: number of frequencies
 - `norm::Bool=true`: normalize powers to dB
-- `demean::Bool=true`: demean signal prior to analysis
-- `frq::Symbol=:log`: linear (:lin) or logarithmic (:log) frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
 - `gw::Real=5`: Gaussian width in Hz
-- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n) for frq === :log or ncyc = linspace(ncyc[1], ncyc[2], frq_n) for frq === :lin
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number o cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
 - `wt<:CWT=wavelet(Morlet(π), β=2)`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
 
 Named tuple containing:
-- `s_pow::Array{Float64, 3}`
-- `s_frq::Vector{Float64}`
-- `s_t::Vector{Float64}`
+- `sp::Array{Float64, 3}`
+- `sf::Vector{Float64}`
+- `st::Vector{Float64}`
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, 0), frq_n::Int64=0, method::Symbol=:standard, norm::Bool=true, demean::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(π), β=2)) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(π), β=2)) where {T <: CWT}
 
     _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    _check_channels(obj, ch)
 
-    # get frequency range
+    ch_n = length(ch)
+    ep_n = epoch_n(obj)
     fs = sr(obj)
-    frq_lim == (0, 0) && (frq_lim = (0, div(fs, 2)))
-    frq_n == 0 && (frq_n = length(frq_lim[1]:frq_lim[2]))
 
     if method === :standard
-        p_tmp, s_frq, _ = @views spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=false, demean=demean)
+        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=false)
     elseif method === :mt
-        p_tmp, s_frq, _ = @views spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=true, st=false, demean=demean)
+        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=true, st=false)
     elseif method === :stft
-        p_tmp, s_frq, _ = @views spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=true, demean=demean)
+        p_tmp, sf, _ = @views NeuroAnalyzer.spectrogram(obj.data[1, :, 1], fs=fs, norm=norm, mt=false, st=true)
     elseif method === :mw
-    _, p_tmp, _, s_frq = @views wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+    _, p_tmp, _, sf = @views NeuroAnalyzer.wspectrogram(obj.data[1, :, 1], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
     elseif method === :gh
-        p_tmp, s_frq = @views ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
+        p_tmp, _, sf = @views NeuroAnalyzer.ghspectrogram(obj.data[1, :, 1], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
     elseif method === :cwt
-        p_tmp, s_frq = @views cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
+        p_tmp, sf = @views NeuroAnalyzer.cwtspectrogram(obj.data[1, :, 1], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
     end
 
-    s_t = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
-    s_pow = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
+    st = linspace(0, (epoch_len(obj) / fs), size(p_tmp, 2))
+    sp = zeros(size(p_tmp, 1), size(p_tmp, 2), ch_n, ep_n)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
@@ -313,17 +306,17 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
             if method === :standard
-                s_pow[:, :, ch_idx, ep_idx], _, _ = @views spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=false, demean=demean)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=false)
             elseif method === :mt
-                s_pow[:, :, ch_idx, ep_idx], _, _ = @views spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=true, st=false, demean=demean)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=true, st=false)
             elseif method === :stft
-                s_pow[:, :, ch_idx, ep_idx], _, _ = @views spectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=true, demean=demean)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.spectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, norm=norm, mt=false, st=true)
             elseif method === :mw
-                _, s_pow[:, :, ch_idx, ep_idx], _, _ = @views wspectrogram(obj.data[channel[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc, demean=demean)
+                _, sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.wspectrogram(obj.data[ch[ch_idx], :, ep_idx], pad=pad, fs=fs, norm=norm, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
             elseif method === :gh
-                s_pow[:, :, ch_idx, ep_idx], _, _ = @views ghspectrogram(obj.data[channel[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, demean=demean, gw=gw)
+                sp[:, :, ch_idx, ep_idx], _, _ = @views NeuroAnalyzer.ghspectrogram(obj.data[ch[ch_idx], :, ep_idx], fs=fs, frq_lim=frq_lim, frq_n=frq_n, norm=norm, frq=frq, gw=gw)
             elseif method === :cwt
-                s_pow[:, :, ch_idx, ep_idx], _ = @views cwtspectrogram(obj.data[channel[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm, demean=demean)
+                sp[:, :, ch_idx, ep_idx], _ = @views NeuroAnalyzer.cwtspectrogram(obj.data[ch[ch_idx], :, ep_idx], wt=wt, fs=fs, frq_lim=frq_lim, norm=norm)
             end
 
             # update progress bar
@@ -331,95 +324,10 @@ function spectrogram(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
         end
     end
 
-    s_frq = round.(s_frq, digits=2)
-    s_t = round.(s_t, digits=2)
-    s_t .+= obj.epoch_time[1]
+    sf = round.(sf, digits=2)
+    st = round.(st, digits=2)
+    st .+= obj.epoch_time[1]
 
-    return (s_pow=s_pow, s_frq=s_frq, s_t=s_t)
-end
+    return (sp=sp, sf=sf, st=st)
 
-"""
-    specseg(sp, sf, st; t, f)
-
-Return spectrogram segment.
-
-# Arguments
-
-- `sp::Matrix{Float64}`: spectrogram powers
-- `st::Vector{Float64}`: spectrogram time
-- `sf::Vector{Float64}`: spectrogram frequencies
-- `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
-
-# Returns
-
-Named tuple containing:
-- `seg_pow::Matrix{Float64}`: powers
-- `seg_shape::Shape{Real, Int64}`: shape for plotting
-- `t_idx::Tuple{Real, Real}`: time indices
-- `f_idx::Tuple{Real, Real}`: frequency indices
-"""
-function specseg(sp::Matrix{Float64}, st::Vector{Float64}, sf::Vector{Float64}; t::Tuple{Real, Real}, f::Tuple{Real, Real})
-
-    t = tuple_order(t)
-    f = tuple_order(f)
-
-    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
-    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
-    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
-    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
-
-    f_idx1 = vsearch(f[1], sf)
-    f_idx2 = vsearch(f[2], sf)
-    t_idx1 = vsearch(t[1], st)
-    t_idx2 = vsearch(t[2], st)
-    seg_pow = sp[f_idx1:f_idx2, t_idx1:t_idx2]
-    seg_shape = Shape([(st[t_idx1], sf[f_idx1]), (st[t_idx2], sf[f_idx1]), (st[t_idx2], sf[f_idx2]), (st[t_idx1], sf[f_idx2])])
-
-    return (seg_pow=seg_pow, seg_shape=seg_shape, t_idx=(t_idx1,t_idx2), f_idx=(f_idx1,f_idx2))
-end
-
-
-"""
-    specseg(sp, sf, st; t, f)
-
-Return spectrogram segment.
-
-# Arguments
-
-- `sp::AbstractArray`: spectrogram powers
-- `st::AbstractVector`: spectrogram time
-- `sf::AbstractVector`: spectrogram frequencies
-- `t::Tuple{Real, Real}`: time bounds
-- `f::Tuple{Real, Real}`: frequency bounds
-
-# Returns
-
-Named tuple containing:
-- `seg_pow::Array{Float64, 3}`: segment of powers
-- `seg_shape::Shape{Real, Int64}`: segment coordinates (shape for plotting)
-- `t_idx::Tuple{Real, Real}`: time indices
-- `f_idx::Tuple{Real, Real}`: frequency indices
-"""
-function specseg(sp::AbstractArray, st::AbstractVector, sf::AbstractVector; channel::Int64, t::Tuple{Real, Real}, f::Tuple{Real, Real})
-
-    t = tuple_order(t)
-    f = tuple_order(f)
-
-    channel < 1 && throw(ArgumentError("channel must be ≥ 1."))
-    channel > size(sp, 3) && throw(ArgumentError("channel must be ≤ $(size(sp, 3))."))
-
-    t[1] < st[1] && throw(ArgumentError("t[1] must be ≥ $(st[1])."))
-    t[2] > st[end] && throw(ArgumentError("t[2] must be ≤ $(st[end])."))
-    f[1] < sf[1] && throw(ArgumentError("f[1] must be ≥ $(sf[1])."))
-    f[2] > sf[end] && throw(ArgumentError("f[2] must be ≤ $(sf[end])."))
-
-    f_idx1 = vsearch(f[1], sf)
-    f_idx2 = vsearch(f[2], sf)
-    t_idx1 = vsearch(t[1], st)
-    t_idx2 = vsearch(t[2], st)
-    seg_pow = sp[f_idx1:f_idx2, t_idx1:t_idx2, channel, :]
-    seg_shape = Shape([(st[t_idx1], sf[f_idx1]), (st[t_idx2], sf[f_idx1]), (st[t_idx2], sf[f_idx2]), (st[t_idx1], sf[f_idx2])])
-
-    return (seg_pow=seg_pow, seg_shape=seg_shape, t_idx=(t_idx1,t_idx2), f_idx=(f_idx1,f_idx2))
 end

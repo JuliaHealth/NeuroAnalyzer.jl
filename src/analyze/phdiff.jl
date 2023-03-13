@@ -15,7 +15,7 @@ Calculate phase difference between signals.
 # Returns
 
 Named tuple containing:
-- `ph_diff::Vector{Float64}`: phase differences in radians
+- `phd::Vector{Float64}`: phase differences in radians
 """
 function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=false)
 
@@ -27,18 +27,21 @@ function phdiff(s1::AbstractVector, s2::AbstractVector; pad::Int64=0, h::Bool=fa
         _, _, _, ph2 = spectrum(s2, pad=pad)
     end
 
-    return round.(ph1 - ph2, digits=2)
+    phd = ph1 - ph2
+
+    return phd
+
 end
 
 """
-    phdiff(obj; channel, pad, h)
+    phdiff(s; ch, pad, h)
 
-Calculate phase difference between channels and mean phase of reference `channel`.
+Calculate phase difference between channels and mean phase of reference `ch`.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
+- `s::AbstractArray`
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=size(s, 1)`: index of reference channels, default is all  channels except the analyzed one
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
@@ -47,48 +50,84 @@ Calculate phase difference between channels and mean phase of reference `channel
 
 # Returns
  
-- `ph_diff::Array{Float64, 3}`
+- `phd::Array{Float64, 3}`
 """
-function phdiff(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:size(s, 1), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
     avg in [:phase, :signal] || throw(ArgumentError("avg must be :phase or :signal."))
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    _check_channels(s, ch)
 
-    ph_diff = zeros(ch_n, epoch_len(obj), ep_n)
-    if avg === :phase
-        @inbounds @simd for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
-                ref_channels = setdiff(channel, ch_idx)
-                ph_ref = zeros(length(ref_channels), epoch_len(obj))
+    ch_n = size(s, 1)
+    ep_len = size(s, 2)
+    ep_n = size(s, 3)
+
+    phd = similar(s)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            if avg === :phase
+                ref_channels = setdiff(ch, ch_idx)
+                ph_ref = zeros(length(ref_channels), ep_len)
+                
                 for ref_idx in eachindex(ref_channels)
                     if h == true
-                        _, _, _, ph = @views hspectrum(obj.data[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views hspectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
-                        _, _, _, ph = @views spectrum(obj.data[ref_channels[ref_idx], :, ep_idx], pad=pad)
+                        _, _, _, ph = @views spectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     end
                     ph_ref[ref_idx, :] = ph
                 end
+                
                 ph_ref = vec(mean(ph_ref, dims=1))
+                
                 if h == true
-                    _, _, _, ph = @views hspectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views hspectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
                 else
-                    _, _, _, ph = @views spectrum(obj.data[channel[ch_idx], :, ep_idx], pad=pad)
+                    _, _, _, ph = @views spectrum(s[ch[ch_idx], :, ep_idx], pad=pad)
                 end
-                ph_diff[ch_idx, :, ep_idx] = ph - ph_ref
-            end
-        end
-    else
-        @inbounds @simd for ep_idx in 1:ep_n
-            Threads.@threads for ch_idx in 1:ch_n
-                ref_channels = setdiff(channel, ch_idx)
-                signal_m = @views vec(mean(obj.data[ref_channels, :, ep_idx], dims=1))
-                ph_diff[ch_idx, :, ep_idx] = @views phdiff(obj.data[channel[ch_idx], :, ep_idx], signal_m)
+
+                phd[ch_idx, :, ep_idx] = ph - ph_ref
+
+            else
+                ref_channels = setdiff(ch, ch_idx)
+                
+                signal_m = @views vec(mean(s[ref_channels, :, ep_idx], dims=1))
+                
+                phd[ch_idx, :, ep_idx] = @views phdiff(s[ch[ch_idx], :, ep_idx], signal_m)
             end
         end
     end
 
-    return ph_diff
+    return phd
+
+end
+
+"""
+    phdiff(obj; ch, pad, h)
+
+Calculate phase difference between channels and mean phase of reference `ch`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
+- `avg::Symbol=:phase`: method of averaging:
+    - `:phase`: phase is calculated for each reference channel separately and then averaged
+    - `:signal`: signals are averaged prior to phase calculation
+- `pad::Int64=0`: pad signals with 0s
+- `h::Bool=false`: use FFT or Hilbert transformation
+
+# Returns
+ 
+- `phd::Array{Float64, 3}`
+"""
+function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+
+    _check_channels(obj, ch)
+
+    phd = @views phdiff(obj.data[ch, :, :], avg=avg, pad=pad, h=h)
+
+    return phd
+    
 end
