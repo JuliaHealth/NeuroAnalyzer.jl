@@ -37,6 +37,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; lag::Int64=1, norm::Bool=f
     norm == true && (xc ./ length(s1))
 
     return (xc=xc, l=l)
+    
 end
 
 """
@@ -76,6 +77,7 @@ function xcov(s1::AbstractArray, s2::AbstractArray; lag::Int64=1, norm::Bool=fal
     end
 
     return (xc=xc, l=l)
+
 end
 
 
@@ -127,6 +129,7 @@ function xcov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstract
     end
 
     return (xc=xc, l=l)
+
 end
 
 """
@@ -170,4 +173,5 @@ function xcov(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{I
     xc, _ = @views xcov(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], lag=lag, norm=norm)
 
     return (xc=xc, l=l)
+
 end
