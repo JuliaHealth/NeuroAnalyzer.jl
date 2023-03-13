@@ -53,13 +53,13 @@ function stationarity_mean(s::AbstractVector; window::Int64)
 end
 
 """
-    stationarity_var(signal; window)
+    stationarity_var(s; window)
 
 Calculate variance stationarity. Signal is split into `window`-long windows and variance is calculated across windows.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `window::Int64`: time window in samples
 
 # Returns
@@ -107,6 +107,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     window < 1 && throw(ArgumentError("window must be ≥ 1."))
     window > epoch_len(obj) && throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
+    ch_n = channel_n(obj)
     ep_n = epoch_n(obj)
 
     if method === :mean
@@ -169,6 +170,7 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
         # perform Augmented Dickey–Fuller test
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx = 1:ch_n
+                adf = @views HypothesisTests.ADFTest(obj.data[ch_idx, :, ep_idx], :none, 1)
                 a = adf.stat
                 p = pvalue(adf)
                 p < eps() && (p = 0.0001)

@@ -22,6 +22,7 @@ function xcov(s1::AbstractVector, s2::AbstractVector; lag::Int64=1, norm::Bool=f
 
     length(s1) == length(s2) || throw(ArgumentError("Both signals must be of the same as length."))
     lag < 1 && throw(ArgumentError("lag must be ≥ 1."))
+
     l = collect(-lag:lag)
 
     xc = zeros(length(l))
@@ -43,7 +44,7 @@ end
 """
     xcov(s1, s2; lag, norm)
 
-Calculate cross-covariance between two NeuroAnalyzer NEURO objects.
+Calculate cross-covariance.
 
 # Arguments
 
@@ -101,18 +102,17 @@ Named tuple containing:
 """
 function xcov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, norm::Bool=false)
 
-    _check_channels(obj, ch)
+    #_check_channels(obj, ch)
     ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     # create vector of lags
     l = 1/sr(obj) .* collect(-lag:lag) .* 1000
-
     xc = zeros(ch_n^2, length(l), ep_n)
 
     @inbounds @simd for ep_idx in 1:ep_n
-        
-        # create half of the covariance matrix
+
+        # create half of the cross-covariance matrix
         xcov_packed = Array{Vector{Float64}}(undef, ch_n, ch_n)
         Threads.@threads for ch_idx1 in 1:ch_n
             for ch_idx2 in 1:ch_idx1
@@ -120,7 +120,12 @@ function xcov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, Abstract
             end
         end
         
-        xcov_packed = _copy_lt2ut(xcov_packed)
+        # copy to the other half
+        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
+            for ch_idx2 in (ch_idx1 + 1):ch_n
+                xcov_packed[ch_idx1, ch_idx2] = @views xcov_packed[ch_idx2, ch_idx1]
+            end
+        end
 
         # unpack by channels
         Threads.@threads for ch_idx in 1:ch_n^2

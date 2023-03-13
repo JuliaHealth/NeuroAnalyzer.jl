@@ -84,6 +84,46 @@ function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=true)
 end
 
 """
+    hspectrum(s; pad=0)
+
+Calculate amplitudes, powers and phases using Hilbert transform.
+
+# Arguments
+
+- `s::AbstractArray`
+- `pad::Int64`: pad the `s` with `pad` zeros
+- `norm::Bool=true`: normalize do dB
+
+# Returns
+
+Named tuple containing:
+- `hc::Array(ComplexF64, 3}`: Hilbert components
+- `sa::Array{Float64, 3}`: amplitudes
+- `sp::Array{Float64, 3}`: powers
+- `sph::Array{Float64, 3}`: phases
+"""
+function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
+
+    ch_n = size(s, 1)
+    ep_len = size(s, 2)
+    ep_n = size(s, 3)
+
+    hc = zeros(ComplexF64, ch_n, ep_len, ep_n)
+    sa = similar(s)
+    sp = similar(s)
+    sph = similar(s)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            hc[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+        end
+    end  
+
+    return (hc=hc, sa=sa, sp=sp, sph=sph)
+    
+end
+
+"""
     spectrum(s; pad, h)
 
 Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
@@ -159,7 +199,7 @@ function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
 
     _check_channels(obj, ch)
 
-    c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, norm=norm)
+    c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, h=h, norm=norm)
 
     return (c=c, sa=sa, sp=sp, sph=sph)
 

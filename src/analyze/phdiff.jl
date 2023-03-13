@@ -70,7 +70,7 @@ function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRang
                 ref_channels = setdiff(ch, ch_idx)
                 ph_ref = zeros(length(ref_channels), ep_len)
                 
-                for ref_idx in eachindex(ref_channels)
+                for ref_idx in 1:length(ref_channels)
                     if h == true
                         _, _, _, ph = @views hspectrum(s[ref_channels[ref_idx], :, ep_idx], pad=pad)
                     else
