@@ -513,26 +513,168 @@ sp, sst, t, f = spec_seg(sp, sf, st, ch=1, t=(0, 1), f=(0, 10))
 @test f == (1, 37)
 
 @info "test 37/ : spectrum()"
-NeuroAnalyzer.spectrum(e10)
-NeuroAnalyzer.spectrum(e10, h=true)
+c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(100))
+@test length(c) == 100
+@test length(sa) == 50
+@test length(sp) == 50
+@test length(sph) == 100
+c, sa, sp, sph = NeuroAnalyzer.hspectrum(rand(100))
+@test length(c) == 100
+@test length(sa) == 100
+@test length(sp) == 100
+@test length(sph) == 100
+c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10))
+@test size(c) == (10, 100, 10)
+@test size(sa) == (10, 50, 10)
+@test size(sp) == (10, 50, 10)
+@test size(sph) == (10, 100, 10)
+c, sa, sp, sph = NeuroAnalyzer.spectrum(rand(10, 100, 10), h=true)
+@test size(c) == (10, 100, 10)
+@test size(sa) == (10, 100, 10)
+@test size(sp) == (10, 100, 10)
+@test size(sph) == (10, 100, 10)
+c, sa, sp, sph = NeuroAnalyzer.spectrum(e10)
+@test size(c) == (19, 2560, 10)
+@test size(sa) == (19, 1280, 10)
+@test size(sp) == (19, 1280, 10)
+@test size(sph) == (19, 2560, 10)
+c, sa, sp, sph = NeuroAnalyzer.spectrum(e10, h=true)
+@test size(c) == (19, 2560, 10)
+@test size(sa) == (19, 2560, 10)
+@test size(sp) == (19, 2560, 10)
+@test size(sph) == (19, 2560, 10)
+
+@info "test 38/ : stationarity()"
+s = NeuroAnalyzer.stationarity(e10, method=:adf)
+@test size(s) == (19, 2, 10)
+s = NeuroAnalyzer.stationarity(e10, method=:cov)
+@test size(s) == (257, 10)
+s = NeuroAnalyzer.stationarity(e10, method=:hilbert)
+@test size(s) == (19, 2559, 10)
+s = NeuroAnalyzer.stationarity(e10, method=:mean)
+@test size(s) == (19, 10, 10)
+s = NeuroAnalyzer.stationarity(e10, method=:var)
+@test size(s) == (19, 10, 10)
+
+@info "test 39/ : channel_stats()"
+c = NeuroAnalyzer.channel_stats(e10)
+for idx in 1:length(c)
+    @test size(c[idx]) == (24, 10)
+end
+
+@info "test 40/ : epoch_stats()"
+e = NeuroAnalyzer.epoch_stats(e10)
+for idx in 1:length(e)
+    @test length(e[idx]) == 10
+end
+
+@info "test 41/ : tcoherence()"
+@test NeuroAnalyzer.tcoherence(v1, v2) == (c = [12.0, 0.22360679774997885, -0.22360679774997896, -0.22360679774997896, 0.22360679774997885], msc = [144.0, 0.5236067977499784, 0.07639320225002108, 0.07639320225002108, 0.5236067977499784], ic = [-0.0, -0.6881909602355865, -0.16245984811645328, 0.16245984811645328, 0.6881909602355865])
+c, mc, ic = NeuroAnalyzer.tcoherence(rand(10, 100), rand(10, 100))
+@test size(c) == (10, 100)
+@test size(mc) == (10, 100)
+@test size(ic) == (10, 100)
+c, mc, ic = NeuroAnalyzer.tcoherence(e10, e10, ch1=1:10, ch2=1:10, ep1=1, ep2=2)
+@test size(c) == (10, 2560)
+@test size(mc) == (10, 2560)
+@test size(ic) == (10, 2560)
+
+@info "test 41/ : tkeo()"
+@test NeuroAnalyzer.tkeo(v1) == [1.0, 1.0, 1.0, 1.0, 5.0]
+@test NeuroAnalyzer.tkeo(a1) == [1.0 0.0 1.0; 1.0 0.0 1.0;;; 1.0 0.0 1.0; 1.0 0.0 1.0]
+t = NeuroAnalyzer.tkeo(e10)
+@test size(t) == (19, 2560, 10)
+
+@info "test 42/ : total_power()"
+@test NeuroAnalyzer.total_power(rand(100), fs=10) > 0.0
+tp = NeuroAnalyzer.total_power(e10)
+@test size(tp) == (19, 10)
+tp = NeuroAnalyzer.total_power(e10, mt=true)
+@test size(tp) == (19, 10)
+
+@info "test 42/ : var_test()"
+f, p = NeuroAnalyzer.vartest(e10)
+@test size(f) == (19, 19, 10)
+@test size(p) == (19, 19, 10)
+f, p = NeuroAnalyzer.vartest(e10, e10)
+@test size(f) == (19, 19, 10)
+@test size(p) == (19, 19, 10)
+
+@info "test 43/ : xcov()"
+@test NeuroAnalyzer.xcov(v1, v2) == (xc = [30.0, 50.0, 58.0], l = [-1, 0, 1])
+@test NeuroAnalyzer.xcov(a1, a2) == (xc = [0.0 0.0 0.0; 0.0 0.0 0.0;;; 0.0 0.0 0.0; 0.0 0.0 0.0], l = [-1, 0, 1])
+xc, l = NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, lag=10)
+@test length(xc) == 21
+@test length(l) == 21
+xc, l = NeuroAnalyzer.xcov(e10, lag=10)
 
 #=
-NeuroAnalyzer.channel_stats(e10)
-NeuroAnalyzer.epoch_stats(e10)
+NeuroAnalyzer.fbsplit(e10)
+NeuroAnalyzer.negentropy(e10)
+NeuroAnalyzer.normalize(e10, method=:zscore)
+NeuroAnalyzer.psd_mw(e10)
+NeuroAnalyzer.psdslope(e10)
+NeuroAnalyzer.remove_dc(e10)
+NeuroAnalyzer.snr(e10)
 NeuroAnalyzer.standardize(e10)
-NeuroAnalyzer.stationarity(e10, method=:adf)
-NeuroAnalyzer.stationarity(e10, method=:cov)
-NeuroAnalyzer.stationarity(e10, method=:hilbert)
-NeuroAnalyzer.stationarity(e10, method=:mean)
-NeuroAnalyzer.stationarity(e10, method=:var)
-NeuroAnalyzer.tcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
-NeuroAnalyzer.tkeo(e10)
-NeuroAnalyzer.total_power(e10)
-NeuroAnalyzer.total_power(e10, mt=true)
-NeuroAnalyzer.vartest(e10)
-NeuroAnalyzer.vartest(e10, e10)
-NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, lag=10, demean=true)
-NeuroAnalyzer.xcov(e10, lag=10, demean=true)
+NeuroAnalyzer.taper(e10, t=generate_window(:hann, epoch_len(e10)))
+NeuroAnalyzer.tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
+
+
+tbp = total_power(eeg)
+@test size(tbp) == (19, 1)
+
+xcov_m, _ = xcov(eeg)
+@test size(xcov_m) == (361, 3, 1)
+
+p = stationarity(eeg, method=:mean)
+@test size(p) == (19, 10, 1)
+p = stationarity(eeg, method=:var)
+@test size(p) == (19, 10, 1)
+p = stationarity(eeg, method=:hilbert)
+@test size(p) == (19, 309759, 1)
+p = stationarity(eeg, window=10000, method=:cov)
+@test size(p) == (32, 1)
+
+c, msc, ic = tcoherence(eeg, eeg)
+@test size(c) == (19, 309760, 1)
+
+e10 = epoch(eeg, ep_len=2560)
+s_conv = fconv(e10, kernel=generate_window(:hann, 256))
+@test size(s_conv) == (19, 2560, 121)
+s_conv = tconv(e10, kernel=generate_window(:hann, 256))
+@test size(s_conv) == (19, 2560, 121)
+
+e = epoch(eeg, ep_len=20*256)
+v = epoch_stats(e)
+@test length(v) == 10
+
+e = epoch(eeg, ep_len=2560)
+erp!(e)
+
+v = channel_stats(eeg)
+@test length(v) == 10
+
+s, h = snr(e10)
+@test size(s) == (19, 1280)
+
+@test size(tkeo(eeg)) == (19, 309760, 1)
+
+f, p = vartest(eeg)
+@test size(f) == (19, 19, 1)
+
+_, _, f = psdslope(eeg)
+@test length(f) == 513
+
+####
+
+eeg1 = wbp(eeg, frq=10)
+@test size(eeg1.data) == (19, 309760, 1)
+eeg1 = cbp(eeg, frq=10)
+@test size(eeg1.data) == (19, 309760, 1)
+
+@test size(phdiff(eeg)) == (19, 309760, 1)
+
 =#
 
 true

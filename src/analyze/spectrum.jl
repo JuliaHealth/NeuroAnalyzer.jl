@@ -8,33 +8,39 @@ Calculate FFT, amplitudes, powers and phases.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractVector`
 - `pad::Int64=0`: number of zeros to add
 - `norm::Bool=false`: normalize do dB
 
 # Returns
 
 Named tuple containing:
-- `s_fft::Vector{ComplexF64}`
-- `s_amp::Vector{Float64}`
-- `s_pow::Vector{Float64}`
-- `s_pha::Vector{Float64}`
+- `ft::Vector{ComplexF64}`: Fourier transforms
+- `sa::Vector{Float64}`: amplitudes
+- `sp::Vector{Float64}`: powers
+- `sph::Vector{Float64}`: phases
 """
-function spectrum(s::AbstractArray; pad::Int64=0, norm::Bool=false)
+function spectrum(s::AbstractVector; pad::Int64=0, norm::Bool=false)
 
-    s_fft = fft0(s, pad)
+    ft = fft0(s, pad)
 
     # amplitudes
-    s_amp = abs.(s_fft) ./ length(s)       # normalize
-    s_amp = s_amp[1:(length(s_amp) ÷ 2)]        # remove negative frequencies
-    s_amp[2:end] .*= 2                          # double positive frequencies
-    # power
-    s_pow = s_amp.^2
-    norm == true && (s_pow = pow2db.(s_pow))
-    # phases
-    s_pha = angle.(s_fft)
+    sa = abs.(ft) ./ length(s)              # normalize
+    sa = sa[1:(length(sa) ÷ 2)]             # remove negative frequencies
+    sa[2:end] .*= 2                         # double positive frequencies
 
-    return (s_fft=s_fft, s_amp=s_amp, s_pow=s_pow, s_pha=s_pha)
+    # replace amplitude at 0 Hz
+    sa[1] = sa[2]
+
+    # power
+    sp = sa.^2
+    norm == true && (sp = pow2db.(sp))
+
+    # phases
+    sph = angle.(ft)
+
+    return (ft=ft, sa=sa, sp=sp, sph=sph)
+
 end
 
 """
@@ -44,33 +50,89 @@ Calculate amplitudes, powers and phases using Hilbert transform.
 
 # Arguments
 
-- `s::AbstractArray`
+- `s::AbstractVector`
 - `pad::Int64`: pad the `s` with `pad` zeros
 - `norm::Bool=true`: normalize do dB
 
 # Returns
 
 Named tuple containing:
-- `h::Vector(ComplexF64}`: Hilbert components
-- `h_amp::Vector{Float64}`
-- `h_pow::Vector{Float64}`
-- `h_pha::Vector{Float64}`
+- `hc::Vector(ComplexF64}`: Hilbert components
+- `sa::Vector{Float64}`: amplitudes
+- `sp::Vector{Float64}`: powers
+- `sph::Vector{Float64}`: phases
 """
-function hspectrum(s::AbstractArray; pad::Int64=0, norm::Bool=true)
+function hspectrum(s::AbstractVector; pad::Int64=0, norm::Bool=true)
 
-    h = hilbert(pad0(s, pad))
+    hc = hilbert(pad0(s, pad))
 
     # amplitudes
-    h_amp = @. abs(h)
-    # power
-    h_pow = h_amp.^2
-    norm == true && (h_pow = pow2db.(h_pow))
-    # phases
-    h_pha = angle.(h)
+    sa = @. abs(hc)
 
-    return (h=h, h_amp=h_amp, h_pow=h_pow, h_pha=h_pha)
+    # replace amplitude at 0 Hz
+    sa[1] = sa[2]
+
+    # powers
+    sp = sa.^2
+    norm == true && (sp = pow2db.(sp))
+
+    # phases
+    sph = angle.(hc)
+
+    return (hc=hc, sa=sa, sp=sp, sph=sph)
     
 end
+
+"""
+    spectrum(s; pad, h)
+
+Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
+
+# Arguments
+
+- `s::AbstractArray`
+- `pad::Int64=0`: number of zeros to add signal for FFT
+- `h::Bool=false`: use Hilbert transform for calculations instead of FFT
+- `norm::Bool=false`: normalize do dB
+
+# Returns
+
+Named tuple containing:
+- `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
+- `sa::Array{Float64, 3}`: amplitudes
+- `sp::Array{Float64, 3}`: powers
+- `sph::Array{Float64, 3}: phase angles
+"""
+function spectrum(s::AbstractArray; pad::Int64=0, h::Bool=false, norm::Bool=false)
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    fft_size = size(s, 2) + pad
+
+    c = zeros(ComplexF64, ch_n, fft_size, ep_n)
+    sph = zeros(ch_n, fft_size, ep_n)
+
+    if h == true
+        sa = zeros(ch_n, fft_size, ep_n)
+        sp = zeros(ch_n, fft_size, ep_n)
+    else
+        sa = zeros(ch_n, fft_size ÷ 2, ep_n)
+        sp = zeros(ch_n, fft_size ÷ 2, ep_n)
+    end        
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            if h == true
+                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views hspectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+            else
+                c[ch_idx, :, ep_idx], sa[ch_idx, :, ep_idx], sp[ch_idx, :, ep_idx], sph[ch_idx, :, ep_idx] = @views spectrum(s[ch_idx, :, ep_idx], pad=pad, norm=norm)
+            end
+        end
+    end  
+
+    return (c=c, sa=sa, sp=sp, sph=sph)
+end
+
 
 """
     spectrum(obj; ch, pad, h)
@@ -89,37 +151,16 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 
 Named tuple containing:
 - `c::Array{ComplexF64, 3}`: Fourier or Hilbert components
-- `amp::Array{Float64, 3}`: amplitudes
-- `pow::Array{Float64, 3}`: powers
-- `pha::Array{Float64, 3}: phase angles
+- `sa::Array{Float64, 3}`: amplitudes
+- `sp::Array{Float64, 3}`: powers
+- `sph::Array{Float64, 3}: phase angles
 """
 function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
 
     _check_channels(obj, ch)
-    ch_n = length(ch)
-    ep_n = epoch_n(obj)
 
-    fft_size = epoch_len(obj) + pad
+    c, sa, sp, sph = spectrum(obj.data[ch, :, :], pad=pad, norm=norm)
 
-    s_c = zeros(ComplexF64, ch_n, fft_size, ep_n)
-    s_pha = zeros(ch_n, fft_size, ep_n)
-    if h == true
-        s_amp = zeros(ch_n, fft_size, ep_n)
-        s_pow = zeros(ch_n, fft_size, ep_n)
-    else
-        s_amp = zeros(ch_n, fft_size ÷ 2, ep_n)
-        s_pow = zeros(ch_n, fft_size ÷ 2, ep_n)
-    end        
+    return (c=c, sa=sa, sp=sp, sph=sph)
 
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            if h == true
-                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views hspectrum(obj.data[ch[ch_idx], :, ep_idx], pad=pad, norm=norm)
-            else
-                s_c[ch_idx, :, ep_idx], s_amp[ch_idx, :, ep_idx], s_pow[ch_idx, :, ep_idx], s_pha[ch_idx, :, ep_idx] = @views spectrum(obj.data[ch[ch_idx], :, ep_idx], pad=pad, norm=norm)
-            end
-        end
-    end
-
-    return (c=s_c, amp=s_amp, pow=s_pow, pha=s_pha)
 end
