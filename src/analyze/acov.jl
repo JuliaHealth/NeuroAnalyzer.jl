@@ -83,7 +83,7 @@ Calculate auto-covariance.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `lag::Int64=1`: lags range is `-lag:lag`
 - `norm::Bool=false`: normalize auto-covariance
 
@@ -93,7 +93,7 @@ Named tuple containing:
 - `ac::Matrix{Float64}`
 - `l::Vector{Float64}`: lags in ms
 """
-function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), lag::Int64=1, norm::Bool=false)
+function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), lag::Int64=1, norm::Bool=false)
 
     _check_channels(obj, ch)
 

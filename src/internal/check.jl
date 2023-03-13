@@ -1,18 +1,18 @@
-function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_channels(s::AbstractArray, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         (idx < 1 || idx > size(s, 1)) && throw(ArgumentError("ch must be ≥ 1 and ≤ $(size(s, 1))."))
     end
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         (idx < 1 || idx > channel_n(obj)) && throw(ArgumentError("ch must be ≥ 1 and ≤ $(channel_n(obj))."))
     end
     return nothing
 end
 
-function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, AbstractRange}, type::Symbol)
+function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64}, <:AbstractRange}, type::Symbol)
     channels = get_channel_bytype(obj, type=type)
     for idx in ch
         idx in channels || throw(ArgumentError("ch $idx does not match type: $(uppercase(string(type))) data channels."))
@@ -21,21 +21,21 @@ function _check_channels(obj::NeuroAnalyzer.NEURO, ch::Union{Int64, Vector{Int64
     return nothing
 end
 
-function _check_channels(channels::Union{Int64, Vector{Int64}, AbstractRange}, ch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_channels(channels::Union{Int64, Vector{Int64}, <:AbstractRange}, ch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in ch
         idx in channels || throw(ArgumentError("ch $idx does not match signal channels."))
         (idx < 1 || idx > length(channels)) && throw(ArgumentError("ch must be ≥ 1 and ≤ $(channel_n(obj))."))
     end
 end
 
-function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_epochs(obj::NeuroAnalyzer.NEURO, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in epoch
         (idx < 1 || idx > epoch_n(obj)) && throw(ArgumentError("epoch must be ≥ 1 and ≤ $(epoch_n(obj))."))
     end
     return nothing
 end
 
-function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
     c, _ = _get_component(obj, c)
     for idx in cc
         (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be ≥ 1 and ≤ $(size(c, 1))."))
@@ -43,7 +43,7 @@ function _check_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, cc::Union{Int64, Vecto
     return nothing
 end
 
-function _check_cidx(c::Array{Float64, 3}, cc::Union{Int64, Vector{Int64}, AbstractRange})
+function _check_cidx(c::Array{Float64, 3}, cc::Union{Int64, Vector{Int64}, <:AbstractRange})
     for idx in cc
         (idx < 1 || idx > size(c, 1)) && throw(ArgumentError("cc must be ≥ 1 and ≤ $(size(c, 1))."))
     end

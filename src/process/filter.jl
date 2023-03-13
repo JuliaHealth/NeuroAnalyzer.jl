@@ -379,7 +379,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -419,7 +419,7 @@ Apply filtering.
 
 For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
+function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     _check_channels(obj, channel)
     _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :mavg, :mmed, :poly, :conv, :sg], "fprototype")
@@ -470,7 +470,7 @@ Apply filtering.
 
 # Arguments
 
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -506,7 +506,7 @@ Apply filtering.
 
 For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
+function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")

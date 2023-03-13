@@ -389,7 +389,7 @@ Plot signal.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
 - `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -408,7 +408,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}=0, channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
 
@@ -544,7 +544,7 @@ Plot embedded or external component.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
@@ -562,7 +562,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
 

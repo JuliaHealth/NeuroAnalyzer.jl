@@ -40,7 +40,7 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `demean::Bool=true`: demean signal prior to analysis
@@ -49,7 +49,7 @@ Perform convolution bandpass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function cbp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, demean::Bool=true)
+function cbp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, demean::Bool=true)
 
     _check_channels(obj, channel)
 
@@ -77,12 +77,12 @@ Perform convolution bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Tuple{Real, Real}`: filter frequency
 - `demean::Bool=true`: demean signal prior to analysis
 """
-function cbp!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, demean::Bool=true)
+function cbp!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, demean::Bool=true)
 
     obj_tmp = cbp(obj, channel=channel, pad=pad, frq=frq, demean=demean)
     obj.data = obj_tmp.data

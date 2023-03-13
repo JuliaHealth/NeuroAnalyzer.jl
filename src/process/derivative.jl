@@ -23,13 +23,13 @@ Return the derivative of channel(s) with length same as the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function derivative(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)))
+function derivative(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
     ep_n = epoch_n(obj)
     
@@ -54,9 +54,9 @@ Return the derivative of channel(s) with length same as the signal.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 """
-function derivative!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)))
+function derivative!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
     obj_tmp = derivative(obj, channel=channel)
     obj.data = obj_tmp.data

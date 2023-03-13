@@ -8,7 +8,7 @@ Split signal into frequency bands.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `order::Int64=8`: number of taps for FIR band-pass filter
 - `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
 
@@ -19,7 +19,7 @@ Named tuple containing:
 - `band_frq::Vector{Tuple{Real, Real}}`
 - `signal_split::Array{Float64, 4}`
 """
-function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), order::Int64=8, window::Union{Nothing, AbstractVector, Int64}=nothing)
+function fbsplit(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=8, window::Union{Nothing, AbstractVector, Int64}=nothing)
     
     band = [:delta, :theta, :alpha, :beta, :beta_high, :gamma, :gamma_1, :gamma_2, :gamma_lower, :gamma_higher]
 

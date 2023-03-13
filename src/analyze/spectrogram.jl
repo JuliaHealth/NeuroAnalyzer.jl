@@ -250,7 +250,7 @@ Calculate spectrogram.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `method::Symbol=:standard`: method of calculating spectrogram:
     - `:standard`: standard
     - `:stft`: short-time Fourier transform
@@ -274,7 +274,7 @@ Named tuple containing:
 - `sf::Vector{Float64}`
 - `st::Vector{Float64}`
 """
-function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(π), β=2)) where {T <: CWT}
+function spectrogram(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), method::Symbol=:standard, norm::Bool=true, frq::Symbol=:log, gw::Real=5, ncyc::Union{Int64, Tuple{Int64, Int64}}=6, wt::T=wavelet(Morlet(π), β=2)) where {T <: CWT}
 
     _check_var(method, [:standard, :stft, :mt, :mw, :gh, :cwt], "method")
     _check_channels(obj, ch)

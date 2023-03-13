@@ -42,7 +42,7 @@ Perform convolution in the frequency domain.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 - `pad::Int64=0`: number of zeros to add signal for FFT
@@ -51,7 +51,7 @@ Perform convolution in the frequency domain.
 
 - `s_convoluted::Array{Float64, 3}`: convoluted signal
 """
-function fconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
+function fconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
     _check_channels(obj, channel)
     ch_n = length(channel)

@@ -87,7 +87,7 @@ Calculate PSD linear fit and slope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: calculate slope of the total power (default) or frequency range f[1] to f[2]
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -100,7 +100,7 @@ Named tuple containing:
 - `ls::Array{Float64, 2}`: slope of linear fit
 - `pf::Vector{Float64}`: range of frequencies for the linear fit
 """
-function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}=(0, sr(obj) ÷ 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd_slope(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}=(0, sr(obj) ÷ 2), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     _check_channels(obj, ch)
 

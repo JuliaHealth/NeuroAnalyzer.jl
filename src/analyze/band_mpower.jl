@@ -86,7 +86,7 @@ Calculate mean and maximum band power and its frequency.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 
@@ -97,7 +97,7 @@ Named tuple containing:
 - `maxfrq::Matrix{Float64}`: frequency of maximum band power per channel per epoch
 - `maxbp::Matrix{Float64}`: power at maximum band frequency per channel per epoch
 """
-function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false)
+function band_mpower(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false)
 
     _check_channels(obj, ch)
     

@@ -77,7 +77,7 @@ Perform piecewise detrending.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -93,7 +93,7 @@ Perform piecewise detrending.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function detrend(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     _check_var(type, [:ls, :linear, :constant, :poly, :loess, :hp], "type")
 
@@ -121,7 +121,7 @@ Perform piecewise detrending.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `type::Symbol=:linear`: detrending method
     - `:ls`: the result of a linear least-squares fit to `signal` is subtracted from `signal`
     - `:linear`: linear trend is subtracted from `signal`
@@ -133,7 +133,7 @@ Perform piecewise detrending.
 - `order::Int64=1`: polynomial fitting order
 - `f::Float64=1.0`: smoothing factor for `:loess` or frequency for `:hp`
 """
-function detrend!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
+function detrend!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
     obj_tmp = detrend(obj, channel=channel, type=type, offset=offset, order=order, f=f)
     obj.data = obj_tmp.data

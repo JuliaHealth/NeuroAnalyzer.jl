@@ -80,8 +80,8 @@ Extract data.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}=epoch_n(obj)`: index of epochs, default is all epochs
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}=epoch_n(obj)`: index of epochs, default is all epochs
 - `time::Bool=false`: return time vector
 - `etime::Bool=false`: return epoch time vector
 
@@ -91,7 +91,7 @@ Extract data.
 - `time::Vector{Float64}`
 - `etime::Vector{Float64}`
 """
-function extract_data(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), epoch::Union{Int64, Vector{Int64}, AbstractRange}=epoch_n(obj), time::Bool=false, etime::Bool=false)
+function extract_data(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), epoch::Union{Int64, Vector{Int64}, <:AbstractRange}=epoch_n(obj), time::Bool=false, etime::Bool=false)
     _check_channels(obj, channel)
     _check_epochs(obj, epoch)
     if time == false && etime == false

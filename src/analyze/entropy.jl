@@ -75,7 +75,7 @@ Calculate entropy.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
@@ -84,7 +84,7 @@ Named tuple containing:
 - `sent::Array{Float64, 2}`: Shanon entropy
 - `leent::Array{Float64, 2}`: log energy entropy
 """
-function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function entropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
 
@@ -155,13 +155,13 @@ Calculate negentropy.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
 - `ne::Array{Float64, 2}`
 """
-function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function negentropy(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, ch)
 

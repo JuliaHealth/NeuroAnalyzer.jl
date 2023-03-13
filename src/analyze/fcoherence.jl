@@ -93,10 +93,10 @@ Calculate coherence (mean over frequencies) and MSC (magnitude-squared coherence
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 - `frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing`: return coherence only for the given frequency range
 
 # Returns
@@ -106,7 +106,7 @@ Named tuple containing:
 - `msc::Array{Float64, 3}`: MSC
 - `f::Vector{Float64}`: frequencies
 """
-function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=0, ch2::Union{Int64, Vector{Int64}, AbstractRange}=0, ep1::Union{Int64, Vector{Int64}, AbstractRange}=0, ep2::Union{Int64, Vector{Int64}, AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
+function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=0, ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=0, frq_lim::Union{Tuple{Real, Real}, Nothing}=nothing)
 
     _check_channels(obj1, ch1)
     _check_channels(obj2, ch2)

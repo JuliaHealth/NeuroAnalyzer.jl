@@ -9,14 +9,14 @@ Interpolate OBJ channel using linear regression.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     channels = get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))
     channel in channels || throw(ArgumentError("channel must be signal channel; cannot interpolate non-signal channels."))
@@ -64,14 +64,14 @@ Interpolate OBJ channel using linear regression.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number to interpolate
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_tmp = lrinterpolate_channel(obj, channel=channel, epoch=epoch)
     obj.data = obj_tmp.data

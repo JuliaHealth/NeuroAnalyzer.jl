@@ -6,7 +6,7 @@ function _get_component(obj::NeuroAnalyzer.NEURO, c::Symbol)
     return (c=c, c_idx=c_idx)
 end
 
-function _select_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
+function _select_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, def_cidx::Int64=0)
     # select component channels, default is all or def_cidx
     c, _ = _get_component(obj, c)
     def_cidx > size(c, 1) && (def_cidx = size(c, 1))
@@ -20,7 +20,7 @@ function _select_cidx(obj::NeuroAnalyzer.NEURO, c::Symbol, c_idx::Union{Int64, V
     return c_idx
 end
 
-function _select_cidx(c::AbstractArray, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, def_cidx::Int64=0)
+function _select_cidx(c::AbstractArray, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, def_cidx::Int64=0)
     # select component channels, default is all or def_cidx
     def_cidx > size(c, 1) && (def_cidx = size(c, 1))
     def_cidx == 0 && (def_cidx = size(c, 1))

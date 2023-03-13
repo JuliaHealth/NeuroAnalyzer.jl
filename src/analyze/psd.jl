@@ -97,7 +97,7 @@ Calculate power spectrum density.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `norm::Bool=false`: normalize do dB
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -108,7 +108,7 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Vector{Float64}`: frequencies
 """
-function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
+function psd(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false, mt::Bool=false, nt::Int64=8)
 
     _check_channels(obj, ch)
 

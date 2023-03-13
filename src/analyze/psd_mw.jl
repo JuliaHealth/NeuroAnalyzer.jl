@@ -121,7 +121,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all s channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all s channels
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool`=true: normalize powers to dB
 - `frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2)`: frequency bounds for the spectrogram
@@ -134,7 +134,7 @@ Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
 - `pf::Matrix{Float64}`: frequencies
 """
-function psd_mw(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+function psd_mw(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 
     _check_channels(obj, ch)
 

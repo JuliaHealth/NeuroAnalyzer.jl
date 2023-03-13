@@ -17,14 +17,14 @@ Reference to selected channel(s). Only signal (EEG/MEG, depending on `obj.header
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function reference_ch(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
+function reference_ch(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
     # keep signal channels
     _check_channels(obj, channel)
@@ -69,10 +69,10 @@ Reference to selected channel(s). Only signal (EEG/MEG, depending on `obj.header
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 """
-function reference_ch!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}, med::Bool=false)
+function reference_ch!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
     obj_tmp = reference_ch(obj, channel=channel, med=med)
     obj.data = obj_tmp.data

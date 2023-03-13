@@ -142,7 +142,7 @@ Return FFT and DFT sample frequencies for a DFT.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
@@ -151,7 +151,7 @@ Named tuple containing:
 - `s_fft::Array{ComplexF64, 3}`: FFT
 - `s_sf::Vector{Float64}`: sample frequencies
 """
-function dft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0)
+function dft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0)
 
     _check_channels(obj, channel)
     ch_n = length(channel)

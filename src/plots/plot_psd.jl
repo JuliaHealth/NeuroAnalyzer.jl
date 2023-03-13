@@ -704,7 +704,7 @@ Plot power spectrum density.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method of calculating PSD:
     - `:welch`: Welch's periodogram
@@ -727,7 +727,7 @@ Plot power spectrum density.
 
 - `p::Union{Plots.Plot{Plots.GRBackend}, GLMakie.Figure}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")
@@ -920,7 +920,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; epoch::Int64, channel::Union{Int64, 
 end
 
 """
-    plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+    plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
 Plot power spectrum density of embedded or external component.
 
@@ -929,7 +929,7 @@ Plot power spectrum density of embedded or external component.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:welch`: method of calculating PSD:
     - `:welch`: Welch's periodogram
@@ -952,7 +952,7 @@ Plot power spectrum density of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
+function plot_psd(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Int64, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, norm::Bool=true, method::Symbol=:welch, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, ref::Symbol=:abs, ax::Symbol=:linlin, xlabel::String="default", ylabel::String="default", zlabel::String="default", title::String="default", mono::Bool=false, type::Symbol=:normal, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :w3d, :s3d, :topo], "type")
     _check_var(method, [:welch, :mt, :mw], "method")

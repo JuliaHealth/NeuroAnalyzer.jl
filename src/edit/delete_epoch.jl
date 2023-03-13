@@ -11,13 +11,13 @@ Remove epoch(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to be removed
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to be removed
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function delete_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     epoch_n(obj) == 1 && throw(ArgumentError("You cannot delete the last epoch."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
@@ -59,9 +59,9 @@ Remove epoch(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to be removed
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to be removed
 """
-function delete_epoch!(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function delete_epoch!(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_tmp = delete_epoch(obj, epoch=epoch)
     obj.header = obj_tmp.header
@@ -81,13 +81,13 @@ Keep epoch(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to keep
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function keep_epoch(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     epoch_n(obj) == 1 && throw(ArgumentError("contains only one epoch."))
     typeof(epoch) <: AbstractRange && (epoch = collect(epoch))
@@ -114,9 +114,9 @@ Keep OBJ epoch(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) to keep
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) to keep
 """
-function keep_epoch!(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, AbstractRange})
+function keep_epoch!(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_tmp = keep_epoch(obj, epoch=epoch)
     obj.header = obj_tmp.header

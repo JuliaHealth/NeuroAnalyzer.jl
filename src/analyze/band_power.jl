@@ -92,7 +92,7 @@ Calculate absolute band power between two frequencies.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `f::Tuple{Real, Real}`: lower and upper frequency bounds
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -101,7 +101,7 @@ Calculate absolute band power between two frequencies.
 
 - `bp::Matrix{Float64}`: band power
 """
-function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false, nt::Int64=8)
+function band_power(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), f::Tuple{Real, Real}, mt::Bool=false, nt::Int64=8)
 
     _check_channels(obj, ch)
 

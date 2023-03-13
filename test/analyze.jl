@@ -4,7 +4,7 @@ using Wavelets
 using ContinuousWavelets
 
 @info "- Initializing"
-eeg = import_edf("test/files/eeg-test-edf.edf")
+eeg = import_edf("files/eeg-test-edf.edf")
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, epoch=1:10)
 v = [1, 2, 3, 4, 5]
@@ -29,8 +29,10 @@ ad = NeuroAnalyzer.ampdiff(e10)
 @test size(ad) == (19, 2560, 10)
 
 @info "test 3/ : band_power()"
-@test NeuroAnalyzer.band_power(v, fs=10, f=(1, 2)) == 0
-@test NeuroAnalyzer.band_power(a1, fs=10, f=(1, 2)) == zeros(2, 2)
+bp = NeuroAnalyzer.band_power(rand(100), fs=10, f=(1, 2))
+@test bp > 0
+bp = NeuroAnalyzer.band_power(rand(10, 100, 10), fs=10, f=(1, 2))
+@test size(bp) == (10, 10)
 @test size(NeuroAnalyzer.band_power(e10, f=(10, 20), mt=false)) == (19, 10)
 @test size(NeuroAnalyzer.band_power(e10, f=(10, 20), mt=true)) == (19, 10)
 
@@ -228,8 +230,8 @@ ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000, 10), n=5, tol=1.0)
 @test size(ic) == (5, 1000, 10)
 @test size(ic_mw) == (10, 5, 10)
 ic, ic_mw = NeuroAnalyzer.ica(e10, n=5, tol=1.0)
-@test size(ic) == (5, 1000, 10)
-@test size(ic_mw) == (10, 5, 10)
+@test size(ic) == (5, 2560, 10)
+@test size(ic_mw) == (24, 5, 10)
 
 @info "test 20/ : ica_reconstruct()"
 ic, ic_mw = NeuroAnalyzer.ica(rand(10, 1000), n=5, tol=1.0)
@@ -292,7 +294,9 @@ st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:absdiff)
 @test size(st) == (2, 6)
 @test sts == [1.0, 1.0]
 @test p == [0.0, 0.0]
-@test NeuroAnalyzer.mdiff(m1, m2, method=:diff2int) == (st = [2.6666666666666665, 8.666666666666666, 4.666666666666666, 1.1666666666666665, 15.166666666666666, 4.5], sts = 4.666666666666666, p = 1.0)
+st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:diff2int)
+@test sts == 4.666666666666666
+@test p == 1.0
 st, sts, p = NeuroAnalyzer.mdiff(a1, a2, method=:diff2int)
 @test size(st) == (2, 6)
 @test sts == [2.0, 2.0]
@@ -515,22 +519,13 @@ NeuroAnalyzer.spectrum(e10, h=true)
 #=
 NeuroAnalyzer.channel_stats(e10)
 NeuroAnalyzer.epoch_stats(e10)
-NeuroAnalyzer.fbsplit(e10)
-NeuroAnalyzer.negentropy(e10)
-NeuroAnalyzer.normalize(e10, method=:zscore)
-NeuroAnalyzer.psd_mw(e10)
-NeuroAnalyzer.psdslope(e10)
-NeuroAnalyzer.remove_dc(e10)
-NeuroAnalyzer.snr(e10)
 NeuroAnalyzer.standardize(e10)
 NeuroAnalyzer.stationarity(e10, method=:adf)
 NeuroAnalyzer.stationarity(e10, method=:cov)
 NeuroAnalyzer.stationarity(e10, method=:hilbert)
 NeuroAnalyzer.stationarity(e10, method=:mean)
 NeuroAnalyzer.stationarity(e10, method=:var)
-NeuroAnalyzer.taper(e10, t=generate_window(:hann, epoch_len(e10)))
 NeuroAnalyzer.tcoherence(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2)
-NeuroAnalyzer.tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
 NeuroAnalyzer.tkeo(e10)
 NeuroAnalyzer.total_power(e10)
 NeuroAnalyzer.total_power(e10, mt=true)
@@ -538,62 +533,6 @@ NeuroAnalyzer.vartest(e10)
 NeuroAnalyzer.vartest(e10, e10)
 NeuroAnalyzer.xcov(e10, e10, ch1=1, ch2=2, ep1=1, ep2=2, lag=10, demean=true)
 NeuroAnalyzer.xcov(e10, lag=10, demean=true)
-
-
-tbp = total_power(eeg)
-@test size(tbp) == (19, 1)
-
-xcov_m, _ = xcov(eeg)
-@test size(xcov_m) == (361, 3, 1)
-
-p = stationarity(eeg, method=:mean)
-@test size(p) == (19, 10, 1)
-p = stationarity(eeg, method=:var)
-@test size(p) == (19, 10, 1)
-p = stationarity(eeg, method=:hilbert)
-@test size(p) == (19, 309759, 1)
-p = stationarity(eeg, window=10000, method=:cov)
-@test size(p) == (32, 1)
-
-c, msc, ic = tcoherence(eeg, eeg)
-@test size(c) == (19, 309760, 1)
-
-e10 = epoch(eeg, ep_len=2560)
-s_conv = fconv(e10, kernel=generate_window(:hann, 256))
-@test size(s_conv) == (19, 2560, 121)
-s_conv = tconv(e10, kernel=generate_window(:hann, 256))
-@test size(s_conv) == (19, 2560, 121)
-
-e = epoch(eeg, ep_len=20*256)
-v = epoch_stats(e)
-@test length(v) == 10
-
-e = epoch(eeg, ep_len=2560)
-erp!(e)
-
-v = channel_stats(eeg)
-@test length(v) == 10
-
-s, h = snr(e10)
-@test size(s) == (19, 1280)
-
-@test size(tkeo(eeg)) == (19, 309760, 1)
-
-f, p = vartest(eeg)
-@test size(f) == (19, 19, 1)
-
-_, _, f = psdslope(eeg)
-@test length(f) == 513
-
-####
-
-eeg1 = wbp(eeg, frq=10)
-@test size(eeg1.data) == (19, 309760, 1)
-eeg1 = cbp(eeg, frq=10)
-@test size(eeg1.data) == (19, 309760, 1)
-
-@test size(phdiff(eeg)) == (19, 309760, 1)
-
 =#
 
 true

@@ -28,14 +28,14 @@ Add noise.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `noise::AbstractVector`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function add_noise(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), noise::AbstractVector)
+function add_noise(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), noise::AbstractVector)
 
     _check_channels(obj, channel)
 
@@ -63,10 +63,10 @@ Add noise.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `noise::AbstractVector`
 """
-function add_noise!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), noise::AbstractVector)
+function add_noise!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), noise::AbstractVector)
 
     obj_tmp = add_noise(obj, channel=channel, noise=noise)
     obj.data = obj_tmp.data

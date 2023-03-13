@@ -111,13 +111,13 @@ Reconstructs `s` via removal of `ic` ICA components.
 - `s::AbstractArray`
 - `ic::AbstractArray:`: IC(1)..IC(n) × epoch
 - `ic_mw::AbstractArray:`: IC(1)..IC(n) × epoch
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `s_reconstructed::Array{Float64, 3}`
 """
-function ica_reconstruct(s::AbstractArray; ic::AbstractArray, ic_mw::AbstractArray, ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
+function ica_reconstruct(s::AbstractArray; ic::AbstractArray, ic_mw::AbstractArray, ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     typeof(ic_idx) <: AbstractRange && (ic_idx = collect(ic_idx))
 
@@ -152,7 +152,7 @@ Perform independent component analysis (ICA).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `n::Int64`: number of ICs
 - `tol::Float64=1.0e-6`: tolerance for ICA
 - `iter::Int64=100`: maximum number of iterations
@@ -166,7 +166,7 @@ Named tuple containing:
 - `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
 """
-function ica(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
+function ica(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), n::Int64, tol::Float64=1.0e-6, iter::Int64=100, f::Symbol=:tanh)
 
     _check_channels(obj, ch)
 
@@ -183,14 +183,14 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange}`: list of ICs to remove
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange}`: list of ICs to remove
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
+function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     :ic in obj.header.component_names || throw(ArgumentError("OBJ does not contain :ic component. Perform ica() first."))
     :ic_mw in obj.header.component_names || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica() first."))
@@ -218,10 +218,10 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 """
-function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
+function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_tmp = ica_reconstruct(obj, ch=ch, ic_idx=ic_idx)
     obj.data = obj_tmp.data
@@ -242,14 +242,14 @@ Reconstruct signals using external ICA components (`ic` and `ic_mw`).
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}; ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
+function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     _check_channels(obj, ch)
 
@@ -273,10 +273,10 @@ Reconstruct signals using external ICA components (`ic` and `ic_mw`).
 - `obj::NeuroAnalyzer.NEURO`
 - `ic::Array{Float64, 3}`: IC(1)..IC(n) × epoch (W * data)
 - `ic_mw::Array{Float64, 3}`: IC(1)..IC(n) × epoch inv(W)
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
-- `ic_idx::Union{Int64, Vector{Int64}, AbstractRange} - list of ICs to remove
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange} - list of ICs to remove
 """
-function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}; ch::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, AbstractRange})
+function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx)
     obj.data = obj_tmp.data

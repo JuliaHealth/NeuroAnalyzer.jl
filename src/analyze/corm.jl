@@ -115,7 +115,7 @@ Calculate correlation matrix.
 
 - `cm::Array{Float64, 3}`: correlation matrix for each epoch
 """
-function corm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), norm::Bool=false)
+function corm(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), norm::Bool=false)
 
     _check_channels(obj, ch)
 

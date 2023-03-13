@@ -9,8 +9,8 @@ Interpolate OBJ channel(s) using planar interpolation.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to interpolate
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method:
     - `:sh`: Shepard
     - `:mq`: Multiquadratic
@@ -24,7 +24,7 @@ Interpolate OBJ channel(s) using planar interpolation.
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
+function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, epoch::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:sh, interpolation_factor::Int64=100)
 
     for idx in channel
         idx in get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type])) || throw(ArgumentError("channel must be OBJ/MEG signal channel(s); cannot interpolate non-OBJ/MEG channels."))
@@ -86,12 +86,12 @@ Interpolate OBJ channel(s) using planar interpolation.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to interpolate
-- `epoch::Union{Int64, Vector{Int64}, AbstractRange}`: epoch number(s) within to interpolate
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to interpolate
+- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 - `imethod::Symbol=:sh`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`)
 - `interpolation_factor::Int64=100`: interpolation quality
 """
-function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}}, epoch::Union{Int64, Vector{Int64}, AbstractRange}, imethod::Symbol=:shepard, interpolation_factor::Int64=100)
+function plinterpolate_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}}, epoch::Union{Int64, Vector{Int64}, <:AbstractRange}, imethod::Symbol=:shepard, interpolation_factor::Int64=100)
 
     obj_tmp = plinterpolate_channel(obj, channel=channel, epoch=epoch, imethod=imethod, interpolation_factor=interpolation_factor)
     obj.data = obj_tmp.data

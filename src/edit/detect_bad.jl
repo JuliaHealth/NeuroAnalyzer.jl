@@ -8,7 +8,7 @@ Detect bad channels and epochs.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p, :var]`: detection method:
     - `:flat`: flat channel(s)
     - `:p2p`: peak-to-peak amplitude; good for detecting transient artifacts
@@ -28,7 +28,7 @@ Named tuple containing:
 - `bm::Matrix{Bool}`: matrix of bad channels × epochs
 - `be::Vector{Int64}`: list of bad epochs
 """
-function detect_bad(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.95, tc::Float64=0.2)
+function detect_bad(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type])), method::Vector{Symbol}=[:flat, :rmse, :rmsd, :euclid, :p2p], w::Int64=10, ftol::Float64=0.1, fr::Float64=0.3, p::Float64=0.95, tc::Float64=0.2)
 
     for idx in method
         _check_var(idx, [:flat, :rmse, :rmsd, :euclid, :var, :p2p], "method")

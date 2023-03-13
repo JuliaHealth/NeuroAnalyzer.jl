@@ -8,7 +8,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -25,7 +25,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function plot_connections(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
     obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 

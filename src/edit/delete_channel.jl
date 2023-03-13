@@ -13,13 +13,13 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to be removed
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     ch_n = channel_n(obj)
@@ -68,9 +68,9 @@ Delete channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to be removed
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function delete_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = delete_channel(obj, channel=channel)
     obj.header = obj_new.header    
@@ -88,13 +88,13 @@ Keep channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to keep
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function keep_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     typeof(channel) <: AbstractRange && (channel = collect(channel))
     _check_channels(obj, channel)
@@ -114,9 +114,9 @@ Keep channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel number(s) to keep
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange})
+function keep_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = keep_channel(obj, channel=channel)
     obj.header = obj_new.header    

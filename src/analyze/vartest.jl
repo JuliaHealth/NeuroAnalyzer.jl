@@ -8,7 +8,7 @@ Calculate variance F-test.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
@@ -16,7 +16,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function vartest(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj))
 
     _check_channels(obj, channel)
     ch_n = length(channel)
@@ -54,10 +54,10 @@ Calculate variance F-test.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2::NeuroAnalyzer.NEURO`
-- `channel1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `channel2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
+- `epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 
 # Returns
 
@@ -65,7 +65,7 @@ Named tuple containing:
 - `f::Array{Float64, 3}`
 - `p::Array{Float64, 3}`
 """
-function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
+function vartest(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; channel1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), channel2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2), epoch1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), epoch2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)))
 
     _check_channels(obj1, channel1)
     _check_channels(obj2, channel2)

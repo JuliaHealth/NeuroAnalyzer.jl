@@ -87,7 +87,7 @@ Calculate total power.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(record)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(record)`: index of channels, default is all signal channels
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
 
@@ -95,7 +95,7 @@ Calculate total power.
  
 - `tp::Matrix{Float64}`: total power
 """
-function total_power(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), mt::Bool=false, nt::Int64=8)
+function total_power(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), mt::Bool=false, nt::Int64=8)
 
     _check_channels(obj, channel)
 

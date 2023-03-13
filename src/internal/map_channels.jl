@@ -1,4 +1,4 @@
-function _map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, channels=Vector{Int64})
+function _map_channels(channel::Union{Int64, Vector{Int64}, <:AbstractRange}, channels=Vector{Int64})
     channel_orig = channel
     if typeof(channel) == Int64
         channel = vsearch(channel, channels)

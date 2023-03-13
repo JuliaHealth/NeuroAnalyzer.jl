@@ -126,7 +126,7 @@ Calculate mean, standard deviation and 95% confidence interval.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `n::Int64=3`: number of bootstraps
 - `method::Symbol=:normal`: use normal (`:normal`) method or `n`-times bootstrapping (`:boot`)
 
@@ -138,7 +138,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI
 - `sl::Matrix{Float64}`: lower 95% CI
 """
-function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:normal)
+function msci95(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), n::Int64=3, method::Symbol=:normal)
 
     _check_channels(obj, ch)
 
@@ -238,10 +238,10 @@ Calculate mean difference, standard deviation and 95% confidence interval.
 
 - `obj1::NeuroAnalyzer.NEURO`
 - `obj2:NeuroAnalyzer.NEURO`
-- `ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
-- `ch2::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1)`: index of channels, default is all signal channels
+- `ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj2)`: index of channels, default is all signal channels
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 
 # Returns
 
@@ -251,7 +251,7 @@ Named tuple containing:
 - `su::Matrix{Float64}`: upper 95% CI bound
 - `sl::Matrix{Float64}`: lower 95% CI bound
 """
-function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj2.header.recording[:data_type])), ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
+function msci95(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj1), ch2::Union{Int64, Vector{Int64}, <:AbstractRange}=get_channel_bytype(obj1, type=Symbol(obj2.header.recording[:data_type])), ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)))
 
     # check channels
     _check_channels(obj1, ch1)

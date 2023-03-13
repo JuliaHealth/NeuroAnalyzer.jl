@@ -291,14 +291,14 @@ Normalize channel(s)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
 
     _check_channels(obj, channel)
     ch_n = length(channel)
@@ -325,10 +325,10 @@ Normalize channel(s)
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 """
-function normalize!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
 
     obj_tmp = normalize(obj, channel=channel, method=method)
     obj.data = obj_tmp.data

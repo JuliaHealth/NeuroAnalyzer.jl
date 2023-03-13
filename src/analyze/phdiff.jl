@@ -41,7 +41,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 # Arguments
 
 - `s::AbstractArray`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=size(s, 1)`: index of reference channels, default is all  channels except the analyzed one
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=size(s, 1)`: index of reference channels, default is all  channels except the analyzed one
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
@@ -52,7 +52,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
  
 - `phd::Array{Float64, 3}`
 """
-function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, AbstractRange}=1:size(s, 1), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function phdiff(s::AbstractArray; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=1:size(s, 1), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
     avg in [:phase, :signal] || throw(ArgumentError("avg must be :phase or :signal."))
 
@@ -111,7 +111,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of reference channels, default is all signal channels except the analyzed one
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged
     - `:signal`: signals are averaged prior to phase calculation
@@ -122,7 +122,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
  
 - `phd::Array{Float64, 3}`
 """
-function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
+function phdiff(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), avg::Symbol=:phase, pad::Int64=0, h::Bool=false)
 
     _check_channels(obj, ch)
 

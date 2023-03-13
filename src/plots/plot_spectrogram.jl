@@ -115,7 +115,7 @@ Plots spectrogram.
 
 - `obj::NeuroAnalyzer.NEURO`
 - `epoch::Int64`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:standard`: method of calculating spectrogram:
     - `:standard`: standard
@@ -136,7 +136,7 @@ Plots spectrogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}, channel::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO; epoch::Union{Int64, AbstractRange}, channel::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
@@ -267,7 +267,7 @@ Plots spectrogram of embedded or external component.
 - `obj::NeuroAnalyzer.NEURO`
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `epoch::Int64`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `norm::Bool=true`: normalize powers to dB
 - `method::Symbol=:standard`: method of calculating spectrogram:
     - `:standard`: standard
@@ -288,7 +288,7 @@ Plots spectrogram of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, 0), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 

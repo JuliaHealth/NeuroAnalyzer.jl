@@ -64,14 +64,14 @@ Perform continuous wavelet transformation (CWT).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `wt<:CWT`: continuous wavelet, e.g. `wt = wavelet(Morlet(π), β=2)`, see ContinuousWavelets.jl documentation for the list of available wavelets
 
 # Returns
  
 - `cwt_c::Array{Float64, 4}`: CWT coefficients (by rows)
 """
-function cw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), wt::T) where {T <: CWT}
+function cw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T) where {T <: CWT}
 
     _check_channels(obj, channel)
     ch_n = length(channel)

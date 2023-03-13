@@ -43,7 +43,7 @@ Perform wavelet bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
@@ -53,7 +53,7 @@ Perform wavelet bandpass filtering.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function wbp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+function wbp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
     _check_channels(obj, channel)
 
@@ -81,13 +81,13 @@ Perform wavelet bandpass filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64`: pad the `signal` with `pad` zeros
 - `frq::Real`: filter frequency
 - `ncyc::Int64=6`: number of cycles for Morlet wavelet
 - `demean::Bool=true`: demean signal prior to analysis
 """
-function wbp!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
+function wbp!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
     obj_tmp = wbp(obj, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean)
     obj.data = obj_tmp.data

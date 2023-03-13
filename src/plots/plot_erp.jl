@@ -410,7 +410,7 @@ Plot ERP.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
@@ -428,7 +428,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -677,7 +677,7 @@ Plot ERP.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
 - `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
@@ -695,7 +695,7 @@ Plot ERP.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 

@@ -40,7 +40,7 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 
@@ -48,7 +48,7 @@ Perform FFT denoising.
 
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_fft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
+function denoise_fft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
 
     _check_channels(obj, channel)
 
@@ -75,11 +75,11 @@ Perform FFT denoising.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `threshold::Int64=100`: PSD threshold for keeping frequency components
 """
-function denoise_fft!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
+function denoise_fft!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, threshold::Int64=100)
 
     obj_tmp = denoise_fft(obj, channel=channel, pad=pad, threshold=threshold)
     obj.data = obj_tmp.data

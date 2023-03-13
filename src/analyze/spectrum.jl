@@ -80,7 +80,7 @@ Calculate FFT/Hilbert transformation components, amplitudes, powers and phases.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 - `h::Bool=false`: use Hilbert transform for calculations instead of FFT
 - `norm::Bool=false`: normalize do dB
@@ -93,7 +93,7 @@ Named tuple containing:
 - `pow::Array{Float64, 3}`: powers
 - `pha::Array{Float64, 3}: phase angles
 """
-function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
+function spectrum(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, h::Bool=false, norm::Bool=false)
 
     _check_channels(obj, ch)
     ch_n = length(ch)

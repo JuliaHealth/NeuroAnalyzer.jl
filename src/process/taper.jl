@@ -28,14 +28,14 @@ Taper channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `taper::Union{Vector{Real, Vector{ComplexF64}}`
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function taper(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), t::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), t::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     _check_channels(obj, channel)
 
@@ -62,10 +62,10 @@ Taper channel(s).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `t::Union{Vector{<:Real}, Vector{ComplexF64}}`
 """
-function taper!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=_c(channel_n(obj)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
+function taper!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     obj_tmp = taper(obj, channel=channel, t=t)
     obj.data = obj_tmp.data

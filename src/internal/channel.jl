@@ -1,4 +1,4 @@
-function _channel2channel_name(channel::Union{Int64, Vector{Int64}, AbstractRange})
+function _channel2channel_name(channel::Union{Int64, Vector{Int64}, <:AbstractRange})
     if typeof(channel) == Int64
         return channel
     else
@@ -16,7 +16,7 @@ function _channel2channel_name(channel::Union{Int64, Vector{Int64}, AbstractRang
     return channel_name
 end
 
-function _map_channels(channel::Union{Int64, Vector{Int64}, AbstractRange}, channels=Vector{Int64})
+function _map_channels(channel::Union{Int64, Vector{Int64}, <:AbstractRange}, channels=Vector{Int64})
     channel_orig = channel
     if typeof(channel) == Int64
         channel = vsearch(channel, channels)

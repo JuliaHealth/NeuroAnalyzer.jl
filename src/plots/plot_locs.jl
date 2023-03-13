@@ -9,8 +9,8 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `channel_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
@@ -22,7 +22,7 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
 
     pal = mono == true ? :grays : :darktest
 
@@ -156,8 +156,8 @@ end
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: selected channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `channel_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
 - `mono::Bool=false`: use color or grey palette
@@ -168,7 +168,7 @@ c
 
 - `fig::GLMakie.Figure`
 """
-function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, AbstractRange}, selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
+function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
 
     # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
     # channel = setdiff(channel, selected)
@@ -235,8 +235,8 @@ Preview of channel locations.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `selected::Union{Int64, Vector{Int64}, AbstractRange}=0`: which channel should be highlighted
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: which channel should be highlighted
 - `channel_labels::Bool=true`: plot channel labels
 - `head::Bool`=true: plot head
 - `head_labels::Bool=false`: plot head labels
@@ -251,7 +251,7 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
 
     obj.header.has_locs == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 

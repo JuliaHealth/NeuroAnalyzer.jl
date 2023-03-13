@@ -8,7 +8,7 @@ Plot topographical view.
 # Arguments
 
 - `signal::Vector{<:Real}`: values to plot (one value per channel)
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `cb::Bool=true`: plot color bar
 - `cb_label::String="[A.U.]"`: color bar label
@@ -33,7 +33,7 @@ Plot topographical view.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(signal::Vector{<:Real}; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
     
     pal = mono == true ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -118,7 +118,7 @@ Topographical plot.
 
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
@@ -224,7 +224,7 @@ Topographical plot of embedded or external component.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `epoch::Union{Int64, AbstractRange}=0`: epoch to display
-- `c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0`: component channel to display, default is all component channels
+- `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
@@ -252,7 +252,7 @@ Topographical plot of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; epoch::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
 

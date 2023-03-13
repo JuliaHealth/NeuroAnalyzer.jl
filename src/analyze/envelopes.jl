@@ -20,7 +20,7 @@ Calculate temporal envelope (amplitude).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -29,7 +29,7 @@ Named tuple containing:
 - `t_env::Array{Float64, 3}`: temporal envelope
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), d::Int64=32)
+function tenv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=32)
     
     _check_channels(obj, ch)
 
@@ -79,7 +79,7 @@ Calculate temporal envelope (amplitude): mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -91,7 +91,7 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
+function tenv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -159,7 +159,7 @@ Calculate temporal envelope (amplitude): median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -171,7 +171,7 @@ Named tuple containing:
 - `t_env_l::Union{Vector{Float64}, Matrix{Float64}}`: temporal envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
+function tenv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -261,7 +261,7 @@ Calculate power (in dB) envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
 - `nt::Int64=8`: number of Slepian tapers
@@ -272,7 +272,7 @@ Named tuple containing:
 - `p_env::Array{Float64, 3}`: power spectrum envelope
 - `p_env_frq::Vector{Float64}`: frequencies for each envelope
 """
-function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), d::Int64=8, mt::Bool=false, nt::Int64=8)
+function penv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=8, mt::Bool=false, nt::Int64=8)
     
     _check_channels(obj, ch)
 
@@ -320,7 +320,7 @@ Calculate power (in dB) envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -333,7 +333,7 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
+function penv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -429,7 +429,7 @@ Calculate power (in dB) envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered periodogram
@@ -442,7 +442,7 @@ Named tuple containing:
 - `p_env_l::Array{Float64, 3}`: power spectrum envelope: 95% CI lower bound
 - `p_env_frq::Vector{Float64}`: power spectrum envelope (useful for plotting over PSD)
 """
-function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
+function penv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=8, mt::Bool=false)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -538,7 +538,7 @@ Calculate spectral envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
 - `t::Union{Real, Nothing}=nothing`: spectrogram threshold (maximize all powers > t)
@@ -549,7 +549,7 @@ Named tuple containing:
 - `s_env::Array{Float64, 3}`: spectral envelope
 - `s_env_t::Vector{Float64}`: spectrogram time
 """
-function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function senv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     _check_channels(obj, ch)
 
@@ -631,7 +631,7 @@ Calculate spectral envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -645,7 +645,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function senv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
 
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -740,7 +740,7 @@ Calculate spectral envelope: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=2`: distance between peeks in samples, lower values get better envelope fit
 - `mt::Bool=false`: if true use multi-tapered spectrogram
@@ -754,7 +754,7 @@ Named tuple containing:
 - `s_env_l::Array{Float64, 3}`: spectral envelope: 95% CI lower bound
 - `s_env_t::Vector{Float64}`: spectral envelope (useful for plotting over spectrogram)
 """
-function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
+function senv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=2, mt::Bool=false, t::Union{Real, Nothing}=nothing)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -850,7 +850,7 @@ Calculate Hilbert spectrum amplitude envelope.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
 # Returns
@@ -859,7 +859,7 @@ Named tuple containing:
 - `h_env::Array{Float64, 3}`: Hilbert spectrum amplitude envelope
 - `s_t::Vector{Float64}`: signal time
 """
-function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), d::Int64=32)
+function henv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), d::Int64=32)
 
     _check_channels(obj, ch)
 
@@ -910,7 +910,7 @@ Calculate Hilbert spectrum amplitude envelope: mean and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: mean over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -922,7 +922,7 @@ Named tuple containing:
 - `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
+function henv_mean(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -988,7 +988,7 @@ Calculate Hilbert spectrum amplitude envelope of `obj`: median and 95% CI.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `dims::Int64`: median over channels (dims = 1), epochs (dims = 2) or channels and epochs (dims = 3)
 - `d::Int64=32`: distance between peeks in samples, lower values get better envelope fit
 
@@ -1000,7 +1000,7 @@ Named tuple containing:
 - `h_env_l::Union{Vector{Float64}, Matrix{Float64}}`: Hilbert spectrum amplitude envelope: 95% CI lower bound
 - `s_t::Vector{Float64}`: signal time
 """
-function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
+function henv_median(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), dims::Int64, d::Int64=32)
     
     if dims == 1
         channel_n(obj) == 1 && throw(ArgumentError("Number of channels must be ≥ 2."))
@@ -1095,8 +1095,8 @@ Calculate envelope correlation.
     - `:hamp`: Hilbert spectrum amplitude
 - `ch1::Int64`
 - `ch2::Int64`
-- `ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
-- `ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
+- `ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1))`: default use all epochs
+- `ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2))`: default use all epochs
 
 # Returns
 
@@ -1104,7 +1104,7 @@ Named tuple containing:
 - `ec::Vector{Float64}`: power correlation value
 - `p::Vector{Float64}`: p-value
 """
-function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, AbstractRange}=_c(epoch_n(obj2)))
+function env_cor(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; type::Symbol=:amp, ch1::Int64, ch2::Int64, ep1::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj1)), ep2::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(epoch_n(obj2)))
 
     _check_var(type, [:amp, :pow, :spec, :hamp], "type")
 
