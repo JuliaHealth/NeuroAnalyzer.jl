@@ -1,28 +1,63 @@
 export tkeo
 
 """
-    tkeo(signal)
+    tkeo(s)
 
 Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 
 # Returns
 
-- `out::Vector{Float64}`
+- `t::Vector{Float64}`
 """
-function tkeo(signal::AbstractVector)
-    out = zeros(length(signal))
-    out[1] = signal[1]
-    out[end] = signal[end]
-    @inbounds @simd for idx in 2:(length(signal) - 1)
-        out[idx] = signal[idx]^2 - (signal[idx - 1] * signal[idx + 1])
+function tkeo(s::AbstractVector)
+
+    t = zeros(length(s))
+    t[1] = s[1]
+    t[end] = s[end]
+
+    @inbounds @simd for idx in 2:(length(s) - 1)
+        t[idx] = s[idx]^2 - (s[idx - 1] * s[idx + 1])
     end
 
-    return out
+    return t
+
 end
+
+"""
+    tkeo(s; channel)
+
+Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+1)
+
+# Arguments
+
+- `s::AbstractArray`
+- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+
+# Returns
+
+- `t::Array{Float64, 3}`
+"""
+function tkeo(s::AbstractArray)
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+
+    t = similar(s)
+
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            t[ch_idx, :, ep_idx] = @views tkeo(s[ch_idx, :, ep_idx])
+        end
+    end
+
+    return t
+
+end
+
 
 """
     tkeo(obj; channel)
@@ -32,24 +67,18 @@ Calculate Teager-Kaiser energy-tracking operator: y(t) = x(t)^2 - x(t-1) × x(t+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 
 # Returns
 
-- `tkeo::Array{Float64, 3}`
+- `t::Array{Float64, 3}`
 """
-function tkeo(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
+function tkeo(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, AbstractRange}=signal_channels(obj))
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    _check_channels(obj, ch)
 
-    out = zeros(ch_n, epoch_len(obj), ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            out[ch_idx, :, ep_idx] = @views tkeo(obj.data[channel[ch_idx], :, ep_idx])
-        end
-    end
+    t = @views tkeo(obj.data[ch, :, :])
 
-    return out
+    return t
+
 end

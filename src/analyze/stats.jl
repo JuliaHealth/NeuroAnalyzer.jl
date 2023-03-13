@@ -46,13 +46,14 @@ function epoch_stats(obj::NeuroAnalyzer.NEURO)
         e_var[ep_idx] = @views var(obj.data[:, :, ep_idx])
         e_kurt[ep_idx] = @views kurtosis(obj.data[:, :, ep_idx])
         e_skew[ep_idx] = @views skewness(obj.data[:, :, ep_idx])
-        e_mean_diff = @views mean(diff(obj.data[:, :, ep_idx], dims=2))
-        e_median_diff = @views median(diff(obj.data[:, :, ep_idx], dims=2))
-        e_max_dif = @views maximum(obj.data[:, :, ep_idx]) - minimum(obj.data[:, :, ep_idx])
-        e_dev_mean = @views abs(mean(obj.data[:, :, ep_idx])) - mean(obj.data[:, :, ep_idx])
+        e_mean_diff[ep_idx] = @views mean(diff(obj.data[:, :, ep_idx], dims=2))
+        e_median_diff[ep_idx] = @views median(diff(obj.data[:, :, ep_idx], dims=2))
+        e_max_dif[ep_idx] = @views maximum(obj.data[:, :, ep_idx]) - minimum(obj.data[:, :, ep_idx])
+        e_dev_mean[ep_idx] = @views abs(mean(obj.data[:, :, ep_idx])) - mean(obj.data[:, :, ep_idx])
     end
 
     return (e_mean=e_mean, e_median=e_median, e_std=e_std, e_var=e_var, e_kurt=e_kurt, e_skew=e_skew, e_mean_diff=e_mean_diff, e_median_diff=e_median_diff, e_max_dif=e_max_dif, e_dev_mean=e_dev_mean)
+    
 end
 
 """
@@ -110,5 +111,6 @@ function channel_stats(obj::NeuroAnalyzer.NEURO)
     end
 
     return (c_mean=c_mean, c_median=c_median, c_std=c_std, c_var=c_var, c_kurt=c_kurt, c_skew=c_skew, c_mean_diff=c_mean_diff, c_median_diff=c_median_diff, c_max_dif=c_max_dif, c_dev_mean=c_dev_mean)
+
 end
 
