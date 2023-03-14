@@ -34,24 +34,24 @@ a1 = extract_channel(eeg, channel=20)
 delete_channel!(eeg, channel=20)
 
 @test eeg.header.recording[:file_type] == "EDF"
-@test eeg.header.recording[:channel_n] == 19
+@test channel_n(eeg) == 19
 @test eeg.header.has_locs == false
 
-s = locs_import_ced("test.ced")
+s = import_locs_ced("test.ced")
 @test typeof(s) == DataFrame
-s = locs_import_locs("test.locs")
+s = import_locs_locs("test.locs")
 @test typeof(s) == DataFrame
-s = locs_import_elc("test.elc")
+s = import_locs_elc("test.elc")
 @test typeof(s) == DataFrame
-s = locs_import_tsv("test.tsv")
+s = import_locs_tsv("test.tsv")
 @test typeof(s) == DataFrame
-s = locs_import_sfp("test.sfp")
+s = import_locs_sfp("test.sfp")
 @test typeof(s) == DataFrame
-s = locs_import_csd("test.csd")
+s = import_locs_csd("test.csd")
 @test typeof(s) == DataFrame
-s = locs_import_geo("test.geo")
+s = import_locs_geo("test.geo")
 @test typeof(s) == DataFrame
-s = locs_import_mat("test.mat")
+s = import_locs_mat("test.mat")
 @test typeof(s) == DataFrame
 
 eeg = load_locs(eeg, file_name="standard-10-20-cap19-elmiko.ced")
@@ -72,16 +72,16 @@ export_csv(eeg, file_name="eeg.csv", header=false)
 isfile("eeg.csv") && rm("eeg.csv")
 
 isfile("test_out.ced") && rm("test_out.ced")
-locs_export(eeg, file_name="test_out.ced")
+export_locs(eeg, file_name="test_out.ced")
 @test isfile("test_out.ced") == true
 isfile("test_out.ced") && rm("test_out.ced")
 
 isfile("test_out.locs") && rm("test_out.locs")
-locs_export(eeg, file_name="test_out.locs")
+export_locs(eeg, file_name="test_out.locs")
 @test isfile("test_out.locs") == true
 isfile("test_out.locs") && rm("test_out.locs")
 
-locs = locs_import_ced("standard-10-20-cap19-elmiko.ced")
+locs = import_locs_ced("standard-10-20-cap19-elmiko.ced")
 eeg2 = add_locs(eeg, locs=locs)
 @test typeof(eeg2) == NeuroAnalyzer.NEURO
 add_locs!(eeg, locs=locs)

@@ -6,32 +6,32 @@ export keep_channel_type
 export keep_channel_type!
 
 """
-    delete_channel(obj; channel)
+    delete_channel(obj; ch)
 
 Delete channel(s).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
+function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
+    typeof(ch) <: AbstractRange && (ch = collect(ch))
     ch_n = channel_n(obj)
-    length(channel) > 1 && (channel = sort!(channel, rev=true))
-    length(channel) == ch_n && throw(ArgumentError("You cannot delete all channels."))
+    length(ch) > 1 && (ch = sort!(ch, rev=true))
+    length(ch) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
 
     obj_new = deepcopy(obj)
 
     # update headers
-    for idx in channel
+    for idx in ch
         loc = findfirst(isequal(lowercase(obj_new.header.recording[:labels][idx])), lowercase.(string.(obj_new.locs[!, :labels])))
         loc !== nothing && deleteat!(obj_new.locs, loc)
         deleteat!(obj_new.header.recording[:labels], idx)
@@ -49,81 +49,86 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{I
             deleteat!(obj_new.header.recording[:gradiometers_planar], idx)
         end
     end
-    obj_new.header.recording[:channel_n] -= length(channel)
 
     # remove channel
-    obj_new.data =obj_new.data[setdiff(1:end, (channel)), :, :]
+    obj_new.data =obj_new.data[setdiff(1:end, (ch)), :, :]
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "delete_channel(OBJ, channel=$channel)")
+    push!(obj_new.header.history, "delete_channel(OBJ, ch=$ch)")
 
     return obj_new
+
 end
 
 """
-    delete_channel!(obj; channel)
+    delete_channel!(obj; ch)
 
 Delete channel(s).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to be removed
 """
-function delete_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
+function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_new = delete_channel(obj, channel=channel)
+    obj_new = delete_channel(obj, ch=ch)
     obj.header = obj_new.header    
     obj.data = obj_new.data    
     obj.components = obj_new.components    
 
     return nothing
+
 end
 
 """
-    keep_channel(obj; channel)
+    keep_channel(obj; ch)
 
 Keep channel(s).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function keep_channel(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
+function keep_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    typeof(channel) <: AbstractRange && (channel = collect(channel))
-    _check_channels(obj, channel)
+    typeof(ch) <: AbstractRange && (ch = collect(ch))
+    _check_channels(obj, ch)
 
     ch_n = channel_n(obj)
-    channels_to_remove = setdiff(collect(1:ch_n), channel)
-    length(channels_to_remove) == ch_n && throw(ArgumentError("You cannot delete all channels."))
+    chs_to_remove = setdiff(collect(1:ch_n), ch)
+    length(chs_to_remove) == ch_n && throw(ArgumentError("You cannot delete all channels."))
 
-    return delete_channel(obj, channel=channels_to_remove)
+    obj_new = delete_channel(obj, ch=chs_to_remove)
+
+    return obj_new
+
 end
 
 """
-    keep_channel!(obj; channel)
+    keep_channel!(obj; ch)
 
 Keep channel(s).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number(s) to keep
 """
-function keep_channel!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange})
+function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_new = keep_channel(obj, channel=channel)
+    obj_new = keep_channel(obj, ch=ch)
     obj.header = obj_new.header    
     obj.data = obj_new.data    
     obj.components = obj_new.components    
 
     return nothing
+
 end
 
 """
@@ -144,16 +149,15 @@ function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
 
-    channels_idx = Vector{Int64}()
+    chs_idx = Vector{Int64}()
     for idx in 1:channel_n(obj, type=:all)
-        obj.header.recording[:channel_type][idx] == string(type) && push!(channels_idx, idx)
+        obj.header.recording[:channel_type][idx] == string(type) && push!(chs_idx, idx)
     end
-    obj_new = keep_channel(obj, channel=channels_idx)
-    reset_components!(obj_new)
-    pop!(obj_new.header.history)
-    push!(obj_new.header.history, "keep_channel_type(OBJ, type=$type")
+
+    obj_new = keep_channel(obj, ch=chs_idx)
 
     return obj_new
+
 end
 
 """

@@ -41,6 +41,7 @@ function cart2pol(x::Real, y::Real)
     # theta < 0 && (theta = 360 - abs(theta))
 
     return radius, theta
+
 end
 
 """
@@ -65,6 +66,7 @@ function pol2cart(radius::Real, theta::Real)
     y = round(radius * sind(theta), digits=3)
 
     return x, y
+
 end
 
 """
@@ -91,6 +93,7 @@ function sph2cart(radius::Real, theta::Real, phi::Real)
     z = round(radius * cosd(90 - phi), digits=3)
 
     return x, y, z
+
 end
 
 """
@@ -123,6 +126,7 @@ function cart2sph(x::Real, y::Real, z::Real)
     # theta < 0 && (theta = 360 - abs(theta))
     
     return radius, theta, phi
+
 end
 
 """
@@ -142,8 +146,11 @@ Convert spherical coordinates to polar.
 - `theta::Float64`
 """
 function sph2pol(radius::Real, theta::Real, phi::Real)
+
     radius = round(radius * abs(cosd(phi)), digits=3)
+
     return radius, theta
+
 end
 
 """
@@ -163,7 +170,7 @@ function locs_sph2cart(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
+    for idx in 1:nrow(locs)
         r = locs_new[idx, :loc_radius_sph]
         t = locs_new[idx, :loc_theta_sph]
         p = locs_new[idx, :loc_phi_sph]
@@ -174,6 +181,7 @@ function locs_sph2cart(locs::DataFrame)
     end
 
     return locs_new
+
 end
 
 """
@@ -186,8 +194,11 @@ Convert spherical locations to Cartesian.
 - `locs::DataFrame`
 """
 function locs_sph2cart!(locs::DataFrame)
+
     locs[!, :] = locs_sph2cart(locs)[!, :]
+
     return nothing
+
 end
 
 """
@@ -207,17 +218,18 @@ function locs_cart2sph(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
-        x = locs_new[!, :loc_x][idx]
-        y = locs_new[!, :loc_y][idx]
-        z = locs_new[!, :loc_z][idx]
+    for idx in 1:nrow(locs)
+        x = locs_new[idx, :loc_x]
+        y = locs_new[idx, :loc_y]
+        z = locs_new[idx, :loc_z]
         r, t, p = cart2sph(x, y, z)
-        locs_new[!, :loc_radius_sph][idx] = r
-        locs_new[!, :loc_theta_sph][idx] = t
-        locs_new[!, :loc_phi_sph][idx] = p
+        locs_new[idx, :loc_radius_sph] = r
+        locs_new[idx, :loc_theta_sph] = t
+        locs_new[idx, :loc_phi_sph] = p
     end
 
     return locs_new
+    
 end
 
 """
@@ -230,8 +242,11 @@ Convert Cartesian locations to spherical.
 - `locs::DataFrame`
 """
 function locs_cart2sph!(locs::DataFrame)
+
     locs[!, :] = locs_cart2sph(locs)[!, :]
+
     return nothing
+
 end
 
 """
@@ -251,15 +266,16 @@ function locs_cart2pol(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
-        x = locs_new[!, :loc_x][idx]
-        y = locs_new[!, :loc_y][idx]
+    for idx in 1:nrow(locs)
+        x = locs_new[idx, :loc_x]
+        y = locs_new[idx, :loc_y]
         r, t = cart2pol(x, y)
-        locs_new[!, :loc_radius][idx] = r
-        locs_new[!, :loc_theta][idx] = t
+        locs_new[idx, :loc_radius] = r
+        locs_new[idx, :loc_theta] = t
     end
 
     return locs_new
+
 end
 
 """
@@ -272,8 +288,11 @@ Convert Cartesian locations to polar.
 - `locs::DataFrame`
 """
 function locs_cart2pol!(locs::DataFrame)
+
     locs[!, :] = locs_cart2pol(locs)[!, :]
+
     return nothing
+
 end
 
 """
@@ -293,16 +312,17 @@ function locs_sph2pol(locs::DataFrame)
 
     locs_new = deepcopy(locs)
 
-    for idx in eachindex(locs[!, :labels])
-        r_sph = locs_new[!, :loc_radius_sph][idx]
-        t_sph = locs_new[!, :loc_theta_sph][idx]
-        p_sph = locs_new[!, :loc_phi_sph][idx]
+    for idx in 1:nrow(locs)
+        r_sph = locs_new[idx, :loc_radius_sph]
+        t_sph = locs_new[idx, :loc_theta_sph]
+        p_sph = locs_new[idx, :loc_phi_sph]
         r_pol, t_pol = sph2pol(r_sph, t_sph, p_sph)
-        locs_new[!, :loc_radius][idx] = r_pol
-        locs_new[!, :loc_theta][idx] = t_pol
+        locs_new[idx, :loc_radius] = r_pol
+        locs_new[idx, :loc_theta] = t_pol
     end
 
     return locs_new
+
 end
 
 """
@@ -315,6 +335,9 @@ Convert Cartesian locations to polar.
 - `locs::DataFrame`
 """
 function locs_sph2pol!(locs::DataFrame)
+
     locs[!, :] = locs_sph2pol(locs)[!, :]
+
     return nothing
+
 end

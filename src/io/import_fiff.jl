@@ -188,10 +188,9 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
     # create signal details
-    duration_samples = size(data, 2)
-    duration_seconds = size(data, 2) / sampling_rate
-    time_pts = collect(0:(1 / sampling_rate):duration_seconds)
-    time_pts = time_pts[1:end - 1]
+    time_pts = collect(0:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate))
+    time_pts = round.(time_pts[1:end - 1], digits=3)
+    epoch_time = time_pts
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     s = _create_subject(id="",
@@ -210,14 +209,8 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                               recording_date=string(Dates.day(date)) * "-" * string(Dates.month(date)) * "-" * string(Dates.year(date)),
                               recording_time=string(Dates.hour(date)) * ":" * string(Dates.minute(date)) * ":" * string(Dates.second(date)),
                               recording_notes="",
-                              channel_n=ch_n,
                               channel_type=channel_type,
                               reference="",
-                              duration_samples=duration_samples,
-                              duration_seconds=duration_seconds,
-                              epoch_n=size(data, 3),
-                              epoch_duration_samples=duration_samples,
-                              epoch_duration_seconds=duration_seconds,
                               clabels=clabels,
                               units=units,
                               prefiltering=repeat(["LP: $lowpass Hz; HP: $highpass Hz"], ch_n),
@@ -240,8 +233,9 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                          history=String[])
 
     components = Vector{Any}()
-    epoch_time = time_pts
+
     markers = DataFrame()
+
     locs = DataFrame(:channel=>Int64,
                      :labels=>String[],
                      :loc_theta=>Float64[],

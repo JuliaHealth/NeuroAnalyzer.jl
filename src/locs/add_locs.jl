@@ -33,15 +33,19 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     e_labels = lowercase.(obj.header.recording[:labels])
     no_match = setdiff(e_labels, f_labels)
-    length(no_match) > 0 && throw(ArgumentError("Labels: $(uppercase.(no_match)) not found in the locs object."))
 
+    length(no_match) > 0 && _info("Labels: $(uppercase.(no_match)) not found in the locs object.")
+    
     labels_idx = zeros(Int64, length(e_labels))
     for idx1 in eachindex(e_labels)
         for idx2 in eachindex(f_labels)
-            e_labels[idx1] == f_labels[idx2] && (labels_idx[idx1] = idx2)
+            e_labels[idx1] == lowercase.(f_labels)[idx2] && (labels_idx[idx1] = idx2)
         end
     end
-    
+    for idx in length(labels_idx):-1:1
+        labels_idx[idx] == 0 && deleteat!(labels_idx, idx)
+    end
+
     # create new dataset
     obj_new = deepcopy(obj)
     obj_new.header.has_locs = true
@@ -51,6 +55,7 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     push!(obj_new.header.history, "add_locs(OBJ, locs)")
 
     return obj_new
+    
 end
 
 """
@@ -81,5 +86,6 @@ function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
     obj.header = obj_new.header
     obj.locs = obj_new.locs
 
-    nothing
+    return nothing
+
 end

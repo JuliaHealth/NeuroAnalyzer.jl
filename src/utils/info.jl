@@ -24,7 +24,9 @@ Return sampling rate.
 - `sr::Int64`
 """
 function sr(obj::NeuroAnalyzer.NEURO)
+
     return obj.header.recording[:sampling_rate]
+
 end
 
 """
@@ -44,14 +46,22 @@ Return number of channels of `type`.
 function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
-    length(obj.header.recording[:channel_type]) == 0 && throw(ArgumentError("RECORD has no defined channel types."))
-    ch_n = 0
-    for idx in 1:obj.header.recording[:channel_n]
-        obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
+    if type === :all
+        if ndims(obj.data) == 1
+            ch_n = 1
+        else
+            ch_n = size(obj.data, 1)
+        end
+    else
+        length(obj.header.recording[:channel_type]) == 0 && throw(ArgumentError("OBJ has no defined channel types."))
+        ch_n = 0
+        for idx in 1:channel_n(obj)
+            obj.header.recording[:channel_type][idx] == string(type) && (ch_n += 1)
+        end
     end
-    type === :all && (ch_n = size(obj.data, 1))
 
     return ch_n
+
 end
 
 """
@@ -68,8 +78,15 @@ Return number of epochs.
 - `epoch_n::Int64`
 """
 function epoch_n(obj::NeuroAnalyzer.NEURO)
-    ndims(obj.data) < 3 && throw(ArgumentError("Record data is either a vector or a matrix."))
-    return obj.header.recording[:epoch_n]
+
+    if ndims(obj.data) < 3
+        throw(ArgumentError("Record data is either a vector or a matrix."))
+    else
+        ep_n = size(obj.data, 3)
+    end
+
+    return ep_n
+
 end
 
 """
@@ -83,10 +100,20 @@ Return signal length.
 
 # Returns
 
-- `signal_len::Int64`
+- `s_len::Int64`
 """
 function signal_len(obj::NeuroAnalyzer.NEURO)
-    return obj.header.recording[:duration_samples]
+
+    if ndims(obj.data) == 1
+        s_len = length(obj.data)
+    elseif ndims(obj.data) == 2
+        s_len = size(obj.data, 2)
+    else
+        s_len = size(obj.data, 2) * size(obj.data, 3)
+    end
+
+    return s_len
+
 end
 
 """
@@ -100,11 +127,18 @@ Return epoch length.
 
 # Returns
 
-- `epoch_len::Int64`
+- `ep_len::Int64`
 """
 function epoch_len(obj::NeuroAnalyzer.NEURO)
-    ndims(obj.data) < 3 && throw(ArgumentError("Record data is either a vector or a matrix."))
-    return obj.header.recording[:epoch_duration_samples]
+
+    if ndims(obj.data) < 3
+        throw(ArgumentError("Record data is either a vector or a matrix."))
+    else
+        ep_len = size(obj.data, 2)
+    end
+
+    return ep_len
+
 end
 
 """
@@ -118,10 +152,14 @@ Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_typ
 
 # Returns
  
-- `channels::Vector{Int64}`
+- `chs::Vector{Int64}`
 """
 function signal_channels(obj::NeuroAnalyzer.NEURO)
-    return get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))
+
+    chs = get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))
+    
+    return chs
+
 end
 
 """
@@ -136,18 +174,22 @@ Return channel number(s) for channel of `type` type.
 
 # Returns
 
-- `ch_n::Vector{Int64}`
+- `ch_idx::Vector{Int64}`
 """
 function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
     _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
-    type === :all && return collect(1:channel_n(obj))
-    ch_idx = Vector{Int64}()
-    for idx in 1:channel_n(obj)
-        obj.header.recording[:channel_type][idx] == string(type) && (push!(ch_idx, idx))
+    if type === :all
+        ch_idx = collect(1:channel_n(obj))
+    else
+        ch_idx = Vector{Int64}()
+        for idx in 1:channel_n(obj)
+            obj.header.recording[:channel_type][idx] == string(type) && (push!(ch_idx, idx))
+        end
     end
 
     return ch_idx
+
 end
 
 """
@@ -164,7 +206,9 @@ Show processing history.
 - `history::Vector{String}`
 """
 function history(obj::NeuroAnalyzer.NEURO)
+
     return obj.header.history
+
 end
 
 """
@@ -181,9 +225,13 @@ Return channel labels.
 - `labels::Vector{String}`
 """
 function labels(obj::NeuroAnalyzer.NEURO)
-    length(obj.header.recording[:labels]) == 0 && throw(ArgumentError("RECORD has no labels."))
 
-    return obj.header.recording[:labels]
+    if length(obj.header.recording[:labels]) == 0
+        throw(ArgumentError("RECORD has no labels."))
+    else
+        return obj.header.recording[:labels]
+    end
+
 end
 
 """
@@ -200,6 +248,8 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("              Data type: $(uppercase(obj.header.recording[:data_type]))")
     println("            File format: $(obj.header.recording[:file_type])")
     println("            Source file: $(obj.header.recording[:file_name])")
+    println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
+    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
     println("                Subject: $(obj.header.subject[:first_name] * " " * obj.header.subject[:last_name])")
     println("              Recording: $(obj.header.recording[:recording])")
     println("        Recording notes: $(obj.header.recording[:recording_notes])")
@@ -207,13 +257,11 @@ function info(obj::NeuroAnalyzer.NEURO)
     println("         Recording time: $(obj.header.recording[:recording_time])")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
-    println("Signal length [seconds]: $(round(obj.header.recording[:duration_seconds], digits=2))")
+    println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits=2))")
     println("     Number of channels: $(channel_n(obj))")
     println("       Number of epochs: $(epoch_n(obj))")
     println(" Epoch length [samples]: $(epoch_len(obj))")
-    println(" Epoch length [seconds]: $(round(obj.header.recording[:epoch_duration_seconds], digits=2))")
-    println("         File size [MB]: $(obj.header.recording[:file_size_mb])")
-    println("       Memory size [MB]: $(round(Base.summarysize(obj) / 1024^2, digits=2))")
+    println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits=2))")
     if obj.header.recording[:reference] == ""
         println("         Reference type: unknown")
     else

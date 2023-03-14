@@ -39,10 +39,6 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     t = collect(0:(1 / sr(obj)):(size(obj_new.data, 2) / sr(obj)))[1:(end - 1)]
     obj_new.time_pts = t
     obj_new.epoch_time = t .+ obj.epoch_time[1]
-    obj_new.header.recording[:duration_samples] = length(t) * ep_n
-    obj_new.header.recording[:duration_seconds] = length(t) * ep_n * (1 / sr(obj))
-    obj_new.header.recording[:epoch_duration_samples] = size(obj_new.data, 2)
-    obj_new.header.recording[:epoch_duration_seconds] = size(obj_new.data, 2) * (1 / sr(obj))
 
     push!(obj_new.header.history, "reflect(OBJ, n=$n)")
 
@@ -107,10 +103,6 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
     t = collect(0:(1 / sr(obj)):(size(obj_new.data, 2) / sr(obj)))[1:(end - 1)]
     obj_new.time_pts = t
     obj_new.epoch_time = t .+ obj.epoch_time[1]
-    obj_new.header.recording[:duration_samples] = length(t) * ep_n
-    obj_new.header.recording[:duration_seconds] = length(t) * ep_n * (1 / sr(obj))
-    obj_new.header.recording[:epoch_duration_samples] = size(obj_new.data, 2)
-    obj_new.header.recording[:epoch_duration_seconds] = size(obj_new.data, 2) * (1 / sr(obj))
 
     push!(obj_new.header.history, "chop(OBJ, n=$n)")
 

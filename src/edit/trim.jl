@@ -26,10 +26,6 @@ function trim(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epo
         t_trimmed = collect(0:(1 / sr(obj)):(size(obj_new.data, 2) / sr(obj)))[1:(end - 1)]
         obj_new.time_pts = t_trimmed
         obj_new.epoch_time = t_trimmed .+ obj.epoch_time[1]
-        obj_new.header.recording[:duration_samples] -= length(segment[1]:segment[2])
-        obj_new.header.recording[:duration_seconds] -= length(segment[1]:segment[2]) * (1 / sr(obj))
-        obj_new.header.recording[:epoch_duration_samples] -= length(segment[1]:segment[2])
-        obj_new.header.recording[:epoch_duration_seconds] -= length(segment[1]:segment[2]) * (1 / sr(obj))
         if epoch_n(obj) > 1
             if epoch_len(obj) <= signal_len(obj_new)
                 epoch!(obj_new, epoch_len=epoch_len(obj))
@@ -68,7 +64,8 @@ function trim!(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_ep
     obj_tmp = trim(obj, segment=segment, remove_epochs=remove_epochs)
     obj.header = obj_tmp.header
     obj.data = obj_tmp.data
+    obj.components = obj_tmp.components
 
-    reset_components!(obj)
     return nothing
+
 end

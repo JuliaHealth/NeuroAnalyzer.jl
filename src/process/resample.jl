@@ -146,10 +146,6 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.data = s_upsampled
     obj_new.time_pts = t_upsampled
     obj_new.epoch_time = linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(s_upsampled, 2))
-    obj_new.header.recording[:duration_samples] = size(s_upsampled, 2) * size(s_upsampled, 3)
-    obj_new.header.recording[:duration_seconds] = (size(s_upsampled, 2) * size(s_upsampled, 3)) / new_sr
-    obj_new.header.recording[:epoch_duration_samples] = size(s_upsampled, 2)
-    obj_new.header.recording[:epoch_duration_seconds] = size(s_upsampled, 2) / new_sr
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
     push!(obj_new.header.history, "upsample(OBJ, new_sr=$new_sr)")
@@ -212,10 +208,6 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.time_pts = t_downsampled
     obj_new.data = s_downsampled
     obj_new.epoch_time = linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(s_downsampled, 2))
-    obj_new.header.recording[:duration_samples] = size(s_downsampled, 2) * size(s_downsampled, 3)
-    obj_new.header.recording[:duration_seconds] = (size(s_downsampled, 2) * size(s_downsampled, 3)) / new_sr
-    obj_new.header.recording[:epoch_duration_samples] = size(s_downsampled, 2)
-    obj_new.header.recording[:epoch_duration_seconds] = size(s_downsampled, 2) / new_sr
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
     push!(obj_new.header.history, "downsample(OBJ, new_sr=$new_sr)")

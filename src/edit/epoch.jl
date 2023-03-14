@@ -3,7 +3,6 @@ export epoch!
 export epoch_time
 export epoch_time!
 
-
 """
     epoch(obj; marker, ep_offset, ep_n, ep_len)
 
@@ -13,7 +12,7 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 
 - `obj::NeuroAnalyzer.NEURO`
 - `marker::String="": marker name to split at
-- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - ep_offset)
+- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at `marker time - ep_offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Int64, Nothing}`=nothing: epoch length in samples
 
@@ -54,37 +53,23 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
         end
     end
 
-    # create new dataset
-    ep_n = size(epochs, 3)
-    epoch_duration_samples = size(epochs, 2)
-    epoch_duration_seconds = size(epochs, 2) / obj.header.recording[:sampling_rate]
-    duration_samples = size(epochs, 2) * size(epochs, 3)
-    duration_seconds = duration_samples / obj.header.recording[:sampling_rate]
-    time_pts = collect(0:(1 / obj.header.recording[:sampling_rate]):duration_seconds)
-    time_pts = time_pts[1:(end - 1)]
-
     # update signal
     obj_new.data = epochs
 
     # update time
+    time_pts = collect(obj.time_pts[1]:(1 / sr(obj)):(size(epochs, 3) * size(epochs, 2)) / sr(obj))
+    time_pts = round.(time_pts[1:(end - 1)], digits=3)
     obj_new.time_pts = time_pts
 
     # update epochs time
-    fs = sr(obj_new)
-    new_epochs_time = linspace(-s2t(ep_offset, fs), epoch_duration_seconds - s2t(ep_offset, fs), epoch_duration_samples)
-    obj_new.epoch_time = new_epochs_time
-
-    # update header
-    obj_new.header.recording[:duration_samples] = duration_samples
-    obj_new.header.recording[:duration_seconds] = duration_seconds
-    obj_new.header.recording[:epoch_n] = ep_n
-    obj_new.header.recording[:epoch_duration_samples] = epoch_duration_samples
-    obj_new.header.recording[:epoch_duration_seconds] = epoch_duration_seconds
+    epoch_time = linspace(-s2t(ep_offset, sr(obj)), (size(epochs, 2) ÷ sr(obj)) - s2t(ep_offset, sr(obj)), size(epochs, 2))
+    obj_new.epoch_time = round.(epoch_time, digits=3)
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "epoch(OBJ, ep_n=$ep_n, ep_len=$ep_len)")
+    push!(obj_new.header.history, "epoch(OBJ, marker=$marker, ep_offset=$ep_offset, ep_n=$ep_n, ep_len=$ep_len)")
 
     return obj_new
+
 end
 
 """
@@ -96,7 +81,7 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 
 - `obj::NeuroAnalyzer.NEURO`
 - `marker::String="": marker name to split at
-- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at marker time - ep_offset)
+- `ep_offset::Int64=0": time offset (in samples) for marker-based epoching (each epoch time will start at `marker time - ep_offset`)
 - `ep_n::Union{Int64, Nothing}=nothing`: number of epochs
 - `ep_len::Union{Int64, Nothing}`=nothing: epoch length in samples
 """
@@ -107,9 +92,10 @@ function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, 
     obj.data = obj_tmp.data
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
@@ -137,6 +123,7 @@ function epoch_time(obj::NeuroAnalyzer.NEURO; ts::Real)
     push!(obj_new.header.history, "epoch_time(OBJ, ts=$ts)")
 
     return obj_new
+
 end
 
 """
@@ -160,4 +147,5 @@ function epoch_time!(obj::NeuroAnalyzer.NEURO; ts::Real)
     obj.epoch_time = obj_tmp.epoch_time
 
     return nothing
+    
 end

@@ -277,10 +277,9 @@ function import_alice4(file_name::String; detect_type::Bool=true)
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     end
 
-    duration_samples = size(data, 2)
-    duration_seconds = size(data, 2) / max_sampling_rate
-    time_pts = collect(0:(1 / max_sampling_rate):duration_seconds)
-    time_pts = time_pts[1:end - 1]
+    time_pts = collect(0:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate))
+    time_pts = round.(time_pts[1:end - 1], digits=3)
+    epoch_time = time_pts
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     data_type = "eeg"
@@ -301,14 +300,8 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               recording_date=recording_date,
                               recording_time=recording_time,
                               recording_notes="",
-                              channel_n=ch_n,
                               channel_type=channel_type[channel_order],
                               reference="",
-                              duration_samples=duration_samples,
-                              duration_seconds=duration_seconds,
-                              epoch_n=1,
-                              epoch_duration_samples=duration_samples,
-                              epoch_duration_seconds=duration_seconds,
                               clabels=clabels[channel_order],
                               units=units[channel_order],
                               transducers=transducers[channel_order],
@@ -329,7 +322,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                          history=String[])
 
     components = Vector{Any}()
-    epoch_time = time_pts
+
     locs = DataFrame(:channel=>Int64,
                      :labels=>String[],
                      :loc_theta=>Float64[],

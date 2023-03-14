@@ -1,15 +1,15 @@
-export locs_import
-export locs_import_ced
-export locs_import_locs
-export locs_import_csd
-export locs_import_elc
-export locs_import_tsv
-export locs_import_sfp
-export locs_import_geo
-export locs_import_mat
+export import_locs
+export import_locs_ced
+export import_locs_locs
+export import_locs_csd
+export import_locs_elc
+export import_locs_tsv
+export import_locs_sfp
+export import_locs_geo
+export import_locs_mat
 
 """
-    locs_import(file_name)
+    import_locs(file_name)
 
 Load channel locations. Supported formats:
 - CED
@@ -21,7 +21,7 @@ Load channel locations. Supported formats:
 - GEO
 - MAT
 
-This is a meta-function that triggers appropriate `locs_import_*()` function. File format is detected based on file extension.
+This is a meta-function that triggers appropriate `import_locs_*()` function. File format is detected based on file extension.
 
 # Arguments
 
@@ -31,7 +31,7 @@ This is a meta-function that triggers appropriate `locs_import_*()` function. Fi
 
 - `locs::DataFrame`
 """
-function locs_import(file_name::String)
+function import_locs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
@@ -39,21 +39,21 @@ function locs_import(file_name::String)
     _info("Nose direction is set at '+Y'.")
 
     if splitext(file_name)[2] == ".ced"
-        locs = locs_import_ced(file_name)
+        locs = import_locs_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = locs_import_elc(file_name)
+        locs = import_locs_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = locs_import_locs(file_name)
+        locs = import_locs_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = locs_import_tsv(file_name)
+        locs = import_locs_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = locs_import_sfp(file_name)
+        locs = import_locs_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = locs_import_csd(file_name)
+        locs = import_locs_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
-        locs = locs_import_geo(file_name)
+        locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
-        locs = locs_import_mat(file_name)
+        locs = import_locs_mat(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
@@ -62,7 +62,7 @@ function locs_import(file_name::String)
 end
 
 """
-    locs_import_ced(file_name)
+    import_locs_ced(file_name)
 
 Load channel locations from CED file.
 
@@ -74,7 +74,7 @@ Load channel locations from CED file.
 
 - `locs::DataFrame`
 """
-function locs_import_ced(file_name::String)
+function import_locs_ced(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".ced" || throw(ArgumentError("Not a CED file."))
@@ -114,7 +114,7 @@ function locs_import_ced(file_name::String)
 end
 
 """
-    locs_import_locs(file_name)
+    import_locs_locs(file_name)
 
 Load channel locations from LOCS file.
 
@@ -126,7 +126,7 @@ Load channel locations from LOCS file.
 
 - `locs::DataFrame`
 """
-function locs_import_locs(file_name::String)
+function import_locs_locs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".locs" || throw(ArgumentError("Not a LOCS file."))
@@ -160,7 +160,7 @@ function locs_import_locs(file_name::String)
 end
 
 """
-    locs_import_elc(file_name)
+    import_locs_elc(file_name)
 
 Load channel locations from ELC file.
 
@@ -172,7 +172,7 @@ Load channel locations from ELC file.
 
 - `locs::DataFrame`
 """
-function locs_import_elc(file_name::String)
+function import_locs_elc(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".elc" || throw(ArgumentError("Not a ELC file."))
@@ -225,7 +225,7 @@ function locs_import_elc(file_name::String)
 end
 
 """
-    locs_import_tsv(file_name)
+    import_locs_tsv(file_name)
 
 Load channel locations from TSV file.
 
@@ -237,7 +237,7 @@ Load channel locations from TSV file.
 
 - `locs::DataFrame`
 """
-function locs_import_tsv(file_name::String)
+function import_locs_tsv(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".tsv" || throw(ArgumentError("Not a TSV file."))
@@ -282,7 +282,7 @@ function locs_import_tsv(file_name::String)
 end
 
 """
-    locs_import_sfp(file_name)
+    import_locs_sfp(file_name)
 
 Load channel locations from SFP file.
 
@@ -294,7 +294,7 @@ Load channel locations from SFP file.
 
 - `locs::DataFrame`
 """
-function locs_import_sfp(file_name::String)
+function import_locs_sfp(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".sfp" || throw(ArgumentError("Not a SFP file."))
@@ -342,7 +342,7 @@ function locs_import_sfp(file_name::String)
 end
 
 """
-    locs_import_csd(file_name)
+    import_locs_csd(file_name)
 
 Load channel locations from CSD file.
 
@@ -354,7 +354,7 @@ Load channel locations from CSD file.
 
 - `locs::DataFrame`
 """
-function locs_import_csd(file_name::String)
+function import_locs_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a CSD file."))
@@ -384,7 +384,7 @@ function locs_import_csd(file_name::String)
 end
 
 """
-    locs_import_geo(file_name)
+    import_locs_geo(file_name)
 
 Load channel locations from GEO file.
 
@@ -396,7 +396,7 @@ Load channel locations from GEO file.
 
 - `locs::DataFrame`
 """
-function locs_import_geo(file_name::String)
+function import_locs_geo(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".geo" || throw(ArgumentError("Not a GEO file."))
@@ -451,7 +451,7 @@ function locs_import_geo(file_name::String)
 end
 
 """
-    locs_import_mat(file_name)
+    import_locs_mat(file_name)
 
 Load channel locations from MAT file.
 
@@ -463,7 +463,7 @@ Load channel locations from MAT file.
 
 - `locs::DataFrame`
 """
-function locs_import_mat(file_name::String)
+function import_locs_mat(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".mat" || throw(ArgumentError("Not a MAT file."))

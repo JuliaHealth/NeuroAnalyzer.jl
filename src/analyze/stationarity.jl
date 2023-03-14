@@ -111,7 +111,9 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     ep_n = epoch_n(obj)
 
     if method === :mean
+
         s = zeros(ch_n, window, ep_n)
+        
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
             end
@@ -120,7 +122,9 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     end
 
     if method === :var
+
         s = zeros(ch_n, window, ep_n)
+
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
             end
@@ -129,20 +133,26 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     end
 
     if method === :hilbert
+
         s = zeros(ch_n, epoch_len(obj) - 1, ep_n)
+
         @inbounds @simd for ep_idx in 1:ep_n
             Threads.@threads for ch_idx in 1:ch_n
             end
         end
+
         return s
+
     end
 
     if method === :cov
+
+        ch_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
+        
         # number of time windows per epoch
         window_n = epoch_len(obj)
         cov_mat = zeros(ch_n, ch_n, window_n, ep_n)
         s = zeros(1 + length(2:window:window_n), ep_n)
-        ch_n == 1 && throw(ArgumentError("For :cov method, number of channels must be ≥ 2."))
 
         # create covariance matrices per each window
         @inbounds @simd for ep_idx in 1:ep_n
@@ -158,7 +168,9 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 w_idx += 1
             end
         end
+
         return s
+
     end
 
     if method === :adf
@@ -183,6 +195,9 @@ function stationarity(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
                 progress_bar == true && next!(pb)
             end
         end
+
         return s
+
     end
+
 end

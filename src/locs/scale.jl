@@ -20,11 +20,16 @@ Scale channel locations.
 - `locs_new::DataFrame`
 """
 function locs_scale(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
+
     locs_new = deepcopy(locs)
+
     planar == true && (locs_new[!, :loc_radius] .*= r)
     spherical == true && (locs_new[!, :loc_radius_sph] .*= r)
+
     locs_sph2cart!(locs_new)
+
     return locs_new
+
 end
 
 """
@@ -40,8 +45,11 @@ Scale channel locations.
 - `spherical::Bool=true`: modify spherical coordinates
 """
 function locs_scale!(locs::DataFrame; r::Real, planar::Bool=true, spherical::Bool=true)
+
     locs[!, :] = locs_scale(locs, r=r, planar=planar, spherical=spherical)[!, :]
+
     return nothing
+
 end
 
 """
@@ -76,9 +84,11 @@ function locs_maximize(locs::DataFrame; planar::Bool=true, spherical::Bool=false
         r = maximum(r2) / maximum(r1)
         locs_new[!, :loc_radius_sph] .*= r
     end
+
     locs_sph2cart!(locs_new)
 
     return locs_new
+
 end
 
 """
@@ -93,6 +103,9 @@ Maximize channel locations to the unit sphere.
 - `spherical::Bool=false`: modify spherical coordinates
 """
 function locs_maximize!(locs::DataFrame; planar::Bool=true, spherical::Bool=false)
+
     locs[!, :] = locs_maximize(locs, planar=planar, spherical=spherical)[!, :]
+
     return nothing
+    
 end

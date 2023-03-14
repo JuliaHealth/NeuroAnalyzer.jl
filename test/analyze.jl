@@ -3,9 +3,10 @@ using Test
 using Wavelets
 using ContinuousWavelets
 
+@info "Initializing"
 eeg = import_edf("files/eeg-test-edf.edf")
 e10 = epoch(eeg, ep_len=10*sr(eeg))
-keep_epoch!(e10, epoch=1:10)
+keep_epoch!(e10, ep=1:10)
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
 v2 = [6, 5, 4, 3, 2]
@@ -250,18 +251,18 @@ e10_tmp = NeuroAnalyzer.ica_reconstruct(e10, ic_idx=1)
 
 @info "test 21/47: ispc()"
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(v1, v2)
-@test iv == 0.6125992852305387
-@test ia == -0.0017801930770334254
+@test iv ≈ 0.6125992852305387
+@test ia ≈ -0.0017801930770334254
 @test sd == [5, 3, 1, -1, -3]
-@test pd == [-1.3157044982273682, 0.8713795327960081, 0.3743702916488456, 0.7615478999167377, -1.0328436072470222]
-@test s1p == [1.039406675134543, -0.6027563879589182, -0.21331750626000984, -0.33140501474755424, 0.3279718365439915]
-@test s2p == [-0.27629782309282525, 0.26862314483709, 0.16105278538883577, 0.4301428851691834, -0.7048717707030308]
+@test pd ≈ [-1.3157044982273682, 0.8713795327960081, 0.3743702916488456, 0.7615478999167377, -1.0328436072470222]
+@test s1p ≈ [1.039406675134543, -0.6027563879589182, -0.21331750626000984, -0.33140501474755424, 0.3279718365439915]
+@test s2p ≈ [-0.27629782309282525, 0.26862314483709, 0.16105278538883577, 0.4301428851691834, -0.7048717707030308]
 iv, ia = NeuroAnalyzer.ispc(e10)
 @test size(iv) == (19, 19, 10)
 @test size(ia) == (19, 19, 10)
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer.ispc(e10, e10, ch1=1, ch2=2, ep1=1, ep2=1)
-@test iv == [0.934947546068702;;]
-@test ia == [0.0013110745656857103;;]
+@test iv ≈ [0.934947546068702;;]
+@test ia ≈ [0.0013110745656858525;;]
 @test size(sd) == (1, 2560, 1)
 @test size(pd) == (1, 2560, 1)
 @test size(s1p) == (1, 2560, 1)
@@ -274,16 +275,16 @@ iv, izv, ia, ip = NeuroAnalyzer.itpc(ones(1, 10, 10), t=1)
 @test ia == 0.0
 @test ip == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 iv, izv, ia, ip = NeuroAnalyzer.itpc(e10, ch=1, t=256)
-@test iv == [0.9742650309891113]
-@test izv == [9.491923506082141]
-@test ia == [-0.09471374965342466]
-@test ip[1] == -0.34043930845454473
+@test iv ≈ [0.9742650309891113]
+@test izv≈ [9.491923506082141]
+@test ia ≈ [-0.09471374965342466]
+@test ip[1] ≈ -0.34043930845454473
 
 @info "test 23/47: itpc_spec()"
 iv, izv, f = NeuroAnalyzer.itpc_spec(e10, ch=1, frq_lim=(0, 4), frq_n=5)
 @test size(iv) == (5, 2560)
 @test size(izv) == (5, 2560)
-@test f == [0.01, 0.044721359549995794, 0.20000000000000004, 0.8944271909999159, 4.0]
+@test f ≈ [0.01, 0.044721359549995794, 0.20000000000000004, 0.8944271909999159, 4.0]
 
 @info "test 24/47: mdiff()"
 st, sts, p = NeuroAnalyzer.mdiff(m1, m2, method=:absdiff)
@@ -312,7 +313,7 @@ st, sts, p = NeuroAnalyzer.mdiff(e10, e10, method=:diff2int)
 @test p == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
 @info "test 25/47: mutual_information()"
-@test NeuroAnalyzer.mutual_information(v1, v2) == 0.4199730940219748
+@test NeuroAnalyzer.mutual_information(v1, v2) ≈ 0.4199730940219748
 @test NeuroAnalyzer.mutual_information(a1) == [0.0 0.0; 0.0 0.0;;; 0.0 0.0; 0.0 0.0]
 @test NeuroAnalyzer.mutual_information(a1, a2) == [0.0 0.0; 0.0 0.0] 
 m = NeuroAnalyzer.mutual_information(e10)

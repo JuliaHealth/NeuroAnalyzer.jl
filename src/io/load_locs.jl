@@ -42,21 +42,21 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     length(obj.header.recording[:labels]) > 0 || throw(ArgumentError("OBJ does not contain labels, use add_labels() first."))
 
     if splitext(file_name)[2] == ".ced"
-        locs = locs_import_ced(file_name)
+        locs = import_locs_ced(file_name)
     elseif splitext(file_name)[2] == ".elc"
-        locs = locs_import_elc(file_name)
+        locs = import_locs_elc(file_name)
     elseif splitext(file_name)[2] == ".locs"
-        locs = locs_import_locs(file_name)
+        locs = import_locs_locs(file_name)
     elseif splitext(file_name)[2] == ".tsv"
-        locs = locs_import_tsv(file_name)
+        locs = import_locs_tsv(file_name)
     elseif splitext(file_name)[2] == ".sfp"
-        locs = locs_import_sfp(file_name)
+        locs = import_locs_sfp(file_name)
     elseif splitext(file_name)[2] == ".csd"
-        locs = locs_import_csd(file_name)
+        locs = import_locs_csd(file_name)
     elseif splitext(file_name)[2] == ".geo"
-        locs = locs_import_geo(file_name)
+        locs = import_locs_geo(file_name)
     elseif splitext(file_name)[2] == ".mat"
-        locs = locs_import_mat(file_name)
+        locs = import_locs_mat(file_name)
     else
         throw(ArgumentError("Unknown file format."))
     end
