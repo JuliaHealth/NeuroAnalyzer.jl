@@ -17,7 +17,7 @@ Return the positions of the `y` value in the vector `x`.
 - `idx::Int64`
 - `d::Real`: the difference between `y` and `x[idx]`
 """
-function vsearch(y::T, x::AbstractVector; acc::Bool=false) where T<:Real
+function vsearch(y::T, x::AbstractVector; acc::Bool=false) where {T<:Real}
 
     d, idx = findmin(abs.(x .- y))
 

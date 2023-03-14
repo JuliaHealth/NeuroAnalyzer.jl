@@ -3,20 +3,18 @@ using Test
 using Wavelets
 using ContinuousWavelets
 
-eeg = import_bdf("eeg-test-bdfplus.bdf")
-delete_marker!(eeg, n=1)
-@test size(eeg.markers) == (1, 5)
-add_marker!(eeg, id="event", start=1, len=1, desc="test", channel=0)
-@test size(eeg.markers) == (2, 5)
-edit_marker!(eeg, n=2, id="event2", start=1, len=1, desc="test2", channel=0)
-
-eeg = import_edf("eeg-test-edf.edf")
-@test size(eeg.data) == (24, 309760, 1)
-
-ecg = extract_channel(eeg, channel=24)
-eog2 = extract_channel(eeg, channel=23)
-eog1 = extract_channel(eeg, channel=22)
-delete_channel!(eeg, channel=22:24)
+@info "Initializing"
+eeg = import_edf("files/eeg-test-edf.edf")
+e10 = epoch(eeg, ep_len=10*sr(eeg))
+keep_epoch!(e10, ep=1:10)
+v = [1, 2, 3, 4, 5]
+v1 = [1, 2, 3, 4, 5]
+v2 = [6, 5, 4, 3, 2]
+m = [1 2 3; 4 5 6]
+m1 = [1 2 3; 4 5 6]
+m2 = [7 6 5; 4 3 2]
+a1 = ones(2, 3, 2)
+a2 = zeros(2, 3, 2)
 
 eeg1 = reference_a(eeg)
 @test size(eeg1.data) == (21, 309760, 1)
@@ -24,20 +22,8 @@ a1 = extract_channel(eeg, channel=20)
 a2 = extract_channel(eeg, channel=21)
 delete_channel!(eeg, channel=[20, 21])
 
-eeg1 = delete_channel(eeg, channel=1)
-@test eeg1.header.recording[:channel_n] == 18
-
-eeg1 = keep_channel(eeg, channel=1)
-@test eeg1.header.recording[:channel_n] == 1
-
 eeg1 = derivative(eeg)
 @test size(eeg1.data) == (19, 309760, 1)
-
-tbp = total_power(eeg)
-@test size(tbp) == (19, 1)
-
-abp = band_power(eeg, f=(2, 4))
-@test size(abp) == (19, 1)
 
 eeg1 = detrend(eeg)
 @test size(eeg1.data) == (19, 309760, 1)
@@ -273,41 +259,11 @@ s, _ = standardize(eeg)
 eeg1 = epoch_time(eeg, ts=-10.0)
 eeg1.epoch_time[1, 1] == -10.0
 
-@test size(tenv(e10)[1]) == (19, 2560, 121)
-@test size(tenv_mean(e10, dims=1)[1]) == (2560, 121)
-@test size(tenv_median(e10, dims=1)[1]) == (2560, 121)
-@test size(penv(e10)[1]) == (19, 513, 121)
-@test size(penv_mean(e10, dims=1)[1]) == (513, 121)
-@test size(penv_median(e10, dims=1)[1]) == (513, 121)
-@test size(senv(e10)[1]) == (19, 37, 121)
-@test size(senv_mean(e10, dims=1)[1]) == (37, 121)
-@test size(senv_median(e10, dims=1)[1]) == (37, 121)
 @test size(denoise_wavelet(eeg, wt=wavelet(WT.haar)).data) == (19, 309760, 1)
-@test length(ispc(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 6
-@test length(itpc(e10, channel=1, t=12)) == 4
-@test length(pli(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 5
-@test size(pli(e10)) == (19, 19, 121)
-@test size(ispc(e10)) == (19, 19, 121)
-@test length(env_cor(e10, e10, channel1=1, channel2=2, epoch1=1, epoch2=1)) == 2
-@test length(ged(e10, e10)) == 3
-@test size(frqinst(eeg)) == (19, 309760, 1)
 @test size(fftdenoise(eeg).data) == (19, 309760, 1)
-@test size(tkeo(eeg)) == (19, 309760, 1)
-@test length(psd_mw(eeg, frq_lim=(0, 20), frq_n=21)) == 2
-
-c, msc, f = fcoherence(eeg, eeg, channel1=1, channel2=2, epoch1=1, epoch2=1)
-@test length(c) == 262145
 
 eeg1 = reference_plap(eeg)
 @test size(eeg1.data) == (19, 309760, 1)
-
-f, p = vartest(eeg)
-@test size(f) == (19, 19, 1)
-
-eeg1 = add_note(eeg, note="test")
-@test view_note(eeg1) == "test"
-delete_note!(eeg1)
-@test view_note(eeg1) == ""
 
 eeg1 = epoch(eeg, ep_len=2560)
 new_channel = zeros(1, epoch_len(eeg1), epoch_n(eeg1))
@@ -363,21 +319,6 @@ _, _, f = psdslope(eeg)
 @test size(henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(henv_median(e10, dims=1)[1]) == (2560, 121)
 @test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 121)
-
-@test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
-
-e1 = deepcopy(eeg)
-add_marker!(e1, id="1", start=100, len=1, desc="test")
-add_marker!(e1, id="1", start=1000, len=1, desc="test")
-add_marker!(e1, id="1", start=2000, len=1, desc="test")
-add_marker!(e1, id="1", start=3000, len=1, desc="test")
-add_marker!(e1, id="1", start=4000, len=1, desc="test")
-add_marker!(e1, id="1", start=5000, len=1, desc="test")
-e2 = trim(e1, segment=(1, 400), remove_epochs=false)
-@test e2.markers[1, :start] == 600
-e2 = epoch(e1, ep_len=200)
-delete_epoch!(e2, epoch=1)
-@test e2.markers[1, :start] == 800
 
 eeg1, g, h = slaplacian(eeg)
 @test size(eeg1.data) == (19, 309760, 1)

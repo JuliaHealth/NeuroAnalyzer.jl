@@ -29,7 +29,7 @@ Named tuple containing:
 function linreg(x::AbstractVector, y::AbstractVector)
 
     df = DataFrame(:x=>x, :y=>y)
-    lr = lm(@formula(y ~ x), df)
+    lr = GLM.lm(@formula(y ~ x), df)
     radj = r2(lr)
     c = coef(lr)
     se = stderror(lr)
@@ -47,7 +47,7 @@ Calculate Akaike’s Information Criterion (AIC) and Bayesian Information Criter
 
 # Arguments
 
-- `m::StatsModels.TableRegressionModel`
+- `m::StatsModels.TableRegressionModel`: linear regression model
 
 # Returns
 
