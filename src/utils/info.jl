@@ -323,7 +323,7 @@ Return channels belonging to a `cluster` of channels.
 
 # Returns
 
-- `channels::Vector{Int64}`: list of channel numbers belonging to a given cluster of channels
+- `ch::Vector{Int64}`: list of channel numbers belonging to a given cluster of channels
 """
 function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
 
@@ -331,7 +331,7 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
 
     _check_var(cluster, [:f1, :f2, :t1, :t2, :c1, :c2, :p1, :p2, :o], "cluster")
     clabels = lowercase.(labels(obj))
-    channels = Int64[]
+    ch = Int64[]
 
     cluster === :f1 && (cluster = ["fp1", "f1", "f3", "f5", "f7", "f9", "af3", "af7"])
     cluster === :f2 && (cluster = ["fp2", "f2", "f4", "f6", "f8", "f10", "af4", "af8"])
@@ -344,10 +344,10 @@ function channel_cluster(obj::NeuroAnalyzer.NEURO; cluster::Symbol)
     cluster === :o && (cluster = ["o1", "o2", "poz", "po3", "po4", "po7", "po8", "po9", "po10"])
 
     for idx in cluster
-        idx in clabels && push!(channels, get_channel(obj, channel=idx))
+        idx in clabels && push!(ch, get_channel(obj, ch=idx))
     end
 
-    return channels
+    return ch
 end
 
 """

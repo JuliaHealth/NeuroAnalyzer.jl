@@ -8,8 +8,8 @@ using Test
     @info "Running io.jl tests"
     @test include("io.jl")
 
-    # @info "Running utils.jl tests"
-    # @test include("utils.jl")
+    @info "Running utils.jl tests"
+    @test include("utils.jl")
 
     @info "Running locs.jl tests"
     @test include("locs.jl")

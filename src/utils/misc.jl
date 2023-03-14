@@ -22,8 +22,11 @@ Generates a sequence of evenly spaced numbers between `start` and `stop`.
 - `range::Vector`
 """
 function linspace(start::Number, stop::Number, n::Int64)
+
     n < 2 && throw(ArgumentError("n must be ≥ 2."))
+
     return collect(range(start, stop, n))
+
 end
 
 """
@@ -42,14 +45,17 @@ Generates a sequence of log10-spaced numbers between `start` and `stop`.
 - `range::Vector{<:Number}`
 """
 function logspace(start::Number, stop::Number, n::Int64)
+
     n < 2 && throw(ArgumentError("n must be ≥ 2."))
+
     return collect(exp10.(range(start, stop, n)))
+
 end
 
 """
     cmax(x)
 
-Return maximum value of the complex vector`x`.
+Return maximum value of the complex vector.
 
 # Arguments
 
@@ -59,14 +65,16 @@ Return maximum value of the complex vector`x`.
 
 - `cmax::ComplexF64`
 """
-function cmax(x::Vector{ComplexF64})
+function cmax(x::Vector{<:Complex})
+
     return argmax(abs, x)
+
 end
 
 """
     cmin(x)
 
-Return minimum value of the complex vector`x`.
+Return minimum value of the complex vector.
 
 # Arguments
 
@@ -76,14 +84,16 @@ Return minimum value of the complex vector`x`.
 
 - `cmin::ComplexF64`
 """
-function cmin(x::Vector{ComplexF64})
+function cmin(x::Vector{<:Complex})
+
     return argmin(abs, x)
+
 end
 
 """
     tuple_order(t, rev)
 
-Order tuple elements in ascending or descending (rev=true) order.
+Order tuple elements in ascending or descending (`rev=true`) order.
 
 # Arguments
 
@@ -95,9 +105,12 @@ Order tuple elements in ascending or descending (rev=true) order.
 - `t::Tuple{Real, Real}`
 """
 function tuple_order(t::Tuple{Real, Real}, rev::Bool=false)
+
     (rev == false && t[1] > t[2]) && (t = (t[2], t[1]))
     (rev == true && t[1] < t[2]) && (t = (t[2], t[1]))
+
     return t
+
 end
 
 """
@@ -125,12 +138,13 @@ function cums(signal::Array{<:Real, 3})
     end
 
     return signal_cs
+
 end
 
 """
     f_nearest(m, pos)
 
-Find nearest position tuple `pos` in matrix of positions `m`.
+Find nearest position tuple `pos` in vector of positions `m`.
 
 # Arguments
 
@@ -142,11 +156,15 @@ Find nearest position tuple `pos` in matrix of positions `m`.
 - `pos::Tuple{Int64, Int64}`: row and column in m
 """
 function f_nearest(m::Matrix{Tuple{Float64, Float64}}, p::Tuple{Float64, Float64})
+
     d = zeros(size(m))
+
     @inbounds @simd for idx1 in 1:size(m, 1)
         for idx2 in 1:size(m, 2)
             d[idx1, idx2] = euclidean(m[idx1, idx2], p)
         end
     end
+
     return (findmin(d)[2][1], findmin(d)[2][2])
+
 end

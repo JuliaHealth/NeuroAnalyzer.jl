@@ -17,8 +17,11 @@ Compare two arrays (e.g. two spectrograms), using L1 (Manhattan) distance.
 - `l1::Float64`
 """
 function l1(a1::AbstractArray, a2::AbstractArray)
+
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+
     return sum(abs.(a1 .- a2))
+
 end
 
 """
@@ -36,9 +39,12 @@ Compare two arrays (e.g. two spectrograms), using L2 (Euclidean) distance.
 - `l2::Float64`
 """
 function l2(a1::AbstractArray, a2::AbstractArray)
+
     size(a1) == size(a2) || throw(ArgumentError("a1 and a2 mast have the same size."))
+    
     # return sqrt(sum((a1 .- a2).^2))
     return euclidean(a1, a2)
+
 end
 
 """
@@ -57,7 +63,7 @@ Compare two 3-dimensional arrays `a1` and `a2` (e.g. two spectrograms), using pe
 
 Named tuple containing:
 - `zmap::Array{Float64, 3}`: array of Z-values
-- `zmap_b::Array{Float64, 3}`: binarized mask of statistically significant positions
+- `bm::Array{Float64, 3}`: binarized mask of statistically significant positions
 """
 function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, perm_n::Int64=1000)
 
@@ -84,11 +90,12 @@ function perm_cmp(a1::Array{<:Real, 3}, a2::Array{<:Real, 3}; p::Float64=0.05, p
     zmap = @. (spec_diff - mean_h0) / std_h0
 
     # threshold at p-value
-    zmap_b = deepcopy(zmap)
-    @. zmap_b[abs(zmap) < zval] = 0
-    @. zmap_b[zmap_b != 0] = 1
-    zmap_b = Bool.(zmap_b)
-    zmap_b = map(x -> !x, zmap_b)
+    bm = deepcopy(zmap)
+    @. bm[abs(zmap) < zval] = 0
+    @. bm[bm != 0] = 1
+    bm = Bool.(bm)
+    bm = map(x -> !x, bm)
 
-    return (zmap=zmap, zmap_b=zmap_b)
+    return (zmap=zmap, bm=bm)
+
 end

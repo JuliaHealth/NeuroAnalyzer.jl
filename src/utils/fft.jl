@@ -38,6 +38,7 @@ function fft0(x::AbstractVector, n::Int64=0)
             return fft(pad0(x, n))
         end
     end
+
 end
 
 """
@@ -52,7 +53,7 @@ IFFT of zero-padded vector.
 
 # Returns
 
-- `signal::Vector{Float64}`: real part of the signal trimmed to original length
+- `ifft0::Vector{Float64}`: real part of the signal trimmed to original length
 """
 function ifft0(x::AbstractVector, n::Int64=0)
 
@@ -64,7 +65,9 @@ function ifft0(x::AbstractVector, n::Int64=0)
     else
         x = ifft(x)
     end
+
     return round.(real.(x[1:(length(x) - n)]))
+
 end
 
 """
@@ -81,8 +84,11 @@ Zeros-padded FFT, so the length of padded vector is a power of 2.
 - `fft2::Vector{ComplexF64}`
 """
 function fft2(x::AbstractVector)
+    
     n = nextpow2(length(x)) - length(x)
-    fft0(x, n)
+    
+    return fft0(x, n)
+
 end
 
 """
@@ -96,11 +102,13 @@ Return the next power of 2 for given number `x`.
 
 # Returns
 
-- `nextpow::Int64`
+- `nextpow2::Int64`
 """
 function nextpow2(x::Int64)
+
     # return x == 0 ? 1 : (2 ^ ndigits(x - 1, base=2))
     return nextpow(2, x)
+
 end
 
 """
@@ -117,21 +125,24 @@ Return FFT and DFT sample frequencies for a DFT.
 # Returns
 
 Named tuple containing:
-- `s_fft::Vector{ComplexF64}`: FFT
-- `s_sf::Vector{Float64}`: sample frequencies
+- `ft::Vector{ComplexF64}`: FFT
+- `f::Vector{Float64}`: sample frequencies
 """
 function dft(signal::AbstractVector; fs::Int64, pad::Int64=0)
 
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
 
-    s_fft = fft0(signal, pad)
+    ft = fft0(signal, pad)
+
     # number of samples
     n = length(signal)
+    
     # time between samples
     d = 1 / fs
-    s_sf = Vector(fftfreq(n, d))
+    f = Vector(fftfreq(n, d))
 
-    return (s_fft=s_fft, s_sf=s_sf)
+    return (ft=ft, f=f)
+
 end
 
 """
@@ -142,31 +153,31 @@ Return FFT and DFT sample frequencies for a DFT.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
 Named tuple containing:
-- `s_fft::Array{ComplexF64, 3}`: FFT
-- `s_sf::Vector{Float64}`: sample frequencies
+- `ft::Array{ComplexF64, 3}`: FFT
+- `f::Vector{Float64}`: sample frequencies
 """
-function dft(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0)
+function dft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     fs = sr(obj)
-    s_fft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
-    s_sf = nothing
+    ft = zeros(ComplexF64, ch_n, epoch_len(obj), ep_n)
+    f = nothing
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_fft[ch_idx, :, ep_idx], s_sf = @views dft(obj.data[channel[ch_idx], :, ep_idx], fs=fs, pad=pad)
+            ft[ch_idx, :, ep_idx], f = @views dft(obj.data[ch[ch_idx], :, ep_idx], fs=fs, pad=pad)
         end
     end
 
-    return (s_fft=s_fft, s_sf=s_sf)
+    return (ft=ft, f=f)
+    
 end
-

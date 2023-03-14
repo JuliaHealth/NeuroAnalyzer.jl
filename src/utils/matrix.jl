@@ -29,6 +29,7 @@ function m_pad0(m::Matrix{<:Number})
     else
         return m
     end
+
 end
 
 """
@@ -38,32 +39,33 @@ Generates sorting index for matrix `m` by columns (`dims` = 1) or by rows (`dims
 
 # Arguments
 
-- `m::Matrix`
+- `m::AbstractMatrix`
 - `rev::Bool`
 - `dims::Int64`
 
 # Returns
 
-- `m_idx::Matrix{Int64}`
+- `idx::Matrix{Int64}`
 """
-function m_sortperm(m::Matrix; rev::Bool=false, dims::Int64=1)
+function m_sortperm(m::AbstractMatrix; rev::Bool=false, dims::Int64=1)
 
     dims in [1, 2] || throw(ArgumentError("dims must be 1 or 2."))
     
-    m_idx = zeros(Int, size(m))
+    idx = zeros(Int, size(m))
     if dims == 1
-        @inbounds @simd for idx = 1:size(m, 2)
+        @inbounds @simd for m_idx = 1:size(m, 2)
             # sort by columns
-            m_idx[:, idx] = sortperm(m[:, idx], rev=rev)
+            idx[:, m_idx] = sortperm(m[:, m_idx], rev=rev)
         end
     else
-        @inbounds @simd for idx = 1:size(m, 1)
+        @inbounds @simd for m_idx = 1:size(m, 1)
             # sort by rows
-            m_idx[idx, :] = sortperm(m[idx, :], rev=rev)'
+            idx[m_idx, :] = sortperm(m[m_idx, :], rev=rev)'
         end     
     end
 
-    return m_idx
+    return idx
+
 end
 
 """
@@ -100,6 +102,7 @@ function m_sort(m::Matrix, m_idx::Vector{Int64}; rev::Bool=false, dims::Int64=1)
     end
 
     return m_sorted
+
 end
 
 """
@@ -116,5 +119,7 @@ Normalize matrix.
 - `m_norm::AbstractArray`
 """
 function m_norm(m::AbstractArray)
+
     return m ./ (size(m, 2) - 1)
+
 end

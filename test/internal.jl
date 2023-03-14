@@ -107,6 +107,8 @@ df1, df2 = NeuroAnalyzer._split(df)
 @test NeuroAnalyzer._convert_t(1.0, 2.0) == (1.0, "1.0 s", 2.0, "2.0 s")
 @test NeuroAnalyzer._s2epoch(e10, 1, 256) == 1
 @test NeuroAnalyzer._epoch2s(e10, 1) == (1, 2560)
+@test NeuroAnalyzer._copy_lt2ut([1 0 0; 1 1 0; 1 1 1]) == ones(3, 3)
+@test NeuroAnalyzer._tlength((1, 10)) == 10
 
 # these function are still in work:
 ## FIFF

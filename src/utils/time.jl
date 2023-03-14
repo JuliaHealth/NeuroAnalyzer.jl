@@ -1,5 +1,5 @@
-export t2f
-export f2t
+export t2s
+export s2t
 
 """
     t2s(t, fs)
@@ -8,20 +8,23 @@ Convert time to sample number.
 
 # Arguments
 
-- `t::Real`: time in s
+- `t::T`: time in s
 - `fs::Int64`: sampling rate
 
 # Returns
 
-- `s::Int64`: sample number
+- `t2s::Int64`: sample number
 """
-function t2s(t::Real, fs::Int64)
+function t2s(t::T, fs::Int64) where T<:Real
+    
     t < 0 && throw(ArgumentError("t must be ≥ 0."))
+    
     if t == 0
         return 1
     else
         return round(Int64, t * fs)
     end
+
 end
 
 """
@@ -36,11 +39,14 @@ Convert sample number to time.
 
 # Returns
 
-- `t::Float64`: time in s
+- `s2t::Float64`: time in s
 """
 function s2t(s::Int64, fs::Int64)
+
     s < 0 && throw(ArgumentError("s must be > 0."))
+    
     return s / fs
+
 end
 
 """
@@ -51,30 +57,34 @@ Convert time in seconds to samples.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `t::Real`: time in seconds
+- `t::T`: time in seconds
 
 # Returns
 
-- `t_s::Int64`: time in samples
+- `t2s::Int64`: time in samples
 """
-function t2s(obj::NeuroAnalyzer.NEURO; t::Real)
+function t2s(obj::NeuroAnalyzer.NEURO; t::T) where T<:Real
+
     return floor(Int64, t * sr(obj)) + 1
+
 end
 
 """
-    s2t(obj; t)
+    s2t(obj; s)
 
 Convert time in samples to seconds.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `t::Int64`: time in samples
+- `s::Int64`: time in samples
 
 # Returns
 
-- `t_s::Float64`: time in seconds
+- `s2t::Float64`: time in seconds
 """
-function s2t(obj::NeuroAnalyzer.NEURO; t::Int64)
-    return round(t / sr(obj), digits=2)
+function s2t(obj::NeuroAnalyzer.NEURO; s::Int64)
+
+    return round(s / sr(obj), digits=2)
+
 end

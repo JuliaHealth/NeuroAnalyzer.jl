@@ -2,24 +2,27 @@ export vsearch
 export vsplit
 
 """
-    vsearch(y, x; return_distance)
+    vsearch(y, x; acc)
 
 Return the positions of the `y` value in the vector `x`.
 
 # Arguments
 
-- `y::Real`: value of interest
+- `y::T`: value of interest
 - `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx]`
+- `acc::Bool=false`: if true, return the difference between `y` and `x[idx]`
 
 # Returns
 
-- `y_idx::Int64`
-- `y_dist::Real`: the difference between `y` and `x[y_idx]`
+- `idx::Int64`
+- `d::Real`: the difference between `y` and `x[idx]`
 """
-function vsearch(y::Real, x::AbstractVector; acc::Bool=false)
-    y_dist, y_idx = findmin(abs.(x .- y))
-    return acc == true ? (y_idx, y_dist) : y_idx
+function vsearch(y::T, x::AbstractVector; acc::Bool=false) where T<:Real
+
+    d, idx = findmin(abs.(x .- y))
+
+    return acc == true ? (idx, d) : idx
+
 end
 
 """
@@ -31,25 +34,25 @@ Return the positions of the `y` vector in the vector `x`.
 
 - `y::AbstractVector`: vector of interest
 - `x::AbstractVector`: vector to search within
-- `acc::Bool=false`: if true, return the difference between `y` and `x[y_idx:y_idx + length(y)]`
+- `acc::Bool=false`: if true, return the difference between `y` and `x[idx:idx + length(y)]`
 
 # Returns
 
-- `y_idx::Int64`
-- `y_dist::Real`: the difference between `y` and `x[y_idx:y_idx + length(y)]`
+- `idx::Int64`
+- `d::Real`: the difference between `y` and `x[idx:idx + length(y)]`
 """
 function vsearch(y::AbstractVector, x::AbstractVector; acc::Bool=false)
 
     length(y) > length(x) && throw(ArgumentError("Length of 'y' cannot be larger than length 'x'"))
 
-    y_idx = zeros(length(y))
-    y_dist = zeros(length(y))
+    idx = zeros(length(y))
+    d = zeros(length(y))
 
-    @inbounds @simd for idx in eachindex(y)
-        y_dist[idx], y_idx[idx] = findmin(abs.(x .- y[idx]))
+    @inbounds @simd for y_idx in 1:length(y)
+        d[y_idx], idx[y_idx] = findmin(abs.(x .- y[y_idx]))
     end
 
-    return acc == true ? (convert.(Int64, y_idx), y_dist) : y_idx
+    return acc == true ? (convert.(Int64, idx), d) : idx
 end
 
 """

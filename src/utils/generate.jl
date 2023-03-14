@@ -31,6 +31,7 @@ Return the `n`-point long symmetric window `type`.
 - `w::Vector{Float64}`:: generated window
 """
 function generate_window(type::Symbol, n::Int64; even::Bool=false)
+
     _check_var(type, [:hann, :bh, :bohman, :flat, :bn, :nutall, :triangle, :exp], "type")
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
 
@@ -38,17 +39,17 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
     t = range(0, 1, n)
 
     if type === :hann
-        return @. 0.5 * (1 - cos.(2 * pi * t))
+        w = @. 0.5 * (1 - cos.(2 * pi * t))
     elseif type === :bh
-        return @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
+        w = @. 0.35875 - 0.48829 * cos.(2 * pi * t) + 0.14128 * cos.(4 * pi * t) - 0.01168 * cos.(6 * pi * t)
     elseif type === :bohman
-        return @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
+        w = @. (1 - abs.(t * 2 - 1)) * cos.(pi * abs.(t * 2 - 1)) + (1 / pi) * sin.(pi * abs.(t * 2 - 1))
     elseif type === :flat
-        return @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
+        w = @. 0.21557 - 0.41663 * cos.(2 * pi * t) + 0.27726 * cos.(4 * pi * t) - 0.08357 * cos.(6 * pi * t) + 0.00694 * cos.(8 * pi * t)
     elseif type === :bn
-        return @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
+        w = @. 0.3635819 - 0.4891775 * cos(2 * pi * t) + 0.1365995 * cos(4 * pi * t) - 0.0106411 * cos(6 * pi * t)
     elseif type === :nutall
-        return @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
+        w = @. 0.355768 - 0.487396 * cos(2 * pi * t) + 0.144232 * cos(4 * pi * t) - 0.012604 * cos(6 * pi * t)
     elseif type === :triangle
         w = zeros(n)
         @inbounds @simd for idx in 1:((n ÷ 2) + 1)
@@ -56,7 +57,6 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
         end
         w[((n ÷ 2) + 2):n] = reverse(w)[((n ÷ 2) + 2):n]
         w .= w ./ maximum(w)
-        return w
     elseif type === :exp
         w = ones(n)
         if mod(n, 2) == 0
@@ -72,8 +72,10 @@ function generate_window(type::Symbol, n::Int64; even::Bool=false)
             w[1:((n ÷ 2) + 1)] = reverse(w[1:((n ÷ 2) + 1)])
             w[((n ÷ 2) + 2):n] = reverse(w[1:(n ÷ 2)])
         end
-        return w
     end
+    
+    return w
+
 end
 
 """
@@ -90,10 +92,14 @@ Generates sine wave.
 
 # Returns
 
-- sine::Vector{Float64}`
+- s::Vector{Float64}`
 """
 function generate_sine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1, p::Real=0)
-    return @. a * sin(2 * pi * f * t + p)
+    
+    s = @. a * sin(2 * pi * f * t + p)
+    
+    return s
+
 end
 
 """
@@ -109,10 +115,14 @@ Generates complex sine wave.
 
 # Returns
 
-- sine::Vector{Float64}`
+- cs::Vector{ComplexF64}`
 """
 function generate_csine(f::Real, t::Union{AbstractVector, AbstractRange}, a::Real=1)
-    return @. a * exp(1im * 2 * pi * f * t)
+
+    cs = @. a * exp(1im * 2 * pi * f * t)
+    
+    return cs
+
 end
 
 """
@@ -129,15 +139,16 @@ Generate sinc function.
 
 # Returns
 
-- `sinc::Vector{Float64}`
+- `s::Vector{Float64}`
 """
 function generate_sinc(t::AbstractRange=-2:0.01:2; f::Real=1, peak::Real=0, norm::Bool=true)
 
-    y_sinc = norm == true ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
-    nan_idx = isnan.(y_sinc)
-    sum(nan_idx) != 0 && (y_sinc[findall(isnan, y_sinc)[1]] = (y_sinc[findall(isnan, y_sinc)[1] - 1] + y_sinc[findall(isnan, y_sinc)[1] + 1]) / 2)
+    s = norm == true ? (@. sin(2 * pi * f * (t - peak)) / (pi * (t - peak))) : (@. sin(2 * f * (t - peak)) / (t - peak))
+    nan_idx = isnan.(s)
+    sum(nan_idx) != 0 && (s[findall(isnan, s)[1]] = (s[findall(isnan, s)[1] - 1] + s[findall(isnan, s)[1] + 1]) / 2)
     
-    return y_sinc
+    return s
+
 end
 
 """
@@ -158,13 +169,18 @@ Generate Morlet wavelet.
 - `morlet::Union{Vector{Float64}, Vector{ComplexF64}}`
 """
 function generate_morlet(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, complex::Bool=false)
+
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
     t <= 0 && throw(ArgumentError("t must be > 0."))
+
     t = -t:1/fs:t
     sin_wave = complex == true ? (@. exp(im * 2 * pi * f * t)) : (@. sin(2 * pi * f * t))
     g = generate_gaussian(fs, f, t[end], ncyc=ncyc)
-    return sin_wave .* g
+    mw = sin_wave .* g
+
+    return mw
+
 end
 
 """
@@ -182,15 +198,20 @@ Generate Gaussian wave.
 
 # Returns
 
-- `gaussian::Vector{Float64}`
+- `g::Vector{Float64}`
 """
 function generate_gaussian(fs::Int64, f::Real, t::Real=1; ncyc::Int64=5, a::Real=1.0)
+
     fs < 1 && throw(ArgumentError("fs must be ≥ 1."))
     ncyc < 1 && throw(ArgumentError("ncyc must be ≥ 1."))
     t <= 0 && throw(ArgumentError("t must be > 0."))
+
     t = -t:1/fs:t
     s = ncyc / (2 * pi * f)             # Gaussian width (standard deviation)
-    return @. a * exp(-(t/s)^2 / 2)     # Gaussian
+    g = @. a * exp(-(t/s)^2 / 2)        # Gaussian
+
+    return g
+
 end
 
 """
@@ -201,25 +222,33 @@ Generate noise.
 # Arguments
 
 - `n::Int64`: length (in samples)
-- `amp::Real=1.0`: amplitude, signal will be [-amp..+amp]
-- `type::Symbol=:whiten`: noise type: `:whiten` (normal distributed), `:whiteu` (uniformly distributed), `:pink`
+- `amp::Real=1.0`: amplitude, signal amplitude will be in `[-amp, +amp]`
+- `type::Symbol=:whiten`: noise type:
+    - `:whiten`: normal distributed
+    - `:whiteu`: uniformly distributed
+    - `:pink`
 
 # Returns
 
-- `noise::Float64`
+- `s::Float64`
 """
 function generate_noise(n::Int64, amp::Real=1.0; type::Symbol=:whiten)
+
     _check_var(type, [:whiten, :whiteu, :pink], "type")
+
     if type === :whiten
-        noise = randn(n)
+        s = randn(n)
     elseif type === :whiteu
-        noise = rand(n)
+        s = rand(n)
     elseif type === :pink
-        noise = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
+        s = real(ifft(fft(randn(n)) .* linspace(-1, 1, length(fft(randn(n)))).^2)) .* 2
     end
-    noise = normalize_minmax(noise)
-    noise .*= amp
-    return noise
+
+    s = normalize_minmax(s)
+    s .*= amp
+
+    return s
+
 end
 
 """
@@ -236,13 +265,17 @@ Generate Morlet wavelet using Mike X Cohen formula.
 
 # Returns
 
-- `morlet::Vector{ComplexF64}`
+- `mw::Vector{ComplexF64}`
 
 # Source
 
 Cohen MX. A better way to define and describe Morlet wavelets for time-frequency analysis. NeuroImage. 2019 Oct;199:81–6. 
 """
 function generate_morlet_fwhm(fs::Int64, f::Real, t::Real=1; h::Float64=0.25)
+    
     t = -t:1/fs:t
-    return @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
+    mw = @. exp(2 * 1im * π * f * t) * exp((-4 * log(2) * t^2) / (h^2))
+    
+    return mw
+    
 end

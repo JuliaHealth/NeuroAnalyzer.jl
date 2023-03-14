@@ -1,19 +1,21 @@
 export phases
 
 """
-    phases(signal; pad)
+    phases(s; pad)
 
 Calculate phases.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractVector`
 - `pad::Int64=0`: number of zeros to add
 
 # Returns
 
 - `phases::Vector{Float64}`
 """
-function phases(signal::AbstractArray, pad::Int64=0)
-    return angle.(pad0(signal, pad))
+function phases(s::AbstractVector, pad::Int64=0)
+
+    return angle.(fft0(s, pad))
+
 end

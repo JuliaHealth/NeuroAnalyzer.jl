@@ -10,6 +10,7 @@ Show keys and values of OBJ header.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function view_header(obj::NeuroAnalyzer.NEURO)
+    
     f = string(fieldnames(typeof(obj.header)))
     f = replace(f, "("=>"", ")"=>"", ":"=>"")
     println("Header fields: $f")
@@ -26,4 +27,5 @@ function view_header(obj::NeuroAnalyzer.NEURO)
     println("header.component_names: $(obj.header.component_names)")
     println("header.has_locs: $(obj.header.has_locs)")
     println("header.history: $(obj.header.history)")
+
 end
