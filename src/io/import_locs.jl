@@ -59,6 +59,7 @@ function import_locs(file_name::String)
     end
 
     return locs
+
 end
 
 """
@@ -78,6 +79,7 @@ function import_locs_ced(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".ced" || throw(ArgumentError("Not a CED file."))
+
     locs = CSV.read(file_name, delim="\t", DataFrame)
 
     colnames = lowercase.(names(locs))
@@ -111,6 +113,7 @@ function import_locs_ced(file_name::String)
     locs_flipx!(locs, planar=true, spherical=false)
 
     return locs
+
 end
 
 """
@@ -130,6 +133,7 @@ function import_locs_locs(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".locs" || throw(ArgumentError("Not a LOCS file."))
+
     locs = CSV.read(file_name, header=false, delim="\t", DataFrame)
 
     DataFrames.rename!(locs, [:number, :theta, :radius, :labels])
@@ -154,9 +158,10 @@ function import_locs_locs(file_name::String)
     locs_swapxy!(locs)
     locs_flipx!(locs, planar=true, spherical=false)
 
-    locs[!, :loc_phi_sph] = zeros(length(clabels))
+    locs[!, :loc_phi_sph] = zeros(nrow(locs))
 
     return locs
+
 end
 
 """
@@ -176,9 +181,11 @@ function import_locs_elc(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".elc" || throw(ArgumentError("Not a ELC file."))
+
     f = open(file_name, "r")
     elc_file = readlines(f)
     close(f)
+
     locs_n = 0
     locs_l = 0
     for idx in eachindex(elc_file)
@@ -222,6 +229,7 @@ function import_locs_elc(file_name::String)
     locs_cart2pol!(locs)
 
     return locs
+
 end
 
 """
@@ -241,6 +249,7 @@ function import_locs_tsv(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".tsv" || throw(ArgumentError("Not a TSV file."))
+
     locs = CSV.read(file_name, header=true, delim="\t", ignorerepeated=true, DataFrame)
 
     colnames = lowercase.(names(locs))
@@ -279,6 +288,7 @@ function import_locs_tsv(file_name::String)
     locs_cart2pol!(locs)
 
     return locs
+
 end
 
 """
@@ -339,6 +349,7 @@ function import_locs_sfp(file_name::String)
     locs_cart2pol!(locs)
 
     return locs
+
 end
 
 """
@@ -358,6 +369,7 @@ function import_locs_csd(file_name::String)
 
     isfile(file_name) || throw(ArgumentError("$file_name not found."))
     splitext(file_name)[2] == ".csd" || throw(ArgumentError("Not a CSD file."))
+
     locs = CSV.read(file_name, skipto=3, delim=' ', header=false, ignorerepeated=true, DataFrame)
 
     DataFrames.rename!(locs, [:labels, :theta_sph, :phi_sph, :radius_sph, :x, :y, :z, :surface])
@@ -381,6 +393,7 @@ function import_locs_csd(file_name::String)
     locs = _round_locs(locs)
 
     return locs
+
 end
 
 """
@@ -448,6 +461,7 @@ function import_locs_geo(file_name::String)
     locs = locs_cart2pol(locs)
 
     return locs
+
 end
 
 """
@@ -492,4 +506,5 @@ function import_locs_mat(file_name::String)
     locs_cart2pol!(locs)
 
     return locs
+    
 end

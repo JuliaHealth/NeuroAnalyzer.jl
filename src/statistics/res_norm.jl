@@ -12,6 +12,7 @@ Test normal distribution of residuals.
 
 # Returns
 
+Named tuple containing:
 - `adt_p::Vector{Float64}`: p-values for k-sample Anderson–Darling test vs normal distribution
 - `ks_p::Vector{Float64}`: p-values for one-sample exact Kolmogorov–Smirnov test vs normal distribution
 
@@ -24,8 +25,8 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
     groups = sort(unique(g))
 
     if length(groups) > 1   
-    adt_p = zeros(length(groups) + 1)
-    ks_p = zeros(length(groups) + 1)
+        adt_p = zeros(length(groups) + 1)
+        ks_p = zeros(length(groups) + 1)
         # check residuals normality per groups 
         for group_idx in 1:length(groups)
             m = mean(x[g .== groups[group_idx]])
@@ -47,4 +48,5 @@ function res_norm(x::AbstractVector, g::Vector{Int64}=repeat([1], length(x)))
     ks_p[end] = pvalue(ExactOneSampleKSTest(res, Distributions.Normal(0, 1)))
 
     return (adt_p=adt_p, ks_p=ks_p)
+
 end

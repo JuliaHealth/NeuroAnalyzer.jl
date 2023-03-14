@@ -37,11 +37,10 @@ Plot filter response.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, 0), kwargs...)
+function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple}, order::Int64=8, rp::Real=8, rs::Real=-1, bw::Real=-1, window::Union{Vector{Float64}, Nothing}=nothing, mono::Bool=false, frq_lim::Tuple{Real, Real}=(0, fs / 2), kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
-    frq_lim == (0, 0) && (frq_lim = (0, fs / 2))
     frq_lim = tuple_order(frq_lim)
 
     flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
@@ -287,4 +286,5 @@ function plot_filter_response(; fs::Int64, n::Int64=2560, fprototype::Symbol, ft
     end
 
     return p
+    
 end

@@ -37,6 +37,7 @@ function linreg(x::AbstractVector, y::AbstractVector)
     lf = MultivariateStats.predict(lr)
 
     return (lr=lr, radj=radj, c=c, se=se, aic=aic, bic=bic, lf=lf)
+
 end
 
 """
@@ -62,4 +63,5 @@ function infcrit(m::T) where {T<:StatsModels.TableRegressionModel}
     bic = k * log(n) - 2 * log(r2(m))
     
     return (aic=aic, bic=bic)
+    
 end

@@ -121,4 +121,5 @@ function cmp_test(s1::AbstractVector, s2::AbstractVector; paired::Bool, alpha::F
         end
         return (t=(perm_diff=perm_diff, obs_diff=observed_difference), p1=p_one_tailed, p2=(p_one_tailed / 2))
     end
+    
 end

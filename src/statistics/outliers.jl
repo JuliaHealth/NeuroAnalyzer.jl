@@ -49,6 +49,7 @@ function outlier_detect(x::AbstractVector; method::Symbol=:iqr)
     end
     
     return o
+
 end
 
 """
@@ -64,7 +65,6 @@ Perform Grubbs test for outlier.
 
 # Returns
 
-Named tuple containing:
 - `g::Bool`: true: outlier exists, false: there is no outlier
 """
 function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
@@ -92,5 +92,6 @@ function grubbs(x::AbstractVector; alpha::Float64=0.95, t::Int64=0)
     h = (n - 1) * t_critical / sqrt(n * (df + t_critical^2))
 
     return g < h ? false : true
+
 end
 

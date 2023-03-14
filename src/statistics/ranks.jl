@@ -12,23 +12,27 @@ Calculate percentile rank.
 
 # Returns
 
-- `prnk::Vector{Float64}`
+- `p::Vector{Float64}`: percentile ranks
 """
 function prank(x::AbstractVector)
+
     xorder = sortperm(x)
     x = sort(x)
-    prnk = zeros(length(x))
+    p = zeros(length(x))
+
     for idx in eachindex(x)
         percentile = length(x[x .< x[idx]]) / length(x) * 100
-        prnk[idx] = percentile / (100 * (length(x) + 1))
+        p[idx] = percentile / (100 * (length(x) + 1))
     end
-    return prnk[xorder]
+
+    return p[xorder]
+
 end
 
 """
     dranks(x, nbins)
 
-Calculate ranks scaled in 0..nbins. Number of bins is calculated automatically using Sturges' formula.
+Calculate ranks scaled in 0..nbins.
 
 # Arguments
 
@@ -40,8 +44,11 @@ Calculate ranks scaled in 0..nbins. Number of bins is calculated automatically u
 - `caf::Array{Float64}`
 """
 function dranks(x::AbstractArray, nbins::Int64=round(Int64, 1 + log2(length(x))))
+
     # scale ranks in 0..1
     ranks = tiedrank(x) ./ length(x)
+
     # scale ranks in 0..nbins
     return ceil.(Int64, ranks .* nbins)
+
 end

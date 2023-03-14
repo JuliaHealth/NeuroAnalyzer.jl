@@ -248,4 +248,5 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                      :loc_phi_sph=>Float64[])
 
     return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs)
+    
 end

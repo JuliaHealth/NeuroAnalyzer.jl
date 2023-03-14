@@ -77,4 +77,5 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.locs)
     end
+    
 end

@@ -29,4 +29,5 @@ function cor_test(s1::AbstractVector, s2::AbstractVector)
     df = length(s1) + length(s2) - 2
 
     return (t=t, r=t.r, rc=confint(t), ts=(t.t, "t"), df=df, p=p)
+    
 end

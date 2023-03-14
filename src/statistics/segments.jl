@@ -11,10 +11,12 @@ Calculate mean of a segment (e.g. spectrogram).
 
 # Returns
 
-- `seg::Vector{Float64}`: averaged segment
+- `seg_mean::Vector{Float64}`: averaged segment
 """
 function seg_mean(seg::AbstractArray)
+
     return reshape(mean(mean(seg, dims=1), dims=2), size(seg, 3))
+
 end
 
 """
@@ -34,5 +36,7 @@ Named tuple containing:
 - `seg2::Vector{Float64}`: averaged segment 2
 """
 function seg_mean(seg1::AbstractArray, seg2::AbstractArray)
+
     return (seg1=seg_mean(seg1), seg2=seg_mean(seg2))
+    
 end

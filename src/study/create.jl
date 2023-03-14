@@ -1,4 +1,4 @@
-export study
+export create_study
 
 """
     study(obj, group)
@@ -14,7 +14,7 @@ Create NeuroAnalyzer STUDY object.
 
 - `study::NeuroAnalyzer.STUDY`
 """
-function study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
+function create_study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
     length(obj) == length(group) || throw(ArgumentError("Length of OBJs and groups must be equal."))
 
     ch_n = channel_n(obj[1])
@@ -30,4 +30,5 @@ function study(obj::Vector{NeuroAnalyzer.NEURO}, group::Vector{Symbol})
     end
 
     return NeuroAnalyzer.STUDY(Dict{Symbol, Any}(), obj, group)
+    
 end

@@ -34,4 +34,5 @@ function import_recording(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
+    
 end

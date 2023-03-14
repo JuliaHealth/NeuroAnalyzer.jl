@@ -62,6 +62,7 @@ function plot_matrix(m::Array{<:Real, 2}; xlabels::Vector{String}, ylabels::Vect
                       kwargs...)
 
     return p
+
 end
 
 """
@@ -110,18 +111,19 @@ function plot_covmatrix(m::AbstractVector, lags::AbstractVector; xlabel::String=
                    kwargs...)
 
     return p
+
 end
 
 """
-    plot_histogram(signal; <keyword arguments>)
+    plot_histogram(s; <keyword arguments>)
 
 Plot histogram.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `type::Symbol`: type of histogram: regular (`:hist`) or kernel density (`:kd`)
-- `bins::Union{Int64, Symbol, AbstractVector}=(length(signal) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
+- `bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10)`: histogram bins: number of bins, range or `:sturges`, `:sqrt`, `:rice`, `:scott` or `:fd`)
 - `label::String=""`: channel label
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -133,7 +135,7 @@ Plot histogram.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_histogram(signal::AbstractVector; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(signal) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_histogram(s::AbstractVector; type::Symbol=:hist, bins::Union{Int64, Symbol, AbstractVector}=(length(s) ÷ 10), label::String="", xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
     _check_var(type, [:hist, :kd], "type")
 
@@ -141,13 +143,13 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, bins::Union{
 
     pal = mono == true ? :grays : :darktest
 
-    if mean(signal) < median(signal)
-        xticks = [floor(minimum(signal), digits=1), round(mean(signal), digits=1), round(median(signal), digits=1), ceil(maximum(signal), digits=1)]
+    if mean(s) < median(s)
+        xticks = [floor(minimum(s), digits=1), round(mean(s), digits=1), round(median(s), digits=1), ceil(maximum(s), digits=1)]
     else
-        xticks = [floor(minimum(signal), digits=1), round(median(signal), digits=1), round(mean(signal), digits=1), ceil(maximum(signal), digits=1)]
+        xticks = [floor(minimum(s), digits=1), round(median(s), digits=1), round(mean(s), digits=1), ceil(maximum(s), digits=1)]
     end        
 
-    p = Plots.plot(signal,
+    p = Plots.plot(s,
                    seriestype=type,
                    xlabel=xlabel,
                    ylabel=ylabel,
@@ -172,123 +174,23 @@ function plot_histogram(signal::AbstractVector; type::Symbol=:hist, bins::Union{
                    xtickfontsize=5,
                    ytickfontsize=5;
                    kwargs...)
-    p = Plots.vline!([round(mean(signal), digits=1)], lw=1, ls=:dot, lc=:black, label="mean")
-    p = Plots.vline!([round(median(signal), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median")
+    p = Plots.vline!([round(mean(s), digits=1)], lw=1, ls=:dot, lc=:black, label="mean")
+    p = Plots.vline!([round(median(s), digits=1)], lw=0.5, ls=:dash, lc=:grey, alpha=0.5, label="median")
 
     Plots.plot(p)
 
     return p
+
 end
 
 """
-    plot_bar(signal; <keyword arguments>)
+    plot_bar(s; <keyword arguments>)
 
 Bar plot.
 
 # Arguments
 
-- `signal::AbstractVector`
-- `labels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_bar(signal::AbstractVector; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    length(signal) == length(labels) || throw(ArgumentError("signal length ($(length(signal))) must be equal to labels length ($(length(labels)))."))
-
-    pal = mono == true ? :grays : :darktest
-    color = mono == true ? :lightgrey : :lightblue
-
-    p = Plots.plot(signal,
-                   seriestype=:bar,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   legend=false,
-                   xticks=(1:length(labels), labels),
-                   xlabel=xlabel,
-                   ylabel=ylabel,
-                   title=title,
-                   color=color,
-                   palette=pal,
-                   linewidth=0.5,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=8,
-                   ytickfontsize=8;
-                   kwargs=kwargs)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_line(signal; <keyword arguments>)
-
-Line plot.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `labels::Vector{String}`: x-ticks labels
-- `xlabel::String=""`: x-axis label
-- `ylabel::String=""`: y-axis label
-- `title::String=""`: plot title
-- `mono::Bool=false`: use color or grey palette
-- `kwargs`: optional arguments for plot() function
-
-# Returns
-
-- `p::Plots.Plot{Plots.GRBackend}`
-"""
-function plot_line(signal::AbstractVector; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
-
-    length(signal) == length(labels) || throw(ArgumentError("signal length ($(length(signal))) must be equal to x-ticks length ($(length(labels)))."))
-
-    pal = mono == true ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
-
-    p = Plots.plot(signal,
-                   seriestype=:line,
-                   size=(1200, 500),
-                   margins=20Plots.px,
-                   legend=false,
-                   xticks=(1:length(labels), labels),
-                   xlabel=xlabel,
-                   ylabel=ylabel,
-                   title=title,
-                   color=color,
-                   palette=pal,
-                   linewidth=0.5,
-                   titlefontsize=8,
-                   xlabelfontsize=8,
-                   ylabelfontsize=8,
-                   xtickfontsize=8,
-                   ytickfontsize=8;
-                   kwargs=kwargs)
-
-    Plots.plot(p)
-
-    return p
-end
-
-"""
-    plot_line(signal; <keyword arguments>)
-
-Line plot.
-
-# Arguments
-
-- `signal::AbstractArray`
-- `labels::Vector{String}`: signal rows labels
+- `s::AbstractVector`
 - `xlabels::Vector{String}`: x-ticks labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -300,21 +202,18 @@ Line plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_line(signal::AbstractArray; labels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_bar(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
-    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to labels length ($(length(labels)))."))
-    size(signal, 2) == length(xlabels) || throw(ArgumentError("Number of signal columns ($(size(signal, 2))) must be equal to x-ticks length ($(length(xlabels)))."))
+    length(s) == length(xlabels) || throw(ArgumentError("signal length ($(length(s))) must be equal to xlabels length ($(length(xlabels)))."))
 
     pal = mono == true ? :grays : :darktest
-    color = mono == true ? :lightgrey : :auto
+    color = mono == true ? :lightgrey : :lightblue
 
-    p = Plots.plot(signal[1, :],
-                   seriestype=:line,
+    p = Plots.plot(s,
+                   seriestype=:bar,
                    size=(1200, 500),
                    margins=20Plots.px,
-                   legend=:topright,
-                   label=labels[1],
+                   legend=false,
                    xticks=(1:length(xlabels), xlabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
@@ -328,26 +227,133 @@ function plot_line(signal::AbstractArray; labels::Vector{String}, xlabels::Vecto
                    xtickfontsize=8,
                    ytickfontsize=8;
                    kwargs=kwargs)
-    for idx in 2:size(signal, 1)
-        p = Plots.plot!(signal[idx, :],
+
+    Plots.plot(p)
+
+    return p
+
+end
+
+"""
+    plot_line(s; <keyword arguments>)
+
+Line plot.
+
+# Arguments
+
+- `s::AbstractVector`
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_line(s::AbstractVector; xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    length(s) == length(xlabels) || throw(ArgumentError("signal length ($(length(s))) must be equal to xlabels ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(s,
+                   seriestype=:line,
+                   size=(1200, 500),
+                   margins=20Plots.px,
+                   legend=false,
+                   xticks=(1:length(xlabels), xlabels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+
+    Plots.plot(p)
+
+    return p
+
+end
+
+"""
+    plot_line(s; <keyword arguments>)
+
+Line plot.
+
+# Arguments
+
+- `s::AbstractArray`
+- `rlabels::Vector{String}`: signal rows labels
+- `xlabels::Vector{String}`: x-ticks labels
+- `xlabel::String=""`: x-axis label
+- `ylabel::String=""`: y-axis label
+- `title::String=""`: plot title
+- `mono::Bool=false`: use color or grey palette
+- `kwargs`: optional arguments for plot() function
+
+# Returns
+
+- `p::Plots.Plot{Plots.GRBackend}`
+"""
+function plot_line(s::AbstractArray; rlabels::Vector{String}, xlabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+
+    ndims(s) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(s, 1) == length(rlabels) || throw(ArgumentError("Number of signal columns ($(size(s, 1))) must be equal to labels length ($(length(rlabels)))."))
+    size(s, 2) == length(xlabels) || throw(ArgumentError("Number of signal columns ($(size(s, 2))) must be equal to x-ticks length ($(length(xlabels)))."))
+
+    pal = mono == true ? :grays : :darktest
+    color = mono == true ? :lightgrey : :auto
+
+    p = Plots.plot(s[1, :],
+                   seriestype=:line,
+                   size=(1200, 500),
+                   margins=20Plots.px,
+                   legend=:topright,
+                   label=rlabels[1],
+                   xticks=(1:length(xlabels), xlabels),
+                   xlabel=xlabel,
+                   ylabel=ylabel,
+                   title=title,
+                   color=color,
+                   palette=pal,
+                   linewidth=0.5,
+                   titlefontsize=8,
+                   xlabelfontsize=8,
+                   ylabelfontsize=8,
+                   xtickfontsize=8,
+                   ytickfontsize=8;
+                   kwargs=kwargs)
+    for idx in 2:size(s, 1)
+        p = Plots.plot!(s[idx, :],
                         seriestype=:line,
                         color=idx,
-                        label=labels[idx])
+                        label=rlabels[idx])
     end
     Plots.plot(p)
 
     return p
+
 end
 
 """
-    plot_box(signal; <keyword arguments>)
+    plot_box(s; <keyword arguments>)
 
 Box plot.
 
 # Arguments
 
-- `signal::AbstractArray`
-- `labels::Vector{String}`: group labels
+- `s::AbstractArray`
+- `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -358,20 +364,20 @@ Box plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_box(signal::AbstractArray; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_box(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
-    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+    ndims(s) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(s, 1) == length(glabels) || throw(ArgumentError("Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."))
 
     pal = mono == true ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
-    p = Plots.plot(signal',
+    p = Plots.plot(s',
                    seriestype=:box,
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(labels), labels),
+                   xticks=(1:length(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -387,17 +393,18 @@ function plot_box(signal::AbstractArray; labels::Vector{String}, xlabel::String=
     Plots.plot(p)
 
     return p
+
 end
 
 """
-    plot_violin(signal; <keyword arguments>)
+    plot_violin(s; <keyword arguments>)
 
 Violin plot.
 
 # Arguments
 
-- `signal::AbstractArray`
-- `labels::Vector{String}`: group labels
+- `s::AbstractArray`
+- `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -408,20 +415,20 @@ Violin plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_violin(signal::AbstractArray; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_violin(s::AbstractArray; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    ndims(signal) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
-    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+    ndims(s) != 2 && throw(ArgumentError("signal must have 2-dimensions."))
+    size(s, 1) == length(glabels) || throw(ArgumentError("Number of signal columns ($(size(s, 1))) must be equal to x-ticks length ($(length(gxlabels)))."))
 
     pal = mono == true ? :grays : :darktest
     color = mono == true ? :lightgrey : :auto
 
-    p = Plots.plot(signal',
+    p = Plots.plot(s',
                    seriestype=:violin,
                    size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(labels), labels),
+                   xticks=(1:length(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -437,17 +444,18 @@ function plot_violin(signal::AbstractArray; labels::Vector{String}, xlabel::Stri
     Plots.plot(p)
 
     return p
+
 end
 
 """
-    plot_dots(signal; <keyword arguments>)
+    plot_dots(s; <keyword arguments>)
 
 Dots plot.
 
 # Arguments
 
-- `signal::Vector{Vector{Float64}}`
-- `labels::Vector{String}`: group labels
+- `s::Vector{Vector{Float64}}`
+- `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -458,16 +466,16 @@ Dots plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_dots(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+    size(signal, 1) == length(glabels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
 
     pal = mono == true ? :grays : :darktest
 
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(labels), labels),
+                   xticks=(1:length(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -479,7 +487,7 @@ function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlab
                    xtickfontsize=8,
                    ytickfontsize=8;
                    kwargs...)
-    for idx1 in eachindex(labels)
+    for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
             if mono == false
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
@@ -494,6 +502,7 @@ function plot_dots(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlab
     Plots.plot(p)
 
     return p
+
 end
 
 """
@@ -504,7 +513,7 @@ Plot paired data.
 # Arguments
 
 - `signal::Vector{Vector{Float64}}`
-- `labels::Vector{String}`: group labels
+- `glabels::Vector{String}`: group labels
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
@@ -515,11 +524,11 @@ Plot paired data.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_paired(signal::Vector{Vector{Float64}}; glabels::Vector{String}, xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
 
-    size(signal, 1) == length(labels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
+    size(signal, 1) == length(glabels) || throw(ArgumentError("Number of signal columns ($(size(signal, 1))) must be equal to x-ticks length ($(length(xlabels)))."))
     ll = Vector{Int64}()
-    for idx in eachindex(labels)
+    for idx in eachindex(glabels)
         push!(ll, length(signal[idx]))
     end
     length(unique(ll)) == 1 || throw(ArgumentError("Each group must have the same number of values."))
@@ -529,7 +538,7 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
     p = Plots.plot(size=(1200, 500),
                    margins=20Plots.px,
                    legend=false,
-                   xticks=(1:length(labels), labels),
+                   xticks=(1:length(glabels), glabels),
                    xlabel=xlabel,
                    ylabel=ylabel,
                    title=title,
@@ -542,14 +551,14 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
                    ytickfontsize=8;
                    kwargs...)
     for idx1 in eachindex(signal[1])
-        c_tmp = zeros(length(labels))
-        for idx2 in eachindex(labels)
+        c_tmp = zeros(length(glabels))
+        for idx2 in eachindex(glabels)
             c_tmp[idx2] = signal[idx2][idx1]
         end
         p = Plots.plot!(c_tmp,
                         color=:black)
     end
-    for idx1 in eachindex(labels)
+    for idx1 in eachindex(glabels)
         for idx2 in eachindex(signal[idx1])
             if mono == false
                 p = Plots.scatter!((idx1, signal[idx1][idx2]),
@@ -564,16 +573,17 @@ function plot_paired(signal::Vector{Vector{Float64}}; labels::Vector{String}, xl
     Plots.plot(p)
 
     return p
+
 end
 
 """
-    plot_polar(signal; <keyword arguments>)
+    plot_polar(s; <keyword arguments>)
 
 Polar plot.
 
 # Arguments
 
-- `signal::Union{AbstractVector, AbstractArray}`
+- `s::Union{AbstractVector, AbstractArray}`
 - `m::Tuple{Real, Real}=(0, 0)`: major value to plot
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
@@ -583,15 +593,15 @@ Polar plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)
+function plot_polar(s::Union{AbstractVector, AbstractArray}; m::Tuple{Real, Real}=(0, 0), title::String="", mono::Bool=false, kwargs...)
 
     length(m) > 2 && throw(ArgumentError("m must have exactly 2 values: phases and lengths."))
-    ndims(signal) > 1 && size(signal, 2) > 2 && throw(ArgumentError("signal must have exactly 2 columns: phases and lengths."))
+    ndims(s) > 1 && size(s, 2) > 2 && throw(ArgumentError("signal must have exactly 2 columns: phases and lengths."))
 
     pal = mono == true ? :grays : :darktest
 
-    if ndims(signal) == 1
-        p = Plots.plot([0, signal[1]], [0, 1],
+    if ndims(s) == 1
+        p = Plots.plot([0, s[1]], [0, 1],
                        size=(800, 800),
                        projection=:polar,
                        left_margin=50Plots.px,
@@ -608,13 +618,13 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real,
                        xtickfontsize=4,
                        ytickfontsize=4;
                        kwargs...)
-        for idx in 2:length(signal)
-            p = Plots.plot!([0, signal[idx]], [0, 1],
+        for idx in 2:length(s)
+            p = Plots.plot!([0, s[idx]], [0, 1],
                             projection=:polar,
                             color=:black)
         end
     else
-        p = Plots.plot([0, signal[1, 1]], [0, signal[1, 2]],
+        p = Plots.plot([0, s[1, 1]], [0, s[1, 2]],
                        size=(800, 800),
                        projection=:polar,
                        left_margin=50Plots.px,
@@ -631,8 +641,8 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real,
                        xtickfontsize=4,
                        ytickfontsize=4;
                        kwargs...)
-        for idx in 2:size(signal, 1)
-            p = Plots.plot!([0, signal[idx, 1]], [0, signal[idx, 2]],
+        for idx in 2:size(s, 1)
+            p = Plots.plot!([0, s[idx, 1]], [0, s[idx, 2]],
                             projection=:polar,
                             color=:black)
         end
@@ -647,4 +657,5 @@ function plot_polar(signal::Union{AbstractVector, AbstractArray}; m::Tuple{Real,
     Plots.plot(p)
 
     return p
+
 end

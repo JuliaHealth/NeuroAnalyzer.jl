@@ -9,7 +9,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `weights::Vector{<:Real}=[]`: weights vector
 - `channel_labels::Bool=true`: plot channel_labels
@@ -22,13 +22,13 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, weights::Vector{<:Real}=[], channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
+function plot_weights(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, weights::Vector{<:Real}=[], channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, plot_size::Int64=400)
 
-    length(weights) > length(channel) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(channel)))."))
+    length(weights) > length(ch) && throw(ArgumentError("Number of weights must be ≤ number of channels to plot ($(length(ch)))."))
     length(weights) < 1 && throw(ArgumentError("weights must contain at least one value."))
 
-    # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
-    # channel = setdiff(channel, selected)
+    # selected != 0 && length(intersect(ch, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
+    # ch = setdiff(ch, selected)
 
     pal = mono == true ? :grays : :darktest
 
@@ -55,7 +55,7 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Ab
     loc_y = _s2v(loc_y)
 
     for idx in eachindex(locs[!, :labels])
-        if idx in channel
+        if idx in ch
             p = Plots.plot!((loc_x[idx], loc_y[idx]),
                             color=:black,
                             seriestype=:scatter,
@@ -69,14 +69,14 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Ab
 
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
-            if idx in channel
+            if idx in ch
                 Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
     end
 
     for idx in eachindex(locs[!, :labels])
-        if idx in channel
+        if idx in ch
             Plots.plot!(annotation=(loc_x[idx], loc_y[idx], Plots.text(string(weights[idx]), pointsize=font_size)))
         end
     end
@@ -87,6 +87,7 @@ function plot_weights(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Ab
     Plots.plot(p)
 
     return p
+
 end
 
 """
@@ -97,7 +98,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `weights::Matrix{<:Real}`: matrix of weights
 - `channel_labels::Bool=false`: plot channel_labels
 - `head_labels::Bool=true`: plot head labels
@@ -111,7 +112,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_weights(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), weights::Vector{<:Real}, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), weights::Vector{<:Real}, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
     obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
@@ -119,11 +120,12 @@ function plot_weights(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int
     obj_tmp = deepcopy(obj)
     keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
-    _check_channels(obj_tmp, channel, Symbol(obj.header.recording[:data_type]))
-    typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
-    p = plot_weights(obj_tmp.locs, weights=weights, channel=channel, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+    _check_channels(obj_tmp, ch, Symbol(obj.header.recording[:data_type]))
+    typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
+    p = plot_weights(obj_tmp.locs, weights=weights, ch=ch, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
 
     Plots.plot!(p, title=title; kwargs)
 
     return p
+    
 end

@@ -60,6 +60,47 @@ end
 Calculate relative power spectrum density.
 
 # Arguments
+- `s::AbstractMatrix`
+- `fs::Int64`: sampling rate
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
+- `f::Union(Tuple{Real, Real}, Nothing)=nothing`: calculate power relative to frequency range or total power
+
+# Returns
+
+Named tuple containing:
+- `pw::Array{Float64, 3}`: powers
+- `pf::Vector{Float64}`: frequencies
+"""
+function psd_rel(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8, f::Union{Tuple{Real, Real}, Nothing}=nothing)
+
+    # for short signals use multi-tapered periodogram
+    if size(s, 2) < 4 * fs
+        mt = true
+        _info("Using multi-tapered periodogram.")
+    end
+
+    ch_n = size(s, 1)
+
+    _, pf = psd_rel(s[1, :, 1], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+
+    pw = zeros(ch_n, length(pf))
+
+    @inbounds @simd for ch_idx in 1:ch_n
+        pw[ch_idx, :], _ = psd_rel(s[ch_idx, :], fs=fs, norm=norm, mt=mt, nt=nt, f=f)
+    end
+    
+    return (pw=pw, pf=pf)
+
+end
+
+"""
+    psd_rel(s; fs, norm, mt, nt, f)
+
+Calculate relative power spectrum density.
+
+# Arguments
 - `s::AbstractArray`
 - `fs::Int64`: sampling rate
 - `norm::Bool=false`: normalize do dB

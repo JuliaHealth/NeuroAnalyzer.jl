@@ -16,7 +16,9 @@ Calculate geometric mean.
 - `m::Float64`
 """
 function meang(x::AbstractVector)
+
     return exp(mean(log.(x[x .> 0])))
+
 end
 
 """
@@ -33,7 +35,9 @@ Calculate harmonic mean.
 - `m::Float64`
 """
 function meanh(x::AbstractVector)
+
     return length(x) / sum(1 ./ x)
+
 end
 
 """
@@ -51,6 +55,9 @@ Calculate weighted mean.
 - `m::Float64`
 """
 function meanw(x::AbstractVector, w::AbstractVector)
+
     length(x) == length(w) || throw(ArgumentError("Weights and values vectors must have the same length."))
+
     return length(x) / sum(1 ./ x)
+    
 end

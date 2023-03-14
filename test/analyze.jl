@@ -394,14 +394,14 @@ p, f = psd(rand(100), fs=10)
 @test length(p) == 21
 @test f == 0.0:0.25:5.0
 p, f = psd(rand(10, 100), fs=10)
-@test size(p) == (10, 21, 1)
+@test size(p) == (10, 21)
 p, f = psd(rand(10, 100, 10), fs=10)
 @test size(p) == (10, 21, 10)
 p, f = psd(rand(100), fs=10, mt=true)
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
 p, f = psd(rand(10, 100), fs=10, mt=true)
-@test size(p) == (10, 51, 1)
+@test size(p) == (10, 51)
 p, f = psd(rand(10, 100, 10), fs=10, mt=true)
 @test size(p) == (10, 51, 10)
 p, f = NeuroAnalyzer.psd(e10)
@@ -416,7 +416,7 @@ p, f = psd_mw(rand(100), fs=10, norm=false)
 @test length(p) == 6
 @test f == [0.1, 1.08, 2.06, 3.04, 4.02, 5.0]
 p, f = psd_mw(rand(10, 100), fs=10, norm=false)
-@test size(p) == (10, 6, 1)
+@test size(p) == (10, 6)
 p, f = psd_mw(rand(10, 100, 10), fs=10, norm=false)
 @test size(p) == (10, 6, 10)
 p, f = NeuroAnalyzer.psd_mw(e10, frq_lim=(0, 4))
@@ -428,14 +428,14 @@ p, f = psd_rel(rand(100), fs=10, f=(0, 1))
 @test length(p) == 21
 @test f == 0.0:0.25:5.0
 p, f = psd_rel(rand(10, 100), fs=10, f=(0, 1))
-@test size(p) == (10, 21, 1)
+@test size(p) == (10, 21)
 p, f = psd_rel(rand(10, 100, 10), fs=10, f=(0, 1))
 @test size(p) == (10, 21, 10)
 p, f = psd_rel(rand(100), fs=10, mt=true, f=(0, 1))
 @test length(p) == 51
 @test round.(f, digits=3) == 0.0:0.1:5.0
 p, f = psd_rel(rand(10, 100), fs=10, mt=true, f=(0, 1))
-@test size(p) == (10, 51, 1)
+@test size(p) == (10, 51)
 p, f = psd_rel(rand(10, 100, 10), fs=10, mt=true, f=(0, 1))
 @test size(p) == (10, 51, 10)
 p, f = NeuroAnalyzer.psd_rel(e10, f=(0, 1))

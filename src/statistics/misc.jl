@@ -24,7 +24,9 @@ Calculate Z-scores for each value of the vector `x`.
 - `z_score::Vector{Float64}`
 """
 function z_score(x::AbstractVector)
+
     return (x .- mean(x)) ./ std(x)
+
 end
 
 """
@@ -43,7 +45,9 @@ Named tuple containing:
 - `k2::Float64`: 1 + 3.222 * log10(n)
 """
 function k_categories(n::Int64)
+
     return (k1=sqrt(n), k2=(1 + 3.222 * log10(n)))
+
 end
 
 """
@@ -60,7 +64,9 @@ Calculate standard error.
 - `se::Float64`
 """
 function se(x::AbstractVector)
+
     return std(x) / sqrt(length(x))
+
 end
 
 """
@@ -74,10 +80,12 @@ Calculate range.
 
 # Returns
 
-- `r::Float64`
+- `rng::Float64`
 """
 function rng(x::AbstractVector)
+
     return maximum(x) - minimum(x)
+
 end
 
 """
@@ -94,7 +102,9 @@ Calculate margin of error for given sample size `n`.
 - `moe::Float64`
 """
 function moe(n::Int64)
+
     return 1 / sqrt(n)
+
 end
 
 """
@@ -112,7 +122,9 @@ Calculate coefficient of variation for statistic `s`.
 - `cvar::Float64`
 """
 function cvar(se::Real, s::Real)
+
     return 100 * (se / s)
+
 end
 
 """
@@ -130,8 +142,13 @@ Calculate effect size for two proportions `p1` and `p2`.
 - `e::Float64`
 """
 function effsize(p1::Float64, p2::Float64)
+
     p1 + p2 == 1.0 || throw(ArgumentError("Proportions must add to 1.0."))
-    return 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
+
+    e = 2 * asin(sqrt(p1)) - 2 * asin(sqrt(p2))
+
+    return e
+
 end
 
 """
@@ -147,10 +164,12 @@ Calculate probability of exactly `r` successes in `n` trials.
 
 # Returns
 
-- `binomp::Float64`: probability
+- `binom_prob::Float64`: probability
 """
 function binom_prob(p::Float64, r::Int64, n::Int64)
+
     return binomial(n, r) * (p^r) * (1 - p)^(n - r)
+
 end
 
 """
@@ -165,11 +184,17 @@ Calculate mean and standard deviation for probability `p`.
 
 # Returns
 
-- `mean::Float64`
-- `std::Float64`
+Named tuple containing:
+- `m::Float64`: mean
+- `s::Float64`: standard deviation
 """
 function binom_stat(p::Float64, n::Int64)
-    return n * p, sqrt(n * p * (1 - p))
+
+    m = n * p
+    s = sqrt(n * p * (1 - p))
+
+    return (m=m, s=s)
+
 end
 
 """
@@ -183,10 +208,12 @@ Calculate coefficient of variation for a mean.
 
 # Returns
 
-- `cvar::Float64`
+- `cvar_mean::Float64`
 """
 function cvar_mean(x::AbstractVector)
+
     return std(x) / mean(x)
+
 end
 
 """
@@ -200,8 +227,10 @@ Calculate coefficient of variation for a median.
 
 # Returns
 
-- `cvar::Float64`
+- `cvar_median::Float64`
 """
 function cvar_median(x::AbstractVector)
+
     return ((quantile(x, 0.75) - quantile(x, 0.25)) / 2) / median(x)
+    
 end

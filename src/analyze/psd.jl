@@ -45,6 +45,44 @@ function psd(s::Vector{Float64}; fs::Int64, norm::Bool=false, mt::Bool=false, nt
 
 end
 
+"""
+    psd(s; fs, norm, mt, nt)
+
+Calculate power spectrum density.
+
+# Arguments
+- `s::AbstractMatrix`
+- `fs::Int64`: sampling rate
+- `norm::Bool=false`: normalize do dB
+- `mt::Bool=false`: if true use multi-tapered periodogram
+- `nt::Int64=8`: number of Slepian tapers
+
+# Returns
+
+Named tuple containing:
+- `pw::Array{Float64, 2}`: powers
+- `pf::Vector{Float64}`: frequencies
+"""
+function psd(s::AbstractMatrix; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
+
+    # for short signals use multi-tapered periodogram
+    if size(s, 2) < 4 * fs
+        mt = true
+        _info("Using multi-tapered periodogram.")
+    end
+
+    ch_n = size(s, 1)
+    _, pf = psd(s[1, :], fs=fs, norm=norm, mt=mt, nt=nt)
+
+    pw = zeros(ch_n, length(pf))
+
+    @inbounds @simd for ch_idx in 1:ch_n
+        pw[ch_idx, :], _ = psd(s[ch_idx, :], fs=fs, norm=norm, mt=mt, nt=nt)
+    end
+    
+    return (pw=pw, pf=pf)
+
+end
 
 """
     psd(s; fs, norm, mt, nt)
@@ -62,7 +100,7 @@ Calculate power spectrum density.
 
 Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
-- `pf::Array{Float64, 3}`: frequencies
+- `pf::Vector{Float64}`: frequencies
 """
 function psd(s::AbstractArray; fs::Int64, norm::Bool=false, mt::Bool=false, nt::Int64=8)
 

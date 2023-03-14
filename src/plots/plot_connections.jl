@@ -8,7 +8,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -25,24 +25,24 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
+function plot_connections(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
     obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
-
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
 
     # remove non-signal channels
     obj_tmp = deepcopy(obj)
     keep_channel_type!(obj_tmp, type=Symbol(obj_tmp.header.recording[:data_type]))
 
-    _check_channels(obj, channel, Symbol(obj.header.recording[:data_type]))
-    typeof(channel) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
+    _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
+    typeof(ch) == Int64 && throw(ArgumentError("≥ 2 channels are required."))
 
-    p = plot_connections(obj_tmp.locs, connections=connections, channel=channel, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
+    p = plot_connections(obj_tmp.locs, connections=connections, ch=ch, threshold=threshold, threshold_type=threshold_type, weights=weights, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size, head_details=head_details)
 
     Plots.plot!(p, title=title; kwargs)
 
     return p
+
 end
 
 """
@@ -53,7 +53,7 @@ Plot connections between channels. It uses polar :loc_radius and :loc_theta loca
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Vector{Int64}, AbstractRange}`: channel(s) to plot
+- `ch::Union{Vector{Int64}, AbstractRange}`: channel(s) to plot
 - `connections::Matrix{<:Real}`: matrix of connections weights
 - `threshold::Real`: plot all connection above threshold
 - `threshold_type::Symbol=:g`: rule for thresholding: = (`:eq`), ≥ (`:geq`), ≤ (`:leq`), > (`:g`), < (`:l`)
@@ -69,11 +69,13 @@ Plot connections between channels. It uses polar :loc_radius and :loc_theta loca
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, kwargs...)
+function plot_connections(locs::DataFrame; ch::Union{Vector{Int64}, AbstractRange}, connections::Matrix{<:Real}, threshold::Real, threshold_type::Symbol=:g, weights::Bool=true, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, kwargs...)
 
-    size(connections, 1) == length(channel) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
+    size(connections, 1) == length(ch) || throw(ArgumentError("Length of channel and number of connections rows must be equal."))
     _check_var(threshold_type, [:eq, :geq, :leq, :g, :l], "threshold_type")
+
     pal = mono == true ? :grays : :darktest
+
     marker_size = plot_size ÷ 100
     font_size = plot_size ÷ 100
 
@@ -97,7 +99,7 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     loc_y = _s2v(loc_y)
 
     for idx in eachindex(locs[!, :labels])
-        if idx in channel
+        if idx in ch
             p = Plots.plot!((loc_x[idx], loc_y[idx]),
                             color=:gray,
                             seriestype=:scatter,
@@ -111,7 +113,7 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
 
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
-            if idx in channel
+            if idx in ch
                 Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.05, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
         end
@@ -169,4 +171,5 @@ function plot_connections(locs::DataFrame; channel::Union{Vector{Int64}, Abstrac
     end
 
     return p
+    
 end

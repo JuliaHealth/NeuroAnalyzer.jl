@@ -9,7 +9,7 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `channel_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -22,7 +22,7 @@ Preview of channel locations. It uses polar `:loc_radius` and `:loc_theta` locat
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
+function plot_locs(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, head_details::Bool=true, grid::Bool=false, plot_size::Int64=400)
 
     pal = mono == true ? :grays : :darktest
 
@@ -44,7 +44,7 @@ function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abstr
         channel_labels = false
     end
 
-    length(channel) > 64 && (font_size = plot_size ÷ 100)
+    length(ch) > 64 && (font_size = plot_size ÷ 100)
 
     if grid == false
         p = Plots.plot(grid=false,
@@ -79,7 +79,7 @@ function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abstr
     p = Plots.plot!(hd)
 
     for idx in eachindex(locs[!, :labels])
-        if idx in channel
+        if idx in ch
             if selected != 0
                 p = Plots.scatter!((loc_x[idx], loc_y[idx]),
                                 color=:lightgrey,
@@ -134,7 +134,7 @@ function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abstr
 
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
-            if idx in channel
+            if idx in ch
                 Plots.plot!(annotation=(loc_x[idx], loc_y[idx] + 0.075, Plots.text(locs[!, :labels][idx], pointsize=font_size)))
             end
             if idx in selected
@@ -146,6 +146,7 @@ function plot_locs(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abstr
     Plots.plot(p)
 
     return p
+
 end
 
 """
@@ -156,7 +157,7 @@ end
 # Arguments
 
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: selected channel(s) to plot
 - `channel_labels::Bool=true`: plot channel labels
 - `head_labels::Bool=true`: plot head labels
@@ -168,10 +169,10 @@ c
 
 - `fig::GLMakie.Figure`
 """
-function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
+function plot_locs3d(locs::DataFrame; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head_labels::Bool=true, mono::Bool=false, plot_size::Int64=800)
 
-    # selected != 0 && length(intersect(channel, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
-    # channel = setdiff(channel, selected)
+    # selected != 0 && length(intersect(ch, selected)) < length(selected) && throw(ArgumentError("channel must include selected."))
+    # ch = setdiff(ch, selected)
 
     pal = mono == true ? :grays : :darktest
 
@@ -195,7 +196,7 @@ function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abs
     ax = Axis3(fig[1, 1]; aspect=(1, 1, 0.5), perspectiveness=0.5, limits = (x_lim, y_lim, z_lim))
     # hidedecorations!(ax, grid=true, ticks=true)
 
-    GLMakie.scatter!(ax, loc_x[channel], loc_y[channel], loc_z[channel], markersize=marker_size, color=:gray)
+    GLMakie.scatter!(ax, loc_x[ch], loc_y[ch], loc_z[ch], markersize=marker_size, color=:gray)
     if selected != 0
         if mono == true
             GLMakie.scatter!(ax, loc_x[selected], loc_y[selected], loc_z[selected], markersize=marker_size, color=:gray)
@@ -206,7 +207,7 @@ function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abs
 
     if channel_labels == true
         for idx in eachindex(locs[!, :labels])
-            if idx in channel
+            if idx in ch
                 GLMakie.text!(ax, locs[!, :labels][idx], position=(loc_x[idx], loc_y[idx], loc_z[idx]), fontsize=font_size)
             end
             if idx in selected
@@ -225,6 +226,7 @@ function plot_locs3d(locs::DataFrame; channel::Union{Int64, Vector{Int64}, <:Abs
     fig
 
     return fig
+
 end
 
 """
@@ -235,7 +237,7 @@ Preview of channel locations.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
 - `selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: which channel should be highlighted
 - `channel_labels::Bool=true`: plot channel labels
 - `head::Bool`=true: plot head
@@ -251,19 +253,20 @@ Preview of channel locations.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_locs(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
+function plot_locs(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), selected::Union{Int64, Vector{Int64}, <:AbstractRange}=0, channel_labels::Bool=true, head::Bool=true, head_labels::Bool=false, plot_size::Int64=400, head_details::Bool=true, mono::Bool=false, threed::Bool=false, grid::Bool=false, kwargs...)
 
     obj.header.has_locs == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
     # select channels, default is all channels
-    _check_channels(obj, channel, Symbol(obj.header.recording[:data_type]))
+    _check_channels(obj, ch, Symbol(obj.header.recording[:data_type]))
     selected != 0 && _check_channels(obj, selected)
 
     if threed == false
-        p = plot_locs(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid)
+        p = plot_locs(obj.locs, ch=ch, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, head_details=head_details, plot_size=plot_size, grid=grid)
     else
-        p = plot_locs3d(obj.locs, channel=channel, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
+        p = plot_locs3d(obj.locs, ch=ch, selected=selected, channel_labels=channel_labels, head_labels=head_labels, mono=mono, plot_size=plot_size)
     end
 
     return p
+    
 end

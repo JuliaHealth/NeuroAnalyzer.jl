@@ -67,5 +67,7 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
     end
 
     GLMakie.show(p)
+    
     return p
+
 end

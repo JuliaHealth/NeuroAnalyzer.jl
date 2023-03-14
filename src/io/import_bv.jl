@@ -217,7 +217,7 @@ function import_bv(file_name::String; detect_type::Bool=true)
     epoch_time = time_pts
     file_size_mb = round(filesize(eeg_file) / 1024^2, digits=2)
 
-data_type = "eeg"
+    data_type = "eeg"
 
     s = _create_subject(id="",
                         first_name="",
@@ -283,4 +283,5 @@ data_type = "eeg"
     end
 
     return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
+    
 end

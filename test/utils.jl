@@ -1,7 +1,21 @@
 using NeuroAnalyzer
 using Test
-using Wavelets
-using ContinuousWavelets
+
+@info "Initializing"
+eeg = import_edf("files/eeg-test-edf.edf")
+e10 = epoch(eeg, ep_len=10*sr(eeg))
+keep_epoch!(e10, ep=1:10)
+v = [1, 2, 3, 4, 5]
+v1 = [1, 2, 3, 4, 5]
+v2 = [6, 5, 4, 3, 2]
+m = [1 2 3; 4 5 6]
+m1 = [1 2 3; 4 5 6]
+m2 = [7 6 5; 4 3 2]
+a1 = ones(2, 3, 2)
+a2 = zeros(2, 3, 2)
+
+@info "test 1/47: apply()"
+@test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 121)
 
 eeg = import_bdf("eeg-test-bdfplus.bdf")
 delete_marker!(eeg, n=1)
@@ -362,7 +376,6 @@ _, _, f = psdslope(eeg)
 @test size(henv(e10)[1]) == (19, 2560, 121)
 @test size(henv_mean(e10, dims=1)[1]) == (2560, 121)
 @test size(henv_median(e10, dims=1)[1]) == (2560, 121)
-@test size(apply(e10, f="mean(obj, dims=1)")) == (19, 1, 121)
 
 @test channel_cluster(e10, cluster=:f1) == [1, 3, 11]
 

@@ -5,8 +5,8 @@ using Test
     @info "Running internal.jl tests"
     @test include("internal.jl")
 
-    # @info "Running io.jl tests"
-    # @test include("io.jl")
+    @info "Running io.jl tests"
+    @test include("io.jl")
 
     # @info "Running utils.jl tests"
     # @test include("utils.jl")
@@ -23,15 +23,16 @@ using Test
     @info "Running analyze.jl tests"
     @test include("analyze.jl")
 
-    # @info "Running plots.jl tests"
-    # @test include("plots.jl")
+    @info "Running plots.jl tests"
+    @test include("plots.jl")
 
-    # @info "Running statistics.jl tests"
-    # @test include("statistics.jl")
+    @info "Running statistics.jl tests"
+    @test include("statistics.jl")
 
-    # @info "Running stim.jl tests"
-    # @test include("stim.jl")
+    @info "Running stim.jl tests"
+    @test include("stim.jl")
 
-    # @info "Running study.jl tests"
-    # @test include("study.jl")
+    @info "Running study.jl tests"
+    @test include("study.jl")
+
 end

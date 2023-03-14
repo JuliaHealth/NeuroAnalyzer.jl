@@ -30,6 +30,7 @@ function tes_dose(;current::Real, pad_area::Real, duration::Int64)
     charge_density = (charge / 1_000) / (pad_area / 1_000)
     
     return (charge=charge, current_density=current_density, charge_density=charge_density)
+
 end
 
 """
@@ -72,4 +73,5 @@ function tes_protocol(;type::Symbol, hd::Bool, current::Real, frequency::Real=0,
     protocol = Dict(:type=>type, :hd=>hd, :current=>current, :frequency=>frequency, :cathode_size=>cathode_size, :cathode_size=>cathode_size, :anode_loc=>anode_loc, :cathode_loc=>cathode_loc, :duration=>duration, :ramp_in=>ramp_in, :ramp_out=>ramp_out, :sham=>sham, )
     
     return protocol
+    
 end

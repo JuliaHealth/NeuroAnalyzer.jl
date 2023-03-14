@@ -74,6 +74,43 @@ Calculate power spectrum using Morlet wavelet convolution.
 
 # Arguments
 
+- `s::AbstractMatrix`
+- `pad::Int64=0`: pad with `pad` zeros
+- `norm::Bool=true`: normalize powers to dB
+- `fs::Int64`: sampling rate
+- `frq_lim::Tuple{Real, Real}=(0, fs ÷ 2)`: frequency bounds for the spectrogram
+- `frq_n::Int64=10`: number of frequencies
+- `frq::Symbol=:log`: linear (`:lin`) or logarithmic (`:log`) frequencies
+- `ncyc::Union{Int64, Tuple{Int64, Int64}}=6`: number of cycles for Morlet wavelet, for tuple a variable number of cycles is used per frequency: `ncyc = logspace(log10(ncyc[1]), log10(ncyc[2]), frq_n)` for `frq = :log` or `ncyc = linspace(ncyc[1], ncyc[2], frq_n)` for `frq = :lin`
+
+# Returns
+
+Named tuple containing:
+- `pw::Array{Float64, 2}`: powers
+- `pf::Vector{Float64}`: frequencies
+"""
+function psd_mw(s::AbstractMatrix; pad::Int64=0, norm::Bool=true, fs::Int64, frq_lim::Tuple{Real, Real}=(0, fs ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
+
+    ch_n = size(s, 1)
+
+    _, pf = psd_mw(s[1, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    pw = zeros(ch_n, length(pf))
+
+    @inbounds @simd for ch_idx in 1:ch_n
+        pw[ch_idx, :], _ = @views psd_mw(s[ch_idx, :], pad=pad, norm=norm, fs=fs, frq_lim=frq_lim, frq_n=frq_n, frq=frq, ncyc=ncyc)
+    end
+
+    return (pw=pw, pf=pf)
+
+end
+
+"""
+    psd_mw(s; pad, norm, frq_lim, frq_n, frq, fs, ncyc)
+
+Calculate power spectrum using Morlet wavelet convolution.
+
+# Arguments
+
 - `s::AbstractArray`
 - `pad::Int64=0`: pad with `pad` zeros
 - `norm::Bool=true`: normalize powers to dB
@@ -132,7 +169,7 @@ Calculate power spectrum using Morlet wavelet convolution.
 
 Named tuple containing:
 - `pw::Array{Float64, 3}`: powers
-- `pf::Matrix{Float64}`: frequencies
+- `pf::Vector{Float64}`: frequencies
 """
 function psd_mw(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), pad::Int64=0, norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), frq_n::Int64=_tlength(frq_lim), frq::Symbol=:lin, ncyc::Union{Int64, Tuple{Int64, Int64}}=6)
 

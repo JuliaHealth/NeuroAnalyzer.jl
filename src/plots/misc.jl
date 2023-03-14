@@ -27,6 +27,7 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
             push!(p, Plots.plot(border=:none, title=""))
         end
     end
+
     pc = Plots.plot(grid=false,
                     framestyle=:none,
                     border=:none,
@@ -35,6 +36,7 @@ function plot_compose(p::Vector{Plots.Plot{Plots.GRBackend}}; layout::Union{Matr
     Plots.plot(pc)
 
     return pc
+
 end
 
 """
@@ -47,5 +49,7 @@ Return an empty plot, useful for filling matrices of plots.
 - `p::Plots.Plot{Plots.GRBackend}`
 """
 function plot_empty()
+
     return Plots.plot(grid=false, border=:none, title="")
+    
 end
