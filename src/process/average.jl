@@ -1,86 +1,92 @@
 export average
 
 """
-    average(signal)
+    average(s)
 
 Average all channels.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
 - `s_averaged::AbstractArray`
 """
-function average(signal::AbstractArray)
-    return mean(signal, dims=1)
+function average(s::AbstractArray)
+
+    return mean(s, dims=1)
+
 end
 
 """
-    average(signal1, signal2)
+    average(s1, s2)
 
-Averages `signal1` and `signal2`.
+Averages two signals.
 
 # Arguments
 
-- `signal1::AbstractArray`
-- `signal2::AbstractArray`
+- `s1::AbstractArray`
+- `s2::AbstractArray`
 
 # Returns
 
 - `s_averaged::Vector{Float64}`
 """
-function average(signal1::AbstractArray, signal2::AbstractArray)
-    return mean(hcat(signal1, signal2), dims=2)
+function average(s1::AbstractArray, s2::AbstractArray)
+
+    return mean(hcat(s1, s2), dims=2)
+
 end
 
 """
-    average(obj; channel)
+    average(obj; ch)
 
 Return the average signal of channels.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function average(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
+function average(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
 
     obj_new = deepcopy(obj)
-    keep_channel!(obj_new, channel=1)
-    obj_new.data = @views s_average(obj.data[channel, :, :])
-    obj_new.header.recording.labels=["averaged channel"]
+    keep_channel!(obj_new, ch=1)
+    obj_new.data = @views average(obj.data[ch, :, :])
+    obj_new.header.recording[:labels]=["averaged ch"]
     reset_components!(obj_new)
-    push!(obj_new.header.history, "average(OBJ, channel=$channel)")
+    push!(obj_new.header.history, "average(OBJ, ch=$ch)")
 
     return obj_new
+
 end
 
 """
-    average!(obj; channel)
+    average!(obj; ch)
 
 Return the average signal of channels.  
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 """
-function average!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
+function average!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = average(obj, channel=channel)
+    obj_tmp = average(obj, ch=ch)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
@@ -100,19 +106,21 @@ Return the average signal of all `obj1` and `obj2` channels.
 function average(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
 
     size(obj1.data) == size(obj2.data) || throw(ArgumentError("Both signals must have the same size."))
+
     ch_n = channel_n(obj1)
     ep_n = epoch_n(obj1)
 
     obj_new = deepcopy(obj1)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            obj_new.data[ch_idx, :, ep_idx] = @views s2_average(obj1.data[ch_idx, :, ep_idx], obj2.data[ch_idx, :, ep_idx])
+            obj_new.data[ch_idx, :, ep_idx] = @views average(obj1.data[ch_idx, :, ep_idx], obj2.data[ch_idx, :, ep_idx])
         end
     end
 
     reset_components!(obj_new)
-    push!(obj.header.history, "average(OBJ1, OBJ2)")
+    push!(obj_new.header.history, "average(OBJ1, OBJ2)")
 
     return obj_new
+
 end
 

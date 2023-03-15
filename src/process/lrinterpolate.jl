@@ -2,32 +2,32 @@ export lrinterpolate_channel
 export lrinterpolate_channel!
 
 """
-    lrinterpolate_channel(obj; channel, epoch)
+    lrinterpolate_channel(obj; ch, ep)
 
-Interpolate OBJ channel using linear regression.
+Interpolate channel using linear regression.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
-- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     channels = get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))
-    channel in channels || throw(ArgumentError("channel must be signal channel; cannot interpolate non-signal channels."))
+    ch in channels || throw(ArgumentError("channel must be signal channel; cannot interpolate non-signal channels."))
 
-    bad_signal = obj.data[:, :, epoch]
-    good_epochs = setdiff(1:epoch_n(obj), epoch)
-    good_channels = setdiff(channels, channel)
-    good_signal = _make_epochs(obj.data[:, :, good_epochs], ep_n=1)
+    bad_signal = obj.data[:, :, ep]
+    good_eps = setdiff(1:epoch_n(obj), ep)
+    good_chs = setdiff(channels, ch)
+    good_signal = _make_epochs(obj.data[:, :, good_eps], ep_n=1)
 
     # train
-    df = @views DataFrame(hcat(good_signal[channel, :, 1], good_signal[good_channels, :, 1]'), :auto)
+    df = @views DataFrame(hcat(good_signal[ch, :, 1], good_signal[good_chs, :, 1]'), :auto)
     train, test = _split(df, 0.80)
     fm = Term(:x1) ~ sum(Term.(Symbol.(names(df[!, Not(:x1)]))))
     linear_regressor = lm(fm, train)
@@ -38,6 +38,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::
     accuracy_testdf[!, :signal_predicted]
     acc_mae = mean(abs.(accuracy_testdf.error))
     aic, bic = infcrit(linear_regressor)
+
     _info("R² for the linear regressor: $(round(acc_r2, digits=3))")
     _info("MAE (test dataset): $(round(acc_mae, digits=3))")
     _info("AIC: $(round(aic, digits=3))")
@@ -45,35 +46,36 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::
 
     # predict
     obj_new = deepcopy(obj) 
-    @inbounds @simd for ep_idx in epoch
-        df = @views DataFrame(hcat(bad_signal[channel, :, ep_idx], bad_signal[good_channels, :, ep_idx]'), :auto)
-        obj_new.data[channel, :, ep_idx] = GLM.predict(linear_regressor, df)
+    @inbounds @simd for ep_idx in ep
+        df = @views DataFrame(hcat(bad_signal[ch, :, ep_idx], bad_signal[good_chs, :, ep_idx]'), :auto)
+        obj_new.data[ch, :, ep_idx] = GLM.predict(linear_regressor, df)
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "lrinterpolate_channel(OBJ, channel=$channel, epoch=$epoch)")
+    push!(obj_new.header.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep)")
 
     return obj_new
+    
 end
 
 """
-    lrinterpolate_channel!(obj; channel, epoch)
+    lrinterpolate_channel!(obj; ch, ep)
 
-Interpolate OBJ channel using linear regression.
+Interpolate channel using linear regression.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
-- `epoch::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel number to interpolate
+- `ep::Union{Int64, Vector{Int64}, <:AbstractRange}`: epoch number(s) within to interpolate
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; channel::Int64, epoch::Union{Int64, Vector{Int64}, <:AbstractRange})
+function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = lrinterpolate_channel(obj, channel=channel, epoch=epoch)
+    obj_tmp = lrinterpolate_channel(obj, ch=ch, ep=ep)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
     reset_components!(obj)

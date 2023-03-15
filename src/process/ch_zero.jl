@@ -23,6 +23,7 @@ function ch_zero(obj::NeuroAnalyzer.NEURO)
     push!(obj_new.header.history, "zero(OBJ)")
 
     return obj_new
+    
 end
 
 """
@@ -42,4 +43,5 @@ function ch_zero!(obj::NeuroAnalyzer.NEURO)
     obj.components = obj_tmp.components
 
     return nothing
+
 end

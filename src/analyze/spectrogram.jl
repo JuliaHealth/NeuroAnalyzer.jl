@@ -192,7 +192,7 @@ function ghspectrogram(s::AbstractVector; fs::Int64, norm::Bool=true, frq_lim::T
     sph = zeros(length(sf), length(s))
 
     @inbounds @simd for frq_idx in 1:length(sf)
-        s = gfilter(s, fs=fs, f=sf[frq_idx], gw=gw)
+        s = filter_g(s, fs=fs, f=sf[frq_idx], gw=gw)
         sp[frq_idx, :] = abs.(hilbert(s)).^2
         sph[frq_idx, :] = angle.(hilbert(s))
     end

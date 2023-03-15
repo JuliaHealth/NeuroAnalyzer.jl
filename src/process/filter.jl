@@ -1,139 +1,7 @@
-export filter
 export filter_apply
 export filter_create
-
-"""
-    filter(signal; <keyword arguments>)
-
-Filter signal.
-
-# Arguments
-
-- `signal::AbstractVector`
-- `fprototype::Symbol`: filter prototype:
-    - `:mavg`: moving average (with threshold)
-    - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order`
-    - `:conv`: convolution
-    - `:sg`: Savitzky-Golay
-- `order::Int64=8`: polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
-- `t::Real=0`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`f=0=
-
-# Returns
-
-- `s_filtered::Vector{Float64}`
-"""
-function filter(signal::AbstractVector; fprototype::Symbol, order::Int64=8, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing)
-
-    _check_var(fprototype, [:mavg, :mmed, :poly, :conv, :sg], "fprototype")
-
-    # check window
-    if fprototype === :sg
-        window === nothing && throw(ArgumentError("For :sg filter window must be specified."))
-    elseif fprototype === :mavg || fprototype === :mmed
-        (window !== nothing && length(window) != (2 * order + 1)) && throw(ArgumentError("For :mavg and :mmed window length must be 2 × order + 1 ($(2 * order + 1))."))
-    end
-    
-    # check order
-    order > length(signal) && throw(ArgumentError("order must be ≤ signal length ($length(signal))."))
-    if fprototype === :poly
-        order < 1 && throw(ArgumentError("For :poly filter order must be > 1."))
-        window === nothing && throw(ArgumentError("For :poly filter window must be specified."))
-        window < 1 && throw(ArgumentError("For :poly filter window must be ≥ 1."))
-    else
-        (order < 2 || mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    end
-
-    if fprototype === :mavg
-        s_filtered = zeros(length(signal))
-        window === nothing && (window = ones(2 * order + 1))
-        @inbounds for idx in (1 + order):(length(signal) - order)
-            if t > 0
-                if signal[idx] > t * std(signal) + mean(signal)
-                    s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
-                end
-            else
-                s_filtered[idx] = mean(signal[(idx - order):(idx + order)] .* window)
-            end
-        end
-        return s_filtered
-    end
-
-    if fprototype === :mmed
-        s_filtered = zeros(length(signal))
-        window === nothing && (window = ones(2 * order + 1))
-        @inbounds for idx in (1 + order):(length(signal) - order)
-            if t > 0
-                if signal[idx] > t * std(signal) + median(signal)
-                    s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
-                end
-            else
-                s_filtered[idx] = median(signal[(idx - order):(idx + order)] .* window)
-            end
-        end
-        return s_filtered
-    end
-
-    if fprototype === :poly
-        # TO DO: smooth spikes between windows
-        window_n = length(signal) ÷ window
-        window_last = length(signal) - (window_n * window)
-        s_filtered = zeros(length(signal))
-        for window_idx in 1:window_n - 1
-            s = @views signal[((window_idx - 1) * window + 1):window_idx * window]
-            t = 1:length(s)       
-            p = Polynomials.fit(t, s, order)
-            @inbounds for idx in eachindex(s)
-                s[idx] = p(t[idx])
-            end
-            @inbounds s_filtered[((window_idx - 1) * window + 1):window_idx * window] = s
-        end
-        s = signal[((window_n - 1) * window + 1):window_n * window + window_last]
-        t = 1:length(s)
-        p = Polynomials.fit(t, s, order)
-        @inbounds for idx in eachindex(s)
-            s[idx] = p(t[idx])
-        end
-        @inbounds s_filtered[((window_n - 1) * window + 1):window_n * window + window_last] = s
-
-        # smooth peaks using Loess
-        for window_idx in window:window:window * (window_n - 1)
-            s = @views s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1]
-            t = collect(1.0:1:length(s))
-            model = loess(t, s, span=1.0)
-            s_smoothed = Loess.predict(model, t)
-            s_smoothed[1] = s[1]
-            s_smoothed[end] = s[end]
-            @inbounds s_filtered[window_idx - window ÷ 4:window_idx + window ÷ 4 - 1] = s_smoothed
-        end
-        
-        # smooth peaks using median/mean
-        # for window_idx in window:window:window * (window_n - 1)
-        #     s_filtered[window_idx-2] = mean(s_filtered[window_idx-3:window_idx])
-        #     s_filtered[window_idx-1] = mean(s_filtered[window_idx-2:window_idx])
-        #     s_filtered[window_idx] = mean(s_filtered[window_idx-2:window_idx+2])
-        #     s_filtered[window_idx+1] = mean(s_filtered[window_idx:window_idx+2])
-        #     s_filtered[window_idx+2] = mean(s_filtered[window_idx:window_idx+3])
-        # end
-        
-        return s_filtered
-    end
-
-    if fprototype === :conv
-        window === nothing && throw(ArgumentError("For :conv filter window must be specified."))
-        s_filtered = tconv(signal, kernel=window)
-        return s_filtered
-    end
-
-    if fprototype === :sg
-        typeof(window) == Int64 || throw(ArgumentError("For :sg filter window must be an integer number."))
-        isodd(window) || throw(ArgumentError("For :sg filter window must be an odd number."))
-        s_filtered = savitzky_golay(signal, window, order)
-        return s_filtered.y
-    end
-
-end
+export filter
+export filter!
 
 """
     filter_create(signal; <keyword arguments>)
@@ -162,7 +30,7 @@ Create IIR or FIR filter.
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
 - `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using fred harris' rule-of-thumb
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window for `:fir` filter; default is Hamming window, number of taps is calculated using Fred Harris' rule-of-thumb
 
 # Returns
 
@@ -180,7 +48,7 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
     fprototype !== :iirnotch && order < 1 && throw(ArgumentError("order must be > 1."))
     order > n && throw(ArgumentError("order must be ≤ signal length ($n)."))
     ((order < 2 && fprototype !== :iirnotch && fprototype !== :remez && fprototype !== :fir) && mod(order, 2) != 0) && throw(ArgumentError("order must be even and ≥ 2."))
-    window !== nothing && length(window) > n && throw(ArgumentError("For :fir filter window must be ≤ signal length ($n)."))
+    window !== nothing && length(window) > n && throw(ArgumentError("window must be ≤ signal length ($n)."))
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :iirnotch, :remez]
         cutoff == 0 && throw(ArgumentError("cutoff must be specified."))
@@ -250,32 +118,32 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
             if ftype === :lp || ftype === :hp
                 ftype === :lp && _info("Creating LP filter:")
                 ftype === :hp && _info("Creating HP filter:")
-                _info("- Using default window: hamming($n_taps)")
-                _info("- Attenuation: $(order * 4) dB")
-                _info("- F_pass: $(round(f_pass, digits=4)) Hz")
-                _info("- F_stop: $(round(f_stop, digits=4)) Hz")
-                _info("- Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("- Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Using default window: hamming($n_taps)")
+                _info(" Attenuation: $(order * 4) dB")
+                _info(" F_pass: $(round(f_pass, digits=4)) Hz")
+                _info(" F_stop: $(round(f_stop, digits=4)) Hz")
+                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bp
                 _info("Creating BP filter:")
-                _info("- Using default window: hamming($n_taps)")
-                _info("- Attenuation: $(order * 4) dB")
-                _info("- F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info("- F1_pass: $f1_pass Hz")
-                _info("- F2_pass: $f2_pass Hz")
-                _info("- F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info("- Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("- Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Using default window: hamming($n_taps)")
+                _info(" Attenuation: $(order * 4) dB")
+                _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F2_pass: $f2_pass Hz")
+                _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             elseif ftype === :bs
                 _info("Creating BS filter:")
-                _info("- Using default window: hamming($n_taps)")
-                _info("- Attenuation: $(order * 4) dB")
-                _info("- F1_pass: $f1_pass Hz")
-                _info("- F1_stop: $(round(f1_stop, digits=4)) Hz")
-                _info("- F2_stop: $(round(f2_stop, digits=4)) Hz")
-                _info("- F2_pass: $f2_pass Hz")
-                _info("- Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
-                _info("- Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
+                _info(" Using default window: hamming($n_taps)")
+                _info(" Attenuation: $(order * 4) dB")
+                _info(" F1_pass: $f1_pass Hz")
+                _info(" F1_stop: $(round(f1_stop, digits=4)) Hz")
+                _info(" F2_stop: $(round(f2_stop, digits=4)) Hz")
+                _info(" F2_pass: $f2_pass Hz")
+                _info(" Transition bandwidth: $(round(trans_bandwidth, digits=4)) Hz")
+                _info(" Cutoff frequency: $(round((cutoff[1] - trans_bandwidth / 2), digits=4)) Hz")
             end
         else
             ftype in [:bp, :bs] && length(window) % 2 == 0 && throw(ArgumentError("For :bp and :bs filters window length must be odd."))
@@ -341,16 +209,17 @@ function filter_create(;fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothin
     end
 
     return flt
+
 end
 
 """
-    filter_apply(signal; <keyword arguments>)
+    filter_apply(s; <keyword arguments>)
 
 Apply IIR or FIR filter.
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}`: filter
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
@@ -361,13 +230,13 @@ Apply IIR or FIR filter.
 
 - `s_filtered::Vector{Float64}`
 """
-function filter_apply(signal::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)
+function filter_apply(s::AbstractVector; flt::Union{Vector{Float64}, ZeroPoleGain{:z, ComplexF64, ComplexF64, Float64}, Biquad{:z, Float64}}, dir::Symbol=:twopass)
 
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
 
-    dir === :twopass && (return filtfilt(flt, signal))
-    dir === :onepass && (return filt(flt, signal))
-    dir === :reverse && (return filt(flt, reverse(signal)))
+    dir === :twopass && (return filtfilt(flt, s))
+    dir === :onepass && (return filt(flt, s))
+    dir === :reverse && (return filt(flt, reverse(s)))
 
 end
 
@@ -379,7 +248,7 @@ Apply filtering.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -388,11 +257,6 @@ Apply filtering.
     - `:fir`
     - `:iirnotch`: second-order IIR notch filter
     - `:remez`: Remez FIR filter
-    - `:mavg`: moving average (with threshold)
-    - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order`
-    - `:conv`: convolution
-    - `:sg`: Savitzky-Golay
 - `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
@@ -406,9 +270,8 @@ Apply filtering.
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
-- `t::Real=0`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window length for `:remez` and `:fir` filters
 - `preview::Bool=false`: plot filter response
 
 # Returns
@@ -419,18 +282,18 @@ Apply filtering.
 
 For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
+function filter(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Nothing, Symbol}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
-    _check_channels(obj, channel)
-    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez, :mavg, :mmed, :poly, :conv, :sg], "fprototype")
+    _check_channels(obj, ch)
+    _check_var(fprototype, [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez], "fprototype")
+
     ep_n = epoch_n(obj)
     fs = sr(obj)
-    n = epoch_len(obj)
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")
         fprototype === :iirnotch && (ftype = :bs)    
-        p = plot_filter_response(fs=fs, n=n, fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        p = plot_filter_response(fs=sr(obj), n=epoch_len(obj), fprototype=fprototype, ftype=ftype, cutoff=cutoff, order=order, rp=rp, rs=rs, bw=bw, window=window)
         Plots.plot(p)
         return p
     end
@@ -438,27 +301,22 @@ function filter(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <
     obj_new = deepcopy(obj)
 
     if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-        n = epoch_len(obj)
-        flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=n, fs=fs, order=order, rp=rp, rs=rs, bw=bw, window=window)
+        flt = filter_create(fprototype=fprototype, ftype=ftype, cutoff=cutoff, n=epoch_len(obj), fs=sr(obj), order=order, rp=rp, rs=rs, bw=bw, window=window)
     end
 
     # initialize progress bar
-    progress_bar == true && (pb = Progress(ep_n * length(channel), 1))
+    progress_bar == true && (pb = Progress(ep_n * length(ch), 1))
 
     @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in eachindex(channel)
-            if fprototype in [:butterworth, :chebyshev1, :chebyshev2, :elliptic, :fir, :iirnotch, :remez]
-                obj_new.data[channel[ch_idx], :, ep_idx] = @views filter_apply(obj_new.data[channel[ch_idx], :, ep_idx], flt=flt, dir=dir)
-            else
-                obj_new.data[channel[ch_idx], :, ep_idx] = @views filter(obj_new.data[channel[ch_idx], :, ep_idx], fprototype=fprototype, order=order, t=t, window=window)
-            end
+        Threads.@threads for ch_idx in 1:length(ch)
+            obj_new.data[ch[ch_idx], :, ep_idx] = @views filter_apply(obj_new.data[ch[ch_idx], :, ep_idx], flt=flt, dir=dir)
             # update progress bar
             progress_bar == true && next!(pb)
         end
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "filter(OBJ, channel=$channel, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, t=$t, window=$window)")
+    push!(obj_new.header.history, "filter(OBJ, ch=$ch, fprototype=$fprototype, ftype=$ftype, cutoff=$cutoff, order=$order, rp=$rp, rs=$rs, dir=$dir, window=$window)")
 
     return obj_new
 end
@@ -470,7 +328,7 @@ Apply filtering.
 
 # Arguments
 
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `fprototype::Symbol`: filter prototype:
     - `:butterworth`
     - `:chebyshev1`
@@ -479,34 +337,28 @@ Apply filtering.
     - `:fir`
     - `:iirnotch`: second-order IIR notch filter
     - `:remez`: Remez FIR filter
-    - `:mavg`: moving average (with threshold)
-    - `:mmed`: moving median (with threshold)
-    - `:poly`: polynomial of `order`
-    - `:conv`: convolution
-    - `:sg`: Savitzky-Golay
-- `ftype::Union{Symbol, Nothing}=nothing`: filter type:
+- `ftype::Union{Nothing, Symbol}=nothing`: filter type:
     - `:lp`: low pass
     - `:hp`: high pass
     - `:bp`: band pass
     - `:bs`: band stop
-- `cutoff::Union{Real, Tuple{Real, Real}}`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
+- `cutoff::Union{Real, Tuple{Real, Real}}=0`: filter cutoff in Hz (tuple for `:bp` and `:bs`)
 - `rp::Real=-1`: ripple amplitude in dB in the pass band; default: 0.0025 dB for `:elliptic`, 2 dB for others
 - `rs::Real=-1`: ripple amplitude in dB in the stop band; default: 40 dB for `:elliptic`, 20 dB for others
-- `bw::Real=-1`: bandwidth for `:iirnotch` and `:remez filters
+- `bw::Real=-1`: bandwidth for `:iirnotch` and :remez filters
 - `dir:Symbol=:twopass`: filter direction (for causal filter use `:onepass`):
     - `:twopass`
     - `:onepass`
     - `:reverse`: one pass, reverse direction
-- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter, polynomial order for `:poly` filter, k-value for `:mavg` and `:mmed` (window length = 2 × k + 1)
-- `t::Real=0`: threshold for `:mavg` and `:mmed` filters; threshold = threshold * std(signal) + mean(signal) for `:mavg` or threshold = threshold * std(signal) + median(signal) for `:mmed` filter
-- `window::Union{Nothing, AbstractVector, Int64}=nothing`: kernel for the `:conv` filter, window length for `:sg` and `:poly` filters, weighting window for `:mavg` and `:mmed`
+- `order::Int64=8`: filter order (6 dB/octave) for IIR filters, number of taps for `:remez` filter, attenuation (× 4 dB) for `:fir` filter
+- `window::Union{Nothing, AbstractVector, Int64}=nothing`: window length for `:remez` and `:fir` filters
 - `preview::Bool=false`: plot filter response
 
 # Notes
 
 For `:poly` filter `order` and `window` have to be set experimentally, recommended initial values are: `order=4` and `window=32`.
 """
-function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
+function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), fprototype::Symbol, ftype::Union{Symbol, Nothing}=nothing, cutoff::Union{Real, Tuple{Real, Real}}=0, order::Int64=8, rp::Real=-1, rs::Real=-1, bw::Real=-1, dir::Symbol=:twopass, t::Real=0, window::Union{Nothing, AbstractVector, Int64}=nothing, preview::Bool=false)
 
     if preview == true
         _info("When `preview=true`, signal is not being filtered.")
@@ -517,7 +369,7 @@ function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     end
 
     obj_tmp = filter(obj,
-                     channel=channel,
+                     ch=ch,
                      fprototype=fprototype,
                      ftype=ftype,
                      cutoff=cutoff,
@@ -526,7 +378,6 @@ function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
                      rs=rs,
                      bw=bw,
                      dir=dir,
-                     t=t,
                      window=window)
 
     obj.data = obj_tmp.data
@@ -534,5 +385,5 @@ function filter!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
     obj.components = obj_tmp.components
 
     return nothing
-end
 
+end

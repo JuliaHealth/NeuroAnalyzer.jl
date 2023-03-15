@@ -2,36 +2,38 @@ export dw_trans
 export idw_trans
 
 """
-    dw_trans(signal; wt, type, l)
+    dw_trans(s; wt, type, l)
 
 Perform discrete wavelet transformation (DWT).
 
 # Arguments
 
-- `signal::AbstractVector`
+- `s::AbstractVector`
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: Stationary Wavelet Transforms (`:sdwt`) or Autocorrelation Wavelet Transforms (`:acdwt`)
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
 - `l::Int64=0`: number of levels, default maximum number of levels available or total transformation
 
 # Returns
 
-- `dwt_c::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+- `dt::Array{Float64, 2}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 """
-function dw_trans(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+function dw_trans(s::AbstractVector; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
     _check_var(type, [:sdwt, :acdwt], "type")
 
     l < 0 && throw(ArgumentError("l must be > 0."))
-    l > maxtransformlevels(signal) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(signal))."))
+    l > maxtransformlevels(s) && throw(ArgumentError("l must be ≤ $(maxtransformlevels(s))."))
 
     if l == 0
-        l = maxtransformlevels(signal)
+        l = maxtransformlevels(s)
         _info("Calculating DWT using maximum level: $l.")
     end
 
     if type === :sdwt
-        dwt_coefs = sdwt(signal, wt, l)
+        dwt_coefs = sdwt(s, wt, l)
     elseif type === :acdwt
-        dwt_coefs = acdwt(signal, wt, l)
+        dwt_coefs = acdwt(s, wt, l)
     end
 
     dwt_c = zeros(size(dwt_coefs, 2), size(dwt_coefs, 1))
@@ -44,6 +46,72 @@ function dw_trans(signal::AbstractVector; wt::T, type::Symbol, l::Int64=0) where
 end
 
 """
+    dw_trans(s; wt, type, l)
+
+Perform discrete wavelet transformation (DWT).
+
+# Arguments
+
+- `s::AbstractArray`
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
+- `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
+
+# Returns
+ 
+- `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+"""
+function dw_trans(s::AbstractArray; wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+
+    if l == 0
+        l = maxtransformlevels(s[1, :, 1])
+        _info("Calculating DWT using maximum level: $l.")
+    end
+
+    ch_n, ep_len, ep_n = size(s)
+
+    dt = zeros(ch_n, (l + 1), ep_len, ep_n)
+    @inbounds @simd for ep_idx in 1:ep_n
+        Threads.@threads for ch_idx in 1:ch_n
+            dt[ch_idx, :, :, ep_idx] = @views dw_trans(s[ch_idx, :, ep_idx], wt=wt, type=type, l=l)
+        end
+    end
+
+    return dt
+
+end
+
+"""
+    dw_trans(obj; ch, wt, type, l)
+
+Perform discrete wavelet transformation (DWT).
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
+- `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
+
+# Returns
+ 
+- `dt::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
+"""
+function dw_trans(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
+
+    _check_channels(obj, ch)
+    dt = @views dw_trans(obj.data[ch, :, :], wt=wt, type=type, l=l)
+
+    return dt
+
+end
+
+"""
     idw_trans(dwt_coefs; wt, type)
 
 Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
@@ -52,11 +120,13 @@ Perform inverse discrete wavelet transformation (iDWT) of the `dwt_coefs`.
 
 - `dwt_coefs::AbstractArray`: DWT coefficients cAl, cD1, ..., cDl (by rows)
 - `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: Stationary Wavelet Transforms (`:sdwt`) or Autocorrelation Wavelet Transforms (`:acdwt`)
+- `type::Symbol`: transformation type: 
+    - `:sdwt`: Stationary Wavelet Transforms
+    - `:acdwt`: Autocorrelation Wavelet Transforms
 
 # Returns
 
-- `signal::Vector{Float64}`: reconstructed signal
+- `s_new::Vector{Float64}`: reconstructed signal
 """
 function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: DiscreteWavelet}
     
@@ -74,44 +144,5 @@ function idw_trans(dwt_coefs::AbstractArray; wt::T, type::Symbol) where {T <: Di
     elseif type === :acdwt
         return iacdwt(dwt_c, wt)
     end
-end
 
-"""
-    dw_trans(obj; channel, wt, type, l)
-
-Perform discrete wavelet transformation (DWT).
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `wt<:DiscreteWavelet`: discrete wavelet, e.g. `wt = wavelet(WT.haar)`, see Wavelets.jl documentation for the list of available wavelets
-- `type::Symbol`: transformation type: 
-    - `:sdwt`: Stationary Wavelet Transforms
-    - `:acdwt`: Autocorrelation Wavelet Transforms
-- `l::Int64=0`: number of levels, default is maximum number of levels available or total transformation
-
-# Returns
- 
-- `dwt_c::Array{Float64, 4}`: DWT coefficients cAl, cD1, ..., cDl (by rows)
-"""
-function dw_trans(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), wt::T, type::Symbol, l::Int64=0) where {T <: DiscreteWavelet}
-
-    if l == 0
-        l = maxtransformlevels(obj.data[1, :, 1])
-        _info("Calculating DWT using maximum level: $l.")
-    end
-
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
-
-    dwt_c = zeros(ch_n, (l + 1), epoch_len(obj), ep_n)
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx in 1:ch_n
-            dwt_c[ch_idx, :, :, ep_idx] = @views dw_trans(obj.data[channel[ch_idx], :, ep_idx], wt=wt, type=type, l=l)
-        end
-    end
-
-    return dwt_c
 end

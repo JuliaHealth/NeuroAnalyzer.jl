@@ -58,6 +58,7 @@ function normalize(s::AbstractArray, n::Real=1.0; method::Symbol)
     elseif method === :none
         return s
     end
+
 end
 
 """
@@ -71,12 +72,15 @@ Normalize (by z-score).
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_zscore::Vector{Float64}`
 """
 function normalize_zscore(s::AbstractArray)
+
     m = mean(s)
-    s = std(s)
-    return @. (s - m) / s
+    sd = std(s)
+
+    return @. (s - m) / sd
+
 end
 
 """
@@ -90,13 +94,16 @@ Normalize in [-1, +1].
 
 # Returns
 
-- `normalized::AbstractArray`
+- `normalize_minmax::AbstractArray`
 """
 function normalize_minmax(s::AbstractArray)
+
     mi = minimum(s)
     mx = maximum(s)
     mxi = mx - mi
+
     return @. (2 * (s - mi) / mxi) - 1
+
 end
 
 """
@@ -111,12 +118,15 @@ Normalize in [0, n], default is [0, +1].
 
 # Returns
 
-- `normalized::AbstractArray`
+- `normalize_n::AbstractArray`
 """
 function normalize_n(s::AbstractArray, n::Real=1.0)
+
     max_x = maximum(s)
     min_x = minimum(s)
+
     return n .* (s .- min_x) ./ (max_x - min_x)
+
 end
 
 """
@@ -130,11 +140,14 @@ Normalize using log-transformation.
 
 # Returns
 
-- `normalized::AbstractArray`
+- `normalize_log::AbstractArray`
 """
 function normalize_log(s::AbstractArray)
+
     m = abs(minimum(s))
+
     return @. log(1 + s + m)
+
 end
 
 """
@@ -149,12 +162,16 @@ Normalize to Gaussian.
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_gauss::Vector{Float64}`
 """
 function normalize_gauss(s::AbstractArray, dims::Int64=1)
-    dims in 1:ndims(s) || throw(ArgumentError("dims must be in: 1:$(ndims(s)).")) 
+
+    dims in 1:ndims(s) || throw(ArgumentError("dims must be in: 1:$(ndims(s))."))
+
     l = length(s) + 1
+
     return atanh.((tiedrank(cumsum(s, dims=dims)) ./ l .- 0.5) .* 2)
+
 end
 
 """
@@ -168,11 +185,14 @@ Normalize using log10-transformation.
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_log10::Vector{Float64}`
 """
 function normalize_log10(s::AbstractArray)
+
     m = 1 + abs(minimum(s))
+
     return @. log10(s + m)
+
 end
 
 """
@@ -186,10 +206,12 @@ Normalize to using -log-transformation.
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_neglog::Vector{Float64}`
 """
 function normalize_neglog(s::AbstractArray)
+
     return @. -log(s)
+
 end
 
 """
@@ -203,10 +225,12 @@ Normalize using -log10-transformation.
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_neglog::Vector{Float64}`
 """
 function normalize_neglog10(s::AbstractArray)
+
     return @. -log10(s)
+
 end
 
 """
@@ -220,11 +244,14 @@ Normalize in [0, -∞].
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_neg::Vector{Float64}`
 """
 function normalize_neg(s::AbstractArray)
+
     m = maximum(s)
+
     return @. s - m
+
 end
 
 """
@@ -238,11 +265,14 @@ Normalize in [0, +∞].
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_pos::Vector{Float64}`
 """
 function normalize_pos(s::AbstractArray)
+
     m = abs(minimum(s))
+
     return @. s + m
+
 end
 
 """
@@ -256,13 +286,16 @@ Normalize in percentages.
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_perc::Vector{Float64}`
 """
 function normalize_perc(s::AbstractArray)
+
     m1 = minimum(s)
     m2 = maximum(s)
     m = m2 - m1
+
     return (s .- m1) ./ m
+
 end
 
 """
@@ -276,43 +309,45 @@ Normalize in inverse root (1/sqrt(x)).
 
 # Returns
 
-- `normalized::Vector{Float64}`
+- `normalize_invroot::Vector{Float64}`
 """
 function normalize_invroot(s::AbstractArray)
+
     # make s > 0
     return 1 ./ (sqrt.(s .+ abs(minimum(s)) .+ eps()))
+
 end
 
 """
-    normalize(obj; channel, method)
+    normalize(obj; ch, method)
 
 Normalize channel(s)
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 - `method::Symbol`: method for normalization, see `normalize()` for details
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function normalize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
+function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
+    _check_channels(obj, ch)
+    ch_n = length(ch)
     ep_n = epoch_n(obj)
 
     obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            @views obj_new.data[channel[ch_idx], :, ep_idx] = normalize(obj_new.data[channel[ch_idx], :, ep_idx], method=method)
+            @views obj_new.data[ch[ch_idx], :, ep_idx] = normalize(obj_new.data[ch[ch_idx], :, ep_idx], method=method)
         end
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "normalize(OBJ, channel=$channel, method=$method)")
+    push!(obj_new.header.history, "normalize(OBJ, ch=$ch, method=$method)")
 
     return obj_new
 end
@@ -333,7 +368,8 @@ function normalize!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64
     obj_tmp = normalize(obj, channel=channel, method=method)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end

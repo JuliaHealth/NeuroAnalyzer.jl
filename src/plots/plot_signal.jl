@@ -444,7 +444,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     if segment[2] <= epoch_len(obj)
         s = obj.data[ch, segment[1]:segment[2], 1]
     else
-        s = ep(obj, ep_n=1).data[ch, segment[1]:segment[2], 1]
+        s = epoch(obj, ep_n=1).data[ch, segment[1]:segment[2], 1]
     end
     t = _get_t(segment[1], segment[2], sr(obj))
 

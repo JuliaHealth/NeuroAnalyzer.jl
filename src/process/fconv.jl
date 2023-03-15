@@ -1,75 +1,132 @@
 export fconv
+export fconv!
 
 """
-    fconv(signal; kernel, norm)
+    fconv(s; kernel, norm)
 
 Perform convolution in the frequency domain.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractVector`
 - `kernel::AbstractVector`
 - `pad::Int64=0`: number of zeros to add
 - `norm::Bool=true`: normalize kernel
 
 # Returns
 
-- `s_conv::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
-function fconv(signal::AbstractArray; pad::Int64=0, kernel::AbstractVector, norm::Bool=true)
+function fconv(s::AbstractVector; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
-    n_signal = length(signal)
-    n_kernel = length(kernel)
-    half_kernel = floor(Int64, n_kernel / 2)
-    s_fft = fft0(signal, pad + n_kernel - 1)
-    kernel_fft = fft0(kernel, pad + n_signal - 1)
+    n_s = length(s)
+    n_k = length(kernel)
+    half_k = floor(Int64, n_k / 2)
+    s_fft = fft0(s, pad + n_k - 1)
+    kernel_fft = fft0(kernel, pad + n_s - 1)
     norm == true && (kernel_fft ./= cmax(kernel_fft))
-    s_conv = @views ifft0(s_fft .* kernel_fft, pad)
+    s_conv = ifft0(s_fft .* kernel_fft, pad)
 
     # remove in- and out- edges
-    if mod(n_kernel, 2) == 0 
-        return s_conv[half_kernel:(end - half_kernel)]
+    if mod(n_k, 2) == 0 
+        s_new = s_conv[half_k:(end - half_k)]
     else
-        return s_conv[(half_kernel + 1):(end - half_kernel)]
+        s_new = s_conv[(half_k + 1):(end - half_k)]
     end
+
+    return s_new
+
 end
 
 """
-    fconv(obj; channel, kernel, norm)
+    fconv(s; kernel, norm)
 
 Perform convolution in the frequency domain.
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `s::AbstractArray`
 - `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
 - `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
 - `pad::Int64=0`: number of zeros to add signal for FFT
 
 # Returns
 
-- `s_convoluted::Array{Float64, 3}`: convoluted signal
+- `s_new::Array{Float64, 3}`: convoluted signal
 """
-function fconv(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
+function fconv(s::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
-    _check_channels(obj, channel)
-    ch_n = length(channel)
-    ep_n = epoch_n(obj)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
 
-    s_convoluted = zeros(ch_n, epoch_len(obj), ep_n)
+    s_new = similar(s)
 
     # initialize progress bar
     progress_bar == true && (p = Progress(ep_n * ch_n, 1))
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_convoluted[ch_idx, :, ep_idx] = @views fconv(obj.data[channel[ch_idx], :, ep_idx], kernel=kernel, norm=norm, pad=pad)
+            s_new[ch_idx, :, ep_idx] = @views fconv(s[ch_idx, :, ep_idx], kernel=kernel, norm=norm, pad=pad)
             
             # update progress bar
             progress_bar == true && next!(p)
         end
     end
 
-    return s_convoluted
+    return s_new
+
+end
+
+"""
+    fconv(obj; ch, kernel, norm)
+
+Perform convolution in the frequency domain.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `pad::Int64=0`: number of zeros to add signal for FFT
+
+# Returns
+
+- `obj_new::NeuroAnalyzer.NEURO`: convoluted signal
+"""
+function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
+
+    _check_channels(obj, ch)
+
+    obj_new = deepcopy(obj)
+    obj_new.data[ch, :, :] = fconv(obj.data[ch, :, :], kernel=kernel, norm=norm, pad=pad)
+    reset_components!(obj_new)
+    push!(obj_new.header.history, "fconv(OBJ, ch=$ch, kernel=$kernel, norm=$norm, pad=$pad)")
+
+    return obj_new
+
+end
+
+"""
+    fconv!(obj; ch)
+
+Perform convolution in the frequency domain.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `kernel::Union{Vector{<:Real}, Vector{ComplexF64}}`: kernel for convolution
+- `norm::Bool=true`: normalize kernel to keep the post-convolution results in the same scale as the original data
+- `pad::Int64=0`: number of zeros to add signal for FFT
+"""
+function fconv!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
+
+    obj_tmp = fconv(obj, ch=ch, kernel=kernel, norm=norm, pad=pad)
+    obj.data = obj_tmp.data
+    obj.header = obj_tmp.header
+    obj.components = obj_tmp.components
+
+    return nothing
+
 end

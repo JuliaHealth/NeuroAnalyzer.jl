@@ -2,76 +2,78 @@ export denoise_wien
 export denoise_wien!
 
 """
-    denoise_wien(signal)
+    denoise_wien(s)
 
 Perform Wiener deconvolution denoising.
 
 # Arguments
 
-- `signal::AbstractArray`
+- `s::AbstractArray`
 
 # Returns
 
-- `signal_new::Vector{Float64}`
+- `s_new::Vector{Float64}`
 """
-function denoise_wien(signal::AbstractArray)
+function denoise_wien(s::AbstractArray)
 
-    ch_n, _, ep_n = size(signal)
-    signal_new = similar(signal)
+    ch_n, _, ep_n = size(s)
+    s_new = similar(s)
 
     @inbounds @simd for ep_idx in 1:ep_n
-        s_m = @views mean(signal[:, :, ep_idx], dims=1)'[:, 1]
+        s_m = @views mean(s[:, :, ep_idx], dims=1)'[:, 1]
         m = mean(s_m)
         noise = rand(Float64, size(s_m)) .* m
         Threads.@threads for ch_idx in 1:ch_n
-            signal_new[ch_idx, :, ep_idx] = @views wiener(signal[ch_idx, :, ep_idx], s_m, noise)
+            s_new[ch_idx, :, ep_idx] = @views wiener(s[ch_idx, :, ep_idx], s_m, noise)
         end
     end
 
-    return signal_new
+    return s_new
+
 end
 
 """
-    denoise_wien(obj; channel)
+    denoise_wien(obj; ch)
 
 Perform Wiener deconvolution denoising.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 
 # Returns
 - `obj_new::NeuroAnalyzer.NEURO`
 """
-function denoise_wien(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
+function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    _check_channels(obj, channel)
+    _check_channels(obj, ch)
 
     obj_new = deepcopy(obj)
-    obj_new.data[channel, :, :] = denoise_wien(obj_new.data[channel, :, :])
+    obj_new.data[ch, :, :] = denoise_wien(obj_new.data[ch, :, :])
     reset_components!(obj_new)
-    push!(obj_new.header.history, "denoise_wien(OBJ, channel=$channel)")
+    push!(obj_new.header.history, "denoise_wien(OBJ, ch=$ch)")
 
     return obj_new
 end
 
 """
-    denoise_wien!(obj; channel)
+    denoise_wien!(obj; ch)
 
 Perform Wiener deconvolution denoising.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: index of channels, default is all channels
 """
-function denoise_wien!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
+function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = denoise_wien(obj, channel=channel)
+    obj_tmp = denoise_wien(obj, ch=ch)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
