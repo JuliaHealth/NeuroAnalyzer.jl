@@ -7,6 +7,7 @@ using ContinuousWavelets
 eeg = import_edf("files/eeg-test-edf.edf")
 e10 = epoch(eeg, ep_len=10*sr(eeg))
 keep_epoch!(e10, ep=1:10)
+load_locs!(e10, file_name="../locs/standard-10-20-cap19-elmiko.ced")
 v = [1, 2, 3, 4, 5]
 v1 = [1, 2, 3, 4, 5]
 v2 = [6, 5, 4, 3, 2]
@@ -130,7 +131,6 @@ s, bn, bf = bpsplit(e10)
 @test length(bn) == 10
 @test length(bf) == 10
 @test size(s) == (10, 19, 2560, 10)
-Plots.plot(s[1, 1, :, 1])
 
 @info "test 17/19: fconv()"
 @test fconv(v1, kernel=v2) == [2.0, 2.0, 3.0, 3.0, 2.0]
@@ -242,6 +242,21 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test normalize_invroot(v1) == [0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579, 0.4082482904638631]
 e10_tmp = normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
+
+@info "test 27/19: lrinterpolate_channel()"
+e10_tmp = deepcopy(e10)
+e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
+e10_int = plinterpolate_channel(e10_tmp, ch=1, ep=1)
+@test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
+
+@info "test 28/19: remove_dc()"
+@test remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
+e10_tmp = remove_dc(e10)
+@test size(e10_tmp.data) == (24, 2560, 10)
+
+@info "test 29/19: scale()"
+e10_tmp = scale(e10, factor=2.0)
+@test e10_tmp.data == e10.data .* 2.0
 
 #=
 

@@ -22,7 +22,7 @@ using GLM
 x = 1:10
 y = 1:10
 df = DataFrame(:x=>x, :y=>y)
-m = lm(@formula(y ~ x), df)
+m = GLM.lm(@formula(y ~ x), df)
 aic, bic = NeuroAnalyzer.infcrit(m)
 @test aic == 2.0
 @test bic == 2.302585092994046
