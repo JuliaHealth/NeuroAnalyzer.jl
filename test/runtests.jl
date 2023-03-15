@@ -17,8 +17,8 @@ using Test
     @info "Running edit.jl tests"
     @test include("edit.jl")
 
-    # @info "Running process.jl tests"
-    # @test include("process.jl")
+    @info "Running process.jl tests"
+    @test include("process.jl")
 
     @info "Running analyze.jl tests"
     @test include("analyze.jl")

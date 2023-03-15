@@ -77,9 +77,9 @@ e10_tmp = denoise_wien(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 10/19: derivative()"
-@test derivative(v1) == ones(5)
-@test derivative(a1) == zeros(2, 3, 2)
-e10_tmp = derivative(e10)
+@test NeuroAnalyzer.derivative(v1) == ones(5)
+@test NeuroAnalyzer.derivative(a1) == zeros(2, 3, 2)
+e10_tmp = NeuroAnalyzer.derivative(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 11/19: detrend()"
@@ -205,7 +205,7 @@ eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:lp, cutoff=40, ord
 @test size(eeg_tmp.data) == (24, 2560, 10)
 eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:hp, cutoff=1, order=12, bw=0.5)
 @test size(eeg_tmp.data) == (24, 2560, 10)
-eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:bs, cutoff=(49, 51), order=2, bw=0.5)
+eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:bs, cutoff=(49, 51), order=4, bw=0.1)
 @test size(eeg_tmp.data) == (24, 2560, 10)
 eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:bp, cutoff=(49, 51), order=4, bw=0.5)
 @test size(eeg_tmp.data) == (24, 2560, 10)
@@ -227,24 +227,23 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
 @info "test 26/19: normalize()"
-@show normalize(v1, method=:none) == v1
-@show normalize_zscore(v1) == [-1.2649110640673518, -0.6324555320336759, 0.0, 0.6324555320336759, 1.2649110640673518]
-@show normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
-@show normalize_n(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
-@show normalize_log(v1) == [1.0986122886681098, 1.3862943611198906, 1.6094379124341003, 1.791759469228055, 1.9459101490553132]
-@show normalize_gauss(v1) == [-0.8047189562170504, -0.3465735902799727, 0.0, 0.3465735902799726, 0.8047189562170504]
-@show normalize_log10(v1) == [0.47712125471966244, 0.6020599913279624, 0.6989700043360189, 0.7781512503836436, 0.8450980400142568]
-@show normalize_neglog(v1) == [-0.0, -0.6931471805599453, -1.0986122886681098, -1.3862943611198906, -1.6094379124341003]
-@show normalize_neglog10(v1) == [-0.0, -0.3010299956639812, -0.47712125471966244, -0.6020599913279624, -0.6989700043360189]
-@show normalize_neg(v1) == [-4, -3, -2, -1, 0]
-@show normalize_pos(v1) == [2, 3, 4, 5, 6]
-@show normalize_perc(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
-@show normalize_invroot(v1) == [0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579, 0.4082482904638631]
+@test normalize(v1, method=:none) == v1
+@test normalize_zscore(v1) == [-1.2649110640673518, -0.6324555320336759, 0.0, 0.6324555320336759, 1.2649110640673518]
+@test normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
+@test normalize_n(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
+@test normalize_log(v1) == [1.0986122886681098, 1.3862943611198906, 1.6094379124341003, 1.791759469228055, 1.9459101490553132]
+@test normalize_gauss(v1) == [-0.8047189562170504, -0.3465735902799727, 0.0, 0.3465735902799726, 0.8047189562170504]
+@test normalize_log10(v1) == [0.47712125471966244, 0.6020599913279624, 0.6989700043360189, 0.7781512503836436, 0.8450980400142568]
+@test normalize_neglog(v1) == [-0.0, -0.6931471805599453, -1.0986122886681098, -1.3862943611198906, -1.6094379124341003]
+@test normalize_neglog10(v1) == [-0.0, -0.3010299956639812, -0.47712125471966244, -0.6020599913279624, -0.6989700043360189]
+@test normalize_neg(v1) == [-4, -3, -2, -1, 0]
+@test normalize_pos(v1) == [2, 3, 4, 5, 6]
+@test normalize_perc(v1) == [0.0, 0.25, 0.5, 0.75, 1.0]
+@test normalize_invroot(v1) == [0.7071067811865475, 0.5773502691896258, 0.5, 0.4472135954999579, 0.4082482904638631]
 e10_tmp = normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-
-
+#=
 
 eeg1 = reference_a(eeg)
 @test size(eeg1.data) == (21, 309760, 1)
@@ -558,5 +557,7 @@ c = NeuroAnalyzer.chop(r)
 @test size(extract_data(eeg, channel=1:channel_n(eeg))) == size(eeg.data)
 @test length(extract_time(eeg)) == length(eeg.time_pts)
 @test length(extract_etime(eeg)) == length(eeg.epoch_time)
+
+=#
 
 true

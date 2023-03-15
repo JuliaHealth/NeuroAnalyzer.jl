@@ -24,7 +24,7 @@ function denoise_fft(s::AbstractVector; pad::Int64=0, t::Real=0)
     s_pow = (real.(s_fft .* conj.(s_fft))) ./ length(s)
     
     t == 0 && (t = mean(s_pow))
-    @show t
+
     # zero frequencies with power above threshold
     f_idx = s_pow .> t
     s_fft[f_idx] .= Complex(0, 0)
