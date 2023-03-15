@@ -96,8 +96,6 @@ e10_tmp = detrend(e10, type=:poly)
 @test size(e10_tmp.data) == (24, 2560, 10)
 e10_tmp = detrend(e10, type=:loess)
 @test size(e10_tmp.data) == (24, 2560, 10)
-e10_tmp = detrend(e10, type=:hp)
-@test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 12/19: dw_trans()"
 s = rand(100)

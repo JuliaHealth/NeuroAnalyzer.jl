@@ -10,82 +10,85 @@ export reference_plap
 export reference_plap!
 
 """
-    reference_ch(obj; channel, med)
+    reference_ch(obj; ch, med)
 
-Reference to selected channel(s). Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to selected channel(s). Only signal channels are processed.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 
 # Returns
 
 - `obj::NeuroAnalyzer.NEURO`
 """
-function reference_ch(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
+function reference_ch(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
     # keep signal channels
-    _check_channels(obj, channel)
-    obj_new = deepcopy(obj)
-    channels = signal_channels(obj)
-    signal = @view obj_new.data[channels, :, :]
+    _check_channels(obj, ch)
+    chs = signal_channels(obj)
 
-    ch_n = size(signal, 1)
-    ep_n = size(signal, 3)
+    s = @view obj_new.data[chs, :, :]
+
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            if length(channel) == 1
-                reference_channel = @views vec(signal[channel, :, ep_idx])
-                if ch_idx != channel
-                    @views signal[ch_idx, :, ep_idx] .-= reference_channel
+            if length(ch) == 1
+                ref_ch = @views vec(s[ch, :, ep_idx])
+                if ch_idx != ch
+                    @views s[ch_idx, :, ep_idx] .-= ref_ch
                 end
             else
                 if med == false
-                    reference_channel = @views vec(mean(signal[channel, :, ep_idx], dims=1))
+                    ref_ch = @views vec(mean(s[ch, :, ep_idx], dims=1))
                 else
-                    reference_channel = @views vec(median(signal[channel, :, ep_idx], dims=1))
+                    ref_ch = @views vec(median(s[ch, :, ep_idx], dims=1))
                 end
-                @views signal[ch_idx, :, ep_idx] .-= reference_channel
+                @views s[ch_idx, :, ep_idx] .-= ref_ch
             end
         end
     end
 
-    obj_new.data[channels, :, :] = signal
-    obj_new.header.recording[:reference] = "channel: $channel"
+    obj_new = deepcopy(obj)
+    obj_new.data[chs, :, :] = s
+    obj_new.header.recording[:reference] = "channel: $ch"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_ch(OBJ, channel=$channel, med=$med")
+    push!(obj_new.header.history, "reference_ch(OBJ, ch=$ch, med=$med")
 
     return obj_new
+
 end
 
 """
-    reference_ch!(obj; channel, med)
+    reference_ch!(obj; ch, med)
 
-Reference to selected channel(s). Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to selected channel(s). Only signal channels are processed.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `channel::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
+- `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: index of channels used as reference; if multiple channels are specified, their average is used as the reference
 - `med::Bool=false`: use median instead of mean
 """
-function reference_ch!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
+function reference_ch!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
-    obj_tmp = reference_ch(obj, channel=channel, med=med)
+    obj_tmp = reference_ch(obj, ch=ch, med=med)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
     reference_car(obj; exclude_fpo, exclude_current, med)
 
-Reference to common average reference. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to common average reference. Only signal channels are processed.
 
 # Arguments
 
@@ -101,46 +104,47 @@ Reference to common average reference. Only signal (EEG/MEG, depending on `obj.h
 function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
     # keep signal channels
-    obj_new = deepcopy(obj)
-    channels = signal_channels(obj)
-    signal = @view obj_new.data[channels, :, :]
+    chs = signal_channels(obj)
+    s = @view obj_new.data[chs, :, :]
 
-    ch_n = size(signal, 1)
-    ep_n = size(signal, 3)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            channels2exclude = Vector{Int64}()
+            chs2exclude = Vector{Int64}()
             if exclude_fpo == true
                 l = lowercase.(labels(obj_new))
-                "fp1" in l && push!(channels2exclude, findfirst(isequal("fp1"), l))
-                "fp2" in l && push!(channels2exclude, findfirst(isequal("fp2"), l))
-                "o1" in l && push!(channels2exclude, findfirst(isequal("o1"), l))
-                "o2" in l && push!(channels2exclude, findfirst(isequal("o2"), l))
+                "fp1" in l && push!(chs2exclude, findfirst(isequal("fp1"), l))
+                "fp2" in l && push!(chs2exclude, findfirst(isequal("fp2"), l))
+                "o1" in l && push!(chs2exclude, findfirst(isequal("o1"), l))
+                "o2" in l && push!(chs2exclude, findfirst(isequal("o2"), l))
             end
-            exclude_current == true && push!(channels2exclude, ch_idx)
-            reference_channels = @view signal[setdiff(1:ch_n, unique(channels2exclude)), :, ep_idx]
+            exclude_current == true && push!(chs2exclude, ch_idx)
+            ref_chs = @view s[setdiff(1:ch_n, unique(chs2exclude)), :, ep_idx]
             if med == false
-                reference_channel = vec(mean(reference_channels, dims=1))
+                ref_ch = vec(mean(ref_chs, dims=1))
             else
-                reference_channel = vec(median(reference_channels, dims=1))
+                ref_ch = vec(median(ref_chs, dims=1))
             end
-            @views signal[ch_idx, :, ep_idx] .-= reference_channel
+            @views s[ch_idx, :, ep_idx] .-= ref_ch
         end
     end
 
-    obj_new.data[channels, :, :] = signal
+    obj_new = deepcopy(obj)
+    obj_new.data[chs, :, :] = s
     obj_new.header.recording[:reference] = "CAR"
     reset_components!(obj_new)
     push!(obj_new.header.history, "reference_car(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
 
     return obj_new
+
 end
 
 """
     reference_car!(obj; exclude_fpo, exclude_current, med)
 
-Reference to common average reference. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to common average reference. Only signal channels are processed.
 
 # Arguments
 
@@ -154,15 +158,16 @@ function reference_car!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclu
     obj_tmp = reference_car(obj, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
     reference_a(obj; type, med)
 
-Reference to auricular (A1, A2) channels. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Arguments
 
@@ -184,92 +189,93 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     all(iszero, occursin.("a2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
 
     # keep signal channels
-    channels = signal_channels(obj)
-    signal = @view obj.data[channels, :, :]
+    chs = signal_channels(obj)
+    s = @view obj.data[chs, :, :]
 
     a1_idx = findfirst(isequal("A1"), obj.header.recording[:labels])
     a2_idx = findfirst(isequal("A2"), obj.header.recording[:labels])
-    a1 = extract_channel(obj, channel=a1_idx)
-    a2 = extract_channel(obj, channel=a2_idx)
+    a1 = extract_channel(obj, ch=a1_idx)
+    a2 = extract_channel(obj, ch=a2_idx)
 
-    ch_n = size(signal, 1)
-    ep_n = size(signal, 3)
-    s_ref = similar(signal)
+    ch_n = size(s, 1)
+    ep_n = size(s, 3)
+    s_ref = similar(s)
 
     if type === :l
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+            ref_ch = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             Threads.@threads for ch_idx in 1:ch_n
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     elseif type === :i
-        central_picks = pick(obj, pick=:central)
+        c_picks = pick(obj, p=:central)
         @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+                ref_ch = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+                ref_ch = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             end
-            Threads.@threads for ch_idx in central_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
-            end
-        end
-        left_picks = pick(obj, pick=:left)
-        @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(a1[:, :, ep_idx])
-            Threads.@threads for ch_idx in left_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            Threads.@threads for ch_idx in c_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
             end
         end
-        right_picks = pick(obj, pick=:right)
+        l_picks = pick(obj, p=:left)
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(a2[:, :, ep_idx])
-            Threads.@threads for ch_idx in right_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            ref_ch = @views vec(a1[:, :, ep_idx])
+            Threads.@threads for ch_idx in l_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
+            end
+        end
+        r_picks = pick(obj, p=:right)
+        @inbounds @simd for ep_idx in 1:ep_n
+            ref_ch = @views vec(a2[:, :, ep_idx])
+            Threads.@threads for ch_idx in r_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     elseif type === :c
-        central_picks = pick(obj, pick=:central)
+        c_picks = pick(obj, p=:central)
         @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+                ref_ch = @views vec(mean([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
+                ref_ch = @views vec(median([a1[:, :, ep_idx], a2[:, :, ep_idx]]))
             end
-            Threads.@threads for ch_idx in central_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
-            end
-        end
-        left_picks = pick(obj, pick=:left)
-        @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(a2[:, :, ep_idx])
-            Threads.@threads for ch_idx in left_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            Threads.@threads for ch_idx in c_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
             end
         end
-        right_picks = pick(obj, pick=:right)
+        l_picks = pick(obj, p=:left)
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(a1[:, :, ep_idx])
-            Threads.@threads for ch_idx in right_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            ref_ch = @views vec(a2[:, :, ep_idx])
+            Threads.@threads for ch_idx in l_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
+            end
+        end
+        r_picks = pick(obj, p=:right)
+        @inbounds @simd for ep_idx in 1:ep_n
+            ref_ch = @views vec(a1[:, :, ep_idx])
+            Threads.@threads for ch_idx in r_picks
+                s_ref[ch_idx, :, ep_idx] = @views s[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     end
 
     obj_new = deepcopy(obj)
-    obj_new.data[channels, :, :] = s_ref
+    obj_new.data[chs, :, :] = s_ref
     obj_new.header.recording[:reference] = "A ($type)"
     reset_components!(obj_new)
     push!(obj_new.header.history, "reference_a(OBJ, type=$type, med=$med)")
 
     return obj_new
+
 end
 
 """
     reference_a!(obj; type, med)
 
-Reference to auricular (A1, A2) channels. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to auricular (A1, A2) channels. Only signal channels are processed.
 
 # Arguments
 
@@ -285,15 +291,16 @@ function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
     obj_tmp = reference_a(obj, type=type, med=med)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
     reference_m(obj; type, med)
 
-Reference to mastoid (M1, M2) channels. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Arguments
 
@@ -320,8 +327,8 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     m1_idx = findfirst(isequal("M1"), obj.header.recording[:labels])
     m2_idx = findfirst(isequal("M2"), obj.header.recording[:labels])
-    m1 = extract_channel(obj, channel=m1_idx)
-    m2 = extract_channel(obj, channel=m2_idx)
+    m1 = extract_channel(obj, ch=m1_idx)
+    m2 = extract_channel(obj, ch=m2_idx)
 
     ch_n = size(signal, 1)
     ep_n = size(signal, 3)
@@ -329,61 +336,61 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     if type === :l
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+            ref_ch = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             Threads.@threads for ch_idx in 1:ch_n
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     elseif type === :i
-        central_picks = pick(obj, pick=:central)
+        c_picks = pick(obj, p=:central)
         @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+                ref_ch = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+                ref_ch = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             end
-            Threads.@threads for ch_idx in central_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
-            end
-        end
-        left_picks = pick(obj, pick=:left)
-        @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(m1[:, :, ep_idx])
-            Threads.@threads for ch_idx in left_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            Threads.@threads for ch_idx in c_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
             end
         end
-        right_picks = pick(obj, pick=:right)
+        l_picks = pick(obj, p=:left)
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(m2[:, :, ep_idx])
-            Threads.@threads for ch_idx in right_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            ref_ch = @views vec(m1[:, :, ep_idx])
+            Threads.@threads for ch_idx in l_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
+            end
+        end
+        r_picks = pick(obj, p=:right)
+        @inbounds @simd for ep_idx in 1:ep_n
+            ref_ch = @views vec(m2[:, :, ep_idx])
+            Threads.@threads for ch_idx in r_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     elseif type === :c
-        central_picks = pick(obj, pick=:central)
+        c_picks = pick(obj, p=:central)
         @inbounds @simd for ep_idx in 1:ep_n
             if med == false
-                reference_channel = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+                ref_ch = @views vec(mean([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             else
-                reference_channel = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
+                ref_ch = @views vec(median([m1[:, :, ep_idx], m2[:, :, ep_idx]]))
             end
-            Threads.@threads for ch_idx in central_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
-            end
-        end
-        left_picks = pick(obj, pick=:left)
-        @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(m2[:, :, ep_idx])
-            Threads.@threads for ch_idx in left_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            Threads.@threads for ch_idx in c_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
             end
         end
-        right_picks = pick(obj, pick=:right)
+        l_picks = pick(obj, p=:left)
         @inbounds @simd for ep_idx in 1:ep_n
-            reference_channel = @views vec(m1[:, :, ep_idx])
-            Threads.@threads for ch_idx in right_picks
-                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- reference_channel
+            ref_ch = @views vec(m2[:, :, ep_idx])
+            Threads.@threads for ch_idx in l_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
+            end
+        end
+        r_picks = pick(obj, p=:right)
+        @inbounds @simd for ep_idx in 1:ep_n
+            ref_ch = @views vec(m1[:, :, ep_idx])
+            Threads.@threads for ch_idx in r_picks
+                s_ref[ch_idx, :, ep_idx] = @views signal[ch_idx, :, ep_idx] .- ref_ch
             end
         end
     end
@@ -400,7 +407,7 @@ end
 """
     reference_m!(obj; type, med)
 
-Reference to mastoid (M1, M2) channels. Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 
 # Arguments
 
@@ -416,15 +423,16 @@ function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false
     obj_tmp = reference_m(obj, type=type, med=med)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
 
 """
     reference_plap(obj; nn, weights)
 
-Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
 
 # Arguments
 
@@ -514,7 +522,7 @@ end
 """
     reference_plap!(obj; nn, weights)
 
-Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal (EEG/MEG, depending on `obj.header.recording[:data_type]`) channels are processed.
+Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal channels are processed.
 
 # Arguments
 
@@ -528,7 +536,8 @@ function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fa
     obj_tmp = reference_plap(obj, nn=nn, weights=weights, med=med)
     obj.data = obj_tmp.data
     obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj.components = obj_tmp.components
 
     return nothing
+
 end
