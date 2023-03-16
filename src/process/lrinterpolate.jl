@@ -52,7 +52,7 @@ function lrinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{In
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep)")
+    push!(obj_new.history, "lrinterpolate_channel(OBJ, ch=$ch, ep=$ep)")
 
     return obj_new
     
@@ -75,10 +75,11 @@ Interpolate channel using linear regression.
 """
 function lrinterpolate_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = lrinterpolate_channel(obj, ch=ch, ep=ep)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj_new = lrinterpolate_channel(obj, ch=ch, ep=ep)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
+
 end

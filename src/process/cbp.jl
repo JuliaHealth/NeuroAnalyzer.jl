@@ -61,7 +61,7 @@ function cbp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstrac
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "cbp(OBJ, ch=$ch, pad=$pad, frq=$frq)")
+    push!(obj_new.history, "cbp(OBJ, ch=$ch, pad=$pad, frq=$frq)")
 
     return obj_new
     
@@ -81,10 +81,10 @@ Perform convolution bandpass filtering.
 """
 function cbp!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real)
 
-    obj_tmp = cbp(obj, ch=ch, pad=pad, frq=frq)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = cbp(obj, ch=ch, pad=pad, frq=frq)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

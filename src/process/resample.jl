@@ -115,10 +115,13 @@ Resample (up- or down-sample).
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
-    obj_tmp = resample(obj, new_sr=new_sr)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = resample(obj, new_sr=new_sr)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
 
@@ -152,7 +155,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.epoch_time = obj_new.epoch_time[1]:(1 / new_sr):obj_new.epoch_time[end]
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
-    push!(obj_new.header.history, "upsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.history, "upsample(OBJ, new_sr=$new_sr)")
 
     return obj_new
 
@@ -170,12 +173,13 @@ Upsample.
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
-    obj_tmp = upsample(obj, new_sr=new_sr)
-    obj.data = obj_tmp.data
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = upsample(obj, new_sr=new_sr)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
 
@@ -211,7 +215,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     obj_new.epoch_time = linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(s_new, 2))
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
-    push!(obj_new.header.history, "downsample(OBJ, new_sr=$new_sr)")
+    push!(obj_new.history, "downsample(OBJ, new_sr=$new_sr)")
 
     return obj_new
 
@@ -229,11 +233,13 @@ Downsample.
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
-    obj_tmp = downsample(obj, new_sr=new_sr)
-    obj.data = obj_tmp.data
-    obj.time_pts = obj_tmp.time_pts
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = downsample(obj, new_sr=new_sr)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
 

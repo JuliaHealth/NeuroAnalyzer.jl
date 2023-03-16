@@ -84,7 +84,7 @@ function filter_sg(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_sg(obj.data[ch, :, :], order=order, window=window)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window")
+    push!(obj_new.history, "filter_sg(OBJ, ch=$ch, order=$order, window=$window")
 
     return obj_new
 
@@ -105,10 +105,10 @@ Filter using Savitzky-Golay filter.
 """
 function filter_sg!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), order::Int64=6, window::Int64=11)
 
-    obj_tmp = filter_sg(obj, ch=ch, order=order, window=window)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = filter_sg(obj, ch=ch, order=order, window=window)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

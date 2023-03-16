@@ -54,7 +54,7 @@ function delete_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}
     obj_new.data =obj_new.data[setdiff(1:end, (ch)), :, :]
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "delete_channel(OBJ, ch=$ch)")
+    push!(obj_new.history, "delete_channel(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -73,9 +73,9 @@ Delete channel(s).
 function delete_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = delete_channel(obj, ch=ch)
-    obj.header = obj_new.header    
-    obj.data = obj_new.data    
-    obj.components = obj_new.components    
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 
@@ -123,9 +123,9 @@ Keep channel(s).
 function keep_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange})
 
     obj_new = keep_channel(obj, ch=ch)
-    obj.header = obj_new.header    
-    obj.data = obj_new.data    
-    obj.components = obj_new.components    
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 
@@ -173,9 +173,10 @@ Keep OBJ channels of `type` type.
 function keep_channel_type!(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
     obj_new = keep_channel_type(obj, type=type)
-    obj.header = obj_new.header    
-    obj.data = obj_new.data    
-    obj.components = obj_new.components  
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
+
 end

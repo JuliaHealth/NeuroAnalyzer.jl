@@ -347,7 +347,7 @@ function normalize(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "normalize(OBJ, ch=$ch, method=$method)")
+    push!(obj_new.history, "normalize(OBJ, ch=$ch, method=$method)")
 
     return obj_new
 end
@@ -365,10 +365,10 @@ Normalize channel(s)
 """
 function normalize!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), method::Symbol)
 
-    obj_tmp = normalize(obj, channel=channel, method=method)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = normalize(obj, channel=channel, method=method)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

@@ -68,7 +68,7 @@ function wbp(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:Ab
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "wbp(OBJ, channel=$channel, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
+    push!(obj_new.history, "wbp(OBJ, channel=$channel, pad=$pad, frq=$frq, ncyc=$ncyc, demean=$demean)")
 
     return obj_new
 end
@@ -89,11 +89,12 @@ Perform wavelet bandpass filtering.
 """
 function wbp!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, frq::Real, ncyc::Int64=6, demean::Bool=true)
 
-    obj_tmp = wbp(obj, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj_new = wbp(obj, channel=channel, pad=pad, frq=frq, ncyc=ncyc, demean=demean)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
+
 end
 

@@ -76,7 +76,7 @@ function denoise_wavelet(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     obj_new = deepcopy(obj)
     obj_new.data = @views denoise_wavelet(obj.data[ch, :, :], wt=wt)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "denoise_wavelet(OBJ, wt=$wt)")
+    push!(obj_new.history, "denoise_wavelet(OBJ, wt=$wt)")
 
     return obj_new
 
@@ -95,10 +95,10 @@ Perform wavelet denoising.
 """
 function denoise_wavelet!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), wt::T) where {T<:DiscreteWavelet}
 
-    obj_tmp = denoise_wavelet(obj, ch=ch, wt=wt)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = denoise_wavelet(obj, ch=ch, wt=wt)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

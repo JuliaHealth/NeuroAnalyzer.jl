@@ -23,6 +23,5 @@ function view_header(obj::NeuroAnalyzer.NEURO)
     for (key, value) in obj.header.experiment
         println("header.experiment[:$key]: $value")
     end
-    println("header.history: $(obj.header.history)")
 
 end

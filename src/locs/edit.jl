@@ -43,7 +43,7 @@ function edit_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Int64}, x::Union{
     phi_sph !== nothing && (obj_new.locs[ch, :loc_phi_sph] = phi_sph)
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
+    push!(obj_new.history, "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
 
     return obj_new
 
@@ -71,10 +71,10 @@ Edit electrode.
 """
 function edit_locs!(obj::NeuroAnalyzer.NEURO; ch::Union{String, Int64}, x::Union{Real, Nothing}=nothing, y::Union{Real, Nothing}=nothing, z::Union{Real, Nothing}=nothing, theta::Union{Real, Nothing}=nothing, radius::Union{Real, Nothing}=nothing, theta_sph::Union{Real, Nothing}=nothing, radius_sph::Union{Real, Nothing}=nothing, phi_sph::Union{Real, Nothing}=nothing, name::String="", type::String="")
 
-    obj_tmp = edit_locs(obj, ch=ch, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
-    obj.header = obj_tmp.header
-    obj.locs = obj_tmp.locs
-    obj.components = obj_tmp.components
+    obj_new = edit_locs(obj, ch=ch, x=x, y=y, z=z, theta=theta, radius=radius, theta_sph=theta_sph, radius_sph=radius_sph, phi_sph=phi_sph, name=name, type=type)
+    obj.locs = obj_new.locs
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

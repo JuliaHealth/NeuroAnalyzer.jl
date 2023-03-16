@@ -146,7 +146,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[pc_idx], pc_model=obj_new.components[pc_m_idx])
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "pca_reconstruct(OBJ, ch=$ch)")
+    push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -164,10 +164,10 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 """
 function pca_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = pca_reconstruct(obj, ch=ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = pca_reconstruct(obj, ch=ch)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -198,7 +198,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_mod
     obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=pc, pc_model=pc_model)
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "pca_reconstruct(OBJ, ch=$ch, pc=$pc, pc_model=$pc_model)")
+    push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch, pc=$pc, pc_model=$pc_model)")
 
     return obj_new
 
@@ -218,10 +218,10 @@ Reconstruct signals using external PCA components (`pc` and `pc_model`).
 """
 function pca_reconstruct!(obj::NeuroAnalyzer.NEURO, pc::Array{Float64, 3}, pc_model::MultivariateStats.PCA{Float64}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    tmp = pca_reconstruct(obj, pc, pc_model, ch=ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = pca_reconstruct(obj, pc, pc_model, ch=ch)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

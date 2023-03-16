@@ -66,7 +66,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
     obj_new.epoch_time = round.(epoch_time, digits=3)
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "epoch(OBJ, marker=$marker, ep_offset=$ep_offset, ep_n=$ep_n, ep_len=$ep_len)")
+    push!(obj_new.history, "epoch(OBJ, marker=$marker, ep_offset=$ep_offset, ep_n=$ep_n, ep_len=$ep_len)")
 
     return obj_new
 
@@ -88,11 +88,12 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
     obj_tmp = epoch(obj, marker=marker, ep_offset=ep_offset, ep_n=ep_n, ep_len=ep_len)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
+    obj.header = obj_new.header
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
-    obj.components = obj_tmp.components
 
     return nothing
 
@@ -120,7 +121,7 @@ function epoch_time(obj::NeuroAnalyzer.NEURO; ts::Real)
     obj_new = deepcopy(obj)
     obj_new.epoch_time = new_epochs_time
 
-    push!(obj_new.header.history, "epoch_time(OBJ, ts=$ts)")
+    push!(obj_new.history, "epoch_time(OBJ, ts=$ts)")
 
     return obj_new
 
@@ -143,7 +144,7 @@ Edit OBJ epochs time start.
 function epoch_time!(obj::NeuroAnalyzer.NEURO; ts::Real)
 
     obj_tmp = epoch_time(obj, ts=ts)
-    obj.header = obj_tmp.header
+    obj.history = obj_tmp.history
     obj.epoch_time = obj_tmp.epoch_time
 
     return nothing

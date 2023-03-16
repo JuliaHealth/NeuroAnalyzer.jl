@@ -72,7 +72,7 @@ function remove_dc(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:A
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views remove_dc(obj.data[ch, :, :])
     reset_components!(obj_new)
-    push!(obj_new.header.history, "remove_dc(OBJ, ch=$ch)")
+    push!(obj_new.history, "remove_dc(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -90,10 +90,10 @@ Remove mean value (DC offset).
 """
 function remove_dc!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = remove_dc(obj, ch=ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = remove_dc(obj, ch=ch)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

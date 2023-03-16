@@ -204,7 +204,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
     obj_new.data[ch, :, :] = @views ica_reconstruct(obj_new.data[ch, :, :], ic=obj_new.components[ic_idx], ic_mw=obj_new.components[ic_mw_idx], ic_idx=ic_idx)
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx)")
+    push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx)")
 
     return obj_new
 
@@ -223,10 +223,10 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 """
 function ica_reconstruct!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = ica_reconstruct(obj, ch=ch, ic_idx=ic_idx)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = ica_reconstruct(obj, ch=ch, ic_idx=ic_idx)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -257,7 +257,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw:
     obj_new.data[ch, :, :] = @views ica_reconstruct(obj_new.data[ch, :, :], ic=ic, ic_mw=ic_mw, ic_idx=ic_idx)
     
     reset_components!(obj_new)
-    push!(obj_new.header.history, "ica_reconstruct(OBJ, ic=$ic, ic_mw=$ic_mw, ch=$ch, ic_idx=$ic_idx)")
+    push!(obj_new.history, "ica_reconstruct(OBJ, ic=$ic, ic_mw=$ic_mw, ch=$ch, ic_idx=$ic_idx)")
 
     return obj_new
 
@@ -278,10 +278,10 @@ Reconstruct signals using external ICA components (`ic` and `ic_mw`).
 """
 function ica_reconstruct!(obj::NeuroAnalyzer.NEURO, ic::Array{Float64, 3}, ic_mw::Array{Float64, 3}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = ica_reconstruct(obj, ic, ic_mw, ch=ch, ic_idx=ic_idx)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

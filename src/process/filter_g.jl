@@ -95,7 +95,7 @@ function filter_g(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views filter_g(obj.data[ch, :, :], fs=sr(obj), pad=pad, f=f, gw=gw)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
+    push!(obj_new.history, "filter_g(OBJ, ch=$ch, pad=$pad, f=$f)")
 
     return obj_new
 
@@ -116,10 +116,10 @@ Filter using Gaussian in the frequency domain.
 """
 function filter_g!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, f::Real, gw::Real=5)
 
-    obj_tmp = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj_new = filter_g(obj, ch=ch, pad=pad, f=f, gw=gw)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

@@ -49,7 +49,7 @@ function taper(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "taper(OBJ, channel=$channel), t=$t")
+    push!(obj_new.history, "taper(OBJ, channel=$channel), t=$t")
 
     return obj_new
 end
@@ -67,10 +67,11 @@ Taper channel(s).
 """
 function taper!(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), taper::Union{Vector{<:Real}, Vector{ComplexF64}})
 
-    obj_tmp = taper(obj, channel=channel, t=t)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj_new = taper(obj, channel=channel, t=t)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
+
 end

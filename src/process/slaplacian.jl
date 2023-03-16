@@ -96,7 +96,7 @@ function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "slaplacian(OBJ, m=m, n=n, s=s)")
+    push!(obj_new.history, "slaplacian(OBJ, m=m, n=n, s=s)")
 
     return obj_new, G, H
 end
@@ -124,10 +124,11 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 """
 function slaplacian!(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64=10^-5)
 
-    obj_tmp, G, H = slaplacian(obj, m=m, n=n, s=s)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new, G, H = slaplacian(obj, m=m, n=n, s=s)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return G, H
+
 end

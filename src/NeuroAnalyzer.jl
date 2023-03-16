@@ -64,7 +64,6 @@ mutable struct HEADER
     subject::Dict
     recording::Dict
     experiment::Dict
-    history::Vector{String}
 end
 
 mutable struct NEURO
@@ -75,6 +74,7 @@ mutable struct NEURO
     components::Dict{Any}
     markers::DataFrame
     locs::DataFrame
+    history::Vector{String}
 end
 
 mutable struct STUDY

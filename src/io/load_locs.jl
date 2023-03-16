@@ -104,7 +104,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     maximize == true && locs_maximize!(obj_new.locs)
 
     # add entry to :history field
-    push!(obj_new.header.history, "load_locs(OBJ, file_name=$file_name)")
+    push!(obj_new.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
     

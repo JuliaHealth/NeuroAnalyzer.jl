@@ -133,7 +133,7 @@ function detrend(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = detrend(obj.data[ch, :, :], type=type, offset=offset, order=order, f=f, fs=sr(obj))
     reset_components!(obj_new)
-    push!(obj_new.header.history, "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
+    push!(obj_new.history, "detrend(OBJ, ch=$ch, type=$type, offset=$offset, order=$order, f=$f)")
 
     return obj_new
 
@@ -160,10 +160,10 @@ Perform piecewise detrending.
 """
 function detrend!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), type::Symbol=:linear, offset::Real=0, order::Int64=1, f::Float64=1.0)
 
-    obj_tmp = detrend(obj, ch=ch, type=type, offset=offset, order=order, f=f)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = detrend(obj, ch=ch, type=type, offset=offset, order=order, f=f)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

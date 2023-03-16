@@ -101,7 +101,7 @@ function fconv(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = fconv(obj.data[ch, :, :], kernel=kernel, norm=norm, pad=pad)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "fconv(OBJ, ch=$ch, kernel=$kernel, norm=$norm, pad=$pad)")
+    push!(obj_new.history, "fconv(OBJ, ch=$ch, kernel=$kernel, norm=$norm, pad=$pad)")
 
     return obj_new
 
@@ -122,10 +122,10 @@ Perform convolution in the frequency domain.
 """
 function fconv!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), kernel::Union{Vector{<:Real}, Vector{ComplexF64}}, norm::Bool=true, pad::Int64=0)
 
-    obj_tmp = fconv(obj, ch=ch, kernel=kernel, norm=norm, pad=pad)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = fconv(obj, ch=ch, kernel=kernel, norm=norm, pad=pad)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

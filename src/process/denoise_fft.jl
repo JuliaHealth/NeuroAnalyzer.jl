@@ -89,7 +89,7 @@ function denoise_fft(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views denoise_fft(obj.data[ch, :, :], pad=pad, t=t)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
+    push!(obj_new.history, "denoise_fft(OBJ, ch=$ch, pad=$pad, t=$t)")
 
     return obj_new
 
@@ -109,10 +109,10 @@ Perform FFT denoising.
 """
 function denoise_fft!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), pad::Int64=0, t::Int64=100)
 
-    obj_tmp = denoise_fft(obj, ch=ch, pad=pad, t=t)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = denoise_fft(obj, ch=ch, pad=pad, t=t)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

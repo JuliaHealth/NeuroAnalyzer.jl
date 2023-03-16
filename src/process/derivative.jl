@@ -72,7 +72,7 @@ function derivative(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = derivative(obj.data[ch, :, :])
     reset_components!(obj_new)
-    push!(obj_new.header.history, "derivative(OBJ, ch=$ch)")
+    push!(obj_new.history, "derivative(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -90,10 +90,10 @@ Return derivative of the same length.
 """
 function derivative!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = derivative(obj, ch=ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = derivative(obj, ch=ch)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

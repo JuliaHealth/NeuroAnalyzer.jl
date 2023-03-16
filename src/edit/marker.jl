@@ -48,7 +48,7 @@ function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     deleteat!(obj_new.markers, n)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "delete_marker(OBJ; n=$n)")
+    push!(obj_new.history, "delete_marker(OBJ; n=$n)")
     
     return obj_new
 end
@@ -65,11 +65,12 @@ Delete marker.
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)
 
-    obj_tmp = delete_marker(obj, n=n)
-    obj.markers = obj_tmp.markers
-    reset_components!(obj)
+    obj_new = delete_marker(obj, n=n)
+    obj.history = obj_new.history
+    obj.markers = obj_new.markers
 
     return nothing
+
 end
 
 """
@@ -101,7 +102,7 @@ function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch))
     sort!(obj_new.markers)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "add_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, ch=$ch)")
+    push!(obj_new.history, "add_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, ch=$ch)")
 
     return obj_new
 end
@@ -122,11 +123,12 @@ Add marker.
 """
 function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int64=1, desc::String, ch::Int64=0)
 
-    obj_tmp = add_marker(obj, id=id, start=start, len=len, desc=desc, ch=ch)
-    obj.markers = obj_tmp.markers
-    reset_components!(obj)
+    obj_new = add_marker(obj, id=id, start=start, len=len, desc=desc, ch=ch)
+    obj.history = obj_new.history
+    obj.markers = obj_new.markers
 
     return nothing
+
 end
 
 """
@@ -161,7 +163,7 @@ function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int6
     obj_new = deepcopy(obj)
     obj_new.markers[n, :] = Dict(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch)
      reset_components!(obj_new)
-    push!(obj_new.header.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, ch=$ch)")
+    push!(obj_new.history, "edit_marker(OBJ; id=$id, start=$start, len=$len, desc=$desc, ch=$ch)")
 
     return obj_new
 end
@@ -183,9 +185,10 @@ Edit marker.
 """
 function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, ch::Int64)
 
-    obj_tmp = edit_marker(obj, n=n, id=id, start=start, len=len, desc=desc, ch=ch)
-    obj.markers = obj_tmp.markers
-    reset_components!(obj)
+    obj_new = edit_marker(obj, n=n, id=id, start=start, len=len, desc=desc, ch=ch)
+    obj.history = obj_new.history
+    obj.markers = obj_new.markers
 
     return nothing
+
 end

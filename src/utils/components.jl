@@ -56,7 +56,7 @@ function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol
     c = pop!(obj.components, c_old)
     push!(obj_new.components, c_new=>c)
 
-    push!(obj_new.header.history, "rename_component(OBJ, c_old=$c_old, c_new=$c_new)")
+    push!(obj_new.history, "rename_component(OBJ, c_old=$c_old, c_new=$c_new)")
 
     return obj_new
     
@@ -76,6 +76,7 @@ Rename component.
 function rename_component!(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol)
 
     obj_new = rename_component(obj, c_old=c_old, c_new=c_new)
+    obj.history = obj_new.history
     obj.components = obj_new.components
 
     return nothing
@@ -106,7 +107,7 @@ function add_component(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
     push!(obj_new.components, c=>v)
     
     # update history
-    push!(obj_new.header.history, "add_component(OBJ, c=$c, v=$v)")
+    push!(obj_new.history, "add_component(OBJ, c=$c, v=$v)")
 
     return obj_new
 
@@ -127,6 +128,7 @@ function add_component!(obj::NeuroAnalyzer.NEURO; c::Symbol, v::Any)
 
     obj_new = add_component(obj, c=c, v=v)
     obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 
@@ -196,7 +198,7 @@ function delete_component(obj::NeuroAnalyzer.NEURO; c::Symbol)
     obj_new = deepcopy(obj)
     pop!(obj_new.components, c)
 
-    push!(obj_new.header.history, "delete_component(OBJ, c=$c)")
+    push!(obj_new.history, "delete_component(OBJ, c=$c)")
     
     return obj_new
 
@@ -215,6 +217,7 @@ Delete component.
 function delete_component!(obj::NeuroAnalyzer.NEURO; c::Symbol)
 
     obj_new = delete_component(obj, c=c)
+    obj.history = obj_new.history
     obj.components = obj_new.components
 
     return nothing
@@ -238,6 +241,7 @@ function reset_components(obj::NeuroAnalyzer.NEURO)
 
     obj_new = deepcopy(obj)
     obj_new.components = Dict()
+    push!(obj_new.history, "reset_components(OBJ)")
 
     return obj_new
 
@@ -254,7 +258,9 @@ Remove all components.
 """
 function reset_components!(obj::NeuroAnalyzer.NEURO)
 
-    obj.components = Dict()
+    obj_new = reset_components(obj)
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

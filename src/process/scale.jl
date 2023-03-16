@@ -23,7 +23,7 @@ function scale(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstr
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = @views obj_new.data[ch, :, :] .* factor
     reset_components!(obj_new)
-    push!(obj_new.header.history, "scale(OBJ, ch=$ch, factor=$factor)")
+    push!(obj_new.history, "scale(OBJ, ch=$ch, factor=$factor)")
 
     return obj_new
 
@@ -42,10 +42,10 @@ Multiply channel(s) by `factor`.
 """
 function scale!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), factor::Real)
 
-    obj_tmp = scale(obj, ch=ch, factor=factor)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = scale(obj, ch=ch, factor=factor)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

@@ -52,7 +52,7 @@ function denoise_wien(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = denoise_wien(obj_new.data[ch, :, :])
     reset_components!(obj_new)
-    push!(obj_new.header.history, "denoise_wien(OBJ, ch=$ch)")
+    push!(obj_new.history, "denoise_wien(OBJ, ch=$ch)")
 
     return obj_new
 end
@@ -69,10 +69,10 @@ Perform Wiener deconvolution denoising.
 """
 function denoise_wien!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    obj_tmp = denoise_wien(obj, ch=ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = denoise_wien(obj, ch=ch)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

@@ -73,6 +73,7 @@ function channel_type!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type:
 
     obj_new = channel_type(obj, ch=ch, type=type)
     obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 
@@ -178,6 +179,7 @@ function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, nam
 
     obj_new = rename_channel(obj, ch=ch, name=name)
     obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 
@@ -231,6 +233,7 @@ function edit_channel!(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value
     
     obj_new = edit_channel(obj, ch=ch, field=field, value=value)
     obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 
@@ -296,6 +299,7 @@ function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s:
     obj_new = replace_channel(obj, ch=ch, s=s)
     obj.header = obj_new.header
     obj.data = obj_new.data
+    obj.history = obj_new.history
     obj.components = obj_new.components
 
     return nothing
@@ -342,6 +346,7 @@ function add_labels!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
 
     obj_new = add_labels(obj, clabels=clabels)
     obj.header = obj_new.header
+    obj.history = obj_new.history
 
     return nothing
 

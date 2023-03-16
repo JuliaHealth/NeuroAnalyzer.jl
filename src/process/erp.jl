@@ -29,7 +29,7 @@ function erp(obj::NeuroAnalyzer.NEURO)
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "erp(OBJ)")
+    push!(obj_new.history, "erp(OBJ)")
 
     return obj_new
 end
@@ -45,12 +45,13 @@ Average epochs.
 """
 function erp!(obj::NeuroAnalyzer.NEURO)
 
-    obj_tmp = erp(obj)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.time_pts = obj_tmp.time_pts
-    obj.markers = obj_tmp.markers
-    obj.components = obj_tmp.components
+    obj_new = erp(obj)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
+    obj.header = obj_new.header
+    obj.time_pts = obj_new.time_pts
+    obj.markers = obj_new.markers
 
     return nothing
 

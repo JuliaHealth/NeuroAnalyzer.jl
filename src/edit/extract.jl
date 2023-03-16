@@ -1,5 +1,6 @@
 export extract_channel
 export extract_epoch
+export extract_epoch!
 export extract_data
 export extract_time
 export extract_eptime
@@ -66,9 +67,32 @@ function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)
     obj_new.epoch_time = obj.epoch_time
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "extract_epoch(OBJ, ep=$ep)")
+    push!(obj_new.history, "extract_epoch(OBJ, ep=$ep)")
 
     return obj_new
+
+end
+
+"""
+    extract_epoch!(obj; ep)
+
+Extract epoch.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`
+- `ep::Int64`: epoch index
+"""
+function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)
+
+    obj_new = extract_epoch(obj, ep=ep)
+    obj.header = obj_new.header
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+
+    return nothing
 
 end
 

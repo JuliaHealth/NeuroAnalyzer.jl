@@ -99,7 +99,7 @@ function filter_mmed(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <
     obj_new = deepcopy(obj)
     obj_new.data[ch, :, :] = filter_mmed(obj.data[ch, :, :], k=k, t=t, window=window)
     reset_components!(obj_new)
-    push!(obj_new.header.history, "filter_mmed(OBJ, ch=$ch, k=$k, t=$t, window=$window")
+    push!(obj_new.history, "filter_mmed(OBJ, ch=$ch, k=$k, t=$t, window=$window")
 
     return obj_new
 
@@ -121,10 +121,10 @@ Filter using moving median filter (with threshold).
 """
 function filter_mmed!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), k::Int64=8, t::Real=0, window::AbstractVector=ones(2 * k + 1))
 
-    obj_tmp = filter_mmed(obj, ch=ch, k=k, t=t, window=window)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = filter_mmed(obj, ch=ch, k=k, t=t, window=window)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

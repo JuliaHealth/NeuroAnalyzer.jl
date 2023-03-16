@@ -53,7 +53,7 @@ function add_signal(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "add_signal(OBJ, ch=$ch)")
+    push!(obj_new.history, "add_signal(OBJ, ch=$ch)")
 
     return obj_new
 
@@ -72,10 +72,10 @@ Add signal.
 """
 function add_signal!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), s::AbstractVector)
 
-    obj_tmp = add_signal(obj, ch=ch, s=s)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = add_signal(obj, ch=ch, s=s)
+    obj.data = obj_new.data
+    obj.components = obj_new.components
+    obj.history = obj_new.history
 
     return nothing
 

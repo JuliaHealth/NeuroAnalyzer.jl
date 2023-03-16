@@ -23,16 +23,17 @@ function standardize(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int6
 
     scaler = Vector{Any}()
 
-    new = deepcopy(obj)
+    obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
         @views push!(scaler, StatsBase.fit(ZScoreTransform, obj.data[channel, :, ep_idx], dims=2)) 
-        @views new.data[channel,:, ep_idx] = StatsBase.transform(scaler[ep_idx], obj.data[channel, :, ep_idx])
+        @views obj_new.data[channel,:, ep_idx] = StatsBase.transform(scaler[ep_idx], obj.data[channel, :, ep_idx])
     end
 
-    reset_components!(new)
-    push!(new.header.history, "standardize(OBJ)")
+    reset_components!(obj_new)
+    push!(obj_new.history, "standardize(OBJ)")
 
-    return new, scaler
+    return obj_new, scaler
+
 end
 
 """
@@ -51,10 +52,11 @@ Standardize channels.
 """
 function standardize!(obj::NeuroAnalyzer.NEURO)
 
-    tmp, scaler = standardize(obj, channel=channel)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    reset_components!(obj)
+    obj_new, scaler = standardize(obj, channel=channel)
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return scaler
+
 end

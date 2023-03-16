@@ -207,7 +207,7 @@ Show processing history.
 """
 function history(obj::NeuroAnalyzer.NEURO)
 
-    return obj.header.history
+    return obj.history
 
 end
 

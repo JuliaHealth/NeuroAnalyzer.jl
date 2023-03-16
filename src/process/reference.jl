@@ -57,7 +57,7 @@ function reference_ch(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, 
     obj_new.data[chs, :, :] = s
     obj_new.header.recording[:reference] = "channel: $ch"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_ch(OBJ, ch=$ch, med=$med")
+    push!(obj_new.history, "reference_ch(OBJ, ch=$ch, med=$med")
 
     return obj_new
 
@@ -76,10 +76,11 @@ Reference to selected channel(s). Only signal channels are processed.
 """
 function reference_ch!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, med::Bool=false)
 
-    obj_tmp = reference_ch(obj, ch=ch, med=med)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = reference_ch(obj, ch=ch, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -135,7 +136,7 @@ function reference_car(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclud
     obj_new.data[chs, :, :] = s
     obj_new.header.recording[:reference] = "CAR"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_car(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
+    push!(obj_new.history, "reference_car(OBJ, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, med=$med))")
 
     return obj_new
 
@@ -155,10 +156,11 @@ Reference to common average reference. Only signal channels are processed.
 """
 function reference_car!(obj::NeuroAnalyzer.NEURO; exclude_fpo::Bool=false, exclude_current::Bool=true, med::Bool=false)
 
-    obj_tmp = reference_car(obj, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = reference_car(obj, exclude_fpo=exclude_fpo, exclude_current=exclude_current, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -266,7 +268,7 @@ function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     obj_new.data[chs, :, :] = s_ref
     obj_new.header.recording[:reference] = "A ($type)"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_a(OBJ, type=$type, med=$med)")
+    push!(obj_new.history, "reference_a(OBJ, type=$type, med=$med)")
 
     return obj_new
 
@@ -288,10 +290,11 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 """
 function reference_a!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
-    obj_tmp = reference_a(obj, type=type, med=med)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = reference_a(obj, type=type, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -399,7 +402,7 @@ function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
     obj_new.data[chs, :, :] = s_ref
     obj_new.header.recording[:reference] = "M ($type)"
     reset_components!(obj_new)
-    push!(obj_new.header.history, "reference_m(OBJ, type=$type, med=$med)")
+    push!(obj_new.history, "reference_m(OBJ, type=$type, med=$med)")
 
     return obj_new
 
@@ -421,10 +424,11 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 """
 function reference_m!(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
-    obj_tmp = reference_m(obj, type=type, med=med)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = reference_m(obj, type=type, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 
@@ -507,13 +511,13 @@ function reference_plap(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=fal
         end
     end
 
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[chs, :, :] = s_ref
-    obj_tmp.header.recording[:reference] = "PLAP ($nn)"
-    reset_components!(obj_tmp)
-    push!(obj_tmp.header.history, "reference_plap(OBJ, nn=$nn, med=$med))")
+    obj_new = deepcopy(obj)
+    obj_new.data[chs, :, :] = s_ref
+    obj_new.header.recording[:reference] = "PLAP ($nn)"
+    reset_components!(obj_new)
+    push!(obj_new.history, "reference_plap(OBJ, nn=$nn, med=$med))")
 
-    return obj_tmp
+    return obj_new
 
 end
 
@@ -531,10 +535,11 @@ Reference using planar Laplacian (using `nn` adjacent electrodes). Only signal c
 """
 function reference_plap!(obj::NeuroAnalyzer.NEURO; nn::Int64=4, weights::Bool=false, med::Bool=false)
 
-    obj_tmp = reference_plap(obj, nn=nn, weights=weights, med=med)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.components = obj_tmp.components
+    obj_new = reference_plap(obj, nn=nn, weights=weights, med=med)
+    obj.data = obj_new.data
+    obj.header = obj_new.header
+    obj.history = obj_new.history
+    obj.components = obj_new.components
 
     return nothing
 

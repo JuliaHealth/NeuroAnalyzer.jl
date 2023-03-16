@@ -43,7 +43,7 @@ function trim(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epo
     end
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "trim(OBJ, segment=$segment, remove_epochs=$remove_epochs)")
+    push!(obj_new.history, "trim(OBJ, segment=$segment, remove_epochs=$remove_epochs)")
 
     return obj_new
 end
@@ -62,9 +62,11 @@ Trim OBJ signal by removing parts of the signal.
 function trim!(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epochs::Bool=true)
 
     obj_tmp = trim(obj, segment=segment, remove_epochs=remove_epochs)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.components = obj_tmp.components
+    obj.data = obj_new.data
+    obj.history = obj_new.history
+    obj.components = obj_new.components
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
 
