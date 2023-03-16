@@ -62,13 +62,13 @@ Remove epoch(s).
 """
 function delete_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = delete_epoch(obj, ep=ep)
+    obj_new = delete_epoch(obj, ep=ep)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.components = obj_new.components
-    obj.time_pts = obj_tmp.time_pts
-    obj.markers = obj_tmp.markers
+    obj.time_pts = obj_new.time_pts
+    obj.markers = obj_new.markers
 
     return nothing
 end
@@ -119,13 +119,13 @@ Keep OBJ epoch(s).
 """
 function keep_epoch!(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    obj_tmp = keep_epoch(obj, ep=ep)
+    obj_new = keep_epoch(obj, ep=ep)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.components = obj_new.components
-    obj.time_pts = obj_tmp.time_pts
-    obj.markers = obj_tmp.markers
+    obj.time_pts = obj_new.time_pts
+    obj.markers = obj_new.markers
 
     return nothing
 

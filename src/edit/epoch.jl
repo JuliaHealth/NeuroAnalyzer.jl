@@ -87,13 +87,13 @@ Split OBJ into epochs. Return signal that is split either by markers (if specifi
 """
 function epoch!(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, ep_n::Union{Int64, Nothing}=nothing, ep_len::Union{Int64, Nothing}=nothing)
 
-    obj_tmp = epoch(obj, marker=marker, ep_offset=ep_offset, ep_n=ep_n, ep_len=ep_len)
+    obj_new = epoch(obj, marker=marker, ep_offset=ep_offset, ep_n=ep_n, ep_len=ep_len)
     obj.header = obj_new.header
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.components = obj_new.components
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
+    obj.time_pts = obj_new.time_pts
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
 
@@ -143,9 +143,9 @@ Edit OBJ epochs time start.
 """
 function epoch_time!(obj::NeuroAnalyzer.NEURO; ts::Real)
 
-    obj_tmp = epoch_time(obj, ts=ts)
-    obj.history = obj_tmp.history
-    obj.epoch_time = obj_tmp.epoch_time
+    obj_new = epoch_time(obj, ts=ts)
+    obj.history = obj_new.history
+    obj.epoch_time = obj_new.epoch_time
 
     return nothing
     

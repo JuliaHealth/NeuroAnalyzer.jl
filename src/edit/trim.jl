@@ -61,7 +61,7 @@ Trim OBJ signal by removing parts of the signal.
 """
 function trim!(obj::NeuroAnalyzer.NEURO; segment::Tuple{Int64, Int64}, remove_epochs::Bool=true)
 
-    obj_tmp = trim(obj, segment=segment, remove_epochs=remove_epochs)
+    obj_new = trim(obj, segment=segment, remove_epochs=remove_epochs)
     obj.data = obj_new.data
     obj.history = obj_new.history
     obj.components = obj_new.components

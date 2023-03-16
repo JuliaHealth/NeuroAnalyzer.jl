@@ -83,6 +83,7 @@ function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     obj_new = add_locs(obj, locs=locs)
     obj.header = obj_new.header
+    obj.history = obj_new.history
     obj.locs = obj_new.locs
 
     return nothing

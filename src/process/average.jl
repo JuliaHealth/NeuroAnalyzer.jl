@@ -81,8 +81,8 @@ Return the average signal of channels.
 function average!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
     obj_new = average(obj, ch=ch)
-    obj.data = obj_new.data
     obj.header = obj_new.header
+    obj.data = obj_new.data
     obj.components = obj_new.components
     obj.history = obj_new.history
 

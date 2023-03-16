@@ -11,7 +11,7 @@ function _clean_labels(clabels::Vector{String})
 end
 
 function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
-    c, _ = _get_component(obj, c)
+    c = _get_component(obj, c)
     clabels = Vector{String}()
     for idx in 1:size(c, 1)
         push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
@@ -19,10 +19,14 @@ function _gen_clabels(obj::NeuroAnalyzer.NEURO, c::Symbol)
     return clabels
 end
 
-function _gen_clabels(c::Array{Float64, 3})
+function _gen_clabels(c::Union{AbstractVector, AbstractArray})
     clabels = Vector{String}()
-    for idx in 1:size(c, 1)
-        push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
+    if ndims(c) == 1
+        push!(clabels, "1")
+    else
+        for idx in 1:size(c, 1)
+            push!(clabels, lpad(string(idx), length(string(size(c, 1))), "0"))
+        end
     end
     return clabels
 end

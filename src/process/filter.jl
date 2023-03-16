@@ -368,7 +368,7 @@ function filter!(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abs
         return p
     end
 
-    obj_tmp = filter(obj,
+    obj_new = filter(obj,
                      ch=ch,
                      fprototype=fprototype,
                      ftype=ftype,

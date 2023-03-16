@@ -226,10 +226,11 @@ function import_fiff(file_name::String; detect_type::Bool=true)
 
     hdr = _create_header(s,
                          r,
-                         e,
-                         history=String[])
+                         e)
 
     components = Dict()
+    
+    history = String[]
 
     markers = DataFrame()
 
@@ -244,6 +245,6 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs)
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data, components, markers, locs, history)
     
 end

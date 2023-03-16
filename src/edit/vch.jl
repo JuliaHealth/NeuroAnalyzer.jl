@@ -33,5 +33,6 @@ function vch(obj::NeuroAnalyzer.NEURO; f::String)
     end
 
     return vc
+
 end
 

@@ -250,10 +250,11 @@ function import_bv(file_name::String; detect_type::Bool=true)
 
     hdr = _create_header(s,
                          r,
-                         e,
-                         history=String[])
+                         e)
 
     components = Dict()
+
+    history = String[]
 
     if channel_locations == false
         locs = DataFrame(:channel=>Int64,
@@ -279,6 +280,6 @@ function import_bv(file_name::String; detect_type::Bool=true)
                              :loc_phi_sph=>loc_phi_sph)
     end
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
     
 end

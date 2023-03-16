@@ -10,16 +10,18 @@ Export `NeuroAnalyzer.NEURO` object to CSV.
 - `obj::NeuroAnalyzer.NEURO`
 - `file_name::String`
 - `header::Bool=false`: export header
+- `epoch_time::Bool=false`: export epoch time points
 - `components::Bool=false`: export components
 - `markers::Bool=false`: export event markers
 - `locs::Bool=false`: export channel locations
+- `history::Bool=false`: export history
 - `overwrite::Bool=false`
 
 # Returns
 
 - `success::Bool`
 """
-function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, overwrite::Bool=false)
+function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=false, epoch_time::Bool=false, components::Bool=false, markers::Bool=false, locs::Bool=false, history::Bool=false, overwrite::Bool=false)
 
     (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
 
@@ -35,7 +37,7 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
 
     # HEADER
     if header
-        file_name = replace(file_name, ".csv" => "_header.csv")
+        file_name = replace(file_name, ".csv" => "_header.txt")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
         for (key, value) in obj.header.subject
@@ -50,10 +52,16 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
         close(f)
     end
 
+    # EPOCH TIME POINST
+    if epoch_time
+        file_name = replace(file_name, ".csv" => "_epoch_time.csv")
+        (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
+        CSV.write(file_name, obj.epoch_time)
+    end
+
     # COMPONENTS
-    if components
-        length(keys(obj.components)) == 0 && throw(ArgumentError("OBJ does not contain components."))
-        file_name = replace(file_name, ".csv" => "_components.csv")
+    if components && length(keys(obj.components)) > 0
+        file_name = replace(file_name, ".csv" => "_components.txt")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
         for c_idx in 1:length(keys(obj.components))
@@ -65,17 +73,26 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
     end
 
     # MARKERS
-    if markers
+    if markers && nrow(obj.markers)
         file_name = replace(file_name, ".csv" => "_markers.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.markers)
     end
 
     # LOCS
-    if locs
+    if locs && nrow(obj.locs) > 0
         file_name = replace(file_name, ".csv" => "_locs.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         CSV.write(file_name, obj.locs)
     end
     
+    # HISTORY
+    if history && length(obj.history) > 0
+        file_name = replace(file_name, ".csv" => "_history.txt")
+        for c_idx in 1:length(history)
+            println(f, obj.history[c_idx])
+        end
+    end
+
 end
+

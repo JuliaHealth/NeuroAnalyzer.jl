@@ -104,10 +104,11 @@ function import_set(file_name::String; detect_type::Bool=true)
 
     hdr = _create_header(s,
                          r,
-                         e,
-                         history=String[])
+                         e)
 
     components = Dict()
+
+    history = String[]
 
     locs = DataFrame(:channel=>Int64,
                      :labels=>String[],
@@ -120,5 +121,5 @@ function import_set(file_name::String; detect_type::Bool=true)
                      :loc_theta_sph=>Float64[],
                      :loc_phi_sph=>Float64[])
 
-    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs)
+    return NeuroAnalyzer.NEURO(hdr, time_pts, epoch_time, data[channel_order, :, :], components, markers, locs, history)
 end

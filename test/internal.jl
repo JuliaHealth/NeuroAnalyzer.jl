@@ -39,7 +39,7 @@ r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size
 @test typeof(r) == Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(experiment_name="a", experiment_notes="a", experiment_design="a")
 @test typeof(e) == Dict{Symbol, String}
-hdr = NeuroAnalyzer._create_header(s, r, e; history=String[])
+hdr = NeuroAnalyzer._create_header(s, r, e)
 @test typeof(hdr) == NeuroAnalyzer.HEADER
 r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
 @test typeof(r) == Vector{ComplexF32}
