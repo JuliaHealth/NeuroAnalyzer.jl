@@ -59,11 +59,10 @@ function _create_experiment(;experiment_name::String, experiment_notes::String, 
                 :experiment_design=>experiment_design)
 end
 
-function _create_header(subject::Dict, recording::Dict, experiment::Dict; component_names::Vector{Symbol}, history::Vector{String})
+function _create_header(subject::Dict, recording::Dict, experiment::Dict; history::Vector{String})
 
     return NeuroAnalyzer.HEADER(subject,
                                 recording,
                                 experiment,
-                                component_names,
                                 history)
 end

@@ -192,8 +192,8 @@ Reconstruct signals using embedded ICA components (`:ic` and `:ic_mw`).
 """
 function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), ic_idx::Union{Int64, Vector{Int64}, <:AbstractRange})
 
-    :ic in obj.header.component_names || throw(ArgumentError("OBJ does not contain :ic component. Perform ica() first."))
-    :ic_mw in obj.header.component_names || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica() first."))
+    :ic in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic component. Perform ica() first."))
+    :ic_mw in keys(obj.components) || throw(ArgumentError("OBJ does not contain :ic_mw component. Perform ica() first."))
 
     _check_channels(obj, ch)
 

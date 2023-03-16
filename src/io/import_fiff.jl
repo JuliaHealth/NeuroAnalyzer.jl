@@ -227,10 +227,9 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e,
-                         component_names=Symbol[],
                          history=String[])
 
-    components = Vector{Any}()
+    components = Dict()
 
     markers = DataFrame()
 

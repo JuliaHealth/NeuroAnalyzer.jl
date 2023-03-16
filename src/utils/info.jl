@@ -282,7 +282,7 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("      Channel locations: yes")
     end
-    if obj.header.component_names != []
+    if length(keys(obj.components)) > 0
         print("             Components: ")
         c = list_components(obj)
         if length(c) == 1

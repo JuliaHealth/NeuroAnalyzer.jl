@@ -64,7 +64,6 @@ mutable struct HEADER
     subject::Dict
     recording::Dict
     experiment::Dict
-    component_names::Vector{Symbol}
     history::Vector{String}
 end
 
@@ -73,7 +72,7 @@ mutable struct NEURO
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
     data::Union{Array{<:Number, 1}, Array{<:Number, 2}, Array{<:Number, 3}}
-    components::Vector{Any}
+    components::Dict{Any}
     markers::DataFrame
     locs::DataFrame
 end

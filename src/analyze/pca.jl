@@ -133,8 +133,8 @@ Reconstruct signal using embedded PCA components (`:pc`) and model (`:pc_model`)
 """
 function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)))
 
-    :pc in obj.header.component_names || throw(ArgumentError("OBJ does not contain :pc component. Perform pca(OBJ) first."))
-    :pc_model in obj.header.component_names || throw(ArgumentError("OBJ does not contain :pc_model component. Perform pca(OBJ) first."))
+    :pc in keys(obj.components) || throw(ArgumentError("OBJ does not contain :pc component. Perform pca(OBJ) first."))
+    :pc_model in keys(obj.components) || throw(ArgumentError("OBJ does not contain :pc_model component. Perform pca(OBJ) first."))
 
     _check_channels(obj, ch)
 

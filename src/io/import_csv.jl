@@ -95,10 +95,9 @@ function import_csv(file_name::String; detect_type::Bool=true)
     hdr = _create_header(s,
                          r,
                          e,
-                         component_names=Symbol[],
                          history=String[])
 
-    components = Vector{Any}()
+    components = Dict()
 
     locs = DataFrame(:channel=>Int64,
                      :labels=>String[],

@@ -52,12 +52,12 @@ function export_csv(obj::NeuroAnalyzer.NEURO; file_name::String, header::Bool=fa
 
     # COMPONENTS
     if components
-        length(obj.header.component_names) == 0 && throw(ArgumentError("OBJ does not contain components."))
+        length(keys(obj.components)) == 0 && throw(ArgumentError("OBJ does not contain components."))
         file_name = replace(file_name, ".csv" => "_components.csv")
         (isfile(file_name) && overwrite == false) && throw(ArgumentError("File $file_name cannot be saved, to overwrite use overwrite=true."))
         f = open(file_name, "w")
-        for c_idx in 1:length(obj.header.component_names)
-            println(f, "component: $(obj.header.component_names[c_idx])")
+        for c_idx in 1:length(keys(obj.components))
+            println(f, "component: $(keys(obj.components)[c_idx])")
             println(f, obj.components[c_idx])
             println(f, "---")
         end
