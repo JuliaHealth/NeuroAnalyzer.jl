@@ -53,7 +53,7 @@ function rename_component(obj::NeuroAnalyzer.NEURO; c_old::Symbol, c_new::Symbol
     c_new in keys(obj.components) && throw(ArgumentError("Component $c_new already exists. Use list_component() to view existing components."))
 
     obj_new = deepcopy(obj)
-    c = pop!(obj.components, c_old)
+    c = pop!(obj_new.components, c_old)
     push!(obj_new.components, c_new=>c)
 
     push!(obj_new.history, "rename_component(OBJ, c_old=$c_old, c_new=$c_new)")

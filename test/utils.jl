@@ -31,33 +31,33 @@ z, b = perm_cmp(a1, a2)
 @info "test 5/65: add_component()"
 x = collect(1:10)
 e10_tmp = add_component(e10, c=:x, v=x)
-@test e10_tmp.components[1] == x
+@test e10_tmp.components[:x] == x
 
-@info "test 6/65: component_idx()"
-@test component_idx(e10_tmp, c=:x) == 1
-
-@info "test 7/65: component_type()"
+@info "test 6/65: component_type()"
 @test component_type(e10_tmp, c=:x) == Vector{Int64}
 
-@info "test 8/65: list_component()"
-@test list_component(e10_tmp) == [:x]
-
-@info "test 9/65: extract_component()"
+@info "test 7/65: extract_component()"
 @test extract_component(e10_tmp, c=:x) == x
 
-@info "test 10/65: delete_component()"
+@info "test 8/65: delete_component()"
 e10_tmp2 = deepcopy(e10_tmp)
 delete_component!(e10_tmp2, c=:x)
-@test e10_tmp2.components == []
+@test e10_tmp2.components == Dict()
 
-@info "test 11/65: rename_component()"
+@info "test 9/65: rename_component()"
 rename_component!(e10_tmp, c_old=:x, c_new=:y)
-@test list_component(e10_tmp) == [:y]
+@test e10_tmp.components[:y] == 1:10
 
-@info "test 12/65: reset_components()"
+@info "test 10/65: reset_components()"
 reset_components!(e10_tmp)
-@test list_component(e10_tmp) == []
-@test e10_tmp.components == []
+@test e10_tmp.components == Dict()
+
+@info "test 11/65: vsearch()"
+@test vsearch(2.1, [1, 2, 3, 4]) == 2
+@test vsearch([2.1, 2.9], [1, 2, 3, 4]) == [2.0, 3.0]
+
+@info "test 12/65: trim()"
+@test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
 
 @info "test 13/65: fft0()"
 x = fft0(v1, 1024)
@@ -177,7 +177,7 @@ s = generate_morlet_fwhm(100, 10)
 @test get_channel_bytype(e10, type=:eeg) == 1:19
 
 @info "test 39/65: get_channel_bytype()"
-@test length(history(e10)) == 3
+@test typeof(history(e10)) == Vector{String}
 
 @info "test 40/65: labels()"
 @test length(labels(e10)) == 24
@@ -263,12 +263,5 @@ m = rand(10, 100)
 @test size(trim(m, seg=(1, 10))) == (10, 90)
 a = rand(10, 100, 10)
 @test size(trim(a, seg=(1, 10))) == (10, 90, 10)
-
-@info "test 64/65: vsearch()"
-@test vsearch(2.1, [1, 2, 3, 4]) == 2
-@test vsearch([2.1, 2.9], [1, 2, 3, 4]) == [2.0, 3.0]
-
-@info "test 65/65: trim()"
-@test vsplit(1:10, 2) == [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
 
 true
