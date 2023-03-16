@@ -30,12 +30,12 @@ function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64
     n < 1 && throw(ArgumentError("n must be ≥ 1."))
     s <= 0 && throw(ArgumentError("s must be > 0."))
 
-    channels = signal_channels(obj)
+    chs = signal_channels(obj)
     locs = obj.locs
     ch_n = nrow(locs)
     ep_n = epoch_n(obj)
 
-    length(channels) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
+    length(chs) > nrow(locs) && throw(ArgumentError("Some channels do not have locations."))
 
     G = zeros(ch_n, ch_n)
     H = zeros(ch_n, ch_n)
@@ -86,19 +86,20 @@ function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64
 
     obj_new = deepcopy(obj)
     @inbounds @simd for ep_idx in 1:ep_n
-        data = @views obj.data[channels, :, ep_idx]
-        # dataGs = data[channels, :]' / Gs
+        data = @views obj.data[chs, :, ep_idx]
+        # dataGs = data[chs, :]' / Gs
         dataGs = Gs / data'
         # C = dataGs .- (sum(dataGs,dims=2)/sum(GsinvS))*GsinvS
         C = data .- (sum(dataGs, dims=2) / sum(GsinvS)) * GsinvS
         # compute surface Laplacian
-        obj_new.data[channels, :, ep_idx] = (C'*H)'
+        obj_new.data[chs, :, ep_idx] = (C'*H)'
     end
 
     reset_components!(obj_new)
     push!(obj_new.history, "slaplacian(OBJ, m=m, n=n, s=s)")
 
     return obj_new, G, H
+    
 end
 
 """

@@ -1,9 +1,10 @@
 function _get_t(from::Int64, to::Int64, fs::Int64)
     t = collect((from / fs):(1 / fs):(to / fs))
-    t = t[1:(end - 1)]
-    t[1] = floor(t[1], digits=2)
-    t[2:(end - 1)] = round.(t[2:(end - 1)], digits=3)
-    t[end] = ceil(t[end], digits=2)
+    t = round.(linspace(t[1], t[end], to-from), digits=4)
+    # t = t[1:(end - 1)]
+    # t[1] = floor(t[1], digits=2)
+    # t[2:(end - 1)] = round.(t[2:(end - 1)], digits=3)
+    # t[end] = ceil(t[end], digits=2)
     return t
 end
 

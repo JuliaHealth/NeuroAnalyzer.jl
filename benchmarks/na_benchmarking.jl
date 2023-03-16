@@ -240,16 +240,17 @@ reference_car(e10)
 print(rpad("PLAP referencing", 36))
 reference_plap(e10)
 @time reference_plap(e10)(e10)
-
-
-
-
 print(rpad("Surface Laplacian", 36))
 slaplacian(e10)
 @time slaplacian(e10)
 print(rpad("Standardize", 36))
 standardize(e10)
 @time standardize(e10)
+print(rpad("Wavelet band-pass filtering", 36))
+wbp(e10, frq=4)
+@time wbp(e10, frq=4)
+
+
 print(rpad("Time convolution", 36))
 tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
 @time tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))

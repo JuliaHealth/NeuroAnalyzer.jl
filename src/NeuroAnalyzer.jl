@@ -304,7 +304,6 @@ include("utils/pad.jl")
 include("utils/phase.jl")
 include("utils/pick.jl")
 include("utils/time.jl")
-include("utils/trim.jl")
 include("utils/vector.jl")
 # study
 include("study/create.jl")

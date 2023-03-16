@@ -219,8 +219,9 @@ function import_bdf(file_name::String; detect_type::Bool=true)
     end
 
     time_pts = collect(0:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate))
-    time_pts = round.(time_pts[1:end - 1], digits=3)
-    epoch_time = time_pts
+    time_pts = round.(linspace(time_pts[1], time_pts[end], size(data, 2) * size(data, 3)), digits=4)
+    epoch_time = round.(linspace(time_pts[1], time_pts[end], size(data, 2)), digits=4)
+    
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
     data_type = "eeg"

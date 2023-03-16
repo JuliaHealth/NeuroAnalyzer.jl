@@ -52,7 +52,7 @@ function channel_type(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, type::
     obj_new.header.recording[:channel_type] = types
     
     # add entry to :history field
-    push!(obj_new.header.history, "channel_type(OBJ, ch=$ch, type=$type)")
+    push!(obj_new.history, "channel_type(OBJ, ch=$ch, type=$type)")
 
     return obj_new
 
@@ -158,7 +158,7 @@ function rename_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, name
     end
     obj_new.header.recording[:labels] = clabels
     
-    push!(obj_new.header.history, "rename_channel(OBJ, ch=$ch, name=$name)")
+    push!(obj_new.history, "rename_channel(OBJ, ch=$ch, name=$name)")
 
     return obj_new
 
@@ -211,7 +211,7 @@ function edit_channel(obj::NeuroAnalyzer.NEURO; ch::Int64, field::Symbol, value:
     typeof(obj_new.header.recording[field][ch]) == typeof(value) || throw(ArgumentError("field type ($(eltype(obj_new.header.recording[field]))) does not mach value type ($(typeof(value)))."))
     obj_new.header.recording[field][ch] = value
 
-    push!(obj_new.header.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")   
+    push!(obj_new.history, "edit_channel(OBJ, ch=$ch, field=$field, value=$value)")   
 
     return obj_new
 
@@ -277,7 +277,7 @@ function replace_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, String}, s::
     obj_new.data[ch_idx, :, :] = s
 
     reset_components!(obj_new)
-    push!(obj_new.header.history, "replace_channel(OBJ, ch=$ch, s=$s")
+    push!(obj_new.history, "replace_channel(OBJ, ch=$ch, s=$s")
 
     return obj_new
 
@@ -327,7 +327,7 @@ function add_labels(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})
     obj_new = deepcopy(obj)
     obj_new.header.recording[:labels] = clabels
 
-    push!(obj_new.header.history, "add_labels(OBJ, clabels=$clabels")
+    push!(obj_new.history, "add_labels(OBJ, clabels=$clabels")
  
     return obj_new
 end

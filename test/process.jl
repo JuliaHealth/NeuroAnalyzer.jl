@@ -17,13 +17,13 @@ m2 = [7 6 5; 4 3 2]
 a1 = ones(2, 3, 2)
 a2 = zeros(2, 3, 2)
 
-@info "test 1/19: add_signal()"
+@info "test 1/39: add_signal()"
 @test add_signal(v1, v2) == v1 + v2
 x = rand(epoch_len(e10))
 e10_tmp = add_signal(e10, s=x)
 e10_tmp.data[1, :, 1] == e10.data[1, :, 1] + x
 
-@info "test 2/19: average()"
+@info "test 2/39: average()"
 @test average(a1) == ones(1, 3, 2)
 @test average(a1, a2) == 0.5 .* ones(2, 1, 2)
 e10_tmp = average(e10)
@@ -31,24 +31,24 @@ e10_tmp = average(e10)
 e10_tmp = average(e10, e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 3/19: cbp()"
+@info "test 3/39: cbp()"
 @test length(cbp(rand(100), fs=10, frq=4)) == 100
 e10_tmp = cbp(e10, frq=4)
 @test size(e10_tmp.data) == size(e10.data)
 
-@info "test 4/19: ch_zero()"
+@info "test 4/39: ch_zero()"
 e10_tmp = ch_zero(e10)
 @test e10_tmp.data[1, 1, 1] == 0
 @test e10_tmp.data[1, end, 1] == 0
 
-@info "test 5/19: cw_trans()"
+@info "test 5/39: cw_trans()"
 s = rand(100)
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=2))
 @test size(ct) == (14, 100)
 ct = cw_trans(e10, wt=wavelet(Morlet(π), β=2))
 @test size(ct) == (19, 33, 2560, 10)
 
-@info "test 6/19: icw_trans()"
+@info "test 6/39: icw_trans()"
 ct = cw_trans(s, wt=wavelet(Morlet(π), β=2))
 s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=2), type=:nd)
 @test length(s_new) == 100
@@ -57,7 +57,7 @@ s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=2), type=:pd)
 s_new = icw_trans(ct, wt=wavelet(Morlet(π), β=2), type=:df)
 @test length(s_new) == 100
 
-@info "test 7/19: denoise_fft()"
+@info "test 7/39: denoise_fft()"
 s = rand(100)
 s2, f = denoise_fft(s)
 @test length(s2) == 100
@@ -65,25 +65,25 @@ s2, f = denoise_fft(s)
 e10_tmp = denoise_fft(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 8/19: denoise_wavelet())"
+@info "test 8/39: denoise_wavelet())"
 s = denoise_wavelet(rand(100), wt=wavelet(WT.haar))
 @test length(s) == 100
 e10_tmp = denoise_wavelet(e10, wt=wavelet(WT.haar))
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 9/19: denoise_wien()"
+@info "test 9/39: denoise_wien()"
 s = denoise_wien(a1)
 @test size(s) == (2, 3, 2)
 e10_tmp = denoise_wien(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 10/19: derivative()"
+@info "test 10/39: derivative()"
 @test NeuroAnalyzer.derivative(v1) == ones(5)
 @test NeuroAnalyzer.derivative(a1) == zeros(2, 3, 2)
 e10_tmp = NeuroAnalyzer.derivative(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 11/19: detrend()"
+@info "test 11/39: detrend()"
 @test detrend(v1) == zeros(5)
 @test round.(detrend(a1)) == zeros(2, 3, 2)
 e10_tmp = detrend(e10, type=:ls)
@@ -97,7 +97,7 @@ e10_tmp = detrend(e10, type=:poly)
 e10_tmp = detrend(e10, type=:loess)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 12/19: dw_trans()"
+@info "test 12/39: dw_trans()"
 s = rand(100)
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
 @test size(dt) == (3, 100)
@@ -108,57 +108,57 @@ dt = dw_trans(e10, wt=wavelet(WT.haar), type=:sdwt)
 dt = dw_trans(e10, wt=wavelet(WT.haar), type=:acdwt)
 @test size(dt) == (19, 10, 2560, 10)
 
-@info "test 13/19: idw_trans()"
+@info "test 13/39: idw_trans()"
 dt = dw_trans(s, wt=wavelet(WT.haar), type=:sdwt)
 s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:sdwt)
 @test length(s_new) == 100
 s_new = idw_trans(dt, wt=wavelet(WT.haar), type=:acdwt)
 @test length(s_new) == 100
 
-@info "test 14/19: dwtsplit()"
+@info "test 14/39: dwtsplit()"
 s = dwtsplit(e10, ch=1, wt = wavelet(WT.haar), type=:sdwt)
 @test size(s) == (10, 2560, 10)
 
-@info "test 15/19: erp()"
+@info "test 15/39: erp()"
 e = erp(e10)
 @test size(e.data) == (24, 2560, 1)
 @test e.time_pts == e.epoch_time
 
-@info "test 16/19: bpsplit()"
+@info "test 16/39: bpsplit()"
 s, bn, bf = bpsplit(e10)
 @test length(bn) == 10
 @test length(bf) == 10
 @test size(s) == (10, 19, 2560, 10)
 
-@info "test 17/19: fconv()"
+@info "test 17/39: fconv()"
 @test fconv(v1, kernel=v2) == [2.0, 2.0, 3.0, 3.0, 2.0]
 @test fconv(a1, kernel=[0.5, 1.0, 0.5]) == ones(2, 3, 2)
 e10_tmp = fconv(e10, kernel=[0.0, 0.5, 1.0, 0.5, 0.0])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 18/19: filter_mavg()"
+@info "test 18/39: filter_mavg()"
 @test filter_mavg(v1, k=2) == [0.0, 0.0, 3.0, 0.0, 0.0]
 e10_tmp = filter_mavg(e10, k=2)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 19/19: filter_mmed()"
+@info "test 19/39: filter_mmed()"
 @test filter_mmed(v1, k=2) == [0.0, 0.0, 3.0, 0.0, 0.0]
 e10_tmp = filter_mmed(e10, k=2)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 20/19: filter_poly()"
+@info "test 20/39: filter_poly()"
 s = filter_poly(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 21/19: filter_sg()"
+@info "test 21/39: filter_sg()"
 s = filter_sg(rand(20))
 @test length(s) == 20
 e10_tmp = filter_poly(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 22/19: filter()"
+@info "test 22/39: filter()"
 eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:lp, cutoff=40, order=8)
 @test size(eeg_tmp.data) == (24, 2560, 10)
 eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:butterworth, ftype=:hp, cutoff=1, order=12)
@@ -208,23 +208,23 @@ eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:bs, cutoff=(49, 51
 eeg_tmp = NeuroAnalyzer.filter(e10, fprototype=:remez, ftype=:bp, cutoff=(49, 51), order=4, bw=0.5)
 @test size(eeg_tmp.data) == (24, 2560, 10)
 
-@info "test 23/19: filter_g()"
+@info "test 23/39: filter_g()"
 s = filter_g(rand(20), fs=2, f=4)
 @test length(s) == 20
 e10_tmp = filter_g(e10, f=20)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 24/19: invert_polarity()"
+@info "test 24/39: invert_polarity()"
 e10_tmp = invert_polarity(e10)
 @test e10_tmp.data == .-(e10.data)
 
-@info "test 25/19: lrinterpolate_channel()"
+@info "test 25/39: lrinterpolate_channel()"
 e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
 e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
-@info "test 26/19: normalize()"
+@info "test 26/39: normalize()"
 @test normalize(v1, method=:none) == v1
 @test normalize_zscore(v1) == [-1.2649110640673518, -0.6324555320336759, 0.0, 0.6324555320336759, 1.2649110640673518]
 @test normalize_minmax(v1) == [-1.0, -0.5, 0.0, 0.5, 1.0]
@@ -241,62 +241,72 @@ e10_int = lrinterpolate_channel(e10_tmp, ch=1, ep=1)
 e10_tmp = normalize(e10, method=:zscore)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 27/19: lrinterpolate_channel()"
+@info "test 27/39: lrinterpolate_channel()"
 e10_tmp = deepcopy(e10)
 e10_tmp.data[1, :, 1] = zeros(epoch_len(e10))
 e10_int = plinterpolate_channel(e10_tmp, ch=1, ep=1)
 @test e10_int.data[1, :, 1] != e10_tmp.data[1, :, 1]
 
-@info "test 28/19: remove_dc()"
+@info "test 28/39: remove_dc()"
 @test remove_dc(v1) == [-2.0, -1.0, 0.0, 1.0, 2.0]
 e10_tmp = remove_dc(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 29/19: scale()"
+@info "test 29/39: scale()"
 e10_tmp = scale(e10, factor=2.0)
 @test e10_tmp.data == e10.data .* 2.0
 
-@info "test 30/19: reference()"
+@info "test 30/39: reference()"
 e10_tmp = reference_ch(e10, ch=1)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 31/19: reference_a()"
+@info "test 31/39: reference_a()"
 e10_tmp = reference_a(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 32/19: reference_m()"
+@info "test 32/39: reference_m()"
 edit_channel!(e10, ch=20, field=:labels, value="M1")
 edit_channel!(e10, ch=21, field=:labels, value="M2")
 e10_tmp = reference_m(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 33/19: reference_car()"
+@info "test 33/39: reference_car()"
 e10_tmp = reference_car(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-@info "test 34/19: reference_plap()"
+@info "test 34/39: reference_plap()"
 e10_tmp = reference_plap(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-# slaplacian
-# standardize
-# taper
+@info "test 35/39: reference_plap()"
+e10_tmp = slaplacian(e10)
+@test size(e10_tmp.data) == (24, 2560, 10)
+
+@info "test 36/39: standardize()"
+m_s, sc = standardize(a1)
+e10_tmp, sc = slaplacian(e10)
+@test size(e10_tmp.data) == (24, 2560, 10)
+@test length(sc) == 10
+
+@info "test 37/39: taper()"
+@test taper(v1, t=v1) == [1, 4, 9, 16, 25]
+e10_tmp = taper(e10, t=e10.data[1, :, 1])
+@test size(e10_tmp.data) == (24, 2560, 10)
+
 # tconv
+
 # wbp
+@info "test 39/39: wbp()"
+@test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560
+e10_tmp = wbp(e10, frq=4)
+@test size(e10_tmp.data) == (24, 2560, 10)
 
 #=
-
-eeg1 = taper(eeg, t=eeg.data[1, :, 1])
-@test size(eeg1.data) == (19, 309760, 1)
-
 cov_m = covm(eeg)
 @test size(cov_m) == (19, 19, 309760, 1)
 
 cor_m = corm(eeg)
 @test size(cor_m) == (19, 19, 309760, 1)
-
-eeg1 = NeuroAnalyzer.upsample(eeg, new_sr=512)
-@test size(eeg1.data) == (19, 619519, 1)
 
 acov_m, _ = acov(eeg)
 @test size(acov_m) == (19, 3, 1)
