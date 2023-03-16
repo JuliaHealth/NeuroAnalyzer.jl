@@ -57,8 +57,8 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
     obj_new.data = epochs
 
     # update time
-    obj_new.time_pts = round.(linspace(obj_new.time_pts[1], obj_new.time_pts[end], size(obj_new.data, 2) * size(obj_new.data, 3)), digits=4)
-    obj_new.epoch_time = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(obj_new.data, 2)), digits=4)
+    obj_new.time_pts = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
+    obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):(size(obj_new.data, 2) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
 
     reset_components!(obj_new)
     push!(obj_new.history, "epoch(OBJ, marker=$marker, ep_offset=$ep_offset, ep_n=$ep_n, ep_len=$ep_len)")

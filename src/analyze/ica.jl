@@ -199,9 +199,7 @@ function ica_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     obj_new = deepcopy(obj)
 
-    ic_idx = component_idx(obj, c=:ic)
-    ic_mw_idx = component_idx(obj, c=:ic_mw)
-    obj_new.data[ch, :, :] = @views ica_reconstruct(obj_new.data[ch, :, :], ic=obj_new.components[ic_idx], ic_mw=obj_new.components[ic_mw_idx], ic_idx=ic_idx)
+    obj_new.data[ch, :, :] = @views ica_reconstruct(obj_new.data[ch, :, :], ic=obj_new.components[:ic], ic_mw=obj_new.components[:ic_mw], ic_idx=ic_idx)
 
     reset_components!(obj_new)
     push!(obj_new.history, "ica_reconstruct(OBJ, ch=$ch, ic_idx=$ic_idx)")

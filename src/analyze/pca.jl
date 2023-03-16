@@ -140,10 +140,7 @@ function pca_reconstruct(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64
 
     obj_new = deepcopy(obj)
 
-    pc_idx = component_idx(obj, c=:pc)
-    pc_m_idx = component_idx(obj, c=:pc_model)
-
-    obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[pc_idx], pc_model=obj_new.components[pc_m_idx])
+    obj_new.data[ch, :, :] = @views pca_reconstruct(obj_new.data[ch, :, :], pc=obj_new.components[:pc], pc_model=obj_new.components[:pc_model])
 
     reset_components!(obj_new)
     push!(obj_new.history, "pca_reconstruct(OBJ, ch=$ch)")

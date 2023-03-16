@@ -246,32 +246,15 @@ slaplacian(e10)
 print(rpad("Standardize", 36))
 standardize(e10)
 @time standardize(e10)
-print(rpad("Wavelet band-pass filtering", 36))
-wbp(e10, frq=4)
-@time wbp(e10, frq=4)
-
-
-print(rpad("Time convolution", 36))
-tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
-@time tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
-print(rpad("DFT", 36))
-dft(e10)
-@time dft(e10)
-print(rpad("Subtract channels", 36))
-chdiff(e10, e10) 
-@time chdiff(e10, e10) 
-print(rpad("Frequency band split", 36))
-fbsplit(e10)
-@time fbsplit(e10)
-print(rpad("Channel difference", 36))
-chdiff(e10, e10, ch1=1, ch2=2)
-@time chdiff(e10, e10, ch1=1, ch2=2)
 print(rpad("Taper", 36))
 taper(e10, t=generate_window(:hann, epoch_len(e10)))
 @time taper(e10, t=generate_window(:hann, epoch_len(e10)))
-
-
-
+print(rpad("Time convolution", 36))
+tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
+@time tconv(e10, kernel=generate_morlet(256, 1, 32, complex=true))
+print(rpad("Wavelet band-pass filtering", 36))
+wbp(e10, frq=4)
+@time wbp(e10, frq=4)
 
 @info "Benchmarking: ANALYZE"
 println()

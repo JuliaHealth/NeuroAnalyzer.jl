@@ -71,7 +71,7 @@ function resample(s::AbstractArray; t::AbstractVector, new_sr::Int64)
     end
 
     # generate new time points
-    t_new = round.(linspace(t[1], t[end], size(s, 2) * size(s, 3)), digits=4)
+    t_new = round.(collect(t[1]:(1 / new_sr):((size(s_new, 2) * size(s_new, 3)) / new_sr)) .- (1 / new_sr), digits=3)
 
     return s_new, t_new
 
@@ -149,7 +149,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
     obj_new.data = s_new
     obj_new.time_pts = t_new
-    obj_new.epoch_time = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(s_new, 2)), digits=4)
+    obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / new_sr):(size(s_new, 2) / new_sr)) .- (1 / new_sr), digits=3)
     obj_new.header.recording[:sampling_rate] = new_sr
     reset_components!(obj_new)
     push!(obj_new.history, "upsample(OBJ, new_sr=$new_sr)")

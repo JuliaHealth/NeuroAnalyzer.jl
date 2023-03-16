@@ -119,7 +119,7 @@ Topographical plot.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj)`: index of channels, default is all signal channels
-- `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
@@ -146,25 +146,25 @@ Topographical plot.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj), segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Vector{Int64}, AbstractRange}=signal_channels(obj), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
+    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
     _check_var(amethod, [:mean, :median], "amethod")
-    _check_segment(obj, segment[1], segment[2])
+    _check_segment(obj, seg[1], seg[2])
 
     if ep != 0
         _check_epochs(obj, ep)
         if epoch_n(obj) == 1
             ep = 0
         else
-            segment = (((ep[1] - 1) * epoch_len(obj) + 1), segment[2])
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
             if typeof(ep) == Int64
-                segment = (segment[1], (segment[1] + epoch_len(obj) - 1))
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
             else
-                segment = (segment[1], (ep[end] * epoch_len(obj)))
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
             end
             ep = 0
         end
@@ -180,14 +180,15 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     length(ch) > nrow(obj_tmp.locs) && throw(ArgumentError("Some channels do not have locations."))
 
     # get time vector
-    if segment[2] <= epoch_len(obj_tmp)
-        signal = obj_tmp.data[ch, segment[1]:segment[2], 1]
+    if seg[2] <= epoch_len(obj_tmp)
+        signal = obj_tmp.data[ch, seg[1]:seg[2], 1]
     else
-        signal = ep(obj_tmp, ep_n=1).data[ch, segment[1]:segment[2], 1]
+        signal = ep(obj_tmp, ep_n=1).data[ch, seg[1]:seg[2], 1]
     end
-    t = _get_t(segment[1], segment[2], sr(obj_tmp))
+    # t = _get_t(seg[1], seg[2], sr(obj_tmp))
+    t = obj.time_pts[seg[1]:seg[2]]
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj_tmp, segment[1], segment[2])
+    ep = _s2epoch(obj_tmp, seg[1], seg[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -200,7 +201,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
         signal = vec(signal)
     end
 
-    if segment[2] != segment[1] + 1
+    if seg[2] != seg[1] + 1
         title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
     else
         title == "default" && (title = "Amplitude topographical plot\n[channel$(_pl(length(ch))): $(_channel2channel_name(ch)), epoch$(_pl(length(ep))): $ep, time point: $t_s1]")
@@ -226,7 +227,7 @@ Topographical plot of embedded or external component.
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
-- `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `title::String="default"`: plot title, default is Amplitude topographical plot [channels: 1:19, epoch: 1, time window: 0 ms:20 s]
 - `mono::Bool=false`: use color or grey palette
 - `cb::Bool=true`: plot color bar
@@ -253,9 +254,9 @@ Topographical plot of embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), title::String="default", mono::Bool=false, cb::Bool=true, cb_label::String="default", amethod::Symbol=:mean, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
+    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
     _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -264,29 +265,29 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     no_timepoint = false
     if typeof(c) == Matrix{Float64}
         c = reshape(c, size(c, 1), size(c, 2), 1)
-        segment = (1, size(c, 2))
+        seg = (1, size(c, 2))
         no_timepoint = true
     elseif typeof(c) == Vector{Float64}
         c = reshape(c, length(c), 1, 1)
-        segment = (1, 1)
+        seg = (1, 1)
         no_timepoint = true
     elseif size(c, 2) == 1
         no_timepoint = true
-        segment = (1, 1)
+        seg = (1, 1)
     end
 
-    _check_segment(obj, segment[1], segment[2])
+    _check_segment(obj, seg[1], seg[2])
 
     if ep != 0
         _check_epochs(obj, ep)
         if epoch_n(obj) == 1
             ep = 0
         else
-            segment = (((ep[1] - 1) * epoch_len(obj) + 1), segment[2])
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
             if typeof(ep) == Int64
-                segment = (segment[1], (segment[1] + epoch_len(obj) - 1))
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
             else
-                segment = (segment[1], (ep[end] * epoch_len(obj)))
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
             end
             ep = 0
         end
@@ -307,18 +308,18 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     length(ch) > nrow(obj_tmp.locs) && throw(ArgumentError("Some channels do not have locations."))
 
     # get time vector
-    if segment[2] <= epoch_len(obj_tmp)
-        signal = c[c_idx, segment[1]:segment[2], 1]
+    if seg[2] <= epoch_len(obj_tmp)
+        signal = c[c_idx, seg[1]:seg[2], 1]
     else
-        signal = _make_epochs(c, ep_n=1)[c_idx, segment[1]:segment[2], 1]
+        signal = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
     end
-    if segment[1] != segment[2]
-        t = _get_t(segment[1], segment[2], sr(obj_tmp))
+    if seg[1] != seg[2]
+        t = _get_t(seg[1], seg[2], sr(obj_tmp))
     else
-        t = _get_t(segment[1], segment[2] + 1, sr(obj_tmp))
+        t = _get_t(seg[1], seg[2] + 1, sr(obj_tmp))
     end
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj_tmp, segment[1], segment[2])
+    ep = _s2epoch(obj_tmp, seg[1], seg[2])
     
     # average signal and convert to vector
     if size(signal, 2) > 1
@@ -331,11 +332,11 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
         signal = vec(signal)
     end
 
-    if segment[2] != segment[1]
+    if seg[2] != seg[1]
         if no_timepoint != true
             title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), epoch$(_pl(length(ep))): $ep, averaged ($(string(amethod))) over time window: $t_s1:$t_s2]")
         else
-            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), averaged ($(string(amethod))) over $(length(segment[1]:segment[2])) time point$(_pl(length(segment)))]")
+            title == "default" && (title = "Amplitude topographical plot\n[component$(_pl(length(c_idx))): $(_channel2channel_name(c_idx)), averaged ($(string(amethod))) over $(length(seg[1]:seg[2])) time point$(_pl(length(seg)))]")
         end
     else
         if no_timepoint != true

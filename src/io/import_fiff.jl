@@ -188,9 +188,8 @@ function import_fiff(file_name::String; detect_type::Bool=true)
     data = reshape(data, size(data, 1), size(data, 2), 1)
 
     # create signal details
-    time_pts = collect(0:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate))
-    time_pts = round.(linspace(time_pts[1], time_pts[end], size(data, 2) * size(data, 3)), digits=4)
-    epoch_time = round.(linspace(time_pts[1], time_pts[end], size(data, 2)), digits=4)
+    time_pts = round.(collect(1 / sampling_rate:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate)) .- (1 / sampling_rate), digits=3)
+    epoch_time = round.(collect(1 / sampling_rate:(1 / sampling_rate):(size(data, 2) / sampling_rate)) .- (1 / sampling_rate), digits=3)
     
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 

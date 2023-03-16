@@ -279,7 +279,7 @@ e10_tmp = reference_plap(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 35/39: reference_plap()"
-e10_tmp = slaplacian(e10)
+e10_tmp, g, h = slaplacian(e10)
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 36/39: standardize()"
@@ -293,35 +293,15 @@ e10_tmp, sc = slaplacian(e10)
 e10_tmp = taper(e10, t=e10.data[1, :, 1])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
-# tconv
+@info "test 38/39: tconv()"
+@test tconv(v1, kernel=[0.2, 0.1, 0.2]) == 
+@test tconv(a1, kernel=[0.2, 0.1, 0.2]) == 
+e10_tmp = tconv(e10, kernel=[0.2, 0.1, 0.2])
+@test size(e10_tmp.data) == (24, 2560, 10)
 
-# wbp
 @info "test 39/39: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560
 e10_tmp = wbp(e10, frq=4)
 @test size(e10_tmp.data) == (24, 2560, 10)
-
-#=
-cov_m = covm(eeg)
-@test size(cov_m) == (19, 19, 309760, 1)
-
-cor_m = corm(eeg)
-@test size(cor_m) == (19, 19, 309760, 1)
-
-acov_m, _ = acov(eeg)
-@test size(acov_m) == (19, 3, 1)
-xcov_m, _ = xcov(eeg)
-@test size(xcov_m) == (361, 3, 1)
-
-e = trim(eeg, segment=(10 * sr(eeg), 20 * sr(eeg)), remove_epochs=false)
-@test signal_len(e) == 307199
-
-e10 = epoch(eeg, ep_len=2560)
-s_conv = fconv(e10, kernel=generate_window(:hann, 256))
-@test size(s_conv) == (19, 2560, 121)
-s_conv = tconv(e10, kernel=generate_window(:hann, 256))
-@test size(s_conv) == (19, 2560, 121)
-
-=#
 
 true

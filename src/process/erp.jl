@@ -18,8 +18,8 @@ function erp(obj::NeuroAnalyzer.NEURO)
 
     obj_new = deepcopy(obj)
     obj_new.data = mean(obj_new.data, dims=3)[:, :, :]
-    obj_new.time_pts = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(obj_new.data, 2)), digits=4)
-    obj_new.epoch_time = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(obj_new.data, 2)), digits=4)
+    obj_new.time_pts =round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
+    obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):(size(obj_new.data, 2) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
 
     # remove markers of deleted epochs
     for marker_idx in nrow(obj_new.markers):-1:1

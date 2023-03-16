@@ -394,7 +394,7 @@ Plot signal.
 - `obj::NeuroAnalyzer.NEURO`: NeuroAnalyzer NEURO object
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj))`: channel(s) to plot, default is all channels
-- `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
@@ -412,20 +412,20 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
+    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
-    _check_segment(obj, segment[1], segment[2])
+    _check_segment(obj, seg[1], seg[2])
 
     if ep != 0
         _check_epochs(obj, ep)
-        segment = (((ep[1] - 1) * epoch_len(obj) + 1), segment[2])
+        seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
         if typeof(ep) == Int64
-            segment = (segment[1], (segment[1] + epoch_len(obj) - 1))
+            seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
         else
-            segment = (segment[1], (ep[end] * epoch_len(obj)))
+            seg = (seg[1], (ep[end] * epoch_len(obj)))
         end
     end
 
@@ -441,15 +441,16 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     length(ch) == 1 && (clabels = [clabels])
 
     # get time vector
-    if segment[2] <= epoch_len(obj)
-        s = obj.data[ch, segment[1]:segment[2], 1]
+    if seg[2] <= epoch_len(obj)
+        s = obj.data[ch, seg[1]:seg[2], 1]
     else
-        s = epoch(obj, ep_n=1).data[ch, segment[1]:segment[2], 1]
+        s = epoch(obj, ep_n=1).data[ch, seg[1]:seg[2], 1]
     end
-    t = _get_t(segment[1], segment[2], sr(obj))
+    #t = _get_t(seg[1], seg[2], sr(obj))
+    t = obj.time_pts[seg[1]:seg[2]]
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, segment[1], segment[2])
+    ep = _s2epoch(obj, seg[1], seg[2])
 
     if type === :normal
         if bad == false
@@ -550,7 +551,7 @@ Plot embedded or external component.
 - `c::Union{Symbol, AbstractArray}`: component to plot
 - `ep::Union{Int64, AbstractRange}=0`: epoch to display
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
-- `segment::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
+- `seg::Tuple{Int64, Int64}=(1, 10*sr(obj))`: segment (from, to) in samples to display, default is 10 seconds or less if single epoch is shorter
 - `xlabel::String="default"`: x-axis label, default is Time [s]
 - `ylabel::String="default"`: y-axis label, default is no label
 - `title::String="default"`: plot title, default is Amplitude [channels: 1:2, epochs: 1:2, time window: 0 ms:20 s]
@@ -567,20 +568,20 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, segment::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
-    signal_len(obj) < 10 * sr(obj) && segment == (1, 10*sr(obj)) && (segment=(1, signal_len(obj)))
+    signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
     _check_var(type, [:normal, :butterfly, :mean], "type")
-    _check_segment(obj, segment[1], segment[2])
+    _check_segment(obj, seg[1], seg[2])
 
     if ep != 0
         _check_epochs(obj, ep)
-        segment = (((ep[1] - 1) * epoch_len(obj) + 1), segment[2])
+        seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
         if typeof(ep) == Int64
-            segment = (segment[1], (segment[1] + epoch_len(obj) - 1))
+            seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
         else
-            segment = (segment[1], (ep[end] * epoch_len(obj)))
+            seg = (seg[1], (ep[end] * epoch_len(obj)))
         end
     end
 
@@ -598,15 +599,15 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
     length(c_idx) == 1 && (clabels = [clabels])
 
     # get time vector
-    if segment[2] <= epoch_len(obj)
-        s = c[c_idx, segment[1]:segment[2], 1]
+    if seg[2] <= epoch_len(obj)
+        s = c[c_idx, seg[1]:seg[2], 1]
     else
-        s = _make_epochs(c, ep_n=1)[c_idx, segment[1]:segment[2], 1]
+        s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
     end
-    t = _get_t(segment[1], segment[2], sr(obj))
+    t = _get_t(seg[1], seg[2], sr(obj))
 
     _, t_s1, _, t_s2 = _convert_t(t[1], t[end])
-    ep = _s2epoch(obj, segment[1], segment[2])
+    ep = _s2epoch(obj, seg[1], seg[2])
 
     if type === :normal
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "", "Component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")

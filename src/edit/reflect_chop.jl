@@ -37,8 +37,8 @@ function reflect(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 
     obj_new.data = s
 
-    obj_new.time_pts = round.(linspace(obj_new.time_pts[1], obj_new.time_pts[end], size(obj_new.data, 2) * size(obj_new.data, 3)), digits=4)
-    obj_new.epoch_time = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(obj_new.data, 2)), digits=4)
+    obj_new.time_pts = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
+    obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):(size(obj_new.data, 2) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
     
     push!(obj_new.history, "reflect(OBJ, n=$n)")
 
@@ -101,8 +101,8 @@ function chop(obj::NeuroAnalyzer.NEURO; n::Int64=sr(obj))
 
     obj_new.data = s
 
-    obj_new.time_pts = round.(linspace(obj_new.time_pts[1], obj_new.time_pts[end], size(obj_new.data, 2) * size(obj_new.data, 3)), digits=4)
-    obj_new.epoch_time = round.(linspace(obj_new.epoch_time[1], obj_new.epoch_time[end], size(obj_new.data, 2)), digits=4)
+    obj_new.time_pts = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
+    obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):(size(obj_new.data, 2) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
 
     push!(obj_new.history, "chop(OBJ, n=$n)")
 
