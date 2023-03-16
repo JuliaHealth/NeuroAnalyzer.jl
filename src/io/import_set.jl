@@ -63,8 +63,6 @@ function import_set(file_name::String; detect_type::Bool=true)
 
     sampling_rate = round(Int64, dataset["srate"])
 
-    has_markers = false
-    markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     gain = ones(ch_n)
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
@@ -108,8 +106,6 @@ function import_set(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          component_names=Symbol[],
-                         has_markers=has_markers,
-                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

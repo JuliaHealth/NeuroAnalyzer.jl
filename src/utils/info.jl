@@ -272,12 +272,12 @@ function info(obj::NeuroAnalyzer.NEURO)
     else
         println("                 Labels: yes")
     end
-    if obj.header.has_markers == false
+    if _has_markers(obj) == false
         println("                Markers: no")
     else
         println("                Markers: yes")
     end
-    if obj.header.has_locs == false
+    if _has_locs(obj) == false
         println("      Channel locations: no")
     else
         println("      Channel locations: yes")

@@ -39,7 +39,7 @@ r = NeuroAnalyzer._create_recording_meg(;data_type="a", file_name="a", file_size
 @test typeof(r) == Dict{Symbol, Any}
 e = NeuroAnalyzer._create_experiment(experiment_name="a", experiment_notes="a", experiment_design="a")
 @test typeof(e) == Dict{Symbol, String}
-hdr = NeuroAnalyzer._create_header(s, r, e; component_names=Symbol[], has_markers=false, has_locs=false, history=String[])
+hdr = NeuroAnalyzer._create_header(s, r, e; component_names=Symbol[], history=String[])
 @test typeof(hdr) == NeuroAnalyzer.HEADER
 r = NeuroAnalyzer._fir_response(rand(100), range(0, stop=π, length=1024))
 @test typeof(r) == Vector{ComplexF32}
@@ -49,6 +49,7 @@ s, x, y = NeuroAnalyzer._interpolate(rand(10), rand(10), rand(10))
 @test length(x) == 100
 @test length(y) == 100
 @test NeuroAnalyzer._has_markers(["eeg", "mrk"]) == (true, 2)
+@test NeuroAnalyzer._has_markers(e10) == false
 @test NeuroAnalyzer._set_channel_types(["fp1", "stim"]) == ["eeg", "mrk"]
 df = NeuroAnalyzer._m2df(["\x141.0\x14stim"])
 @test names(df) == ["id", "start", "length", "description", "channel"]
@@ -64,6 +65,7 @@ l = NeuroAnalyzer._gen_clabels(e10, :x)
 @test NeuroAnalyzer._channel2channel_name(1:10) == "1:10"
 @test NeuroAnalyzer._len(e10, 0, 20) == 2560
 x, y, z, = locs[!, :loc_x], locs[!, :loc_y], locs[!, :loc_z]
+@test NeuroAnalyzer._has_locs(e10) == false
 xn, yn = NeuroAnalyzer._locnorm(x, y)
 @test xn[1] == 0.30930930930930933
 @test yn[1] == 0.9509509509509508

@@ -201,7 +201,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
 
         # plot markers if available
         # TODO: draw markers length
-        if markers == true && obj.header.has_markers == true
+        if markers == true && _has_markers(obj) == true
             markers_pos = obj.markers[!, :start] ./ sr(obj)
             markers_desc = obj.markers[!, :description]
             p = Plots.vline!(markers_pos,
@@ -356,7 +356,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         # plot markers if available
         # TODO: draw markers length
-        if markers == true && obj.header.has_markers == true
+        if markers == true && _has_markers(obj) == true
             markers_pos = obj.markers[!, :start] ./ sr(obj)
             markers_desc = obj.markers[!, :description]
             p = Plots.vline!(markers_pos,

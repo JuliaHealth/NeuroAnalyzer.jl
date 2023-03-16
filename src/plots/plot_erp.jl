@@ -502,7 +502,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                          yrev=yrev;
                          kwargs...)
     elseif type === :topo
-        obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
+        _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         s = mean(s, dims=3)[:, :]
@@ -780,7 +780,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                          yrev=yrev;
                          kwargs...)
     elseif type === :topo
-        obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
+        _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
         xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         peaks = false
         s = mean(s, dims=3)[:, :]

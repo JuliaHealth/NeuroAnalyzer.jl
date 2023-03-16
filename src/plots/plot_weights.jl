@@ -114,7 +114,7 @@ Plot weights at electrode positions. It uses polar :loc_radius and :loc_theta lo
 """
 function plot_weights(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:AbstractRange}=signal_channels(obj), weights::Vector{<:Real}, channel_labels::Bool=true, head_labels::Bool=false, mono::Bool=false, head_details::Bool=true, plot_size::Int64=800, title::String="", kwargs...)
 
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
     # remove non-signal channels
     obj_tmp = deepcopy(obj)

@@ -90,7 +90,6 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.header.has_locs = true
     obj_new.locs = DataFrame(:channel=>1:length(f_labels[labels_idx]),
                              :labels=>f_labels[labels_idx],
                              :loc_theta=>loc_theta[labels_idx],
@@ -108,6 +107,7 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=t
     push!(obj_new.header.history, "load_locs(OBJ, file_name=$file_name)")
 
     return obj_new
+    
 end
 
 """
@@ -145,7 +145,7 @@ function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String, maximize::Bool=
 
     obj_tmp = load_locs(obj, file_name=file_name, maximize=maximize)
     obj.locs = obj_tmp.locs
-    obj.header.has_locs = true
 
-    nothing
+    return nothing
+
  end

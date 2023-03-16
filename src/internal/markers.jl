@@ -30,6 +30,10 @@ function _has_markers(channel_types::Vector{String})
     return markers, markers_channel
 end
 
+function _has_markers(obj::NeuroAnalyzer.NEURO)
+    return nrow(obj.markers) > 0 ? true : false
+end
+
 function _m2df(markers::Vector{String})
     # convert EDF/BDF markers to DataFrame
     markers = replace.(markers, "\x14\x14\0" => "|")

@@ -888,7 +888,7 @@ function plot_psd(obj::NeuroAnalyzer.NEURO; ep::Int64, ch::Union{Int64, Vector{I
                         variant=:s;
                         kwargs...)
     elseif type === :topo
-        obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available."))
+        _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available."))
         ndims(s_pow) == 1 && (s_pow = reshape(s_pow, 1, length(s_pow)))
         xlabel == "default" && (xlabel = "")
         ylabel == "default" && (ylabel = "")

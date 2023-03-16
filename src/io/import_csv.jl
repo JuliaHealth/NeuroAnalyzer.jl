@@ -51,7 +51,6 @@ function import_csv(file_name::String; detect_type::Bool=true)
     end
     channel_order = _sort_channels(copy(channel_type))
 
-    has_markers = false
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
     sampling_rate = round(Int64, 1 / time_pts[2] * 1000)
     gain = ones(ch_n)
@@ -97,8 +96,6 @@ function import_csv(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          component_names=Symbol[],
-                         has_markers=has_markers,
-                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

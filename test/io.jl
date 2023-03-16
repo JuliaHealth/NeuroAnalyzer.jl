@@ -90,7 +90,7 @@ l = import_locs_mat("files/locs.mat")
 
 @info "test 18/22: load_locs()"
 eeg = load_locs(eeg, file_name="files/standard-10-20-cap19-elmiko.ced")
-@test eeg.header.has_locs == true
+@test NeuroAnalyzer._has_locs(eeg) == true
 
 @info "test 19/22: save()"
 isfile("test.hdf5") && rm("test.hdf5")

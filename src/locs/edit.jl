@@ -42,8 +42,6 @@ function edit_locs(obj::NeuroAnalyzer.NEURO; ch::Union{String, Int64}, x::Union{
     radius_sph !== nothing && (obj_new.locs[ch, :loc_radius_sph] = radius_sph)
     phi_sph !== nothing && (obj_new.locs[ch, :loc_phi_sph] = phi_sph)
 
-    (x !== nothing || y !== nothing || z !== nothing || theta !== nothing || radius !== nothing || theta_sph !== nothing  || radius_sph !== nothing || phi_sph !== nothing) && (obj_new.header.has_locs == true)
-
     reset_components!(obj_new)
     push!(obj_new.header.history, "edit_locs(OBJ; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)")
 

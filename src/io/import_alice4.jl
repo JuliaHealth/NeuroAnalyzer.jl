@@ -138,7 +138,6 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     channel_order = _sort_channels(copy(channel_type))
 
     if file_type == "EDF"
-        has_markers = false
         markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
         markers_channel = -1
     else
@@ -317,8 +316,6 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          component_names=Symbol[],
-                         has_markers=has_markers,
-                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

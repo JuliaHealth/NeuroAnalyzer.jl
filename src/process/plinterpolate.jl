@@ -31,7 +31,7 @@ function plinterpolate_channel(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector
     end
 
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
-    obj.header.has_locs == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
+    _has_locs(obj) == false && throw(ArgumentError("Electrode locations not available, use load_locs() or add_locs() first."))
 
     typeof(ch) == Vector{Int64} && sort!(ch, rev=true)
 

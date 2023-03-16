@@ -26,7 +26,7 @@ function epoch(obj::NeuroAnalyzer.NEURO; marker::String="", ep_offset::Real=0, e
 
     if marker != ""
         # split by markers
-        if obj.header.has_markers == true
+        if _has_markers(obj) == true
             ep_len === nothing && throw(ArgumentError("ep_len must be specified."))
             ep_offset == 0 && throw(ArgumentError("ep_offset must be specified."))
             _check_markers(obj, marker)

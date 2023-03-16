@@ -258,8 +258,6 @@ function import_bdf(file_name::String; detect_type::Bool=true)
                          r,
                          e,
                          component_names=Symbol[],
-                         has_markers=has_markers,
-                         has_locs=false,
                          history=String[])
 
     components = Vector{Any}()

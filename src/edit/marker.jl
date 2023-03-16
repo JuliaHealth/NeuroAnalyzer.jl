@@ -16,10 +16,13 @@ Show markers.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function view_marker(obj::NeuroAnalyzer.NEURO)
-    obj.header.has_markers == true || throw(ArgumentError("OBJ has no markers."))
+
+    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
+    
     for marker_idx in 1:size(obj.markers, 1)
         println("ID: $(rpad(("'" * obj.markers[marker_idx, :id] * "'"), 24, " ")) start [sample]: $(rpad(obj.markers[marker_idx, :start], 8, " ")) length [samples]: $(rpad(obj.markers[marker_idx, :length], 8, " ")) description: $(rpad(("'" * obj.markers[marker_idx, :description] * "'"), 24, " ")) channel: $(obj.markers[marker_idx, :channel])")
     end
+
 end
 
 """
@@ -37,12 +40,13 @@ Delete marker.
 - `obj::NeuroAnalyzer.NEURO`
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)
+
+    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
+
     obj_new = deepcopy(obj)
-    obj_new.header.has_markers == true || throw(ArgumentError("OBJ has no markers."))
     nn = size(obj_new.markers, 1)
     (n < 1 || n > nn) && throw(ArgumentError("n has to be ≥ 1 and ≤ $nn."))
     deleteat!(obj_new.markers, n)
-    size(obj_new.markers, 1) == 0 && (obj_new.header.has_markers = false)
     reset_components!(obj_new)
     push!(obj_new.header.history, "delete_marker(OBJ; n=$n)")
     
@@ -62,7 +66,6 @@ Delete marker.
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)
 
     obj_tmp = delete_marker(obj, n=n)
-    obj.header.has_markers = obj_tmp.header.has_markers
     obj.markers = obj_tmp.markers
     reset_components!(obj)
 
@@ -95,7 +98,6 @@ function add_marker(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int
     start + len > signal_len(obj) && throw(ArgumentError("start + len must be ≤ $(signal_len(obj))."))
 
     obj_new = deepcopy(obj)
-    obj_new.header.has_markers = true
     append!(obj_new.markers, DataFrame(:id=>id, :start=>start, :length=>len, :description=>desc, :channel=>ch))
     sort!(obj_new.markers)
     reset_components!(obj_new)
@@ -121,7 +123,6 @@ Add marker.
 function add_marker!(obj::NeuroAnalyzer.NEURO; id::String, start::Int64, len::Int64=1, desc::String, ch::Int64=0)
 
     obj_tmp = add_marker(obj, id=id, start=start, len=len, desc=desc, ch=ch)
-    obj.header.has_markers = obj_tmp.header.has_markers
     obj.markers = obj_tmp.markers
     reset_components!(obj)
 
@@ -149,7 +150,7 @@ Edit marker.
 """
 function edit_marker(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, ch::Int64)
 
-    obj.header.has_markers == true || throw(ArgumentError("OBJ has no markers."))
+    _has_markers(obj) == true || throw(ArgumentError("OBJ has no markers."))
     start < 1 && throw(ArgumentError("start must be > 0."))
     len < 1 && throw(ArgumentError("len must be > 0."))
     start >= signal_len(obj) && throw(ArgumentError("start must be < $(signal_len(obj))."))
@@ -183,7 +184,6 @@ Edit marker.
 function edit_marker!(obj::NeuroAnalyzer.NEURO; n::Int64, id::String, start::Int64, len::Int64=1, desc::String, ch::Int64)
 
     obj_tmp = edit_marker(obj, n=n, id=id, start=start, len=len, desc=desc, ch=ch)
-    obj.header.has_markers = obj_tmp.header.has_markers
     obj.markers = obj_tmp.markers
     reset_components!(obj)
 

@@ -24,7 +24,7 @@ Perrin F, Pernier J, Bertrand O, Echallier JF. Spherical splines for scalp poten
 """
 function slaplacian(obj::NeuroAnalyzer.NEURO; m::Int64=4, n::Int64=8, s::Float64=10^-5)
 
-    obj.header.has_locs == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
+    _has_locs(obj) == false && throw(ArgumentError("Channel locations not available, use load_locs() or add_locs() first."))
 
     m < 1 && throw(ArgumentError("m must be ≥ 1."))
     n < 1 && throw(ArgumentError("n must be ≥ 1."))

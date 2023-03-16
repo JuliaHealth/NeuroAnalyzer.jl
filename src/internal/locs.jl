@@ -1,3 +1,7 @@
+function _has_locs(obj::NeuroAnalyzer.NEURO)
+    return nrow(obj.locs) > 0 ? true : false
+end
+
 function _locnorm(x::Union{AbstractVector, Real}, y::Union{AbstractVector, Real})
     xy = normalize_minmax(hcat(x, y))
     x = xy[:, 1]

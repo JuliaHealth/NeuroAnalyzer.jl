@@ -23,9 +23,7 @@ function view_header(obj::NeuroAnalyzer.NEURO)
     for (key, value) in obj.header.experiment
         println("header.experiment[:$key]: $value")
     end
-    println("header.has_markers: $(obj.header.has_markers)")
     println("header.component_names: $(obj.header.component_names)")
-    println("header.has_locs: $(obj.header.has_locs)")
     println("header.history: $(obj.header.history)")
 
 end

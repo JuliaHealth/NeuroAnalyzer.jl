@@ -48,7 +48,6 @@ function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)
 
     # create new dataset
     obj_new = deepcopy(obj)
-    obj_new.header.has_locs = true
     obj_new.locs = locs
 
     # add entry to :history field
