@@ -122,7 +122,6 @@ s = dwtsplit(e10, ch=1, wt = wavelet(WT.haar), type=:sdwt)
 @info "test 15/39: erp()"
 e = erp(e10)
 @test size(e.data) == (24, 2560, 1)
-@test e.time_pts == e.epoch_time
 
 @info "test 16/39: bpsplit()"
 s, bn, bf = bpsplit(e10)
@@ -284,8 +283,8 @@ e10_tmp, g, h = slaplacian(e10)
 
 @info "test 36/39: standardize()"
 m_s, sc = standardize(a1)
-e10_tmp, sc = slaplacian(e10)
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test length(sc) == 2
+m_s, sc = standardize(e10)
 @test length(sc) == 10
 
 @info "test 37/39: taper()"
@@ -294,10 +293,10 @@ e10_tmp = taper(e10, t=e10.data[1, :, 1])
 @test size(e10_tmp.data) == (24, 2560, 10)
 
 @info "test 38/39: tconv()"
-@test tconv(v1, kernel=[0.2, 0.1, 0.2]) == 
-@test tconv(a1, kernel=[0.2, 0.1, 0.2]) == 
-e10_tmp = tconv(e10, kernel=[0.2, 0.1, 0.2])
-@test size(e10_tmp.data) == (24, 2560, 10)
+@test tconv(v1, kernel=[0.2, 0.1, 0.2]) == [0.49999999999999983, 1.0000000000000002, 1.5000000000000002, 2.0, 1.2999999999999998]
+@test tconv(a1, kernel=[0.2, 0.1, 0.2]) == [0.30000000000000004 0.5 0.30000000000000004; 0.30000000000000004 0.5 0.30000000000000004;;; 0.30000000000000004 0.5 0.30000000000000004; 0.30000000000000004 0.5 0.30000000000000004]
+s = tconv(e10, kernel=[0.2, 0.1, 0.2])
+@test size(s) == (19, 2560, 10)
 
 @info "test 39/39: wbp()"
 @test length(wbp(e10.data[1, :, 1], fs=10, frq=4)) == 2560

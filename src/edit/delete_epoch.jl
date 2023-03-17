@@ -39,8 +39,8 @@ function delete_epoch(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, 
     end
 
     # update time
-    obj_new.time_pts = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
-    
+    obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
+
     reset_components!(obj_new)
     push!(obj_new.history, "delete_epoch(OBJ, $ep)")
     

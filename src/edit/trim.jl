@@ -94,8 +94,7 @@ function trim(obj::NeuroAnalyzer.NEURO; seg::Tuple{Int64, Int64}, remove_epochs:
         epoch_n(obj) > 1 && (epoch!(obj_new, ep_n=1))
         _check_segment(obj_new, seg[1], seg[2])
         obj_new.data = trim(obj_new.data, seg=seg)
-        obj_new.time_pts = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):((size(obj_new.data, 2) * size(obj_new.data, 3)) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
-        obj_new.epoch_time = round.(collect(obj_new.time_pts[1]:(1 / sr(obj_new)):(size(obj_new.data, 2) / sr(obj_new))) .- (1 / sr(obj_new)), digits=3)
+        obj_new.time_pts, obj_new.epoch_time = _get_t(obj_new)
         if epoch_n(obj) > 1
             if epoch_len(obj) <= signal_len(obj_new)
                 epoch!(obj_new, ep_len=epoch_len(obj))

@@ -111,6 +111,14 @@ df1, df2 = NeuroAnalyzer._split(df)
 @test NeuroAnalyzer._epoch2s(e10, 1) == (1, 2560)
 @test NeuroAnalyzer._copy_lt2ut([1 0 0; 1 1 0; 1 1 1]) == ones(3, 3)
 @test NeuroAnalyzer._tlength((1, 10)) == 10
+t, et = NeuroAnalyzer._get_t(e10)
+@test length(t) == 25600
+@test length(et) == 2560
+@test NeuroAnalyzer._get_t(1, 10, 10) == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+@test NeuroAnalyzer._convert_t(0.22, 11.0) == (0.22, "220.0 ms", 11.0, "11.0 s")
+@test NeuroAnalyzer._s2epoch(e10, 256, 512) == 1
+@test NeuroAnalyzer._s2epoch(e10, 3256, 3512) == 2
+@test NeuroAnalyzer._epoch2s(e10, 2) == (2561, 5120)
 
 # these function are still in work:
 ## FIFF

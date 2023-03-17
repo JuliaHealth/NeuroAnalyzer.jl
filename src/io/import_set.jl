@@ -66,8 +66,8 @@ function import_set(file_name::String; detect_type::Bool=true)
     gain = ones(ch_n)
     markers = DataFrame(:id=>String[], :start=>Int64[], :length=>Int64[], :description=>String[], :channel=>Int64[])
 
-    time_pts = round.(collect(1 / sampling_rate:(1 / sampling_rate):((size(data, 2) * size(data, 3)) / sampling_rate)) .- (1 / sampling_rate), digits=3)
-    epoch_time = round.(collect(1 / sampling_rate:(1 / sampling_rate):(size(data, 2) / sampling_rate)) .- (1 / sampling_rate), digits=3)
+    time_pts = round.(collect(0:1/sampling_rate:size(data, 2) * size(data, 3) / sampling_rate)[1:end-1], digits=3)
+    epoch_time = round.((collect(0:1/sampling_rate:size(data, 2) / sampling_rate))[1:end-1], digits=3)
     
     file_size_mb = round(filesize(file_name) / 1024^2, digits=2)
 
@@ -96,7 +96,7 @@ function import_set(file_name::String; detect_type::Bool=true)
                               units=repeat([""], ch_n),
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
-                              gain=ones(ch_n))
+                              gain=gain)
 
     e = _create_experiment(experiment_name="",
                            experiment_notes="",

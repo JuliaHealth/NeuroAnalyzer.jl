@@ -44,7 +44,7 @@ Perform convolution in the time domain.
 
 - `s_new::Array{Float64, 3}`: convoluted signal
 """
-function tconv(s::AbstractArray; ckernel::Union{Vector{<:Real}, Vector{ComplexF64}})
+function tconv(s::AbstractArray; kernel::Union{Vector{<:Real}, Vector{ComplexF64}})
 
     ch_n = size(s, 1)
     ep_n = size(s, 3)
