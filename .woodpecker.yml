@@ -1,6 +1,6 @@
 pipeline:
   docs:
-    image: 1.9.0-rc1-bullseye
+    image: julia:1.9.0-rc1-bullseye
     secrets: [ cbtoken, cbmail, ftp, ftp_pass, ftp_user ]
     commands:
       - mkdir ~/NeuroAnalyzer
