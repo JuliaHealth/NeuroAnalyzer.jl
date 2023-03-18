@@ -12,7 +12,7 @@ Load FIFF (Functional Image File Format) file and return `NeuroAnalyzer.NEURO` o
 
 # Returns
 
-- `obj::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`: name of the file to load
 
 # Source
 

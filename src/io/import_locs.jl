@@ -25,7 +25,7 @@ This is a meta-function that triggers appropriate `import_locs_*()` function. Fi
 
 # Arguments
 
-- `file_name::String`
+- `file_name::String`: name of the file to load
 
 # Returns
 

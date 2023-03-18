@@ -13,8 +13,6 @@ Load Digitrack ASCII file and return `NeuroAnalyzer.NEURO` object.
 # Returns
 
 - `::NeuroAnalyzer.NEURO`
-
-# Notes
 """
 function import_digitrack(file_name::String; detect_type::Bool=true)
  

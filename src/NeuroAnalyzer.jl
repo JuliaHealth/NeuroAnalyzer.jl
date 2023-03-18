@@ -85,6 +85,7 @@ end
 
 mutable struct DIPOLE
     loc::Tuple{Real, Real, Real}
+    mag::Tuple{Real, Real, Real}
 end
 
 FFTW.set_provider!("mkl")

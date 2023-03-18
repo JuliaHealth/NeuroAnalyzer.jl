@@ -77,7 +77,7 @@ function frqinst(obj::NeuroAnalyzer.NEURO; channel::Union{Int64, Vector{Int64}, 
 
     _check_channels(obj, channel)
 
-    f = @views frqinst(obj.data[channel, :, ep_idx], fs=sr(obj))
+    f = @views frqinst(obj.data[channel, :, :], fs=sr(obj))
 
     return f
 

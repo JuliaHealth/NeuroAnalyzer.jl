@@ -17,19 +17,19 @@ Accepted formats:
 - MAT
 
 Channel locations:
-- `loc_theta`       planar polar angle
-- `loc_radius`      planar polar radius
-- `loc_x`           spherical Cartesian x
-- `loc_y`           spherical Cartesian y
-- `loc_z`           spherical Cartesian z
-- `loc_radius_sph`  spherical radius
-- `loc_theta_sph`   spherical horizontal angle
-- `loc_phi_sph`     spherical azimuth angle
+- `loc_theta`: planar polar angle
+- `loc_radius`: planar polar radius
+- `loc_x`: spherical Cartesian x
+- `loc_y`: spherical Cartesian y
+- `loc_z`: spherical Cartesian z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `file_name::String`
+- `file_name::String`: name of the file to load
 - `maximize::Bool=true`: maximize locations after importing
 
 # Returns

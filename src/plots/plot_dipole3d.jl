@@ -46,6 +46,11 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
     y = d.loc[2]
     z = d.loc[3]
 
+    # get dipole magnitude
+    mx = d.mag[1]
+    my = d.mag[2]
+    mz = d.mag[3]
+
     # prepare figure
     p = Figure(backgroundcolor=:black, resolution=(800, 800))
     ax = Axis3(p[1, 1])

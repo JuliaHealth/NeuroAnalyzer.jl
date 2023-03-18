@@ -16,9 +16,9 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Notes
 
-- sampling_rate = n.samples / data.record.duration
-- gain = (physical_maximum - physical_minimum) / (digital_maximum - digital_minimum)
-- value = (value - digital_minimum ) * gain + physical_minimum
+- sampling_rate = n.samples ÷ data.record.duration
+- gain = (physical maximum - physical minimum) ÷ (digital maximum - digital minimum)
+- value = (value - digital minimum ) × gain + physical minimum
 
 # Source
 

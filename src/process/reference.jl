@@ -187,15 +187,15 @@ Reference to auricular (A1, A2) channels. Only signal channels are processed.
 function reference_a(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("a1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain A1 channel."))
-    all(iszero, occursin.("a2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
+    all(iszero, occursin.("a1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A1 channel."))
+    all(iszero, occursin.("a2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain A2 channel."))
 
     # keep signal channels
     chs = signal_channels(obj)
     s = @view obj.data[chs, :, :]
 
-    a1_idx = findfirst(isequal("A1"), obj.header.recording[:labels])
-    a2_idx = findfirst(isequal("A2"), obj.header.recording[:labels])
+    a1_idx = findfirst(isequal("a1"), lowercase.(labels(obj)))
+    a2_idx = findfirst(isequal("a2"), lowercase.(labels(obj)))
     a1 = extract_channel(obj, ch=a1_idx)
     a2 = extract_channel(obj, ch=a2_idx)
 
@@ -321,15 +321,15 @@ Reference to mastoid (M1, M2) channels. Only signal channels are processed.
 function reference_m(obj::NeuroAnalyzer.NEURO; type::Symbol=:l, med::Bool=false)
 
     _check_var(type, [:l, :i, :c], "type")
-    all(iszero, occursin.("m1", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain M1 channel."))
-    all(iszero, occursin.("m2", lowercase.(obj.header.recording[:labels]))) == false || throw(ArgumentError("OBJ does not contain M2 channel."))
+    all(iszero, occursin.("m1", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M1 channel."))
+    all(iszero, occursin.("m2", lowercase.(labels(obj)))) == false || throw(ArgumentError("OBJ does not contain M2 channel."))
 
     # keep signal channels
     chs = signal_channels(obj)
     s = @view obj.data[chs, :, :]
 
-    m1_idx = findfirst(isequal("M1"), obj.header.recording[:labels])
-    m2_idx = findfirst(isequal("M2"), obj.header.recording[:labels])
+    m1_idx = findfirst(isequal("m1"), lowercase.(labels(obj)))
+    m2_idx = findfirst(isequal("m2"), lowercase.(labels(obj)))
     m1 = extract_channel(obj, ch=m1_idx)
     m2 = extract_channel(obj, ch=m2_idx)
 
