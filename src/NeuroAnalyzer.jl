@@ -84,7 +84,7 @@ mutable struct STUDY
 end
 
 mutable struct DIPOLE
-    loc::Tuple{Real, Real, Real}
+    pos::Tuple{Real, Real, Real}
     mag::Tuple{Real, Real, Real}
 end
 
@@ -259,7 +259,6 @@ include("process/ch_zero.jl")
 # plot
 include("plots/misc.jl")
 include("plots/plot_connections.jl")
-include("plots/plot_dipole3d.jl")
 include("plots/plot_locs.jl")
 include("plots/plot_erp.jl")
 include("plots/plot_filter_response.jl")
@@ -270,6 +269,8 @@ include("plots/plot_spectrogram.jl")
 include("plots/plot_topo.jl")
 include("plots/plot_varia.jl")
 include("plots/plot_weights.jl")
+include("plots/plot_dipole2d.jl")
+include("plots/plot_dipole3d.jl")
 # statistics
 include("statistics/dprime.jl")
 include("statistics/effsize.jl")

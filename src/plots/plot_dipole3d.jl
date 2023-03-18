@@ -42,9 +42,9 @@ function plot_dipole3d(d::NeuroAnalyzer.DIPOLE; project::Bool=true)
     brain_front_texture = FileIO.load("resources/brain_front.png")
 
     # get dipole position
-    x = d.loc[1]
-    y = d.loc[2]
-    z = d.loc[3]
+    x = d.pos[1]
+    y = d.pos[2]
+    z = d.pos[3]
 
     # get dipole magnitude
     mx = d.mag[1]
