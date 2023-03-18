@@ -116,6 +116,7 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int6
     ep_n = epoch_n(obj)
 
     m = zeros(ch_n, ch_n, ep_n)
+
     @inbounds @simd for ep_idx in 1:ep_n
 
         # create half of the matrix
@@ -125,12 +126,11 @@ function mutual_information(obj::NeuroAnalyzer.NEURO; channel::Union{Vector{Int6
             end
         end
 
-        # copy to the other half
-        Threads.@threads for ch_idx1 in 1:(ch_n - 1)
-            for ch_idx2 in (ch_idx1 + 1):ch_n
-                m[ch_idx1, ch_idx2, ep_idx] = @views m[ch_idx2, ch_idx1, ep_idx]
-            end
-        end
+    end
+
+    # copy to the other half
+    Threads.@threads for ep_idx in 1:ep_n
+        @inbounds m[:, :, ep_idx] = _copy_lt2ut(m[:, :, ep_idx])
     end
 
     return m
@@ -169,19 +169,6 @@ function mutual_information(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO
     epoch_len(obj1) == epoch_len(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     m = @views mutual_information(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2])
-
-    ch_n = length(ch1)
-    ep_n = length(ep1)
-
-    m = zeros(ch_n, ch_n, ep_n)
-
-    @inbounds @simd for ep_idx in 1:ep_n
-        Threads.@threads for ch_idx1 in 1:ch_n
-            for ch_idx2 in 1:ch_n
-                m[ch_idx1, ch_idx2, ep_idx] = @views mutual_information(obj1.data[ch1[ch_idx1], :, ep1[ep_idx]], obj2.data[ch2[ch_idx2], :, ep2[ep_idx]])
-            end
-        end
-    end
 
     return m
 

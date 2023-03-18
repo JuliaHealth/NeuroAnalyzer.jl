@@ -30,14 +30,14 @@ function sr(obj::NeuroAnalyzer.NEURO)
 end
 
 """
-    channel_n(obj; type=:signal)
+    channel_n(obj; type)
 
 Return number of channels of `type`.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `type::Vector{Symbol}=:all`: channel type: `:all`, `:eeg`, `:meg`, `:ecg`, `:eog`, `:emg`, `:ref`, `:mrk`
+- `type::Vector{Symbol}=:all`: channel type (stored in the global channel_types constant variable)
 
 # Returns
 
@@ -45,7 +45,8 @@ Return number of channels of `type`.
 """
 function channel_n(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
-    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
+    _check_var(type, channel_types, "type")
+
     if type === :all
         if ndims(obj.data) == 1
             ch_n = 1
@@ -144,7 +145,7 @@ end
 """
     signal_channels(obj)
 
-Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_type` variable in `obj.header.recording`).
+Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_type` variable in `obj.header.recording`). For MEG data type, 'meg', `grad` and `mag` channels are returned.
 
 # Arguments
 
@@ -156,14 +157,20 @@ Return all signal (e.g. EEG or MEG) channels; signal is determined by `:data_typ
 """
 function signal_channels(obj::NeuroAnalyzer.NEURO)
 
-    chs = get_channel_bytype(obj, type=Symbol(obj.header.recording[:data_type]))
-    
+    dt = Symbol(obj.header.recording[:data_type])
+
+    if dt !== :meg
+        chs = get_channel_bytype(obj, type=dt)
+    else
+        chs = union(get_channel_bytype(obj, type=dt), get_channel_bytype(obj, type=:mag), get_channel_bytype(obj, type=:grad))
+    end
+
     return chs
 
 end
 
 """
-    get_channel_bytype(obj; type=:eeg)
+    get_channel_bytype(obj; type)
 
 Return channel number(s) for channel of `type` type.
 
@@ -178,7 +185,7 @@ Return channel number(s) for channel of `type` type.
 """
 function get_channel_bytype(obj::NeuroAnalyzer.NEURO; type::Symbol=:all)
 
-    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
+    _check_var(type, channel_types, "type")
     if type === :all
         ch_idx = collect(1:channel_n(obj))
     else

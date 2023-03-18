@@ -200,7 +200,6 @@ function import_fiff(file_name::String; detect_type::Bool=true)
                         handedness="",
                         weight=-1,
                         height=-1)
-
     r = _create_recording_meg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,

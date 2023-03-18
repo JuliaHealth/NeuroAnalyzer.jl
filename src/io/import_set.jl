@@ -80,7 +80,6 @@ function import_set(file_name::String; detect_type::Bool=true)
                         handedness="",
                         weight=-1,
                         height=-1)
-
     r = _create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,
@@ -97,7 +96,6 @@ function import_set(file_name::String; detect_type::Bool=true)
                               prefiltering=repeat([""], ch_n),
                               sampling_rate=sampling_rate,
                               gain=gain)
-
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
                            experiment_design="")

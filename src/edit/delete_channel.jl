@@ -149,7 +149,7 @@ Keep channel(s) of `type` type.
 """
 function keep_channel_type(obj::NeuroAnalyzer.NEURO; type::Symbol=:eeg)
 
-    _check_var(type, [:all, :eeg, :meg, :ecg, :eog, :emg, :ref, :mrk], "type")
+    _check_var(type, channel_types, "type")
 
     chs_idx = Vector{Int64}()
     for idx in 1:channel_n(obj, type=:all)

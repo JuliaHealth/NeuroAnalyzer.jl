@@ -60,6 +60,8 @@ using Wavelets
 using WaveletsExt
 using ContinuousWavelets
 
+# define structures
+
 mutable struct HEADER
     subject::Dict
     recording::Dict
@@ -88,11 +90,18 @@ mutable struct DIPOLE
     mag::Tuple{Real, Real, Real}
 end
 
+# set constans
+
+const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :misc]
+
+# set package options
+
 FFTW.set_provider!("mkl")
 FFTW.set_num_threads(Sys.CPU_THREADS)
 BLAS.set_num_threads(Sys.CPU_THREADS)
 
-# NA functions
+# load NA functions
+
 include("na.jl")
 
 function __init__()
@@ -120,7 +129,7 @@ function __init__()
 end
 
 # load sub-modules
-# find . -name "*.jl"
+
 # internal functions are exposed outside NA
 include("internal/check.jl")
 include("internal/component.jl")
@@ -185,6 +194,7 @@ include("analyze/tkeo.jl")
 include("analyze/total_power.jl")
 include("analyze/vartest.jl")
 include("analyze/xcov.jl")
+include("analyze/xcorr.jl")
 # edit
 include("edit/channel.jl")
 include("edit/delete_channel.jl")

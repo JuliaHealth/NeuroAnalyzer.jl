@@ -84,6 +84,7 @@ function import_alice4(file_name::String; detect_type::Bool=true)
     for idx in 1:ch_n
         units[idx] = strip(header[1 + ((idx - 1) * 8):(idx * 8)])
     end
+    units = replace(lowercase.(units), "uv"=>"μV")
 
     header = zeros(UInt8, ch_n * 8)
     readbytes!(fid, header, ch_n * 8)
@@ -290,7 +291,6 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                         handedness="",
                         weight=-1,
                         height=-1)
-
     r = _create_recording_eeg(data_type=data_type,
                               file_name=file_name,
                               file_size_mb=file_size_mb,
@@ -307,7 +307,6 @@ function import_alice4(file_name::String; detect_type::Bool=true)
                               prefiltering=prefiltering[channel_order],
                               sampling_rate=max_sampling_rate,
                               gain=gain[channel_order])
-
     e = _create_experiment(experiment_name="",
                            experiment_notes="",
                            experiment_design="")

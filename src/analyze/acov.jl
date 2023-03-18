@@ -103,4 +103,3 @@ function acov(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Abstra
     return (ac=ac, l=l)
 
 end
-
