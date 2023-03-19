@@ -76,7 +76,7 @@ function ged(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::Union{In
     ress_norm = zeros(ch_n, ep_n)
 
     Threads.@threads for ep_idx in 1:ep_n
-        sged[:, :, ep_idx], ress[:, ep_idx], ress_norm[:, ep_idx] = @views ged(obj1.data[ch1, :, ep1[ep_idx]], obj2.data[ch2, :, ep2[ep_idx]])
+        @inbounds sged[:, :, ep_idx], ress[:, ep_idx], ress_norm[:, ep_idx] = @views ged(obj1.data[ch1, :, ep1[ep_idx]], obj2.data[ch2, :, ep2[ep_idx]])
     end
 
     return (sged=sged, ress=ress, ress_norm=ress_norm)

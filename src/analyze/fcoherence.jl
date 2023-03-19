@@ -119,16 +119,7 @@ function fcoherence(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO; ch1::U
 
     sr(obj1) == sr(obj2) || throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
-    c_tmp, _, f = @views fcoherence(obj1.data[1, :, 1], obj1.data[1, :, 1], fs=sr(obj1), frq_lim=frq_lim)
-    c = zeros(length(ch1), length(c_tmp), length(ep1))
-    msc = zeros(length(ch1), length(c_tmp), length(ep1))
-    f = zeros(length(ch1), length(c_tmp), length(ep1))
-
-    @inbounds @simd for ep_idx in eachindex(ep1)
-        Threads.@threads for ch_idx in eachindex(ch1)
-            c[ch_idx, :, ep_idx], msc[ch_idx, :, ep_idx], _ = @views fcoherence(obj1.data[ch1[ch_idx], :, ep1[ep_idx]], obj2.data[ch2[ch_idx], :, ep2[ep_idx]], fs=sr(obj1), frq_lim=frq_lim)
-        end
-    end
+    c, msc, f = @views fcoherence(obj1.data[ch1, :, ep1], obj2.data[ch2, :, ep2], fs=sr(obj1), frq_lim=frq_lim)
 
     return (c=c, msc=msc, f=f)
 
