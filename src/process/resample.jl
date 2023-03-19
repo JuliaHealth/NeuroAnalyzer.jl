@@ -13,60 +13,55 @@ Resample to `new_sr` sampling frequency.
 # Arguments
 
 - `s::AbstractVector`
-- `t::AbstractVector`: time
+- `old_sr::Int64`: old sampling rate
 - `new_sr::Int64`: new sampling rate
 
 # Returns
 
 - `s_new::Vector{Float64}`
 """
-function resample(s::AbstractVector; t::AbstractVector, new_sr::Int64)
+function resample(s::AbstractVector; old_sr::Int64, new_sr::Int64)
 
+    old_sr < 1 && throw(ArgumentError("old_sr must be ≥ 1."))
     new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
 
-    # sampling interval
-    dt = t[2] - t[1]
-    # sampling rate
-    sr = 1 / dt
-    new_sr == sr && return(s)
+    new_sr == old_sr && return(s)
 
     # resample
-    sr_ratio = new_sr / sr
+    sr_ratio = new_sr / old_sr
     s_new = DSP.resample(s, sr_ratio)
-    # s_interpolation = CubicSplineInterpolation(t, s)
-    # s_new = s_interpolation(t_new)
     
     return s_new
 
 end
 
 """
-    resample(s; t, new_sr)
+    resample(s; old_sr::Int64, new_sr::Int64)
 
 Resamples all channels and time vector `t` to `new_sr` sampling frequency.
 
 # Arguments
 
 - `s::AbstractArray`
-- `t::AbstractVector`
+- `old_sr::Int64`: old sampling rate
 - `new_sr::Int64`: new sampling rate
 
 # Returns
 
 - `s_new::Array{Float64, 3}`
 """
-function resample(s::AbstractArray; t::AbstractVector, new_sr::Int64)
+function resample(s::AbstractArray; old_sr::Int64, new_sr::Int64)
 
     new_sr < 1 && throw(ArgumentError("new_sr must be ≥ 1."))
 
     ch_n, _, ep_n = size(s)
 
-    s_new = resample(s[1, :, 1], t=t, new_sr=new_sr)
+    s_new = NeuroAnalyzer.resample(s[1, :, 1], old_sr=old_sr, new_sr=new_sr)
     s_new = zeros(ch_n, length(s_new), ep_n) 
 
     @inbounds @simd for ep_idx in 1:ep_n
         Threads.@threads for ch_idx in 1:ch_n
-            s_new[ch_idx, :, ep_idx], _ = @views resample(s[ch_idx, :, ep_idx], t=t, new_sr=new_sr)
+            s_new[ch_idx, :, ep_idx] = @views NeuroAnalyzer.resample(s[ch_idx, :, ep_idx], old_sr=old_sr, new_sr=new_sr)
         end
     end
 
@@ -82,7 +77,7 @@ Resample (up- or down-sample).
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`
-- `new_sr::Int64`: new sampling rate
+- `old_sr::Int64`: old sampling rate - `new_sr::Int64`: new sampling rate
 
 # Returns
 
@@ -142,7 +137,7 @@ function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
     
     obj_new = deepcopy(obj)
 
-    s_new = resample(obj.data, t=obj.time_pts, new_sr=new_sr)
+    s_new = NeuroAnalyzer.resample(obj.data, old_sr=sr(obj), new_sr=new_sr)
 
     obj_new.data = s_new
 
@@ -202,7 +197,7 @@ function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)
 
     obj_new = deepcopy(obj)
 
-    s_new = resample(obj.data, t=obj.time_pts, new_sr=new_sr)
+    s_new = NeuroAnalyzer.resample(obj.data, old_sr=sr(obj), new_sr=new_sr)
 
     obj_new.data = s_new
 

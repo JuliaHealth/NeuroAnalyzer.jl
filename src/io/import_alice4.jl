@@ -12,7 +12,7 @@ Load EDF exported from Alice 4 Polysomnography System and return `NeuroAnalyzer.
 
 # Returns
 
-- `::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 

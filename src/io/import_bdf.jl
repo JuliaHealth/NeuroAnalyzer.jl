@@ -12,7 +12,7 @@ Load BDF/BDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `::NeuroAnalyzer.NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 

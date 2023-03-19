@@ -12,7 +12,7 @@ Load EDF/EDF+ file and return `NeuroAnalyzer.NEURO` object.
 
 # Returns
 
-- `obj::NEURO`
+- `obj::NeuroAnalyzer.NEURO`
 
 # Notes
 

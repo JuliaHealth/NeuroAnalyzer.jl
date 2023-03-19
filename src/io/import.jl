@@ -10,8 +10,9 @@ Load recording file and return `NeuroAnalyzer.NEURO` object. Supported formats:
 - CSV
 - SET (EEGLAB dataset)
 - FIFF
+- SNIRF
 
-This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
+This is a meta-function that triggers appropriate `import_*()` function. File format is detected based on file extension (.edf|.bdf|.vhdr|.csv|.csv.gz|.set|.fif|.fiff|.snirf). Signal data type (e.g. EEG or MEG is auto-detected) and stored in the `obj.header.recording[:data_type]` field.
 
 # Arguments
 
@@ -34,5 +35,6 @@ function import_recording(file_name::String; detect_type::Bool=true)
     splitext(file_name)[2] == ".set" && return import_set(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fif" && return import_fiff(file_name, detect_type=detect_type)
     splitext(file_name)[2] == ".fiff" && return import_fiff(file_name, detect_type=detect_type)
+    splitext(file_name)[2] == ".snirf" && return import_snirf(file_name)
     
 end
