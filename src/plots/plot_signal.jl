@@ -18,14 +18,14 @@ Plot amplitude of single- or multi-channel `s`.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `scale::Bool=true`: draw scale
-- `units::String="μV"`: units of the scale
+- `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractVector, AbstractArray}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractVector, AbstractArray}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", kwargs...)
 
     # convert single-channel signal to single-row matrix
     ndims(s) == 1 && (s = reshape(s, 1, length(s)))
@@ -119,14 +119,14 @@ Plot amplitude of single- or multi-channel `s`.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `scale::Bool=true`: draw scale
-- `units::String="μV"`: units of the scale
+- `units::String=""`: units of the scale
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractVector, AbstractArray}, bad::Vector{Bool}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="μV", kwargs...)
+function plot_signal(t::Union{AbstractVector, AbstractRange}, s::Union{AbstractVector, AbstractArray}, bad::Vector{Bool}; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", scale::Bool=true, units::String="", kwargs...)
 
     length(bad) == size(s, 1) || throw(ArgumentError("Length of bad channels vector and number of channels must be equal."))
 
@@ -219,7 +219,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
 - `scale::Bool=true`: draw scale
-- `units::String="μV"`: units of the scale
+- `units::String=""`: units of the scale
 - `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
 
@@ -227,7 +227,7 @@ Plot amplitude mean and ±95% CI of averaged `signal` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
+function plot_signal_avg(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -315,7 +315,7 @@ Butterfly plot of `s` channels.
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `scale::Bool=true`: draw scale
-- `units::String="μV"`: units of the scale
+- `units::String=""`: units of the scale
 - `mono::Bool=false`: use color or grey palette
 - `norm::Bool=false`: normalize to -1 .. +1
 - `kwargs`: optional arguments for plot() function
@@ -324,7 +324,7 @@ Butterfly plot of `s` channels.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="μV", norm::Bool=false, kwargs...)
+function plot_signal_butterfly(t::Union{AbstractVector, AbstractRange}, s::AbstractArray; clabels::Vector{String}=[""], xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, scale::Bool=true, units::String="", norm::Bool=false, kwargs...)
 
     pal = mono == true ? :grays : :darktest
 
@@ -402,7 +402,7 @@ Plot signal.
 - `emarkers::Bool`: draw epoch markers if available
 - `markers::Bool`: draw markers if available
 - `scale::Bool=true`: draw scale
-- `units::String="μV"`: units of the scale
+- `units::String=""`: units of the scale
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`)
 - `norm::Bool=false`: normalize signal for butterfly and averaged plots
 - `bad::Union{Bool, Matrix{Bool}}=false`: list of bad channels; if not empty - plot bad channels using this list
@@ -412,7 +412,7 @@ Plot signal.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="μV", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::Union{Int64, Vector{Int64}, <:AbstractRange}=_c(channel_n(obj)), seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, bad::Union{Bool, Matrix{Bool}}=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
@@ -421,13 +421,19 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     if ep != 0
         _check_epochs(obj, ep)
-        seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-        if typeof(ep) == Int64
-            seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+        if epoch_n(obj) == 1
+            ep = 0
         else
-            seg = (seg[1], (ep[end] * epoch_len(obj)))
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+            if typeof(ep) == Int64
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+            else
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
+            end
+            ep = 0
         end
     end
+
 
     # do not show epoch markers if there are no epochs
     epoch_n(obj) == 1 && (emarkers = false)
@@ -439,6 +445,9 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
     _check_channels(obj, ch)
     clabels = labels(obj)[ch]
     length(ch) == 1 && (clabels = [clabels])
+
+    # set units
+    units = _set_units(obj, ch[1])
 
     # get time vector
     if seg[2] <= epoch_len(obj)
@@ -482,7 +491,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
         end
     elseif type === :butterfly
         size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Channels $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Channels $(_channel2channel_name(ch)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   s,
                                   clabels=clabels,
@@ -496,7 +505,7 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
                                   kwargs...)
     elseif type === :mean
         size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Averaged channels $(_channel2channel_name(ch)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged channels $(_channel2channel_name(ch)) amplitude [mean ± 95%CI]\n [epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             s,
                             xlabel=xlabel,
@@ -568,7 +577,7 @@ Plot embedded or external component.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="", type::Symbol=:normal, norm::Bool=false, kwargs...)
+function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, seg::Tuple{Int64, Int64}=(1, 10*sr(obj)), xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, emarkers::Bool=true, markers::Bool=true, scale::Bool=true, units::String="a.u.", type::Symbol=:normal, norm::Bool=false, kwargs...)
 
     signal_len(obj) < 10 * sr(obj) && seg == (1, 10*sr(obj)) && (seg = (1, signal_len(obj)))
 
@@ -623,7 +632,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                         kwargs...)
     elseif type === :butterfly
         size(s, 1) == 1 && throw(ArgumentError("For type=:butterfly plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Components $(_channel2channel_name(c_idx)) amplitude\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_butterfly(t,
                                   s,
                                   clabels=clabels,
@@ -637,7 +646,7 @@ function plot(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Uni
                                   kwargs...)
     elseif type === :mean
         size(s, 1) == 1 && throw(ArgumentError("For type=:mean plot the signal must contain ≥ 2 channels."))
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [μV]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [s]", "Amplitude [$units]", "Averaged components $(_channel2channel_name(c_idx)) amplitude [mean ± 95%CI]\n[epoch$(_pl(length(ep))): $ep, time window: $t_s1:$t_s2]")
         p = plot_signal_avg(t,
                             s,
                             clabels=clabels,

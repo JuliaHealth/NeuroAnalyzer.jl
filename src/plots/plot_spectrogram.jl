@@ -1,42 +1,43 @@
 export plot_spectrogram
 
 """
-    plot_spectrogram(s_t, s_frq, s_pow; <keyword arguments>)
+    plot_spectrogram(st, sf, sp; <keyword arguments>)
 
 Plot single-channel spectrogram.
 
 # Arguments
 
-- `s_t::Vector{Float64}`: time
-- `s_frq::Vector{Float64}`: frequencies
-- `s_pow::Array{Float64, 2}`: powers
+- `st::Vector{Float64}`: time
+- `sf::Vector{Float64}`: frequencies
+- `sp::Array{Float64, 2}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_spectrogram(st::Vector{Float64}, sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", kwargs...)
 
-    size(s_pow, 2) == length(s_t) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and time vector $(length(s_t)) do not match."))
-    size(s_pow, 1) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and frequencies vector $(length(s_frq)) do not match."))
+    size(sp, 2) == length(st) || throw(ArgumentError("Size of powers $(size(sp, 2)) and time vector $(length(st)) do not match."))
+    size(sp, 1) == length(sf) || throw(ArgumentError("Size of powers $(size(sp, 1)) and frequencies vector $(length(sf)) do not match."))
 
     pal = mono == true ? :grays : :darktest
-    cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
+    cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
 
-    p = Plots.heatmap(s_t,
-                      s_frq,
-                      s_pow,
+    p = Plots.heatmap(st,
+                      sf,
+                      sp,
                       xlabel=xlabel,
                       ylabel=ylabel,
                       ylims=frq_lim,
-                      xticks=_ticks(s_t),
+                      xticks=_ticks(st),
                       yticks=_ticks(frq_lim),
                       title=title,
                       size=(1200, 800),
@@ -55,43 +56,44 @@ function plot_spectrogram(s_t::Vector{Float64}, s_frq::Vector{Float64}, s_pow::A
 end
 
 """
-    plot_spectrogram(s_ch, s_frq, s_pow; <keyword arguments>)
+    plot_spectrogram(sch, sf, sp; <keyword arguments>)
 
 Plot multiple-channel spectrogram.
 
 # Arguments
 
-- `s_ch::Vector{String}`: channel labels
-- `s_frq::Vector{Float64}`: frequencies
-- `s_pow::Array{Float64, 2}`: powers
+- `sch::Vector{String}`: channel labels
+- `sf::Vector{Float64}`: frequencies
+- `sp::Array{Float64, 2}`: powers
 - `norm::Bool=true`: whether powers are normalized to dB
 - `frq_lim::Tuple{Real, Real}=(0, 0): frequency limit for the Y-axis
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: use color or grey palette
+- `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(s_ch::Vector{String}, s_frq::Vector{Float64}, s_pow::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, kwargs...)
+function plot_spectrogram(sch::Vector{String}, sf::Vector{Float64}, sp::Array{Float64, 2}; norm::Bool=true, frq_lim::Tuple{Real, Real}=(0, 0), xlabel::String="", ylabel::String="", title::String="", mono::Bool=false, units::String="", kwargs...)
 
-    size(s_pow, 1) == length(s_ch) || throw(ArgumentError("Size of powers $(size(s_pow, 1)) and channels vector $(length(s_ch)) do not match."))
-    size(s_pow, 2) == length(s_frq) || throw(ArgumentError("Size of powers $(size(s_pow, 2)) and frequencies vector $(length(s_frq)) do not match."))
+    size(sp, 1) == length(sch) || throw(ArgumentError("Size of powers $(size(sp, 1)) and channels vector $(length(sch)) do not match."))
+    size(sp, 2) == length(sf) || throw(ArgumentError("Size of powers $(size(sp, 2)) and frequencies vector $(length(sf)) do not match."))
 
     pal = mono == true ? :grays : :darktest
-    cb_title = norm == true ? "[dB/Hz]" : "[μV^2/Hz]"
+    cb_title = norm == true ? "[dB/Hz]" : "[$units^2/Hz]"
     
-    ch = collect(1:length(s_ch)) .- 0.5
-    p = Plots.heatmap(s_frq,
+    ch = collect(1:length(sch)) .- 0.5
+    p = Plots.heatmap(sf,
                       ch,
-                      s_pow,
+                      sp,
                       xlabel=xlabel,
-                      xticks=_ticks(s_frq),
+                      xticks=_ticks(sf),
                       ylabel=ylabel,
-                      yticks=(ch, s_ch),
+                      yticks=(ch, sch),
                       title=title,
                       size=(1200, 800),
                       margins=20Plots.px,
@@ -148,6 +150,9 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
     clabels = labels(obj)[ch]
     length(ch) == 1 && (clabels = [clabels])
 
+    # set units
+    units = _set_units(obj, ch[1])
+
     # get frequency range
     fs = sr(obj)
     frq_lim = tuple_order(frq_lim)
@@ -166,38 +171,38 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
         title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[channel: $(_channel2channel_name(ch)), epoch: $ep, time window: $t_s1:$t_s2]")
 
         if method === :standard
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=false)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mt
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=true, st=false)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=true, st=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=true)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=true)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(short-time Fourier transform)")
         elseif method === :mw
             _, s_p, _, s_f = NeuroAnalyzer.wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
-            s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
 
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
-        p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
+        p = plot_spectrogram(st, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
 
         # plot markers if available
         # TODO: draw markers length
@@ -250,7 +255,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRan
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
-        p = plot_spectrogram(clabels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
+        p = plot_spectrogram(clabels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
 
     Plots.plot(p)
@@ -284,13 +289,14 @@ Plots spectrogram of embedded or external component.
 - `title::String="default"`: plot title, default is Spectrogram [frequency limit: 0-128 Hz]\n[component: 1, epoch: 1, time window: 0 ms:10 s]
 - `mono::Bool=false`: use color or grey palette
 - `markers::Bool`: draw markers if available
+- `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, kwargs...)
+function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep::Union{Int64, AbstractRange}=0, c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}, norm::Bool=true, method::Symbol=:standard, nt::Int64=8, frq_lim::Tuple{Real, Real}=(0, sr(obj) ÷ 2), ncyc::Union{Int64, Tuple{Int64, Int64}}=6, xlabel::String="default", ylabel::String="default", title::String="default", mono::Bool=false, markers::Bool=true, units::String="", kwargs...)
 
     _check_var(method, [:standard, :stft, :mt, :mw], "method")
 
@@ -321,38 +327,38 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
         title == "default" && (title = "Spectrogram method [frequency limit: $(frq_lim[1])-$(frq_lim[2]) Hz]\n[component: $(_channel2channel_name(c_idx)), epoch: $ep, time window: $t_s1:$t_s2]")
 
         if method === :standard
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=false)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(standard periodogram)")
         elseif method === :mt
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=true, st=false)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=true, st=false)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(multi-tapered periodogram)")
         elseif method === :stft
-            s_p, s_f, s_t = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=true)
+            s_p, s_f, st = NeuroAnalyzer.spectrogram(signal, fs=fs, norm=false, mt=false, st=true)
             f1 = vsearch(frq_lim[1], s_f)
             f2 = vsearch(frq_lim[2], s_f)
             s_f = s_f[f1:f2]
             s_p = s_p[f1:f2, :]
-            # s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            # st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(short-time Fourier transform)")
         elseif method === :mw
             _, s_p, _, s_f = NeuroAnalyzer.wspectrogram(signal, fs=fs, frq_lim=frq_lim, frq_n=length(frq_lim[1]:frq_lim[2]), ncyc=ncyc, norm=false)
-            s_t = linspace(0, (length(signal) / fs), size(s_p, 2))
+            st = linspace(0, (length(signal) / fs), size(s_p, 2))
             title = replace(title, "method" => "(Morlet-wavelet transform)")
         end
 
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
-        p = plot_spectrogram(s_t, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
+        p = plot_spectrogram(st, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
 
         # plot markers if available
         # TODO: draw markers length
@@ -404,7 +410,7 @@ function plot_spectrogram(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArr
 
         norm == true && (s_p = pow2db.(s_p))
         s_p[s_p .== -Inf] .= minimum(s_p[s_p .!== -Inf])
-        p = plot_spectrogram(clabels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, kwargs=kwargs)
+        p = plot_spectrogram(clabels, s_f, s_p, norm=norm, frq_lim=frq_lim, xlabel=xlabel, ylabel=ylabel, title=title, mono=mono, units=units, kwargs=kwargs)
     end
 
     Plots.plot(p)

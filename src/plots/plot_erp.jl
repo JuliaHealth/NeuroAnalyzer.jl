@@ -417,10 +417,10 @@ Plot ERP.
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
-- `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
+- `ylabel::String="default"`: y-axis label, default is Amplitude [units] 
 - `title::String="default"`: plot title, default is ERP amplitude [channel: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
-- `cb_title::String="default"`: color bar title, default is Amplitude [μV] 
+- `cb_title::String="default"`: color bar title, default is Amplitude [units] 
 - `mono::Bool=false`: use color or grey palette
 - `peaks::Bool=true`: draw peaks
 - `channel_labels::Bool=true`: draw labels legend (using channel labels) for multi-channel `:butterfly` plot
@@ -441,6 +441,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
     # check channels
     _check_channels(obj, ch)
 
+    # set units
+    units = _set_units(obj, ch[1])
+
     # average all epochs
     ep_n = 1:epoch_n(obj)
 
@@ -458,7 +461,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
         end
     end
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         s = mean(s, dims=2)[:]
         p = plot_erp(t,
                      s,
@@ -470,7 +473,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                      kwargs...)
     elseif type === :butterfly
         if length(ch) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             s = mean(s, dims=3)[:, :]
             if channel_labels == true
                 clabels = labels(obj)[ch]
@@ -478,7 +481,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 clabels = repeat([""], length(ch))
             end
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             s = s'
             clabels = [""]
         end
@@ -492,7 +495,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(ch))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude [mean ± 95%CI] channel $(_channel2channel_name(ch))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          s,
                          xlabel=xlabel,
@@ -522,7 +525,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                           kwargs...)
     elseif type === :stack
         peaks = false
-        cb_title == "default" && (cb_title = "Amplitude [μV]")
+        cb_title == "default" && (cb_title = "Amplitude [$units]")
         if length(ch) > 1
             xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude channel$(_pl(length(ch))) $(_channel2channel_name(ch))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             s = mean(s, dims=3)[:, :]
@@ -573,9 +576,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 Plots.scatter!((t[pp[ch, 2]], erp_obj[ch, pp[ch, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[ch, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp_obj[ch, pp[ch, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[ch, pp[ch, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[ch, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp_obj[ch, pp[ch, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[ch, pp[ch, 2]], digits=2)) $units")
         else
             erp_obj = mean(erp(obj).data[ch, :], dims=1)[:]
             obj_tmp = keep_channel(obj, ch=1)
@@ -589,9 +592,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO; ch::Union{Int64, Vector{Int64}, <:Ab
                 Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) $units")
         end
     end
 
@@ -686,7 +689,7 @@ Plot ERP.
 - `c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0`: component channel to display, default is all component channels
 - `tm::Union{Int64, Vector{Int64}}=0`: time markers (in miliseconds) to plot as vertical lines, useful for adding topoplots at these time points 
 - `xlabel::String="default"`: x-axis label, default is Time [ms]
-- `ylabel::String="default"`: y-axis label, default is Amplitude [μV] 
+- `ylabel::String="default"`: y-axis label, default is Amplitude [units] 
 - `title::String="default"`: plot title, default is ERP amplitude [component: 1, epochs: 1:2, time window: -0.5 s:1.5 s]
 - `cb::Bool=true`: plot color bar
 - `cb_title::String="default"`: color bar title
@@ -695,13 +698,14 @@ Plot ERP.
 - `channel_labels::Bool=true`: draw labels legend (using component labels) for multi-channel `:butterfly` plot
 - `type::Symbol=:normal`: plot type: `:normal`, mean ± 95%CI (`:mean`), butterfly plot (`:butterfly`), topographical plot of ERPs (`:topo`) or stacked epochs/channels (`:stack`)
 - `yrev::Bool=false`: reverse Y axis
+- `units::String=""`
 - `kwargs`: optional arguments for plot() function
 
 # Returns
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, kwargs...)
+function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_idx::Union{Int64, Vector{Int64}, <:AbstractRange}=0, tm::Union{Int64, Vector{Int64}}=0, xlabel::String="default", ylabel::String="default", title::String="default", cb::Bool=true, cb_title::String="default", mono::Bool=false, peaks::Bool=true, channel_labels::Bool=true, type::Symbol=:normal, yrev::Bool=false, units::String="", kwargs...)
 
     _check_var(type, [:normal, :butterfly, :mean, :topo, :stack], "type")
 
@@ -736,7 +740,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
     end
 
     if type === :normal
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude component $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
         s = mean(s, dims=2)[:]
         p = plot_erp(t,
                      s,
@@ -748,7 +752,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                      kwargs...)
     elseif type === :butterfly
         if length(c_idx) > 1
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
             s = mean(s, dims=3)[:, :]
             if channel_labels == true
                 clabels = _gen_clabels(c)[c_idx]
@@ -756,7 +760,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 clabels = repeat([""], length(c_idx))
             end
         else
-            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
+            xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[epochs: $ep_n, time window: $t_s1:$t_s2]")
             s = s'
             clabels = [""]
         end
@@ -770,7 +774,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                                yrev=yrev;
                                kwargs...)
     elseif type === :mean
-        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [μV]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
+        xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "Amplitude [$units]", "ERP amplitude [mean ± 95%CI] component $(_channel2channel_name(c_idx))\n[averaged epoch$(_pl(length(ep_n))): $ep_n, time window: $t_s1:$t_s2]")
         p = plot_erp_avg(t,
                          s,
                          xlabel=xlabel,
@@ -797,7 +801,7 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                           mono=mono;
                           kwargs...)
     elseif type === :stack
-        cb_title == "default" && (cb_title = "Amplitude [μV]")
+        cb_title == "default" && (cb_title = "Amplitude [$units]")
         peaks = false
         if length(c_idx) > 1
             xlabel, ylabel, title = _set_defaults(xlabel, ylabel, title, "Time [ms]", "", "ERP amplitude component$(_pl(length(c_idx))) $(_channel2channel_name(c_idx))\n[averaged epochs: $ep_n, time window: $t_s1:$t_s2]")
@@ -847,9 +851,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) $units")
         else         
             erp_obj = mean(mean(s, dims=3), dims=1)[:]
             obj_tmp = keep_channel(obj, channel=1)
@@ -863,9 +867,9 @@ function plot_erp(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; c_i
                 Plots.scatter!((t[pp[1, 2]], erp_obj[pp[1, 2]]), marker=:xcross, markercolor=:black, markersize=3, label=false)
             end
             _info("Positive peak time: $(round(t[pp[1, 1]] * 1000, digits=0)) ms")
-            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) μV")
+            _info("Positive peak amplitude: $(round(erp_obj[pp[1, 1]], digits=2)) $units")
             _info("Negative peak time: $(round(t[pp[1, 2]] * 1000, digits=0)) ms")
-            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) μV")
+            _info("Negative peak amplitude: $(round(erp_obj[pp[1, 2]], digits=2)) $units")
         end
     end
 

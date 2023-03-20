@@ -7,7 +7,7 @@ Plot topographical view.
 
 # Arguments
 
-- `signal::Vector{<:Real}`: values to plot (one value per channel)
+- `s::Vector{<:Real}`: values to plot (one value per channel)
 - `ch::Union{Int64, Vector{Int64}, <:AbstractRange}`: channel(s) to plot
 - `locs::DataFrame`: columns: channel, labels, loc_theta, loc_radius, loc_x, loc_y, loc_z, loc_radius_sph, loc_theta_sph, loc_phi_sph
 - `cb::Bool=true`: plot color bar
@@ -33,7 +33,7 @@ Plot topographical view.
 
 - `p::Plots.Plot{Plots.GRBackend}`
 """
-function plot_topo(signal::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
+function plot_topo(s::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:AbstractRange}, locs::DataFrame, cb::Bool=true, cb_label::String="[A.U.]", title::String="default", mono::Bool=false, imethod::Symbol=:sh, nmethod::Symbol=:minmax, plot_contours::Bool=true, plot_electrodes::Bool=true, plot_size::Int64=800, head_labels::Bool=false, head_details::Bool=true, kwargs...)
     
     pal = mono == true ? :grays : :darktest
     _check_var(imethod, [:sh, :mq, :imq, :tp, :nn, :ga], "imethod")
@@ -49,7 +49,7 @@ function plot_topo(signal::Vector{<:Real}; ch::Union{Int64, Vector{Int64}, <:Abs
     loc_x = _s2v(loc_x)
     loc_y = _s2v(loc_y)
 
-    s_interpolated, interpolated_x, interpolated_y = _interpolate(signal, loc_x, loc_y, 100, imethod, nmethod)
+    s_interpolated, interpolated_x, interpolated_y = _interpolate(s, loc_x, loc_y, 100, imethod, nmethod)
 
     p = Plots.plot(grid=true,
                    framestyle=:none,
@@ -181,9 +181,9 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
 
     # get time vector
     if seg[2] <= epoch_len(obj_tmp)
-        signal = obj_tmp.data[ch, seg[1]:seg[2], 1]
+        s = obj_tmp.data[ch, seg[1]:seg[2], 1]
     else
-        signal = ep(obj_tmp, ep_n=1).data[ch, seg[1]:seg[2], 1]
+        s = epoch(obj_tmp, ep_n=1).data[ch, seg[1]:seg[2], 1]
     end
     # t = _get_t(seg[1], seg[2], sr(obj_tmp))
     t = obj.time_pts[seg[1]:seg[2]]
@@ -191,14 +191,14 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     ep = _s2epoch(obj_tmp, seg[1], seg[2])
     
     # average signal and convert to vector
-    if size(signal, 2) > 1
+    if size(s, 2) > 1
         if amethod === :mean
-            signal = vec(mean(signal, dims=2))
+            s = vec(mean(s, dims=2))
         elseif amethod === :median
-            signal = vec(median(signal, dims=2))
+            s = vec(median(s, dims=2))
         end
     else
-        signal = vec(signal)
+        s = vec(s)
     end
 
     if seg[2] != seg[1] + 1
@@ -208,7 +208,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, 
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(signal, ch=ch, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+    p = plot_topo(s, ch=ch, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
 
     Plots.plot(p)
 
@@ -309,9 +309,9 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
 
     # get time vector
     if seg[2] <= epoch_len(obj_tmp)
-        signal = c[c_idx, seg[1]:seg[2], 1]
+        s = c[c_idx, seg[1]:seg[2], 1]
     else
-        signal = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
+        s = _make_epochs(c, ep_n=1)[c_idx, seg[1]:seg[2], 1]
     end
     if seg[1] != seg[2]
         t = _get_t(seg[1], seg[2], sr(obj_tmp))
@@ -322,14 +322,14 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     ep = _s2epoch(obj_tmp, seg[1], seg[2])
     
     # average signal and convert to vector
-    if size(signal, 2) > 1
+    if size(s, 2) > 1
         if amethod === :mean
-            signal = vec(mean(signal, dims=2))
+            s = vec(mean(s, dims=2))
         elseif amethod === :median
-            signal = vec(median(signal, dims=2))
+            s = vec(median(s, dims=2))
         end
     else
-        signal = vec(signal)
+        s = vec(s)
     end
 
     if seg[2] != seg[1]
@@ -347,7 +347,7 @@ function plot_topo(obj::NeuroAnalyzer.NEURO, c::Union{Symbol, AbstractArray}; ep
     end
     cb_label == "default" && (cb_label = "[A.U.]")
 
-    p = plot_topo(signal, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
+    p = plot_topo(s, ch=c_idx, locs=obj_tmp.locs, cb=cb, cb_label=cb_label, title=title, mono=mono, imethod=imethod, nmethod=nmethod, plot_contours=plot_contours, plot_electrodes=plot_electrodes, plot_size=plot_size, head_labels=head_labels, head_details=head_details, kwargs=kwargs)
 
     Plots.plot(p)
 

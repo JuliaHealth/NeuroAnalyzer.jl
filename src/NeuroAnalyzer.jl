@@ -92,7 +92,7 @@ end
 
 # set constans
 
-const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :misc]
+const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
@@ -260,7 +260,7 @@ include("process/plinterpolate.jl")
 include("process/reference.jl")
 include("process/resample.jl")
 include("process/scale.jl")
-include("process/slaplacian.jl")
+include("process/csd.jl")
 include("process/standardize.jl")
 include("process/taper.jl")
 include("process/tconv.jl")
