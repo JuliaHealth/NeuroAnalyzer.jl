@@ -421,13 +421,19 @@ function plot(obj::NeuroAnalyzer.NEURO; ep::Union{Int64, AbstractRange}=0, ch::U
 
     if ep != 0
         _check_epochs(obj, ep)
-        seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
-        if typeof(ep) == Int64
-            seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+        if epoch_n(obj) == 1
+            ep = 0
         else
-            seg = (seg[1], (ep[end] * epoch_len(obj)))
+            seg = (((ep[1] - 1) * epoch_len(obj) + 1), seg[2])
+            if typeof(ep) == Int64
+                seg = (seg[1], (seg[1] + epoch_len(obj) - 1))
+            else
+                seg = (seg[1], (ep[end] * epoch_len(obj)))
+            end
+            ep = 0
         end
     end
+
 
     # do not show epoch markers if there are no epochs
     epoch_n(obj) == 1 && (emarkers = false)

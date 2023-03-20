@@ -92,7 +92,7 @@ end
 
 # set constans
 
-const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :misc]
+const channel_types = [:all, :eeg, :meg, :grad, :mag, :csd, :ecg, :eog, :emg, :ref, :mrk, :other]
 
 # set package options
 
